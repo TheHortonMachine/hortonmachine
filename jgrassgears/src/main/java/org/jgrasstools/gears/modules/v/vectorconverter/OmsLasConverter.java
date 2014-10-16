@@ -33,7 +33,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inFile_DE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inPolygons_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_outFile_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pClasses_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pCode_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pEast_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pImpulses_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pIntensityrange_DESCRIPTION;
@@ -67,8 +66,8 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
-import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.las.core.ALasReader;
+import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.utils.LasStats;
@@ -76,7 +75,6 @@ import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -148,11 +146,6 @@ public class OmsLasConverter extends JGTModel {
     @In
     public Double pEast = null;
 
-    @Description(OMSLASCONVERTER_pCode_DESCRIPTION)
-    @UI(JGTConstants.CRS_UI_HINT)
-    @In
-    public String pCode;
-
     @Description(OMSLASCONVERTER_doHeader_DESCRIPTION)
     @In
     public boolean doHeader = false;
@@ -195,32 +188,31 @@ public class OmsLasConverter extends JGTModel {
 
         boolean doShapefile = false;
         boolean doCsv = false;
+        boolean doLas = false;
         if (outFile != null) {
             if (outFile.endsWith(".shp")) {
                 doShapefile = true;
-            } else {
-                // any other == csv
+            } else if (outFile.endsWith(".las")) {
+                doLas = true;
+            } else if (outFile.endsWith(".csv")) {
                 doCsv = true;
             }
         }
 
         SimpleFeatureCollection outGeodata = new DefaultFeatureCollection();
 
-        CoordinateReferenceSystem crs = null;
-        if (pCode != null) {
-            crs = CRS.decode(pCode);
-        } else {
-            // read the prj file
-            crs = CrsUtilities.readProjectionFile(inFile, "las");
+        final File lasFile = new File(inFile);
+        lasReader = ALasReader.getReader(lasFile, null);
+        lasReader.open();
+        ILasHeader header = lasReader.getHeader();
+        CoordinateReferenceSystem crs = header.getCrs();
+        if (crs == null) {
+            throw new ModelsIllegalargumentException("No CRS infromation available for the input data.", this);
         }
 
-        final File lasFile = new File(inFile);
-        lasReader = ALasReader.getReader(lasFile, crs);
-        lasReader.open();
-
         if (doHeader) {
-            final String header = lasReader.getHeader().toString();
-            pm.message(header);
+            final String headerString = header.toString();
+            pm.message(headerString);
             if (!doInfo)
                 return;
         }
@@ -304,7 +296,13 @@ public class OmsLasConverter extends JGTModel {
             csvWriter = new BufferedWriter(new FileWriter(outFile));
         }
 
-        ILasHeader header = lasReader.getHeader();
+        ALasWriter lasWriter = null;
+        if (doLas) {
+            lasWriter = ALasWriter.getWriter(new File(outFile), crs);
+            lasWriter.setBounds(header);
+            lasWriter.open();
+        }
+
         final long recordsCount = header.getRecordsCount();
         pm.message("File header info \n" + header);
 
@@ -385,6 +383,9 @@ public class OmsLasConverter extends JGTModel {
                     stats.addClassification(classification);
                     stats.addImpulse((int) impulse);
                     stats.addIntensity(intensity);
+                } else if (doLas) {
+                    lasWriter.addPoint(lasDot);
+                    addedFeatures++;
                 } else if (doShapefile) {
                     final SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
                     final Point point = gf.createPoint(tmp);
@@ -428,7 +429,9 @@ public class OmsLasConverter extends JGTModel {
         if (doCsv) {
             csvWriter.close();
         }
-
+        if (doLas) {
+            lasWriter.close();
+        }
         if (doShapefile) {
             OmsVectorWriter.writeVector(outFile, outGeodata);
         }

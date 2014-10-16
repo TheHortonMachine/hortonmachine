@@ -15,18 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gears.modules.v.las;
+package org.jgrasstools.lesto.modules.utilities;
 
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inFile_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pCode_DESCRIPTION;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import oms3.annotations.Author;
@@ -39,20 +36,18 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
-import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.CrsUtilities;
-import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -62,7 +57,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.index.strtree.STRtree;
@@ -70,29 +64,29 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 @Description("Creates a vector map of the point cloud density over a given grid.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("las, density, vector")
-@Label(JGTConstants.LESTO)
-@Name("pointdensityextractor")
+@Label(JGTConstants.LESTO + "/utilities")
+@Name("laspointdensityextractor")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
-public class OmsLasPointDensityExtractor extends JGTModel {
+public class LasPointDensityExtractor extends JGTModel {
 
-    @Description(OMSLASCONVERTER_inFile_DESCRIPTION)
+    @Description("Las file path.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inFile;
 
-    @Description(OMSLASCONVERTER_pCode_DESCRIPTION)
-    @UI(JGTConstants.CRS_UI_HINT)
-    @In
-    public String pCode;
-
     @Description("The grid resolution.")
+    @Unit("m")
     @In
     public double pGridStep = 1.0;
 
-    private GeometryFactory gf = GeometryUtilities.gf();
+    @Description("Output vector map.")
+    @UI(JGTConstants.FILEOUT_UI_HINT)
+    @In
+    public String outFile;
 
-    @SuppressWarnings("nls")
+    private CoordinateReferenceSystem crs;
+
     @Execute
     public void process() throws Exception {
         checkNull(inFile);
@@ -101,21 +95,13 @@ public class OmsLasPointDensityExtractor extends JGTModel {
             throw new ModelsIllegalargumentException("The grid step has to be major than 0.", this);
         }
 
-        CoordinateReferenceSystem crs = null;
-        if (pCode != null) {
-            crs = CRS.decode(pCode);
-        } else {
-            // read the prj file
-            crs = CrsUtilities.readProjectionFile(inFile, "las");
-        }
-
         List<DensityData> densityDataList = new ArrayList<DensityData>();
         final File lasFile = new File(inFile);
-        ALasReader lasReader = ALasReader.getReader(lasFile, crs);
-        try {
+        try (ALasReader lasReader = ALasReader.getReader(lasFile, null)) {
             lasReader.open();
 
             ILasHeader header = lasReader.getHeader();
+            crs = header.getCrs();
             ReferencedEnvelope3D dataEnvelope = header.getDataEnvelope();
 
             double[] xBins = NumericsUtilities.range2Bins(dataEnvelope.getMinX(), dataEnvelope.getMaxX(), pGridStep, false);
@@ -171,9 +157,6 @@ public class OmsLasPointDensityExtractor extends JGTModel {
             }
             pm.done();
 
-        } finally {
-            if (lasReader != null)
-                lasReader.close();
         }
 
         DefaultFeatureCollection outGeodata = new DefaultFeatureCollection();
@@ -194,19 +177,15 @@ public class OmsLasPointDensityExtractor extends JGTModel {
         for( DensityData d : densityDataList ) {
             Object[] objs = {d.geometry, d.imp[1], d.imp[2], d.imp[3], d.imp[4], d.imp[5], d.imp[0]};
 
-            if (d.imp[0]>0) {
+            if (d.imp[0] > 0) {
                 builder.addAll(objs);
                 final SimpleFeature feature = builder.buildFeature(null);
-                
+
                 outGeodata.add(feature);
             }
         }
 
-        File inputFile = new File(inFile);
-        String name = FileUtilities.getNameWithoutExtention(inputFile);
-        File parentFile = inputFile.getParentFile();
-        File outFile = new File(parentFile, name + "_density.shp");
-        dumpVector(outGeodata, outFile.getAbsolutePath());
+        dumpVector(outGeodata, outFile);
     }
 
     private static class DensityData {
@@ -215,24 +194,6 @@ public class OmsLasPointDensityExtractor extends JGTModel {
          */
         int[] imp = new int[6];
         Geometry geometry;
-    }
-
-    public static void main( String[] args ) throws Exception {
-        File[] lasFiles = FileUtilities.getFilesListByExtention("/media/lacntfs/unibz/LAS_Classificati/", "las");
-        Arrays.sort(lasFiles);
-        for( File lasFile : lasFiles ) {
-            String name = lasFile.getName();
-            if (name.contains("indexed")) {
-                // don't duplicate
-                continue;
-            }
-
-            OmsLasPointDensityExtractor ex = new OmsLasPointDensityExtractor();
-            ex.inFile = lasFile.getAbsolutePath();
-            ex.pGridStep = 1.0;
-            ex.process();
-        }
-
     }
 
 }

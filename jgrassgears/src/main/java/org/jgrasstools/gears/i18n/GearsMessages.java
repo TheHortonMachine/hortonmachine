@@ -1304,7 +1304,6 @@ public class GearsMessages {
     public static final String OMSLASCONVERTER_pSouth_DESCRIPTION = "The optional requested boundary south coordinate.";
     public static final String OMSLASCONVERTER_pWest_DESCRIPTION = "The optional requested boundary west coordinate.";
     public static final String OMSLASCONVERTER_pEast_DESCRIPTION = "The optional requested boundary east coordinate.";
-    public static final String OMSLASCONVERTER_pCode_DESCRIPTION = "The optional code defining the target coordinate reference system. This is needed only if the file has no prj file. If set, it will be used over the prj file.";
     public static final String OMSLASCONVERTER_doHeader_DESCRIPTION = "Only print header and exit (default is false).";
     public static final String OMSLASCONVERTER_doInfo_DESCRIPTION = "Print additional info and exit (default is false).";
     public static final String OMSLASCONVERTER_doBbox_DESCRIPTION = "Generate a bounding box polygon as output vector (default is false).";

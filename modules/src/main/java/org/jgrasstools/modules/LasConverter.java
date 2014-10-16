@@ -32,10 +32,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inFile_DE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inPolygons_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_outFile_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pClasses_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pCode_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pEast_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pImpulses_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pIndexrange_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pIntensityrange_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pNorth_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pSouth_DESCRIPTION;
@@ -43,7 +41,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pWest_DES
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
-import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
@@ -110,11 +107,6 @@ public class LasConverter extends JGTModel {
     @In
     public Double pEast = null;
 
-    @Description(OMSLASCONVERTER_pCode_DESCRIPTION)
-    @UI(JGTConstants.CRS_UI_HINT)
-    @In
-    public String pCode;
-
     @Description(OMSLASCONVERTER_doHeader_DESCRIPTION)
     @In
     public boolean doHeader = false;
@@ -147,7 +139,6 @@ public class LasConverter extends JGTModel {
         lasconverter.pSouth = pSouth;
         lasconverter.pWest = pWest;
         lasconverter.pEast = pEast;
-        lasconverter.pCode = pCode;
         lasconverter.doHeader = doHeader;
         lasconverter.doInfo = doInfo;
         lasconverter.doBbox = doBbox;
