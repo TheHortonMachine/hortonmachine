@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.lesto.modules.filter;
 import java.io.File;
+import java.text.DecimalFormat;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -69,8 +70,10 @@ public class LasHistogram extends JGTModel {
         checkNull(inLas);
 
         boolean doIntensity = false;
+        DecimalFormat formatter = new DecimalFormat("0.0");
         if (pType.equals(LasUtils.INTENSITY)) {
             doIntensity = true;
+            formatter = new DecimalFormat("0");
         }
 
         CoordinateReferenceSystem crs = null;
@@ -131,7 +134,7 @@ public class LasHistogram extends JGTModel {
         String[] markersLabels = new String[pBin];
         for( int i = 0; i < markersLabels.length; i++ ) {
             double center = markers[i] - step / 2.0;
-            markersLabels[i] = String.valueOf(center);
+            markersLabels[i] = formatter.format(center);
             pm.message(markersLabels[i] + ",\t" + count[i]);
         }
 
@@ -140,4 +143,5 @@ public class LasHistogram extends JGTModel {
             hi.plot();
         }
     }
+
 }

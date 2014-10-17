@@ -308,7 +308,8 @@ public class LasHeightDistribution extends JGTModel {
 
         double[] pointsArray = new double[pointsList.size()];
         for( int i = 0; i < pointsArray.length; i++ ) {
-            pointsArray[i] = pointsList.get(i).z;
+            LasRecord lasRecord = pointsList.get(i);
+            pointsArray[i] = lasRecord.groundElevation;
         }
 
         double binSize = 0.5;
