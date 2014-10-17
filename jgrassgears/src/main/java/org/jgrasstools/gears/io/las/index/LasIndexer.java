@@ -117,7 +117,7 @@ public class LasIndexer extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inFolder, pCode, pIndexname);
+        checkNull(inFolder, pIndexname);
 
         if (pCellsize <= 0) {
             throw new ModelsIllegalargumentException("The cell size parameter needs to be > 0.", this);
@@ -128,7 +128,8 @@ public class LasIndexer extends JGTModel {
         }
 
         try {
-            crs = CRS.decode(pCode);
+            if (pCode != null)
+                crs = CRS.decode(pCode);
         } catch (Exception e1) {
             throw new ModelsIllegalargumentException("An error occurred while reading the projection definition: "
                     + e1.getLocalizedMessage(), this);
@@ -158,7 +159,11 @@ public class LasIndexer extends JGTModel {
         for( File file : filesList ) {
             try (ALasReader reader = ALasReader.getReader(file, crs)) {
                 reader.open();
-                ReferencedEnvelope3D envelope = reader.getHeader().getDataEnvelope();
+                ILasHeader header = reader.getHeader();
+                if (crs == null) {
+                    crs = header.getCrs();
+                }
+                ReferencedEnvelope3D envelope = header.getDataEnvelope();
                 File newLasFile = getNewLasFile(file);
                 mainTree.insert(envelope, newLasFile.getName());
             }
