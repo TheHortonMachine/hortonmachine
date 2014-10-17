@@ -110,7 +110,9 @@ public class LasIndexer extends JGTModel {
     @In
     public boolean doOverview = false;
 
-    public Integer pThreads = getDefaultThreadsNum();
+    @Description("The number of threads to use for the process.")
+    @In
+    public int pThreads = 1;
 
     private CoordinateReferenceSystem crs;
     private ConcurrentLinkedQueue<Polygon> envelopesQueue;
