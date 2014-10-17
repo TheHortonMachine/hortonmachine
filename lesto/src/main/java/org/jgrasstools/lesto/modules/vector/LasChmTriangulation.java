@@ -37,6 +37,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -65,6 +66,7 @@ import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder;
 @Name("laschmtriangulation")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
+@UI(JGTConstants.HIDE_UI_HINT)
 @SuppressWarnings("nls")
 public class LasChmTriangulation extends JGTModel {
 
