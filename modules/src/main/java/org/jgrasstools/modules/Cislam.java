@@ -109,28 +109,28 @@ public class Cislam extends JGTModel {
 	@Unit("m")
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
-	public GridCoverage2D inPit = null;
+	public String inPit = null;
 
 	@Description(OMSCISLAM_inFlow_DESCRIPTION)
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
-	public GridCoverage2D inFlow = null;
+	public String inFlow = null;
 
 	@Description(OMSCISLAM_inSlope_DESCRIPTION)
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
-	public GridCoverage2D inSlope = null;
+	public String inSlope = null;
 
 	@Description(OMSCISLAM_inAb_DESCRIPTION)
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
-	public GridCoverage2D inAb = null;
+	public String inAb = null;
 
 	@Description(OMSCISLAM_inSoilThickness_DESCRIPTION)
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@Unit("m")
 	@In
-	public GridCoverage2D inSoilThickness = null;
+	public String inSoilThickness = null;
 
 	// #############################################
 	// Rainfall-statistics related parameters
@@ -154,7 +154,7 @@ public class Cislam extends JGTModel {
 	@Unit("m")
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
-	public GridCoverage2D inPsiInitAtBedrock = null;
+	public String inPsiInitAtBedrock = null;
 
 	// #############################################
 	// van Genuchten parameters
@@ -163,7 +163,7 @@ public class Cislam extends JGTModel {
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@Unit("kPa")
 	@In
-	public GridCoverage2D inCohesion = null;
+	public String inCohesion = null;
 	/*
 	 * @Description(OMSCISLAM_pCohesion_DESCRIPTION)
 	 * 
@@ -174,7 +174,7 @@ public class Cislam extends JGTModel {
 	@Description(OMSCISLAM_inPhi_DESCRIPTION)
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
-	public GridCoverage2D inPhi = null;
+	public String inPhi = null;
 	/*
 	 * @Description(OMSCISLAM_pPhi_DESCRIPTION)
 	 * 
@@ -183,7 +183,7 @@ public class Cislam extends JGTModel {
 	@Description(OMSCISLAM_inGamma_DESCRIPTION)
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
-	public GridCoverage2D inGammaSoil = null;
+	public String inGammaSoil = null;
 	/*
 	 * @Description(OMSCISLAM_pGamma_DESCRIPTION)
 	 * 
@@ -193,7 +193,7 @@ public class Cislam extends JGTModel {
 	@Unit("m/s")
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
-	public GridCoverage2D inKsat = null;
+	public String inKsat = null;
 	/*
 	 * @Description(OMSCISLAM_pKsat_DESCRIPTION)
 	 * 
@@ -203,7 +203,7 @@ public class Cislam extends JGTModel {
 	@Unit("-")
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
-	public GridCoverage2D inTheta_s = null;
+	public String inTheta_s = null;
 	/*
 	 * @Description(OMSCISLAM_pTheta_s_DESCRIPTION)
 	 * 
@@ -213,7 +213,7 @@ public class Cislam extends JGTModel {
 	@Unit("-")
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
-	public GridCoverage2D inTheta_r = null;
+	public String inTheta_r = null;
 	/*
 	 * @Description(OMSCISLAM_pTheta_r_DESCRIPTION)
 	 * 
@@ -223,7 +223,7 @@ public class Cislam extends JGTModel {
 	@Unit("1/m")
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
-	public GridCoverage2D inAlfaVanGen = null;
+	public String inAlfaVanGen = null;
 	/*
 	 * @Description(OMSCISLAM_pAlfaVanGen_DESCRIPTION)
 	 * 
@@ -233,7 +233,7 @@ public class Cislam extends JGTModel {
 	@UI(JGTConstants.FILEIN_UI_HINT)
 	@Unit("-")
 	@In
-	public GridCoverage2D inNVanGen = null;
+	public String inNVanGen = null;
 	/*
 	 * @Description(OMSCISLAM_pNVanGen_DESCRIPTION)
 	 * 
@@ -256,34 +256,34 @@ public class Cislam extends JGTModel {
 
 	@Execute
 	public void process() throws Exception {
-		OmsCislam cislam = new OmsCislam();
+		OmsCislam omscislam = new OmsCislam();
 
-		cislam.pOutFolder = pOutFolder;
+		omscislam.pOutFolder = pOutFolder;
 
-		cislam.doSaveByProducts = doSaveByProducts;
+		omscislam.doSaveByProducts = doSaveByProducts;
 		
-		cislam.pReturnTimes = pReturnTimes;
-		cislam.pRainfallDurations = pRainfallDurations;
+		omscislam.pReturnTimes = pReturnTimes;
+		omscislam.pRainfallDurations = pRainfallDurations;
 
-		cislam.inPit = inPit;
-		cislam.inFlow = inFlow;
-		cislam.inSlope = inSlope;
-		cislam.inAb = inAb;
-		cislam.inSoilThickness = inSoilThickness;
-		cislam.inTheta_s = inTheta_s;
-		cislam.inTheta_r = inTheta_r;
-		cislam.inPsiInitAtBedrock = inPsiInitAtBedrock;
-		cislam.inAlfaVanGen = inAlfaVanGen;
-		cislam.inNVanGen = inNVanGen;
-		cislam.inKsat = inKsat;
-		cislam.inGammaSoil = inGammaSoil;
-		cislam.inCohesion = inCohesion;
-		cislam.inPhi = inPhi;
+		omscislam.inPit = getRaster(inPit);
+		omscislam.inFlow = getRaster(inFlow);
+		omscislam.inSlope = getRaster(inSlope);
+		omscislam.inAb = getRaster(inAb);
+		omscislam.inSoilThickness = getRaster(inSoilThickness);
+		omscislam.inTheta_s = getRaster(inTheta_s);
+		omscislam.inTheta_r = getRaster(inTheta_r);
+		omscislam.inPsiInitAtBedrock = getRaster(inPsiInitAtBedrock);
+		omscislam.inAlfaVanGen = getRaster(inAlfaVanGen);
+		omscislam.inNVanGen = getRaster(inNVanGen);
+		omscislam.inKsat = getRaster(inKsat);
+		omscislam.inGammaSoil = getRaster(inGammaSoil);
+		omscislam.inCohesion = getRaster(inCohesion);
+		omscislam.inPhi = getRaster(inPhi);
 
-		cislam.pSigma1 = pSigma1;
-		cislam.pmF = pmF;
-		cislam.pCV = pCV;
+		omscislam.pSigma1 = pSigma1;
+		omscislam.pmF = pmF;
+		omscislam.pCV = pCV;
 
-		cislam.process();
+		omscislam.process();
 	}
 }

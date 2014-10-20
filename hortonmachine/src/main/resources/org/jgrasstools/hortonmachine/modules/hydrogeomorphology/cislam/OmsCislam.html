@@ -1,0 +1,64 @@
+This is a version of the Ci-Slam stability model for the evaluation of the proneness to instability of each pixel of a map belonging to a single basin, based on an infinite slope model affected by hydrological variables.
+<br>The output, at the current stage of development, is composed by a set of maps containing the Stability Factor of each cell.
+<br>Each map represents the worst-case based composition of a set of maps computed for a single Return Time (RT) and for a number simulated rainfall events with different durations (1h, 3h, etc.).
+<br>Since the model can also be run for one single Return Time, the final output can consist in just one Safety Factor map. 
+<br>
+For example, an output file named
+<br>
+<br>SAFETY_FACTOR_HYDOLOGIC_30y_1h3h6h.asc
+<br>
+<br>represents the result of a simulation run for a RT of 30 years and for the three different rainfall durations of 1 hour, 3hours and 6 hours.
+
+<br>
+<h3>Reference Paper</h3>
+The CI-Slam module is an implementation of the methodology proposed in the paper:
+<br>
+<br>
+Lanni, C., Borga, M., Rigon, R. and Tarolli, P. (2012) Modelling shallow landslide susceptibility by means of a subsurface flow path connectivity index and estimates of soil depth spatial distribution. <i>Hydrology and Earth System Sciences</i>, 16(11), pp. 3959-3971.
+<br>Available at: <a href="http://www.hydrol-earth-syst-sci.net/16/3959/2012/hess-16-3959-2012.html">http://www.hydrol-earth-syst-sci.net/16/3959/2012/hess-16-3959-2012.html</a>
+<br>
+<h3>Inputs</h3>
+<br>
+The parameters used for the evaluation of the stability conditions are:
+<ul>
+<li>the comma-separated list of Return Times for which to run the simulation</li>
+<li>the comma-separated list of Rainfall Durations for which to run the simulation</li>
+<li>the depitted elevation map</li>
+<li>the flow directions map</li>
+<li>the slope map</li>
+<li>the area for unit length map</li>
+<li>the soil thickness map</li>
+<li>the Sigma1 parameter</li>
+<li>the mF parameter</li>
+<li>the Coefficent of Varaition parameter</li>
+<li>the map of initial suction head (Psi) at soil-bedrock interface</li>
+<li>the map of effective soil Cohesion</li>
+<li>the map of effective frictional angle (Phi)</li>
+<li>the map of soil density (Gamma S)</li>
+<li>the map of saturated hydraulic conductivity (Ksat)</li>
+<li>the map of saturated water content (Theta S)</li>
+<li>the map of residual water content (Theta R)</li
+<li>the map of alpha (van Genuchten parameter)</li>
+<li>the map of n (van Genuchten parameter)</li>
+</ul>
+<br>
+<br>
+Those parameters that should be possible to insert as single constant values to be used over all the basin (soil thickness, psi, cohesion, ecc) have to be converted into maps before proceeding, by using other modules.
+<br>
+<h3>Output</h3>
+<br>
+The output is composed by one or more maps of the Safety Factor, one fore each Return Time requested.
+<ul>      
+<li>one or more maps of Safety Factor deployed in the user-specified output folder</li>
+</ul>
+<br>
+The cell values mean:
+<br>
+<ul>
+<li><1 : unstable cell</li>
+<li>>1 : stable cell</li>
+<li>-9999 : no-value area</li>
+</ul>
+<br>
+Upon request (checking the relevant box) also the Initial Safety Factor map is computed: a safety factor controlled by hydrological parameters but not considering rainfalls.
+<br>

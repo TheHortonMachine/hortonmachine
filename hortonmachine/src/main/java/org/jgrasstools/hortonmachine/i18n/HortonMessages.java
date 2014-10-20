@@ -1329,7 +1329,7 @@ public class HortonMessages {
     public static final String OMSEXTRACTBASIN_outOutlet_DESCRIPTION = "The optional outlet point vector map.";
     public static final String OMSEXTRACTBASIN_outVectorBasin_DESCRIPTION = "The optional extracted basin vector map.";
     
-    public static final int OMSCISLAM_STATUS = oms3.annotations.Status.VALIDATED;    
+    public static final int OMSCISLAM_STATUS = oms3.annotations.Status.EXPERIMENTAL;    
     public static final String OMSCISLAM_NAME = "cislam";
     public static final String OMSCISLAM_DESCRIPTION = "A version of the OmsCislam model.";
     public static final String OMSCISLAM_DOCUMENTATION = "OmsCislam.html";
@@ -1354,23 +1354,23 @@ public class HortonMessages {
     public static final String OMSCISLAM_OMSVANGENUCHMAPGEN_KEYWORDS = "OmsVanGenuchtenMapsGenerator, OmsCislam, Hydrology";    
     public static final String OMSCISLAM_OMSVWT_DESCRIPTION = "A model to compute the soil mosture volume needed to produce a perched water table, so the saturation, at the soil-bedrock interface due to vertical infiltration, during a rainfall event (no lateral flow considered). The model is used as a component within the OmsCislam model.";
     public static final String OMSCISLAM_OMSVWT_NAME = "soilmoisturetowatertable";
-    public static final int OMSCISLAM_OMSVWT_STATUS = oms3.annotations.Status.TESTED;
+    public static final int OMSCISLAM_OMSVWT_STATUS = oms3.annotations.Status.EXPERIMENTAL;
     public static final String OMSCISLAM_OMSVWT_KEYWORDS = "OmsVwt, OmsCislam, Hydrology";
     public static final String OMSCISLAM_OMSPSIINITATBEDROCK_DESCRIPTION = "A model to produce a map defining the initial suction head (psi) at soil-bedrock interface before any rainfall event. It computes a map basing on what the user provides:<ul><li>If a soil thickness map is provided the map will be computed according to the logic:<br /><em>psi = 1 - soil_thickness</em></li><li>If a <em>constant</em> > 0 is passed then psi will have the value:<br /><em>psi = constant</em></li><li>If nothing is provided, the whole basin will get a constant psi value:<br /><em>psi = 0.05</em></li></ul>";
     public static final String OMSCISLAM_OMSPSIINITATBEDROCK_NAME = "psiinitatbedrock";
-    public static final int OMSCISLAM_OMSPSIINITATBEDROCK_STATUS = oms3.annotations.Status.TESTED;
+    public static final int OMSCISLAM_OMSPSIINITATBEDROCK_STATUS = oms3.annotations.Status.EXPERIMENTAL;
     public static final String OMSCISLAM_OMSPSIINITATBEDROCK_KEYWORDS = "OmsPsiInitAtBedrock, OmsCislam, Hydrology";    
     public static final String OMSCISLAM_OMSV0_DESCRIPTION = "A model to compute the volume of soil mosture initally contained through the soil profile before any rainfall event. The model is used as a component within the OmsCislam model.";
     public static final String OMSCISLAM_OMSV0_NAME = "soilmoisturebeforerainfall";
-    public static final int OMSCISLAM_OMSV0_STATUS = oms3.annotations.Status.TESTED;
+    public static final int OMSCISLAM_OMSV0_STATUS = oms3.annotations.Status.EXPERIMENTAL;
     public static final String OMSCISLAM_OMSV0_KEYWORDS = "OmsV0, OmsCislam, Hydrology";    
     public static final String OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_DESCRIPTION = "A model to produce a geo-technical Safety Factor map. This calculation does not take into account hydrologic factors that may negatively affect the result. This means that map areas that do not even stand the test of this geo-technical safety factor will surely result in not stable areas even when hydrology is taken into account.";
     public static final String OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_NAME = "safetyfactorgeomechanic";
-    public static final int OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_STATUS = oms3.annotations.Status.TESTED;
+    public static final int OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_STATUS = oms3.annotations.Status.EXPERIMENTAL;
     public static final String OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_KEYWORDS = "OmsSafetyFactorGeomechanic, OmsCislam, Hydrology";    
     public static final String OMSCISLAM_OMSSAFETYFACTORCOMPOSER_DESCRIPTION = "A model to compose a set of Safety Factor maps created for the same Return Time but for different rainfallon durations. The model uses a worst-case logic so that the lowest values from each map is set in the output, cell by cell.";
     public static final String OMSCISLAM_OMSSAFETYFACTORCOMPOSER_NAME = "safetyfactorsworstcasecomposer";
-    public static final int OMSCISLAM_OMSSAFETYFACTORCOMPOSER_STATUS = oms3.annotations.Status.TESTED;
+    public static final int OMSCISLAM_OMSSAFETYFACTORCOMPOSER_STATUS = oms3.annotations.Status.EXPERIMENTAL;
     public static final String OMSCISLAM_OMSSAFETYFACTORCOMPOSER_KEYWORDS = "OmsSafetyFactorsWorstCaseComposer, OmsCislam, Hydrology";    
     // Output-related parameters
     public static final String OMSCISLAM_pOutFolder_DESCRIPTION = "The folder in which results will be deployed along with by-products, if specified.";

@@ -50,6 +50,14 @@ org.jgrasstools.hortonmachine.modules.hydrogeomorphology.melton.OmsMeltonNumber
 org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow
 org.jgrasstools.hortonmachine.modules.hydrogeomorphology.shalstab.OmsShalstab
 org.jgrasstools.hortonmachine.modules.hydrogeomorphology.skyview.OmsSkyview
+org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.OmsCislam
+org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsPsiInitAtBedrock
+org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSlopeForCislam
+org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSoilThickness
+org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsV0
+org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsVwt
+org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSafetyFactorGeomechanic
+org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSafetyFactorsWorstCaseComposer
 org.jgrasstools.hortonmachine.modules.network.distancetooutlet.OmsDistanceToOutlet
 org.jgrasstools.hortonmachine.modules.network.extractnetwork.OmsExtractNetwork
 org.jgrasstools.hortonmachine.modules.network.hacklength.OmsHackLength
@@ -75,11 +83,3 @@ org.jgrasstools.hortonmachine.modules.statistics.kriging.OmsKriging
 org.jgrasstools.hortonmachine.modules.statistics.kriging.OmsValidateDoubleStation
 org.jgrasstools.hortonmachine.modules.statistics.kriging.OmsVariogram
 org.jgrasstools.hortonmachine.modules.statistics.sumdownstream.OmsSumDownStream
-org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.OmsCislam
-org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsPsiInitAtBedrock
-org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSlopeForCislam
-org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSoilThickness
-org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsV0
-org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsVwt
-org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSafetyFactorGeomechanic
-org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSafetyFactorsWorstCaseComposer
