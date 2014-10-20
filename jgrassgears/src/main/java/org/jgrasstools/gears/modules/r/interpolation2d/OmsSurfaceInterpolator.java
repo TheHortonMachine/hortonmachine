@@ -44,6 +44,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
@@ -83,6 +84,7 @@ import org.opengis.referencing.operation.TransformException;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.index.strtree.STRtree;
 
 @Description(OMSSURFACEINTERPOLATOR_DESCRIPTION)
@@ -101,7 +103,7 @@ public class OmsSurfaceInterpolator extends JGTModel {
 
     @Description(OMSSURFACEINTERPOLATOR_inGrid_DESCRIPTION)
     @In
-    public GridGeometry2D inGrid = null;
+    public GridCoverage2D inGrid = null;
 
     @Description(OMSSURFACEINTERPOLATOR_inMask_DESCRIPTION)
     @In
@@ -131,41 +133,67 @@ public class OmsSurfaceInterpolator extends JGTModel {
 
     private ISurfaceInterpolator interpolator;
 
+    private STRtree coordinatesSpatialTree;
+
+    private GridGeometry2D gridGeometry;
+
     @Execute
     public void process() throws Exception {
-        checkNull(inVector, inGrid, fCat);
+        checkNull(inGrid);
 
-        GeometryDescriptor geometryDescriptor = inVector.getSchema().getGeometryDescriptor();
-        if (!GeometryUtilities.isPoint(geometryDescriptor)) {
-            throw new ModelsIllegalargumentException("The geometry has to be a point geometry.", this, pm);
-        }
-
-        RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(inGrid);
+        gridGeometry = inGrid.getGridGeometry();
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inGrid);
         final int cols = regionMap.getCols();
         int rows = regionMap.getRows();
 
-        SimpleFeatureIterator featureIterator = inVector.features();
-        Coordinate[] coordinates = new Coordinate[inVector.size()];
-        final STRtree tree = new STRtree(coordinates.length);
+        coordinatesSpatialTree = new STRtree();
+        if (inVector != null) {
+            checkNull(fCat);
+            GeometryDescriptor geometryDescriptor = inVector.getSchema().getGeometryDescriptor();
+            if (!GeometryUtilities.isPoint(geometryDescriptor)) {
+                throw new ModelsIllegalargumentException("The geometry has to be a point geometry.", this, pm);
+            }
+            SimpleFeatureIterator featureIterator = inVector.features();
+            Coordinate[] coordinates = new Coordinate[inVector.size()];
 
-        int index = 0;
-        pm.beginTask("Indexing control points...", coordinates.length);
-        while( featureIterator.hasNext() ) {
-            SimpleFeature feature = featureIterator.next();
-            Geometry geometry = (Geometry) feature.getDefaultGeometry();
-            coordinates[index] = geometry.getCoordinate();
-            double value = ((Number) feature.getAttribute(fCat)).doubleValue();
-            coordinates[index].z = value;
+            int index = 0;
+            pm.beginTask("Indexing control points...", coordinates.length);
+            while( featureIterator.hasNext() ) {
+                SimpleFeature feature = featureIterator.next();
+                Geometry geometry = (Geometry) feature.getDefaultGeometry();
+                coordinates[index] = geometry.getCoordinate();
+                double value = ((Number) feature.getAttribute(fCat)).doubleValue();
+                coordinates[index].z = value;
 
-            Envelope env = new Envelope(coordinates[index]);
-            tree.insert(env, coordinates[index]);
+                Envelope env = new Envelope(coordinates[index]);
+                coordinatesSpatialTree.insert(env, coordinates[index]);
 
-            pm.worked(1);
+                pm.worked(1);
+            }
+            pm.done();
+            pm.message("Indexed control points: " + coordinates.length);
+        } else {
+            // create it from grid
+            pm.beginTask("Indexing control points...", cols);
+            RandomIter inIter = CoverageUtilities.getRandomIterator(inGrid);
+            int count = 0;
+            for( int c = 0; c < cols; c++ ) {
+                for( int r = 0; r < rows; r++ ) {
+                    double value = inIter.getSampleDouble(c, r, 0);
+                    if (!JGTConstants.isNovalue(value)) {
+                        Coordinate coordinate = CoverageUtilities.coordinateFromColRow(c, r, gridGeometry);
+                        coordinate.z = value;
+                        Envelope env = new Envelope(coordinate);
+                        coordinatesSpatialTree.insert(env, coordinate);
+                        count++;
+                    }
+                }
+                pm.worked(1);
+            }
+            pm.done();
+            pm.message("Indexed control points (from input grid): " + count);
         }
-        tree.build();
-        pm.done();
-
-        pm.message("Indexed control points: " + coordinates.length);
+        coordinatesSpatialTree.build();
 
         if (pMode.equals(IDW)) {
             interpolator = new IDWInterpolator(pBuffer);
@@ -191,12 +219,12 @@ public class OmsSurfaceInterpolator extends JGTModel {
             if (doMultiThread) {
                 Runnable runner = new Runnable(){
                     public void run() {
-                        processing(cols, tree, interpolatedIter, eval, row);
+                        processing(cols, coordinatesSpatialTree, interpolatedIter, eval, row);
                     }
                 };
                 fixedThreadPool.execute(runner);
             } else {
-                processing(cols, tree, interpolatedIter, eval, row);
+                processing(cols, coordinatesSpatialTree, interpolatedIter, eval, row);
             }
         }
 
@@ -211,16 +239,15 @@ public class OmsSurfaceInterpolator extends JGTModel {
         }
         pm.done();
 
-        outRaster = CoverageUtilities.buildCoverage("interpolatedraster", interpolatedWR, regionMap, inVector.getSchema()
-                .getCoordinateReferenceSystem());
+        outRaster = CoverageUtilities.buildCoverage("interpolatedraster", interpolatedWR, regionMap,
+                inGrid.getCoordinateReferenceSystem());
 
     }
-
     private void processing( final int cols, final STRtree tree, final WritableRandomIter interpolatedIter, final double[] eval,
             final int row ) {
         try {
             for( int c = 0; c < cols; c++ ) {
-                final DirectPosition gridToWorld = inGrid.gridToWorld(new GridCoordinates2D(c, row));
+                final DirectPosition gridToWorld = gridGeometry.gridToWorld(new GridCoordinates2D(c, row));
                 // System.out.println(row + "/" + c);
                 boolean doProcess = true;
                 if (inMask != null) {

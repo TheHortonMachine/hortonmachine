@@ -19,6 +19,12 @@
 		<groupId>org.jgrasstools</groupId>
 		<artifactId>jgt-hortonmachine</artifactId>
         <version>0.7.9-SNAPSHOT</version>
+</dependency>
+
+	<dependency>
+		<groupId>org.jgrasstools</groupId>
+		<artifactId>jgt-lesto</artifactId>
+        <version>0.7.9-SNAPSHOT</version>
 	</dependency>
 
     <dependency>

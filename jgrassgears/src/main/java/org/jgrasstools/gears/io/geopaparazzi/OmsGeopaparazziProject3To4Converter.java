@@ -39,8 +39,10 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
+
 import oms3.annotations.*;
 import oms3.annotations.Label;
+
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -59,11 +61,13 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import javax.imageio.ImageIO;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -161,13 +165,12 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
         String folderName = geopapFolderFile.getName();
         File geopap4DbFile = new File(geopapFolderFile.getParentFile(), folderName + ".gpap");
         if (geopap4DbFile.exists()) {
-            throw new ModelsIllegalargumentException("The output database file already exists: " + geopap4DbFile.getAbsolutePath(), this);
+            throw new ModelsIllegalargumentException("The output database file already exists: "
+                    + geopap4DbFile.getAbsolutePath(), this);
         }
 
-
         try (Connection geopap3Connection = DriverManager.getConnection("jdbc:sqlite:" + geopap3DbFile.getAbsolutePath());
-             Connection geopap4Connection = DriverManager.getConnection("jdbc:sqlite:" + geopap4DbFile.getAbsolutePath())
-        ) {
+                Connection geopap4Connection = DriverManager.getConnection("jdbc:sqlite:" + geopap4DbFile.getAbsolutePath())) {
 
             createBaseTables(geopap4Connection);
 
@@ -177,7 +180,8 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
 
             // create some metadata info
             String notes = "This project has been migrated through JGrasstools from a Geopaparazzi < 4 version. The creation timestamp refers to the conversion instant. The name might contain the original creation timestamp.";
-            DaoMetadata.fillProjectMetadata(geopap4Connection, folderName, null, notes, "JGrasstools Geopaparazzi 3 to 4 Converter");
+            DaoMetadata.fillProjectMetadata(geopap4Connection, folderName, null, notes,
+                    "JGrasstools Geopaparazzi 3 to 4 Converter");
 
         } catch (Exception e) {
             throw new ModelsRuntimeException("An error occurred while importing from geopaparazzi: " + e.getLocalizedMessage(),
@@ -186,7 +190,7 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
 
     }
 
-    private void createBaseTables(Connection connection) throws Exception {
+    private void createBaseTables( Connection connection ) throws Exception {
 
         DaoNotes.createTables(connection);
         DaoImages.createTables(connection);
@@ -195,19 +199,19 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
         DaoGpsLog.createTables(connection);
         DaoLog.createTables(connection);
 
-
     }
 
-    private void importNotes(Connection geopap3Connection, Connection geopap4Connection, IJGTProgressMonitor pm) throws Exception {
+    private void importNotes( Connection geopap3Connection, Connection geopap4Connection, IJGTProgressMonitor pm )
+            throws Exception {
 
         pm.beginTask("Import " + TABLE_NOTES + "...", -1);
 
         try (Statement readStatement = geopap3Connection.createStatement()) {
             readStatement.setQueryTimeout(30); // set timeout to 30 sec.
 
-            ResultSet rs = readStatement.executeQuery("select " + ID + ", " + LAT + ", " + LON + ", " + ALTIM +
-                    ", " + TS + ", " + TEXT + ", " + FORM + " from " + TABLE_NOTES);
-            while (rs.next()) {
+            ResultSet rs = readStatement.executeQuery("select " + ID + ", " + LAT + ", " + LON + ", " + ALTIM + ", " + TS + ", "
+                    + TEXT + ", " + FORM + " from " + TABLE_NOTES);
+            while( rs.next() ) {
                 String form = rs.getString(FORM);
 
                 long id = rs.getLong(ID);
@@ -216,65 +220,70 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
                 double altim = rs.getDouble(ALTIM);
                 String dateTimeString = rs.getString(TS);
                 String text = rs.getString(TEXT);
+                try {
 
-                if (lat == 0 || lon == 0) {
-                    continue;
-                }
+                    if (lat == 0 || lon == 0) {
+                        continue;
+                    }
 
-                if (form != null && form.trim().length() != 0) {
-                    // complex note, first extract images
+                    if (form != null && form.trim().length() != 0) {
+                        // complex note, first extract images
 
-                    JSONObject sectionObject = new JSONObject(form);
-                    List<String> formNames4Section = Utilities.getFormNames4Section(sectionObject);
+                        JSONObject sectionObject = new JSONObject(form);
+                        List<String> formNames4Section = Utilities.getFormNames4Section(sectionObject);
 
-                    for (String formName : formNames4Section) {
-                        JSONObject form4Name = Utilities.getForm4Name(formName, sectionObject);
-                        JSONArray formItems = Utilities.getFormItems(form4Name);
+                        for( String formName : formNames4Section ) {
+                            JSONObject form4Name = Utilities.getForm4Name(formName, sectionObject);
+                            JSONArray formItems = Utilities.getFormItems(form4Name);
 
-                        int length = formItems.length();
-                        for (int i = 0; i < length; i++) {
-                            JSONObject jsonObject = formItems.getJSONObject(i);
+                            int length = formItems.length();
+                            for( int i = 0; i < length; i++ ) {
+                                JSONObject jsonObject = formItems.getJSONObject(i);
 
-                            if (!jsonObject.has(TAG_KEY)) {
-                                continue;
-                            }
-                            String key = jsonObject.getString(TAG_KEY).trim();
+                                if (!jsonObject.has(TAG_KEY)) {
+                                    continue;
+                                }
+                                String key = jsonObject.getString(TAG_KEY).trim();
 
-                            String value = null;
-                            if (jsonObject.has(TAG_VALUE)) {
-                                value = jsonObject.getString(TAG_VALUE).trim();
-                            }
+                                String value = null;
+                                if (jsonObject.has(TAG_VALUE)) {
+                                    value = jsonObject.getString(TAG_VALUE).trim();
+                                }
 
-                            if (value != null) {
-                                if (isImage(value)) {
-                                    // do images
-                                    String[] imageSplit = value.split(IMAGE_ID_SEPARATOR);
-                                    StringBuilder sb = new StringBuilder();
-                                    for (String image : imageSplit) {
-                                        int lastSlash = image.lastIndexOf('/');
-                                        image = image.substring(lastSlash + 1, image.length()).trim();
+                                if (value != null) {
+                                    if (isImage(value)) {
+                                        // do images
+                                        String[] imageSplit = value.split(IMAGE_ID_SEPARATOR);
+                                        StringBuilder sb = new StringBuilder();
+                                        for( String image : imageSplit ) {
+                                            int lastSlash = image.lastIndexOf('/');
+                                            image = image.substring(lastSlash + 1, image.length()).trim();
 
-                                        imageName2IdMap.put(image, imageCount);
-                                        sb.append(IMAGE_ID_SEPARATOR).append(imageCount);
-                                        imageCount++;
-                                        imageName2NoteIdMap.put(image, id);
+                                            imageName2IdMap.put(image, imageCount);
+                                            sb.append(IMAGE_ID_SEPARATOR).append(imageCount);
+                                            imageCount++;
+                                            imageName2NoteIdMap.put(image, id);
 
-                                        imageName2DataMap.put(image, new double[]{lon, lat});
+                                            imageName2DataMap.put(image, new double[]{lon, lat});
+                                        }
+
+                                        value = sb.substring(1);
+                                        jsonObject.put(TAG_VALUE, value);
                                     }
-
-                                    value = sb.substring(1);
-                                    jsonObject.put(TAG_VALUE, value);
                                 }
                             }
                         }
+
+                        form = sectionObject.toString();
                     }
 
-                    form = sectionObject.toString();
+                    Date ts = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(dateTimeString);
+
+                    DaoNotes.addNote(geopap4Connection, id, lon, lat, altim, ts.getTime(), text, form);
+                } catch (Exception e) {
+                    System.err.println("Problems importing note: " + text + "\n" + form);
+                    e.printStackTrace();
                 }
-
-                Date ts = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(dateTimeString);
-
-                DaoNotes.addNote(geopap4Connection, id, lon, lat, altim, ts.getTime(), text, form);
             }
 
         } finally {
@@ -282,21 +291,22 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
         }
     }
 
-    private boolean isImage(String value) {
+    private boolean isImage( String value ) {
         String tmp = value.toLowerCase();
         return tmp.endsWith(PNG) || tmp.endsWith(JPG);
     }
 
-
-    private void importGpsLog(Connection geopap3Connection, Connection geopap4Connection, IJGTProgressMonitor pm) throws Exception {
+    private void importGpsLog( Connection geopap3Connection, Connection geopap4Connection, IJGTProgressMonitor pm )
+            throws Exception {
         List<GpsLog> logsList;
         try (Statement readStatement = geopap3Connection.createStatement()) {
             readStatement.setQueryTimeout(30); // set timeout to 30 sec.
 
             logsList = new ArrayList<GpsLog>();
             // first get the logs
-            ResultSet rs = readStatement.executeQuery("select " + ID + ", " + STARTTS + ", " + ENDTS + ", " + TEXT + " from " + TABLE_GPSLOGS);
-            while (rs.next()) {
+            ResultSet rs = readStatement.executeQuery("select " + ID + ", " + STARTTS + ", " + ENDTS + ", " + TEXT + " from "
+                    + TABLE_GPSLOGS);
+            while( rs.next() ) {
                 long id = rs.getLong(ID);
 
                 String startDateTimeString = rs.getString(STARTTS);
@@ -314,15 +324,16 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
 
         try {
             // then the log data
-            for (GpsLog log : logsList) {
+            for( GpsLog log : logsList ) {
                 long logId = log.id;
-                String query = "select " + ID + ", " + LAT + ", " + LON + ", " + ALTIM + ", " + TS + " from " + TABLE_GPSLOG_DATA + " where " + LOGID + " = " + logId + " order by " + TS;
+                String query = "select " + ID + ", " + LAT + ", " + LON + ", " + ALTIM + ", " + TS + " from " + TABLE_GPSLOG_DATA
+                        + " where " + LOGID + " = " + logId + " order by " + TS;
 
                 try (Statement newStatement = geopap3Connection.createStatement()) {
                     newStatement.setQueryTimeout(30);
                     ResultSet result = newStatement.executeQuery(query);
 
-                    while (result.next()) {
+                    while( result.next() ) {
                         long id = result.getLong(ID);
                         double lat = result.getDouble(LAT);
                         double lon = result.getDouble(LON);
@@ -346,7 +357,7 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
         }
 
         pm.beginTask("Import logs...", logsList.size());
-        for (GpsLog log : logsList) {
+        for( GpsLog log : logsList ) {
 
             DaoGpsLog.addGpsLog(geopap4Connection, log, 8, "red", true);
 
@@ -355,7 +366,7 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
         pm.done();
     }
 
-    private void importImages(File geopapFolderFile, Connection geopap4Connection, IJGTProgressMonitor pm) throws Exception {
+    private void importImages( File geopapFolderFile, Connection geopap4Connection, IJGTProgressMonitor pm ) throws Exception {
         File folder = new File(geopapFolderFile, FOLDER_MEDIA);
         if (!folder.exists()) {
             // try to see if it is an old version of geopaparazzi
@@ -369,113 +380,120 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
         List<String> nonTakenFilesList = new ArrayList<String>();
 
         pm.message("Import media: ");
-        for (File imageFile : listFiles) {
+        for( File imageFile : listFiles ) {
             String name = imageFile.getName();
             String nameLC = name.toLowerCase();
             if (nameLC.endsWith(JPG) || nameLC.endsWith(PNG)) {
-                pm.message("\t" + name);
-                int lastDot = name.lastIndexOf('.');
-                if (lastDot == -1) continue;
-                String ext = name.substring(lastDot + 1);
-
-                int id = -1;
-                Integer idObj = imageName2IdMap.get(name);
-                if (idObj != null) {
-                    id = idObj;
-                } else {
-                    id = imageCount++;
-                }
-
-                String[] nameSplit = name.split("[_//|.]"); //$NON-NLS-1$
-                String dateString = nameSplit[1];
-                String timeString = nameSplit[2];
-
-                double lat = 0.0;
-                double lon = 0.0;
-                double altim = -1;
-                double azimuth = -9999.0;
-
-                Properties locationProperties = new Properties();
-                String mediaPath = imageFile.getAbsolutePath();
-                lastDot = mediaPath.lastIndexOf("."); //$NON-NLS-1$
-                if (lastDot == -1) continue;
-                String nameNoExt = mediaPath.substring(0, lastDot);
-                String infoPath = nameNoExt + ".properties"; //$NON-NLS-1$
-                File infoFile = new File(infoPath);
-                if (!infoFile.exists()) {
-                    double[] data = imageName2DataMap.get(name);
-                    if (data == null) {
-                        nonTakenFilesList.add(mediaPath);
+                try {
+                    pm.message("\t" + name);
+                    int lastDot = name.lastIndexOf('.');
+                    if (lastDot == -1)
                         continue;
-                    }
-                    lon = data[0];
-                    lat = data[1];
+                    String ext = name.substring(lastDot + 1);
 
-                } else {
-                    locationProperties.load(new FileInputStream(infoFile));
-
-                    String azimuthString = locationProperties.getProperty(AZIMUTH); //$NON-NLS-1$
-                    String latString = locationProperties.getProperty(LATITUDE); //$NON-NLS-1$
-                    String lonString = locationProperties.getProperty(LONGITUDE); //$NON-NLS-1$
-                    String altimString = locationProperties.getProperty(ALTIM); //$NON-NLS-1$
-
-
-                    if (azimuthString != null)
-                        azimuth = Double.parseDouble(azimuthString);
-
-                    if (latString.contains("/")) {
-                        // this is an exif string
-                        lat = exifFormat2degreeDecimal(latString);
-                        lon = exifFormat2degreeDecimal(lonString);
+                    int id = -1;
+                    Integer idObj = imageName2IdMap.get(name);
+                    if (idObj != null) {
+                        id = idObj;
                     } else {
-                        lat = Double.parseDouble(latString);
-                        lon = Double.parseDouble(lonString);
+                        id = imageCount++;
                     }
-                    altim = Double.parseDouble(altimString);
-                }
 
-                Date timestamp = TimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.parse(dateString + "_" + timeString);
+                    String[] nameSplit = name.split("[_//|.]"); //$NON-NLS-1$
+                    String dateString = nameSplit[1];
+                    String timeString = nameSplit[2];
 
+                    double lat = 0.0;
+                    double lon = 0.0;
+                    double altim = -1;
+                    double azimuth = -9999.0;
+
+                    Properties locationProperties = new Properties();
+                    String mediaPath = imageFile.getAbsolutePath();
+                    lastDot = mediaPath.lastIndexOf("."); //$NON-NLS-1$
+                    if (lastDot == -1)
+                        continue;
+                    String nameNoExt = mediaPath.substring(0, lastDot);
+                    String infoPath = nameNoExt + ".properties"; //$NON-NLS-1$
+                    File infoFile = new File(infoPath);
+                    if (!infoFile.exists()) {
+                        double[] data = imageName2DataMap.get(name);
+                        if (data == null) {
+                            nonTakenFilesList.add(mediaPath);
+                            continue;
+                        }
+                        lon = data[0];
+                        lat = data[1];
+
+                    } else {
+                        locationProperties.load(new FileInputStream(infoFile));
+
+                        String azimuthString = locationProperties.getProperty(AZIMUTH); //$NON-NLS-1$
+                        String latString = locationProperties.getProperty(LATITUDE); //$NON-NLS-1$
+                        String lonString = locationProperties.getProperty(LONGITUDE); //$NON-NLS-1$
+                        String altimString = locationProperties.getProperty(ALTIM); //$NON-NLS-1$
+
+                        if (azimuthString != null)
+                            azimuth = Double.parseDouble(azimuthString);
+
+                        if (latString.contains("/")) {
+                            // this is an exif string
+                            lat = exifFormat2degreeDecimal(latString);
+                            lon = exifFormat2degreeDecimal(lonString);
+                        } else {
+                            lat = Double.parseDouble(latString);
+                            lon = Double.parseDouble(lonString);
+                        }
+                        altim = Double.parseDouble(altimString);
+                    }
+
+                    Date timestamp = TimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.parse(dateString + "_" + timeString);
 
                     /*
                      * image bytes read as they are on disk, so that they can be decoded in geopap
                      */
-                byte[] imageBytes = FileUtilities.readFileToBytes(imageFile.getAbsolutePath());
+                    byte[] imageBytes = FileUtilities.readFileToBytes(imageFile.getAbsolutePath());
 
-                BufferedImage bufferedImage = ImageIO.read(imageFile);
-                // create thumb
-                // define sampling for thumbnail
-                int THUMBNAILWIDTH = 100;
-                float sampleSizeF = (float) bufferedImage.getWidth() / (float) THUMBNAILWIDTH;
-                int newHeight = (int) (bufferedImage.getHeight() / sampleSizeF);
-                BufferedImage resized = new BufferedImage(THUMBNAILWIDTH, newHeight, bufferedImage.getType());
-                Graphics2D g = resized.createGraphics();
-                g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                g.drawImage(bufferedImage, 0, 0, THUMBNAILWIDTH, newHeight, 0, 0, bufferedImage.getWidth(), bufferedImage.getHeight(), null);
-                g.dispose();
+                    BufferedImage bufferedImage = ImageIO.read(imageFile);
+                    // create thumb
+                    // define sampling for thumbnail
+                    int THUMBNAILWIDTH = 100;
+                    float sampleSizeF = (float) bufferedImage.getWidth() / (float) THUMBNAILWIDTH;
+                    int newHeight = (int) (bufferedImage.getHeight() / sampleSizeF);
+                    BufferedImage resized = new BufferedImage(THUMBNAILWIDTH, newHeight, bufferedImage.getType());
+                    Graphics2D g = resized.createGraphics();
+                    g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    g.drawImage(bufferedImage, 0, 0, THUMBNAILWIDTH, newHeight, 0, 0, bufferedImage.getWidth(),
+                            bufferedImage.getHeight(), null);
+                    g.dispose();
 
-                Path tempPath = Files.createTempFile("jgt-", name);
-                File tempFile = tempPath.toFile();
-                ImageIO.write(resized, ext, tempFile);
+                    Path tempPath = Files.createTempFile("jgt-", name);
+                    File tempFile = tempPath.toFile();
+                    ImageIO.write(resized, ext, tempFile);
 
-                byte[] thumbImageBytes = FileUtilities.readFileToBytes(tempFile.getAbsolutePath());
+                    byte[] thumbImageBytes = FileUtilities.readFileToBytes(tempFile.getAbsolutePath());
 
-                long noteId = -1;
-                Long noteIdObj = imageName2NoteIdMap.get(name);
-                if (noteIdObj != null) {
-                    noteId = noteIdObj;
+                    long noteId = -1;
+                    Long noteIdObj = imageName2NoteIdMap.get(name);
+                    if (noteIdObj != null) {
+                        noteId = noteIdObj;
+                    }
+
+                    DaoImages.addImage(geopap4Connection, id, lon, lat, altim, azimuth, timestamp.getTime(), name, imageBytes,
+                            thumbImageBytes, noteId);
+
+                    Files.delete(tempPath);
+                } catch (Exception e) {
+                    System.err.println("Problems with image: " + imageFile);
+                    e.printStackTrace();
                 }
-
-                DaoImages.addImage(geopap4Connection, id, lon, lat, altim, azimuth, timestamp.getTime(), name, imageBytes, thumbImageBytes, noteId);
-
-                Files.delete(tempPath);
             }
         }
 
         if (nonTakenFilesList.size() > 0) {
             final StringBuilder sB = new StringBuilder();
             sB.append("For the following media no *.properties file could be found:/n");
-            for (String p : nonTakenFilesList) {
+            for( String p : nonTakenFilesList ) {
                 sB.append(p).append("/n");
             }
             pm.errorMessage(sB.toString());
@@ -493,7 +511,7 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
      * @return the exif format string.
      */
     @SuppressWarnings("nls")
-    public static String degreeDecimal2ExifFormat(double decimalDegree) {
+    public static String degreeDecimal2ExifFormat( double decimalDegree ) {
         StringBuilder sb = new StringBuilder();
         sb.append((int) decimalDegree);
         sb.append("/1,");
@@ -514,7 +532,7 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
      * @return the decimal degree.
      */
     @SuppressWarnings("nls")
-    public static double exifFormat2degreeDecimal(String exifFormat) {
+    public static double exifFormat2degreeDecimal( String exifFormat ) {
         // latitude=44/1,10/1,28110/1000
         String[] exifSplit = exifFormat.trim().split(",");
 

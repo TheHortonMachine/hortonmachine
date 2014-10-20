@@ -639,60 +639,56 @@ public class ModelsEngine {
         return binStep;
     }
 
-    public static double doubleNMoment( double[] m, int nh, double mean, double NN, IJGTProgressMonitor pm ) {
-        double moment = 0.0, n;
+    /**
+     * Calculates the nth moment of a set of values.
+     * 
+     * @param values the array of values.
+     * @param validValues the number of valid values in the array.
+     * @param mean the mean to use.
+     * @param momentOrder the moment order to calculate.
+     * @param pm the monitor.
+     * @return the nth moment value.
+     */
+    public static double calculateNthMoment( double[] values, int validValues, double mean, double momentOrder, IJGTProgressMonitor pm ) {
+        double moment = 0.0;
+        double n = 0.0;
 
-        n = 0;
-
-        if (NN == 1.0) {
-
-            for( int i = 0; i < nh; i++ ) {
-
-                if (!isNovalue(m[i])) {
-                    moment += m[i];
+        if (momentOrder == 1.0) {
+            for( int i = 0; i < validValues; i++ ) {
+                if (!isNovalue(values[i])) {
+                    moment += values[i];
                     n++;
                 }
-
             }
-
             if (n >= 1) {
                 moment /= n;
-            } else {
-                pm.errorMessage("No valid data were processed, setting moment value to zero.");
-                moment = 0.0;
             }
-
-        } else if (NN == 2.0) {
-            for( int i = 0; i < nh; i++ ) {
-                if (!isNovalue(m[i])) {
-                    moment += (m[i]) * (m[i]);
+        } else if (momentOrder == 2.0) {
+            // FIXME this needs to be checked, variance doesn't give negative values
+            for( int i = 0; i < validValues; i++ ) {
+                if (!isNovalue(values[i])) {
+                    moment += (values[i]) * (values[i]);
                     n++;
                 }
-
             }
             if (n >= 1) {
                 moment = (moment / n - mean * mean);
-            } else {
-                pm.errorMessage("No valid data were processed, setting moment value to zero.");
-                moment = 0.0;
             }
-
         } else {
-            for( int i = 0; i < nh; i++ ) {
-                if (!isNovalue(m[i])) {
-                    moment += pow((m[i] - mean), NN);
+            for( int i = 0; i < validValues; i++ ) {
+                if (!isNovalue(values[i])) {
+                    moment += pow((values[i] - mean), momentOrder);
                     n++;
                 }
-
             }
             if (n >= 1) {
                 moment /= n;
-
-            } else {
-                pm.errorMessage("No valid data were processed, setting moment value to zero.");
-                moment = 0.0;
             }
+        }
 
+        if (n == 0) {
+            pm.errorMessage("No valid data were processed, setting moment value to zero.");
+            moment = 0.0;
         }
 
         return moment;

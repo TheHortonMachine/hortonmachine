@@ -21,6 +21,7 @@ org.jgrasstools.modules.CutOut
 org.jgrasstools.modules.DebrisFlow
 org.jgrasstools.modules.DebrisTriggerCnr
 org.jgrasstools.modules.DebrisVandre
+org.jgrasstools.modules.DelaunayTriangulation
 org.jgrasstools.modules.DistanceToOutlet
 org.jgrasstools.modules.DrainDir
 org.jgrasstools.modules.DwgConverter
@@ -34,6 +35,7 @@ org.jgrasstools.modules.Gc
 org.jgrasstools.modules.Geomorphon
 org.jgrasstools.modules.Geopaparazzi3Converter
 org.jgrasstools.modules.Geopaparazzi4Converter
+org.jgrasstools.modules.GeopaparazziMapsCreator
 org.jgrasstools.modules.GeopaparazziProject3To4Converter
 org.jgrasstools.modules.Gradient
 org.jgrasstools.modules.GridGeometryReader
@@ -81,6 +83,8 @@ org.jgrasstools.modules.RasterCatToFeatureAttribute
 org.jgrasstools.modules.RasterConverter
 org.jgrasstools.modules.RasterCorrector
 org.jgrasstools.modules.RasterDiff
+org.jgrasstools.modules.RasterExtruder
+org.jgrasstools.modules.RasterGenerator
 org.jgrasstools.modules.RasterNull
 org.jgrasstools.modules.RasterReader
 org.jgrasstools.modules.RasterReprojector
@@ -103,7 +107,6 @@ org.jgrasstools.modules.SurfaceInterpolator
 org.jgrasstools.modules.Tc
 org.jgrasstools.modules.Tca
 org.jgrasstools.modules.Tca3d
-org.jgrasstools.modules.TmsGenerator
 org.jgrasstools.modules.TopIndex
 org.jgrasstools.modules.Variogram
 org.jgrasstools.modules.VectorClipper
@@ -121,6 +124,7 @@ org.jgrasstools.modules.VectorTableJoiner
 org.jgrasstools.modules.VectorTransformer
 org.jgrasstools.modules.VectorWriter
 org.jgrasstools.modules.Vectorizer
+org.jgrasstools.modules.VoronoiDiagram
 org.jgrasstools.modules.Wateroutlet
 org.jgrasstools.modules.WindowSampler
 org.jgrasstools.modules.Xyz2Raster
