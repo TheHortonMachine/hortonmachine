@@ -46,7 +46,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSafetyFactorsWorstCaseComposer;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsVanGenuchtenMapsGenerator;
 
 @Description(OMSCISLAM_OMSVANGENUCHMAPGEN_DESCRIPTION)
 @Author(name = OMSCISLAM_AUTHORNAMES, contact = OMSCISLAM_AUTHORCONTACTS)
@@ -94,18 +94,18 @@ public class CislamVanGenuchtenMapsGenerator extends JGTModel {
     public String outNVanGen = null;
 
     @Execute
-    public void process() {
-    	OmsSafetyFactorsWorstCaseComposer omsModel = new OmsSafetyFactorsWorstCaseComposer();
-		omsModel.inSlope = getRaster(inSlope);
-		omsModel.inSoilThickness = getRaster(inSoilThickness);
-		omsModel.inCohesion = getRaster(inCohesion);
-		omsModel.inPhi = getRaster(inPhi);
-		omsModel.inGammaSoil = getRaster(inGammaSoil);
-		omsModel.inKsat = getRaster(inKsat);
-		omsModel.inTheta_s = getRaster(inTheta_s);
-		omsModel.inTheta_r = getRaster(inTheta_r);
+    public void process() throws Exception {
+    	
+    	OmsVanGenuchtenMapsGenerator omsModel = new OmsVanGenuchtenMapsGenerator();
+		omsModel.inGeo = getRaster(inGeo);
 		omsModel.process();
-    	dumpRaster(omsModel.outSafetyactorGeoMechanic, outSafetyactorGeoMechanic);
-     
+    	dumpRaster(omsModel.outCohesion, outCohesion);
+    	dumpRaster(omsModel.outPhi, outPhi);
+    	dumpRaster(omsModel.outGamma, outGamma);
+    	dumpRaster(omsModel.outKsat, outKsat);
+    	dumpRaster(omsModel.outTheta_s, outTheta_s);
+    	dumpRaster(omsModel.outTheta_r, outTheta_r);
+    	dumpRaster(omsModel.outAlfaVanGen, outAlfaVanGen);
+    	dumpRaster(omsModel.outNVanGen, outNVanGen);     
     }
 }

@@ -127,9 +127,6 @@ public class CislamSafetyFactorGeomechanic extends JGTModel {
 		omsModel.inTheta_s = getRaster(inTheta_s);
 		omsModel.inTheta_r = getRaster(inTheta_r);
 		omsModel.process();
-    	dumpRaster(omsModel.outSafetyactorGeoMechanic, outSafetyactorGeoMechanic);
-    	
+    	dumpRaster(omsModel.outSafetyactorGeoMechanic, outSafetyactorGeoMechanic);    	
 	}
-
-
 }

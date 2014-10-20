@@ -40,8 +40,7 @@ import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSafetyFactorsWorstCaseComposer;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSoilThickness;
 
 @Description(OMSCISLAM_OMSSOILTHICKNESS_DESCRIPTION)
 @Author(name = OMSCISLAM_AUTHORNAMES, contact = OMSCISLAM_AUTHORCONTACTS)
@@ -62,23 +61,12 @@ public class CislamSoilThickness extends JGTModel {
 	@Out
 	public String outSoilThickness = null;
 
-	private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-
 	@Execute
 	public void process() throws Exception {
 		
-    	OmsSafetyFactorsWorstCaseComposer omsModel = new OmsSafetyFactorsWorstCaseComposer();
+		OmsSoilThickness omsModel = new OmsSoilThickness();
 		omsModel.inSlope = getRaster(inSlope);
-		omsModel.inSoilThickness = getRaster(inSoilThickness);
-		omsModel.inCohesion = getRaster(inCohesion);
-		omsModel.inPhi = getRaster(inPhi);
-		omsModel.inGammaSoil = getRaster(inGammaSoil);
-		omsModel.inKsat = getRaster(inKsat);
-		omsModel.inTheta_s = getRaster(inTheta_s);
-		omsModel.inTheta_r = getRaster(inTheta_r);
 		omsModel.process();
-    	dumpRaster(omsModel.outSafetyactorGeoMechanic, outSafetyactorGeoMechanic);
-		
+    	dumpRaster(omsModel.outSoilThickness, outSoilThickness);		
 	}
-
 }

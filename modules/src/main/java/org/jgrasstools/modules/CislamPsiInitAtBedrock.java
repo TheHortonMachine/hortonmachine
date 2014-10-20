@@ -83,8 +83,6 @@ public class CislamPsiInitAtBedrock extends JGTModel {
     	omsPsiInitAtBedrock.pPsiInitAtBedrockConstant = pPsiInitAtBedrockConstant;
     	omsPsiInitAtBedrock.inSoilThickness = getRaster(inSoilThickness);
     	omsPsiInitAtBedrock.process();
-    	dumpRaster(omsPsiInitAtBedrock.outPsiInitAtBedrock, outPsiInitAtBedrock);
-        
+    	dumpRaster(omsPsiInitAtBedrock.outPsiInitAtBedrock, outPsiInitAtBedrock);        
     }
-
 }

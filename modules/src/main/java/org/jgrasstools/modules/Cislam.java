@@ -17,8 +17,6 @@
  */
 package org.jgrasstools.modules;
 
-import org.jgrasstools.gears.libs.modules.JGTModel;
-
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_AUTHORNAMES;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_DESCRIPTION;
@@ -27,6 +25,7 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_LABEL;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_LICENSE;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_NAME;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_doSaveByproducts_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inAb_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inAlfaVanGen_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inCohesion_DESCRIPTION;
@@ -51,7 +50,6 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_pOutFo
 //import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_pPhi_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_pRainfallDurations_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_pReturnTimes_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_doSaveByproducts_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_pSigma1_DESCRIPTION;
 //import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_pTheta_r_DESCRIPTION;
 //import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_pTheta_s_DESCRIPTION;
@@ -64,13 +62,12 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
-import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.OmsCislam;
 
 /**

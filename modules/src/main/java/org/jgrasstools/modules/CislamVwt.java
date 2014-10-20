@@ -44,7 +44,7 @@ import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSafetyFactorsWorstCaseComposer;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsVwt;
 
 
 @Description(OMSCISLAM_OMSVWT_DESCRIPTION)
@@ -82,20 +82,15 @@ public class CislamVwt extends JGTModel {
     public String outVwt = null;
 	
 	@Execute
-	public void process(){
+	public void process() throws Exception{
 		
-    	OmsSafetyFactorsWorstCaseComposer omsModel = new OmsSafetyFactorsWorstCaseComposer();
-		omsModel.inSlope = getRaster(inSlope);
+		OmsVwt omsModel = new OmsVwt();
 		omsModel.inSoilThickness = getRaster(inSoilThickness);
-		omsModel.inCohesion = getRaster(inCohesion);
-		omsModel.inPhi = getRaster(inPhi);
-		omsModel.inGammaSoil = getRaster(inGammaSoil);
-		omsModel.inKsat = getRaster(inKsat);
 		omsModel.inTheta_s = getRaster(inTheta_s);
 		omsModel.inTheta_r = getRaster(inTheta_r);
+		omsModel.inAlfaVanGen = getRaster(inAlfaVanGen);
+		omsModel.inNVanGen = getRaster(inNVanGen);
 		omsModel.process();
-    	dumpRaster(omsModel.outSafetyactorGeoMechanic, outSafetyactorGeoMechanic);
-
+    	dumpRaster(omsModel.outVwt, outVwt);
 	}
-
 }

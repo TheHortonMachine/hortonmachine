@@ -29,6 +29,7 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSSAF
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSSAFETYFACTORCOMPOSER_pReturnTime_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_SUBMODULES_LABEL;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
@@ -42,6 +43,7 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSafetyFactorGeomechanic;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSafetyFactorsWorstCaseComposer;
@@ -71,20 +73,15 @@ public class CislamSafetyFactorsWorstCaseComposer extends JGTModel {
     @Execute
     public void process() throws Exception {
 
-
     	OmsSafetyFactorsWorstCaseComposer omsModel = new OmsSafetyFactorsWorstCaseComposer();
-		omsModel.inSlope = getRaster(inSlope);
-		omsModel.inSoilThickness = getRaster(inSoilThickness);
-		omsModel.inCohesion = getRaster(inCohesion);
-		omsModel.inPhi = getRaster(inPhi);
-		omsModel.inGammaSoil = getRaster(inGammaSoil);
-		omsModel.inKsat = getRaster(inKsat);
-		omsModel.inTheta_s = getRaster(inTheta_s);
-		omsModel.inTheta_r = getRaster(inTheta_r);
-		omsModel.process();
-    	dumpRaster(omsModel.outSafetyactorGeoMechanic, outSafetyactorGeoMechanic);
     	
+    	List<GridCoverage2D> rasterList = new ArrayList<GridCoverage2D>();
+    	for (String inRaster : inRasters){
+    		rasterList.add(getRaster(inRaster));
+    	}    	
+		omsModel.inRasters = rasterList;
+		omsModel.pReturnTime = pReturnTime;
+		omsModel.process();
+    	dumpRaster(omsModel.outSafetyFactorTotal, outSafetyFactorTotal);    	
     }
-    
-
 }

@@ -83,7 +83,6 @@ public class CislamSlopeForCislam extends JGTModel {
 		omsModel.inPit = getRaster(inPit);
 		omsModel.pMinSlope = pMinSlope;
 		omsModel.process();
-    	dumpRaster(omsModel.outSlope, outSlope);
-        
+    	dumpRaster(omsModel.outSlope, outSlope);        
     }
 }
