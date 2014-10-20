@@ -253,7 +253,7 @@ public class OmsTmsGenerator extends JGTModel {
             throw new ModelsIllegalargumentException("No raster and vector input maps available. check your inputs.", this, pm);
         }
 
-        if (pEpsg == null && inPrj == null) {
+        if (dataCrs == null && pEpsg == null && inPrj == null) {
             throw new ModelsIllegalargumentException("No projection info available. check your inputs.", this, pm);
         }
 
@@ -375,7 +375,6 @@ public class OmsTmsGenerator extends JGTModel {
                                     }
                                 } catch (Exception e) {
                                     e.printStackTrace();
-                                    System.exit(1);
                                 }
                                 pm.worked(1);
                             }
@@ -412,7 +411,6 @@ public class OmsTmsGenerator extends JGTModel {
                                     pm.worked(1);
                                 } catch (Exception ex) {
                                     ex.printStackTrace();
-                                    System.exit(1);
                                 }
                             }
                         };

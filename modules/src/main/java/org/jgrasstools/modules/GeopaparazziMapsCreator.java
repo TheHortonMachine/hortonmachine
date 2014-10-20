@@ -63,10 +63,15 @@ public class GeopaparazziMapsCreator extends JGTModel {
     @In
     public String inZoomLimitROI = null;
 
-    @Description("Optional input raster map or image mosaic.")
+    @Description("Optional input raster map 1.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public String inRaster = null;
+    public String inRaster1 = null;
+
+    @Description("Optional input raster map 2.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    @In
+    public String inRaster2 = null;
 
     @Description("Optional input vector map 1.")
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -128,9 +133,12 @@ public class GeopaparazziMapsCreator extends JGTModel {
         // bounds.expandBy(50.0);
 
         OmsTmsGenerator gen = new OmsTmsGenerator();
-        if (inRaster != null) {
+        if (inRaster1 != null || inRaster2 != null) {
             List<String> inRasters = new ArrayList<String>();
-            inRasters.add(inRaster);
+            if (inRaster1 != null)
+                inRasters.add(inRaster1);
+            if (inRaster2 != null)
+                inRasters.add(inRaster2);
             gen.inRasterFile = FileUtilities.stringListAsTmpFile(inRasters).getAbsolutePath();
         }
         if (inVector1 != null || inVector2 != null || inVector3 != null || inVector4 != null || inVector5 != null) {
@@ -174,5 +182,23 @@ public class GeopaparazziMapsCreator extends JGTModel {
         gen.pm = pm;
         gen.process();
 
+    }
+    
+    public static void main( String[] args ) throws Exception {
+        GeopaparazziMapsCreator c = new GeopaparazziMapsCreator();
+        c.inROI = "/yourpath/roi.shp";
+        c.inZoomLimitROI = "/yourpath/roi_zoom.shp";
+        c.inRaster1 = "/yourpath/DTM/dtm.asc";
+        c.inRaster2 = "/yourpath/DTM/aspect.asc";
+        c.inVector1 = "/yourpath/contours.shp";
+        c.inVector2 = "/yourpath/lines.shp";
+        c.inVector3 = "/yourpath/point.shp";
+        c.pMinZoom = 13;
+        c.pMaxZoom = 17;
+        c.pZoomLimit = 21;
+        c.pImageType = "jpg";
+        c.pName = "misonet";
+        c.outFolder = "/yourpath/";
+        c.process();
     }
 }

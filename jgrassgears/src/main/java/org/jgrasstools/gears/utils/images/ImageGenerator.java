@@ -56,6 +56,7 @@ import org.geotools.map.GridReaderLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.map.WMSLayer;
+import org.geotools.renderer.RenderListener;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.ColorMap;
 import org.geotools.styling.ColorMapEntry;
@@ -74,6 +75,7 @@ import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.expression.Expression;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -419,7 +421,7 @@ public class ImageGenerator {
         StreamingRenderer renderer = new StreamingRenderer();
         renderer.setMapContent(content);
 
-        if (buffer > 0.0){
+        if (buffer > 0.0) {
             ref = new ReferencedEnvelope(ref);
             ref.expandBy(buffer, buffer);
         }
