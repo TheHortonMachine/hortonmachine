@@ -119,17 +119,17 @@ public class LW09_AreaToNetpointAssociator extends JGTModel {
 
     @Description(outNetPoints_DESCR)
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Out
+    @In
     public String outNetPoints = null;
 
     @Description(outNetnum_DESCR)
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Out
+    @In
     public String outNetnum = null;
 
     @Description(outBasins_DESCR)
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Out
+    @In
     public String outBasins = null;
 
     @Execute
