@@ -17,12 +17,13 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
@@ -32,8 +33,7 @@ import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -44,26 +44,38 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
-@Description("Merge the inundated polygons to avoid strange perimeters.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("network, vector, bankflull, inundation")
-@Label("HortonMachine/Hydro-Geomorphology/LWRecruitment")
-@Name("LW08_NetworBufferMergerHolesRemover")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
-public class LW08_NetworBufferMergerHolesRemover extends JGTModel implements LWFields {
-    
-    @Description("The input polygon layer with the inundation polygons.")
-    @Out
+@Description(OmsLW08_NetworBufferMergerHolesRemover.DESCRIPTION)
+@Author(name = OmsLW08_NetworBufferMergerHolesRemover.AUTHORS, contact = OmsLW08_NetworBufferMergerHolesRemover.CONTACTS)
+@Keywords(OmsLW08_NetworBufferMergerHolesRemover.KEYWORDS)
+@Label(OmsLW08_NetworBufferMergerHolesRemover.LABEL)
+@Name("_" + OmsLW08_NetworBufferMergerHolesRemover.NAME)
+@Status(OmsLW08_NetworBufferMergerHolesRemover.STATUS)
+@License(OmsLW08_NetworBufferMergerHolesRemover.LICENSE)
+public class OmsLW08_NetworBufferMergerHolesRemover extends JGTModel {
+
+    @Description(inInundationArea_DESCR)
+    @In
     public SimpleFeatureCollection inInundationArea = null;
 
-    @Description("The output polygon layer with the merged and without holes inundation polygons.")
+    @Description(outInundationArea_DESCR)
     @Out
     public SimpleFeatureCollection outInundationArea = null;
 
+    // VARS DOC START
+    public static final String outInundationArea_DESCR = "The output polygon layer with the merged and without holes inundation polygons.";
+    public static final String inInundationArea_DESCR = "The input polygon layer with the inundation polygons.";
+    public static final int STATUS = Status.EXPERIMENTAL;
+    public static final String LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String NAME = "lw08_networbuffermergerholesremover";
+    public static final String LABEL = JGTConstants.HYDROGEOMORPHOLOGY + "/LWRecruitment";
+    public static final String KEYWORDS = "network, vector, bankflull, inundation";
+    public static final String CONTACTS = "http://www.hydrologis.com";
+    public static final String AUTHORS = "Silvia Franceschi, Andrea Antonello";
+    public static final String DESCRIPTION = "Merge the inundated polygons to avoid strange perimeters.";
+    // VARS DOC END
 
-
-    private void process() {
+    @Execute
+    public void process() {
 
         // create a geometry list of the input polygons
         List<Geometry> inInundationGeomsList = FeatureUtilities.featureCollectionToGeometriesList(inInundationArea, false, null);
@@ -71,15 +83,14 @@ public class LW08_NetworBufferMergerHolesRemover extends JGTModel implements LWF
         // make the union and merge of the polygons
         Geometry union = CascadedPolygonUnion.union(inInundationGeomsList);
         List<Geometry> removedHoles = removeHoles(union);
-        
+
         // store the results in the output feature collection
         outInundationArea = new DefaultFeatureCollection();
         SimpleFeatureCollection outMergedAreaFC = FeatureUtilities.featureCollectionFromGeometry(inInundationArea.getBounds()
                 .getCoordinateReferenceSystem(), removedHoles.toArray(GeometryUtilities.TYPE_POLYGON));
-        
+
         ((DefaultFeatureCollection) outInundationArea).addAll(outMergedAreaFC);
     }
-
 
     /*
      * remove holes in merged polygons
@@ -95,23 +106,5 @@ public class LW08_NetworBufferMergerHolesRemover extends JGTModel implements LWF
         }
         return gl;
     }
-
-    public static void main( String[] args ) throws IOException {
-
-        String inInundatedPolyShp = "D:/lavori_tmp/gsoc/floodpolygon.shp";
-        String outInundatedPolyShp = "D:/lavori_tmp/gsoc/floodpolygon_merged.shp";
-        
-        LW08_NetworBufferMergerHolesRemover networkBufferMergerHolesRemover = new LW08_NetworBufferMergerHolesRemover();
-        networkBufferMergerHolesRemover.inInundationArea = OmsVectorReader.readVector(inInundatedPolyShp);
-        
-        networkBufferMergerHolesRemover.process();
-        
-        SimpleFeatureCollection outInundationAreaFC = networkBufferMergerHolesRemover.outInundationArea;
-
-        OmsVectorWriter.writeVector(outInundatedPolyShp, outInundationAreaFC);
-        
-        
-    }
-
 
 }

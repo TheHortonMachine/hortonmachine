@@ -22,12 +22,13 @@ import static java.lang.Math.pow;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
@@ -35,12 +36,12 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -59,59 +60,85 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.operation.distance.DistanceOp;
 import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
-@Description("Calculate the inundation zones along the channel network following a power law for the new width based on the original widht and the channel slope.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("network, vector, bankflull, width, inundation, power law")
-@Label("HortonMachine/Hydro-Geomorphology/LWRecruitment")
-@Name("LW07_NetworkBufferWidthCalculator")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
-public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFields {
-
-    @Description("The input hierarchy point network layer with the information of local slope.")
+@Description(OmsLW07_NetworkBufferWidthCalculator.DESCRIPTION)
+@Author(name = OmsLW07_NetworkBufferWidthCalculator.AUTHORS, contact = OmsLW07_NetworkBufferWidthCalculator.CONTACTS)
+@Keywords(OmsLW07_NetworkBufferWidthCalculator.KEYWORDS)
+@Label(OmsLW07_NetworkBufferWidthCalculator.LABEL)
+@Name("_" + OmsLW07_NetworkBufferWidthCalculator.NAME)
+@Status(OmsLW07_NetworkBufferWidthCalculator.STATUS)
+@License(OmsLW07_NetworkBufferWidthCalculator.LICENSE)
+public class OmsLW07_NetworkBufferWidthCalculator extends JGTModel implements LWFields {
+    @Description(inNetPoints_DESCR)
     @In
     public SimpleFeatureCollection inNetPoints = null;
 
-    @Description("The input polygon layer with the geological superficial geological formations.")
+    @Description(inGeo_DESCR)
     @In
     public SimpleFeatureCollection inGeo = null;
 
-    @Description("The input line shapefile with the extracted transversal sections.")
+    @Description(inSectWidth_DESCR)
     @In
     public SimpleFeatureCollection inSectWidth = null;
 
-    @Description("The output points network layer with the additional attribute of inundated width and average slope.")
+    @Description(pPrePostCount4Slope_DESCR)
+    @In
+    public int pPrePostCount4Slope = 10;
+
+    @Description(pK_DESCR)
+    @In
+    public double pK = 20.0;
+
+    @Description(pN_DESCR)
+    @In
+    public double pN = -0.2;
+
+    @Description(doKeepBridgeDamWidth_DESCR)
+    @In
+    public boolean doKeepBridgeDamWidth = true;
+
+    @Description(pMinSlope_DESCR)
+    @In
+    public double pMinSlope = 0.001;
+
+    @Description(outNetPoints_DESCR)
     @Out
     public SimpleFeatureCollection outNetPoints = null;
 
-    @Description("The output polygon layer with the inundation areas.")
+    @Description(outInundationArea_DESCR)
     @Out
     public SimpleFeatureCollection outInundationArea = null;
 
-    @Description("The output layer with the sections lines where the inundation width has been calculated.")
+    @Description(outInundationSections_DESCR)
     @Out
     public SimpleFeatureCollection outInundationSections = null;
 
-    // The number of cells upstream and downstream to consider to evaluate the average slope in each
-    // section
-    private int prePostCount4Slope = 10;
-
-    /*
-     * Parameters of the power law for the evaluation of the new width: newWidth = width + k * slope^n
-     */
-    private double k = 20.0; // Formula constant
-    private double n = -0.2; // formula exponent
-
-    // The boolean to select if considering the width of dams and bridges or not.
-    private boolean keepBridgeDamWidth = true;
-
-    // The value to use for the places where the slope is zero in the input raster map.
-    private double MIN_SLOPE = 0.001;
+    // VARS DOC START
+    public static final String outInundationSections_DESCR = "The output layer with the sections lines where the inundation width has been calculated.";
+    public static final String outInundationArea_DESCR = "The output polygon layer with the inundation areas.";
+    public static final String outNetPoints_DESCR = "The output points network layer with the additional attribute of inundated width and average slope.";
+    public static final String pMinSlope_DESCR = "The value to use for the places where the slope is zero in the input raster map.";
+    public static final String doKeepBridgeDamWidth_DESCR = "The boolean to select if considering the width of dams and bridges or not.";
+    public static final String pN_DESCR = "Formula exponent of the power law for the evaluation of the new width: newWidth = width + k * slope^n";
+    public static final String pK_DESCR = "Formula constant of the power law for the evaluation of the new width: newWidth = width + k * slope^n";
+    public static final String pPrePostCount4Slope_DESCR = "The number of cells upstream and downstream to consider to evaluate the average slope in each section.";
+    public static final String inSectWidth_DESCR = "The input line shapefile with the extracted transversal sections.";
+    public static final String inGeo_DESCR = "The input polygon layer with the geological superficial geological formations.";
+    public static final String inNetPoints_DESCR = "The input hierarchy point network layer with the information of local slope.";
+    public static final int STATUS = Status.EXPERIMENTAL;
+    public static final String LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String NAME = "lw07_networkbufferwidthcalculator";
+    public static final String LABEL = JGTConstants.HYDROGEOMORPHOLOGY + "/LWRecruitment";
+    public static final String KEYWORDS = "network, vector, bankflull, width, inundation, power law";
+    public static final String CONTACTS = "http://www.hydrologis.com";
+    public static final String AUTHORS = "Silvia Franceschi, Andrea Antonello";
+    public static final String DESCRIPTION = "Calculate the inundation zones along the channel network following a power law for the new width based on the original widht and the channel slope.";
+    // VARS DOC END
 
     private HashMap<String, Geometry> pfafId2WidthLine;
     private SimpleFeatureBuilder newLinesBuilder;
     private PreparedGeometry preparedSupFormGeom;
 
+    @Execute
     public void process() throws Exception {
 
         // store the geometries of the superficial geology in a list
@@ -179,11 +206,11 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
 
                 // consider the original bankfull line sections
                 LineString lineBankfullSection = getLineGeometry(netPointFeature);
-                double slope = getSlope(prePostCount4Slope, netPointsFeatures, i);
+                double slope = getSlope(pPrePostCount4Slope, netPointsFeatures, i);
 
                 int from = ((Double) netPointFeature.getAttribute(WIDTH_FROM)).intValue();
                 double newWidth = 0;
-                if (keepBridgeDamWidth && from != 0) {
+                if (doKeepBridgeDamWidth && from != 0) {
                     // in this case the new lines are the same as the old
                     /*
                      * the width is taken from the attributes table, since it
@@ -198,7 +225,7 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
                     newLinesFeatures.add(feature);
                 } else {
                     // calculate the inundated section
-                    newWidth = addPoints(k, n, slope, newLinesFeatures, netPointFeature, lineBankfullSection);
+                    newWidth = addPoints(pK, pN, slope, newLinesFeatures, netPointFeature, lineBankfullSection);
                 }
 
                 // add the attributes to the point network
@@ -220,7 +247,7 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
 
         // add the inundated polygons to the output collection
         ((DefaultFeatureCollection) outInundationArea).addAll(outInundatedAreaFC);
-        
+
         pm.done();
 
     }
@@ -251,7 +278,7 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
      */
     private double calculateWidth( double k, double n, double slope, double width ) {
         if (slope == 0) {
-            slope = MIN_SLOPE;
+            slope = pMinSlope;
         }
         double newWidth = width + k * pow(slope, n);
         if (Double.isInfinite(newWidth) || Double.isNaN(newWidth)) {
@@ -360,8 +387,8 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
          * check of the intersection of the new vertexes of the inundated section
          * and the superficial geology
          */
-         newSeg1 = checkSupFormIntersection(centerPoint, origC1, newSeg1);
-         newSeg2 = checkSupFormIntersection(centerPoint, origC2, newSeg2);
+        newSeg1 = checkSupFormIntersection(centerPoint, origC1, newSeg1);
+        newSeg2 = checkSupFormIntersection(centerPoint, origC2, newSeg2);
 
         // consider the final coordinates of the vertexes of the inundated section and create
         // the new line
@@ -417,39 +444,6 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
         }
 
         return newOneSideSegment;
-    }
-
-    public static void main( String[] args ) throws Exception {
-
-        String inSupFormShp = "D:/lavori_tmp/gsoc/basedata/FSmd.shp";
-        String inNetPointsShp = "D:/lavori_tmp/gsoc/netpoints_width_bridgesdams_slope.shp";
-        String inWidthLinesShp = "D:/lavori_tmp/gsoc/bankfull_sections.shp";
-        String outInundatedPolyShp = "D:/lavori_tmp/gsoc/floodpolygon.shp";
-        String outNetPointsShp = "D:/lavori_tmp/gsoc/netpoints_width_bridgesdams_slope_floodwidth.shp";
-        String outWidthLinesShp = "D:/lavori_tmp/gsoc/inundated_sections.shp";
-
-        LW07_NetworkBufferWidthCalculator networkBufferWidthCalculator = new LW07_NetworkBufferWidthCalculator();
-        networkBufferWidthCalculator.inGeo = OmsVectorReader.readVector(inSupFormShp);
-        networkBufferWidthCalculator.inNetPoints = OmsVectorReader.readVector(inNetPointsShp);
-        networkBufferWidthCalculator.inSectWidth = OmsVectorReader.readVector(inWidthLinesShp);
-
-        networkBufferWidthCalculator.process();
-
-        SimpleFeatureCollection outNetPointFC = networkBufferWidthCalculator.outNetPoints;
-        SimpleFeatureCollection outInundatedSectionFC = networkBufferWidthCalculator.outInundationSections;
-        SimpleFeatureCollection outInundatedAreaFC = networkBufferWidthCalculator.outInundationArea;
-        
-        // SimpleFeatureCollection outInundatedAreaFC =
-        // networkBufferWidthCalculator.outInundationArea;
-
-        OmsVectorWriter.writeVector(outNetPointsShp, outNetPointFC);
-        OmsVectorWriter.writeVector(outWidthLinesShp, outInundatedSectionFC);
-
-        int size = outInundatedAreaFC.size();
-        if (size > 0) {
-            OmsVectorWriter.writeVector(outInundatedPolyShp, outInundatedAreaFC);
-        }
-
     }
 
 }

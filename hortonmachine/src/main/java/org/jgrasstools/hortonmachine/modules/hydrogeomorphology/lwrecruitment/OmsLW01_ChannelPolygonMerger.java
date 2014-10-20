@@ -31,48 +31,59 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.geotools.data.simple.SimpleFeatureCollection;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
-@Description("Merges the adjacent bankfull polygons in a single geometry for further processing.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("network, vector, union")
-@Label("HortonMachine/Hydro-Geomorphology/LWRecruitment")
-@Name("LW01_ChannelPolygonMerger")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
-public class LW01_ChannelPolygonMerger extends JGTModel {
+@Description(OmsLW01_ChannelPolygonMerger.DESCRIPTION)
+@Author(name = OmsLW01_ChannelPolygonMerger.AUTHORS, contact = OmsLW01_ChannelPolygonMerger.CONTACTS)
+@Keywords(OmsLW01_ChannelPolygonMerger.KEYWORDS)
+@Label(OmsLW01_ChannelPolygonMerger.LABEL)
+@Name("_" + OmsLW01_ChannelPolygonMerger.NAME)
+@Status(OmsLW01_ChannelPolygonMerger.STATUS)
+@License(OmsLW01_ChannelPolygonMerger.LICENSE)
+public class OmsLW01_ChannelPolygonMerger extends JGTModel {
 
-    @Description("The input polygon layer of the bankfull area")
+    @Description(inBankfull_DESCR)
     @In
     public SimpleFeatureCollection inBankfull = null;
-    
-    @Description("The output polygon of the bankfull area")
+
+    @Description(outBankfull_DESCR)
     @Out
     public SimpleFeatureCollection outBankfull = null;
-    
-    
+
+    // VARS DOCS START
+    public static final String outBankfull_DESCR = "The output polygon of the bankfull area";
+    public static final String inBankfull_DESCR = "The input polygon layer of the bankfull area";
+    public static final int STATUS = Status.EXPERIMENTAL;
+    public static final String LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String NAME = "lw01_channelpolygonmerger";
+    public static final String LABEL = JGTConstants.HYDROGEOMORPHOLOGY + "/LWRecruitment";
+    public static final String KEYWORDS = "network, vector, union";
+    public static final String CONTACTS = "http://www.hydrologis.com";
+    public static final String AUTHORS = "Silvia Franceschi, Andrea Antonello";
+    public static final String DESCRIPTION = "Merges the adjacent bankfull polygons in a single geometry for further processing.";
+    // VARS DOC END
+
     @Execute
     public void process() throws Exception {
         checkNull(inBankfull);
-        
+
         List<Geometry> geoms = FeatureUtilities.featureCollectionToGeometriesList(inBankfull, true, null);
-        
-        //creates a unique feature with multipolygons
+
+        // creates a unique feature with multipolygons
         Geometry union = CascadedPolygonUnion.union(geoms);
-        
-        //makes a buffer of each geometry in the feature and merges the touching geometries
+
+        // makes a buffer of each geometry in the feature and merges the touching geometries
         Geometry buffer = union.buffer(0.05);
 
-        //splits the remaining geometries (not touching)
+        // splits the remaining geometries (not touching)
         List<Geometry> newGeoms = new ArrayList<Geometry>();
         for( int i = 0; i < buffer.getNumGeometries(); i++ ) {
             Geometry geometryN = buffer.getGeometryN(i);
@@ -81,28 +92,9 @@ public class LW01_ChannelPolygonMerger extends JGTModel {
             }
         }
 
-        outBankfull = FeatureUtilities.featureCollectionFromGeometry(inBankfull.getBounds()
-                .getCoordinateReferenceSystem(), newGeoms.toArray(GeometryUtilities.TYPE_POLYGON));
+        outBankfull = FeatureUtilities.featureCollectionFromGeometry(inBankfull.getBounds().getCoordinateReferenceSystem(),
+                newGeoms.toArray(GeometryUtilities.TYPE_POLYGON));
 
-    
-    }
-    /**
-     * @param args
-     * @throws Exception 
-     */
-    public static void main( String[] args ) throws Exception {
-
-        String inBankfull = "D:/lavori_tmp/gsoc/channeledited.shp";
-        String outBankfull = "D:/lavori_tmp/gsoc/channeledited_merged2.shp";
-        LW01_ChannelPolygonMerger channelPolygonMerger = new LW01_ChannelPolygonMerger();
-        channelPolygonMerger.inBankfull = OmsVectorReader.readVector(inBankfull);
-        
-        channelPolygonMerger.process();
-        
-        SimpleFeatureCollection outBankfullFC = channelPolygonMerger.outBankfull;
-        
-        OmsVectorWriter.writeVector(outBankfull, outBankfullFC);
-        
     }
 
 }

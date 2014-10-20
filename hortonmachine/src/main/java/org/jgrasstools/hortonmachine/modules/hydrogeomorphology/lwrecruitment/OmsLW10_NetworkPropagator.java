@@ -25,6 +25,7 @@ import java.util.TreeMap;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
@@ -35,8 +36,7 @@ import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -44,34 +44,43 @@ import org.jgrasstools.hortonmachine.modules.network.PfafstetterNumber;
 import org.jgrasstools.hortonmachine.modules.network.networkattributes.NetworkChannel;
 import org.opengis.feature.simple.SimpleFeature;
 
-@Description("Label the critical section for the transit of the wood and calculate the cumulated volume of biomass in each blocking section.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("network, vector, bankflull, width, inundation, vegetation")
-@Label("HortonMachine/Hydro-Geomorphology/LWRecruitment/critical/wood")
-@Name("LW10_NetworkPropagator")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)") 
-public class LW10_NetworkPropagator extends JGTModel implements LWFields {
+@Description(OmsLW10_NetworkPropagator.DESCRIPTION)
+@Author(name = OmsLW10_NetworkPropagator.AUTHORS, contact = OmsLW10_NetworkPropagator.CONTACTS)
+@Label(OmsLW10_NetworkPropagator.LABEL)
+@Keywords(OmsLW10_NetworkPropagator.KEYWORDS)
+@Name("_" + OmsLW10_NetworkPropagator.NAME)
+@Status(OmsLW10_NetworkPropagator.STATUS)
+@License(OmsLW10_NetworkPropagator.LICENSE)
+public class OmsLW10_NetworkPropagator extends JGTModel implements LWFields {
 
-    @Description("The input network points layer with the additional attributes vegetation height and timber volume.")
+    @Description(inNetPoints_DESCR)
     @In
     public SimpleFeatureCollection inNetPoints = null;
 
-    @Description("The output network points layer with the critical sections labelled in the attribute table.")
+    @Description(outNetPoints_DESCR)
     @Out
     public SimpleFeatureCollection outNetPoints = null;
+
+    // VARS DOC START
+    public static final String outNetPoints_DESCR = "The output network points layer with the critical sections labelled in the attribute table.";
+    public static final String inNetPoints_DESCR = "The input network points layer with the additional attributes vegetation height and timber volume.";
+    public static final int STATUS = Status.EXPERIMENTAL;
+    public static final String LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String NAME = "lw10_networkpropagator";
+    public static final String LABEL = JGTConstants.HYDROGEOMORPHOLOGY + "/LWRecruitment";
+    public static final String KEYWORDS = "critical, wood";
+    public static final String CONTACTS = "http://www.hydrologis.com";
+    public static final String AUTHORS = "Silvia Franceschi, Andrea Antonello";
+    public static final String DESCRIPTION = "Label the critical section for the transit of the wood and calculate the cumulated volume of biomass in each blocking section.";
+    // VARS DOC END
 
     /*
      * specify the names of the attributes fields
      */
-    final String FIELD_LINKID = "linkid";
-    public static final String FIELD_WIDTH = "w2"; // TODO add logical check on width to use
-    public static final String FIELD_MEDIAN = "median";
-    public static final String FIELD_ISCRITIC_LOCAL = "iscriticl";
-    public static final String FIELD_ISCRITIC_GLOBAL = "iscriticg";
-    public static final String FIELD_CRITIC_SOURCE = "critsource";
+    private final String FIELD_LINKID = LINKID;
 
-    private void process() throws Exception {
+    @Execute
+    public void process() throws Exception {
 
         /*
          * store the network points in a collection and map the Pfafstetter codes together with
@@ -144,7 +153,6 @@ public class LW10_NetworkPropagator extends JGTModel implements LWFields {
                 }
             }
 
-            SimpleFeature lastFeature;
             for( SimpleFeature feature : featuresMap.values() ) {
                 String linkid = feature.getAttribute(FIELD_LINKID).toString();
                 double width = (Double) feature.getAttribute(FIELD_WIDTH);
@@ -153,23 +161,23 @@ public class LW10_NetworkPropagator extends JGTModel implements LWFields {
                     maxUpstreamHeight = height;
                     criticSource = pfafstetterNumber + "-" + linkid;
                 }
-                
+
                 /*
                  * label the ctitical sections
                  */
-                //critical from local parameters veg_h > width
+                // critical from local parameters veg_h > width
                 int isCriticLocal = 0;
                 int isCriticGlobal = 0;
                 if (height > width) {
                     isCriticLocal = 1;
                 }
-                //critical on vegetation coming from upstream
+                // critical on vegetation coming from upstream
                 if (maxUpstreamHeight > width) {
                     isCriticGlobal = 1;
                     maxUpstreamHeight = -1;
                 }
 
-                //update the field with the origin of critical sections
+                // update the field with the origin of critical sections
                 if (criticSource == null)
                     criticSource = "";
                 String tmpCriticSource = criticSource;
@@ -180,7 +188,7 @@ public class LW10_NetworkPropagator extends JGTModel implements LWFields {
                         new Object[]{isCriticLocal, isCriticGlobal, tmpCriticSource});
                 outputFC.add(newFeature);
             }
-            //add the point to the list for the next step
+            // add the point to the list for the next step
             lastUpStreamPfafstetters.add(pfafstetterNumber);
             lastUpStreamMaxHeights.add(maxUpstreamHeight);
             lastUpStreamCriticSource.add(criticSource);
@@ -190,21 +198,6 @@ public class LW10_NetworkPropagator extends JGTModel implements LWFields {
         pm.done();
 
         outNetPoints = outputFC;
-    }
-
-    public static void main( String[] args ) throws Exception {
-
-        String inNetPointsShp = "D:/lavori_tmp/gsoc/netpoints_width_bridgesdams_slope_veg_stand.shp";
-        String outNetPointsShp = "D:/lavori_tmp/gsoc/netpoints_width_bridgesdams_slope_veg_stand_critical.shp";
-
-        LW10_NetworkPropagator networkPropagator = new LW10_NetworkPropagator();
-        networkPropagator.inNetPoints = OmsVectorReader.readVector(inNetPointsShp);
-
-        networkPropagator.process();
-
-        SimpleFeatureCollection outNetPointFC = networkPropagator.outNetPoints;
-        OmsVectorWriter.writeVector(outNetPointsShp, outNetPointFC);
-
     }
 
 }
