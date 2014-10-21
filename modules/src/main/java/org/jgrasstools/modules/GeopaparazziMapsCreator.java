@@ -114,7 +114,7 @@ public class GeopaparazziMapsCreator extends JGTModel {
     @In
     public int pZoomLimit = 19;
 
-    @Description("Zoom limit.")
+    @Description("Image type.")
     @In
     @UI("combo: png,jpg")
     public String pImageType = "png";
