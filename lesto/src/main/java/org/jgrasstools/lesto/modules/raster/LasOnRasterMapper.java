@@ -100,7 +100,7 @@ public class LasOnRasterMapper extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inLas, inDtm, outDtm, outRaster);
+        checkNull(inLas, inDtm, outRaster);
 
         GridCoverage2D inDtmGC = getRaster(inDtm);
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDtmGC);
@@ -171,7 +171,7 @@ public class LasOnRasterMapper extends JGTModel {
         GridCoverage2D outRasterGC = CoverageUtilities.buildCoverage("outraster", newWR, newRegionMap, crs);
         dumpRaster(outRasterGC, outRaster);
 
-        if (pXres != null && pYres != null) {
+        if (pXres != null && pYres != null && outDtm != null) {
             WritableRaster[] holder = new WritableRaster[1];
             GridCoverage2D outDtmGC = CoverageUtilities.createCoverageFromTemplate(outRasterGC, JGTConstants.doubleNovalue,
                     holder);

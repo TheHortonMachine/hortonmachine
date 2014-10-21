@@ -169,6 +169,10 @@ public class LasTriangulation2Dsm extends JGTModel {
         double east = regionMap.getEast();
         double west = regionMap.getWest();
 
+        if (pXres == null || pYres == null) {
+            pXres = regionMap.getXres();
+            pYres = regionMap.getYres();
+        }
         final int newRows = (int) round((north - south) / pYres);
         int newCols = (int) round((east - west) / pXres);
 
