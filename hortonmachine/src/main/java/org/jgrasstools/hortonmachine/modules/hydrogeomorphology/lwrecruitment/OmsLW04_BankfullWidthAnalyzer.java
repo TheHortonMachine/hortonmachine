@@ -18,8 +18,8 @@
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment;
 
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -33,6 +33,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -40,6 +41,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -60,51 +62,70 @@ import com.vividsolutions.jts.geom.prep.PreparedPolygon;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.operation.distance.DistanceOp;
 
-@Description("Extracts the bankfull width for each section of the channels and adds it as an attribute to the input layer.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("network, vector, point, bankflull, width")
-@Label("HortonMachine/Hydro-Geomorphology/LWRecruitment")
-@Name("LW04_BankfullWidthAnalyzer")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
-public class LW04_BankfullWidthAnalyzer extends JGTModel implements LWFields {
+@Description(OmsLW04_BankfullWidthAnalyzer.DESCRIPTION)
+@Author(name = OmsLW04_BankfullWidthAnalyzer.AUTHORS, contact = OmsLW04_BankfullWidthAnalyzer.CONTACTS)
+@Keywords(OmsLW04_BankfullWidthAnalyzer.KEYWORDS)
+@Label(OmsLW04_BankfullWidthAnalyzer.LABEL)
+@Name("_" + OmsLW04_BankfullWidthAnalyzer.NAME)
+@Status(OmsLW04_BankfullWidthAnalyzer.STATUS)
+@License(OmsLW04_BankfullWidthAnalyzer.LICENSE)
+public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields {
 
-    @Description("The input polygon layer of the bankfull area.")
+    @Description(inBankfull_DESCR)
     @In
     public SimpleFeatureCollection inBankfull = null;
 
-    @Description("The input hierarchy point network layer.")
+    @Description(inNetPoints_DESCR)
     @In
     public SimpleFeatureCollection inNetPoints = null;
 
-    @Description("The output points network layer with the additional attribute of bankfull width.")
+    @Description(pMaxDistanceFromNetpoint_DESCR)
+    @Unit("m")
+    @In
+    public double pMaxDistanceFromNetpoint = 100.0;
+
+    @Description(pMaxNetworkWidth_DESCR)
+    @Unit("m")
+    @In
+    public double pMaxNetworkWidth = 100;
+
+    @Description(pMinNetworkWidth_DESCR)
+    @Unit("m")
+    @In
+    public double pMinNetworkWidth = 0.5;
+
+    @Description(outNetPoints_DESCR)
     @Out
     public SimpleFeatureCollection outNetPoints = null;
 
-    @Description("The output points layer highlighting the position of the problematic sections.")
+    @Description(outProblemPoints_DESCR)
     @Out
     public SimpleFeatureCollection outProblemPoints = null;
 
-    @Description("The output layer with the sections lines where the bankfull width has been calculated.")
+    @Description(outBankfullSections_DESCR)
     @Out
     public SimpleFeatureCollection outBankfullSections = null;
 
-    private int NEW_NETWORK_ATTRIBUTES_NUM = 2;
+    // VARS DOC START
+    public static final String outBankfullSections_DESCR = "The output layer with the sections lines where the bankfull width has been calculated.";
+    public static final String outProblemPoints_DESCR = "The output points layer highlighting the position of the problematic sections.";
+    public static final String outNetPoints_DESCR = "The output points network layer with the additional attribute of bankfull width.";
+    public static final String pMinNetworkWidth_DESCR = "The minimum width for the channel network";
+    public static final String pMaxNetworkWidth_DESCR = "The maximum width for the channel network";
+    public static final String pMaxDistanceFromNetpoint_DESCR = "The maximum distance that a point can have from the nearest polygon. If distance is major, then the netpoint is ignored and identified as outside the region of interest.";
+    public static final String inNetPoints_DESCR = "The input hierarchy point network layer.";
+    public static final String inBankfull_DESCR = "The input polygon layer of the bankfull area.";
+    public static final int STATUS = Status.EXPERIMENTAL;
+    public static final String LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String NAME = "lw04_bankfullwidthanalyzer";
+    public static final String LABEL = JGTConstants.HYDROGEOMORPHOLOGY + "/LWRecruitment";
+    public static final String KEYWORDS = "network, vector, point, bankflull, width";
+    public static final String CONTACTS = "http://www.hydrologis.com";
+    public static final String AUTHORS = "Silvia Franceschi, Andrea Antonello";
+    public static final String DESCRIPTION = "Extracts the bankfull width for each section of the channels and adds it as an attribute to the input layer.";
+    // VARS DOC END
 
-    private double MAX_DISTANCE_FROM_NETPOINT = 100.0;
-    /**
-     * The maximum distance that a point can have from the nearest polygon. If
-     * distance is major, then the netpoint is ignored and identified as outside 
-     * the region of interest.  
-     */
-    private double MAX_NETWORK_WIDTH = 100;
-    /**
-     * The maximum width for the channel network
-     */
-    private double MIN_NETWORK_WIDTH = 0.5;
-    /**
-     * The minimum width for the channel network
-     */
+    private int NEW_NETWORK_ATTRIBUTES_NUM = 2;
 
     // error messages
     private String NEAREST_CHANNEL_POLYGON_TOO_FAR_FROM_POINT = "nearest channeledit polygon is too far from point";
@@ -167,7 +188,7 @@ public class LW04_BankfullWidthAnalyzer extends JGTModel implements LWFields {
             double[] attributes = entry.getValue();
             // expand the envelop of the point to verify if it is inside the area of interest
             Envelope env = new Envelope(netPoint.getCoordinate());
-            env.expandBy(MAX_DISTANCE_FROM_NETPOINT);
+            env.expandBy(pMaxDistanceFromNetpoint);
             // consider the bankfull polygons
             List<PreparedPolygon> channelsList = channelIndex.query(env);
             /*
@@ -224,7 +245,7 @@ public class LW04_BankfullWidthAnalyzer extends JGTModel implements LWFields {
                  * polygon, if the distance is grater than max_dist the point is labeled as
                  * problem point
                  */
-                if (nearestOnChannelCoordinate.distance(netCoordinate) > MAX_DISTANCE_FROM_NETPOINT) {
+                if (nearestOnChannelCoordinate.distance(netCoordinate) > pMaxDistanceFromNetpoint) {
                     problemPointsMap.put(netFeature, NEAREST_CHANNEL_POLYGON_TOO_FAR_FROM_POINT);
                     pm.worked(1);
                     continue;
@@ -317,9 +338,9 @@ public class LW04_BankfullWidthAnalyzer extends JGTModel implements LWFields {
             SimpleFeature netFeature, Object linkId, Object pfaf, double[] attributes, Coordinate nearestOnChannelCoordinate,
             Coordinate coordinate ) {
         double width = coordinate.distance(nearestOnChannelCoordinate);
-        if (width > MAX_NETWORK_WIDTH) {
+        if (width > pMaxNetworkWidth) {
             problemPointsMap.put(netFeature, FOUND_INVALID_NETWORK_WIDTH_LARGE);
-        } else if (width < MIN_NETWORK_WIDTH) {
+        } else if (width < pMinNetworkWidth) {
             problemPointsMap.put(netFeature, FOUND_INVALID_NETWORK_WIDTH_SMALL);
         } else {
             attributes[0] = width;
@@ -401,33 +422,4 @@ public class LW04_BankfullWidthAnalyzer extends JGTModel implements LWFields {
 
         return newCollection;
     }
-
-    /**
-     * @param args
-     * @throws Exception 
-     */
-    public static void main( String[] args ) throws Exception {
-        String inBankfull = "D:/lavori_tmp/gsoc/channeledited_merged.shp";
-        String inNetPoints = "D:/lavori_tmp/gsoc/netpoints.shp";
-
-        String outNetPoints = "D:/lavori_tmp/gsoc/netpoints_width.shp";
-        String outProblemPoints = "D:/lavori_tmp/gsoc/netpoints_problems.shp";
-        String outBankfullSections = "D:/lavori_tmp/gsoc/bankfull_sections.shp";
-
-        LW04_BankfullWidthAnalyzer bankfullWidthAnalyzer = new LW04_BankfullWidthAnalyzer();
-        bankfullWidthAnalyzer.inBankfull = OmsVectorReader.readVector(inBankfull);
-        bankfullWidthAnalyzer.inNetPoints = OmsVectorReader.readVector(inNetPoints);
-
-        bankfullWidthAnalyzer.process();
-
-        SimpleFeatureCollection outNetPointFC = bankfullWidthAnalyzer.outNetPoints;
-        SimpleFeatureCollection outProblemPointsFC = bankfullWidthAnalyzer.outProblemPoints;
-        SimpleFeatureCollection outBankfullSectionsFC = bankfullWidthAnalyzer.outBankfullSections;
-
-        OmsVectorWriter.writeVector(outNetPoints, outNetPointFC);
-        OmsVectorWriter.writeVector(outProblemPoints, outProblemPointsFC);
-        OmsVectorWriter.writeVector(outBankfullSections, outBankfullSectionsFC);
-
-    }
-
 }

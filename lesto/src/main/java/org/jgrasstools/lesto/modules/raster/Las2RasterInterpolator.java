@@ -117,12 +117,22 @@ public class Las2RasterInterpolator extends JGTModel {
             }
 
             List<LasRecord> lasPoints = lasData.getPointsInGeometry(polygon, false);
+            if (lasPoints.size() == 0) {
+                pm.message("No points foudn in the given area. Check your input.");
+                return;
+            }
 
             RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDtmGC);
             double north = regionMap.getNorth();
             double south = regionMap.getSouth();
             double east = regionMap.getEast();
             double west = regionMap.getWest();
+            if (pXres == null) {
+                pXres = regionMap.getXres();
+            }
+            if (pYres == null) {
+                pYres = regionMap.getYres();
+            }
 
             int newRows = (int) round((north - south) / pYres);
             int newCols = (int) round((east - west) / pXres);

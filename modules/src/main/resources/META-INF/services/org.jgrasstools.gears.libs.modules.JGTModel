@@ -52,6 +52,16 @@ org.jgrasstools.modules.IntersectionFinder
 org.jgrasstools.modules.Jami
 org.jgrasstools.modules.KernelDensity
 org.jgrasstools.modules.Kriging
+org.jgrasstools.modules.LW01_ChannelPolygonMerger
+org.jgrasstools.modules.LW02_NetworkAttributesBuilder
+org.jgrasstools.modules.LW03_NetworkHierarchyToPointsSplitter
+org.jgrasstools.modules.LW04_BankfullWidthAnalyzer
+org.jgrasstools.modules.LW05_BridgesDamsWidthAdder
+org.jgrasstools.modules.LW06_SlopeToNetworkAdder
+org.jgrasstools.modules.LW07_NetworkBufferWidthCalculator
+org.jgrasstools.modules.LW08_NetworBufferMergerHolesRemover
+org.jgrasstools.modules.LW09_AreaToNetpointAssociator
+org.jgrasstools.modules.LW10_NetworkPropagator
 org.jgrasstools.modules.Labeler
 org.jgrasstools.modules.LasConverter
 org.jgrasstools.modules.LasNativeChecker

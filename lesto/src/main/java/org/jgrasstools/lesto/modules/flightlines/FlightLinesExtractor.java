@@ -39,6 +39,7 @@ import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
 import org.jgrasstools.gears.io.las.utils.LasUtils;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.chart.CategoryHistogram;
@@ -72,14 +73,15 @@ public class FlightLinesExtractor extends JGTModel {
     @In
     public boolean doPlot = true;
 
-    @Description("Optional output folder.")
+    @Description("Output folder.")
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In
     public String outFolder;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inLas);
+        checkNull(inLas, outFolder);
+        checkFileExists(inLas, outFolder);
 
         int timeType = 1;
         if (pGpsTimeType.equals(ADJUSTED_STANDARD_GPS_TIME)) {
@@ -89,13 +91,17 @@ public class FlightLinesExtractor extends JGTModel {
             timeType = 0;
         }
 
-        CoordinateReferenceSystem crs = null;
         File lasFile = new File(inLas);
-        ALasReader reader = ALasReader.getReader(lasFile, crs);
+        ALasReader reader = ALasReader.getReader(lasFile, null);
         reader.setOverrideGpsTimeType(timeType);
         ILasHeader header = reader.getHeader();
         int gpsTimeType = header.getGpsTimeType();
         pm.message(header.toString());
+
+        CoordinateReferenceSystem crs = header.getCrs();
+        if (crs == null) {
+            throw new ModelsIllegalargumentException("No crs available for the input data.", this);
+        }
 
         pm.beginTask("Creating histogram...", (int) header.getRecordsCount());
         TreeMap<String, Integer> histogramMap = new TreeMap<String, Integer>();
@@ -158,55 +164,45 @@ public class FlightLinesExtractor extends JGTModel {
             index++;
         }
 
-        boolean doWrite = true;
-        if (doWrite) {
-            if (outFolder == null) {
-                outFolder = lasFile.getParent();
-            }
-            File outFolderFile = new File(outFolder);
-            String nameWithoutExtention = FileUtilities.getNameWithoutExtention(lasFile);
+        File outFolderFile = new File(outFolder);
+        String nameWithoutExtention = FileUtilities.getNameWithoutExtention(lasFile);
 
-            pm.beginTask("Splitting flightlines...", (int) header.getRecordsCount());
-            // now read them all and split them into files following the markers
-            ALasWriter[] writers = new ALasWriter[100];
-            reader = ALasReader.getReader(lasFile, crs);
-            reader.setOverrideGpsTimeType(timeType);
-            ILasHeader header2 = reader.getHeader();
-            int gpsTimeType2 = header2.getGpsTimeType();
-            while( reader.hasNextPoint() ) {
-                LasRecord readNextLasDot = reader.getNextPoint();
-                DateTime gpsTimeToDateTime = LasUtils.gpsTimeToDateTime(readNextLasDot.gpsTime, gpsTimeType2);
+        pm.beginTask("Splitting flightlines...", (int) header.getRecordsCount());
+        // now read them all and split them into files following the markers
+        ALasWriter[] writers = new ALasWriter[100];
+        reader = ALasReader.getReader(lasFile, crs);
+        reader.setOverrideGpsTimeType(timeType);
+        ILasHeader header2 = reader.getHeader();
+        int gpsTimeType2 = header2.getGpsTimeType();
+        while( reader.hasNextPoint() ) {
+            LasRecord readNextLasDot = reader.getNextPoint();
+            DateTime gpsTimeToDateTime = LasUtils.gpsTimeToDateTime(readNextLasDot.gpsTime, gpsTimeType2);
 
-                // round to seconds
-                long millis = (long) (gpsTimeToDateTime.getMillis() / 1000.0);
-                millis = millis * 1000;
+            // round to seconds
+            long millis = (long) (gpsTimeToDateTime.getMillis() / 1000.0);
+            millis = millis * 1000;
 
-                // String string = gpsTimeToDateTime.toString();
-                // if (string.startsWith("2011-09-18T12:27:35")) {
-                // System.out.println();
-                // }
-                for( int j = 0; j < markersArray.length; j++ ) {
-                    if (millis <= markersArray[j]) {
-                        if (writers[j] == null) {
-                            File file = new File(outFolderFile, nameWithoutExtention + "_" + j + ".las");
-                            writers[j] = new LasWriter(file, crs);
-                            writers[j].setBounds(header2);
-                            writers[j].open();
-                        }
-                        writers[j].addPoint(readNextLasDot);
-                        break;
+            for( int j = 0; j < markersArray.length; j++ ) {
+                if (millis <= markersArray[j]) {
+                    if (writers[j] == null) {
+                        File file = new File(outFolderFile, nameWithoutExtention + "_" + j + ".las");
+                        writers[j] = new LasWriter(file, crs);
+                        writers[j].setBounds(header2);
+                        writers[j].open();
                     }
+                    writers[j].addPoint(readNextLasDot);
+                    break;
                 }
-                pm.worked(1);
             }
-            reader.close();
-            pm.done();
+            pm.worked(1);
+        }
+        reader.close();
+        pm.done();
 
-            for( int j = 0; j < writers.length; j++ ) {
-                ALasWriter writer = writers[j];
-                if (writer != null)
-                    writer.close();
-            }
+        for( int j = 0; j < writers.length; j++ ) {
+            ALasWriter writer = writers[j];
+            if (writer != null)
+                writer.close();
         }
 
         if (doPlot) {
@@ -215,11 +211,4 @@ public class FlightLinesExtractor extends JGTModel {
         }
     }
 
-    public static void main( String[] args ) throws Exception {
-        FlightLinesExtractor fl = new FlightLinesExtractor();
-        fl.inLas = "*.las";
-        fl.pGpsTimeType = FlightLinesExtractor.ADJUSTED_STANDARD_GPS_TIME;
-        fl.outFolder = "/home/flightlines/";
-        fl.process();
-    }
 }

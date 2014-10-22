@@ -34,17 +34,12 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-import oms3.annotations.UI;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
-import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
-import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.rasterdiff.OmsRasterDiff;
@@ -64,77 +59,95 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
-@Description("Calculate median vegetation height and total timber volume of the vegetation on unstable and connected areas of each subbasin.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("network, vector, bankflull, width, inundation, vegetation")
-@Label("HortonMachine/Hydro-Geomorphology/LWRecruitment")
-@Name("LW09_AreaToNetpointAssociator")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
-public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields {
+@Description(OmsLW09_AreaToNetpointAssociator.DESCRIPTION)
+@Author(name = OmsLW09_AreaToNetpointAssociator.AUTHORS, contact = OmsLW09_AreaToNetpointAssociator.CONTACTS)
+@Keywords(OmsLW09_AreaToNetpointAssociator.KEYWORDS)
+@Label(OmsLW09_AreaToNetpointAssociator.LABEL)
+@Name("_" + OmsLW09_AreaToNetpointAssociator.NAME)
+@Status(OmsLW09_AreaToNetpointAssociator.STATUS)
+@License(OmsLW09_AreaToNetpointAssociator.LICENSE)
+public class OmsLW09_AreaToNetpointAssociator extends JGTModel {
 
-    @Description("The input hierarchy point network layer.")
+    @Description(inNetPoints_DESCR)
     @In
     public SimpleFeatureCollection inNetPoints = null;
 
-    @Description("The input polygon layer with the inundation areas.")
-    @Out
+    @Description(inInundationArea_DESCR)
+    @In
     public SimpleFeatureCollection inInundationArea = null;
 
-    @Description("The input flow directions raster map.")
-    @UI(JGTConstants.FILEIN_UI_HINT)
+    @Description(inFlow_DESCR)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The input total contributing areas raster map.")
-    @UI(JGTConstants.FILEIN_UI_HINT)
+    @Description(inTca_DESCR)
     @In
     public GridCoverage2D inTca = null;
 
-    @Description("The input network raster map.")
-    @UI(JGTConstants.FILEIN_UI_HINT)
+    @Description(inNet_DESCR)
     @In
     public GridCoverage2D inNet = null;
 
-    @Description("The input terrain elevation raster map.")
-    @UI(JGTConstants.FILEIN_UI_HINT)
+    @Description(inDtm_DESCR)
     @In
     public GridCoverage2D inDtm = null;
 
-    @Description("The input superficial elevation raster map.")
-    @UI(JGTConstants.FILEIN_UI_HINT)
+    @Description(inDsm_DESCR)
     @In
     public GridCoverage2D inDsm = null;
-    
-    @Description("The input total stand volume raster map.")
-    @UI(JGTConstants.FILEIN_UI_HINT)
+
+    @Description(inStand_DESCR)
     @In
     public GridCoverage2D inStand = null;
 
-    @Description("The input slope raster map.")
-    @UI(JGTConstants.FILEIN_UI_HINT)
+    @Description(inSlope_DESCR)
     @In
     public GridCoverage2D inSlope = null;
 
-    @Description("The input downslope connectivity index raster map.")
-    @UI(JGTConstants.FILEIN_UI_HINT)
+    @Description(inConnectivity_DESCR)
     @In
     public GridCoverage2D inConnectivity = null;
 
-    @Description("The output points network layer with the additional attributes vegetation height and timber volume .")
+    @Description(pConnectivityThreshold_DESCR)
+    @In
+    public double pConnectivityThreshold = 4.0;
+
+    @Description(outNetPoints_DESCR)
     @Out
     public SimpleFeatureCollection outNetPoints = null;
 
-    @Description("The output netnumbering raster map.")
+    @Description(outNetnum_DESCR)
     @Out
     public GridCoverage2D outNetnum = null;
 
-    @Description("The output subbasins raster map.")
+    @Description(outBasins_DESCR)
     @Out
     public GridCoverage2D outBasins = null;
 
-    // Threshold on connectivity map for extracting unstable connected pixels of the basins.
-    double connectivityThreshold = 4.0;
+    // VARS DOC START
+    public static final String outBasins_DESCR = "The output subbasins raster map.";
+    public static final String outNetnum_DESCR = "The output netnumbering raster map.";
+    public static final String outNetPoints_DESCR = "The output points network layer with the additional attributes vegetation height and timber volume .";
+    public static final String pConnectivityThreshold_DESCR = "Threshold on connectivity map for extracting unstable connected pixels of the basins.";
+    public static final String inConnectivity_DESCR = "The input downslope connectivity index raster map.";
+    public static final String inSlope_DESCR = "The input slope raster map.";
+    public static final String inStand_DESCR = "The input total stand volume raster map.";
+    public static final String inDsm_DESCR = "The input superficial elevation raster map.";
+    public static final String inDtm_DESCR = "The input terrain elevation raster map.";
+    public static final String inNet_DESCR = "The input network raster map.";
+    public static final String inTca_DESCR = "The input total contributing areas raster map.";
+    public static final String inFlow_DESCR = "The input flow directions raster map.";
+    public static final String inInundationArea_DESCR = "The input polygon layer with the inundation areas.";
+    public static final String inNetPoints_DESCR = "The input hierarchy point network layer.";
+    public static final int STATUS = Status.EXPERIMENTAL;
+    public static final String LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String NAME = "lw09_areatonetpointassociator";
+    public static final String LABEL = JGTConstants.HYDROGEOMORPHOLOGY + "/LWRecruitment";
+    public static final String KEYWORDS = "network, vector, bankflull, width, inundation, vegetation";
+    public static final String CONTACTS = "http://www.hydrologis.com";
+    public static final String AUTHORS = "Silvia Franceschi, Andrea Antonello";
+    public static final String DESCRIPTION = "Calculate median vegetation height and total timber volume of the vegetation on unstable and connected areas of each subbasin.";
+    // VARS DOC END
 
     @Execute
     public void process() throws Exception {
@@ -192,7 +205,7 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
                      * - point is inside the inundated area
                      * and fill the hashmaps with the correspondent positions.
                      */
-                    if (connectivityDouble < connectivityThreshold || preparedFooldingArea.intersects(point)) {
+                    if (connectivityDouble < pConnectivityThreshold || preparedFooldingArea.intersects(point)) {
                         double chmDouble = chmIter.getSampleDouble(c, r, 0);
                         double standDouble = standIter.getSampleDouble(c, r, 0);
                         DescriptiveStatistics summaryHeightStatistics = heightBasin2ValueMap.get(netNum);
@@ -233,7 +246,7 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
             if (summaryHeightStatistics != null) {
                 medianHeight = summaryHeightStatistics.getPercentile(50);
             }
-            
+
             DescriptiveStatistics summaryStandStatistics = standBasin2ValueMap.get(netnum);
             double sumStand = 0.0;
             if (summaryStandStatistics != null) {
@@ -269,48 +282,6 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
         rasterDiff.process();
         GridCoverage2D out = rasterDiff.outRaster;
         return out;
-    }
-
-    public static void main( String[] args ) throws Exception {
-        String inNetPointsShp = "D:/lavori_tmp/gsoc/netpoints_width_bridgesdams_slope_floodwidth.shp";
-        String inInundatedShp = "D:/lavori_tmp/gsoc/floodpolygon_merged.shp";
-        String inFlowRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_flow.asc";
-        String inTcaRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_tca.asc";
-        String inNetRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_netnull.asc";
-        String inDtmRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_dtmfel.asc";
-        String inDsmRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_dsm.asc";
-        String inStandRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_stand_zero.asc";
-        String inSlopeRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_slope.asc";
-        String inConnectivityRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_down_slope_con_log10.asc";
-
-        String outNetnumRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_netnum.asc";
-        String outBasinsRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_basins.asc";
-        String outNetPointsShp = "D:/lavori_tmp/gsoc/netpoints_width_bridgesdams_slope_veg_stand.shp";
-
-        LW09_AreaToNetpointAssociator areaToNetpointAssociator = new LW09_AreaToNetpointAssociator();
-        areaToNetpointAssociator.inNetPoints = OmsVectorReader.readVector(inNetPointsShp);
-        areaToNetpointAssociator.inInundationArea = OmsVectorReader.readVector(inInundatedShp);
-
-        areaToNetpointAssociator.inFlow = OmsRasterReader.readRaster(inFlowRaster);
-        areaToNetpointAssociator.inTca = OmsRasterReader.readRaster(inTcaRaster);
-        areaToNetpointAssociator.inNet = OmsRasterReader.readRaster(inNetRaster);
-        areaToNetpointAssociator.inDtm = OmsRasterReader.readRaster(inDtmRaster);
-        areaToNetpointAssociator.inDsm = OmsRasterReader.readRaster(inDsmRaster);
-        areaToNetpointAssociator.inStand = OmsRasterReader.readRaster(inStandRaster);
-        areaToNetpointAssociator.inSlope = OmsRasterReader.readRaster(inSlopeRaster);
-        areaToNetpointAssociator.inConnectivity = OmsRasterReader.readRaster(inConnectivityRaster);
-
-        areaToNetpointAssociator.process();
-
-        SimpleFeatureCollection outNetPointFC = areaToNetpointAssociator.outNetPoints;
-        OmsVectorWriter.writeVector(outNetPointsShp, outNetPointFC);
-
-        GridCoverage2D outNetnum = areaToNetpointAssociator.outNetnum;
-        OmsRasterWriter.writeRaster(outNetnumRaster, outNetnum);
-
-        GridCoverage2D outBasins = areaToNetpointAssociator.outBasins;
-        OmsRasterWriter.writeRaster(outBasinsRaster, outBasins);
-
     }
 
 }

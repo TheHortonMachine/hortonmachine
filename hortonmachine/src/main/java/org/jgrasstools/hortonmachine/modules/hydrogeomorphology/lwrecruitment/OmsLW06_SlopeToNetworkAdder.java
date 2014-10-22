@@ -21,6 +21,7 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
@@ -28,14 +29,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
-import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -46,28 +43,42 @@ import org.opengis.feature.simple.SimpleFeature;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Add the local slope attribute to the input channel point layer.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("network, vector, point, bankflull, width")
-@Label("HortonMachine/Hydro-Geomorphology/LWRecruitment")
-@Name("LW06_SlopeToNetworkAdder")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
-public class LW06_SlopeToNetworkAdder extends JGTModel implements LWFields {
+@Description(OmsLW06_SlopeToNetworkAdder.DESCRIPTION)
+@Author(name = OmsLW06_SlopeToNetworkAdder.AUTHORS, contact = OmsLW06_SlopeToNetworkAdder.CONTACTS)
+@Keywords(OmsLW06_SlopeToNetworkAdder.KEYWORDS)
+@Label(OmsLW06_SlopeToNetworkAdder.LABEL)
+@Name("_" + OmsLW06_SlopeToNetworkAdder.NAME)
+@Status(OmsLW06_SlopeToNetworkAdder.STATUS)
+@License(OmsLW06_SlopeToNetworkAdder.LICENSE)
+public class OmsLW06_SlopeToNetworkAdder extends JGTModel implements LWFields {
 
-    @Description("The input hierarchy point network layer.")
+    @Description(inNetPoints_DESCR)
     @In
     public SimpleFeatureCollection inNetPoints = null;
 
-    @Description("The input slope raster map")
-    @UI(JGTConstants.FILEIN_UI_HINT)
+    @Description(inSlope_DESCR)
     @In
     public GridCoverage2D inSlope = null;
 
-    @Description("The output points network layer with the additional attribute of local slope.")
+    @Description(outNetPoints_DESCR)
     @Out
     public SimpleFeatureCollection outNetPoints = null;
 
+    // VARS DOC START
+    public static final String outNetPoints_DESCR = "The output points network layer with the additional attribute of local slope.";
+    public static final String inSlope_DESCR = "The input slope raster map";
+    public static final String inNetPoints_DESCR = "The input hierarchy point network layer.";
+    public static final int STATUS = Status.EXPERIMENTAL;
+    public static final String LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String NAME = "lw06_slopetonetworkadder";
+    public static final String LABEL = JGTConstants.HYDROGEOMORPHOLOGY + "/LWRecruitment";
+    public static final String KEYWORDS = "network, vector, point, bankflull, width";
+    public static final String CONTACTS = "http://www.hydrologis.com";
+    public static final String AUTHORS = "Silvia Franceschi, Andrea Antonello";
+    public static final String DESCRIPTION = "Add the local slope attribute to the input channel point layer.";
+    // VARS DOC END
+
+    @Execute
     public void process() throws Exception {
 
         // creates the schema for the output shapefile
@@ -82,7 +93,7 @@ public class LW06_SlopeToNetworkAdder extends JGTModel implements LWFields {
         for( SimpleFeature netFeature : netList ) {
             Geometry geometry = (Geometry) netFeature.getDefaultGeometry();
             Coordinate coordinate = geometry.getCoordinate();
-            
+
             // gets the slope in the correspondent raster cell
             double slope = CoverageUtilities.getValue(inSlope, coordinate);
             // extents and adds the data to the output FC
@@ -92,22 +103,6 @@ public class LW06_SlopeToNetworkAdder extends JGTModel implements LWFields {
         }
         pm.done();
 
-    }
-    public static void main( String[] args ) throws Exception {
-
-        String inNetPoints = "D:/lavori_tmp/gsoc/netpoints_width.shp";
-        String inSlope = "D:/lavori_tmp/gsoc/raster/slope.asc";
-
-        String outNetPoints = "D:/lavori_tmp/gsoc/netpoints_width_bridgesdams_slope.shp";
-
-        LW06_SlopeToNetworkAdder slopeToNetworkAdder = new LW06_SlopeToNetworkAdder();
-        slopeToNetworkAdder.inNetPoints = OmsVectorReader.readVector(inNetPoints);
-        slopeToNetworkAdder.inSlope = OmsRasterReader.readRaster(inSlope);
-
-        slopeToNetworkAdder.process();
-
-        SimpleFeatureCollection outNetPointFC = slopeToNetworkAdder.outNetPoints;
-        OmsVectorWriter.writeVector(outNetPoints, outNetPointFC);
     }
 
 }

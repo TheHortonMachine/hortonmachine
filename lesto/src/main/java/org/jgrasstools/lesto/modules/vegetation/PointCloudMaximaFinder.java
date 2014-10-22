@@ -171,6 +171,7 @@ public class PointCloudMaximaFinder extends JGTModel {
                 }
             }
 
+            dumpVector(outTopsFC, outTops);
         }
     }
 

@@ -34,8 +34,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -46,38 +45,46 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 
-@Description("Creates the equivalent point shapefile for the input hierarchic line shapefile of the network.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("network, vector, point")
-@Label("HortonMachine/Hydro-Geomorphology/LWRecruitment")
-@Name("LW03_NetworkHierarchyToPointsSplitter")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
-public class LW03_NetworkHierarchyToPointsSplitter extends JGTModel {
-
-    @Description("The input hierarchy network layer")
+@Description(OmsLW03_NetworkHierarchyToPointsSplitter.DESCRIPTION)
+@Author(name = OmsLW03_NetworkHierarchyToPointsSplitter.AUTHORS, contact = OmsLW03_NetworkHierarchyToPointsSplitter.CONTACTS)
+@Keywords(OmsLW03_NetworkHierarchyToPointsSplitter.KEYWORDS)
+@Label(OmsLW03_NetworkHierarchyToPointsSplitter.LABEL)
+@Name("_" + OmsLW03_NetworkHierarchyToPointsSplitter.NAME)
+@Status(OmsLW03_NetworkHierarchyToPointsSplitter.STATUS)
+@License(OmsLW03_NetworkHierarchyToPointsSplitter.LICENSE)
+public class OmsLW03_NetworkHierarchyToPointsSplitter extends JGTModel implements LWFields {
+    @Description(inNet_DESCR)
     @In
     public SimpleFeatureCollection inNet = null;
-    
-    @Description("The output points network layer")
+
+    @Description(outNetPoints_DESCR)
     @Out
     public SimpleFeatureCollection outNetPoints = null;
-    
-    
+
+    // VARS DOC START
+    public static final String outNetPoints_DESCR = "The output points network layer";
+    public static final String inNet_DESCR = "The input hierarchy network layer";
+    public static final int STATUS = Status.EXPERIMENTAL;
+    public static final String LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String NAME = "lw03_networkhierarchytopointssplitter";
+    public static final String LABEL = JGTConstants.HYDROGEOMORPHOLOGY + "/LWRecruitment";
+    public static final String KEYWORDS = "network, vector, point";
+    public static final String CONTACTS = "http://www.hydrologis.com";
+    public static final String AUTHORS = "Silvia Franceschi, Andrea Antonello";
+    public static final String DESCRIPTION = "Creates the equivalent point shapefile for the input hierarchic line shapefile of the network.";
+    // VARS DOC END
+
     @Execute
     public void process() throws Exception {
         checkNull(inNet);
-        
-        String LINKID = "linkid";
-        String PFAF = "pfaf";
-        
-        //Creates the list of contained features
+
+        // Creates the list of contained features
         List<SimpleFeature> netList = FeatureUtilities.featureCollectionToList(inNet);
-        
-        //Creates the output feature collection
+
+        // Creates the output feature collection
         DefaultFeatureCollection outNetPointsFC = new DefaultFeatureCollection();
-        
-        //Creates the structure of the output point layer
+
+        // Creates the structure of the output point layer
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("net");
         b.setCRS(inNet.getBounds().getCoordinateReferenceSystem());
@@ -113,26 +120,6 @@ public class LW03_NetworkHierarchyToPointsSplitter extends JGTModel {
 
         }
         outNetPoints = outNetPointsFC;
-    }
-    
-    
-    /**
-     * @param args
-     * @throws Exception 
-     */
-    public static void main( String[] args ) throws Exception {
-
-        String inNet = "D:/lavori_tmp/gsoc/net_attribute.shp";
-        String outNetPoint = "D:/lavori_tmp/gsoc/netpoints.shp";
-        LW03_NetworkHierarchyToPointsSplitter networkHierarchyToPointSplitter = new LW03_NetworkHierarchyToPointsSplitter();
-        networkHierarchyToPointSplitter.inNet = OmsVectorReader.readVector(inNet);
-        
-        networkHierarchyToPointSplitter.process();
-        
-        SimpleFeatureCollection outNetPointFC = networkHierarchyToPointSplitter.outNetPoints;
-        
-        OmsVectorWriter.writeVector(outNetPoint, outNetPointFC);
-        
     }
 
 }

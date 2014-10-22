@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment;
+package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.*;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_LICENSE;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -38,7 +38,7 @@ import org.jgrasstools.hortonmachine.modules.network.networkattributes.OmsNetwor
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords(OMSNETWORKATTRIBUTESBUILDER_KEYWORDS)
 @Label("HortonMachine/Hydro-Geomorphology/LWRecruitment")
-@Name("LW02_NetworkAttributesBuilder")
+@Name("lw02_networkattributesbuilder")
 @Status(Status.EXPERIMENTAL)
 @License(OMSNETWORKATTRIBUTESBUILDER_LICENSE)
 public class LW02_NetworkAttributesBuilder extends JGTModel {
@@ -76,24 +76,7 @@ public class LW02_NetworkAttributesBuilder extends JGTModel {
         networkattributesbuilder.process();
         dumpRaster(networkattributesbuilder.outHack, null);
         dumpVector(networkattributesbuilder.outNet, outNet);
-
     }
 
-    public static void main( String[] args ) throws Exception {
-
-        String inNet = "D:/lavori_tmp/gsoc/raster/net_null.asc";
-        String inFlow = "D:/lavori_tmp/gsoc/raster/flow.asc";
-        String inTca = "D:/lavori_tmp/gsoc/raster/tca.asc";
-        String outNet = "D:/lavori_tmp/gsoc/net_attribute.shp";
-        LW02_NetworkAttributesBuilder networkAttributesBuilder = new LW02_NetworkAttributesBuilder();
-        networkAttributesBuilder.inNet = inNet;
-        networkAttributesBuilder.inFlow = inFlow;
-        networkAttributesBuilder.inTca = inTca;
-        networkAttributesBuilder.outNet = outNet;
-
-        networkAttributesBuilder.process();
-
-
-    }
 
 }
