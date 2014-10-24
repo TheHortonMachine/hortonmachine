@@ -133,8 +133,6 @@ public class LasOnDtmBuildingsExtractor extends JGTModel {
             lasHandler.open();
 
             ReferencedEnvelope3D e = lasHandler.getEnvelope3D();
-            Envelope2D envelope2d = new Envelope2D(e.getCoordinateReferenceSystem(), e.getMinX(), e.getMinY(), e.getWidth(),
-                    e.getHeight());
 
             if (pRasterResolution != null) {
                 OmsRasterReader reader = new OmsRasterReader();
@@ -151,16 +149,18 @@ public class LasOnDtmBuildingsExtractor extends JGTModel {
                 inDtmGC = getRaster(inDtm);
             }
 
+            Envelope2D envelope2d = inDtmGC.getEnvelope2D();
             Polygon regionPolygon = FeatureUtilities.envelopeToPolygon(e);
 
             WritableRaster[] buildingsHolder = new WritableRaster[1];
-            GridCoverage2D newBuildingsRaster = CoverageUtilities.createSubCoverageFromTemplate(inDtmGC, envelope2d, 1.0,
-                    buildingsHolder);
+            GridCoverage2D newBuildingsRaster = CoverageUtilities.createCoverageFromTemplate(inDtmGC, 1.0, buildingsHolder);
             GridGeometry2D gridGeometry = newBuildingsRaster.getGridGeometry();
 
             java.awt.Point p = new java.awt.Point();
             IJGTProgressMonitor pm = new LogProgressMonitor();
+            pm.beginTask("Reading points...", IJGTProgressMonitor.UNKNOWN);
             List<LasRecord> pointsInGeometry = lasHandler.getPointsInGeometry(regionPolygon, true);
+            pm.done();
             pm.beginTask("Buildings filtering...", (int) pointsInGeometry.size());
             for( LasRecord dot : pointsInGeometry ) {
                 Coordinate c = new Coordinate(dot.x, dot.y);
