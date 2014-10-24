@@ -528,28 +528,6 @@ public class GearsMessages {
     public static final String OMSMAPSVIEWER_inVector_DESCRIPTION = "The feature collection to visualize.";
     public static final String OMSMAPSVIEWER_inSld_DESCRIPTION = "The feature collections style layer.";
 
-    public static final String OMSGRIDSGENERATOR_DESCRIPTION = "Generates grid of lines or polygons.";
-    public static final String OMSGRIDSGENERATOR_DOCUMENTATION = "";
-    public static final String OMSGRIDSGENERATOR_KEYWORDS = "Vector, Grid";
-    public static final String OMSGRIDSGENERATOR_LABEL = VECTORPROCESSING;
-    public static final String OMSGRIDSGENERATOR_NAME = "gridgenerator";
-    public static final int OMSGRIDSGENERATOR_STATUS = 40;
-    public static final String OMSGRIDSGENERATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSGRIDSGENERATOR_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSGRIDSGENERATOR_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSGRIDSGENERATOR_inVector_DESCRIPTION = "Optional vector map from which to take the bounds (if supplied, all other bounds related parameter are ignored). This needs pRows and pCols to be defined.";
-    public static final String OMSGRIDSGENERATOR_inRaster_DESCRIPTION = "Optional raster map from which to take the bounds (if supplied, all other bounds related parameter are ignored. This needs pRows and pCols to be defined.";
-    public static final String OMSGRIDSGENERATOR_pLon_DESCRIPTION = "The lower left longitude.";
-    public static final String OMSGRIDSGENERATOR_pLat_DESCRIPTION = "The lower left latitude.";
-    public static final String OMSGRIDSGENERATOR_pWidth_DESCRIPTION = "The grid cell width.";
-    public static final String OMSGRIDSGENERATOR_pHeight_DESCRIPTION = "The grid cell height.";
-    public static final String OMSGRIDSGENERATOR_pRows_DESCRIPTION = "The number of rows.";
-    public static final String OMSGRIDSGENERATOR_pCols_DESCRIPTION = "The number of cols.";
-    public static final String OMSGRIDSGENERATOR_pSpacing_DESCRIPTION = "The vertex spacing to use.";
-    public static final String OMSGRIDSGENERATOR_pType_DESCRIPTION = "Output type: 0 = polygons, 1 = lines, 2 = points (default = 0).";
-    public static final String OMSGRIDSGENERATOR_pCode_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328). Applied in the case the file is missing.";
-    public static final String OMSGRIDSGENERATOR_outMap_DESCRIPTION = "The grid.";
-
     public static final String OMSRASTERCORRECTOR_DESCRIPTION = "Raster corrector module.";
     public static final String OMSRASTERCORRECTOR_DOCUMENTATION = "";
     public static final String OMSRASTERCORRECTOR_KEYWORDS = "IO, Coverage, Raster, Correct, OmsRasterReader";

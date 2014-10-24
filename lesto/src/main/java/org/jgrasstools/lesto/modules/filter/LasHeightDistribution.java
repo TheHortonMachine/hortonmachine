@@ -49,7 +49,7 @@ import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.io.las.ALasDataManager;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.utils.LasRecordElevationComparator;
+import org.jgrasstools.gears.io.las.utils.LasRecordGroundElevationComparator;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.filter.OmsKernelFilter;
@@ -83,22 +83,22 @@ public class LasHeightDistribution extends JGTModel {
     @In
     public String inDem = null;
 
+    @Description("Tiled region to work on.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    @In
+    public String inVector = null;
+
     @Description("Normalization difference threshold in meters.")
     @In
     public double pThres = 2;
 
+    @Description("Minumin percentage of overlap that defines a multilayer.")
+    @In
+    public double pOverlapPerc = 80.0;
+
     @Description("Field name for tile id.")
     @In
     public String fId = "id";
-
-    @Description("Las class to consider (if unset, all are considered).")
-    @In
-    public double[] pClass = null;
-
-    @Description("Optional tiled region of interest")
-    @UI(JGTConstants.FILEIN_UI_HINT)
-    @In
-    public String inVector = null;
 
     @Description("Optional folder to dump charts in.")
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
@@ -125,6 +125,7 @@ public class LasHeightDistribution extends JGTModel {
             }
         }
 
+        double percentageOverlap = pOverlapPerc / 100.0;
         File indexFile = new File(inIndexFile);
 
         SimpleFeatureCollection tilesFC = getVector(inVector);
@@ -136,13 +137,13 @@ public class LasHeightDistribution extends JGTModel {
         WritableRaster[] finalCoverageWRH = new WritableRaster[1];
         GridCoverage2D outCatsGC = CoverageUtilities.createCoverageFromTemplate(inDemGC, JGTConstants.doubleNovalue,
                 finalCoverageWRH);
+        WritableRandomIter finalIter = CoverageUtilities.getWritableRandomIterator(finalCoverageWRH[0]);
 
         try (ALasDataManager dataManager = ALasDataManager.getDataManager(indexFile, inDemGC, pThres, null)) {
             dataManager.open();
-            dataManager.setClassesConstraint(pClass);
 
-            pm.beginTask("Processing tiles...", tilesMates.size());
             for( int i = 0; i < tilesMates.size(); i++ ) {
+                pm.message("Processing tile: " + i + "/" + tilesMates.size());
                 FeatureMate tileMate = tilesMates.get(i);
                 String id = tileMate.getAttribute(fId, String.class);
                 Geometry tileGeom = tileMate.getGeometry();
@@ -150,26 +151,34 @@ public class LasHeightDistribution extends JGTModel {
                 Envelope geomEnvelope = tileGeom.getEnvelopeInternal();
                 ReferencedEnvelope refEnvelope = new ReferencedEnvelope(geomEnvelope, crs);
                 Envelope2D tileEnvelope = new Envelope2D(refEnvelope);
+                WritableRaster[] tmpWrH = new WritableRaster[1];
+                GridCoverage2D tmp = CoverageUtilities
+                        .createSubCoverageFromTemplate(inDemGC, tileEnvelope, doubleNovalue, tmpWrH);
+                RegionMap tileRegionMap = CoverageUtilities.getRegionParamsFromGridCoverage(tmp);
+                GridGeometry2D tileGridGeometry = tmp.getGridGeometry();
 
                 List<LasRecord> pointsListForTile = dataManager.getPointsInGeometry(tileGeom, true);
                 // do something with the data
+
+                if (pointsListForTile.size() == 0) {
+                    pm.errorMessage("No points found in tile: " + id);
+                    continue;
+                }
+                if (pointsListForTile.size() < 2) {
+                    pm.errorMessage("Not enough points found in tile: " + id);
+                    continue;
+                }
                 List<double[]> negativeRanges = analyseNegativeLayerRanges(id, pointsListForTile);
                 List<GridCoverage2D> rangeCoverages = new ArrayList<GridCoverage2D>();
 
-                RegionMap tileRegionMap = null;
-                GridGeometry2D tileGridGeometry = null;
                 for( double[] range : negativeRanges ) {
-
                     List<LasRecord> pointsInVerticalRange = ALasDataManager.getPointsInVerticalRange(pointsListForTile, range[0],
-                            range[1]);
+                            range[1], true);
 
                     WritableRaster[] wrH = new WritableRaster[1];
                     GridCoverage2D tmpCoverage = CoverageUtilities.createSubCoverageFromTemplate(inDemGC, tileEnvelope,
                             doubleNovalue, wrH);
                     rangeCoverages.add(tmpCoverage);
-                    if (tileRegionMap == null)
-                        tileRegionMap = CoverageUtilities.getRegionParamsFromGridCoverage(tmpCoverage);
-                    tileGridGeometry = tmpCoverage.getGridGeometry();
 
                     WritableRandomIter tmpIter = CoverageUtilities.getWritableRandomIterator(wrH[0]);
 
@@ -184,15 +193,9 @@ public class LasHeightDistribution extends JGTModel {
                         tmpIter.setSample(gp.x, gp.y, 0, count + 1);
                     }
 
-                    // PrintUtilities.printCoverageData(tmpCoverage);
-                    // System.out.println("In range: " + range[0] + "/" + range[1] +
-                    // " points num = " +
-                    // pointsInVerticalRange.size());
+                    tmpIter.done();
 
                 }
-                // System.out.println("**************************************");
-                // System.out.println("TILE DONE");
-                // System.out.println("**************************************");
 
                 /*
                  * categorize in non forest/single/double layer
@@ -206,7 +209,7 @@ public class LasHeightDistribution extends JGTModel {
                     for( int j = 0; j < rangeCoverages.size() - 1; j++ ) {
                         GridCoverage2D cov1 = rangeCoverages.get(j);
                         GridCoverage2D cov2 = rangeCoverages.get(j + 1);
-                        if (overlapForPercentage(cov1, cov2, 0.5)) {
+                        if (overlapForPercentage(cov1, cov2, percentageOverlap)) {
                             isDoubleLayered = true;
                             break;
                         }
@@ -221,7 +224,6 @@ public class LasHeightDistribution extends JGTModel {
                  */
                 GridGeometry2D gridGeometry = outCatsGC.getGridGeometry();
                 // RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(outCats);
-                WritableRandomIter finalIter = CoverageUtilities.getWritableRandomIterator(finalCoverageWRH[0]);
                 double[] gridValue = new double[1];
                 int cols = tileRegionMap.getCols();
                 int rows = tileRegionMap.getRows();
@@ -252,12 +254,25 @@ public class LasHeightDistribution extends JGTModel {
                         finalIter.setSample(worldPositionCats.x, worldPositionCats.y, 0, value);
                     }
                 }
-                pm.worked(1);
             }
-            pm.done();
+
         }
 
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(outCatsGC);
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        for( int c = 0; c < cols; c++ ) {
+            for( int r = 0; r < rows; r++ ) {
+                double value = finalIter.getSampleDouble(c, r, 0);
+                if (isNovalue(value)) {
+                    finalIter.setSample(c, r, 0, 0.0);
+                }
+            }
+        }
+        finalIter.done();
+
         dumpRaster(outCatsGC, outCats);
+
     }
 
     private boolean overlapForPercentage( GridCoverage2D cov1, GridCoverage2D cov2, double forPercentage ) {
@@ -289,14 +304,17 @@ public class LasHeightDistribution extends JGTModel {
             }
         }
 
+        cov1Iter.done();
+        cov2Iter.done();
+
         if (overlapping == 0) {
             return false;
         }
-        double perc1 = valid1 / overlapping;
+        double perc1 = overlapping / valid1;
         if (perc1 > forPercentage) {
             return true;
         }
-        double perc2 = valid2 / overlapping;
+        double perc2 = overlapping / valid2;
         if (perc2 > forPercentage) {
             return true;
         }
@@ -304,7 +322,7 @@ public class LasHeightDistribution extends JGTModel {
     }
 
     private List<double[]> analyseNegativeLayerRanges( String id, List<LasRecord> pointsList ) throws Exception {
-        Collections.sort(pointsList, new LasRecordElevationComparator());
+        Collections.sort(pointsList, new LasRecordGroundElevationComparator());
 
         double[] pointsArray = new double[pointsList.size()];
         for( int i = 0; i < pointsArray.length; i++ ) {
@@ -439,6 +457,9 @@ public class LasHeightDistribution extends JGTModel {
         double min = values[0];
         double max = values[values.length - 1];
         int num = (int) Math.ceil((max - min) / binSize);
+        if (num == 0) {
+            num = 1;
+        }
         double from = min;
         double to = min + binSize;
         double[][] result = new double[2][num];
@@ -458,18 +479,5 @@ public class LasHeightDistribution extends JGTModel {
         }
         return result;
     }
-
-    // public static void main( String[] args ) throws Exception {
-    //
-    // String base = UNIBZDATAFOLDER;
-    // HeightDistributionReader r = new HeightDistributionReader();
-    // r.inIndexFile = base + "Dati_LiDAR/LAS_Classificati/index.lasfolder";
-    // r.inVector = getVector(base + "output_shp/tiles2.shp");
-    // r.inDem = getRaster(base + "grassdb/unibz_utm32n/testarea/cell/dtm");
-    // r.pClass = new double[]{3};
-    // r.process();
-    // GridCoverage2D outCats = r.outCats;
-    // dumpRaster(outCats, base + "grassdb/unibz_utm32n/testarea/cell/forestcats_c3");
-    // }
 
 }

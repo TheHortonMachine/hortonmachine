@@ -77,7 +77,7 @@ public class FlightLinesExtractor extends JGTModel {
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In
     public String outFolder;
-
+    
     @Execute
     public void process() throws Exception {
         checkNull(inLas, outFolder);
@@ -93,6 +93,7 @@ public class FlightLinesExtractor extends JGTModel {
 
         File lasFile = new File(inLas);
         ALasReader reader = ALasReader.getReader(lasFile, null);
+        reader.open();
         reader.setOverrideGpsTimeType(timeType);
         ILasHeader header = reader.getHeader();
         int gpsTimeType = header.getGpsTimeType();

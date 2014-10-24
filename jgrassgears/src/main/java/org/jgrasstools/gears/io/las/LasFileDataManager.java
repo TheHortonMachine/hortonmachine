@@ -46,6 +46,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
+import com.vividsolutions.jts.index.strtree.STRtree;
 
 /**
  * A class that manages las folder data.
@@ -65,6 +66,7 @@ class LasFileDataManager extends ALasDataManager {
     private ALasReader lasReader;
     private ILasHeader lasHeader;
     private boolean isOpen;
+    private STRtree pointsTree;
 
     /**
      * Constructor.
@@ -114,68 +116,89 @@ class LasFileDataManager extends ALasDataManager {
         isOpen = true;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public synchronized List<LasRecord> getPointsInGeometry( Geometry checkGeom, boolean doOnlyEnvelope ) throws Exception {
         checkOpen();
 
         ArrayList<LasRecord> pointsListForTile = new ArrayList<LasRecord>();
-
-        ReferencedEnvelope overallEnvelope = getOverallEnvelope();
-        if (doOnlyEnvelope && overallEnvelope.covers(checkGeom.getEnvelopeInternal())) {
-            System.out.println("READING STRAIGHT");
-            // read it straight
-            while( lasReader.hasNextPoint() ) {
-                LasRecord lasDot = lasReader.getNextPoint();
-                if (!doAccept(lasDot)) {
+        Envelope checkEnvelope = checkGeom.getEnvelopeInternal();
+        if (pointsTree != null) {
+            List<LasRecord> pointsList = pointsTree.query(checkEnvelope);
+            PreparedGeometry preparedGeometry = null;
+            if (!doOnlyEnvelope) {
+                preparedGeometry = PreparedGeometryFactory.prepare(checkGeom);
+            }
+            for( LasRecord lasDot : pointsList ) {
+                Coordinate c = new Coordinate(lasDot.x, lasDot.y);
+                if (!checkEnvelope.contains(c)) {
+                    continue;
+                }
+                if (!doOnlyEnvelope && !preparedGeometry.contains(gf.createPoint(c))) {
                     continue;
                 }
                 pointsListForTile.add(lasDot);
             }
         } else {
-
-            Envelope env = checkGeom.getEnvelopeInternal();
-            PreparedGeometry preparedGeometry = null;
-            if (!doOnlyEnvelope) {
-                preparedGeometry = PreparedGeometryFactory.prepare(checkGeom);
-            }
-
-            while( lasReader.hasNextPoint() ) {
-                LasRecord lasDot = lasReader.getNextPoint();
-                if (!doAccept(lasDot)) {
-                    continue;
-                }
-                Coordinate c = new Coordinate(lasDot.x, lasDot.y);
-                if (!env.contains(c)) {
-                    continue;
-                }
-
-                if (inDem != null) {
-                    // check geom instead of only envelope?
-                    if (!doOnlyEnvelope && !preparedGeometry.contains(gf.createPoint(c))) {
+            pointsTree = new STRtree();
+            ReferencedEnvelope overallEnvelope = getOverallEnvelope();
+            if (doOnlyEnvelope && checkEnvelope.covers(overallEnvelope)) {
+                // read it straight
+                while( lasReader.hasNextPoint() ) {
+                    LasRecord lasDot = lasReader.getNextPoint();
+                    if (!doAccept(lasDot)) {
                         continue;
                     }
-                    double value = CoverageUtilities.getValue(inDem, lasDot.x, lasDot.y);
-                    if (JGTConstants.isNovalue(value)) {
-                        continue;
-                    }
-                    double height = lasDot.z - value;
-                    if (height > elevThreshold) {
-                        lasDot.groundElevation = height;
-                        pointsListForTile.add(lasDot);
-                    }
-                } else {
-                    if (!doOnlyEnvelope && !preparedGeometry.contains(gf.createPoint(c))) {
-                        continue;
-                    }
+                    pointsTree.insert(new Envelope(new Coordinate(lasDot.x, lasDot.y)), lasDot);
                     pointsListForTile.add(lasDot);
                 }
+            } else {
+
+                Envelope env = checkGeom.getEnvelopeInternal();
+                PreparedGeometry preparedGeometry = null;
+                if (!doOnlyEnvelope) {
+                    preparedGeometry = PreparedGeometryFactory.prepare(checkGeom);
+                }
+
+                while( lasReader.hasNextPoint() ) {
+                    LasRecord lasDot = lasReader.getNextPoint();
+                    if (!doAccept(lasDot)) {
+                        continue;
+                    }
+                    Coordinate c = new Coordinate(lasDot.x, lasDot.y);
+                    pointsTree.insert(new Envelope(c), lasDot);
+                    if (!env.contains(c)) {
+                        continue;
+                    }
+
+                    if (inDem != null) {
+                        // check geom instead of only envelope?
+                        if (!doOnlyEnvelope && !preparedGeometry.contains(gf.createPoint(c))) {
+                            continue;
+                        }
+                        double value = CoverageUtilities.getValue(inDem, lasDot.x, lasDot.y);
+                        if (JGTConstants.isNovalue(value)) {
+                            continue;
+                        }
+                        double height = lasDot.z - value;
+                        if (height > elevThreshold) {
+                            lasDot.groundElevation = height;
+                            pointsListForTile.add(lasDot);
+                        }
+                    } else {
+                        if (!doOnlyEnvelope && !preparedGeometry.contains(gf.createPoint(c))) {
+                            continue;
+                        }
+                        pointsListForTile.add(lasDot);
+                    }
+                }
+
             }
-
+            close();
         }
-        close();
-
         return pointsListForTile;
     }
+
     @Override
     public synchronized List<Geometry> getEnvelopesInGeometry( Geometry checkGeom, boolean doOnlyEnvelope, double[] minMaxZ )
             throws Exception {

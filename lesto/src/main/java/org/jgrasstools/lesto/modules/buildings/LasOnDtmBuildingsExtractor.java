@@ -54,6 +54,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.r.morpher.OmsMorpher;
 import org.jgrasstools.gears.modules.v.smoothing.OmsLineSmootherMcMaster;
 import org.jgrasstools.gears.modules.v.vectorize.OmsVectorizer;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -129,7 +130,7 @@ public class LasOnDtmBuildingsExtractor extends JGTModel {
 
         SimpleFeatureCollection buildingsFC = null;
         GridCoverage2D inDtmGC = null;
-        try (ALasDataManager lasHandler = ALasDataManager.getDataManager(new File(inLas), null, 0, null)) {
+        try (ALasDataManager lasHandler = ALasDataManager.getDataManager(new File(inLas), inDtmGC, 0, null)) {
             lasHandler.open();
 
             ReferencedEnvelope3D e = lasHandler.getEnvelope3D();
@@ -147,10 +148,12 @@ public class LasOnDtmBuildingsExtractor extends JGTModel {
                 inDtmGC = reader.outRaster;
             } else {
                 inDtmGC = getRaster(inDtm);
+                RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDtmGC);
+                pRasterResolution = regionMap.getXres();
             }
 
             Envelope2D envelope2d = inDtmGC.getEnvelope2D();
-            Polygon regionPolygon = FeatureUtilities.envelopeToPolygon(e);
+            Polygon regionPolygon = FeatureUtilities.envelopeToPolygon(envelope2d);
 
             WritableRaster[] buildingsHolder = new WritableRaster[1];
             GridCoverage2D newBuildingsRaster = CoverageUtilities.createCoverageFromTemplate(inDtmGC, 1.0, buildingsHolder);
@@ -196,45 +199,43 @@ public class LasOnDtmBuildingsExtractor extends JGTModel {
 
             buildingsFC = buildingsVectorizer.outVector;
             dumpVector(buildingsFC, outBuildings);
-        }
-        if (doSmoothing && outCleanBuildings != null) {
-            // smooth
-            SimpleFeatureCollection smoothedFC = smoothBuildings(pDensifyResolution, buildingsFC);
+            if (doSmoothing && outCleanBuildings != null) {
+                // smooth
+                SimpleFeatureCollection smoothedFC = smoothBuildings(pDensifyResolution, buildingsFC);
 
-            // remove trees
-            DefaultFeatureCollection removedAndSmoothedFC = removeNonBuildings(smoothedFC, inLas, inDtmGC, pBuildingsBuffer);
+                // remove trees
+                DefaultFeatureCollection removedAndSmoothedFC = removeNonBuildings(lasHandler, smoothedFC, inDtmGC,
+                        pBuildingsBuffer);
 
-            dumpVector(removedAndSmoothedFC, outCleanBuildings);
+                dumpVector(removedAndSmoothedFC, outCleanBuildings);
+            }
         }
 
     }
 
-    private DefaultFeatureCollection removeNonBuildings( SimpleFeatureCollection buildingsFC, String lasPath, GridCoverage2D dem,
-            double buildingsBuffer ) throws Exception {
+    private DefaultFeatureCollection removeNonBuildings( ALasDataManager lasHandler, SimpleFeatureCollection buildingsFC,
+            GridCoverage2D dem, double buildingsBuffer ) throws Exception {
         final List<SimpleFeature> buildingsList = FeatureUtilities.featureCollectionToList(buildingsFC);
 
-        try (final ALasDataManager lasHandler = ALasDataManager.getDataManager(new File(lasPath), dem, 0, null)) {
-            lasHandler.open();
-            final List<SimpleFeature> checkedBuildings = new ArrayList<SimpleFeature>();
-            pm.beginTask("Removing buildings...", buildingsList.size());
-            for( int i = 0; i < buildingsList.size(); i++ ) {
-                SimpleFeature building = buildingsList.get(i);
-                Geometry buildingGeom = (Geometry) building.getDefaultGeometry();
+        final List<SimpleFeature> checkedBuildings = new ArrayList<SimpleFeature>();
+        pm.beginTask("Removing buildings...", buildingsList.size());
+        for( int i = 0; i < buildingsList.size(); i++ ) {
+            SimpleFeature building = buildingsList.get(i);
+            Geometry buildingGeom = (Geometry) building.getDefaultGeometry();
 
-                Geometry bufferedGeom = buildingGeom.buffer(buildingsBuffer);
-                List<LasRecord> points = lasHandler.getPointsInGeometry(bufferedGeom, false);
-                int percOfOnes = checkReturnNum(points, bufferedGeom);
-                if (percOfOnes >= 96) {
-                    checkedBuildings.add(building);
-                }
-                pm.worked(1);
+            Geometry bufferedGeom = buildingGeom.buffer(buildingsBuffer);
+            List<LasRecord> points = lasHandler.getPointsInGeometry(bufferedGeom, false);
+            int percOfOnes = checkReturnNum(points, bufferedGeom);
+            if (percOfOnes >= 96) {
+                checkedBuildings.add(building);
             }
-            pm.done();
-
-            DefaultFeatureCollection fc = new DefaultFeatureCollection();
-            fc.addAll(checkedBuildings);
-            return fc;
+            pm.worked(1);
         }
+        pm.done();
+
+        DefaultFeatureCollection fc = new DefaultFeatureCollection();
+        fc.addAll(checkedBuildings);
+        return fc;
     }
 
     private int checkReturnNum( List<LasRecord> points, Geometry bufferedGeom ) {
@@ -308,5 +309,4 @@ public class LasOnDtmBuildingsExtractor extends JGTModel {
                 newGeomsList.toArray(GeometryUtilities.TYPE_POLYGON));
         return fc;
     }
-
 }

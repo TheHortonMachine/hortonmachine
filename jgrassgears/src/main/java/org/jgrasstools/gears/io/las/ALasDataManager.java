@@ -308,13 +308,23 @@ public abstract class ALasDataManager implements AutoCloseable {
      * @param pointsList the list os {@link org.jgrasstools.gears.io.las.core.LasRecord points}.
      * @param min the min value of the range.
      * @param max the max value of the range.
+     * @param isGroundElev if <code>true</code>, ground elevation is used instead of z.
      * @return the points contained in the range.
      */
-    public static List<LasRecord> getPointsInVerticalRange( List<LasRecord> pointsList, double min, double max ) {
+    public static List<LasRecord> getPointsInVerticalRange( List<LasRecord> pointsList, double min, double max,
+            boolean isGroundElev ) {
         ArrayList<LasRecord> pointsListInVertical = new ArrayList<LasRecord>();
-        for( LasRecord lasRecord : pointsList ) {
-            if (NumericsUtilities.isBetween(lasRecord.z, min, max)) {
-                pointsListInVertical.add(lasRecord);
+        if (!isGroundElev) {
+            for( LasRecord lasRecord : pointsList ) {
+                if (NumericsUtilities.isBetween(lasRecord.z, min, max)) {
+                    pointsListInVertical.add(lasRecord);
+                }
+            }
+        } else {
+            for( LasRecord lasRecord : pointsList ) {
+                if (NumericsUtilities.isBetween(lasRecord.groundElevation, min, max)) {
+                    pointsListInVertical.add(lasRecord);
+                }
             }
         }
         return pointsListInVertical;
