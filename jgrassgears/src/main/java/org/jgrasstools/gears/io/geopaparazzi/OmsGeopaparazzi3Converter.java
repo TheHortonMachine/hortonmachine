@@ -112,10 +112,12 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
 
         File geopapFolderFile = new File(inGeopaparazzi);
         File geopapDatabaseFile = new File(geopapFolderFile, "geopaparazzi.db");
-
         if (!geopapDatabaseFile.exists()) {
-            throw new ModelsIllegalargumentException(
-                    "The geopaparazzi database file (geopaparazzi.db) is missing. Check the inserted path.", this, pm);
+            geopapDatabaseFile = new File(geopapFolderFile, "geopaparazzi3.db");
+            if (!geopapDatabaseFile.exists()) {
+                throw new ModelsIllegalargumentException(
+                        "The geopaparazzi database file (geopaparazzi.db) is missing. Check the inserted path.", this, pm);
+            }
         }
 
         File outputFolderFile = new File(outData);
@@ -633,6 +635,5 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
         public List<GpsPoint> points = new ArrayList<GpsPoint>();
 
     }
-
 
 }
