@@ -22,8 +22,10 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
+import oms3.annotations.Range;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 import org.jgrasstools.gears.JGrassGears;
 import org.jgrasstools.gears.libs.modules.ClassField;
@@ -152,6 +154,9 @@ public class Modules {
 
                 classNames.add(moduleName);
 
+                if (moduleName.equals("Ab")) {
+                    System.out.println();
+                }
                 List<ClassField> tmpfields = new ArrayList<ClassField>();
                 Object annotatedObject = moduleClass.newInstance();
                 ComponentAccess cA = new ComponentAccess(annotatedObject);
@@ -175,11 +180,26 @@ public class Modules {
                     cf.fieldClass = fieldClass;
                     cf.parentClass = moduleClass;
                     cf.parentClassStatus = statusString;
+                    UI uiAnnotation = field.getAnnotation(UI.class);
+                    if (uiAnnotation != null) {
+                        cf.uiString = uiAnnotation.value();
+                    }
+                    Unit unitAnnotation = field.getAnnotation(Unit.class);
+                    if (unitAnnotation != null) {
+                        cf.unitsString = unitAnnotation.value();
+                    }
+                    Range rangeAnnotation = field.getAnnotation(Range.class);
+                    if (rangeAnnotation != null) {
+                        double min = rangeAnnotation.min();
+                        double max = rangeAnnotation.max();
+                        cf.rangeString = min + "," + max;
+                    }
                     if (!fieldNamesList.contains(name)) {
                         fieldNamesList.add(name);
                     }
-                    tmpfields.add(cf);
-
+                    if (!tmpfields.contains(cf)) {
+                        tmpfields.add(cf);
+                    }
                 }
                 Collection<Access> outputs = cA.outputs();
                 for( Access access : outputs ) {
@@ -204,7 +224,9 @@ public class Modules {
                     if (!fieldNamesList.contains(name)) {
                         fieldNamesList.add(name);
                     }
-                    tmpfields.add(cf);
+                    if (!tmpfields.contains(cf)) {
+                        tmpfields.add(cf);
+                    }
                 }
                 moduleName2Fields.put(moduleName, tmpfields);
             }
