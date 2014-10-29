@@ -59,6 +59,8 @@ public class Generator {
         for( String className : allClasses ) {
             Class< ? > clazz = moduleName2Class.get(className);
             String builderAndConfigName = className + "Builder";
+            String newClassCanonicalName = "org.jgrasstools.zoowps." + className + "Wps";
+            String newClassSimpleName = className + "Wps";
 
             StringBuilder sb = new StringBuilder();
             sb.append("[" + builderAndConfigName + "]").append("\n");
@@ -74,7 +76,6 @@ public class Generator {
             sb.append(" processVersion = 1").append("\n");
             sb.append(" storeSupported = true").append("\n");
             sb.append(" statusSupported = true").append("\n");
-            String newClassCanonicalName = clazz.getCanonicalName() + "Wps";
             sb.append(" serviceProvider = " + newClassCanonicalName).append("\n");
             sb.append(" serviceType = Java").append("\n");
             sb.append(" <MetaData>").append("\n");
@@ -131,6 +132,68 @@ public class Generator {
 
             File outConfigFile = new File(configFolderFile, builderAndConfigName + ".zcfg");
             FileUtilities.writeFile(sb.toString(), outConfigFile);
+
+            // GENERATE CLASS
+            sb = new StringBuilder();
+            sb.append("// THIS FILE IS GENERATED, DO NOT EDIT, IT WILL BE OVERWRITTEN \n");
+            sb.append("package org.jgrasstools.zoowps; \n");
+            sb.append(" \n");
+            sb.append("import java.util.Collection; \n");
+            sb.append("import java.util.HashMap; \n");
+            sb.append(" \n");
+            sb.append("import oms3.Access; \n");
+            sb.append("import oms3.ComponentAccess; \n");
+            sb.append("import oms3.annotations.Execute; \n");
+            sb.append("import oms3.annotations.Finalize; \n");
+            sb.append("import oms3.annotations.Initialize; \n");
+            sb.append(" \n");
+            sb.append("import org.geotools.process.ProcessException; \n");
+            sb.append("import org.jgrasstools.modules." + className + "; \n");
+            sb.append(" \n");
+            sb.append("public class " + newClassSimpleName + " { \n");
+            sb.append("    public static int " + builderAndConfigName + "( HashMap conf, HashMap inputs, HashMap outputs ) { \n");
+            sb.append("        try { \n");
+            sb.append("            " + className + " tmpModule = new " + className + "(); \n");
+            sb.append(" \n");
+            sb.append("            // set the inputs to the model \n");
+            sb.append("            ComponentAccess.setInputData(inputs, tmpModule, null); \n");
+            sb.append(" \n");
+            sb.append("            // trigger execution of the module \n");
+            sb.append("            ComponentAccess.callAnnotated(tmpModule, Initialize.class, true); \n");
+            sb.append("            ComponentAccess.callAnnotated(tmpModule, Execute.class, false); \n");
+            sb.append("            ComponentAccess.callAnnotated(tmpModule, Finalize.class, true); \n");
+            sb.append(" \n");
+            sb.append("            // get the results \n");
+            sb.append("            ComponentAccess cA = new ComponentAccess(tmpModule); \n");
+            sb.append("            Collection<Access> outputsCollection = cA.outputs(); \n");
+            sb.append(" \n");
+            sb.append("            // and put them into the output map \n");
+            sb.append("            HashMap<String, Object> outputMap = new HashMap<String, Object>(); \n");
+            sb.append("            for( Access access : outputsCollection ) { \n");
+            sb.append("                try { \n");
+            sb.append("                    String fieldName = access.getField().getName(); \n");
+            sb.append("                    Object fieldValue = access.getFieldValue(); \n");
+            sb.append("                    outputMap.put(fieldName, fieldValue); \n");
+            sb.append("                } catch (Exception e) { \n");
+            sb.append("                    throw new ProcessException(e.getLocalizedMessage()); \n");
+            sb.append("                } \n");
+            sb.append("            } \n");
+            sb.append(" \n");
+            sb.append("            outputs.put(\"Result\", outputMap); \n");
+            sb.append("        } catch (Exception e) { \n");
+            sb.append("            e.printStackTrace(); \n");
+            sb.append("            outputs.clear(); \n");
+            sb.append("            outputs.put(\"Result\", \"ERROR: \" + e.getLocalizedMessage()); \n");
+            sb.append("            return 4; \n");
+            sb.append("        } \n");
+            sb.append("        return 3; \n");
+            sb.append("    } \n");
+            sb.append("} \n");
+            sb.append(" \n");
+
+            File outJavaFile = new File(classesPackageFile, newClassSimpleName + ".java");
+            FileUtilities.writeFile(sb.toString(), outJavaFile);
+
         }
 
     }
