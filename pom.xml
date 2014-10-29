@@ -23,6 +23,7 @@
         <module>jgrassgears</module>
         <module>hortonmachine</module>
         <module>lesto</module>
+        <module>zoowps</module>
         <module>grass</module>
     <module>modules</module>
   </modules>
