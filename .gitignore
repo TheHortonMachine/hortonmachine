@@ -11,3 +11,6 @@ target
 .directory
 .idea
 *.iml
+
+zoowps/src/main/java/org/jgrasstools/zoowps/*.java
+zoowps/config/
