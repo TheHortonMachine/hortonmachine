@@ -82,6 +82,8 @@ public class Generator {
             sb.append("   title = " + descriptionStr).append("\n");
             sb.append(" </MetaData>").append("\n");
 
+
+            sb.append(" <DataInputs>").append("\n");
             List<ClassField> fieldsList = moduleName2Fields.get(className);
             for( ClassField classField : fieldsList ) {
                 String fieldName = classField.fieldName;
@@ -99,7 +101,6 @@ public class Generator {
                     }
                 }
 
-                sb.append(" <DataInputs>").append("\n");
                 sb.append("  [" + fieldName + "]").append("\n");
                 sb.append("   Title = " + outputPrefix + fieldDescription).append("\n");
                 sb.append("   Abstract = " + outputPrefix + fieldDescription).append("\n");
@@ -117,18 +118,18 @@ public class Generator {
                 }
                 sb.append("    </Default>").append("\n");
                 sb.append("   </LiteralData>").append("\n");
-                sb.append(" </DataInputs>").append("\n");
-                // sb.append(" <DataOutputs>");
-                // sb.append("  [Result]");
-                // sb.append("   Title = The hello string");
-                // sb.append("   Abstract = The Hello message string.");
-                // sb.append("   <LiteralOutput>");
-                // sb.append("    DataType = string");
-                // sb.append("    <Default>");
-                // sb.append("    </Default>");
-                // sb.append("   </LiteralOutput>");
-                // sb.append(" </DataOutputs>  ");
             }
+            sb.append(" </DataInputs>").append("\n");
+            // sb.append(" <DataOutputs>");
+            // sb.append("  [Result]");
+            // sb.append("   Title = The hello string");
+            // sb.append("   Abstract = The Hello message string.");
+            // sb.append("   <LiteralOutput>");
+            // sb.append("    DataType = string");
+            // sb.append("    <Default>");
+            // sb.append("    </Default>");
+            // sb.append("   </LiteralOutput>");
+            // sb.append(" </DataOutputs>  ");
 
             File outConfigFile = new File(configFolderFile, builderAndConfigName + ".zcfg");
             FileUtilities.writeFile(sb.toString(), outConfigFile);

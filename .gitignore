@@ -13,4 +13,5 @@ target
 *.iml
 
 zoowps/src/main/java/org/jgrasstools/zoowps/*Wps.java
+zoowps/src/main/java/*Wps.java
 zoowps/config/*.zcfg
