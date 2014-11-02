@@ -42,7 +42,11 @@ public class Generator {
     private static final String EMPTY_DOC = " - ";
 
     public static void generate() throws IOException {
+        boolean doInDefaultPackage = true;
         File classesPackageFile = new File("./src/main/java/org/jgrasstools/zoowps");
+        if (doInDefaultPackage) {
+            classesPackageFile = new File("./src/main/java");
+        }
         if (!classesPackageFile.exists()) {
             throw new IOException("Output package doesn't exist: " + classesPackageFile.getAbsolutePath());
         }
@@ -60,19 +64,27 @@ public class Generator {
             Class< ? > clazz = moduleName2Class.get(className);
             String builderAndConfigName = className + "Builder";
             String newClassCanonicalName = "org.jgrasstools.zoowps." + className + "Wps";
+            if (doInDefaultPackage) {
+                newClassCanonicalName = className + "Wps";
+            }
             String newClassSimpleName = className + "Wps";
 
             StringBuilder sb = new StringBuilder();
             sb.append("[" + builderAndConfigName + "]").append("\n");
             Description description = clazz.getAnnotation(Description.class);
             String descriptionStr = description.value();
-            sb.append(" Title = " + descriptionStr).append("\n");
-            Documentation documentation = clazz.getAnnotation(Documentation.class);
-            String documentationStr = EMPTY_DOC;
-            if (documentation != null && !documentation.value().endsWith("html")) {
-                documentationStr = documentation.value();
-            }
-            sb.append(" Abstract = " + documentationStr).append("\n");
+
+            sb.append(" Title = " + className).append("\n");
+            sb.append(" Abstract = " + descriptionStr).append("\n");
+
+            // sb.append(" Title = " + descriptionStr).append("\n");
+            // Documentation documentation = clazz.getAnnotation(Documentation.class);
+            // String documentationStr = EMPTY_DOC;
+            // if (documentation != null && !documentation.value().endsWith("html")) {
+            // documentationStr = documentation.value();
+            // }
+            // sb.append(" Abstract = " + documentationStr).append("\n");
+
             sb.append(" processVersion = 1").append("\n");
             sb.append(" storeSupported = true").append("\n");
             sb.append(" statusSupported = true").append("\n");
@@ -81,7 +93,6 @@ public class Generator {
             sb.append(" <MetaData>").append("\n");
             sb.append("   title = " + descriptionStr).append("\n");
             sb.append(" </MetaData>").append("\n");
-
 
             sb.append(" <DataInputs>").append("\n");
             List<ClassField> fieldsList = moduleName2Fields.get(className);
@@ -137,7 +148,8 @@ public class Generator {
             // GENERATE CLASS
             sb = new StringBuilder();
             sb.append("// THIS FILE IS GENERATED, DO NOT EDIT, IT WILL BE OVERWRITTEN \n");
-            sb.append("package org.jgrasstools.zoowps; \n");
+            if (!doInDefaultPackage)
+                sb.append("package org.jgrasstools.zoowps; \n");
             sb.append(" \n");
             sb.append("import java.util.Collection; \n");
             sb.append("import java.util.HashMap; \n");
