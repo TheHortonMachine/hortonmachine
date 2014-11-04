@@ -17,28 +17,7 @@
  */
 package org.jgrasstools.gears.modules.v.vectorconverter;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_DOCUMENTATION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_doBbox_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_doHeader_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_doInfo_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inFile_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inPolygons_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_outFile_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pClasses_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pImpulses_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pIntensityrange_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pSouth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pWest_DESCRIPTION;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.VECTORPROCESSING;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.dEq;
 
 import java.io.BufferedWriter;
@@ -91,18 +70,17 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
-@Description(OMSLASCONVERTER_DESCRIPTION)
-@Documentation(OMSLASCONVERTER_DOCUMENTATION)
-@Author(name = OMSLASCONVERTER_AUTHORNAMES, contact = OMSLASCONVERTER_AUTHORCONTACTS)
-@Keywords(OMSLASCONVERTER_KEYWORDS)
-@Label(OMSLASCONVERTER_LABEL)
-@Name(OMSLASCONVERTER_NAME)
-@Status(OMSLASCONVERTER_STATUS)
-@License(OMSLASCONVERTER_LICENSE)
+@Description(OmsLasConverter.OMSLASCONVERTER_DESCRIPTION)
+@Documentation(OmsLasConverter.OMSLASCONVERTER_DOCUMENTATION)
+@Author(name = OmsLasConverter.OMSLASCONVERTER_AUTHORNAMES, contact = OmsLasConverter.OMSLASCONVERTER_AUTHORCONTACTS)
+@Keywords(OmsLasConverter.OMSLASCONVERTER_KEYWORDS)
+@Label(OmsLasConverter.OMSLASCONVERTER_LABEL)
+@Name(OmsLasConverter.OMSLASCONVERTER_NAME)
+@Status(OmsLasConverter.OMSLASCONVERTER_STATUS)
+@License(OmsLasConverter.OMSLASCONVERTER_LICENSE)
 public class OmsLasConverter extends JGTModel {
 
     @Description(OMSLASCONVERTER_inFile_DESCRIPTION)
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inFile;
 
@@ -121,10 +99,6 @@ public class OmsLasConverter extends JGTModel {
     @Description(OMSLASCONVERTER_pClasses_DESCRIPTION)
     @In
     public String pClasses;
-
-    // @Description(OMSLASCONVERTER_pIndexrange_DESCRIPTION)
-    // @In
-    // public String pIndexrange;
 
     @Description(OMSLASCONVERTER_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
@@ -162,6 +136,32 @@ public class OmsLasConverter extends JGTModel {
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outFile;
+
+    // VARS DOCS START
+    public static final String OMSLASCONVERTER_DESCRIPTION = "Coverter from LAS to vector point data.";
+    public static final String OMSLASCONVERTER_DOCUMENTATION = "";
+    public static final String OMSLASCONVERTER_KEYWORDS = "IO, Feature, Vector, Convert";
+    public static final String OMSLASCONVERTER_LABEL = VECTORPROCESSING;
+    public static final String OMSLASCONVERTER_NAME = "lasconverter";
+    public static final int OMSLASCONVERTER_STATUS = 5;
+    public static final String OMSLASCONVERTER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
+    public static final String OMSLASCONVERTER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSLASCONVERTER_AUTHORCONTACTS = "www.hydrologis.com";
+    public static final String OMSLASCONVERTER_inFile_DESCRIPTION = "The LAS file.";
+    public static final String OMSLASCONVERTER_inPolygons_DESCRIPTION = "A vector map of polygons to filter the data on.";
+    public static final String OMSLASCONVERTER_pIntensityrange_DESCRIPTION = "The (min, max) range inside which the values should be taken.";
+    public static final String OMSLASCONVERTER_pImpulses_DESCRIPTION = "The comma separated list of impulses values to keep.";
+    public static final String OMSLASCONVERTER_pClasses_DESCRIPTION = "The comma separated list of classes to keep.";
+    public static final String OMSLASCONVERTER_pIndexrange_DESCRIPTION = "The min,max index of data to consider (useful to split in different files). Note that filters are applied after this for performance reasons, so resulting data might be less than expected.";
+    public static final String OMSLASCONVERTER_pNorth_DESCRIPTION = "The optional requested boundary north coordinate.";
+    public static final String OMSLASCONVERTER_pSouth_DESCRIPTION = "The optional requested boundary south coordinate.";
+    public static final String OMSLASCONVERTER_pWest_DESCRIPTION = "The optional requested boundary west coordinate.";
+    public static final String OMSLASCONVERTER_pEast_DESCRIPTION = "The optional requested boundary east coordinate.";
+    public static final String OMSLASCONVERTER_doHeader_DESCRIPTION = "Only print header and exit (default is false).";
+    public static final String OMSLASCONVERTER_doInfo_DESCRIPTION = "Print additional info and exit (default is false).";
+    public static final String OMSLASCONVERTER_doBbox_DESCRIPTION = "Generate a bounding box polygon as output vector (default is false).";
+    public static final String OMSLASCONVERTER_outFile_DESCRIPTION = "The output file (csv, shp, las).";
+    // VARS DOCS END
 
     private double[] intensityRange = null;
     // private long[] indexRange = null;

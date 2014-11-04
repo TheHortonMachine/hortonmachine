@@ -49,7 +49,7 @@ public class LiblasWrapper {
      * Loads the native libs creating the native wrapper.
      * 
      * @param nativeLibPath the path to add or <code>null</code>.
-     * @param libName the lib name or <code>null</code>, in which case "lib_c" is used.
+     * @param libName the lib name or <code>null</code>, in which case "las_c" is used.
      * @return <code>null</code>, if the lib could be loaded, the error string else.
      */
     public static String loadNativeLibrary( String nativeLibPath, String libName ) {

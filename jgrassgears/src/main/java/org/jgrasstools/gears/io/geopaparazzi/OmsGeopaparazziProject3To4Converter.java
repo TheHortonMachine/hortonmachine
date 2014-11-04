@@ -156,10 +156,13 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
 
         File geopapFolderFile = new File(inGeopaparazzi);
         File geopap3DbFile = new File(geopapFolderFile, "geopaparazzi.db");
-
         if (!geopap3DbFile.exists()) {
-            throw new ModelsIllegalargumentException(
-                    "The geopaparazzi database file (geopaparazzi.db) is missing. Check the inserted path.", this, pm);
+            // try version 3 name
+            geopap3DbFile = new File(geopapFolderFile, "geopaparazzi3.db");
+            if (!geopap3DbFile.exists()) {
+                throw new ModelsIllegalargumentException(
+                        "The geopaparazzi database file (geopaparazzi.db) is missing. Check the inserted path.", this, pm);
+            }
         }
 
         String folderName = geopapFolderFile.getName();

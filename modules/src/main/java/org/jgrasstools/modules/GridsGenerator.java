@@ -17,26 +17,29 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_outMap_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pCode_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pCols_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pHeight_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pLat_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pLon_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pRows_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pSpacing_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pType_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pWidth_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.LINE;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_AUTHORNAMES;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_KEYWORDS;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_LABEL;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_LICENSE;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_NAME;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_STATUS;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_outMap_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_pCode_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_pCols_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_pHeight_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_pLat_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_pLon_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_pRows_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_pSpacing_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_pType_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_pWidth_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.POINT;
+import static org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator.POLYGON;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -100,8 +103,9 @@ public class GridsGenerator extends JGTModel {
     public Double pSpacing = null;
 
     @Description(OMSGRIDSGENERATOR_pType_DESCRIPTION)
+    @UI("combo: " + POLYGON + "," + LINE + "," + POINT)
     @In
-    public int pType = 0;
+    public String pType = POLYGON;
 
     @Description(OMSGRIDSGENERATOR_pCode_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
