@@ -116,27 +116,22 @@ public class OmsCislam extends JGTModel {
     // Input files
     @Description(OMSCISLAM_inPit_DESCRIPTION)
     @Unit("m")
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inPit = null;
 
     @Description(OMSCISLAM_inFlow_DESCRIPTION)
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inFlow = null;
 
     @Description(OMSCISLAM_inSlope_DESCRIPTION)
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inSlope = null;
 
     @Description(OMSCISLAM_inAb_DESCRIPTION)
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inAb = null;
     
     @Description(OMSCISLAM_inSoilThickness_DESCRIPTION)
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @Unit("m")
     @In
     public GridCoverage2D inSoilThickness = null;
@@ -161,7 +156,6 @@ public class OmsCislam extends JGTModel {
     // #############################################
     @Description(OMSCISLAM_inPsiInitAtBedrock_DESCRIPTION)
     @Unit("m")
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inPsiInitAtBedrock = null;
 
@@ -173,85 +167,44 @@ public class OmsCislam extends JGTModel {
     @Unit("kPa")
     @In
     public GridCoverage2D inCohesion = null;
-    /*
-    @Description(OMSCISLAM_pCohesion_DESCRIPTION)
-    @Unit("Pa")
-    @In
-    public double pCohesion = -1.0;
-    */
+
     @Description(OMSCISLAM_inPhi_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inPhi = null;
-    /*
-    @Description(OMSCISLAM_pPhi_DESCRIPTION)
-    @In
-    public double pPhi = 30.0;
-    */
+
     @Description(OMSCISLAM_inGamma_DESCRIPTION)
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inGammaSoil = null;
-    /*
-    @Description(OMSCISLAM_pGamma_DESCRIPTION)
-    @In
-    public double pGamma = 19.0;
-    */
+
     @Description(OMSCISLAM_inKsat_DESCRIPTION)
     @Unit("m/s")
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inKsat = null;
-    /*
-    @Description(OMSCISLAM_pKsat_DESCRIPTION)
-    @In
-    public double pKsat_ = 10 ^ (-6);
-	*/
+
     @Description(OMSCISLAM_inTheta_s_DESCRIPTION)
     @Unit("-")
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inTheta_s = null;
-    /*
-    @Description(OMSCISLAM_pTheta_s_DESCRIPTION)
-    @In
-    public double pTheta_s = 0.3;
-	*/
+
     @Description(OMSCISLAM_inTheta_r_DESCRIPTION)
     @Unit("-")
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inTheta_r = null;
-    /*
-    @Description(OMSCISLAM_pTheta_r_DESCRIPTION)
-    @In
-    public double pTheta_r = 0.03;
-    */
+
     
     // #############################################
     // van Genuchten parameters
     // #############################################
     @Description(OMSCISLAM_inAlfaVanGen_DESCRIPTION)
     @Unit("1/m")
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inAlfaVanGen = null;
-    /*
-    @Description(OMSCISLAM_pAlfaVanGen_DESCRIPTION)
-    @In
-    public double pAlfaVanGen = 6.5;
-    */
+
     @Description(OMSCISLAM_inNVanGen_DESCRIPTION)
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @Unit("-")
     @In
     public GridCoverage2D inNVanGen = null;
-    /*
-    @Description(OMSCISLAM_pNVanGen_DESCRIPTION)
-    @Unit("-")
-    @In
-    public double pNVanGen = 1.36;
-	*/
     
     // #############################################
     // Calculate hydrologic Initial Safety Factor
@@ -269,43 +222,39 @@ public class OmsCislam extends JGTModel {
     public boolean doSaveByProducts = false;
 
     @Description(OMSCISLAM_pOutFolder_DESCRIPTION)
-    @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In
     public String pOutFolder = System.getProperty("java.io.tmpdir");
 
     // #############
     // References to internal by-products for DEBUGGING and TESTING purposes
-    public GridCoverage2D outMarkedFlow_Raster = null;
-    public GridCoverage2D outFixedSlope_Raster = null;
-    public GridCoverage2D out_avg_slope_cum_Raster = null;
-    public GridCoverage2D out_avg_soil_thickness_cum_Raster = null;
-    public GridCoverage2D out_avg_th_time_cum_Raster = null;
-    public GridCoverage2D out_avg_ab_cum_Raster = null;
-    public GridCoverage2D out_cumRatio_Raster = null;
-    public GridCoverage2D out_cumDist_Raster = null;
-    public GridCoverage2D out_cumCont_Raster = null;
-    public GridCoverage2D out_avg_slope_cum_fixed_Raster = null;
-    public GridCoverage2D out_avg_soil_thickness_cum_fixed_Raster = null;
-    public GridCoverage2D out_avg_th_time_cum_fixed_Raster = null;
-    public GridCoverage2D out_avg_ab_cum_fixed_Raster = null;
-    public GridCoverage2D out_cumRatio_fixed_Raster = null;
-    public GridCoverage2D out_cumDist_fixed_Raster = null;
-    public GridCoverage2D out_IT_din_lin_Raster = null;
-    public GridCoverage2D out_psi_b_Eq9_Raster = null;
-    public GridCoverage2D out_psi_b_Eq12_Raster = null;
-    public GridCoverage2D out_psi_b_Combined_Raster = null;
-    public GridCoverage2D out_SafetyFactor_Initial_Raster = null;
-    public GridCoverage2D out_SafetyFactor_InfiniteSlope_accounting_for_SaturatedZones_Raster = null;
-    public GridCoverage2D out_SafetyFactor_InfiniteSlope_accounting_for_SaturatedZones_RetTime_TOTAL_Raster = null;
+    private GridCoverage2D outMarkedFlow_Raster = null;
+    private GridCoverage2D outFixedSlope_Raster = null;
+    private GridCoverage2D out_avg_slope_cum_Raster = null;
+    private GridCoverage2D out_avg_soil_thickness_cum_Raster = null;
+    private GridCoverage2D out_avg_th_time_cum_Raster = null;
+    private GridCoverage2D out_avg_ab_cum_Raster = null;
+    private GridCoverage2D out_cumRatio_Raster = null;
+    private GridCoverage2D out_cumDist_Raster = null;
+    private GridCoverage2D out_cumCont_Raster = null;
+    private GridCoverage2D out_avg_slope_cum_fixed_Raster = null;
+    private GridCoverage2D out_avg_soil_thickness_cum_fixed_Raster = null;
+    private GridCoverage2D out_avg_th_time_cum_fixed_Raster = null;
+    private GridCoverage2D out_avg_ab_cum_fixed_Raster = null;
+    private GridCoverage2D out_cumRatio_fixed_Raster = null;
+    private GridCoverage2D out_cumDist_fixed_Raster = null;
+    private GridCoverage2D out_IT_din_lin_Raster = null;
+    private GridCoverage2D out_psi_b_Eq9_Raster = null;
+    private GridCoverage2D out_psi_b_Eq12_Raster = null;
+    private GridCoverage2D out_psi_b_Combined_Raster = null;
+    private GridCoverage2D out_SafetyFactor_Initial_Raster = null;
+    private GridCoverage2D out_SafetyFactor_InfiniteSlope_accounting_for_SaturatedZones_Raster = null;
+    private GridCoverage2D out_SafetyFactor_InfiniteSlope_accounting_for_SaturatedZones_RetTime_TOTAL_Raster = null;
     // #############
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute
     public void process() throws Exception {
-        // if (!concatOr(outAspect == null, doReset)) {
-        // return;
-        // }
 
         // Check required parameters
     	checkNull(pReturnTimes);
@@ -474,8 +423,7 @@ public class OmsCislam extends JGTModel {
                 
                 // Export map references for allowing testing
                 out_psi_b_Eq9_Raster = mapPsiMultiHours_Eq9;
-            //} 
-        //}
+
                 pm.message(" ");
                 pm.message("### COMPUTING Psi Maps IS COMPLETED ###");
                 pm.message("#######################################");
@@ -490,13 +438,6 @@ public class OmsCislam extends JGTModel {
                 pm.message("### Compute maps of Concentration time. ###");
                 pm.message(" ");
                 
-        //for( int y : returnTimesArrayList ) {
-
-            //for( int h : rainfallDurationsArrayList ) {
-                // y = 10;
-                // h = 24;
-                //GridCoverage2D singleTwtMap = getTwsMap(mapsOfTwt, y, h);
-
                 pm.message(" ");
                 pm.message("### First compute maps of cumulated parameters. ########################");
                 pm.message(" ");
@@ -654,7 +595,7 @@ public class OmsCislam extends JGTModel {
                 pm.message(" ");
                 
                 //GridCoverage2D mapSafetyFactor_InfiniteSlope_with_SaturatedZones = MapCalculationFunctions.computeSafetyFactor_InfiniteSlope_with_SaturatedZones(y, h, mapPsiMultiHours_Combined_Eq9_Eq12, inSoilThickness, inPhi, inGammaSoil, inCohesion, inAlfaVanGen, inNVanGen, inSlopeFixZeroValuesAndBorder, pm);              
-                GridCoverage2D mapSafetyFactor_InfiniteSlope_with_SaturatedZones_SingleBand = MapCalculationFunctions.computeSafetyFactor_InfiniteSlope_with_SaturatedZones_SingleBand(y, h, mapPsiMultiHours_Combined_Eq9_Eq12, inSoilThickness, inPhi, inGammaSoil, inCohesion, inAlfaVanGen, inNVanGen, inSlopeFixZeroValuesAndBorder, pm);              
+                GridCoverage2D mapSafetyFactor_InfiniteSlope_with_SaturatedZones_SingleBand = MapCalculationFunctions.computeSafetyFactorInfiniteSlopeWithSaturatedZonesSingleBand(y, h, mapPsiMultiHours_Combined_Eq9_Eq12, inSoilThickness, inPhi, inGammaSoil, inCohesion, inAlfaVanGen, inNVanGen, inSlopeFixZeroValuesAndBorder, pm);              
                 
                 // Dump results to file
                 if (doSaveByProducts) {
@@ -757,16 +698,6 @@ public class OmsCislam extends JGTModel {
             }
         }
         return null;
-    }
-
-    private GridCoverage2D flowMapMarkOutlet_NotWorking( GridCoverage2D inFlow ) {
-        // #### DOES NOT WORK ######
-        OmsMarkoutlets markoutlet = new OmsMarkoutlets();
-        Map<String, Object> inputMap = new HashMap<String, Object>();
-        inputMap.put("inFlow", inFlow);
-        Map<String, Object> outputMap = markoutlet.execute(inputMap, null);
-        GridCoverage2D outRaster = (GridCoverage2D) outputMap.get("outFlow");
-        return outRaster;
     }
 
 }

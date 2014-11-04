@@ -41,8 +41,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsVwt;
 
@@ -58,22 +60,27 @@ public class CislamVwt extends JGTModel {
 	
 	@Description(OMSCISLAM_inSoilThickness_DESCRIPTION)
     @Unit("m")
+	@UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inSoilThickness = null;
 	
     @Description(OMSCISLAM_inTheta_s_DESCRIPTION)
+	@UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inTheta_s = null;
 
     @Description(OMSCISLAM_inTheta_r_DESCRIPTION)
+	@UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inTheta_r = null;
 
     @Description(OMSCISLAM_inAlfaVanGen_DESCRIPTION)
+	@UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inAlfaVanGen = null;
 
     @Description(OMSCISLAM_inNVanGen_DESCRIPTION)
+	@UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inNVanGen = null;
     

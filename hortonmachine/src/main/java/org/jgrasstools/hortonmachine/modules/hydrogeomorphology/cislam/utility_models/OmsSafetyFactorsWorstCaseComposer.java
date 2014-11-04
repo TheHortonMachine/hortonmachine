@@ -53,32 +53,18 @@ public class OmsSafetyFactorsWorstCaseComposer extends JGTModel {
     
     @Execute
     public void process(){
-    	
-    	//RegionMap regionMap = null;
-        //CoordinateReferenceSystem crs;
         
         GridCoverage2D[] inRastersArray = new GridCoverage2D[inRasters.size()];
     	
     	// gather maps
         int i = 0;
         for( GridCoverage2D mapGC : inRasters ) {
-            //if (regionMap == null) {
-            //	regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(mapGC);
-            //    crs = mapGC.getCoordinateReferenceSystem();
-            //}
             inRastersArray[i] = mapGC;
-            //RenderedImage renderedImage = mapGC.getRenderedImage();
-            // add map
-            //String name = mapGC.getName().toString();
             i++;
         }
-        //if (regionMap == null) {
-        //    throw new ModelsIllegalargumentException("No map has been supplied.", this.getClass().getSimpleName());
-        //}
         
         outSafetyFactorTotal = MapCalculationFunctions.computeSafetyFactorTOTAL(inRastersArray, pReturnTime, pm);
     	
-    }
-    
+    }    
 
 }

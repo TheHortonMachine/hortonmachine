@@ -8,7 +8,6 @@ org.jgrasstools.modules.Cb
 org.jgrasstools.modules.Cislam
 org.jgrasstools.modules.CislamPsiInitAtBedrock
 org.jgrasstools.modules.CislamSafetyFactorGeomechanic
-org.jgrasstools.modules.CislamSafetyFactorsWorstCaseComposer
 org.jgrasstools.modules.CislamSlopeForCislam
 org.jgrasstools.modules.CislamSoilThickness
 org.jgrasstools.modules.CislamV0

@@ -37,8 +37,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSoilThickness;
 
@@ -53,6 +55,7 @@ public class CislamSoilThickness extends JGTModel {
 
 	@Description(OMSCISLAM_OMSSLOPEFORCISLAM_inSlope_DESCRIPTION)
 	@Unit("m/m")
+	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
 	public String inSlope = null;
 

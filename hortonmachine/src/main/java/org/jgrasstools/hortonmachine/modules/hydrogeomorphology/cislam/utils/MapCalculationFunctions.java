@@ -796,20 +796,20 @@ public class MapCalculationFunctions {
      * @param pm
      * @return GridCoverage2D Safety_Factor_initial
      */
-    public static GridCoverage2D computeSafetyFactor_InfiniteSlope_with_SaturatedZones_SingleBand(int pReturnTime, int pRainfallDuration, GridCoverage2D inPsi_Combined, GridCoverage2D inSoil_Thickness, GridCoverage2D inPhi, GridCoverage2D inGammaSoil, GridCoverage2D inCohesion, GridCoverage2D inAlfaVanGen, GridCoverage2D inNVanGen, GridCoverage2D inSlopeFixedBorders, IJGTProgressMonitor pm) {
+    public static GridCoverage2D computeSafetyFactorInfiniteSlopeWithSaturatedZonesSingleBand(int pReturnTime, int pRainfallDuration, GridCoverage2D inPsi_Combined, GridCoverage2D inSoil_Thickness, GridCoverage2D inPhi, GridCoverage2D inGammaSoil, GridCoverage2D inCohesion, GridCoverage2D inAlfaVanGen, GridCoverage2D inNVanGen, GridCoverage2D inSlopeFixedBorders, IJGTProgressMonitor pm) {
         
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inPhi);
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
         
-        RandomIter inPsi_Combined_Iter = RandomIterFactory.create(inPsi_Combined.getRenderedImage(), null);
-        RandomIter inSoil_Thickness_Iter = RandomIterFactory.create(inSoil_Thickness.getRenderedImage(), null);
-        RandomIter inPhi_Iter = RandomIterFactory.create(inPhi.getRenderedImage(), null);
-        RandomIter inGammaSoil_Iter = RandomIterFactory.create(inGammaSoil.getRenderedImage(), null);
-        RandomIter inCohesion_Iter = RandomIterFactory.create(inCohesion.getRenderedImage(), null);
-        RandomIter inAlfaVanGen_Iter = RandomIterFactory.create(inAlfaVanGen.getRenderedImage(), null);
-        RandomIter inNVAnGen_Iter = RandomIterFactory.create(inNVanGen.getRenderedImage(), null);
-        RandomIter inSlopeFixedBorders_Iter = RandomIterFactory.create(inSlopeFixedBorders.getRenderedImage(), null);
+        RandomIter inPsiCombinedIter = RandomIterFactory.create(inPsi_Combined.getRenderedImage(), null);
+        RandomIter inSoilThicknessIter = RandomIterFactory.create(inSoil_Thickness.getRenderedImage(), null);
+        RandomIter inPhiIter = RandomIterFactory.create(inPhi.getRenderedImage(), null);
+        RandomIter inGammaSoilIter = RandomIterFactory.create(inGammaSoil.getRenderedImage(), null);
+        RandomIter inCohesionIter = RandomIterFactory.create(inCohesion.getRenderedImage(), null);
+        RandomIter inAlfaVanGenIter = RandomIterFactory.create(inAlfaVanGen.getRenderedImage(), null);
+        RandomIter inNVAnGenIter = RandomIterFactory.create(inNVanGen.getRenderedImage(), null);
+        RandomIter inSlopeFixedBordersIter = RandomIterFactory.create(inSlopeFixedBorders.getRenderedImage(), null);
         
         // Prepare objects for iterating over the maps
         BandedSampleModel bandedSampleModel = new BandedSampleModel(DataBuffer.TYPE_DOUBLE, cols, rows, pRainfallDuration);
@@ -833,15 +833,15 @@ public class MapCalculationFunctions {
             for( int c = 0; c < cols; c++ ) {
                 for( int r = 0; r < rows; r++ ) {
                     
-                    psi_combined = inPsi_Combined_Iter.getSampleDouble(c, r, (pRainfallDuration-1));
+                    psi_combined = inPsiCombinedIter.getSampleDouble(c, r, (pRainfallDuration-1));
                     
-                    soil_thick = inSoil_Thickness_Iter.getSampleDouble(c, r, 0);
-                    tan_phi = Math.tan(inPhi_Iter.getSampleDouble(c, r, 0)/180.0*Math.PI);
-                    gamma = inGammaSoil_Iter.getSampleDouble(c, r, 0)/10.0;
-                    cohesion = inCohesion_Iter.getSampleDouble(c, r, 0);
-                    alfaVanGen = inAlfaVanGen_Iter.getSampleDouble(c, r, 0);
-                    nVanGen = inNVAnGen_Iter.getSampleDouble(c, r, 0);
-                    angle = Math.atan(inSlopeFixedBorders_Iter.getSampleDouble(c, r, 0));
+                    soil_thick = inSoilThicknessIter.getSampleDouble(c, r, 0);
+                    tan_phi = Math.tan(inPhiIter.getSampleDouble(c, r, 0)/180.0*Math.PI);
+                    gamma = inGammaSoilIter.getSampleDouble(c, r, 0)/10.0;
+                    cohesion = inCohesionIter.getSampleDouble(c, r, 0);
+                    alfaVanGen = inAlfaVanGenIter.getSampleDouble(c, r, 0);
+                    nVanGen = inNVAnGenIter.getSampleDouble(c, r, 0);
+                    angle = Math.atan(inSlopeFixedBordersIter.getSampleDouble(c, r, 0));
                     tg = Math.tan(angle);
                     ctg = 1.0/tg;
                     

@@ -40,8 +40,10 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Range;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models.OmsSlopeForCislam;
 
@@ -56,11 +58,13 @@ public class CislamSlopeForCislam extends JGTModel {
 
     @Description(OMSCISLAM_inSlope_DESCRIPTION)
     @Unit("m/m")
+	@UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inSlope = null;
 
     @Description(OMSCISLAM_inPit_DESCRIPTION)
     @Unit("m")
+	@UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inPit = null;
     

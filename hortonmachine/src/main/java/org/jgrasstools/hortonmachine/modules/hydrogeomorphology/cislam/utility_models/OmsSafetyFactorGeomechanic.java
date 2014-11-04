@@ -56,12 +56,10 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class OmsSafetyFactorGeomechanic extends JGTModel {
 
 	@Description(OMSCISLAM_inSlope_DESCRIPTION)
-	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
 	public GridCoverage2D inSlope = null;
 
 	@Description(OMSCISLAM_inSoilThickness_DESCRIPTION)
-	@UI(JGTConstants.FILEIN_UI_HINT)
 	@Unit("m")
 	@In
 	public GridCoverage2D inSoilThickness = null;
@@ -70,42 +68,35 @@ public class OmsSafetyFactorGeomechanic extends JGTModel {
 	// Geo-Techical parameters
 	// #############################################
 	@Description(OMSCISLAM_inCohesion_DESCRIPTION)
-	@UI(JGTConstants.FILEIN_UI_HINT)
 	@Unit("kPa")
 	@In
 	public GridCoverage2D inCohesion = null;
 
 	@Description(OMSCISLAM_inPhi_DESCRIPTION)
-	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
 	public GridCoverage2D inPhi = null;
 
 	@Description(OMSCISLAM_inGamma_DESCRIPTION)
-	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
 	public GridCoverage2D inGammaSoil = null;
 
 	@Description(OMSCISLAM_inKsat_DESCRIPTION)
 	@Unit("m/s")
-	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
 	public GridCoverage2D inKsat = null;
 
 	@Description(OMSCISLAM_inTheta_s_DESCRIPTION)
 	@Unit("-")
-	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
 	public GridCoverage2D inTheta_s = null;
 
 	@Description(OMSCISLAM_inTheta_r_DESCRIPTION)
 	@Unit("-")
-	@UI(JGTConstants.FILEIN_UI_HINT)
 	@In
 	public GridCoverage2D inTheta_r = null;
 
 	@Description(OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_outSafetyactorGeoMechanic_DESCRIPTION)
 	@Unit("-")
-	@UI(JGTConstants.FILEIN_UI_HINT)
 	@Out
 	public GridCoverage2D outSafetyactorGeoMechanic = null;
 
@@ -197,7 +188,7 @@ public class OmsSafetyFactorGeomechanic extends JGTModel {
 							/ (gamma * soil_thickness * Math.sin(2 * Math
 									.atan(slope)));
 					if (Double.isInfinite(FSi))
-						System.out.println(FSi);
+						pm.message("Output data contains INFINITE Safety Factor!");
 					else
 						outSafetyFactorGeoTechnicalIter.setSample(c, r, 0, FSi);
 				}
