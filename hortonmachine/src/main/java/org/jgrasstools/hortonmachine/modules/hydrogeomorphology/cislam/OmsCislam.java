@@ -101,8 +101,6 @@ public class OmsCislam extends JGTModel {
     // Default rainfall durations used to compute maps of times to develop water table.
     private static final String RAINFALL_DURATIONS_ARRAY = "1, 3, 6, 12, 24";
 
-
-
     @Description(OMSCISLAM_pReturnTimes_DESCRIPTION)
     @Unit("years")
     @In
@@ -213,7 +211,6 @@ public class OmsCislam extends JGTModel {
     @In
     public boolean doCalculateInitialSafetyFactor = false;
     
-    
     // #############################################
     // Save by-products to file
     // #############################################
@@ -292,15 +289,6 @@ public class OmsCislam extends JGTModel {
         // Take flow map with proper border and mark basin outlet with value 10
         GridCoverage2D inFlowWithBorderAndOutlet = MapPreprocessingUtilities.flowMapMarkOutlet(inFlowWithBorder, pm);
 
-        // Use default framework facility to mark outlets
-        // Mark basin outlet with value 10
-        /*
-        OmsMarkoutlets markOutlets = new OmsMarkoutlets();
-        markOutlets.inFlow = inFlowWithBorder;
-        markOutlets.process();
-        inFlowWithBorderAndOutlet = markOutlets.outFlow;
-        */
-
         // ##################################################################################
         // Rebuild border of slope map, computing cell values, and replace zero values with a not-null minimum
         GridCoverage2D inSlopeFixZeroValuesAndBorder = MapPreprocessingUtilities.slopeMapFixZeroValuesAndBorder(inSlope, inPit,
@@ -326,13 +314,6 @@ public class OmsCislam extends JGTModel {
         mVwt.process();
         GridCoverage2D outVwt = mVwt.outVwt;
 
-        /*
-        OmsPsiInitAtBedrock psiInitAtBedrock = new OmsPsiInitAtBedrock();
-        psiInitAtBedrock.inPit = inPit;
-        psiInitAtBedrock.pPsiInitAtBedrokConstant = 0.05;
-        psiInitAtBedrock.process();
-        GridCoverage2D inPsiInitAtBedrock = psiInitAtBedrock.outPsiInitAtBedrock;
-        */
 
         // ##==## Equation (6)
         OmsV0 mV0 = new OmsV0();
@@ -600,14 +581,11 @@ public class OmsCislam extends JGTModel {
                 // Dump results to file
                 if (doSaveByProducts) {
                     String message = "Dumping maps of HYDROLOGY-and-GEOMECHANIC driven SAFETY FACTOR to ";
-                    //MapDumpingFunctions.dumpMultiBandCoverage(mapSafetyFactor_InfiniteSlope_with_SaturatedZones, (h-1), pOutFolder, pm, message);
                     MapDumpingFunctions.dumpSingleBandCoverage(mapSafetyFactor_InfiniteSlope_with_SaturatedZones_SingleBand, pOutFolder, pm, message);
                 }
                 // Export map references for allowing testing
-                //out_SafetyFactor_InfiniteSlope_accounting_for_SaturatedZones_Raster = mapSafetyFactor_InfiniteSlope_with_SaturatedZones;
                 out_SafetyFactor_InfiniteSlope_accounting_for_SaturatedZones_Raster = mapSafetyFactor_InfiniteSlope_with_SaturatedZones_SingleBand;
                 
-                //mapsSafetyFactor_InfSlope_with_SaturZones_LastHour[durationArrayStep] = MapCalculationFunctions.getSingleBandFromMultibandCoverage((h-1), y, mapSafetyFactor_InfiniteSlope_with_SaturatedZones);
                 mapsSafetyFactor_InfSlope_with_SaturZones_LastHour[durationArrayStep] = mapSafetyFactor_InfiniteSlope_with_SaturatedZones_SingleBand;
                 
             } // Step to next simulated Rainfall Duration [h]
