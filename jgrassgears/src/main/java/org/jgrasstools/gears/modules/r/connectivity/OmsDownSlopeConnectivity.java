@@ -19,7 +19,6 @@ package org.jgrasstools.gears.modules.r.connectivity;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
@@ -44,8 +43,6 @@ import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
-import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.GridNode;
@@ -55,40 +52,54 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.ConstantRandomIter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description(OMSCUTOUT_DESCRIPTION)
+@Description(OmsDownSlopeConnectivity.DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
-@Keywords("connectivity, raster")
-@Label(JGTConstants.HILLSLOPE)
-@Name("downslopeconnectivity")
+@Keywords(OmsDownSlopeConnectivity.KEYWORDS)
+@Label(OmsDownSlopeConnectivity.LABEL)
+@Name(OmsDownSlopeConnectivity.NAME)
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
-@Bibliography("Geomorphometric assessment of spatial sediment connectivity in small Alpine catchments. - Cavalli et al. 2012")
+@Bibliography(OmsDownSlopeConnectivity.BIBLIO)
 public class OmsDownSlopeConnectivity extends JGTModel {
 
-    @Description("The map of flowdirections.")
+    @Description(inFlow_DESCR)
     @In
     public GridCoverage2D inFlow;
 
-    @Description("The network map.")
+    @Description(inNet_DESCR)
     @In
     public GridCoverage2D inNet;
 
-    @Description("The map of slope.")
+    @Description(inSlope_DESCR)
     @Unit("m/m")
     @In
     public GridCoverage2D inSlope;
 
-    @Description("The optional map of weights.")
+    @Description(inWeights_DESCR)
     @In
     public GridCoverage2D inWeights;
 
-    @Description("The optional constant value of weights.")
+    @Description(pWeight_DESCR)
     @In
     public Double pWeight;
 
-    @Description("The connectivity map.")
+    @Description(outConnectivity_DESCR)
     @Out
     public GridCoverage2D outConnectivity = null;
+
+    // VARS DOC START
+    public static final String outConnectivity_DESCR = "The connectivity map.";
+    public static final String pWeight_DESCR = "The optional constant value of weights.";
+    public static final String inWeights_DESCR = "The optional map of weights.";
+    public static final String inSlope_DESCR = "The map of slope.";
+    public static final String inNet_DESCR = "The network map.";
+    public static final String inFlow_DESCR = "The map of flowdirections.";
+    public static final String KEYWORDS = "connectivity, raster";
+    public static final String BIBLIO = "Geomorphometric assessment of spatial sediment connectivity in small Alpine catchments. - Cavalli et al. 2012";
+    public static final String NAME = "downslopeconnectivity";
+    public static final String DESCRIPTION = "Module for the calculation of the downslope connectivity.";
+    public static final String LABEL = JGTConstants.HILLSLOPE;
+    // VARS DOC END
 
     @Execute
     public void process() throws Exception {
@@ -129,8 +140,7 @@ public class OmsDownSlopeConnectivity extends JGTModel {
                 if (c == 7 && r == 2) {
                     System.out.println();
                 }
-                
-                
+
                 FlowNode flowNode = new FlowNode(flowIter, nCols, nRows, c, r);
                 if (!flowNode.isValid()) {
                     continue;
