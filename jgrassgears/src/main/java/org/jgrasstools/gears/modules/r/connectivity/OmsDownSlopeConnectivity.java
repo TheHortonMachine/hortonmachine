@@ -44,6 +44,7 @@ import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -137,10 +138,6 @@ public class OmsDownSlopeConnectivity extends JGTModel {
                 return;
             }
             for( int c = 0; c < nCols; c++ ) {
-                if (c == 7 && r == 2) {
-                    System.out.println();
-                }
-
                 FlowNode flowNode = new FlowNode(flowIter, nCols, nRows, c, r);
                 if (!flowNode.isValid()) {
                     continue;
@@ -151,6 +148,10 @@ public class OmsDownSlopeConnectivity extends JGTModel {
                 double connectivitySum = 0;
                 while( flowNode.isValid() && !netNode.isValid() ) {
                     FlowNode nextFlowNode = flowNode.goDownstream();
+                    if (nextFlowNode == null) {
+                        throw new ModelsRuntimeException(
+                                "Could not properly navigate the flowdirections. Are you using an extracted basin?", this);
+                    }
                     int col = flowNode.col;
                     int nextCol = nextFlowNode.col;
                     int row = flowNode.row;
