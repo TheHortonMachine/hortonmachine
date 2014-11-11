@@ -99,5 +99,16 @@ public class DownSlopeConnectivity extends JGTModel {
         odsc.process();
         dumpRaster(odsc.outConnectivity, outConnectivity);
     }
+    
+    public static void main( String[] args ) throws Exception {
+        DownSlopeConnectivity d = new DownSlopeConnectivity();
+        d.inFlow = "F:/unibz/raster/drain.asc";
+        d.inNet = "F:/unibz/raster/net_20000.asc";
+        d.inSlope = "F:/unibz/raster/slope.asc";
+//        d.inWeights = "";
+        d.pWeight = 100.0;
+        d.outConnectivity = "F:/unibz/raster/outconnect.asc";
+        d.process();
+    }
 
 }
