@@ -49,6 +49,7 @@ import org.geotools.data.wms.WebMapServer;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.gce.grassraster.GrassCoverageReader;
+import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;
@@ -77,6 +78,7 @@ import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.expression.Expression;
+import org.opengis.geometry.DirectPosition;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -200,9 +202,11 @@ public class ImageGenerator {
      * Set the layers that have to be drawn.
      * 
      * <p><b>This has to be called before the drawing process.</p>
+     * @return 
      * @throws Exception 
      */
-    public void setLayers() throws Exception {
+    public Envelope setLayers() throws Exception {
+        Envelope maxExtent = new Envelope();
 
         // wms first
         if (wmsURL != null) {
@@ -214,6 +218,11 @@ public class ImageGenerator {
             Style style = SLD.wrapSymbolizers(sym);
             GridReaderLayer layer = new GridReaderLayer(reader, style);
             layers.add(layer);
+
+            GeneralEnvelope originalEnvelope = reader.getOriginalEnvelope();
+            if (originalEnvelope != null) {
+                expandToIncludeEnvelope(maxExtent, originalEnvelope);
+            }
         }
 
         // coverages
@@ -264,6 +273,7 @@ public class ImageGenerator {
                         rreader.process();
                         raster = rreader.outRaster;
                     }
+
                 }
                 // if (crs == null) {
                 // crs = raster.getCoordinateReferenceSystem();
@@ -299,11 +309,17 @@ public class ImageGenerator {
             if (raster != null) {
                 GridCoverageLayer layer = new GridCoverageLayer(raster, style);
                 layers.add(layer);
+
+                org.opengis.geometry.Envelope envelope = raster.getEnvelope();
+                expandToIncludeEnvelope(maxExtent, envelope);
             }
             if (reader != null) {
                 GridReaderLayer layer = new GridReaderLayer(reader, style);
                 // SimpleFeatureSource featureSource = layer.getFeatureSource();
                 layers.add(layer);
+
+                org.opengis.geometry.Envelope envelope = reader.getOriginalEnvelope();
+                expandToIncludeEnvelope(maxExtent, envelope);
             }
             monitor.worked(1);
         }
@@ -335,13 +351,27 @@ public class ImageGenerator {
 
             FeatureLayer layer = new FeatureLayer(featureCollection, style);
             layers.add(layer);
+
+            expandToIncludeEnvelope(maxExtent, featureCollection.getBounds());
+
             monitor.worked(1);
         }
 
         synchronizedLayers = Collections.synchronizedList(layers);
 
         monitor.done();
+        return maxExtent;
     }
+
+    private void expandToIncludeEnvelope( Envelope maxExtent, org.opengis.geometry.Envelope envelope ) {
+        DirectPosition ll = envelope.getLowerCorner();
+        double[] coordinate = ll.getCoordinate();
+        maxExtent.expandToInclude(new Coordinate(coordinate[0], coordinate[1]));
+        DirectPosition ur = envelope.getUpperCorner();
+        coordinate = ur.getCoordinate();
+        maxExtent.expandToInclude(new Coordinate(coordinate[0], coordinate[1]));
+    }
+
     private org.geotools.data.ows.Layer getWMSLayer( WebMapServer server, String layerName ) {
         for( org.geotools.data.ows.Layer layer : server.getCapabilities().getLayerList() ) {
             if (layerName.equals(layer.getName())) {
