@@ -57,7 +57,6 @@ import org.geotools.map.GridReaderLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.map.WMSLayer;
-import org.geotools.renderer.RenderListener;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.ColorMap;
 import org.geotools.styling.ColorMapEntry;
@@ -76,9 +75,10 @@ import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.expression.Expression;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -202,11 +202,11 @@ public class ImageGenerator {
      * Set the layers that have to be drawn.
      * 
      * <p><b>This has to be called before the drawing process.</p>
-     * @return 
+     * @return the max envelope of the data.
      * @throws Exception 
      */
-    public Envelope setLayers() throws Exception {
-        Envelope maxExtent = new Envelope();
+    public ReferencedEnvelope setLayers() throws Exception {
+        ReferencedEnvelope maxExtent = null;
 
         // wms first
         if (wmsURL != null) {
@@ -221,6 +221,9 @@ public class ImageGenerator {
 
             GeneralEnvelope originalEnvelope = reader.getOriginalEnvelope();
             if (originalEnvelope != null) {
+                if (maxExtent == null) {
+                    maxExtent = new ReferencedEnvelope(originalEnvelope.getCoordinateReferenceSystem());
+                }
                 expandToIncludeEnvelope(maxExtent, originalEnvelope);
             }
         }
@@ -311,6 +314,9 @@ public class ImageGenerator {
                 layers.add(layer);
 
                 org.opengis.geometry.Envelope envelope = raster.getEnvelope();
+                if (maxExtent == null) {
+                    maxExtent = new ReferencedEnvelope(envelope.getCoordinateReferenceSystem());
+                }
                 expandToIncludeEnvelope(maxExtent, envelope);
             }
             if (reader != null) {
@@ -319,6 +325,9 @@ public class ImageGenerator {
                 layers.add(layer);
 
                 org.opengis.geometry.Envelope envelope = reader.getOriginalEnvelope();
+                if (maxExtent == null) {
+                    maxExtent = new ReferencedEnvelope(envelope.getCoordinateReferenceSystem());
+                }
                 expandToIncludeEnvelope(maxExtent, envelope);
             }
             monitor.worked(1);
@@ -352,6 +361,9 @@ public class ImageGenerator {
             FeatureLayer layer = new FeatureLayer(featureCollection, style);
             layers.add(layer);
 
+            if (maxExtent == null) {
+                maxExtent = new ReferencedEnvelope(featureCollection.getSchema().getCoordinateReferenceSystem());
+            }
             expandToIncludeEnvelope(maxExtent, featureCollection.getBounds());
 
             monitor.worked(1);
@@ -363,13 +375,21 @@ public class ImageGenerator {
         return maxExtent;
     }
 
-    private void expandToIncludeEnvelope( Envelope maxExtent, org.opengis.geometry.Envelope envelope ) {
+    private void expandToIncludeEnvelope( ReferencedEnvelope maxExtent, org.opengis.geometry.Envelope envelope ) {
+        ReferencedEnvelope tmpExtent = new ReferencedEnvelope(envelope.getCoordinateReferenceSystem());
         DirectPosition ll = envelope.getLowerCorner();
         double[] coordinate = ll.getCoordinate();
-        maxExtent.expandToInclude(new Coordinate(coordinate[0], coordinate[1]));
+        tmpExtent.expandToInclude(new Coordinate(coordinate[0], coordinate[1]));
         DirectPosition ur = envelope.getUpperCorner();
         coordinate = ur.getCoordinate();
-        maxExtent.expandToInclude(new Coordinate(coordinate[0], coordinate[1]));
+        tmpExtent.expandToInclude(new Coordinate(coordinate[0], coordinate[1]));
+
+        try {
+            ReferencedEnvelope transformed = tmpExtent.transform(maxExtent.getCoordinateReferenceSystem(), true);
+            maxExtent.expandToInclude(transformed);
+        } catch (TransformException | FactoryException e) {
+            e.printStackTrace();
+        }
     }
 
     private org.geotools.data.ows.Layer getWMSLayer( WebMapServer server, String layerName ) {
