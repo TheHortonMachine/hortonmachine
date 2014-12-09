@@ -17,27 +17,27 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_doBbox_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_doHeader_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_doInfo_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inFile_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inPolygons_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_outFile_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pClasses_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pImpulses_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pIntensityrange_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pSouth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pWest_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_AUTHORNAMES;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_KEYWORDS;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_LABEL;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_LICENSE;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_NAME;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_STATUS;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_doBbox_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_doHeader_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_doInfo_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_inFile_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_inPolygons_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_outFile_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_pClasses_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_pEast_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_pImpulses_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_pIntensityrange_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_pNorth_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_pSouth_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_pWest_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -68,6 +68,7 @@ public class LasConverter extends JGTModel {
     public String inFile;
 
     @Description(OMSLASCONVERTER_inPolygons_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inPolygons;
 

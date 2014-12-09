@@ -105,7 +105,7 @@ public class LasWriter extends ALasWriter {
     @Override
     public void setScales( double xScale, double yScale, double zScale ) {
         if (openCalled) {
-            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, this);
         }
         this.xScale = xScale;
         this.yScale = yScale;
@@ -115,7 +115,7 @@ public class LasWriter extends ALasWriter {
     @Override
     public void setOffset( double xOffset, double yOffset, double zOffset ) {
         if (openCalled) {
-            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, this);
         }
         this.xOffset = xOffset;
         this.yOffset = yOffset;
@@ -125,7 +125,7 @@ public class LasWriter extends ALasWriter {
     @Override
     public void setBounds( double xMin, double xMax, double yMin, double yMax, double zMin, double zMax ) {
         if (openCalled) {
-            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, this);
         }
         this.xMin = xMin;
         this.yMin = yMin;
@@ -283,7 +283,7 @@ public class LasWriter extends ALasWriter {
         fos.write(getDouble(zOffset));
         hLength = hLength + 3 * 8;
 
-        //  x,y,z - min/max
+        // x,y,z - min/max
         fos.write(getDouble(xMax));
         fos.write(getDouble(xMin));
         fos.write(getDouble(yMax));

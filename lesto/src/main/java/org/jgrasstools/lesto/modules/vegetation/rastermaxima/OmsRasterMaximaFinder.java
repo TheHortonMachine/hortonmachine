@@ -317,6 +317,7 @@ public class OmsRasterMaximaFinder extends JGTModel {
                             Point point = gf.createPoint(coordinate);
 
                             String elevStr = formatter.format(elevation);
+                            elevStr = elevStr.replace(',', '.');
                             elevation = Double.parseDouble(elevStr);
                             Object[] values = new Object[]{point, id, elevation, note};
                             maximaBuilder.addAll(values);

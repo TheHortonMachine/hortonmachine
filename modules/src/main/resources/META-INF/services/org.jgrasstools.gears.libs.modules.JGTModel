@@ -14,6 +14,7 @@ org.jgrasstools.modules.DebrisTriggerCnr
 org.jgrasstools.modules.DebrisVandre
 org.jgrasstools.modules.DelaunayTriangulation
 org.jgrasstools.modules.DistanceToOutlet
+org.jgrasstools.modules.DownSlopeConnectivity
 org.jgrasstools.modules.DrainDir
 org.jgrasstools.modules.DwgConverter
 org.jgrasstools.modules.DxfConverter

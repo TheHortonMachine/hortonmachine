@@ -103,7 +103,7 @@ public class FlightLinesIntensityNormalizer extends JGTModel {
     public void process() throws Exception {
         checkNull(inLas, inFlightpoints, pDateTimePattern);
 
-        int timeType = 1;
+        int timeType = -1;
         if (pGpsTimeType.equals(FlightLinesExtractor.ADJUSTED_STANDARD_GPS_TIME)) {
             timeType = 1;
         }
@@ -196,12 +196,8 @@ public class FlightLinesIntensityNormalizer extends JGTModel {
                 DateTime gpsTimeToDateTime = LasUtils.gpsTimeToDateTime(r.gpsTime, gpsTimeType);
                 long gpsMillis = gpsTimeToDateTime.getMillis();
                 Coordinate lasCoordinate = new Coordinate(r.x, r.y, r.z);
-
                 Envelope pEnv = new Envelope(new Coordinate(gpsMillis, gpsMillis));
                 List points = tree.query(pEnv);
-                if (points.size() > 1) {
-                    System.out.println();
-                }
                 Coordinate[] flightCoords = (Coordinate[]) points.get(0);
                 long d1 = points2dateMap.get(flightCoords[0]).getMillis();
                 long d2 = points2dateMap.get(flightCoords[1]).getMillis();
@@ -226,15 +222,5 @@ public class FlightLinesIntensityNormalizer extends JGTModel {
             }
             pm.done();
         }
-    }
-    
-    public static void main( String[] args ) throws Exception {
-        FlightLinesIntensityNormalizer fl = new FlightLinesIntensityNormalizer();
-        fl.inLas = "*.las";
-        fl.inFlightpoints = "flightline_points.shp";
-        fl.pDateTimePattern = "dd/MM/yyyy HH:mm:ss.00";
-        fl.pGpsTimeType = FlightLinesExtractor.ADJUSTED_STANDARD_GPS_TIME;
-        fl.outLas = "*_normfl.las";
-        fl.process();
     }
 }
