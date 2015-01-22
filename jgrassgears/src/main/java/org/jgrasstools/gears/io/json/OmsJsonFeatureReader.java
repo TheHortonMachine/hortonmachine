@@ -186,7 +186,7 @@ public class OmsJsonFeatureReader extends JGTModel {
      * @return the read {@link FeatureCollection}.
      * @throws Exception 
      */
-    public static SimpleFeatureCollection readPropertiesfile( String path ) throws Exception {
+    public static SimpleFeatureCollection readJsonfile( String path ) throws Exception {
 
         OmsJsonFeatureReader reader = new OmsJsonFeatureReader();
         reader.file = path;
