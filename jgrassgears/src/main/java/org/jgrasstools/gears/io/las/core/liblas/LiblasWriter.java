@@ -67,6 +67,7 @@ public class LiblasWriter extends ALasWriter {
     private int pointFormat = 0;
 
     private long fileHandle;
+    private boolean pointFormatHasBeenSet = false;
 
     /**
      * A las file writer.
@@ -106,12 +107,13 @@ public class LiblasWriter extends ALasWriter {
         this.zOffset = zOffset;
     }
 
-    // public void setPointFormat( int pointFormat ) {
-    // this.pointFormat = pointFormat;
-    // if (openCalled) {
-    // throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
-    // }
-    // }
+    public void setPointFormat( int pointFormat ) {
+        this.pointFormat = pointFormat;
+        pointFormatHasBeenSet = true;
+        if (openCalled) {
+            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+        }
+    }
 
     @Override
     public void setBounds( double xMin, double xMax, double yMin, double yMax, double zMin, double zMax ) {
@@ -236,13 +238,17 @@ public class LiblasWriter extends ALasWriter {
 
         if (record.gpsTime > 0) {
             WRAPPER.LASPoint_SetTime(pointHandle, record.gpsTime);
-            pointFormat = 1;
+            if (!pointFormatHasBeenSet)
+                pointFormat = 1;
         }
 
-        // if (record.color != null) {
-        // pointFormat = 3;
-        //
-        // }
+        if (pointFormat == 3 || pointFormat == 2) {
+            long colorHandle = WRAPPER.LASColor_Create();
+            WRAPPER.LASColor_SetRed(colorHandle, record.color[0]);
+            WRAPPER.LASColor_SetGreen(colorHandle, record.color[1]);
+            WRAPPER.LASColor_SetBlue(colorHandle, record.color[2]);
+            WRAPPER.LASPoint_SetColor(pointHandle, colorHandle);
+        }
 
         WRAPPER.LASWriter_WritePoint(fileHandle, pointHandle);
         WRAPPER.LASPoint_Destroy(pointHandle);

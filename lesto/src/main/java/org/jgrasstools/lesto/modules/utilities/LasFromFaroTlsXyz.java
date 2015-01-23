@@ -106,16 +106,17 @@ public class LasFromFaroTlsXyz extends JGTModel {
                     continue;
                 }
                 String[] lineSplit = line.split("\\s+");
-
-                double deltaX = Double.parseDouble(lineSplit[0]);
-                double deltaY = Double.parseDouble(lineSplit[1]);
+                
+                int index = 2;
+                double deltaX = Double.parseDouble(lineSplit[index++]);
+                double deltaY = Double.parseDouble(lineSplit[index++]);
                 double x = pLongitude + deltaX;
                 double y = pLatitude + deltaY;
 
-                double elev = Double.parseDouble(lineSplit[2]);
-                int r = Integer.parseInt(lineSplit[3]);
-                int g = Integer.parseInt(lineSplit[4]);
-                int b = Integer.parseInt(lineSplit[5]);
+                double elev = Double.parseDouble(lineSplit[index++]);
+                int r = Integer.parseInt(lineSplit[index++]);
+                int g = Integer.parseInt(lineSplit[index++]);
+                int b = Integer.parseInt(lineSplit[index++]);
                 xMin = min(xMin, x);
                 yMin = min(yMin, y);
                 zMin = min(zMin, elev);
@@ -128,7 +129,7 @@ public class LasFromFaroTlsXyz extends JGTModel {
                 dot.y = y;
                 dot.z = elev;
                 dot.color = new short[]{(short) r, (short) g, (short) b};
-                dot.gpsTime = 0;
+                dot.gpsTime = System.currentTimeMillis();
                 readRecords.add(dot);
             }
         }
@@ -137,6 +138,7 @@ public class LasFromFaroTlsXyz extends JGTModel {
         File outFile = new File(outLas);
         try (ALasWriter writer = new LasWriter(outFile, crs)) {
             writer.setBounds(xMin, xMax, yMin, yMax, zMin, zMax);
+            writer.setPointFormat(3);
             writer.open();
             pm.beginTask("Writing las...", readRecords.size());
             for( LasRecord dot : readRecords ) {
@@ -149,11 +151,11 @@ public class LasFromFaroTlsXyz extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
         LasFromFaroTlsXyz x = new LasFromFaroTlsXyz();
-        x.inFile = "D:/TMP/faro/capriana_nuvola_punti_progetto_lowres.xyz";
+        x.inFile = "/home/hydrologis/data/rilievo_tls/capriana_punti_scansione_lowres.xyz";
         x.pLongitude = 681269.8905;
         x.pLatitude = 5127117.2439;
         x.pCode = "EPSG:32632";
-        x.outLas = "D:/TMP/faro/capriana_lowres.las";
+        x.outLas = "/home/hydrologis/data/rilievo_tls/capriana_lowres.las";
         x.process();
     }
 }

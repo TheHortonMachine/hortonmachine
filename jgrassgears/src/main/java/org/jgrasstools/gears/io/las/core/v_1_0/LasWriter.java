@@ -82,6 +82,7 @@ public class LasWriter extends ALasWriter {
     private byte[] previousReturnBytes = null;
     private long offsetToData = 227;
     private int recordLengthPosition;
+    private boolean pointFormatHasBeenSet = false;
 
     /**
      * A las file writer.
@@ -120,6 +121,12 @@ public class LasWriter extends ALasWriter {
         this.xOffset = xOffset;
         this.yOffset = yOffset;
         this.zOffset = zOffset;
+    }
+
+    @Override
+    public void setPointFormat( int pointFormat ) {
+        this.pointFormat = pointFormat;
+        pointFormatHasBeenSet = true;
     }
 
     @Override
@@ -356,7 +363,14 @@ public class LasWriter extends ALasWriter {
         if (record.gpsTime > 0) {
             fos.write(getDouble(record.gpsTime));
             length = length + 8;
-            pointFormat = 1;
+            if (!pointFormatHasBeenSet)
+                pointFormat = 1;
+        }
+        if (pointFormat == 3 || pointFormat == 2) {
+            fos.write(getShort(record.color[0]));
+            fos.write(getShort(record.color[1]));
+            fos.write(getShort(record.color[2]));
+            length = length + 6;
         }
 
         recordLength = (short) length;
