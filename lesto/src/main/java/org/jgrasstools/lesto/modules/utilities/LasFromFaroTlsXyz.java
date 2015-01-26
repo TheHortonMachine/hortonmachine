@@ -35,6 +35,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.las.core.ALasWriter;
@@ -43,6 +44,7 @@ import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("Converts XYZ data exported from FARO TLS to las.")
@@ -65,6 +67,11 @@ public class LasFromFaroTlsXyz extends JGTModel {
     @Description("The reference latitude in a metric projection.")
     @In
     public double pLatitude;
+
+    @Description("The maximum allowed distance from the center.")
+    @Unit("m")
+    @In
+    public Double pMaxDistance;
 
     @Description("The code defining the data coordinate reference system.")
     @UI(JGTConstants.CRS_UI_HINT)
@@ -92,24 +99,41 @@ public class LasFromFaroTlsXyz extends JGTModel {
         double yMax = Double.NEGATIVE_INFINITY;
         double zMax = Double.NEGATIVE_INFINITY;
 
+        double maxDistance = Double.POSITIVE_INFINITY;
+        if (pMaxDistance != null) {
+            maxDistance = pMaxDistance;
+        }
+
         /*
          * Lines are of type:
          * -7.41840000 0.39450000 1190.87950000 254 254 254
          * xDeltaMeters, yDeltaMeters, Elev, R, G, B 
          */
+        int ignoredCount = 0;
         pm.beginTask("Reading xyz and creating bounds...", IJGTProgressMonitor.UNKNOWN);
         try (BufferedReader xyzReader = new BufferedReader(new FileReader(inXyzFile))) {
             String line;
+            int count = 0;
             while( (line = xyzReader.readLine()) != null ) {
+                if (count++ % 1000000 == 0) {
+                    pm.message("processed lines: " + (count - 1) + " of which ignored: " + ignoredCount);
+                }
                 line = line.trim();
                 if (line.length() == 0) {
                     continue;
                 }
                 String[] lineSplit = line.split("\\s+");
-                
+
                 int index = 2;
                 double deltaX = Double.parseDouble(lineSplit[index++]);
                 double deltaY = Double.parseDouble(lineSplit[index++]);
+
+                double distanceFromCenter = NumericsUtilities.pythagoras(deltaX, deltaY);
+                if (distanceFromCenter > maxDistance) {
+                    ignoredCount++;
+                    continue;
+                }
+
                 double x = pLongitude + deltaX;
                 double y = pLatitude + deltaY;
 
@@ -135,6 +159,8 @@ public class LasFromFaroTlsXyz extends JGTModel {
         }
         pm.done();
 
+        pm.message("Keeping point: " + readRecords.size());
+
         File outFile = new File(outLas);
         try (ALasWriter writer = new LasWriter(outFile, crs)) {
             writer.setBounds(xMin, xMax, yMin, yMax, zMin, zMax);
@@ -150,12 +176,24 @@ public class LasFromFaroTlsXyz extends JGTModel {
     }
 
     public static void main( String[] args ) throws Exception {
+        String inFile = "/home/hydrologis/data/rilievo_tls/capriana_punti_scansione_avgres.xyz";
+        double lon = 681274.363;
+        double lat = 5127118.3962;
+        String outFile = "/home/hydrologis/data/rilievo_tls/capriana_avgres.las";
+        double maxDistance = 15;
+
+        // String inFile = "/home/hydrologis/data/rilievo_tls/capriana_punti_scansione_lowres.xyz";
+        // double lon = 681269.8905;
+        // double lat = 5127117.2439;
+        // String outFile = "/home/hydrologis/data/rilievo_tls/capriana_lowres.las";
+
         LasFromFaroTlsXyz x = new LasFromFaroTlsXyz();
-        x.inFile = "/home/hydrologis/data/rilievo_tls/capriana_punti_scansione_lowres.xyz";
-        x.pLongitude = 681269.8905;
-        x.pLatitude = 5127117.2439;
+        x.inFile = inFile;
+        x.pLongitude = lon;
+        x.pLatitude = lat;
+        x.pMaxDistance = maxDistance;
         x.pCode = "EPSG:32632";
-        x.outLas = "/home/hydrologis/data/rilievo_tls/capriana_lowres.las";
+        x.outLas = outFile;
         x.process();
     }
 }

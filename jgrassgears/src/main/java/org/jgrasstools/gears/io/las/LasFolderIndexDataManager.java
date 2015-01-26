@@ -395,6 +395,7 @@ class LasFolderIndexDataManager extends ALasDataManager implements AutoCloseable
                             pair.reader = reader;
                             pair.strTree = lasIndex;
                             fileName2LasReaderMap.put(name, pair);
+                            fileName4LasReaderMapSupport.add(name);
                         } else {
                             continue;
                         }

@@ -117,6 +117,14 @@ public class LasIndexer extends JGTModel {
     private CoordinateReferenceSystem crs;
     private ConcurrentLinkedQueue<Polygon> envelopesQueue;
 
+    public static void main( String[] args ) throws Exception {
+        LasIndexer in = new LasIndexer();
+        in.inFolder = "/home/hydrologis/data/rilievo_tls/avgres";
+        in.process();
+        
+    }
+    
+    
     @Execute
     public void process() throws Exception {
         checkNull(inFolder, pIndexname);
