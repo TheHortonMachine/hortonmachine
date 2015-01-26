@@ -49,8 +49,9 @@ public class Scatter extends ApplicationFrame {
     private boolean yLog = false;
     private boolean showLines = true;
     private boolean showShapes = true;
+    private JFreeChart chart;
 
-    public Scatter(String title) {
+    public Scatter( String title ) {
         super(title);
         dataset = new XYSeriesCollection();
     }
@@ -59,36 +60,36 @@ public class Scatter extends ApplicationFrame {
         this("Scatter");
     }
 
-    public void addSeries(String seriesName, double[] x, double[] y) {
+    public void addSeries( String seriesName, double[] x, double[] y ) {
         XYSeries series = new XYSeries(seriesName);
-        for (int i = 0; i < x.length; i++) {
+        for( int i = 0; i < x.length; i++ ) {
             series.add(x[i], y[i]);
         }
         dataset.addSeries(series);
     }
 
-    public void setLogAxes(boolean xLog, boolean yLog) {
+    public void setLogAxes( boolean xLog, boolean yLog ) {
         this.xLog = xLog;
         this.yLog = yLog;
     }
 
-    public void setShowLines(boolean showLines) {
+    public void setShowLines( boolean showLines ) {
         this.showLines = showLines;
     }
 
-    public void setShowShapes(boolean showShapes) {
+    public void setShowShapes( boolean showShapes ) {
         this.showShapes = showShapes;
     }
 
-    public void setXLabel(String xLabel) {
+    public void setXLabel( String xLabel ) {
         this.xLabel = xLabel;
     }
 
-    public void setYLabel(String yLabel) {
+    public void setYLabel( String yLabel ) {
         this.yLabel = yLabel;
     }
 
-    public BufferedImage getImage(int width, int height) {
+    public BufferedImage getImage( int width, int height ) {
         JFreeChart chart = getChart();
         BufferedImage bufferedImage = chart.createBufferedImage(width, height);
         return bufferedImage;
@@ -108,52 +109,65 @@ public class Scatter extends ApplicationFrame {
     }
 
     private JFreeChart getChart() {
-        JFreeChart chart = ChartFactory.createXYLineChart(getTitle(), // chart title
-                xLabel,
-                // domain axis label
-                yLabel,
-                // range axis label
-                dataset,
-                // data
-                PlotOrientation.VERTICAL,
-                // orientation
-                false,
-                // include legend
-                true,
-                // tooltips?
-                false
-                // URLs?
-        );
+        if (chart == null) {
+            chart = ChartFactory.createXYLineChart(getTitle(), // chart title
+                    xLabel,
+                    // domain axis label
+                    yLabel,
+                    // range axis label
+                    dataset,
+                    // data
+                    PlotOrientation.VERTICAL,
+                    // orientation
+                    false,
+                    // include legend
+                    true,
+                    // tooltips?
+                    false
+            // URLs?
+                    );
 
-        XYPlot plot = (XYPlot) chart.getPlot();
-        if (xLog) {
-            LogAxis xAxis = new LogAxis("");
-            xAxis.setBase(10);
-            plot.setDomainAxis(xAxis);
-        }
-        if (yLog) {
-            LogAxis yAxis = new LogAxis("");
-            yAxis.setBase(10);
-            plot.setRangeAxis(yAxis);
-        }
+            XYPlot plot = (XYPlot) chart.getPlot();
+            if (xLog) {
+                LogAxis xAxis = new LogAxis("");
+                xAxis.setBase(10);
+                plot.setDomainAxis(xAxis);
+            }
+            if (yLog) {
+                LogAxis yAxis = new LogAxis("");
+                yAxis.setBase(10);
+                plot.setRangeAxis(yAxis);
+            }
 
-        ValueAxis rangeAxis = plot.getRangeAxis();
-        if (rangeAxis instanceof NumberAxis) {
-            NumberAxis axis = (NumberAxis) rangeAxis;
-            axis.setAutoRangeIncludesZero(false);
-        }
+            ValueAxis rangeAxis = plot.getRangeAxis();
+            if (rangeAxis instanceof NumberAxis) {
+                NumberAxis axis = (NumberAxis) rangeAxis;
+                axis.setAutoRangeIncludesZero(false);
+            }
 
-        XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
-        int seriesCount = plot.getSeriesCount();
-        for (int i = 0; i < seriesCount; i++) {
-            renderer.setSeriesShapesVisible(i, showShapes);
-            renderer.setSeriesLinesVisible(i, showLines);
+            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+            int seriesCount = plot.getSeriesCount();
+            for( int i = 0; i < seriesCount; i++ ) {
+                renderer.setSeriesShapesVisible(i, showShapes);
+                renderer.setSeriesLinesVisible(i, showLines);
+            }
         }
-
         return chart;
     }
+    
+    public  void setXRange(double min, double max){
+        XYPlot plot = (XYPlot) getChart().getPlot();
+        ValueAxis domainAxis = plot.getDomainAxis();
+        domainAxis.setRange(min, max);
+    }
 
-    public static void main(String[] args) {
+    public  void setYRange(double min, double max){
+        XYPlot plot = (XYPlot) getChart().getPlot();
+        ValueAxis rangeAxis = plot.getRangeAxis();
+        rangeAxis.setRange(min, max);
+    }
+
+    public static void main( String[] args ) {
         double[] asd = {1, 2};
         double[] qwe = {1, 2};
         Scatter scatter = new Scatter("");

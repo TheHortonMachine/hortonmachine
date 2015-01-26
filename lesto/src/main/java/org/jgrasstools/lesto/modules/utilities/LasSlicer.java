@@ -117,13 +117,14 @@ public class LasSlicer extends JGTModel {
 
             double xDelta = maxX - minX;
             double yDelta = maxY - minY;
-            int chartWidth = 1000;
+            int chartWidth = 1600;
             int chartHeigth = (int) (chartWidth * yDelta / xDelta);
             pm.message("Generating charts of " + chartWidth + "x" + chartHeigth);
 
             double[] xRange = NumericsUtilities.range2Bins(minX, maxX, 3.0, false);
             double[] yRange = NumericsUtilities.range2Bins(minY, maxY, 3.0, false);
 
+            int tilesNum = xRange.length * yRange.length;
             HashMap<String, List<LasRecord>> recordsMap = new LinkedHashMap<>();
             pm.beginTask("Producing slices...", (xRange.length - 1));
             for( int x = 0; x < xRange.length - 1; x++ ) {
@@ -132,6 +133,10 @@ public class LasSlicer extends JGTModel {
                     Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(env);
                     List<LasRecord> pointsInGeometry = dataManager.getPointsInGeometry(polygon, true);
 
+                    pm.message("Points in tile " + x + "/" + y + " of " + tilesNum + ": " + pointsInGeometry.size());
+                    if (pointsInGeometry.size() == 0) {
+                        continue;
+                    }
                     for( double z = minZ + pInterval; z < maxZ; z = z + pInterval ) {
                         String key = String.valueOf(z);
                         List<LasRecord> pointsInSlice = recordsMap.get(key);
@@ -142,16 +147,11 @@ public class LasSlicer extends JGTModel {
                         double height = z - minZ;
                         double low = height - pThickness / 2.0;
                         double high = height + pThickness / 2.0;
-                        List<LasRecord> pointsInHeightRange = null;
-                        if (pointsInGeometry.size() > 0)
-                            pointsInHeightRange = ALasDataManager.getPointsInHeightRange(pointsInGeometry, low, high);
-
-                        if (pointsInHeightRange == null || pointsInHeightRange.size() == 0) {
-                            pm.message("No points in: " + env);
-                        } else {
+                        List<LasRecord> pointsInHeightRange = ALasDataManager.getPointsInHeightRange(pointsInGeometry, low, high);
+                        if (pointsInHeightRange.size() > 0) {
                             pointsInSlice.addAll(pointsInHeightRange);
-                            pm.message("Added points: " + pointsInHeightRange.size());
-                            chartPoints(chartFolder, height, pointsInSlice, chartWidth, chartHeigth);
+                            // pm.message("Added points: " + pointsInHeightRange.size());
+                            chartPoints(chartFolder, height, pointsInSlice, chartWidth, chartHeigth, minX, maxX, minY, maxY);
                         }
                     }
                 }
@@ -161,9 +161,8 @@ public class LasSlicer extends JGTModel {
 
         }
     }
-
-    private void chartPoints( File chartFolder, double z, List<LasRecord> pointsInSlice, int width, int height )
-            throws IOException {
+    private void chartPoints( File chartFolder, double z, List<LasRecord> pointsInSlice, int width, int height, double minX,
+            double maxX, double minY, double maxY ) throws IOException {
         File chartFile = new File(chartFolder, "slice_" + z + ".png");
 
         int size = pointsInSlice.size();
@@ -180,6 +179,8 @@ public class LasSlicer extends JGTModel {
         scatterPlanim.setShowLines(false);
         scatterPlanim.setXLabel("longitude");
         scatterPlanim.setYLabel("latitude");
+        scatterPlanim.setXRange(minX, maxX);
+        scatterPlanim.setYRange(minY, maxY);
         BufferedImage imagePlanim = scatterPlanim.getImage(width, height);
         ImageIO.write(imagePlanim, "png", chartFile);
 
