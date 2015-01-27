@@ -125,15 +125,18 @@ public class LasSlicer extends JGTModel {
             double[] yRange = NumericsUtilities.range2Bins(minY, maxY, 3.0, false);
 
             int tilesNum = xRange.length * yRange.length;
+            int tilesCount = 0;
             HashMap<String, List<LasRecord>> recordsMap = new LinkedHashMap<>();
             pm.beginTask("Producing slices...", (xRange.length - 1));
             for( int x = 0; x < xRange.length - 1; x++ ) {
                 for( int y = 0; y < yRange.length - 1; y++ ) {
+                    tilesCount++;
                     Envelope env = new Envelope(xRange[x], xRange[x + 1], yRange[y], yRange[y + 1]);
                     Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(env);
                     List<LasRecord> pointsInGeometry = dataManager.getPointsInGeometry(polygon, true);
 
-                    pm.message("Points in tile " + x + "/" + y + " of " + tilesNum + ": " + pointsInGeometry.size());
+                    pm.message("Points in tile " + x + "/" + y + "(" + tilesCount + " of " + tilesNum + "): "
+                            + pointsInGeometry.size());
                     if (pointsInGeometry.size() == 0) {
                         continue;
                     }
@@ -188,10 +191,10 @@ public class LasSlicer extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
         LasSlicer l = new LasSlicer();
-        l.inLas = "/home/hydrologis/data/rilievo_tls/avgres/index.lasfolder";
+        l.inLas = "/home/hydrologis/data/rilievo_tls/lowres/index.lasfolder";
         l.inDtm = "/home/hydrologis/data/rilievo_tls/DTM/tls_5h681051270_DTM.asc";
         l.pInterval = 2.0;
-        l.pThickness = 0.2;
+        l.pThickness = 0.4;
         l.pGroundThreshold = 0.5;
         l.process();
     }

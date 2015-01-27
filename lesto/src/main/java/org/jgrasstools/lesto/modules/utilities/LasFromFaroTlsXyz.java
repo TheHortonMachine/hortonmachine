@@ -41,6 +41,7 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
+import org.jgrasstools.gears.io.las.index.LasIndexer;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -176,16 +177,18 @@ public class LasFromFaroTlsXyz extends JGTModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        String inFile = "/home/hydrologis/data/rilievo_tls/capriana_punti_scansione_avgres.xyz";
-        double lon = 681274.363;
-        double lat = 5127118.3962;
-        String outFile = "/home/hydrologis/data/rilievo_tls/capriana_avgres.las";
-        double maxDistance = 15;
+        // String inFile = "/home/hydrologis/data/rilievo_tls/capriana_punti_scansione_avgres.xyz";
+        // double lon = 681274.363;
+        // double lat = 5127118.3962;
+        // String outFile = "/home/hydrologis/data/rilievo_tls/capriana_avgres.las";
+        // double maxDistance = 15;
 
-        // String inFile = "/home/hydrologis/data/rilievo_tls/capriana_punti_scansione_lowres.xyz";
-        // double lon = 681269.8905;
-        // double lat = 5127117.2439;
-        // String outFile = "/home/hydrologis/data/rilievo_tls/capriana_lowres.las";
+        String inFile = "/home/hydrologis/data/rilievo_tls/capriana_punti_scansione_lowres.xyz";
+        double lon = 681269.8905;
+        double lat = 5127117.2439;
+        String outFolder = "/home/hydrologis/data/rilievo_tls/lowres/";
+        String outFile = outFolder + "capriana_lowres.las";
+        double maxDistance = 16;
 
         LasFromFaroTlsXyz x = new LasFromFaroTlsXyz();
         x.inFile = inFile;
@@ -195,5 +198,9 @@ public class LasFromFaroTlsXyz extends JGTModel {
         x.pCode = "EPSG:32632";
         x.outLas = outFile;
         x.process();
+
+        LasIndexer in = new LasIndexer();
+        in.inFolder = outFolder;
+        in.process();
     }
 }
