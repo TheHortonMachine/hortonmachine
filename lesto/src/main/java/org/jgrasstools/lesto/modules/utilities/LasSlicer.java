@@ -17,20 +17,27 @@
  */
 package org.jgrasstools.lesto.modules.utilities;
 
+import static java.lang.Math.round;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
+import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Random;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
+import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -45,16 +52,21 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.jgrasstools.gears.io.las.ALasDataManager;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.chart.Scatter;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Polygon;
 
@@ -91,15 +103,30 @@ public class LasSlicer extends JGTModel {
     @Unit("m")
     public double pGroundThreshold = 0.5;
 
+    @Description("Type of output to use.")
+    @UI("combo: chart, raster")
+    @In
+    public String pMode = "raster";
+
+    @Description("Raster resolution in case of raster mode..")
+    @In
+    @Unit("m")
+    public double pResolution = 0.5;
+
     @Execute
     public void process() throws Exception {
         checkNull(inLas);
 
+        boolean doRaster = true;
+        if (pMode.equals("chart")) {
+            doRaster = false;
+        }
+
         File lasFile = new File(inLas);
         File parentFile = lasFile.getParentFile();
-        File chartFolder = new File(parentFile, "vertical_slices");
-        if (!chartFolder.exists() && !chartFolder.mkdir()) {
-            throw new ModelsIOException("Can't create folder: " + chartFolder, this);
+        File outputFolder = new File(parentFile, "vertical_slices");
+        if (!outputFolder.exists() && !outputFolder.mkdir()) {
+            throw new ModelsIOException("Can't create folder: " + outputFolder, this);
         }
 
         GridCoverage2D dtm = getRaster(inDtm);
@@ -107,6 +134,7 @@ public class LasSlicer extends JGTModel {
         try (ALasDataManager dataManager = ALasDataManager.getDataManager(lasFile, dtm, pGroundThreshold, null)) {
             dataManager.open();
             ReferencedEnvelope3D dataEnvelope = dataManager.getEnvelope3D();
+            CoordinateReferenceSystem crs = dataEnvelope.getCoordinateReferenceSystem();
 
             double minX = dataEnvelope.getMinX();
             double minY = dataEnvelope.getMinY();
@@ -126,7 +154,7 @@ public class LasSlicer extends JGTModel {
 
             int tilesNum = xRange.length * yRange.length;
             int tilesCount = 0;
-            HashMap<String, List<LasRecord>> recordsMap = new LinkedHashMap<>();
+            LinkedHashMap<String, List<LasRecord>> recordsMap = new LinkedHashMap<>();
             pm.beginTask("Producing slices...", (xRange.length - 1));
             for( int x = 0; x < xRange.length - 1; x++ ) {
                 for( int y = 0; y < yRange.length - 1; y++ ) {
@@ -154,7 +182,8 @@ public class LasSlicer extends JGTModel {
                         if (pointsInHeightRange.size() > 0) {
                             pointsInSlice.addAll(pointsInHeightRange);
                             // pm.message("Added points: " + pointsInHeightRange.size());
-                            chartPoints(chartFolder, height, pointsInSlice, chartWidth, chartHeigth, minX, maxX, minY, maxY);
+                            if (!doRaster)
+                                chartPoints(outputFolder, height, pointsInSlice, chartWidth, chartHeigth, minX, maxX, minY, maxY);
                         }
                     }
                 }
@@ -162,8 +191,49 @@ public class LasSlicer extends JGTModel {
             }
             pm.done();
 
+            if (doRaster) {
+                Set<Entry<String, List<LasRecord>>> entrySet = recordsMap.entrySet();
+                int size = entrySet.size();
+                pm.beginTask("Generating rasters...", size);
+                for( Entry<String, List<LasRecord>> entry : entrySet ) {
+                    double z = Double.parseDouble(entry.getKey());
+                    double height = z - minZ;
+                    List<LasRecord> points = entry.getValue();
+
+                    dumpRaster(outputFolder, height, points, pResolution, minX, maxX, minY, maxY, crs);
+                    pm.worked(1);
+                }
+                pm.done();
+            }
+
         }
     }
+
+    private void dumpRaster( File outputFolder, double height, List<LasRecord> points, double resolution, double minX,
+            double maxX, double minY, double maxY, CoordinateReferenceSystem crs ) throws Exception {
+
+        File rasterFile = new File(outputFolder, "slice_" + height + ".tiff");
+
+        int rows = (int) round((maxY - minY) / resolution);
+        int cols = (int) round((maxX - minX) / resolution);
+
+        GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(maxY, minY, maxX, minX, cols, rows, crs);
+        RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometry);
+
+        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 0.0);
+        WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
+
+        Point point = new Point();
+        for( LasRecord dot : points ) {
+            CoverageUtilities.colRowFromCoordinate(new Coordinate(dot.x, dot.y), gridGeometry, point);
+            outIter.setSample(point.x, point.y, 0, 1.0);
+        }
+        outIter.done();
+
+        GridCoverage2D outRaster = CoverageUtilities.buildCoverage(rasterFile.getName(), outWR, regionMap, crs);
+        dumpRaster(outRaster, rasterFile.getAbsolutePath());
+    }
+
     private void chartPoints( File chartFolder, double z, List<LasRecord> pointsInSlice, int width, int height, double minX,
             double maxX, double minY, double maxY ) throws IOException {
         File chartFile = new File(chartFolder, "slice_" + z + ".png");
@@ -196,6 +266,8 @@ public class LasSlicer extends JGTModel {
         l.pInterval = 2.0;
         l.pThickness = 0.4;
         l.pGroundThreshold = 0.5;
+        l.pMode = "raster";
+        l.pResolution = 0.02;
         l.process();
     }
 
