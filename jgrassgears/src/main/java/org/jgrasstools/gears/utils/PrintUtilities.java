@@ -74,14 +74,14 @@ public class PrintUtilities {
         for( int r = 0; r < colsRows[1]; r++ ) {
             if (r == 0) {
                 printer.print("/*    */{");
-            }else{
+            } else {
                 printer.print("{");
             }
             for( int c = 0; c < colsRows[0]; c++ ) {
                 printer.print(renderedImageIterator.getSampleDouble(c, r, 0));
                 if (c < colsRows[0] - 1) {
                     printer.print(", ");
-                } 
+                }
             }
             if (r < colsRows[1] - 1) {
                 printer.println("}, //");
@@ -90,6 +90,7 @@ public class PrintUtilities {
             }
         }
         printer.println("};");
+        renderedImageIterator.done();
     }
 
     /**
@@ -98,16 +99,17 @@ public class PrintUtilities {
      * @param renderedImage the image.
      */
     public static void printRenderedImageData( RenderedImage renderedImage ) {
-        RandomIter netIter = RandomIterFactory.create(renderedImage, null);
+        RandomIter iter = RandomIterFactory.create(renderedImage, null);
         int cols = renderedImage.getWidth();
         int rows = renderedImage.getHeight();
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
-                printer.print(netIter.getSampleDouble(c, r, 0));
+                printer.print(iter.getSampleDouble(c, r, 0));
                 printer.print(separator);
             }
             printer.println();
         }
+        iter.done();
     }
 
     /**
@@ -116,16 +118,17 @@ public class PrintUtilities {
      * @param raster the image.
      */
     public static void printWritableRasterData( Raster raster ) {
-        RandomIter netIter = RandomIterFactory.create(raster, null);
+        RandomIter iter = RandomIterFactory.create(raster, null);
         int cols = raster.getWidth();
         int rows = raster.getHeight();
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
-                printer.print(netIter.getSampleDouble(c, r, 0));
+                printer.print(iter.getSampleDouble(c, r, 0));
                 printer.print(separator);
             }
             printer.println();
         }
+        iter.done();
     }
 
     /**
