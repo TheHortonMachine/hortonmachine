@@ -63,14 +63,18 @@ public class HoughCircles {
     private BufferedImage raster;
 
     public static void main( String[] args ) throws Exception {
-        String inImage = "/home/hydrologis/data/rilievo_tls/slice_12.0rgb.png";
-        String outImage = "/home/hydrologis/data/rilievo_tls/slice_12.0bw_out.png";
 
-        BufferedImage src = ImageIO.read(new File(inImage));
-        HoughCircles h = new HoughCircles(src, 10, 40, 1, 400);
-        h.run();
+        int[] i = {10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
+        for( int index : i ) {
+            String inImage = "/home/hydrologis/data/rilievo_tls/slice_" + index + ".0rgb.png";
+            String outImage = "/home/hydrologis/data/rilievo_tls/slice_" + index + ".0bw_out.png";
 
-        ImageIO.write(src, "png", new File(outImage));
+            BufferedImage src = ImageIO.read(new File(inImage));
+            HoughCircles h = new HoughCircles(src, 10, 40, 1, 300);
+            h.run();
+            ImageIO.write(src, "png", new File(outImage));
+        }
+
     }
 
     public HoughCircles( BufferedImage raster, int radiusMin, int radiusMax, int radiusIncrement, int circleCount ) {

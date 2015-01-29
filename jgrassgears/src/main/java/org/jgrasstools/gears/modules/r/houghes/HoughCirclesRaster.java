@@ -23,6 +23,10 @@ package org.jgrasstools.gears.modules.r.houghes;
 //import sigus.*;
 
 import java.awt.geom.Point2D;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.media.jai.iterator.RandomIter;
 
@@ -72,16 +76,35 @@ public class HoughCirclesRaster extends JGTModel {
     private GridCoverage2D raster;
 
     public static void main( String[] args ) throws Exception {
-        String inRaster = "/home/hydrologis/data/rilievo_tls/lowres/vertical_slices_2cm/slice_30.0.tiff";
-        String outShp = "/home/hydrologis/data/rilievo_tls/lowres/vertical_slices_2cm/slice_vector_30.0.shp";
 
-        GridCoverage2D src = OmsRasterReader.readRaster(inRaster);
-        HoughCirclesRaster h = new HoughCirclesRaster(src, 10, 40, 1, 400);
-        Geometry[] circles = h.getCircles();
+        ExecutorService exec = Executors.newFixedThreadPool(5);
 
-        SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(src.getCoordinateReferenceSystem(), circles);
+        int[] i = {12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
+        for( int index : i ) {
+            final int _index = index;
+            exec.execute(new Runnable(){
+                public void run() {
+                    try {
+                        String inRaster = "/home/hydrologis/data/rilievo_tls/avgres/vertical_slices/slice_" + _index + ".0.tiff";
+                        String outShp = "/home/hydrologis/data/rilievo_tls/avgres/vertical_slices/slice_vector_" + _index
+                                + ".0.shp";
 
-        OmsVectorWriter.writeVector(outShp, fc);
+                        GridCoverage2D src = OmsRasterReader.readRaster(inRaster);
+                        HoughCirclesRaster h = new HoughCirclesRaster(src, 10, 40, 1, 300);
+                        Geometry[] circles = h.getCircles();
+
+                        SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(
+                                src.getCoordinateReferenceSystem(), circles);
+
+                        OmsVectorWriter.writeVector(outShp, fc);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+        
+        exec.awaitTermination(10, TimeUnit.DAYS);
     }
 
     public HoughCirclesRaster( GridCoverage2D raster, int radiusMin, int radiusMax, int radiusIncrement, int circleCount ) {
