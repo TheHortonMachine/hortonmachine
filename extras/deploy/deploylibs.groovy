@@ -90,6 +90,17 @@ JGTMODULESCOPY: {
     def modCopyToFile = new File(modulesFolderFile.absolutePath, modJar.name).absolutePath;
     (new AntBuilder()).copy( file : modJar , tofile : modCopyToFile )
 
+    // take latest lest jar
+    jarFiles = new File("./lesto/target").listFiles(new FilenameFilter() {  
+        public boolean accept(File f, String filename) {  
+            return filename.startsWith("jgt-lesto-") && filename.endsWith(".jar")  
+        }  
+    });
+	Arrays.sort(jarFiles, Collections.reverseOrder());
+	def lestoJar = jarFiles[0];
+    def lestoCopyToFile = new File(modulesFolderFile.absolutePath, lestoJar.name).absolutePath;
+    (new AntBuilder()).copy( file : lestoJar , tofile : lestoCopyToFile )
+
     // tools.jar
     def newToolsJar = new File(copyPathFile, "tools.jar");
     new AntBuilder().copy ( file : toolsJar.absolutePath , tofile : newToolsJar.absolutePath )

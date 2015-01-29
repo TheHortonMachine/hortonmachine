@@ -4,7 +4,7 @@
 
 
     <properties>
-		<gt.version>11.2</gt.version>
+		<gt.version>12.2</gt.version>
 		<jaitools.version>1.3.1</jaitools.version>
 		<jiffle.version>0.2.1</jiffle.version>
 		<performRelease>false</performRelease>
