@@ -37,6 +37,7 @@ import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.chart.CategoryHistogram;
+import org.jgrasstools.gears.utils.chart.PlotFrame;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("A module that creates a histogram from a las file.")
@@ -140,7 +141,8 @@ public class LasHistogram extends JGTModel {
 
         if (doPlot) {
             CategoryHistogram hi = new CategoryHistogram(markersLabels, count);
-            hi.plot();
+            PlotFrame frame = new PlotFrame(hi);
+            frame.plot();
         }
     }
 

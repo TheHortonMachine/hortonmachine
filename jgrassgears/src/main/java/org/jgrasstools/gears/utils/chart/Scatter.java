@@ -17,11 +17,9 @@
  */
 package org.jgrasstools.gears.utils.chart;
 
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.axis.NumberAxis;
@@ -31,33 +29,36 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.ApplicationFrame;
-import org.jfree.ui.RefineryUtilities;
 
 /**
  * A simple scatter plotter.
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class Scatter extends ApplicationFrame {
+public class Scatter implements IChart {
 
-    private static final long serialVersionUID = 1L;
-    private String xLabel = "X";
-    private String yLabel = "Y";
-    private XYSeriesCollection dataset;
-    private boolean xLog = false;
-    private boolean yLog = false;
-    private boolean showLines = true;
-    private boolean showShapes = true;
-    private JFreeChart chart;
+    protected String xLabel = "X";
+    protected String yLabel = "Y";
+    protected XYSeriesCollection dataset;
+    protected boolean xLog = false;
+    protected boolean yLog = false;
+    protected boolean showLines = true;
+    protected boolean showShapes = true;
+    protected JFreeChart chart;
+    protected String title;
 
     public Scatter( String title ) {
-        super(title);
+        this.title = title;
         dataset = new XYSeriesCollection();
     }
 
     public Scatter() {
         this("Scatter");
+    }
+
+    @Override
+    public String getTitle() {
+        return title;
     }
 
     public void addSeries( String seriesName, double[] x, double[] y ) {
@@ -95,22 +96,9 @@ public class Scatter extends ApplicationFrame {
         return bufferedImage;
     }
 
-    public void plot() {
-
-        JFreeChart chart = getChart();
-
-        ChartPanel chartPanel = new ChartPanel(chart, true);
-        chartPanel.setPreferredSize(new Dimension(500, 270));
-        setContentPane(chartPanel);
-
-        pack();
-        RefineryUtilities.centerFrameOnScreen(this);
-        setVisible(true);
-    }
-
-    private JFreeChart getChart() {
+    public JFreeChart getChart() {
         if (chart == null) {
-            chart = ChartFactory.createXYLineChart(getTitle(), // chart title
+            chart = ChartFactory.createXYLineChart(title, // chart title
                     xLabel,
                     // domain axis label
                     yLabel,
@@ -154,27 +142,28 @@ public class Scatter extends ApplicationFrame {
         }
         return chart;
     }
-    
-    public  void setXRange(double min, double max){
+    public void setXRange( double min, double max ) {
         XYPlot plot = (XYPlot) getChart().getPlot();
         ValueAxis domainAxis = plot.getDomainAxis();
         domainAxis.setRange(min, max);
     }
 
-    public  void setYRange(double min, double max){
+    public void setYRange( double min, double max ) {
         XYPlot plot = (XYPlot) getChart().getPlot();
         ValueAxis rangeAxis = plot.getRangeAxis();
         rangeAxis.setRange(min, max);
     }
 
-    public static void main( String[] args ) {
-        double[] asd = {1, 2};
-        double[] qwe = {1, 2};
-        Scatter scatter = new Scatter("");
-        scatter.addSeries("asd", asd, qwe);
-        scatter.setShowLines(false);
-        scatter.setXLabel("diameter");
-        scatter.plot();
-    }
+    // public static void main( String[] args ) {
+    // double[] asd = {1, 2};
+    // double[] qwe = {1, 2};
+    // Scatter scatter = new Scatter("");
+    // scatter.addSeries("asd", asd, qwe);
+    // scatter.setShowLines(false);
+    // scatter.setXLabel("diameter");
+    //
+    // PlotFrame frame = new PlotFrame(scatter);
+    // frame.plot();
+    // }
 
 }

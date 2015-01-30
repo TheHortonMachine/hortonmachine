@@ -43,6 +43,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.chart.CategoryHistogram;
+import org.jgrasstools.gears.utils.chart.PlotFrame;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.time.UtcTimeUtilities;
 import org.joda.time.DateTime;
@@ -208,7 +209,9 @@ public class FlightLinesExtractor extends JGTModel {
 
         if (doPlot) {
             CategoryHistogram hi = new CategoryHistogram(cat, values);
-            hi.plot();
+            
+            PlotFrame frame = new PlotFrame(hi);
+            frame.plot();
         }
     }
 
