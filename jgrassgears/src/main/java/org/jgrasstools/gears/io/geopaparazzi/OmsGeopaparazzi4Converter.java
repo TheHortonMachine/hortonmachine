@@ -58,6 +58,7 @@ import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
@@ -87,6 +88,9 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.geopaparazzi.forms.Utilities;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsPoint;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Image;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsDataTableFields;
@@ -511,74 +515,12 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     }
 
     private void gpsLogToShapefiles( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
-        List<GpsLog> logsList = new ArrayList<>();
-        try (Statement statement = connection.createStatement()) {
-            statement.setQueryTimeout(30); // set timeout to 30 sec.
-
-            String sql = "select " + //
-                    GpsLogsTableFields.COLUMN_ID.getFieldName() + "," + //
-                    GpsLogsTableFields.COLUMN_LOG_STARTTS.getFieldName() + "," + //
-                    GpsLogsTableFields.COLUMN_LOG_ENDTS.getFieldName() + "," + //
-                    GpsLogsTableFields.COLUMN_LOG_TEXT.getFieldName() + //
-                    " from " + TABLE_GPSLOGS; //
-
-            // first get the logs
-            ResultSet rs = statement.executeQuery(sql);
-            while( rs.next() ) {
-                long id = rs.getLong(1);
-
-                long startDateTimeString = rs.getLong(2);
-                long endDateTimeString = rs.getLong(3);
-                String text = rs.getString(4);
-
-                GpsLog log = new GpsLog();
-                log.id = id;
-                log.startTime = startDateTimeString;
-                log.endTime = endDateTimeString;
-                log.text = text;
-                logsList.add(log);
-            }
-        }
+        List<GpsLog> logsList = DaoGpsLog.getLogsList(connection);
 
         try {
             // then the log data
             for( GpsLog log : logsList ) {
-                long logId = log.id;
-
-                String query = "select "
-                        + //
-                        GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + ","
-                        + //
-                        GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + ","
-                        + //
-                        GpsLogsDataTableFields.COLUMN_DATA_ALTIM.getFieldName() + ","
-                        + //
-                        GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName()
-                        + //
-                        " from " + TABLE_GPSLOG_DATA + " where "
-                        + //
-                        GpsLogsDataTableFields.COLUMN_LOGID.getFieldName() + " = " + logId + " order by "
-                        + GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName();
-
-                try (Statement newStatement = connection.createStatement()) {
-                    newStatement.setQueryTimeout(30);
-                    ResultSet result = newStatement.executeQuery(query);
-
-                    while( result.next() ) {
-                        double lat = result.getDouble(1);
-                        double lon = result.getDouble(2);
-                        double altim = result.getDouble(3);
-                        long ts = result.getLong(4);
-
-                        GpsPoint gPoint = new GpsPoint();
-                        gPoint.lon = lon;
-                        gPoint.lat = lat;
-                        gPoint.altim = altim;
-                        gPoint.utctime = ts;
-                        log.points.add(gPoint);
-                    }
-                }
-
+                DaoGpsLog.collectDataForLog(connection, log);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -812,21 +754,6 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             pm.done();
         }
 
-    }
-
-    private static class GpsPoint {
-        public double lat;
-        public double lon;
-        public double altim;
-        public long utctime;
-    }
-
-    private static class GpsLog {
-        public long id;
-        public long startTime;
-        public long endTime;
-        public String text;
-        public List<GpsPoint> points = new ArrayList<>();
     }
 
 }
