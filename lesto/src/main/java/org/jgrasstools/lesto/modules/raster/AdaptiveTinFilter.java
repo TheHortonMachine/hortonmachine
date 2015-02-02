@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -69,13 +70,14 @@ import com.vividsolutions.jts.geom.Location;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.index.strtree.STRtree;
 
-@Description("An adaptive tin filter for laserscan data (Dem generation from laser scanner data usign adaptive tin models - Axelsson)")
+@Description("Tool for DEM generation from laser scanner data using adaptive tin models .")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
 @Keywords("tin, filter, lidar")
 @Label(JGTConstants.LESTO + "/raster")
 @Name("adaptivetinfilter")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)
+@Bibliography("Dem generation from laser scanner data using adaptive tin models - 01/2000 - P.Axelsson")
 @SuppressWarnings("nls")
 public class AdaptiveTinFilter extends JGTModel {
     @Description("The las folder index file")
@@ -236,23 +238,9 @@ public class AdaptiveTinFilter extends JGTModel {
                 dumpVector(outNonGroundFC, outNonGround);
             }
 
-            double[] minMaxElev0 = tinHandler.getMinMaxElev();
-            doRaster(tinHandler, regionMap, minMaxElev0, 0);
-            // doRaster(tinHandler, regionMap, minMaxElev0, iteration);
-
-            // OmsSurfaceInterpolator spliner = new OmsSurfaceInterpolator();
-            // spliner.inVector = tinHandler.toFeatureCollectionTinPoints();
-            // spliner.inGrid = inTemplate.getGridGeometry();
-            // // spliner.inMask = mask;
-            // spliner.fCat = "elev";
-            // spliner.pMode = Variables.IDW;
-            // spliner.pMaxThreads = 8;
-            // spliner.pBuffer = 15.0;
-            // spliner.pm = pm;
-            // spliner.process();
-            //
-            // outDem = spliner.outRaster;
         }
+        double[] minMaxElev0 = tinHandler.getMinMaxElev();
+        doRaster(tinHandler, regionMap, minMaxElev0, 0);
 
     }
 
@@ -356,13 +344,15 @@ public class AdaptiveTinFilter extends JGTModel {
         try (ALasDataManager lasHandler = ALasDataManager.getDataManager(new File(inLas), null, 0,
                 inTemplateGC.getCoordinateReferenceSystem())) {
             lasHandler.open();
-            pm.beginTask("Extracting seed points...", secGridGeoms.size());
-            ThreadedRunnable tRun = new ThreadedRunnable(getDefaultThreadsNum(), null);
+            int defaultThreadsNum = getDefaultThreadsNum();
+            pm.beginTask("Extracting seed points on " + secGridGeoms.size() + " tiles... (cores = " + defaultThreadsNum + ")",
+                    secGridGeoms.size());
+            ThreadedRunnable tRun = new ThreadedRunnable(defaultThreadsNum, null);
             for( final Geometry secGridGeom : secGridGeoms ) {
                 tRun.executeRunnable(new Runnable(){
                     public void run() {
                         try {
-                            List<LasRecord> pointsInGeom = lasHandler.getPointsInGeometry(secGridGeom, true);
+                            final List<LasRecord> pointsInGeom = lasHandler.getPointsInGeometry(secGridGeom, true);
                             if (pointsInGeom.size() != 0) {
                                 Collections.sort(pointsInGeom, new LasRecordElevationComparator());
                                 LasRecord seedPoint = pointsInGeom.get(0);

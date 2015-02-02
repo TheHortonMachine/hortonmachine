@@ -99,11 +99,11 @@ public class OmsGridsGenerator extends JGTModel {
 
     @Description(OMSGRIDSGENERATOR_pWidth_DESCRIPTION)
     @In
-    public Double pWidth = 1.0;
+    public Double pWidth;
 
     @Description(OMSGRIDSGENERATOR_pHeight_DESCRIPTION)
     @In
-    public Double pHeight = 1.0;
+    public Double pHeight;
 
     @Description(OMSGRIDSGENERATOR_pRows_DESCRIPTION)
     @In
