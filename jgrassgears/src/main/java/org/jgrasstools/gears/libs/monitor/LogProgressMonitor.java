@@ -101,7 +101,7 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
         } else {
             runningWork = runningWork + work;
             // calculate %
-            int percentage = 100 * runningWork / totalWork;
+            int percentage = (int) (100 * (runningWork /(double) totalWork));
             if (percentage % 10 == 0 && percentage != lastPercentage) {
                 if (percentage < 0) {
                     System.err.println(runningWork + "/" + totalWork + "/" + work);
