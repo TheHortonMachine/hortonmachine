@@ -29,10 +29,8 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Random;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -70,7 +68,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Polygon;
 
-@Description("Creates vertical slices of a las file.")
+@Description("Creates vertical slices of a las file. The resulting raster will have the slice height value as valid pixel value.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("slices, lidar, las")
 @Label(JGTConstants.LESTO + "/utilities")
@@ -220,13 +218,13 @@ public class LasSlicer extends JGTModel {
         GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(maxY, minY, maxX, minX, cols, rows, crs);
         RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometry);
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 0.0);
+        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
 
         Point point = new Point();
         for( LasRecord dot : points ) {
             CoverageUtilities.colRowFromCoordinate(new Coordinate(dot.x, dot.y), gridGeometry, point);
-            outIter.setSample(point.x, point.y, 0, 1.0);
+            outIter.setSample(point.x, point.y, 0, height);
         }
         outIter.done();
 
@@ -261,7 +259,7 @@ public class LasSlicer extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
         LasSlicer l = new LasSlicer();
-        l.inLas = "/home/hydrologis/data/rilievo_tls/avgres/index.lasfolder";
+        l.inLas = "/home/hydrologis/data/rilievo_tls/avgres/las/index.lasfolder";
         l.inDtm = "/home/hydrologis/data/rilievo_tls/DTM/tls_5h681051270_DTM.asc";
         l.pInterval = 2.0;
         l.pThickness = 0.4;

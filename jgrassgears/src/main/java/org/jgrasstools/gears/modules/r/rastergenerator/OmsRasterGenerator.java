@@ -22,16 +22,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_pNull_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_pValue_DESCRIPTION;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.WritableRaster;
 import java.util.Random;
 
-import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
@@ -54,7 +48,6 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description(OmsRasterGenerator.DESCRIPTION)

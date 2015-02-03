@@ -1,181 +1,224 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.gears.modules.r.houghes;
-/** houghCircles_.java:
- 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
- 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- 
- @author Hemerson Pistori (pistori@ec.ucdb.br) and Eduardo Rocha Costa
- @created 18 de Mar�o de 2004
- 
- The Hough Transform implementation was based on 
- Mark A. Schulze applet (http://www.markschulze.net/)
- 
-*/
 
-//package sigus.templateMatching;
-//import sigus.*;
+import static java.lang.Math.round;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
 import java.awt.geom.Point2D;
-import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.media.jai.iterator.RandomIter;
 
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.Unit;
+
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.opengis.referencing.operation.TransformException;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 
-/**
- * A Hough Transform implementation.
- * 
- * @author Hemerson Pistori (pistori@ec.ucdb.br) and Eduardo Rocha Costa
- * @author Mark A. Schulze applet (http://www.markschulze.net/)
- * @author Andrea Antonello (www.hydrologis.com)
- */
+@Description("A Hough Transform implementation.")
+@Author(name = "Hemerson Pistori (pistori@ec.ucdb.br) and Eduardo Rocha Costa, Mark A. Schulze (http://www.markschulze.net/), Andrea Antonello (www.hydrologis.com)", contact = "")
+@Keywords("Hough, circle")
+@Label(JGTConstants.RASTERPROCESSING)
+@Name("houghcirclesraster")
+@Status(OMSHYDRO_DRAFT)
+@License(OMSHYDRO_LICENSE)
 public class HoughCirclesRaster extends JGTModel {
 
-    public int radiusMin; // Find circles with radius grater or equal radiusMin
-    public int radiusMax; // Find circles with radius less or equal radiusMax
-    public int radiusInc; // Increment used to go from radiusMin to radiusMax
-    public int maxCircles; // Numbers of circles to be found
-    public int threshold = -1; // An alternative to maxCircles. All circles with
-    // a value in the hough space greater then threshold are marked. Higher thresholds
-    // results in fewer circles.
-    byte imageValues[]; // Raw image (returned by ip.getPixels())
-    public int width; // Hough Space width (depends on image width)
-    public int height; // Hough Space heigh (depends on image height)
-    public int depth; // Hough Space depth (depends on radius interval)
-    public int offset; // Image Width
-    public int offx; // ROI x offset
-    public int offy; // ROI y offset
-    private int vectorMaxSize = 500;
-    boolean useThreshold = false;
-    int lut[][][]; // LookUp Table for rsin e rcos values
-    private GridCoverage2D raster;
+    @Description("The input raster.")
+    @In
+    public GridCoverage2D inRaster;
+
+    @Description("The minimum radius to look for.")
+    @Unit("m")
+    @In
+    public Double pMinRadius;
+
+    @Description("The maximum radius to look for.")
+    @Unit("m")
+    @In
+    public Double pMaxRadius;
+
+    @Description("The radius increment to use.")
+    @Unit("m")
+    @In
+    public Double pRadiusIncrement;
+
+    @Description("The maximum circle count to look for.")
+    @In
+    public int pMaxCircleCount = 50;
+
+    @Description("The output circles.")
+    @In
+    public SimpleFeatureCollection outCircles;
+
+    private int radiusMinPixel; // Find circles with radius grater or equal radiusMin
+    private int radiusMaxPixel; // Find circles with radius less or equal radiusMax
+    private int radiusIncPixel; // Increment used to go from radiusMin to radiusMax
+    private int maxCircles; // Numbers of circles to be found
+
+    private byte imageValues[]; // Raw image (returned by ip.getPixels())
+    private int width; // Hough Space width (depends on image width)
+    private int height; // Hough Space heigh (depends on image height)
+    private int depth; // Hough Space depth (depends on radius interval)
+    private int offset; // Image Width
+    private int offx; // ROI x offset
+    private int offy; // ROI y offset
+    private int lut[][][]; // LookUp Table for rsin e rcos values
+
+    private double xRes;
+    private double referenceImageValue = JGTConstants.doubleNovalue;
 
     public static void main( String[] args ) throws Exception {
 
         ExecutorService exec = Executors.newFixedThreadPool(5);
 
-        int[] i = {12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
+        // int[] i = {12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
+        int[] i = {14};
         for( int index : i ) {
             final int _index = index;
             exec.execute(new Runnable(){
                 public void run() {
                     try {
                         String inRaster = "/home/hydrologis/data/rilievo_tls/avgres/vertical_slices/slice_" + _index + ".0.tiff";
-                        String outShp = "/home/hydrologis/data/rilievo_tls/avgres/vertical_slices/slice_vector_" + _index
+                        String outShp = "/home/hydrologis/data/rilievo_tls/avgres/vertical_slices/slice_vector2_" + _index
                                 + ".0.shp";
 
                         GridCoverage2D src = OmsRasterReader.readRaster(inRaster);
-                        HoughCirclesRaster h = new HoughCirclesRaster(src, 10, 40, 1, 300);
-                        Geometry[] circles = h.getCircles();
+                        HoughCirclesRaster h = new HoughCirclesRaster();
+                        h.inRaster = src;
+                        h.pMinRadius = 0.1;
+                        h.pMaxRadius = 0.4;
+                        h.pRadiusIncrement = 0.01;
+                        h.pMaxCircleCount = 300;
+                        h.process();
 
-                        SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(
-                                src.getCoordinateReferenceSystem(), circles);
-
-                        OmsVectorWriter.writeVector(outShp, fc);
+                        OmsVectorWriter.writeVector(outShp, h.outCircles);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             });
         }
-        
+
         exec.awaitTermination(10, TimeUnit.DAYS);
     }
 
-    public HoughCirclesRaster( GridCoverage2D raster, int radiusMin, int radiusMax, int radiusIncrement, int circleCount ) {
-        this.raster = raster;
-        this.radiusMin = radiusMin;
-        this.radiusMax = radiusMax;
-        maxCircles = circleCount;
-        radiusInc = radiusIncrement;
-        depth = ((radiusMax - radiusMin) / radiusInc) + 1;
+    @Execute
+    public void process() throws Exception {
+        checkNull(inRaster, pMinRadius, pMaxRadius, pRadiusIncrement);
 
-        // TODO support threshold
-        // threshold = (int) gd.getNextNumber();
-        // if (maxCircles > 0) {
-        // useThreshold = false;
-        // threshold = -1;
-        // } else {
-        // useThreshold = true;
-        // if (threshold < 0) {
-        // IJ.showMessage("Threshold must be greater than 0");
-        // return (false);
-        // }
-        // }
-    }
-
-    public Geometry[] getCircles() throws Exception {
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(raster);
-
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
         offx = 0;
         offy = 0;
         width = regionMap.getCols();
         height = regionMap.getRows();
         offset = width;
+        xRes = regionMap.getXres();
 
-        RandomIter renderedImageIterator = CoverageUtilities.getRandomIterator(raster);
+        radiusMinPixel = (int) round(width * pMinRadius / (regionMap.getEast() - regionMap.getWest()));
+        radiusMaxPixel = (int) round(width * pMaxRadius / (regionMap.getEast() - regionMap.getWest()));;
+        radiusIncPixel = (int) round(width * pRadiusIncrement / (regionMap.getEast() - regionMap.getWest()));
+        if (radiusIncPixel < 1) {
+            radiusIncPixel = 1;
+        }
+
+        maxCircles = pMaxCircleCount;
+        depth = ((radiusMaxPixel - radiusMinPixel) / radiusIncPixel) + 1;
+
+        Geometry[] circles = getCircles();
+
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("houghcircles");
+        b.setCRS(inRaster.getCoordinateReferenceSystem());
+        b.add("the_geom", Polygon.class);
+        b.add("value", Double.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+
+        DefaultFeatureCollection outFC = new DefaultFeatureCollection();
+        for( Geometry geometry : circles ) {
+            Object[] values = new Object[]{geometry, referenceImageValue};
+            builder.addAll(values);
+            SimpleFeature feature = builder.buildFeature(null);
+            outFC.add(feature);
+        }
+
+        outCircles = outFC;
+    }
+
+    public Geometry[] getCircles() throws Exception {
+
+        RandomIter renderedImageIterator = CoverageUtilities.getRandomIterator(inRaster);
         imageValues = new byte[width * height];
+
         int count = 0;
         for( int r = 0; r < height; r++ ) {
             for( int c = 0; c < width; c++ ) {
-                int sample = renderedImageIterator.getSample(c, r, 0);
-                imageValues[count++] = (byte) sample;
+                double sample = renderedImageIterator.getSampleDouble(c, r, 0);
+                if (JGTConstants.isNovalue(sample)) {
+                    imageValues[count++] = (byte) 0;
+                } else {
+                    referenceImageValue = sample;
+                    imageValues[count++] = (byte) 1;
+                }
             }
         }
         renderedImageIterator.done();
 
         double[][][] houghValues = houghTransform();
-
-        // Create image View for Hough Transform.
-        // ImageProcessor newip = new ByteProcessor(width, height);
-        // byte[] newpixels = (byte[]) newip.getPixels();
-        // createHoughPixels(houghValues, newpixels);
-        //
-        // // Create image View for Marked Circles.
-        // ImageProcessor circlesip = new ByteProcessor(width, height);
-        // byte[] circlespixels = (byte[]) circlesip.getPixels();
-
-        // Mark the center of the found circles in a new image
-        // if (useThreshold)
-        // getCenterPointsByThreshold(threshold);
-        // else
         Coordinate[] centerPoints = getCenterPoints(houghValues, maxCircles);
-        // drawCircles(houghValues, circlespixels);
         Geometry[] geoms = new Geometry[centerPoints.length];
-        GridGeometry2D gridGeometry = raster.getGridGeometry();
-        double xres = regionMap.getXres();
+        GridGeometry2D gridGeometry = inRaster.getGridGeometry();
         for( int i = 0; i < centerPoints.length; i++ ) {
             Coordinate c = centerPoints[i];
-
             Point2D world = CoverageUtilities.gridToWorld(gridGeometry, (int) c.x, (int) c.y);
-            double radius = c.z * xres;
+            double radius = c.z * xRes;
             Coordinate w = new Coordinate(world.getX(), world.getY(), radius);
-
             Point point = gf.createPoint(w);
             Geometry circle = point.buffer(radius);
             geoms[i] = circle;
@@ -183,34 +226,33 @@ public class HoughCirclesRaster extends JGTModel {
 
         return geoms;
     }
-    /** The parametric equation for a circle centered at (a,b) with
-        radius r is:
 
-    a = x - r*cos(theta)
-    b = y - r*sin(theta)
-
-    In order to speed calculations, we first construct a lookup
-    table (lut) containing the rcos(theta) and rsin(theta) values, for
-    theta varying from 0 to 2*PI with increments equal to
-    1/8*r. As of now, a fixed increment is being used for all
-    different radius (1/8*radiusMin). This should be corrected in
-    the future.
-
-    Return value = Number of angles for each radius
-       
-    */
+    /** 
+     *  The parametric equation for a circle centered at (a,b) with
+     *   radius r is:
+     *
+     *   a = x - r*cos(theta)
+     *   b = y - r*sin(theta)
+     *
+     *   In order to speed calculations, we first construct a lookup
+     *   table (lut) containing the rcos(theta) and rsin(theta) values, for
+     *   theta varying from 0 to 2*PI with increments equal to
+     *   1/8*r. As of now, a fixed increment is being used for all
+     *   different radius (1/8*radiusMin). This should be corrected in
+     *   the future.
+     *
+     *   Return value = Number of angles for each radius
+     *  
+     */
     private int buildLookUpTable() {
-
         int i = 0;
-        int incDen = Math.round(8F * radiusMin); // increment denominator
-
+        int incDen = Math.round(8F * radiusMinPixel); // increment denominator
         lut = new int[2][incDen][depth];
-
-        for( int radius = radiusMin; radius <= radiusMax; radius = radius + radiusInc ) {
+        for( int radius = radiusMinPixel; radius <= radiusMaxPixel; radius = radius + radiusIncPixel ) {
             i = 0;
             for( int incNun = 0; incNun < incDen; incNun++ ) {
                 double angle = (2 * Math.PI * (double) incNun) / (double) incDen;
-                int indexR = (radius - radiusMin) / radiusInc;
+                int indexR = (radius - radiusMinPixel) / radiusIncPixel;
                 int rcos = (int) Math.round((double) radius * Math.cos(angle));
                 int rsin = (int) Math.round((double) radius * Math.sin(angle));
                 if ((i == 0) | (rcos != lut[0][i][indexR]) & (rsin != lut[1][i][indexR])) {
@@ -220,7 +262,6 @@ public class HoughCirclesRaster extends JGTModel {
                 }
             }
         }
-
         return i;
     }
 
@@ -236,9 +277,9 @@ public class HoughCirclesRaster extends JGTModel {
                 throw new ModelsRuntimeException("Module interrupted.", this);
             }
             for( int x = 1; x < k; x++ ) {
-                for( int radius = radiusMin; radius <= radiusMax; radius = radius + radiusInc ) {
+                for( int radius = radiusMinPixel; radius <= radiusMaxPixel; radius = radius + radiusIncPixel ) {
                     if (imageValues[(x + offx) + (y + offy) * offset] != 0) {// Edge pixel found
-                        int indexR = (radius - radiusMin) / radiusInc;
+                        int indexR = (radius - radiusMinPixel) / radiusIncPixel;
                         for( int i = 0; i < lutSize; i++ ) {
                             int a = x + lut[1][i][indexR];
                             int b = y + lut[0][i][indexR];
@@ -257,106 +298,13 @@ public class HoughCirclesRaster extends JGTModel {
 
     }
 
-    // Convert Values in Hough Space to an 8-Bit Image Space.
-    private void createHoughPixels( double[][][] houghValues, byte houghPixels[] ) {
-        double d = -1D;
-        for( int j = 0; j < height; j++ ) {
-            for( int k = 0; k < width; k++ ) {
-                if (houghValues[k][j][0] > d) {
-                    d = houghValues[k][j][0];
-                }
-            }
-        }
-        for( int l = 0; l < height; l++ ) {
-            for( int i = 0; i < width; i++ ) {
-                houghPixels[i + l * width] = (byte) Math.round((houghValues[i][l][0] * 255D) / d);
-            }
-        }
-    }
-
-    // Draw the circles found in the original image.
-    public void drawCircles( double[][][] houghValues, byte[] circlespixels ) {
-
-        // Copy original input pixels into output
-        // circle location display image and
-        // combine with saturation at 100
-        int roiaddr = 0;
-        for( int y = offy; y < offy + height; y++ ) {
-            for( int x = offx; x < offx + width; x++ ) {
-                // Copy;
-                circlespixels[roiaddr] = imageValues[x + offset * y];
-                // Saturate
-                if (circlespixels[roiaddr] != 0)
-                    circlespixels[roiaddr] = 100;
-                else
-                    circlespixels[roiaddr] = 0;
-                roiaddr++;
-            }
-        }
-        // Copy original image to the circlespixels image.
-        // Changing pixels values to 100, so that the marked
-        // circles appears more clear. Must be improved in
-        // the future to show the resuls in a colored image.
-        // for(int i = 0; i < width*height ;++i ) {
-        // if(imageValues[i] != 0 )
-        // if(circlespixels[i] != 0 )
-        // circlespixels[i] = 100;
-        // else
-        // circlespixels[i] = 0;
-        // }
-        // if (centerPoints == null) {
-        // if (useThreshold)
-        // getCenterPointsByThreshold(threshold);
-        // else
-        Coordinate[] centerPoints = getCenterPoints(houghValues, maxCircles);
-        // }
-        byte cor = -1;
-        // Redefine these so refer to ROI coordinates exclusively
-        int offset = width;
-        int offx = 0;
-        int offy = 0;
-
-        for( int l = 0; l < maxCircles; l++ ) {
-            int i = (int) centerPoints[l].x;
-            int j = (int) centerPoints[l].y;
-            // Draw a gray cross marking the center of each circle.
-            for( int k = -10; k <= 10; ++k ) {
-                int p = (j + k + offy) * offset + (i + offx);
-                if (!outOfBounds(j + k + offy, i + offx))
-                    circlespixels[(j + k + offy) * offset + (i + offx)] = cor;
-                if (!outOfBounds(j + offy, i + k + offx))
-                    circlespixels[(j + offy) * offset + (i + k + offx)] = cor;
-            }
-            for( int k = -2; k <= 2; ++k ) {
-                if (!outOfBounds(j - 2 + offy, i + k + offx))
-                    circlespixels[(j - 2 + offy) * offset + (i + k + offx)] = cor;
-                if (!outOfBounds(j + 2 + offy, i + k + offx))
-                    circlespixels[(j + 2 + offy) * offset + (i + k + offx)] = cor;
-                if (!outOfBounds(j + k + offy, i - 2 + offx))
-                    circlespixels[(j + k + offy) * offset + (i - 2 + offx)] = cor;
-                if (!outOfBounds(j + k + offy, i + 2 + offx))
-                    circlespixels[(j + k + offy) * offset + (i + 2 + offx)] = cor;
-            }
-        }
-    }
-
-    private boolean outOfBounds( int y, int x ) {
-        if (x >= width)
-            return (true);
-        if (x <= 0)
-            return (true);
-        if (y >= height)
-            return (true);
-        if (y <= 0)
-            return (true);
-        return (false);
-    }
-
-    /** Search for a fixed number of circles.
-
-    @param maxCircles The number of circles that should be found.  
-     * @param houghValues 
-    */
+    /** 
+     * Search for a fixed number of circles.
+     * 
+     * @param houghValues the hough values.
+     * @param maxCircles The number of circles that should be found.  
+     * @return the center coordinates.
+     */
     private Coordinate[] getCenterPoints( double[][][] houghValues, int maxCircles ) {
 
         Coordinate[] centerPoints = new Coordinate[maxCircles];
@@ -367,9 +315,9 @@ public class HoughCirclesRaster extends JGTModel {
         pm.beginTask("Search for circles...", maxCircles);
         for( int c = 0; c < maxCircles; c++ ) {
             double counterMax = -1;
-            for( int radius = radiusMin; radius <= radiusMax; radius = radius + radiusInc ) {
+            for( int radius = radiusMinPixel; radius <= radiusMaxPixel; radius = radius + radiusIncPixel ) {
 
-                int indexR = (radius - radiusMin) / radiusInc;
+                int indexR = (radius - radiusMinPixel) / radiusIncPixel;
                 for( int y = 0; y < height; y++ ) {
                     for( int x = 0; x < width; x++ ) {
                         if (houghValues[x][y][indexR] > counterMax) {
@@ -382,9 +330,7 @@ public class HoughCirclesRaster extends JGTModel {
 
                 }
             }
-
             centerPoints[c] = new Coordinate(xMax, yMax, rMax);
-
             clearNeighbours(houghValues, xMax, yMax, rMax);
             pm.worked(1);
         }
@@ -392,51 +338,15 @@ public class HoughCirclesRaster extends JGTModel {
         return centerPoints;
     }
 
-    /** Search circles having values in the hough space higher than a threshold
-
-    @param threshold The threshold used to select the higher point of Hough Space
-    */
-    // private void getCenterPointsByThreshold( int threshold ) {
-    //
-    // centerPoint = new Point[vectorMaxSize];
-    // int xMax = 0;
-    // int yMax = 0;
-    // int countCircles = 0;
-    //
-    // for( int radius = radiusMin; radius <= radiusMax; radius = radius + radiusInc ) {
-    // int indexR = (radius - radiusMin) / radiusInc;
-    // for( int y = 0; y < height; y++ ) {
-    // for( int x = 0; x < width; x++ ) {
-    //
-    // if (houghValues[x][y][indexR] > threshold) {
-    //
-    // if (countCircles < vectorMaxSize) {
-    //
-    // centerPoint[countCircles] = new Point(x, y);
-    //
-    // clearNeighbours(xMax, yMax, radius);
-    //
-    // ++countCircles;
-    // } else
-    // break;
-    // }
-    // }
-    // }
-    // }
-    //
-    // maxCircles = countCircles;
-    // }
-
-    /** Clear, from the Hough Space, all the counter that are near (radius/2) a previously found circle C.
-        
-    @param x The x coordinate of the circle C found.
-    @param x The y coordinate of the circle C found.
-    @param x The radius of the circle C found.
-    */
+    /** 
+     * Clear, from the Hough Space, all the counter that are near (radius/2) a previously found circle C.
+     *  
+     * @param x The x coordinate of the circle C found.
+     * @param x The y coordinate of the circle C found.
+     * @param x The radius of the circle C found.
+     */
     private void clearNeighbours( double[][][] houghValues, int x, int y, int radius ) {
-
         // The following code just clean the points around the center of the circle found.
-
         double halfRadius = radius / 2.0F;
         double halfSquared = halfRadius * halfRadius;
 
@@ -454,8 +364,8 @@ public class HoughCirclesRaster extends JGTModel {
         if (x2 > width)
             x2 = width;
 
-        for( int r = radiusMin; r <= radiusMax; r = r + radiusInc ) {
-            int indexR = (r - radiusMin) / radiusInc;
+        for( int r = radiusMinPixel; r <= radiusMaxPixel; r = r + radiusIncPixel ) {
+            int indexR = (r - radiusMinPixel) / radiusIncPixel;
             for( int i = y1; i < y2; i++ ) {
                 for( int j = x1; j < x2; j++ ) {
                     if (Math.pow(j - x, 2D) + Math.pow(i - y, 2D) < halfSquared) {

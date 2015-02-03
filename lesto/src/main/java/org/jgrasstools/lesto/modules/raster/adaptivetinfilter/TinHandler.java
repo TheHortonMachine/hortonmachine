@@ -22,7 +22,6 @@ import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getAngleBet
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getLineWithPlaneIntersection;
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getTriangleCentroid;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
@@ -37,7 +36,6 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.io.las.ALasDataManager;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.ThreadedRunnable;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -192,29 +190,38 @@ public class TinHandler {
     public void filterOnAllData( final ALasDataManager lasHandler ) throws Exception {
         final ConcurrentSkipListSet<Double> angleSet = new ConcurrentSkipListSet<Double>();
         final ConcurrentSkipListSet<Double> distanceSet = new ConcurrentSkipListSet<Double>();
+
         if (isFirstStatsCalculation) {
             pm.beginTask("Calculating initial statistics...", tinGeometries.length);
         } else {
             pm.beginTask("Filtering all data on seeds tin...", tinGeometries.length);
         }
         try {
+            final List<Coordinate> newTotalLeftOverCoordinateList = new ArrayList<Coordinate>();
             if (threadsNum > 1) {
                 // multithreaded
                 ThreadedRunnable tRun = new ThreadedRunnable(threadsNum, null);
                 for( final Geometry tinGeom : tinGeometries ) {
                     tRun.executeRunnable(new Runnable(){
                         public void run() {
-                            runFilterOnAllData(lasHandler, angleSet, distanceSet, tinGeom);
+                            List<Coordinate> leftOverList = runFilterOnAllData(lasHandler, angleSet, distanceSet, tinGeom);
+                            synchronized (newTotalLeftOverCoordinateList) {
+                                newTotalLeftOverCoordinateList.addAll(leftOverList);
+                            }
                         }
                     });
                 }
                 tRun.waitAndClose();
             } else {
                 for( final Geometry tinGeom : tinGeometries ) {
-                    runFilterOnAllData(lasHandler, angleSet, distanceSet, tinGeom);
+                    List<Coordinate> leftOverList = runFilterOnAllData(lasHandler, angleSet, distanceSet, tinGeom);
+                    newTotalLeftOverCoordinateList.addAll(leftOverList);
                 }
             }
             pm.done();
+
+            leftOverCoordinateList.clear();
+            leftOverCoordinateList.addAll(newTotalLeftOverCoordinateList);
 
             /*
              * now recalculate the thresholds
@@ -248,8 +255,9 @@ public class TinHandler {
         }
     }
 
-    private void runFilterOnAllData( final ALasDataManager lasHandler, final ConcurrentSkipListSet<Double> angleSet,
+    private List<Coordinate> runFilterOnAllData( final ALasDataManager lasHandler, final ConcurrentSkipListSet<Double> angleSet,
             final ConcurrentSkipListSet<Double> distanceSet, final Geometry tinGeom ) {
+        final List<Coordinate> newTotalLeftOverCoordinateList = new ArrayList<Coordinate>();
         try {
             Coordinate[] tinCoords = tinGeom.getCoordinates();
             Coordinate triangleCentroid = getTriangleCentroid(tinCoords[0], tinCoords[1], tinCoords[2]);
@@ -273,9 +281,8 @@ public class TinHandler {
             boolean foundOne = false;
             for( Coordinate c : centroidNearestSet ) {
                 if (foundOne && !isFirstStatsCalculation) {
-                    synchronized (leftOverCoordinateList) {
-                        leftOverCoordinateList.add(c);
-                    }
+                    if (!newTotalLeftOverCoordinateList.contains(c))
+                        newTotalLeftOverCoordinateList.add(c);
                 } else {
                     /*
                      * find the nearest node and distance
@@ -288,9 +295,8 @@ public class TinHandler {
                          * for the next round only on the kept data.
                          */
                         if (nearestDistance > calculatedDistanceThreshold) {
-                            synchronized (leftOverCoordinateList) {
-                                leftOverCoordinateList.add(c);
-                            }
+                            if (!newTotalLeftOverCoordinateList.contains(c))
+                                newTotalLeftOverCoordinateList.add(c);
                             continue;
                         }
                     }
@@ -305,17 +311,18 @@ public class TinHandler {
                     }
                     if (!isFirstStatsCalculation) {
                         if (angle > calculatedAngleThreshold) {
-                            synchronized (leftOverCoordinateList) {
-                                leftOverCoordinateList.add(c);
-                            }
+                            if (!newTotalLeftOverCoordinateList.contains(c))
+                                newTotalLeftOverCoordinateList.add(c);
                             continue;
                         } else {
                             // add it to the next tin
                             synchronized (tinCoordinateList) {
-                                tinCoordinateList.add(c);
-                                foundOne = true;
-                                angleSet.add(angle);
-                                distanceSet.add(nearestDistance);
+                                if (!tinCoordinateList.contains(c)) {
+                                    tinCoordinateList.add(c);
+                                    foundOne = true;
+                                    angleSet.add(angle);
+                                    distanceSet.add(nearestDistance);
+                                }
                             }
                         }
                     } else {
@@ -328,76 +335,7 @@ public class TinHandler {
             e.printStackTrace();
         }
         pm.worked(1);
-
-    }
-
-    private AtomicInteger count = new AtomicInteger();
-    private void dumpPointsInGeom( Geometry tinGeom, List<LasRecord> pointsInGeom, List<Coordinate> addedPoints )
-            throws IOException {
-        String path = "/home/moovida/dati_unibz/outshape/tinfilter/triangles/";
-        int i = count.getAndIncrement();
-        {
-            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-            b.setName("t" + i);
-            b.setCRS(crs);
-
-            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
-            b.add("the_geom", Polygon.class);
-            b.add("elev1", Double.class);
-            b.add("elev2", Double.class);
-            b.add("elev3", Double.class);
-            SimpleFeatureType type = b.buildFeatureType();
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-            Coordinate[] coordinates = tinGeom.getCoordinates();
-            Object[] values = new Object[]{tinGeom, coordinates[0].z, coordinates[1].z, coordinates[2].z};
-            builder.addAll(values);
-            SimpleFeature feature = builder.buildFeature(null);
-            newCollection.add(feature);
-
-            OmsVectorWriter.writeVector(path + "t" + i + ".shp", newCollection);
-        }
-        {
-            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-            b.setName("p" + i);
-            b.setCRS(crs);
-
-            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
-            b.add("the_geom", Point.class);
-            b.add("elev", Double.class);
-            SimpleFeatureType type = b.buildFeatureType();
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-
-            for( LasRecord lasRecord : pointsInGeom ) {
-                Point point = gf.createPoint(new Coordinate(lasRecord.x, lasRecord.y, lasRecord.z));
-                Object[] values = new Object[]{point, lasRecord.z};
-                builder.addAll(values);
-                SimpleFeature feature = builder.buildFeature(null);
-                newCollection.add(feature);
-            }
-
-            OmsVectorWriter.writeVector(path + "p" + i + ".shp", newCollection);
-        }
-        {
-            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-            b.setName("a" + i);
-            b.setCRS(crs);
-
-            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
-            b.add("the_geom", Point.class);
-            b.add("elev", Double.class);
-            SimpleFeatureType type = b.buildFeatureType();
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-
-            for( Coordinate coord : addedPoints ) {
-                Point point = gf.createPoint(coord);
-                Object[] values = new Object[]{point, coord.z};
-                builder.addAll(values);
-                SimpleFeature feature = builder.buildFeature(null);
-                newCollection.add(feature);
-            }
-
-            OmsVectorWriter.writeVector(path + "a" + i + ".shp", newCollection);
-        }
+        return newTotalLeftOverCoordinateList;
     }
 
     public void filterOnLeftOverData() {
@@ -418,7 +356,7 @@ public class TinHandler {
         Geometry[] triangles = getTriangles();
         final ConcurrentSkipListSet<Double> angleSet = new ConcurrentSkipListSet<Double>();
         final ConcurrentSkipListSet<Double> distanceSet = new ConcurrentSkipListSet<Double>();
-        final List<Coordinate> newLeftOverCoordinateList = new ArrayList<Coordinate>();
+        final List<Coordinate> newTotalLeftOverCoordinateList = new ArrayList<Coordinate>();
         pm.beginTask("Filtering leftover coordinates on previous tin...", triangles.length);
         if (threadsNum > 1) {
             ThreadedRunnable tRun = new ThreadedRunnable(threadsNum, null);
@@ -429,8 +367,11 @@ public class TinHandler {
                         if (maxEdgeLength != null && triangle.getLength() < maxEdgeLengthThreshold * 3.0) {
                             return;
                         }
-                        runfilterOnLeftOverData(leftOverCoordinatesTree, newLeftOverCoordinateList, angleSet, distanceSet,
+                        List<Coordinate> leftOverList = runfilterOnLeftOverData(leftOverCoordinatesTree, angleSet, distanceSet,
                                 triangle);
+                        synchronized (newTotalLeftOverCoordinateList) {
+                            newTotalLeftOverCoordinateList.addAll(leftOverList);
+                        }
                     }
                 });
             }
@@ -438,13 +379,14 @@ public class TinHandler {
         } else {
             for( int i = 0; i < triangles.length; i++ ) {
                 Geometry triangle = triangles[i];
-                runfilterOnLeftOverData(leftOverCoordinatesTree, newLeftOverCoordinateList, angleSet, distanceSet, triangle);
+                List<Coordinate> leftOverList = runfilterOnLeftOverData(leftOverCoordinatesTree, angleSet, distanceSet, triangle);
+                newTotalLeftOverCoordinateList.addAll(leftOverList);
             }
         }
         pm.done();
 
         leftOverCoordinateList.clear();
-        leftOverCoordinateList.addAll(newLeftOverCoordinateList);
+        leftOverCoordinateList.addAll(newTotalLeftOverCoordinateList);
 
         /*
          * now recalculate the thresholds
@@ -477,9 +419,10 @@ public class TinHandler {
     }
 
     @SuppressWarnings("rawtypes")
-    private void runfilterOnLeftOverData( final STRtree leftOverCoordsTree, List<Coordinate> newLeftOverCoordinateList,
+    private List<Coordinate> runfilterOnLeftOverData( final STRtree leftOverCoordsTree,
             final ConcurrentSkipListSet<Double> angleSet, final ConcurrentSkipListSet<Double> distanceSet, final Geometry triangle ) {
 
+        List<Coordinate> newLeftOverCoordinateList = new ArrayList<Coordinate>();
         Coordinate[] tinCoords = triangle.getCoordinates();
         Coordinate triangleCentroid = getTriangleCentroid(tinCoords[0], tinCoords[1], tinCoords[2]);
 
@@ -513,9 +456,8 @@ public class TinHandler {
         boolean foundOne = false;
         for( Coordinate c : centroidNearestSet ) {
             if (foundOne && !isFirstStatsCalculation) {
-                synchronized (newLeftOverCoordinateList) {
+                if (!newLeftOverCoordinateList.contains(c))
                     newLeftOverCoordinateList.add(c);
-                }
             } else {
                 /*
                  * find the nearest node and distance
@@ -527,9 +469,8 @@ public class TinHandler {
                  * for the next round only on the kept data.
                  */
                 if (nearestDistance > calculatedDistanceThreshold) {
-                    synchronized (newLeftOverCoordinateList) {
+                    if (!newLeftOverCoordinateList.contains(c))
                         newLeftOverCoordinateList.add(c);
-                    }
                     continue;
                 }
                 /*
@@ -542,23 +483,25 @@ public class TinHandler {
                     angle = 0.0;
                 }
                 if (angle > calculatedAngleThreshold && angle > angleThreshold) { // TODO
-                    synchronized (newLeftOverCoordinateList) {
+                    if (!newLeftOverCoordinateList.contains(c))
                         newLeftOverCoordinateList.add(c);
-                    }
                     continue;
                 } else {
                     // add it to the next tin
                     synchronized (tinCoordinateList) {
-                        tinCoordinateList.add(c);
-                        foundOne = true;
-                        angleSet.add(angle);
-                        distanceSet.add(nearestDistance);
+                        if (!tinCoordinateList.contains(c)) {
+                            tinCoordinateList.add(c);
+                            foundOne = true;
+                            angleSet.add(angle);
+                            distanceSet.add(nearestDistance);
+                        }
                     }
                 }
             }
         }
 
         pm.worked(1);
+        return newLeftOverCoordinateList;
     }
 
     public void finalCleanup( final double pFinalCleanupDist ) {
@@ -817,7 +760,7 @@ public class TinHandler {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("points");
         b.setCRS(crs);
-        
+
         DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
         b.add("the_geom", Point.class);
         b.add("elev", Double.class);
@@ -842,4 +785,74 @@ public class TinHandler {
         return new double[]{min, max};
     }
 
+    // private AtomicInteger count = new AtomicInteger();
+    // private void dumpPointsInGeom( Geometry tinGeom, List<LasRecord> pointsInGeom,
+    // List<Coordinate> addedPoints )
+    // throws IOException {
+    // String path = "/home/moovida/dati_unibz/outshape/tinfilter/triangles/";
+    // int i = count.getAndIncrement();
+    // {
+    // SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+    // b.setName("t" + i);
+    // b.setCRS(crs);
+    //
+    // DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
+    // b.add("the_geom", Polygon.class);
+    // b.add("elev1", Double.class);
+    // b.add("elev2", Double.class);
+    // b.add("elev3", Double.class);
+    // SimpleFeatureType type = b.buildFeatureType();
+    // SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+    // Coordinate[] coordinates = tinGeom.getCoordinates();
+    // Object[] values = new Object[]{tinGeom, coordinates[0].z, coordinates[1].z,
+    // coordinates[2].z};
+    // builder.addAll(values);
+    // SimpleFeature feature = builder.buildFeature(null);
+    // newCollection.add(feature);
+    //
+    // OmsVectorWriter.writeVector(path + "t" + i + ".shp", newCollection);
+    // }
+    // {
+    // SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+    // b.setName("p" + i);
+    // b.setCRS(crs);
+    //
+    // DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
+    // b.add("the_geom", Point.class);
+    // b.add("elev", Double.class);
+    // SimpleFeatureType type = b.buildFeatureType();
+    // SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+    //
+    // for( LasRecord lasRecord : pointsInGeom ) {
+    // Point point = gf.createPoint(new Coordinate(lasRecord.x, lasRecord.y, lasRecord.z));
+    // Object[] values = new Object[]{point, lasRecord.z};
+    // builder.addAll(values);
+    // SimpleFeature feature = builder.buildFeature(null);
+    // newCollection.add(feature);
+    // }
+    //
+    // OmsVectorWriter.writeVector(path + "p" + i + ".shp", newCollection);
+    // }
+    // {
+    // SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+    // b.setName("a" + i);
+    // b.setCRS(crs);
+    //
+    // DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
+    // b.add("the_geom", Point.class);
+    // b.add("elev", Double.class);
+    // SimpleFeatureType type = b.buildFeatureType();
+    // SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+    //
+    // for( Coordinate coord : addedPoints ) {
+    // Point point = gf.createPoint(coord);
+    // Object[] values = new Object[]{point, coord.z};
+    // builder.addAll(values);
+    // SimpleFeature feature = builder.buildFeature(null);
+    // newCollection.add(feature);
+    // }
+    //
+    // OmsVectorWriter.writeVector(path + "a" + i + ".shp", newCollection);
+    // }
+    // }
 }

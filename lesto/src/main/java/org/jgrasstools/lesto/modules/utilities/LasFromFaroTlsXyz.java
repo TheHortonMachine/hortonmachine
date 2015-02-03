@@ -42,6 +42,7 @@ import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
 import org.jgrasstools.gears.io.las.index.LasIndexer;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -63,11 +64,11 @@ public class LasFromFaroTlsXyz extends JGTModel {
 
     @Description("The reference longitude in a metric projection.")
     @In
-    public double pLongitude;
+    public Double pLongitude;
 
     @Description("The reference latitude in a metric projection.")
     @In
-    public double pLatitude;
+    public Double pLatitude;
 
     @Description("The maximum allowed distance from the center.")
     @Unit("m")
@@ -86,8 +87,11 @@ public class LasFromFaroTlsXyz extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inFile, outLas, pCode);
+        checkNull(inFile, outLas, pCode, pLatitude, pLongitude);
         CoordinateReferenceSystem crs = CRS.decode(pCode);
+
+        double latitude = pLatitude;
+        double longitude = pLongitude;
 
         List<LasRecord> readRecords = new ArrayList<LasRecord>();
 
@@ -108,7 +112,10 @@ public class LasFromFaroTlsXyz extends JGTModel {
         /*
          * Lines are of type:
          * -7.41840000 0.39450000 1190.87950000 254 254 254
-         * xDeltaMeters, yDeltaMeters, Elev, R, G, B 
+         * rownum, colnum, xDeltaMeters, yDeltaMeters, Elev, R, G, B 
+         * 
+         * Export scan points
+         * 
          */
         int ignoredCount = 0;
         pm.beginTask("Reading xyz and creating bounds...", IJGTProgressMonitor.UNKNOWN);
@@ -125,6 +132,11 @@ public class LasFromFaroTlsXyz extends JGTModel {
                 }
                 String[] lineSplit = line.split("\\s+");
 
+                if (lineSplit.length != 8) {
+                    String msg = "Wrong data format. The data are supposed to be exported from the SCENE software as scan points.\nThe data format in the XYZ file is: rowNum, colNum, xDeltaMeters, yDeltaMeters, elev, R, G, B";
+                    throw new ModelsIllegalargumentException(msg, this);
+                }
+
                 int index = 2;
                 double deltaX = Double.parseDouble(lineSplit[index++]);
                 double deltaY = Double.parseDouble(lineSplit[index++]);
@@ -135,8 +147,8 @@ public class LasFromFaroTlsXyz extends JGTModel {
                     continue;
                 }
 
-                double x = pLongitude + deltaX;
-                double y = pLatitude + deltaY;
+                double x = longitude + deltaX;
+                double y = latitude + deltaY;
 
                 double elev = Double.parseDouble(lineSplit[index++]);
                 int r = Integer.parseInt(lineSplit[index++]);
@@ -201,6 +213,7 @@ public class LasFromFaroTlsXyz extends JGTModel {
 
         LasIndexer in = new LasIndexer();
         in.inFolder = outFolder;
+        in.pCellsize = 0.5;
         in.process();
     }
 }
