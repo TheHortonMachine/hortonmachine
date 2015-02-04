@@ -22,9 +22,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
 import java.awt.geom.Point2D;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import javax.media.jai.iterator.RandomIter;
 
@@ -50,6 +47,7 @@ import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.ThreadedRunnable;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -60,41 +58,55 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
-@Description("A Hough Transform implementation.")
-@Author(name = "Hemerson Pistori (pistori@ec.ucdb.br) and Eduardo Rocha Costa, Mark A. Schulze (http://www.markschulze.net/), Andrea Antonello (www.hydrologis.com)", contact = "")
-@Keywords("Hough, circle")
+@Description(HoughCirclesRaster.DESCRIPTIO)
+@Author(name = HoughCirclesRaster.AUTHORS, contact = "")
+@Keywords(HoughCirclesRaster.KEYWORDS)
 @Label(JGTConstants.RASTERPROCESSING)
-@Name("houghcirclesraster")
+@Name(HoughCirclesRaster.NAME)
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
 public class HoughCirclesRaster extends JGTModel {
 
-    @Description("The input raster.")
+    @Description(inRaster_DESCR)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The minimum radius to look for.")
+    @Description(pMinRadius_DESCR)
     @Unit("m")
     @In
     public Double pMinRadius;
 
-    @Description("The maximum radius to look for.")
+    @Description(pMaxRadius_DESCR)
     @Unit("m")
     @In
     public Double pMaxRadius;
 
-    @Description("The radius increment to use.")
+    @Description(pRadiusIncrement_DESCR)
     @Unit("m")
     @In
     public Double pRadiusIncrement;
 
-    @Description("The maximum circle count to look for.")
+    @Description(pMaxCircleCount_DESCR)
     @In
     public int pMaxCircleCount = 50;
 
-    @Description("The output circles.")
+    @Description(outCircles_DESCR)
     @In
     public SimpleFeatureCollection outCircles;
+
+    // VARS DESCR START
+    public static final String NAME = "houghcirclesraster";
+    public static final String KEYWORDS = "Hough, circle";
+    public static final String AUTHORS = "Hemerson Pistori (pistori@ec.ucdb.br) and Eduardo Rocha Costa, Mark A. Schulze (http://www.markschulze.net/), Andrea Antonello (www.hydrologis.com)";
+    public static final String DESCRIPTIO = "Hough Transform implementation.";
+
+    public static final String outCircles_DESCR = "The output circles.";
+    public static final String pMaxCircleCount_DESCR = "The maximum circle count to look for.";
+    public static final String pRadiusIncrement_DESCR = "The radius increment to use.";
+    public static final String pMaxRadius_DESCR = "The maximum radius to look for.";
+    public static final String pMinRadius_DESCR = "The minimum radius to look for.";
+    public static final String inRaster_DESCR = "The input raster.";
+    // VARS DESCR END
 
     private int radiusMinPixel; // Find circles with radius grater or equal radiusMin
     private int radiusMaxPixel; // Find circles with radius less or equal radiusMax
@@ -112,41 +124,6 @@ public class HoughCirclesRaster extends JGTModel {
 
     private double xRes;
     private double referenceImageValue = JGTConstants.doubleNovalue;
-
-    public static void main( String[] args ) throws Exception {
-
-        ExecutorService exec = Executors.newFixedThreadPool(5);
-
-        // int[] i = {12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
-        int[] i = {14};
-        for( int index : i ) {
-            final int _index = index;
-            exec.execute(new Runnable(){
-                public void run() {
-                    try {
-                        String inRaster = "/home/hydrologis/data/rilievo_tls/avgres/vertical_slices/slice_" + _index + ".0.tiff";
-                        String outShp = "/home/hydrologis/data/rilievo_tls/avgres/vertical_slices/slice_vector2_" + _index
-                                + ".0.shp";
-
-                        GridCoverage2D src = OmsRasterReader.readRaster(inRaster);
-                        HoughCirclesRaster h = new HoughCirclesRaster();
-                        h.inRaster = src;
-                        h.pMinRadius = 0.1;
-                        h.pMaxRadius = 0.4;
-                        h.pRadiusIncrement = 0.01;
-                        h.pMaxCircleCount = 300;
-                        h.process();
-
-                        OmsVectorWriter.writeVector(outShp, h.outCircles);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        }
-
-        exec.awaitTermination(10, TimeUnit.DAYS);
-    }
 
     @Execute
     public void process() throws Exception {
@@ -377,4 +354,38 @@ public class HoughCirclesRaster extends JGTModel {
 
     }
 
+    public static void main( String[] args ) throws Exception {
+
+        ThreadedRunnable< ? > runner = new ThreadedRunnable(getDefaultThreadsNum(), null);
+
+        int[] i = {2};// , 4, 6, 8, 10};
+        for( int index : i ) {
+            final int _index = index;
+            runner.executeRunnable(new Runnable(){
+                public void run() {
+                    try {
+                        String inRaster = "/home/hydrologis/data/rilievo_tls/avgres/las/vertical_slices/slice_" + _index
+                                + ".0.asc";
+                        String outShp = "/home/hydrologis/data/rilievo_tls/avgres/las/vertical_slices/slice_vector_" + _index
+                                + ".0.shp";
+
+                        GridCoverage2D src = OmsRasterReader.readRaster(inRaster);
+                        HoughCirclesRaster h = new HoughCirclesRaster();
+                        h.inRaster = src;
+                        h.pMinRadius = 0.1;
+                        h.pMaxRadius = 0.5;
+                        h.pRadiusIncrement = 0.01;
+                        h.pMaxCircleCount = 500;
+                        h.process();
+
+                        OmsVectorWriter.writeVector(outShp, h.outCircles);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+
+        runner.waitAndClose();
+    }
 }

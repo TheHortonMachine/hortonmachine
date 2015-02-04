@@ -210,7 +210,7 @@ public class LasSlicer extends JGTModel {
     private void dumpRaster( File outputFolder, double height, List<LasRecord> points, double resolution, double minX,
             double maxX, double minY, double maxY, CoordinateReferenceSystem crs ) throws Exception {
 
-        File rasterFile = new File(outputFolder, "slice_" + height + ".tiff");
+        File rasterFile = new File(outputFolder, "slice_" + height + ".asc");
 
         int rows = (int) round((maxY - minY) / resolution);
         int cols = (int) round((maxX - minX) / resolution);
@@ -260,7 +260,7 @@ public class LasSlicer extends JGTModel {
     public static void main( String[] args ) throws Exception {
         LasSlicer l = new LasSlicer();
         l.inLas = "/home/hydrologis/data/rilievo_tls/avgres/las/index.lasfolder";
-        l.inDtm = "/home/hydrologis/data/rilievo_tls/DTM/tls_5h681051270_DTM.asc";
+        l.inDtm = "/home/hydrologis/data/rilievo_tls/avgres/dem.asc";
         l.pInterval = 2.0;
         l.pThickness = 0.4;
         l.pGroundThreshold = 0.5;

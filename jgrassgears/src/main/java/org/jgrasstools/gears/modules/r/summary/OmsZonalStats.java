@@ -52,6 +52,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
@@ -64,6 +65,7 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -219,6 +221,7 @@ public class OmsZonalStats extends JGTModel {
         final double delta = xRes / 4.0;
         Envelope env = geometry.getEnvelopeInternal();
         env.expandBy(xRes, yRes);
+        double geometryUpperBound = env.getMaxY();
         double envArea = env.getWidth() * env.getHeight();
         int maxCells = (int) ceil(envArea / (xRes * yRes));
 
@@ -227,15 +230,27 @@ public class OmsZonalStats extends JGTModel {
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
 
+        MathTransform gridToCRS2 = gridGeometry.getGridToCRS();
+
         double[] values = new double[maxCells];
 
+        LineString previousLine = null;
+        final Coordinate worldWestCoord = new Coordinate();
+        final Coordinate worldEastCoord = new Coordinate();
         for( int r = startY; r < startY + rows; r++ ) {
             // do scan line to fill the polygon
-            double[] westPos = gridGeometry.gridToWorld(new GridCoordinates2D(startX, r)).getCoordinate();
-            double[] eastPos = gridGeometry.gridToWorld(new GridCoordinates2D(startX + cols - 1, r)).getCoordinate();
-            Coordinate west = new Coordinate(westPos[0], westPos[1]);
-            Coordinate east = new Coordinate(eastPos[0], eastPos[1]);
-            LineString line = gf.createLineString(new Coordinate[]{west, east});
+            Coordinate gridWestCoord = new Coordinate(startX, r);
+            JTS.transform(gridWestCoord, worldWestCoord, gridToCRS2);
+            if (geometryUpperBound < worldWestCoord.y) {
+                continue;
+            }
+            Coordinate gridEastCoord = new Coordinate(startX + cols - 1, r);
+            JTS.transform(gridEastCoord, worldEastCoord, gridToCRS2);
+            LineString line = gf.createLineString(new Coordinate[]{worldWestCoord, worldEastCoord});
+            if (previousLine != null && previousLine.equals(line)) {
+                previousLine = line;
+                continue;
+            }
             if (geometry.intersects(line)) {
                 Geometry internalLines = geometry.intersection(line);
                 int lineNums = internalLines.getNumGeometries();
@@ -295,6 +310,8 @@ public class OmsZonalStats extends JGTModel {
                 }
 
             }
+
+            previousLine = line;
         }
 
         int all = activeCellCount + passiveCellCount;
