@@ -45,6 +45,7 @@ import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.ThreadedRunnable;
 import org.jgrasstools.gears.modules.r.summary.OmsZonalStats;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -57,14 +58,14 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.index.strtree.STRtree;
 
-@Description(HoughCirclesRasterCleaner.DESCRIPTIO)
-@Author(name = HoughCirclesRasterCleaner.AUTHORS, contact = "")
-@Keywords(HoughCirclesRasterCleaner.KEYWORDS)
+@Description(OmsHoughCirclesRasterCleaner.DESCRIPTIO)
+@Author(name = OmsHoughCirclesRasterCleaner.AUTHORS, contact = "")
+@Keywords(OmsHoughCirclesRasterCleaner.KEYWORDS)
 @Label(JGTConstants.RASTERPROCESSING)
-@Name(HoughCirclesRasterCleaner.NAME)
+@Name(OmsHoughCirclesRasterCleaner.NAME)
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
-public class HoughCirclesRasterCleaner extends JGTModel {
+public class OmsHoughCirclesRasterCleaner extends JGTModel {
 
     @Description(inVector_DESCR)
     @In
@@ -175,41 +176,52 @@ public class HoughCirclesRasterCleaner extends JGTModel {
         rasterIter.done();
     }
 
+    @SuppressWarnings("rawtypes")
     public static void main( String[] args ) throws Exception {
+
+        ThreadedRunnable< ? > runner = new ThreadedRunnable(8, null);
 
         int[] i = {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
         for( int index : i ) {
             final int _index = index;
-            try {
-                String inRaster = "/home/hydrologis/data/rilievo_tls/avgres/las/vertical_slices/slice_" + _index + ".0.asc";
-                String inShp = "/home/hydrologis/data/rilievo_tls/avgres/las/vertical_slices/slice_vector_" + _index + ".0.shp";
-                String outShp = "/home/hydrologis/data/rilievo_tls/avgres/las/vertical_slices/slice_vector_cleaned_" + _index
-                        + ".0.shp";
+            runner.executeRunnable(new Runnable(){
+                public void run() {
+                    try {
+                        String inRaster = "/home/hydrologis/data/rilievo_tls/avgres/las/vertical_slices/slice_" + _index
+                                + ".0.asc";
+                        String inShp = "/home/hydrologis/data/rilievo_tls/avgres/las/vertical_slices/slice_vector_" + _index
+                                + ".0.shp";
+                        String outShp = "/home/hydrologis/data/rilievo_tls/avgres/las/vertical_slices/slice_vector_cleaned_"
+                                + _index + ".0.shp";
 
-                GridCoverage2D src = OmsRasterReader.readRaster(inRaster);
+                        GridCoverage2D src = OmsRasterReader.readRaster(inRaster);
 
-                HoughCirclesRaster h = new HoughCirclesRaster();
-                h.inRaster = src;
-                h.pMinRadius = 0.1;
-                h.pMaxRadius = 0.5;
-                h.pRadiusIncrement = 0.01;
-                h.pMaxCircleCount = 500;
-                h.process();
+                        OmsHoughCirclesRaster h = new OmsHoughCirclesRaster();
+                        h.inRaster = src;
+                        h.pMinRadius = 0.1;
+                        h.pMaxRadius = 0.5;
+                        h.pRadiusIncrement = 0.01;
+                        h.pMaxCircleCount = 500;
+                        h.process();
 
-                OmsVectorWriter.writeVector(inShp, h.outCircles);
+                        OmsVectorWriter.writeVector(inShp, h.outCircles);
 
-                SimpleFeatureCollection inVector = OmsVectorReader.readVector(inShp);
-                HoughCirclesRasterCleaner hCleaner = new HoughCirclesRasterCleaner();
-                hCleaner.inRaster = src;
-                hCleaner.inVector = inVector;
-                hCleaner.pMaxOverlap = 0.1;
-                hCleaner.pMaxOverlapCount = 5;
-                hCleaner.process();
+                        SimpleFeatureCollection inVector = OmsVectorReader.readVector(inShp);
+                        OmsHoughCirclesRasterCleaner hCleaner = new OmsHoughCirclesRasterCleaner();
+                        hCleaner.inRaster = src;
+                        hCleaner.inVector = inVector;
+                        hCleaner.pMaxOverlap = 0.1;
+                        hCleaner.pMaxOverlapCount = 5;
+                        hCleaner.process();
 
-                OmsVectorWriter.writeVector(outShp, hCleaner.outCircles);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+                        OmsVectorWriter.writeVector(outShp, hCleaner.outCircles);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
         }
+
+        runner.waitAndClose();
     }
 }

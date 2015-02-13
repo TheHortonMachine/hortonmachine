@@ -58,14 +58,14 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
-@Description(HoughCirclesRaster.DESCRIPTIO)
-@Author(name = HoughCirclesRaster.AUTHORS, contact = "")
-@Keywords(HoughCirclesRaster.KEYWORDS)
+@Description(OmsHoughCirclesRaster.DESCRIPTIO)
+@Author(name = OmsHoughCirclesRaster.AUTHORS, contact = "")
+@Keywords(OmsHoughCirclesRaster.KEYWORDS)
 @Label(JGTConstants.RASTERPROCESSING)
-@Name(HoughCirclesRaster.NAME)
+@Name(OmsHoughCirclesRaster.NAME)
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
-public class HoughCirclesRaster extends JGTModel {
+public class OmsHoughCirclesRaster extends JGTModel {
 
     @Description(inRaster_DESCR)
     @In
@@ -370,7 +370,7 @@ public class HoughCirclesRaster extends JGTModel {
                                 + ".0.shp";
 
                         GridCoverage2D src = OmsRasterReader.readRaster(inRaster);
-                        HoughCirclesRaster h = new HoughCirclesRaster();
+                        OmsHoughCirclesRaster h = new OmsHoughCirclesRaster();
                         h.inRaster = src;
                         h.pMinRadius = 0.1;
                         h.pMaxRadius = 0.5;
