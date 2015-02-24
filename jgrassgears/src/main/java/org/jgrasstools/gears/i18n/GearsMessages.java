@@ -556,20 +556,6 @@ public class GearsMessages {
     public static final String OMSRASTERDIFF_doNegatives_DESCRIPTION = "Allow negative values.";
     public static final String OMSRASTERDIFF_outRaster_DESCRIPTION = "The output raster.";
 
-    public static final String OMSVECTOROVERLAYOPERATORS_DESCRIPTION = "A module that performs overlay operations on a pure geometric layer. The resulting feature layer does not consider original attributes tables.";
-    public static final String OMSVECTOROVERLAYOPERATORS_DOCUMENTATION = "";
-    public static final String OMSVECTOROVERLAYOPERATORS_KEYWORDS = "JTS, Overlay, Union, Intersect, SymDifference, Difference";
-    public static final String OMSVECTOROVERLAYOPERATORS_LABEL = VECTORPROCESSING;
-    public static final String OMSVECTOROVERLAYOPERATORS_NAME = "overlay";
-    public static final int OMSVECTOROVERLAYOPERATORS_STATUS = 5;
-    public static final String OMSVECTOROVERLAYOPERATORS_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSVECTOROVERLAYOPERATORS_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSVECTOROVERLAYOPERATORS_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSVECTOROVERLAYOPERATORS_inMap1_DESCRIPTION = "The first vector map.";
-    public static final String OMSVECTOROVERLAYOPERATORS_inMap2_DESCRIPTION = "The second vector map.";
-    public static final String OMSVECTOROVERLAYOPERATORS_pType_DESCRIPTION = "The overlay type to perform.";
-    public static final String OMSVECTOROVERLAYOPERATORS_outMap_DESCRIPTION = "The resulting vector map.";
-
     public static final String OMSSCANLINERASTERIZER_DESCRIPTION = "Module for polygon vector to raster conversion.";
     public static final String OMSSCANLINERASTERIZER_DOCUMENTATION = "OmsScanLineRasterizer.html";
     public static final String OMSSCANLINERASTERIZER_KEYWORDS = "Raster, Vector, Rasterize";

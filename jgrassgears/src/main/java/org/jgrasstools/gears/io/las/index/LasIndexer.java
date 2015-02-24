@@ -49,6 +49,7 @@ import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.io.las.ALasDataManager;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
@@ -433,5 +434,6 @@ public class LasIndexer extends JGTModel {
             raf.write(bytes);
         }
     }
+
 
 }

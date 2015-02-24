@@ -17,18 +17,7 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_inMap1_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_inMap2_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_outMap_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_pType_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.*;
 import static org.jgrasstools.gears.libs.modules.Variables.DIFFERENCE;
 import static org.jgrasstools.gears.libs.modules.Variables.INTERSECTION;
 import static org.jgrasstools.gears.libs.modules.Variables.SYMDIFFERENCE;
