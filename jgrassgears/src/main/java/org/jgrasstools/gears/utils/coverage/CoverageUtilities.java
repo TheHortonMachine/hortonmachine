@@ -51,6 +51,7 @@ import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
+import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
@@ -169,6 +170,29 @@ public class CoverageUtilities {
         }
         WritableRandomIter iter = RandomIterFactory.createWritable(raster, null);
         return iter;
+    }
+
+    /**
+     * Get a {@link GridCoverage2D} from a reader.
+     * 
+     * @param reader the reader to use.
+     * @param north north bound.
+     * @param south south bound.
+     * @param east east bound.
+     * @param west west bound.
+     * @param xRes x resolution.
+     * @param yRes y resolution.
+     * @param crs the {@link CoordinateReferenceSystem}.
+     * @return the read coverage.
+     * @throws Exception
+     */
+    public static GridCoverage2D getGridCoverage( AbstractGridCoverage2DReader reader, double north, double south, double east,
+            double west, double xRes, double yRes, CoordinateReferenceSystem crs ) throws Exception {
+        GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities.createGridGeometryGeneralParameter(xRes, yRes,
+                north, south, east, west, crs);
+
+        GridCoverage2D readGC = reader.read(readGeneralParameterValues);
+        return readGC;
     }
 
     /**

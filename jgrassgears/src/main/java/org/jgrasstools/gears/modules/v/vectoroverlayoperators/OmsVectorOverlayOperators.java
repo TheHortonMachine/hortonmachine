@@ -17,12 +17,20 @@
  */
 package org.jgrasstools.gears.modules.v.vectoroverlayoperators;
 
-import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.*;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.VECTORPROCESSING;
 import static org.jgrasstools.gears.libs.modules.Variables.DIFFERENCE;
 import static org.jgrasstools.gears.libs.modules.Variables.INTERSECTION;
 import static org.jgrasstools.gears.libs.modules.Variables.SYMDIFFERENCE;
 import static org.jgrasstools.gears.libs.modules.Variables.UNION;
+import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.OMSVECTOROVERLAYOPERATORS_AUTHORCONTACTS;
+import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.OMSVECTOROVERLAYOPERATORS_AUTHORNAMES;
+import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.OMSVECTOROVERLAYOPERATORS_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.OMSVECTOROVERLAYOPERATORS_DOCUMENTATION;
+import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.OMSVECTOROVERLAYOPERATORS_KEYWORDS;
+import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.OMSVECTOROVERLAYOPERATORS_LABEL;
+import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.OMSVECTOROVERLAYOPERATORS_LICENSE;
+import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.OMSVECTOROVERLAYOPERATORS_NAME;
+import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.OMSVECTOROVERLAYOPERATORS_STATUS;
 
 import java.util.List;
 
@@ -52,6 +60,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.LineString;
@@ -68,6 +77,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @License(OMSVECTOROVERLAYOPERATORS_LICENSE)
 public class OmsVectorOverlayOperators extends JGTModel {
 
+
     @Description(OMSVECTOROVERLAYOPERATORS_inMap1_DESCRIPTION)
     @In
     public SimpleFeatureCollection inMap1 = null;
@@ -80,6 +90,10 @@ public class OmsVectorOverlayOperators extends JGTModel {
     @UI("combo:" + INTERSECTION + "," + UNION + "," + DIFFERENCE + "," + SYMDIFFERENCE)
     @In
     public String pType = INTERSECTION;
+
+    @Description(doAllowHoles_DESCRIPTION)
+    @In
+    public boolean doAllowHoles = true;
 
     @Description(OMSVECTOROVERLAYOPERATORS_outMap_DESCRIPTION)
     @Out
@@ -99,6 +113,7 @@ public class OmsVectorOverlayOperators extends JGTModel {
     public static final String OMSVECTOROVERLAYOPERATORS_inMap2_DESCRIPTION = "The second vector map.";
     public static final String OMSVECTOROVERLAYOPERATORS_pType_DESCRIPTION = "The overlay type to perform.";
     public static final String OMSVECTOROVERLAYOPERATORS_outMap_DESCRIPTION = "The resulting vector map.";
+    private static final String doAllowHoles_DESCRIPTION = "Allow holes in the result.";
     // VARS DOCS STOP
 
     @Execute
@@ -177,6 +192,16 @@ public class OmsVectorOverlayOperators extends JGTModel {
                     b.add("id", Integer.class);
                     SimpleFeatureType type = b.buildFeatureType();
                     builder = new SimpleFeatureBuilder(type);
+                }
+                
+                if (geometryN2 instanceof Polygon && !doAllowHoles) {
+                    // remove holes
+                    Polygon polygon = (Polygon) geometryN2;
+                    LineString exteriorRing = polygon.getExteriorRing();
+                    
+                    Coordinate[] coordinates = exteriorRing.getCoordinates();
+                    
+                    geometryN2 = gf.createPolygon(coordinates);
                 }
 
                 Object[] values = new Object[]{geometryN2, i};
