@@ -10,10 +10,13 @@ org.jgrasstools.lesto.modules.raster.Las2BivariateRasterMosaic
 org.jgrasstools.lesto.modules.raster.Las2RasterInterpolator
 org.jgrasstools.lesto.modules.raster.LasOnRasterMapper
 org.jgrasstools.lesto.modules.raster.LasTriangulation2Dsm
+org.jgrasstools.lesto.modules.utilities.LasFromFaroTlsXyz
 org.jgrasstools.lesto.modules.utilities.LasInfo
 org.jgrasstools.lesto.modules.utilities.LasOverviewCreator
 org.jgrasstools.lesto.modules.utilities.LasPointDensityExtractor
+org.jgrasstools.lesto.modules.utilities.LasSlicer
 org.jgrasstools.lesto.modules.vector.LasChmTriangulation
+org.jgrasstools.lesto.modules.vegetation.OmsPointCloudMaximaFinder
 org.jgrasstools.lesto.modules.vegetation.PointCloudMaximaFinder
 org.jgrasstools.lesto.modules.vegetation.RasterMaximaFinder
 org.jgrasstools.lesto.modules.vegetation.WatershedAlgorithm
