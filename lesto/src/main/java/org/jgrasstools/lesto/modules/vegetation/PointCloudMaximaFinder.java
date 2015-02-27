@@ -17,18 +17,15 @@
  */
 package org.jgrasstools.lesto.modules.vegetation;
 
-import static java.lang.Math.pow;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
+import static org.jgrasstools.lesto.modules.vegetation.OmsPointCloudMaximaFinder.*;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -51,67 +48,70 @@ import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.StringUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.opengis.feature.simple.SimpleFeature;
+import org.jgrasstools.lesto.modules.vegetation.OmsPointCloudMaximaFinder.DsmDtmDiffHelper;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
-@Description("Module that identifies local maxima in point clouds.")
+@Description(DESCR)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
-@Keywords("Local maxima, las, lidar")
-@Label(JGTConstants.LESTO + "/vegetation")
-@Name("pointcloudmaximafinder")
+@Keywords(KEYWORDS)
+@Label(LABEL)
+@Name(NAME)
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
 @SuppressWarnings("nls")
 public class PointCloudMaximaFinder extends JGTModel {
 
-    @Description("Input las file.")
+    @Description(inLas_DESCR)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inLas = null;
 
-    @Description("A dtm raster to use for the area of interest and to calculate the elevation threshold.")
+    @Description(inDtm_DESCR)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inDtm;
 
-    @Description("A set of polygons to use as region of interest.")
+    @Description(inRoi_DESCR)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRoi;
 
-    @Description("Radius for which a point can be local maxima.")
+    @Description(inDsmDtmDiff_DESCR)
+    @In
+    public GridCoverage2D inDsmDtmDiff;
+
+    @Description(pMaxRadius_DESCR)
     @In
     public double pMaxRadius = -1.0;
 
-    @Description("Use an adaptive radius based on the height.")
+    @Description(doDynamicRadius_DESCR)
     @In
     public boolean doDynamicRadius = true;
 
-    @Description("The elevation threshold to apply to the chm.")
+    @Description(pElevDiffThres_DESCR)
+    @In
+    public double pElevDiffThres = 3.5;
+
+    @Description(pThreshold_DESCR)
     @In
     public double pThreshold = 0.0;
 
-    @Description("The comma separated list of classes to filter (if empty, all are picked).")
+    @Description(pClass_DESCR)
     @In
     public String pClass = null;
 
-    @Description("The output local maxima.")
+    @Description(outTops_DESCR)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outTops = null;
-
-    private SimpleFeatureBuilder lasBuilder;
-
-    private DefaultFeatureCollection outTopsFC;
 
     @Execute
     public void process() throws Exception {
@@ -135,6 +135,19 @@ public class PointCloudMaximaFinder extends JGTModel {
             crs = inDtmGC.getCoordinateReferenceSystem();
         }
 
+        DsmDtmDiffHelper helper = null;
+        if (inDsmDtmDiff != null) {
+            helper = new DsmDtmDiffHelper();
+            helper.pElevDiffThres = pElevDiffThres;
+            helper.gridGeometry = inDsmDtmDiff.getGridGeometry();
+            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDsmDtmDiff);
+            helper.cols = regionMap.getCols();
+            helper.rows = regionMap.getRows();
+            helper.xres = regionMap.getXres();
+            helper.yres = regionMap.getYres();
+            helper.dsmDtmDiffIter = CoverageUtilities.getRandomIterator(inDsmDtmDiff);
+        }
+
         try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inLas), inDtmGC, pThreshold, crs)) {
             lasData.open();
             if (pClass != null) {
@@ -142,8 +155,8 @@ public class PointCloudMaximaFinder extends JGTModel {
                 lasData.setClassesConstraint(classes);
             }
 
-            outTopsFC = new DefaultFeatureCollection();
-            lasBuilder = LasUtils.getLasFeatureBuilder(crs);
+            DefaultFeatureCollection outTopsFC = new DefaultFeatureCollection();
+            SimpleFeatureBuilder lasBuilder = LasUtils.getLasFeatureBuilder(crs);
 
             final int roiNum = regionGeometries.size();
             int index = 1;
@@ -165,74 +178,15 @@ public class PointCloudMaximaFinder extends JGTModel {
                     continue;
                 }
                 try {
-                    doProcess(pointsInTile);
+                    doProcess(pointsInTile, pMaxRadius, doDynamicRadius, helper, outTopsFC, lasBuilder, pm);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-
             dumpVector(outTopsFC, outTops);
         }
-    }
-
-    private void doProcess( final List<LasRecord> pointsInTile ) throws Exception {
-        /*
-         * we use the intensity value to mark local maxima
-         * - 1 = maxima
-         * - 0 = non maxima
-         */
-        pm.beginTask("Mark local maxima...", pointsInTile.size());
-        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(getDefaultThreadsNum());
-        for( final LasRecord r : pointsInTile ) {
-            Runnable runner = new Runnable(){
-                public void run() {
-                    // check if it is a local maxima
-                    boolean isLocalMaxima = true;
-                    for( LasRecord tmpRecord : pointsInTile ) {
-                        double distance = LasUtils.distance(r, tmpRecord);
-                        double maxRadius = pMaxRadius;
-                        if (doDynamicRadius) {
-                            // use Popescu lowered to 70% (Popescu & Kini 2004 for mixed pines and
-                            // deciduous trees)
-                            maxRadius = (2.51503 + 0.00901 * pow(r.z, 2.0)) / 2.0 * 0.7;
-                            if (maxRadius > pMaxRadius) {
-                                maxRadius = pMaxRadius;
-                            }
-                        }
-                        if (distance > maxRadius) {
-                            continue;
-                        }
-                        if (tmpRecord.z > r.z) {
-                            // not local maxima
-                            isLocalMaxima = false;
-                            break;
-                        }
-                    }
-                    // mark it
-                    if (isLocalMaxima) {
-                        synchronized (lasBuilder) {
-                            final Point point = gf.createPoint(new Coordinate(r.x, r.y));
-                            final Object[] values = new Object[]{point, r.z, r.intensity, r.classification, r.returnNumber,
-                                    r.numberOfReturns};
-                            lasBuilder.addAll(values);
-                            final SimpleFeature feature = lasBuilder.buildFeature(null);
-                            outTopsFC.add(feature);
-                        }
-                    }
-                    pm.worked(1);
-                }
-            };
-            fixedThreadPool.execute(runner);
-        }
-        try {
-            fixedThreadPool.shutdown();
-            fixedThreadPool.awaitTermination(30, TimeUnit.DAYS);
-            fixedThreadPool.shutdownNow();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        pm.done();
-
+        if (helper != null)
+            helper.dsmDtmDiffIter.done();
     }
 
 }
