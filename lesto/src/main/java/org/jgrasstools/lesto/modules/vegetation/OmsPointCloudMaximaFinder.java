@@ -19,6 +19,7 @@ package org.jgrasstools.lesto.modules.vegetation;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.pow;
+import static java.lang.Math.round;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
@@ -238,9 +239,12 @@ public class OmsPointCloudMaximaFinder extends JGTModel {
                             if (isLocalMaxima) {
                                 synchronized (lasBuilder) {
                                     final Point point = gf.createPoint(new Coordinate(currentDot.x, currentDot.y));
-                                    final Object[] values = new Object[]{point, index.getAndIncrement(),
-                                            currentDot.groundElevation, currentDot.intensity, currentDot.classification,
-                                            currentDot.returnNumber, currentDot.numberOfReturns};
+                                    double groundElevation = currentDot.groundElevation;
+                                    // round to meter with 1 decimal
+                                    groundElevation = ((int) round(groundElevation * 10)) / 10.0;
+                                    final Object[] values = new Object[]{point, index.getAndIncrement(), groundElevation,
+                                            currentDot.intensity, currentDot.classification, currentDot.returnNumber,
+                                            currentDot.numberOfReturns};
                                     lasBuilder.addAll(values);
                                     final SimpleFeature feature = lasBuilder.buildFeature(null);
                                     outTopsFC.add(feature);
