@@ -27,12 +27,14 @@ public interface IPSFunction {
     /**
      * Evaluates the value of the fitting function and returns representing scalar.
      * 
+     * @param iterationStep the iterationstep to monitor the process.
+     * @param particleNum the particle number to monitor the process.
      * @param parameters the parameters to be used in the function.
      * @param ranges the valid ranges for the given parameters.
      * @return the calculated value.
      * @throws Exception 
      */
-    public double evaluate( double[] parameters, double[]... ranges ) throws Exception;
+    public double evaluate( int iterationStep, int particleNum, double[] parameters, double[]... ranges ) throws Exception;
 
     /**
      * Evaluates if the supplied value is better than the supplied best.
@@ -63,7 +65,7 @@ public interface IPSFunction {
      * @return the initial global best to use.
      */
     public double getInitialGlobalBest();
-    
+
     /**
      * Getter for information the module might want to collect and make available. 
      * 

@@ -25,6 +25,7 @@ package org.jgrasstools.gears.libs.monitor;
  */
 public class LogProgressMonitor implements IJGTProgressMonitor {
 
+    private static final String PERC = "%...";
     protected boolean cancelled = false;
     protected String taskName;
     protected int totalWork;
@@ -101,11 +102,11 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
         } else {
             runningWork = runningWork + work;
             // calculate %
-            int percentage = (int) (100 * (runningWork /(double) totalWork));
-            if (percentage % 10 == 0 && percentage != lastPercentage) {
-                if (percentage < 0) {
-                    System.err.println(runningWork + "/" + totalWork + "/" + work);
-                }
+            int percentage = (int) (100 * (runningWork / (double) totalWork));
+            if (percentage != lastPercentage && percentage % 10 == 0) {
+                // if (percentage < 0) {
+                // System.err.println(runningWork + "/" + totalWork + "/" + work);
+                // }
                 String msg = percentage + "%...";
                 if (prefix != null) {
                     msg = prefix + msg;

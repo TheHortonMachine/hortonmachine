@@ -145,7 +145,7 @@ public class PSEngine {
         for( int j = 0; j < swarm.length; j++ ) {
             swarm[j] = new Particle(ranges);
             double[] currentLocations = swarm[j].getInitialLocations();
-            double evaluated = function.evaluate(currentLocations, ranges);
+            double evaluated = function.evaluate(iterationStep, j, currentLocations, ranges);
             swarm[j].setParticleBestFunction(evaluated);
             /* find globally best function value */
             if (function.isBetter(evaluated, globalBest)) {
@@ -181,7 +181,7 @@ public class PSEngine {
                     rand.nextDouble(), globalBestLocations);
             double evaluated;
             if (currentLocations != null) {
-                evaluated = function.evaluate(currentLocations, ranges);
+                evaluated = function.evaluate(iterationStep, i, currentLocations, ranges);
             } else {
                 // parameters were outside, ignore and try next round with new position
                 continue;
