@@ -56,7 +56,6 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.Triangle;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder;
 
@@ -69,6 +68,7 @@ public class LasUtils {
     private static final GeometryFactory gf = GeometryUtilities.gf();
 
     public static final String THE_GEOM = "the_geom";
+    public static final String ID = "rid"; // record id
     public static final String ELEVATION = "elev";
     public static final String INTENSITY = "intensity";
     public static final String CLASSIFICATION = "classifica";
@@ -167,6 +167,7 @@ public class LasUtils {
             b.setName("lasdata");
             b.setCRS(crs);
             b.add(THE_GEOM, Point.class);
+            b.add(ID, Integer.class);
             b.add(ELEVATION, Double.class);
             b.add(INTENSITY, Double.class);
             b.add(CLASSIFICATION, Integer.class);
@@ -178,13 +179,25 @@ public class LasUtils {
         return lasSimpleFeatureBuilder;
     }
 
-    public static SimpleFeature tofeature( LasRecord r, CoordinateReferenceSystem crs ) {
+    /**
+     * Convert a record to a feature.
+     * 
+     * @param r the record to convert.
+     * @param featureId an optional feature id, if not available, the id is set to -1.
+     * @param crs the crs to apply.
+     * @return the feature.
+     */
+    public static SimpleFeature tofeature( LasRecord r, Integer featureId, CoordinateReferenceSystem crs ) {
         final Point point = toGeometry(r);
         double elev = r.z;
         if (!Double.isNaN(r.groundElevation)) {
             elev = r.groundElevation;
         }
-        final Object[] values = new Object[]{point, elev, r.intensity, r.classification, r.returnNumber, r.numberOfReturns};
+        if (featureId == null) {
+            featureId = -1;
+        }
+        final Object[] values = new Object[]{point, featureId, elev, r.intensity, r.classification, r.returnNumber,
+                r.numberOfReturns};
         SimpleFeatureBuilder lasFeatureBuilder = getLasFeatureBuilder(crs);
         lasFeatureBuilder.addAll(values);
         final SimpleFeature feature = lasFeatureBuilder.buildFeature(null);
@@ -195,7 +208,17 @@ public class LasUtils {
         return gf.createPoint(new Coordinate(r.x, r.y));
     }
 
-    public static List<LasRecord> getLasRecordsFromFeatureCollection( SimpleFeatureCollection lasCollection ) {
+    /**
+     * Create a {@link LasRecord} from a collection.
+     * 
+     * <p><b>The collection has to be created with the methods of this class previously,
+     * else some fields will be missing.</b>
+     * 
+     * @param lasCollection the collection to convert.
+     * @param elevIsGround if <code>true</code>, the elevation is the ground height.
+     * @return the list of las records.
+     */
+    public static List<LasRecord> getLasRecordsFromFeatureCollection( SimpleFeatureCollection lasCollection, boolean elevIsGround ) {
         List<SimpleFeature> featuresList = FeatureUtilities.featureCollectionToList(lasCollection);
         List<LasRecord> lasList = new ArrayList<LasRecord>();
         for( SimpleFeature lasFeature : featuresList ) {
@@ -205,6 +228,9 @@ public class LasUtils {
             r.y = coordinate.y;
             double elevation = ((Number) lasFeature.getAttribute(ELEVATION)).doubleValue();
             r.z = elevation;
+            if (elevIsGround) {
+                r.groundElevation = elevation;
+            }
             short intensity = ((Number) lasFeature.getAttribute(INTENSITY)).shortValue();
             r.intensity = intensity;
             byte classification = ((Number) lasFeature.getAttribute(CLASSIFICATION)).byteValue();
@@ -565,7 +591,7 @@ public class LasUtils {
             }
             pm.done();
         }
-        
+
         pm.beginTask("Triangulation1...", -1);
         List<Coordinate> lasCoordinates2 = new ArrayList<Coordinate>();
         for( Geometry g : trianglesList ) {
@@ -579,12 +605,12 @@ public class LasUtils {
         triangulationBuilder1.setSites(lasCoordinates2);
         Geometry triangles1 = triangulationBuilder1.getTriangles(gf);
         pm.done();
-         numTriangles = triangles1.getNumGeometries();
-            // no true dsm to be calculated
-            for( int i = 0; i < numTriangles; i++ ) {
-                Geometry geometryN = triangles1.getGeometryN(i);
-                trianglesList.add(geometryN);
-            }
+        numTriangles = triangles1.getNumGeometries();
+        // no true dsm to be calculated
+        for( int i = 0; i < numTriangles; i++ ) {
+            Geometry geometryN = triangles1.getGeometryN(i);
+            trianglesList.add(geometryN);
+        }
         return trianglesList;
     }
 
@@ -650,7 +676,7 @@ public class LasUtils {
      * 
      * <p>For the profile the min and max angles of "sight" are
      * calculated. The min azimuth angle represents the "upper"
-     * line of sight, as thoght from the zenith.
+     * line of sight, as thought from the zenith.
      * <p>The max azimuth angle represents the "below the earth" line
      * of sight (think of a viewer looking in direction nadir).
      * <p>The return values are in an array of doubles containing:

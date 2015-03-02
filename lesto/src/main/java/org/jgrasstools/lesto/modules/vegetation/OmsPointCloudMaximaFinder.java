@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.media.jai.iterator.RandomIter;
 
@@ -127,6 +128,8 @@ public class OmsPointCloudMaximaFinder extends JGTModel {
     public static final String LABEL = JGTConstants.LESTO + "/vegetation";
     // VARS DOCS END
 
+    private AtomicInteger index = new AtomicInteger();
+
     @Execute
     public void process() throws Exception {
         checkNull(inLas);
@@ -164,7 +167,7 @@ public class OmsPointCloudMaximaFinder extends JGTModel {
         }
 
         try {
-            doProcess(inLas, pMaxRadius, doDynamicRadius, helper, (DefaultFeatureCollection) outTops, lasBuilder, pm);
+            doProcess(inLas, pMaxRadius, doDynamicRadius, helper, (DefaultFeatureCollection) outTops, lasBuilder, index, pm);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -175,7 +178,7 @@ public class OmsPointCloudMaximaFinder extends JGTModel {
 
     public static void doProcess( final List<LasRecord> pointsInTile, final double pMaxRadius, final boolean doDynamicRadius,
             final DsmDtmDiffHelper helper, final DefaultFeatureCollection outTopsFC, final SimpleFeatureBuilder lasBuilder,
-            final IJGTProgressMonitor pm ) throws Exception {
+            final AtomicInteger index, final IJGTProgressMonitor pm ) throws Exception {
         /*
          * we use the intensity value to mark local maxima
          * - 1 = maxima
@@ -197,7 +200,7 @@ public class OmsPointCloudMaximaFinder extends JGTModel {
                                 // use Popescu lowered to 70% (Popescu & Kini 2004 for mixed pines
                                 // and
                                 // deciduous trees)
-                                maxRadius = (2.51503 + 0.00901 * pow(currentDot.z, 2.0)) / 2.0 * 0.7;
+                                maxRadius = (2.51503 + 0.00901 * pow(currentDot.groundElevation, 2.0)) / 2.0 * 0.7;
                                 if (maxRadius > pMaxRadius) {
                                     maxRadius = pMaxRadius;
                                 }
@@ -205,7 +208,7 @@ public class OmsPointCloudMaximaFinder extends JGTModel {
                             if (distance > maxRadius) {
                                 continue;
                             }
-                            if (tmpDot.z > currentDot.z) {
+                            if (tmpDot.groundElevation > currentDot.groundElevation) {
                                 // not local maxima
                                 isLocalMaxima = false;
                                 break;
@@ -235,8 +238,9 @@ public class OmsPointCloudMaximaFinder extends JGTModel {
                             if (isLocalMaxima) {
                                 synchronized (lasBuilder) {
                                     final Point point = gf.createPoint(new Coordinate(currentDot.x, currentDot.y));
-                                    final Object[] values = new Object[]{point, currentDot.z, currentDot.intensity,
-                                            currentDot.classification, currentDot.returnNumber, currentDot.numberOfReturns};
+                                    final Object[] values = new Object[]{point, index.getAndIncrement(),
+                                            currentDot.groundElevation, currentDot.intensity, currentDot.classification,
+                                            currentDot.returnNumber, currentDot.numberOfReturns};
                                     lasBuilder.addAll(values);
                                     final SimpleFeature feature = lasBuilder.buildFeature(null);
                                     outTopsFC.add(feature);

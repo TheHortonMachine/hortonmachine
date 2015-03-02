@@ -26,6 +26,7 @@ import static org.jgrasstools.lesto.modules.vegetation.OmsPointCloudMaximaFinder
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -113,6 +114,8 @@ public class PointCloudMaximaFinder extends JGTModel {
     @In
     public String outTops = null;
 
+    private AtomicInteger featureIndex = new AtomicInteger();
+
     @Execute
     public void process() throws Exception {
         checkNull(inLas);
@@ -178,7 +181,7 @@ public class PointCloudMaximaFinder extends JGTModel {
                     continue;
                 }
                 try {
-                    doProcess(pointsInTile, pMaxRadius, doDynamicRadius, helper, outTopsFC, lasBuilder, pm);
+                    doProcess(pointsInTile, pMaxRadius, doDynamicRadius, helper, outTopsFC, lasBuilder, featureIndex, pm);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
