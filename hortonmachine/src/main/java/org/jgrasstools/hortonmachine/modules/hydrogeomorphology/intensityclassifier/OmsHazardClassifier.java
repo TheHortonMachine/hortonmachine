@@ -44,34 +44,54 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Hazard classifier.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Flooding, Hazard")
-@Label("HortonMachine/Hydro-Geomorphology")
-@Name("hazardclassifier")
-@Status(5)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OmsHazardClassifier.DESCRIPTION)
+@Author(name = OmsHazardClassifier.AUTHORS, contact = OmsHazardClassifier.CONTACT)
+@Keywords(OmsHazardClassifier.KEYWORDS)
+@Label(OmsHazardClassifier.LABEL)
+@Name(OmsHazardClassifier.NAME)
+@Status(OmsHazardClassifier.STATUS)
+@License(OmsHazardClassifier.LICENSE)
 public class OmsHazardClassifier extends JGTModel {
 
-    @Description("Intensity map for Tr=200 years.")
+    @Description(inIntensityTr200_DESCR)
     @In
     public GridCoverage2D inIntensityTr200;
 
-    @Description("Intensity map for Tr=100 years.")
+    @Description(inIntensityTr100_DESCR)
     @In
     public GridCoverage2D inIntensityTr100;
 
-    @Description("Intensity map for Tr=30 years.")
+    @Description(inIntensityTr30_DESCR)
     @In
     public GridCoverage2D inIntensityTr30;
 
-    @Description("Output hazard map IP1")
+    @Description(outHazardIP1_DESCR)
     @Out
     public GridCoverage2D outHazardIP1 = null;
 
-    @Description("Output hazard map IP2")
+    @Description(outHazardIP2_DESCR)
     @Out
     public GridCoverage2D outHazardIP2 = null;
+
+    // VARS DOC START
+    public static final String LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final int STATUS = 5;
+    public static final String LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String NAME = "hazardclassifier";
+    public static final String KEYWORDS = "Raster, Flooding, Hazard";
+    public static final String CONTACT = "http://www.hydrologis.com";
+    public static final String AUTHORS = "Silvia Franceschi, Andrea Antonello";
+    public static final String DESCRIPTION = "Hazard classifier.";
+    public static final String outHazardIP2_DESCR = "Output hazard map IP2";
+    public static final String outHazardIP1_DESCR = "Output hazard map IP1";
+    public static final String inIntensityTr30_DESCR = "Intensity map for Tr=30 years.";
+    public static final String inIntensityTr100_DESCR = "Intensity map for Tr=100 years.";
+    public static final String inIntensityTr200_DESCR = "Intensity map for Tr=200 years.";
+    // VARS DOC END
+
+    public static final double INTENSITY_HIGH = 3.0;
+    public static final double INTENSITY_MEDIUM = 2.0;
+    public static final double INTENSITY_LOW = 1.0;
 
     @Execute
     public void process() throws Exception {
@@ -107,11 +127,11 @@ public class OmsHazardClassifier extends JGTModel {
                 double tmpTr30;
                 if (isNovalue(tr30)) {
                     tmpTr30 = Double.NEGATIVE_INFINITY;
-                } else if (dEq(tr30, 1.0)) {
+                } else if (dEq(tr30, INTENSITY_LOW)) {
                     tmpTr30 = 3.0;
-                } else if (dEq(tr30, 2.0)) {
+                } else if (dEq(tr30, INTENSITY_MEDIUM)) {
                     tmpTr30 = 6.0;
-                } else if (dEq(tr30, 3.0)) {
+                } else if (dEq(tr30, INTENSITY_HIGH)) {
                     tmpTr30 = 9.0;
                 } else {
                     throw new ModelsIllegalargumentException("Unknown tr30 value: " + tr30, this, pm);
@@ -119,11 +139,11 @@ public class OmsHazardClassifier extends JGTModel {
                 double tmpTr100;
                 if (isNovalue(tr100)) {
                     tmpTr100 = Double.NEGATIVE_INFINITY;
-                } else if (dEq(tr100, 1.0)) {
+                } else if (dEq(tr100, INTENSITY_LOW)) {
                     tmpTr100 = 2.0;
-                } else if (dEq(tr100, 2.0)) {
+                } else if (dEq(tr100, INTENSITY_MEDIUM)) {
                     tmpTr100 = 5.0;
-                } else if (dEq(tr100, 3.0)) {
+                } else if (dEq(tr100, INTENSITY_HIGH)) {
                     tmpTr100 = 8.0;
                 } else {
                     throw new ModelsIllegalargumentException("Unknown tr100 value: " + tr100, this, pm);
@@ -131,11 +151,11 @@ public class OmsHazardClassifier extends JGTModel {
                 double tmpTr200;
                 if (isNovalue(tr200)) {
                     tmpTr200 = Double.NEGATIVE_INFINITY;
-                } else if (dEq(tr200, 1.0)) {
+                } else if (dEq(tr200, INTENSITY_LOW)) {
                     tmpTr200 = 1.0;
-                } else if (dEq(tr200, 2.0)) {
+                } else if (dEq(tr200, INTENSITY_MEDIUM)) {
                     tmpTr200 = 4.0;
-                } else if (dEq(tr200, 3.0)) {
+                } else if (dEq(tr200, INTENSITY_HIGH)) {
                     tmpTr200 = 7.0;
                 } else {
                     throw new ModelsIllegalargumentException("Unknown tr200 value: " + tr200, this, pm);

@@ -1265,23 +1265,6 @@ public class HortonMessages {
     public static final String OMSCB_pLast_DESCRIPTION = "The last moment to calculate.";
     public static final String OMSCB_outCb_DESCRIPTION = "A matrix containing 1) the mean value of the data in abscissa; 2) the number of elements in each interval; 3) the mean value of the data in ordinate; n+2) the n-esimal moment of the data in ordinate.";
 
-    public static final String OMSINTENSITYCLASSIFIER_DESCRIPTION = "Module for the calculation of the flooding intensity.";
-    public static final String OMSINTENSITYCLASSIFIER_DOCUMENTATION = "";
-    public static final String OMSINTENSITYCLASSIFIER_KEYWORDS = "Raster, Flooding";
-    public static final String OMSINTENSITYCLASSIFIER_LABEL = HYDROGEOMORPHOLOGY;
-    public static final String OMSINTENSITYCLASSIFIER_NAME = "intensityclassifier";
-    public static final int OMSINTENSITYCLASSIFIER_STATUS = 5;
-    public static final String OMSINTENSITYCLASSIFIER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSINTENSITYCLASSIFIER_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
-    public static final String OMSINTENSITYCLASSIFIER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION = "The map of the water depth.";
-    public static final String OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION = "The map of the water velocity.";
-    public static final String OMSINTENSITYCLASSIFIER_pUpperThresWaterdepth_DESCRIPTION = "The upper threshold value for the water depth.";
-    public static final String OMSINTENSITYCLASSIFIER_pUpperThresVelocityWaterdepth_DESCRIPTION = "The upper threshold value for the product of water depth and velocity.";
-    public static final String OMSINTENSITYCLASSIFIER_pLowerThresWaterdepth_DESCRIPTION = "The lower threshold value for the water depth.";
-    public static final String OMSINTENSITYCLASSIFIER_pLowerThresVelocityWaterdepth_DESCRIPTION = "The lower threshold value for the product of water depth and velocity.";
-    public static final String OMSINTENSITYCLASSIFIER_outIntensity_DESCRIPTION = "The map of flooding intensity.";
-
     public static final String OMSEPANETPARAMETERSOPTIONS_DESCRIPTION = "The options parameters of the epanet inp file";
     public static final String OMSEPANETPARAMETERSOPTIONS_DOCUMENTATION = "";
     public static final String OMSEPANETPARAMETERSOPTIONS_KEYWORDS = "OmsEpanet";

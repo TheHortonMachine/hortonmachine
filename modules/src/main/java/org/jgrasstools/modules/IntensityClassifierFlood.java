@@ -17,21 +17,7 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_outIntensity_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_pLowerThresVelocityWaterdepth_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_pLowerThresWaterdepth_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_pUpperThresVelocityWaterdepth_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_pUpperThresWaterdepth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.intensityclassifier.OmsIntensityClassifierFlood.*;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -46,7 +32,7 @@ import oms3.annotations.Unit;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.intensityclassifier.OmsIntensityClassifier;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.intensityclassifier.OmsIntensityClassifierFlood;
 
 @Description(OMSINTENSITYCLASSIFIER_DESCRIPTION)
 @Author(name = OMSINTENSITYCLASSIFIER_AUTHORNAMES, contact = OMSINTENSITYCLASSIFIER_AUTHORCONTACTS)
@@ -55,7 +41,7 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.intensityclassif
 @Name("_" + OMSINTENSITYCLASSIFIER_NAME)
 @Status(OMSINTENSITYCLASSIFIER_STATUS)
 @License(OMSINTENSITYCLASSIFIER_LICENSE)
-public class IntensityClassifier extends JGTModel {
+public class IntensityClassifierFlood extends JGTModel {
 
     @Description(OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -96,7 +82,7 @@ public class IntensityClassifier extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        OmsIntensityClassifier intensityclassifier = new OmsIntensityClassifier();
+        OmsIntensityClassifierFlood intensityclassifier = new OmsIntensityClassifierFlood();
         intensityclassifier.inWaterDepth = getRaster(inWaterDepth);
         intensityclassifier.inVelocity = getRaster(inVelocity);
         intensityclassifier.pUpperThresWaterdepth = pUpperThresWaterdepth;
