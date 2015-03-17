@@ -31,6 +31,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.geotools.util.WeakValueHashMap;
 import org.jgrasstools.gears.io.las.core.ALasReader;
+import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.index.OmsLasIndexReader;
 import org.jgrasstools.gears.io.las.index.LasIndexer;
@@ -159,15 +160,11 @@ class LasFolderIndexDataManager extends ALasDataManager implements AutoCloseable
                     File lasIndexFile = FileUtilities.substituteExtention(lasFile, "lasfix");
 
                     if (lasIndexFile.exists()) {
-                        ALasReader reader = ALasReader.getReader(lasFile, crs);
-                        reader.open();
-                        reader.getHeader();
-                        STRtreeJGT lasIndex = OmsLasIndexReader.readIndex(lasIndexFile.getAbsolutePath());
-                        pair = new Pair();
-                        pair.reader = reader;
-                        pair.strTree = lasIndex;
-                        fileName2LasReaderMap.put(name, pair);
-                        fileName4LasReaderMapSupport.add(name);
+                        pair = getIndexPair(lasFile);
+                        if (pair != null) {
+                            fileName2LasReaderMap.put(name, pair);
+                            fileName4LasReaderMapSupport.add(name);
+                        }
                     } else {
                         continue;
                     }
@@ -333,11 +330,21 @@ class LasFolderIndexDataManager extends ALasDataManager implements AutoCloseable
 
             for( String key : fileName4LasReaderMapSupport ) {
                 Pair pair = fileName2LasReaderMap.get(key);
-                ReferencedEnvelope3D envelope = pair.reader.getHeader().getDataEnvelope();
+                if (pair == null) {
+                    File lasFile = new File(lasFolder, key);
+                    pair = getIndexPair(lasFile);
+                    if (pair == null) {
+                        System.err.println("Null reader pair: " + lasFile);
+                        continue;
+                    }
+                }
+                ILasHeader header = pair.reader.getHeader();
+                ReferencedEnvelope3D envelope = header.getDataEnvelope();
                 if (referencedEnvelope3D == null) {
                     referencedEnvelope3D = envelope;
                 } else {
-                    referencedEnvelope3D.expandToInclude(envelope);
+                    referencedEnvelope3D.expandToInclude(envelope.getMinX(), envelope.getMinY(), envelope.getMinZ());
+                    referencedEnvelope3D.expandToInclude(envelope.getMaxX(), envelope.getMaxY(), envelope.getMaxZ());
                 }
             }
         }
@@ -372,37 +379,60 @@ class LasFolderIndexDataManager extends ALasDataManager implements AutoCloseable
         return overviewFeatures;
     }
 
+    @SuppressWarnings("rawtypes")
     private void checkReadersMap() throws Exception {
         checkOpen();
         if (fileName2LasReaderMap.size() == 0) {
-            @SuppressWarnings("rawtypes")
             List filesList = mainLasFolderIndex.itemsTree();
             for( Object fileName : filesList ) {
                 if (fileName instanceof String) {
                     String name = (String) fileName;
-
-                    Pair pair = fileName2LasReaderMap.get(name);
-                    if (pair == null) {
-                        File lasFile = new File(lasFolder, name);
-                        File lasIndexFile = FileUtilities.substituteExtention(lasFile, "lasfix");
-
-                        if (lasIndexFile.exists()) {
-                            ALasReader reader = ALasReader.getReader(lasFile, crs);
-                            reader.open();
-                            reader.getHeader();
-                            STRtreeJGT lasIndex = OmsLasIndexReader.readIndex(lasIndexFile.getAbsolutePath());
-                            pair = new Pair();
-                            pair.reader = reader;
-                            pair.strTree = lasIndex;
-                            fileName2LasReaderMap.put(name, pair);
-                            fileName4LasReaderMapSupport.add(name);
-                        } else {
-                            continue;
+                    getReader(name);
+                } else if (fileName instanceof List) {
+                    List filesList2 = (List) fileName;
+                    for( Object fileName2 : filesList2 ) {
+                        if (fileName2 instanceof String) {
+                            String name2 = (String) fileName2;
+                            getReader(name2);
                         }
                     }
+                } else {
+                    throw new RuntimeException();
                 }
             }
         }
+    }
+
+    private void getReader( String name ) throws Exception {
+        Pair pair = fileName2LasReaderMap.get(name);
+        if (pair == null) {
+            File lasFile = new File(lasFolder, name);
+            pair = getIndexPair(lasFile);
+            if (pair != null) {
+                fileName2LasReaderMap.put(name, pair);
+                fileName4LasReaderMapSupport.add(name);
+            }
+            // System.out.println("Added: " + lasIndexFile);
+            // } else {
+
+        }
+    }
+
+    private Pair getIndexPair( File lasFile ) throws Exception {
+        File lasIndexFile = FileUtilities.substituteExtention(lasFile, "lasfix");
+        if (lasIndexFile.exists()) {
+            ALasReader reader = ALasReader.getReader(lasFile, crs);
+            reader.open();
+            reader.getHeader();
+            STRtreeJGT lasIndex = OmsLasIndexReader.readIndex(lasIndexFile.getAbsolutePath());
+            Pair pair = new Pair();
+            pair.reader = reader;
+            pair.strTree = lasIndex;
+            return pair;
+        } else {
+            System.err.println("Doesn't exist: " + lasIndexFile);
+        }
+        return null;
     }
 
     private void checkOpen() throws Exception {
