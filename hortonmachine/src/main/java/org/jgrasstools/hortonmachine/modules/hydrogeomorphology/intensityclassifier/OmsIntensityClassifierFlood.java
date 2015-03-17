@@ -17,23 +17,11 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.intensityclassifier;
 
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.intensityclassifier.OmsHazardClassifier.*;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.HYDROGEOMORPHOLOGY;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_outIntensity_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_pLowerThresVelocityWaterdepth_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_pLowerThresWaterdepth_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_pUpperThresVelocityWaterdepth_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_pUpperThresWaterdepth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.intensityclassifier.OmsIntensityClassifierFlood.*;
 
 import java.awt.image.WritableRaster;
 
@@ -66,7 +54,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Name(OMSINTENSITYCLASSIFIER_NAME)
 @Status(OMSINTENSITYCLASSIFIER_STATUS)
 @License(OMSINTENSITYCLASSIFIER_LICENSE)
-public class OmsIntensityClassifier extends JGTModel {
+public class OmsIntensityClassifierFlood extends JGTModel {
 
     @Description(OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION)
     @Unit("m")
@@ -102,9 +90,24 @@ public class OmsIntensityClassifier extends JGTModel {
     @Out
     public GridCoverage2D outIntensity = null;
 
-    private final double INTENSITY_HIGH = 3.0;
-    private final double INTENSITY_MEDIUM = 2.0;
-    private final double INTENSITY_LOW = 1.0;
+    // VARS DOC START
+    public static final String OMSINTENSITYCLASSIFIER_DESCRIPTION = "Module for the calculation of the flooding intensity.";
+    public static final String OMSINTENSITYCLASSIFIER_DOCUMENTATION = "";
+    public static final String OMSINTENSITYCLASSIFIER_KEYWORDS = "Raster, Flooding";
+    public static final String OMSINTENSITYCLASSIFIER_LABEL = HYDROGEOMORPHOLOGY;
+    public static final String OMSINTENSITYCLASSIFIER_NAME = "intensityclassifier";
+    public static final int OMSINTENSITYCLASSIFIER_STATUS = 5;
+    public static final String OMSINTENSITYCLASSIFIER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSINTENSITYCLASSIFIER_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
+    public static final String OMSINTENSITYCLASSIFIER_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION = "The map of the water depth.";
+    public static final String OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION = "The map of the water velocity.";
+    public static final String OMSINTENSITYCLASSIFIER_pUpperThresWaterdepth_DESCRIPTION = "The upper threshold value for the water depth.";
+    public static final String OMSINTENSITYCLASSIFIER_pUpperThresVelocityWaterdepth_DESCRIPTION = "The upper threshold value for the product of water depth and velocity.";
+    public static final String OMSINTENSITYCLASSIFIER_pLowerThresWaterdepth_DESCRIPTION = "The lower threshold value for the water depth.";
+    public static final String OMSINTENSITYCLASSIFIER_pLowerThresVelocityWaterdepth_DESCRIPTION = "The lower threshold value for the product of water depth and velocity.";
+    public static final String OMSINTENSITYCLASSIFIER_outIntensity_DESCRIPTION = "The map of flooding intensity.";
+    // VARS DOC END
 
     @Execute
     public void process() throws Exception {
@@ -167,7 +170,7 @@ public class OmsIntensityClassifier extends JGTModel {
         pm.done();
 
         outIntensity = CoverageUtilities
-                .buildCoverage("pitfiller", outWR, regionMap, inWaterDepth.getCoordinateReferenceSystem());
+                .buildCoverage("intensity", outWR, regionMap, inWaterDepth.getCoordinateReferenceSystem());
 
     }
 }
