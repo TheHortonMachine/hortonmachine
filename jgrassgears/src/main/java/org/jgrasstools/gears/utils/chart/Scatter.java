@@ -17,18 +17,27 @@
  */
 package org.jgrasstools.gears.utils.chart;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.annotations.XYTextAnnotation;
 import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.Marker;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.general.Series;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.Layer;
+import org.jfree.ui.TextAnchor;
 
 /**
  * A simple scatter plotter.
@@ -61,12 +70,33 @@ public class Scatter implements IChart {
         return title;
     }
 
+    /**
+     * Add a new series by name and data.
+     * 
+     * @param seriesName the name.
+     * @param x the x data array.
+     * @param y the y data array.
+     */
     public void addSeries( String seriesName, double[] x, double[] y ) {
         XYSeries series = new XYSeries(seriesName);
         for( int i = 0; i < x.length; i++ ) {
             series.add(x[i], y[i]);
         }
         dataset.addSeries(series);
+    }
+
+    /**
+     * Get {@link Series} to be populated.
+     * 
+     * <p>Teh series is added to the dataset.
+     * 
+     * @param seriesName the name of the series to add.
+     * @return the {@link XYSeries} to use.
+     */
+    public XYSeries getSeries( String seriesName ) {
+        XYSeries series = new XYSeries(seriesName);
+        dataset.addSeries(series);
+        return series;
     }
 
     public void setLogAxes( boolean xLog, boolean yLog ) {
@@ -134,13 +164,21 @@ public class Scatter implements IChart {
             }
 
             XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
-            int seriesCount = plot.getSeriesCount();
-            for( int i = 0; i < seriesCount; i++ ) {
-                renderer.setSeriesShapesVisible(i, showShapes);
-                renderer.setSeriesLinesVisible(i, showLines);
-            }
+            double x = 1.5;
+            double w = x * 2;
+            renderer.setSeriesShape(0, new Ellipse2D.Double(-x, x, w, w));
+            setShapeLinesVisibility(plot);
         }
         return chart;
+    }
+
+    private void setShapeLinesVisibility( XYPlot plot ) {
+        XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+        int seriesCount = plot.getSeriesCount();
+        for( int i = 0; i < seriesCount; i++ ) {
+            renderer.setSeriesShapesVisible(i, showShapes);
+            renderer.setSeriesLinesVisible(i, showLines);
+        }
     }
     public void setXRange( double min, double max ) {
         XYPlot plot = (XYPlot) getChart().getPlot();
@@ -152,6 +190,21 @@ public class Scatter implements IChart {
         XYPlot plot = (XYPlot) getChart().getPlot();
         ValueAxis rangeAxis = plot.getRangeAxis();
         rangeAxis.setRange(min, max);
+    }
+
+    public void addAnnotation( String text, double x ) {
+        XYPlot plot = (XYPlot) getChart().getPlot();
+        Marker updateMarker = new ValueMarker(x, Color.black, new BasicStroke(2f));
+        plot.addDomainMarker(updateMarker);
+        if (text != null) {
+            XYTextAnnotation updateLabel = new XYTextAnnotation(text, x, 0);
+            updateLabel.setRotationAnchor(TextAnchor.BASELINE_CENTER);
+            updateLabel.setTextAnchor(TextAnchor.BASELINE_CENTER);
+            updateLabel.setRotationAngle(-3.14 / 2);
+            updateLabel.setPaint(Color.black);
+            plot.addAnnotation(updateLabel);
+        }
+        setShapeLinesVisibility(plot);
     }
 
     // public static void main( String[] args ) {
