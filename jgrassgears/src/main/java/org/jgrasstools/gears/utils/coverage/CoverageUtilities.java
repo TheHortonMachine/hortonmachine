@@ -33,6 +33,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +54,7 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.JTS;
@@ -377,6 +379,42 @@ public class CoverageUtilities {
     }
 
     /**
+     * Get the parameters of the region covered by the {@link ImageMosaicReader}. 
+     * 
+     * @param reader the ImageMosaicReader.
+     * @return the {@link HashMap map} of parameters. ( {@link #NORTH} and the 
+     *          other static vars can be used to retrieve them.
+     */
+    public static RegionMap getRegionParamsFromImageMosaicReader( ImageMosaicReader reader ) throws IOException {
+        RegionMap envelopeParams = new RegionMap();
+
+        Envelope envelope = reader.getOriginalEnvelope();
+
+        DirectPosition lowerCorner = envelope.getLowerCorner();
+        double[] westSouth = lowerCorner.getCoordinate();
+        DirectPosition upperCorner = envelope.getUpperCorner();
+        double[] eastNorth = upperCorner.getCoordinate();
+
+        GridEnvelope2D gridRange = (GridEnvelope2D) reader.getOriginalGridRange();
+        int height = gridRange.height;
+        int width = gridRange.width;
+        double[][] resolutionLevels = reader.getResolutionLevels();
+        double xRes = resolutionLevels[0][0];
+        double yRes = resolutionLevels[0][1];
+
+        envelopeParams.put(NORTH, eastNorth[1]);
+        envelopeParams.put(SOUTH, westSouth[1]);
+        envelopeParams.put(WEST, westSouth[0]);
+        envelopeParams.put(EAST, eastNorth[0]);
+        envelopeParams.put(XRES, xRes);
+        envelopeParams.put(YRES, yRes);
+        envelopeParams.put(ROWS, (double) height);
+        envelopeParams.put(COLS, (double) width);
+
+        return envelopeParams;
+    }
+
+    /**
      * Get the array of region parameters covered by the {@link GridCoverage2D coverage}. 
      * 
      * @param gridCoverage the coverage.
@@ -453,7 +491,7 @@ public class CoverageUtilities {
         return new int[]{minCol, maxCol, minRow, maxRow};
     }
 
-    public static HashMap<String, Double> generalParameterValues2RegionParamsMap( GeneralParameterValue[] params ) {
+    public static RegionMap generalParameterValues2RegionParamsMap( GeneralParameterValue[] params ) {
         GridGeometry2D gg = null;
         if (params != null) {
             for( int i = 0; i < params.length; i++ ) {
@@ -468,7 +506,7 @@ public class CoverageUtilities {
         if (gg == null) {
             throw new IllegalArgumentException("No gridgeometry present"); //$NON-NLS-1$
         }
-        HashMap<String, Double> regionParams = gridGeometry2RegionParamsMap(gg);
+        RegionMap regionParams = gridGeometry2RegionParamsMap(gg);
         return regionParams;
     }
 
@@ -563,6 +601,34 @@ public class CoverageUtilities {
         readGG.setValue(new GridGeometry2D(gridEnvelope, env));
         readParams[0] = readGG;
 
+        return readParams;
+    }
+
+    /**
+     * Utility method to create read parameters for {@link GridCoverageReader} 
+     * 
+     * @param regionMap the RegionMap.
+     * @param crs the {@link CoordinateReferenceSystem}. Can be null, even if it should not.
+     * @return the {@link GeneralParameterValue array of parameters}.
+     */
+    public static GeneralParameterValue[] createGridGeometryGeneralParameter( RegionMap regionMap, CoordinateReferenceSystem crs ) {
+        GeneralParameterValue[] readParams = new GeneralParameterValue[1];
+        Parameter<GridGeometry2D> readGG = new Parameter<GridGeometry2D>(AbstractGridFormat.READ_GRIDGEOMETRY2D);
+        GridEnvelope2D gridEnvelope = new GridEnvelope2D(0, 0, regionMap.getCols(), regionMap.getRows());
+        Envelope env;
+        double north = regionMap.getNorth();
+        double south = regionMap.getSouth();
+        double east = regionMap.getEast();
+        double west = regionMap.getWest();
+        if (crs != null) {
+            env = new ReferencedEnvelope(west, east, south, north, crs);
+        } else {
+            DirectPosition2D minDp = new DirectPosition2D(west, south);
+            DirectPosition2D maxDp = new DirectPosition2D(east, north);
+            env = new Envelope2D(minDp, maxDp);
+        }
+        readGG.setValue(new GridGeometry2D(gridEnvelope, env));
+        readParams[0] = readGG;
         return readParams;
     }
 
