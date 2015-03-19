@@ -88,5 +88,4 @@ public class HazardClassifier extends JGTModel {
         dumpRaster(classifier.outHazardIP1, outHazardIP1);
         dumpRaster(classifier.outHazardIP2, outHazardIP2);
     }
-
 }

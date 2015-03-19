@@ -35,11 +35,13 @@ org.jgrasstools.modules.GridsGenerator
 org.jgrasstools.modules.H2cA
 org.jgrasstools.modules.H2cd
 org.jgrasstools.modules.HackLength
+org.jgrasstools.modules.HazardClassifier
 org.jgrasstools.modules.HecrasInputBuilder
 org.jgrasstools.modules.Hillshade
 org.jgrasstools.modules.ImageMosaicCreator
 org.jgrasstools.modules.Insolation
-org.jgrasstools.modules.IntensityClassifier
+org.jgrasstools.modules.IntensityClassifierDebrisFlowTN
+org.jgrasstools.modules.IntensityClassifierFlood
 org.jgrasstools.modules.IntersectionFinder
 org.jgrasstools.modules.Jami
 org.jgrasstools.modules.KernelDensity
