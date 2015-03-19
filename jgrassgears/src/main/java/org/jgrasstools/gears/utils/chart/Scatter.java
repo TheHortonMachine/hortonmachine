@@ -194,7 +194,8 @@ public class Scatter implements IChart {
 
     public void addAnnotation( String text, double x ) {
         XYPlot plot = (XYPlot) getChart().getPlot();
-        Marker updateMarker = new ValueMarker(x, Color.black, new BasicStroke(2f));
+        Color color = new Color(0, 0, 0, 100);
+        Marker updateMarker = new ValueMarker(x, color, new BasicStroke(2f));
         plot.addDomainMarker(updateMarker);
         if (text != null) {
             XYTextAnnotation updateLabel = new XYTextAnnotation(text, x, 0);
