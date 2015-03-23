@@ -34,11 +34,11 @@ import java.util.List;
  */
 public class FileUtilities {
 
-    public static void copyFile(String fromFile, String toFile) throws IOException {
+    public static void copyFile( String fromFile, String toFile ) throws IOException {
         Files.copy(Paths.get(fromFile), Paths.get(toFile));
     }
 
-    public static void copyFile(File in, File out) throws IOException {
+    public static void copyFile( File in, File out ) throws IOException {
         copyFile(in.getAbsolutePath(), out.getAbsolutePath());
     }
 
@@ -50,11 +50,11 @@ public class FileUtilities {
      *
      * @return true if all deletions were successful
      */
-    public static boolean deleteFileOrDir(File filehandle) {
+    public static boolean deleteFileOrDir( File filehandle ) {
 
         if (filehandle.isDirectory()) {
             String[] children = filehandle.list();
-            for (String aChildren : children) {
+            for( String aChildren : children ) {
                 boolean success = deleteFileOrDir(new File(filehandle, aChildren));
                 if (!success) {
                     return false;
@@ -80,10 +80,10 @@ public class FileUtilities {
      *
      * @return true if all went well
      */
-    public static boolean deleteFileOrDirOnExit(File filehandle) {
+    public static boolean deleteFileOrDirOnExit( File filehandle ) {
         if (filehandle.isDirectory()) {
             String[] children = filehandle.list();
-            for (String aChildren : children) {
+            for( String aChildren : children ) {
                 boolean success = deleteFileOrDir(new File(filehandle, aChildren));
                 if (!success) {
                     return false;
@@ -94,7 +94,6 @@ public class FileUtilities {
         return true;
     }
 
-
     /**
      * Read a file into a byte array.
      *
@@ -104,7 +103,7 @@ public class FileUtilities {
      *
      * @throws IOException
      */
-    public static byte[] readFileToBytes(String filePath) throws IOException {
+    public static byte[] readFileToBytes( String filePath ) throws IOException {
         Path path = Paths.get(filePath);
         byte[] bytes = Files.readAllBytes(path);
         return bytes;
@@ -120,19 +119,19 @@ public class FileUtilities {
      *
      * @throws IOException
      */
-    public static String readInputStreamToString(InputStream inputStream) throws IOException {
+    public static String readInputStreamToString( InputStream inputStream ) throws IOException {
         // Create the byte list to hold the data
         List<Byte> bytesList = new ArrayList<Byte>();
 
         byte b = 0;
-        while ((b = (byte) inputStream.read()) != -1) {
+        while( (b = (byte) inputStream.read()) != -1 ) {
             bytesList.add(b);
         }
         // Close the input stream and return bytes
         inputStream.close();
 
         byte[] bArray = new byte[bytesList.size()];
-        for (int i = 0; i < bArray.length; i++) {
+        for( int i = 0; i < bArray.length; i++ ) {
             bArray[i] = bytesList.get(i);
         }
 
@@ -149,7 +148,7 @@ public class FileUtilities {
      *
      * @throws IOException
      */
-    public static String readFile(String filePath) throws IOException {
+    public static String readFile( String filePath ) throws IOException {
         return readFile(new File(filePath));
     }
 
@@ -162,12 +161,14 @@ public class FileUtilities {
      *
      * @throws IOException
      */
-    public static String readFile(File file) throws IOException {
+    public static String readFile( File file ) throws IOException {
+        if (!file.exists()) {
+            throw new FileNotFoundException("The required projection file is not available: " + file.getAbsolutePath());
+        }
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-
             StringBuilder sb = new StringBuilder(200);
             String line;
-            while ((line = br.readLine()) != null) {
+            while( (line = br.readLine()) != null ) {
                 sb.append(line);
                 sb.append("\n"); //$NON-NLS-1$
             }
@@ -184,7 +185,7 @@ public class FileUtilities {
      *
      * @throws IOException
      */
-    public static List<String> readFileToLinesList(String filePath) throws IOException {
+    public static List<String> readFileToLinesList( String filePath ) throws IOException {
         return readFileToLinesList(new File(filePath));
     }
 
@@ -197,11 +198,11 @@ public class FileUtilities {
      *
      * @throws IOException
      */
-    public static List<String> readFileToLinesList(File file) throws IOException {
+    public static List<String> readFileToLinesList( File file ) throws IOException {
         List<String> lines = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
-            while ((line = br.readLine()) != null) {
+            while( (line = br.readLine()) != null ) {
                 lines.add(line);
             }
             return lines;
@@ -216,7 +217,7 @@ public class FileUtilities {
      *
      * @throws IOException
      */
-    public static void writeFile(String text, File file) throws IOException {
+    public static void writeFile( String text, File file ) throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
 
             bw.write(text);
@@ -231,7 +232,7 @@ public class FileUtilities {
      *
      * @throws IOException
      */
-    public static void writeFile(List<String> lines, String filePath) throws IOException {
+    public static void writeFile( List<String> lines, String filePath ) throws IOException {
         writeFile(lines, new File(filePath));
     }
 
@@ -243,16 +244,16 @@ public class FileUtilities {
      *
      * @throws IOException
      */
-    public static void writeFile(List<String> lines, File file) throws IOException {
+    public static void writeFile( List<String> lines, File file ) throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
-            for (String line : lines) {
+            for( String line : lines ) {
                 bw.write(line);
                 bw.write("\n"); //$NON-NLS-1$
             }
         }
     }
 
-    public static String replaceBackSlashes(String path) {
+    public static String replaceBackSlashes( String path ) {
         return path.replaceAll("\\\\", "\\\\\\\\"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
@@ -265,7 +266,7 @@ public class FileUtilities {
      *
      * @return the name without extension.
      */
-    public static String getNameWithoutExtention(File file) {
+    public static String getNameWithoutExtention( File file ) {
         String name = file.getName();
         int lastDot = name.lastIndexOf("."); //$NON-NLS-1$
         if (lastDot == -1) {
@@ -284,7 +285,7 @@ public class FileUtilities {
      *
      * @return the file with the new extention.
      */
-    public static File substituteExtention(File file, String newExtention) {
+    public static File substituteExtention( File file, String newExtention ) {
         String path = file.getAbsolutePath();
         int lastDot = path.lastIndexOf("."); //$NON-NLS-1$
         if (lastDot == -1) {
@@ -304,12 +305,12 @@ public class FileUtilities {
      *
      * @return the safe filename.
      */
-    public static String getSafeFileName(String fileName) {
+    public static String getSafeFileName( String fileName ) {
         char fileSep = '/'; // ... or do this portably.
         char escape = '%'; // ... or some other legal char.
         int len = fileName.length();
         StringBuilder sb = new StringBuilder(len);
-        for (int i = 0; i < len; i++) {
+        for( int i = 0; i < len; i++ ) {
             char ch = fileName.charAt(i);
             if (ch < ' ' || ch >= 0x7F || ch == fileSep // add other illegal chars
                     || (ch == '.' && i == 0) // we don't want to collide with "." or ".."!
@@ -338,14 +339,14 @@ public class FileUtilities {
      *
      * @throws IOException
      */
-    public static LinkedHashMap<String, String> readFileToHashMap(String filePath, String separator, boolean valueFirst)
+    public static LinkedHashMap<String, String> readFileToHashMap( String filePath, String separator, boolean valueFirst )
             throws IOException {
         if (separator == null) {
             separator = "=";
         }
         List<String> lines = readFileToLinesList(filePath);
         LinkedHashMap<String, String> propertiesMap = new LinkedHashMap<>();
-        for (String line : lines) {
+        for( String line : lines ) {
             line = line.trim();
             if (line.length() == 0) {
                 continue;
@@ -382,7 +383,7 @@ public class FileUtilities {
      *
      * @throws Exception
      */
-    public static File stringAsTmpFile(String string) throws Exception {
+    public static File stringAsTmpFile( String string ) throws Exception {
         File tempFile = File.createTempFile("jgt-", "txt");
         writeFile(string, tempFile);
         return tempFile;
@@ -398,7 +399,7 @@ public class FileUtilities {
      *
      * @throws Exception
      */
-    public static File stringListAsTmpFile(List<String> list) throws Exception {
+    public static File stringListAsTmpFile( List<String> list ) throws Exception {
         File tempFile = File.createTempFile("jgt-", "txt");
         writeFile(list, tempFile);
         return tempFile;
@@ -412,9 +413,9 @@ public class FileUtilities {
      *
      * @return the list of files patching.
      */
-    public static File[] getFilesListByExtention(String folderPath, final String ext) {
-        File[] shpFiles = new File(folderPath).listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
+    public static File[] getFilesListByExtention( String folderPath, final String ext ) {
+        File[] shpFiles = new File(folderPath).listFiles(new FilenameFilter(){
+            public boolean accept( File dir, String name ) {
                 return name.endsWith(ext);
             }
         });
