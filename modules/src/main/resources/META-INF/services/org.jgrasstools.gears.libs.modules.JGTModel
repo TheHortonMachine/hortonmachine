@@ -1,5 +1,6 @@
 org.jgrasstools.modules.Ab
 org.jgrasstools.modules.Aspect
+org.jgrasstools.modules.BasinShape
 org.jgrasstools.modules.BobTheBuilder
 org.jgrasstools.modules.Buffer
 org.jgrasstools.modules.CannyEdgeDetector

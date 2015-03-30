@@ -697,19 +697,6 @@ public class HortonMessages {
     public static final String OMSRESCALEDDISTANCE_pRatio_DESCRIPTION = "Ratio between the velocity in the channel and in the hillslope.";
     public static final String OMSRESCALEDDISTANCE_outRescaled_DESCRIPTION = "The map of the rescaled distances.";
 
-    public static final String OMSBASINSHAPE_DESCRIPTION = "Creates a Feature collection of the subbasins created with the netnumbering module.";
-    public static final String OMSBASINSHAPE_DOCUMENTATION = "OmsBasinShape.html";
-    public static final String OMSBASINSHAPE_KEYWORDS = "Basin, Geomorphology";
-    public static final String OMSBASINSHAPE_LABEL = BASIN;
-    public static final String OMSBASINSHAPE_NAME = "basinshape";
-    public static final int OMSBASINSHAPE_STATUS = 40;
-    public static final String OMSBASINSHAPE_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSBASINSHAPE_AUTHORNAMES = "Erica Ghesla, Andrea Antonello";
-    public static final String OMSBASINSHAPE_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSBASINSHAPE_inElev_DESCRIPTION = "The elevation map.";
-    public static final String OMSBASINSHAPE_inBasins_DESCRIPTION = "The map of the numbered basins.";
-    public static final String OMSBASINSHAPE_outBasins_DESCRIPTION = "The extracted basins vector map.";
-
     public static final String OMSNETWORKATTRIBUTESBUILDER_DESCRIPTION = "Extracts network attributes and the vector network based on a raster network.";
     public static final String OMSNETWORKATTRIBUTESBUILDER_DOCUMENTATION = "";
     public static final String OMSNETWORKATTRIBUTESBUILDER_KEYWORDS = "Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope";
