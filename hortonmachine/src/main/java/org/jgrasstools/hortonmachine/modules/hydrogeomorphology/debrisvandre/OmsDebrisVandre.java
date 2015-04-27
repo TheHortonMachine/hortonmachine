@@ -607,7 +607,7 @@ public class OmsDebrisVandre extends JGTModel {
             if (!isNovalue(net)) {
                 // first move to the next point
                 if (!ModelsEngine.go_downstream(flowDirColRow, tmpFlowValue))
-                    throw new ModelsIllegalargumentException("Unable to go downstream: " + flowDirColRow[0] + "/"
+                    throw new ModelsIllegalargumentException("Unable to go downstream [col/row]: " + flowDirColRow[0] + "/"
                             + flowDirColRow[1], this, pm);
                 tmpFlowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
                 while( !isNovalue(tmpFlowValue) && tmpFlowValue != 10 ) {
@@ -619,7 +619,7 @@ public class OmsDebrisVandre extends JGTModel {
                     outSoilIter.setSample(flowDirColRow[0], flowDirColRow[1], 0, newCumulated);
 
                     if (!ModelsEngine.go_downstream(flowDirColRow, tmpFlowValue))
-                        throw new ModelsIllegalargumentException("Unable to go downstream: " + flowDirColRow[0] + "/"
+                        throw new ModelsIllegalargumentException("Unable to go downstream [col/row]: " + flowDirColRow[0] + "/"
                                 + flowDirColRow[1], this, pm);
                     tmpFlowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
                 }

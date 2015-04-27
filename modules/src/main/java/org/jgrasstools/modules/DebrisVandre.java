@@ -104,6 +104,7 @@ public class DebrisVandre extends JGTModel {
     public double pDistance = 100.0;
 
     @Description(OMSDEBRISVANDRE_inObstacles_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inObstacles = null;
 
