@@ -194,7 +194,10 @@ lista.each{
    println "${split[1]} --- ${split[3]}"
 }
 
-def finalList = [];
+println "---------------------------------------"
+println "---------------------------------------"
+
+TreeMap<String, String> finalList = new TreeMap<>();
 // extract right jars paths from list
 for (it in files){
     def name = it.getName()
@@ -210,9 +213,10 @@ for (it in files){
     for (int i = 0; i < fileBeginList.size(); i++){
         def fBegin = fileBeginList.get(i);
         def version = versionList.get(i);
+        version = version.replaceAll("\\.", "\\\\.");
         if(name.startsWith(fBegin)){
             if(name.matches(".*"+version+".*")){
-                finalList << it;
+                finalList.put(it.getName(), it);
                 break;
             }
         }
@@ -222,8 +226,8 @@ for (it in files){
 println "---------------------------------------"
 println "---------------------------------------"
 println "Found:"
-finalList.each{
-    println it
+finalList.each{ k, v -> 
+    println k;
 }
 
 
@@ -232,9 +236,9 @@ println "---------------------------------------"
 if(copyPath){
     if(new File(copyPath).exists()){
         println "Copy deps jars to: ${copyPath}"
-        finalList.each{
-            def name = it.getName();
-            def path = it.getAbsolutePath();
+        finalList.each{ k, file ->
+            def name = file.getName();
+            def path = file.getAbsolutePath();
             def newPath = new File(copyPath, name).getAbsolutePath();
 
             // exclude those that go in the modules folder
