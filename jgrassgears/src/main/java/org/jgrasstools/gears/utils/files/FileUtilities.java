@@ -314,7 +314,7 @@ public class FileUtilities {
             char ch = fileName.charAt(i);
             if (ch < ' ' || ch >= 0x7F || ch == fileSep // add other illegal chars
                     || (ch == '.' && i == 0) // we don't want to collide with "." or ".."!
-                    || ch == escape) {
+                  || ch == '?'  || ch == escape) {
                 sb.append(escape);
                 if (ch < 0x10) {
                     sb.append('0');

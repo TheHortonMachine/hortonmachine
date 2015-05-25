@@ -46,8 +46,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
-import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOGS;
-import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOG_DATA;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_METADATA;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_NOTES;
 
@@ -58,7 +56,6 @@ import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
@@ -88,13 +85,11 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.geopaparazzi.forms.Utilities;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsPoint;
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Image;
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsDataTableFields;
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.MetadataTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
@@ -616,13 +611,16 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             pm.beginTask("Create log charts...", logsList.size());
             for( GpsLog log : logsList ) {
                 String logName = log.text;
+                int size = log.points.size();
+                pm.message("Processing log: " + logName + " with " + size + " points.");
 
-                File profileFile = new File(chartsFolderFile, logName + "_profile.png");
-                File planimetricFile = new File(chartsFolderFile, logName + "_planimetric.png");
-                File csvFile = new File(chartsFolderFile, logName + ".csv");
+                String fileName = FileUtilities.getSafeFileName(logName);
+
+                File profileFile = new File(chartsFolderFile, fileName + "_profile.png");
+                File planimetricFile = new File(chartsFolderFile, fileName + "_planimetric.png");
+                File csvFile = new File(chartsFolderFile, fileName + ".csv");
 
                 GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
-                int size = log.points.size();
                 double[] xProfile = new double[size];
                 double[] yProfile = new double[size];
                 double[] xPlanim = new double[size];
