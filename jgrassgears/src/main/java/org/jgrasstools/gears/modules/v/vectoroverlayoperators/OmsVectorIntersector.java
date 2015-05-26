@@ -35,33 +35,42 @@
  */
 package org.jgrasstools.gears.modules.v.vectoroverlayoperators;
 
-import com.vividsolutions.jts.geom.*;
-import com.vividsolutions.jts.geom.prep.PreparedGeometry;
-import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
-import oms3.annotations.*;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
+import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.OMSVECTOROVERLAYOPERATORS_inMap1_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.OMSVECTOROVERLAYOPERATORS_inMap2_DESCRIPTION;
+import static org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators.OMSVECTOROVERLAYOPERATORS_outMap_DESCRIPTION;
+
+import java.util.List;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.util.List;
-
-import static org.jgrasstools.gears.i18n.GearsMessages.*;
-import static org.jgrasstools.gears.libs.modules.Variables.*;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
 @Description(OmsVectorIntersector.DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
@@ -118,13 +127,12 @@ public class OmsVectorIntersector extends JGTModel {
         }
 
         GeometryType geometryType = GeometryUtilities.getGeometryType((Geometry) mainFeatures.get(0).getDefaultGeometry());
-        Class<?> multiClazz = geometryType.getMultiClazz();
+        Class< ? > multiClazz = geometryType.getMultiClazz();
         GeometryType newGeometryType = GeometryType.forClass(multiClazz);
         FeatureGeometrySubstitutor sub = new FeatureGeometrySubstitutor(inMap1.getSchema(), multiClazz);
 
-
         pm.beginTask("Performing intersection...", mainFeatures.size());
-        for (SimpleFeature feature : mainFeatures) {
+        for( SimpleFeature feature : mainFeatures ) {
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
             if (preparedIntersectionGeometry.intersects(geometry)) {
                 Geometry intersection = geometry.intersection(intersectionGeometry);
@@ -141,14 +149,6 @@ public class OmsVectorIntersector extends JGTModel {
         }
         pm.done();
 
-    }
-    public static void main(String[] args) throws Exception {
-        OmsVectorIntersector vint = new OmsVectorIntersector();
-        vint.inMap1 = OmsVectorReader.readVector("/media/hydrologis/FLASH DRIVE/test_data/topodb_poly.shp");
-        vint.inMap2 = OmsVectorReader.readVector("/media/hydrologis/FLASH DRIVE/test_data/stand.shp");
-//        vint.doKeepFirstAttributes = doKeepFirstAttributes;
-        vint.process();
-        OmsVectorWriter.writeVector("/media/hydrologis/FLASH DRIVE/test_data/intersected.shp", vint.outMap);
     }
 
 }

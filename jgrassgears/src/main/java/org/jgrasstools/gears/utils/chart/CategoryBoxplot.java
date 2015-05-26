@@ -17,13 +17,11 @@
  */
 package org.jgrasstools.gears.utils.chart;
 
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
@@ -32,31 +30,35 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
-import org.jfree.ui.ApplicationFrame;
-import org.jfree.ui.RefineryUtilities;
 
 /**
  * A simple category boxplot chart.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class CategoryBoxplot extends ApplicationFrame {
+public class CategoryBoxplot implements IChart {
 
-    private static final long serialVersionUID = 1L;
     private String[] categories;
     private List<double[]> values;
     private DefaultBoxAndWhiskerCategoryDataset dataset;
     private boolean isMeanVisible;
+    private JFreeChart chart;
+    private String title;
 
     public CategoryBoxplot( String[] categories, List<double[]> values, boolean isMeanVisible ) {
         this("Boxplot", categories, values, isMeanVisible);
     }
 
     public CategoryBoxplot( String title, String[] categories, List<double[]> values, boolean isMeanVisible ) {
-        super(title);
+        this.title = title;
         this.categories = categories;
         this.values = values;
         this.isMeanVisible = isMeanVisible;
+    }
+
+    @Override
+    public String getTitle() {
+        return title;
     }
 
     private void createDataset() {
@@ -73,55 +75,37 @@ public class CategoryBoxplot extends ApplicationFrame {
 
     }
 
-    public void plot() {
-        createDataset();
+    public JFreeChart getChart() {
+        if (chart == null) {
+            createDataset();
+            chart = ChartFactory.createBarChart(getTitle(),
+            // chart title
+                    "Category",
+                    // domain axis label
+                    "Value",
+                    // range axis label
+                    dataset,
+                    // data
+                    PlotOrientation.VERTICAL,
+                    // orientation
+                    false,
+                    // include legend
+                    true,
+                    // tooltips?
+                    false
+            // URLs?
+                    );
+            CategoryPlot plot = (CategoryPlot) chart.getPlot();
+            CategoryAxis rangeAxis = plot.getDomainAxis();
+            rangeAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+            final BoxAndWhiskerRenderer renderer = new BoxAndWhiskerRenderer();
+            renderer.setFillBox(true);
+            renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
+            renderer.setMeanVisible(isMeanVisible);
+            plot.setRenderer(renderer);
+        }
 
-        // final CategoryAxis xAxis = new CategoryAxis("Type");
-        // final NumberAxis yAxis = new NumberAxis("Value");
-        // // yAxis.setAutoRangeIncludesZero(false);
-        // final BoxAndWhiskerRenderer renderer = new BoxAndWhiskerRenderer();
-        // renderer.setFillBox(true);
-        // renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
-        // final CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
-
-        // final JFreeChart chart = new JFreeChart("", plot);
-
-        JFreeChart chart = ChartFactory.createBarChart(getTitle(),
-        // chart title
-                "Category",
-                // domain axis label
-                "Value",
-                // range axis label
-                dataset,
-                // data
-                PlotOrientation.VERTICAL,
-                // orientation
-                false,
-                // include legend
-                true,
-                // tooltips?
-                false
-        // URLs?
-                );
-
-        CategoryPlot plot = (CategoryPlot) chart.getPlot();
-        CategoryAxis rangeAxis = plot.getDomainAxis();
-        rangeAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-
-        final BoxAndWhiskerRenderer renderer = new BoxAndWhiskerRenderer();
-        renderer.setFillBox(true);
-        renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
-        renderer.setMeanVisible(isMeanVisible);
-
-        plot.setRenderer(renderer);
-
-        ChartPanel chartPanel = new ChartPanel(chart, false);
-        chartPanel.setPreferredSize(new Dimension(500, 270));
-        setContentPane(chartPanel);
-
-        pack();
-        RefineryUtilities.centerFrameOnScreen(this);
-        setVisible(true);
+        return chart;
     }
 
     public static void main( String[] args ) {
@@ -131,7 +115,10 @@ public class CategoryBoxplot extends ApplicationFrame {
 
         List<double[]> asList = Arrays.asList(qwe1, qwe2);
         CategoryBoxplot categoryHistogram = new CategoryBoxplot(asd, asList, false);
-        categoryHistogram.plot();
+
+        PlotFrame frame = new PlotFrame(categoryHistogram);
+        frame.setDimension(1600, 1000);
+        frame.plot();
     }
 
 }

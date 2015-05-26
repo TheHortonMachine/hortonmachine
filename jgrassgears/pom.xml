@@ -117,6 +117,12 @@
 			<groupId>org.geotools.jdbc</groupId>
 			<artifactId>gt-jdbc-h2</artifactId>
 			<version>${gt.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>net.sourceforge.hatbox</groupId>
+					<artifactId>hatbox</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
@@ -187,7 +193,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20090211</version>
+			<version>20140107</version>
 		</dependency>
 
 		<dependency>

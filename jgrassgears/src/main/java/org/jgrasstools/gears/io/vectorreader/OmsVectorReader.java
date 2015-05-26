@@ -97,6 +97,9 @@ public class OmsVectorReader extends JGTModel {
             reader.pm = pm;
             reader.readFeatureCollection();
             outVector = reader.geodata;
+            if (outVector.getSchema().getCoordinateReferenceSystem() == null) {
+                pm.errorMessage("The coordinate reference system could not be defined for: " + reader.file);
+            }
         } else if (name.toLowerCase().endsWith("properties")) {
             outVector = OmsPropertiesFeatureReader.readPropertiesfile(vectorFile.getAbsolutePath());
         } else {
@@ -124,12 +127,11 @@ public class OmsVectorReader extends JGTModel {
         return fc;
     }
 
-    public static ReferencedEnvelope readEnvelope(String filePath) throws IOException {
+    public static ReferencedEnvelope readEnvelope( String filePath ) throws IOException {
         File shapeFile = new File(filePath);
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         return featureSource.getBounds();
     }
-    
 
 }

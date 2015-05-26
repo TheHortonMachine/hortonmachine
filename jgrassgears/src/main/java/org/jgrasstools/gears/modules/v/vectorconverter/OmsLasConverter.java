@@ -17,30 +17,7 @@
  */
 package org.jgrasstools.gears.modules.v.vectorconverter;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_DOCUMENTATION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_doBbox_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_doHeader_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_doInfo_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inFile_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inPolygons_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_outFile_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pClasses_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pCode_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pImpulses_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pIndexrange_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pIntensityrange_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pSouth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pWest_DESCRIPTION;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.VECTORPROCESSING;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.dEq;
 
 import java.io.BufferedWriter;
@@ -53,7 +30,6 @@ import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
-import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
@@ -69,19 +45,16 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
-import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.ALasReader;
+import org.jgrasstools.gears.io.las.core.ALasWriter;
+import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.utils.LasStats;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.features.FilterUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -97,18 +70,17 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
-@Description(OMSLASCONVERTER_DESCRIPTION)
-@Documentation(OMSLASCONVERTER_DOCUMENTATION)
-@Author(name = OMSLASCONVERTER_AUTHORNAMES, contact = OMSLASCONVERTER_AUTHORCONTACTS)
-@Keywords(OMSLASCONVERTER_KEYWORDS)
-@Label(OMSLASCONVERTER_LABEL)
-@Name(OMSLASCONVERTER_NAME)
-@Status(OMSLASCONVERTER_STATUS)
-@License(OMSLASCONVERTER_LICENSE)
-public class OmsLasConverter extends JGTModel implements AutoCloseable {
+@Description(OmsLasConverter.OMSLASCONVERTER_DESCRIPTION)
+@Documentation(OmsLasConverter.OMSLASCONVERTER_DOCUMENTATION)
+@Author(name = OmsLasConverter.OMSLASCONVERTER_AUTHORNAMES, contact = OmsLasConverter.OMSLASCONVERTER_AUTHORCONTACTS)
+@Keywords(OmsLasConverter.OMSLASCONVERTER_KEYWORDS)
+@Label(OmsLasConverter.OMSLASCONVERTER_LABEL)
+@Name(OmsLasConverter.OMSLASCONVERTER_NAME)
+@Status(OmsLasConverter.OMSLASCONVERTER_STATUS)
+@License(OmsLasConverter.OMSLASCONVERTER_LICENSE)
+public class OmsLasConverter extends JGTModel {
 
     @Description(OMSLASCONVERTER_inFile_DESCRIPTION)
-    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inFile;
 
@@ -127,10 +99,6 @@ public class OmsLasConverter extends JGTModel implements AutoCloseable {
     @Description(OMSLASCONVERTER_pClasses_DESCRIPTION)
     @In
     public String pClasses;
-
-    // @Description(OMSLASCONVERTER_pIndexrange_DESCRIPTION)
-    // @In
-    // public String pIndexrange;
 
     @Description(OMSLASCONVERTER_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
@@ -152,11 +120,6 @@ public class OmsLasConverter extends JGTModel implements AutoCloseable {
     @In
     public Double pEast = null;
 
-    @Description(OMSLASCONVERTER_pCode_DESCRIPTION)
-    @UI(JGTConstants.CRS_UI_HINT)
-    @In
-    public String pCode;
-
     @Description(OMSLASCONVERTER_doHeader_DESCRIPTION)
     @In
     public boolean doHeader = false;
@@ -173,6 +136,32 @@ public class OmsLasConverter extends JGTModel implements AutoCloseable {
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outFile;
+
+    // VARS DOCS START
+    public static final String OMSLASCONVERTER_DESCRIPTION = "Coverter from LAS to vector point data.";
+    public static final String OMSLASCONVERTER_DOCUMENTATION = "";
+    public static final String OMSLASCONVERTER_KEYWORDS = "IO, Feature, Vector, Convert";
+    public static final String OMSLASCONVERTER_LABEL = VECTORPROCESSING;
+    public static final String OMSLASCONVERTER_NAME = "lasconverter";
+    public static final int OMSLASCONVERTER_STATUS = 5;
+    public static final String OMSLASCONVERTER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
+    public static final String OMSLASCONVERTER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSLASCONVERTER_AUTHORCONTACTS = "www.hydrologis.com";
+    public static final String OMSLASCONVERTER_inFile_DESCRIPTION = "The LAS file.";
+    public static final String OMSLASCONVERTER_inPolygons_DESCRIPTION = "A vector map of polygons to filter the data on.";
+    public static final String OMSLASCONVERTER_pIntensityrange_DESCRIPTION = "The (min, max) range inside which the values should be taken.";
+    public static final String OMSLASCONVERTER_pImpulses_DESCRIPTION = "The comma separated list of impulses values to keep.";
+    public static final String OMSLASCONVERTER_pClasses_DESCRIPTION = "The comma separated list of classes to keep.";
+    public static final String OMSLASCONVERTER_pIndexrange_DESCRIPTION = "The min,max index of data to consider (useful to split in different files). Note that filters are applied after this for performance reasons, so resulting data might be less than expected.";
+    public static final String OMSLASCONVERTER_pNorth_DESCRIPTION = "The optional requested boundary north coordinate.";
+    public static final String OMSLASCONVERTER_pSouth_DESCRIPTION = "The optional requested boundary south coordinate.";
+    public static final String OMSLASCONVERTER_pWest_DESCRIPTION = "The optional requested boundary west coordinate.";
+    public static final String OMSLASCONVERTER_pEast_DESCRIPTION = "The optional requested boundary east coordinate.";
+    public static final String OMSLASCONVERTER_doHeader_DESCRIPTION = "Only print header and exit (default is false).";
+    public static final String OMSLASCONVERTER_doInfo_DESCRIPTION = "Print additional info and exit (default is false).";
+    public static final String OMSLASCONVERTER_doBbox_DESCRIPTION = "Generate a bounding box polygon as output vector (default is false).";
+    public static final String OMSLASCONVERTER_outFile_DESCRIPTION = "The output file (csv, shp, las).";
+    // VARS DOCS END
 
     private double[] intensityRange = null;
     // private long[] indexRange = null;
@@ -199,32 +188,31 @@ public class OmsLasConverter extends JGTModel implements AutoCloseable {
 
         boolean doShapefile = false;
         boolean doCsv = false;
+        boolean doLas = false;
         if (outFile != null) {
             if (outFile.endsWith(".shp")) {
                 doShapefile = true;
-            } else {
-                // any other == csv
+            } else if (outFile.endsWith(".las")) {
+                doLas = true;
+            } else if (outFile.endsWith(".csv")) {
                 doCsv = true;
             }
         }
 
         SimpleFeatureCollection outGeodata = new DefaultFeatureCollection();
 
-        CoordinateReferenceSystem crs = null;
-        if (pCode != null) {
-            crs = CRS.decode(pCode);
-        } else {
-            // read the prj file
-            crs = CrsUtilities.readProjectionFile(inFile, "las");
+        final File lasFile = new File(inFile);
+        lasReader = ALasReader.getReader(lasFile, null);
+        lasReader.open();
+        ILasHeader header = lasReader.getHeader();
+        CoordinateReferenceSystem crs = header.getCrs();
+        if (crs == null) {
+            throw new ModelsIllegalargumentException("No CRS infromation available for the input data.", this);
         }
 
-        final File lasFile = new File(inFile);
-        lasReader = ALasReader.getReader(lasFile, crs);
-        lasReader.open();
-
         if (doHeader) {
-            final String header = lasReader.getHeader().toString();
-            pm.message(header);
+            final String headerString = header.toString();
+            pm.message(headerString);
             if (!doInfo)
                 return;
         }
@@ -308,7 +296,13 @@ public class OmsLasConverter extends JGTModel implements AutoCloseable {
             csvWriter = new BufferedWriter(new FileWriter(outFile));
         }
 
-        ILasHeader header = lasReader.getHeader();
+        ALasWriter lasWriter = null;
+        if (doLas) {
+            lasWriter = ALasWriter.getWriter(new File(outFile), crs);
+            lasWriter.setBounds(header);
+            lasWriter.open();
+        }
+
         final long recordsCount = header.getRecordsCount();
         pm.message("File header info \n" + header);
 
@@ -389,6 +383,9 @@ public class OmsLasConverter extends JGTModel implements AutoCloseable {
                     stats.addClassification(classification);
                     stats.addImpulse((int) impulse);
                     stats.addIntensity(intensity);
+                } else if (doLas) {
+                    lasWriter.addPoint(lasDot);
+                    addedFeatures++;
                 } else if (doShapefile) {
                     final SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
                     final Point point = gf.createPoint(tmp);
@@ -432,12 +429,17 @@ public class OmsLasConverter extends JGTModel implements AutoCloseable {
         if (doCsv) {
             csvWriter.close();
         }
-
+        if (doLas) {
+            lasWriter.close();
+        }
         if (doShapefile) {
             OmsVectorWriter.writeVector(outFile, outGeodata);
         }
+
+        if (lasReader != null)
+            lasReader.close();
     }
-    
+
     private void createBboxGeometry( CoordinateReferenceSystem crs, File lasFile, SimpleFeatureCollection outGeodata )
             throws IOException {
         final ReferencedEnvelope3D envelope = lasReader.getHeader().getDataEnvelope();
@@ -459,32 +461,25 @@ public class OmsLasConverter extends JGTModel implements AutoCloseable {
         OmsVectorWriter.writeVector(outFile, outGeodata);
     }
 
-    @Finalize
-    public void close() throws Exception {
-        if (lasReader != null)
-            lasReader.close();
-    }
-
-    public static void main( String[] args ) throws Exception {
-        SimpleFeatureCollection plots = OmsVectorReader.readVector("/media/hydrologis/LESTO/unibz/plot_data/12_plots_32632.shp");
-        List<SimpleFeature> list = FeatureUtilities.featureCollectionToList(plots);
-        DefaultFeatureCollection d = new DefaultFeatureCollection();
-        for( SimpleFeature simpleFeature : list ) {
-            if (simpleFeature.getAttribute("ID").toString().equals("878")) {
-                d.add(simpleFeature);
-                break;
-            }
-        }
-        
-
-        String path = "/media/hydrologis/LESTO/unibz/LAS_Classificati/uni_bz_63.las";
-        try (OmsLasConverter c = new OmsLasConverter()) {
-            c.inFile = path;
-            c.inPolygons = d;
-            c.outFile = "/media/hydrologis/LESTO/unibz/LAS_Classificati/uni_bz_plot878.las";
-            c.process();
-        }
-
-    }
+    // public static void main( String[] args ) throws Exception {
+    // SimpleFeatureCollection plots =
+    // OmsVectorReader.readVector("/media/hydrologis/LESTO/unibz/plot_data/12_plots_32632.shp");
+    // List<SimpleFeature> list = FeatureUtilities.featureCollectionToList(plots);
+    // DefaultFeatureCollection d = new DefaultFeatureCollection();
+    // for( SimpleFeature simpleFeature : list ) {
+    // if (simpleFeature.getAttribute("ID").toString().equals("878")) {
+    // d.add(simpleFeature);
+    // break;
+    // }
+    // }
+    //
+    // String path = "/media/hydrologis/LESTO/unibz/LAS_Classificati/uni_bz_63.las";
+    // OmsLasConverter c = new OmsLasConverter();
+    // c.inFile = path;
+    // c.inPolygons = d;
+    // c.outFile = "/media/hydrologis/LESTO/unibz/LAS_Classificati/uni_bz_plot878.shp";
+    // c.process();
+    //
+    // }
 
 }

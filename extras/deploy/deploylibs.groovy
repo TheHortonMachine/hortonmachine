@@ -90,6 +90,17 @@ JGTMODULESCOPY: {
     def modCopyToFile = new File(modulesFolderFile.absolutePath, modJar.name).absolutePath;
     (new AntBuilder()).copy( file : modJar , tofile : modCopyToFile )
 
+    // take latest lest jar
+    jarFiles = new File("./lesto/target").listFiles(new FilenameFilter() {  
+        public boolean accept(File f, String filename) {  
+            return filename.startsWith("jgt-lesto-") && filename.endsWith(".jar")  
+        }  
+    });
+	Arrays.sort(jarFiles, Collections.reverseOrder());
+	def lestoJar = jarFiles[0];
+    def lestoCopyToFile = new File(modulesFolderFile.absolutePath, lestoJar.name).absolutePath;
+    (new AntBuilder()).copy( file : lestoJar , tofile : lestoCopyToFile )
+
     // tools.jar
     def newToolsJar = new File(copyPathFile, "tools.jar");
     new AntBuilder().copy ( file : toolsJar.absolutePath , tofile : newToolsJar.absolutePath )
@@ -183,7 +194,10 @@ lista.each{
    println "${split[1]} --- ${split[3]}"
 }
 
-def finalList = [];
+println "---------------------------------------"
+println "---------------------------------------"
+
+TreeMap<String, String> finalList = new TreeMap<>();
 // extract right jars paths from list
 for (it in files){
     def name = it.getName()
@@ -199,9 +213,10 @@ for (it in files){
     for (int i = 0; i < fileBeginList.size(); i++){
         def fBegin = fileBeginList.get(i);
         def version = versionList.get(i);
+        version = version.replaceAll("\\.", "\\\\.");
         if(name.startsWith(fBegin)){
             if(name.matches(".*"+version+".*")){
-                finalList << it;
+                finalList.put(it.getName(), it);
                 break;
             }
         }
@@ -211,8 +226,8 @@ for (it in files){
 println "---------------------------------------"
 println "---------------------------------------"
 println "Found:"
-finalList.each{
-    println it
+finalList.each{ k, v -> 
+    println k;
 }
 
 
@@ -221,9 +236,9 @@ println "---------------------------------------"
 if(copyPath){
     if(new File(copyPath).exists()){
         println "Copy deps jars to: ${copyPath}"
-        finalList.each{
-            def name = it.getName();
-            def path = it.getAbsolutePath();
+        finalList.each{ k, file ->
+            def name = file.getName();
+            def path = file.getAbsolutePath();
             def newPath = new File(copyPath, name).getAbsolutePath();
 
             // exclude those that go in the modules folder

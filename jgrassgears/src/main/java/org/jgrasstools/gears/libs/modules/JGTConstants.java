@@ -255,7 +255,7 @@ public class JGTConstants {
     // processing
     public static final String RASTERPROCESSING = "Raster Processing";
     public static final String VECTORPROCESSING = "Vector Processing";
-    public static final String LAS = "Las";
+    public static final String LESTO = "Lesto";
     public static final String MOBILE = "Mobile";
     // horton
     public static final String BASIN = "HortonMachine/Basin";

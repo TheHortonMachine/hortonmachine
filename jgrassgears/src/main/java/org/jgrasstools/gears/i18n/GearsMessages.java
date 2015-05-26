@@ -303,21 +303,6 @@ public class GearsMessages {
     public static final String OMSWINDOWSAMPLER_pYstep_DESCRIPTION = "The rows to move the window forward (default is = pRows).";
     public static final String OMSWINDOWSAMPLER_outGeodata_DESCRIPTION = "The output coverage.";
 
-    public static final String OMSMAXIMAFINDER_DESCRIPTION = "Module to find local maxima.";
-    public static final String OMSMAXIMAFINDER_DOCUMENTATION = "";
-    public static final String OMSMAXIMAFINDER_KEYWORDS = "IO, Coverage, Raster, Downsampling, Interpolation";
-    public static final String OMSMAXIMAFINDER_LABEL = RASTERPROCESSING;
-    public static final String OMSMAXIMAFINDER_NAME = "winsampler";
-    public static final int OMSMAXIMAFINDER_STATUS = 5;
-    public static final String OMSMAXIMAFINDER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSMAXIMAFINDER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSMAXIMAFINDER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSMAXIMAFINDER_inGeodata_DESCRIPTION = "The input coverage.";
-    public static final String OMSMAXIMAFINDER_pMode_DESCRIPTION = "The mode to use: average (0 = default), sum (1), max (2), min (3).";
-    public static final String OMSMAXIMAFINDER_pSize_DESCRIPTION = "The windows size to use for cutom mode(default is 3).";
-    public static final String OMSMAXIMAFINDER_outMaxima_DESCRIPTION = "The maxima vector.";
-    public static final String OMSMAXIMAFINDER_outCircles_DESCRIPTION = "The maxima related areas vector.";
-
     public static final String OMSRASTERREADER_DESCRIPTION = "Raster reader module.";
     public static final String OMSRASTERREADER_DOCUMENTATION = "OmsRasterReader.html";
     public static final String OMSRASTERREADER_KEYWORDS = "IO, Coverage, Raster, Reading";
@@ -543,28 +528,6 @@ public class GearsMessages {
     public static final String OMSMAPSVIEWER_inVector_DESCRIPTION = "The feature collection to visualize.";
     public static final String OMSMAPSVIEWER_inSld_DESCRIPTION = "The feature collections style layer.";
 
-    public static final String OMSGRIDSGENERATOR_DESCRIPTION = "Generates grid of lines or polygons.";
-    public static final String OMSGRIDSGENERATOR_DOCUMENTATION = "";
-    public static final String OMSGRIDSGENERATOR_KEYWORDS = "Vector, Grid";
-    public static final String OMSGRIDSGENERATOR_LABEL = VECTORPROCESSING;
-    public static final String OMSGRIDSGENERATOR_NAME = "gridgenerator";
-    public static final int OMSGRIDSGENERATOR_STATUS = 40;
-    public static final String OMSGRIDSGENERATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSGRIDSGENERATOR_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSGRIDSGENERATOR_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSGRIDSGENERATOR_inVector_DESCRIPTION = "Optional vector map from which to take the bounds (if supplied, all other bounds related parameter are ignored). This needs pRows and pCols to be defined.";
-    public static final String OMSGRIDSGENERATOR_inRaster_DESCRIPTION = "Optional raster map from which to take the bounds (if supplied, all other bounds related parameter are ignored. This needs pRows and pCols to be defined.";
-    public static final String OMSGRIDSGENERATOR_pLon_DESCRIPTION = "The lower left longitude.";
-    public static final String OMSGRIDSGENERATOR_pLat_DESCRIPTION = "The lower left latitude.";
-    public static final String OMSGRIDSGENERATOR_pWidth_DESCRIPTION = "The grid cell width.";
-    public static final String OMSGRIDSGENERATOR_pHeight_DESCRIPTION = "The grid cell height.";
-    public static final String OMSGRIDSGENERATOR_pRows_DESCRIPTION = "The number of rows.";
-    public static final String OMSGRIDSGENERATOR_pCols_DESCRIPTION = "The number of cols.";
-    public static final String OMSGRIDSGENERATOR_pSpacing_DESCRIPTION = "The vertex spacing to use.";
-    public static final String OMSGRIDSGENERATOR_pType_DESCRIPTION = "Output type: 0 = polygons, 1 = lines, 2 = points (default = 0).";
-    public static final String OMSGRIDSGENERATOR_pCode_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328). Applied in the case the file is missing.";
-    public static final String OMSGRIDSGENERATOR_outMap_DESCRIPTION = "The grid.";
-
     public static final String OMSRASTERCORRECTOR_DESCRIPTION = "Raster corrector module.";
     public static final String OMSRASTERCORRECTOR_DOCUMENTATION = "";
     public static final String OMSRASTERCORRECTOR_KEYWORDS = "IO, Coverage, Raster, Correct, OmsRasterReader";
@@ -592,20 +555,6 @@ public class GearsMessages {
     public static final String OMSRASTERDIFF_pThreshold_DESCRIPTION = "The threshold, under which to set novalue.";
     public static final String OMSRASTERDIFF_doNegatives_DESCRIPTION = "Allow negative values.";
     public static final String OMSRASTERDIFF_outRaster_DESCRIPTION = "The output raster.";
-
-    public static final String OMSVECTOROVERLAYOPERATORS_DESCRIPTION = "A module that performs overlay operations on a pure geometric layer. The resulting feature layer does not consider original attributes tables.";
-    public static final String OMSVECTOROVERLAYOPERATORS_DOCUMENTATION = "";
-    public static final String OMSVECTOROVERLAYOPERATORS_KEYWORDS = "JTS, Overlay, Union, Intersect, SymDifference, Difference";
-    public static final String OMSVECTOROVERLAYOPERATORS_LABEL = VECTORPROCESSING;
-    public static final String OMSVECTOROVERLAYOPERATORS_NAME = "overlay";
-    public static final int OMSVECTOROVERLAYOPERATORS_STATUS = 5;
-    public static final String OMSVECTOROVERLAYOPERATORS_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSVECTOROVERLAYOPERATORS_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSVECTOROVERLAYOPERATORS_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSVECTOROVERLAYOPERATORS_inMap1_DESCRIPTION = "The first vector map.";
-    public static final String OMSVECTOROVERLAYOPERATORS_inMap2_DESCRIPTION = "The second vector map.";
-    public static final String OMSVECTOROVERLAYOPERATORS_pType_DESCRIPTION = "The overlay type to perform.";
-    public static final String OMSVECTOROVERLAYOPERATORS_outMap_DESCRIPTION = "The resulting vector map.";
 
     public static final String OMSSCANLINERASTERIZER_DESCRIPTION = "Module for polygon vector to raster conversion.";
     public static final String OMSSCANLINERASTERIZER_DOCUMENTATION = "OmsScanLineRasterizer.html";
@@ -1299,31 +1248,6 @@ public class GearsMessages {
     public static final String OMSRASTERNULL_pValue_DESCRIPTION = "The value to set to null.";
     public static final String OMSRASTERNULL_pNull_DESCRIPTION = "The the null value to set (else it is guessed).";
     public static final String OMSRASTERNULL_outRaster_DESCRIPTION = "The new raster.";
-
-    public static final String OMSLASCONVERTER_DESCRIPTION = "Coverter from LAS to vector point data.";
-    public static final String OMSLASCONVERTER_DOCUMENTATION = "";
-    public static final String OMSLASCONVERTER_KEYWORDS = "IO, Feature, Vector, Convert";
-    public static final String OMSLASCONVERTER_LABEL = VECTORPROCESSING;
-    public static final String OMSLASCONVERTER_NAME = "lasconverter";
-    public static final int OMSLASCONVERTER_STATUS = 5;
-    public static final String OMSLASCONVERTER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSLASCONVERTER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSLASCONVERTER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSLASCONVERTER_inFile_DESCRIPTION = "The LAS file.";
-    public static final String OMSLASCONVERTER_inPolygons_DESCRIPTION = "A vector map of polygons to filter the data on.";
-    public static final String OMSLASCONVERTER_pIntensityrange_DESCRIPTION = "The (min, max) range inside which the values should be taken.";
-    public static final String OMSLASCONVERTER_pImpulses_DESCRIPTION = "The comma separated list of impulses values to keep.";
-    public static final String OMSLASCONVERTER_pClasses_DESCRIPTION = "The comma separated list of classes to keep.";
-    public static final String OMSLASCONVERTER_pIndexrange_DESCRIPTION = "The min,max index of data to consider (useful to split in different files). Note that filters are applied after this for performance reasons, so resulting data might be less than expected.";
-    public static final String OMSLASCONVERTER_pNorth_DESCRIPTION = "The optional requested boundary north coordinate.";
-    public static final String OMSLASCONVERTER_pSouth_DESCRIPTION = "The optional requested boundary south coordinate.";
-    public static final String OMSLASCONVERTER_pWest_DESCRIPTION = "The optional requested boundary west coordinate.";
-    public static final String OMSLASCONVERTER_pEast_DESCRIPTION = "The optional requested boundary east coordinate.";
-    public static final String OMSLASCONVERTER_pCode_DESCRIPTION = "The optional code defining the target coordinate reference system. This is needed only if the file has no prj file. If set, it will be used over the prj file.";
-    public static final String OMSLASCONVERTER_doHeader_DESCRIPTION = "Only print header and exit (default is false).";
-    public static final String OMSLASCONVERTER_doInfo_DESCRIPTION = "Print additional info and exit (default is false).";
-    public static final String OMSLASCONVERTER_doBbox_DESCRIPTION = "Generate a bounding box polygon as output vector (default is false).";
-    public static final String OMSLASCONVERTER_outFile_DESCRIPTION = "The output file (csv or shp).";
 
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_DESCRIPTION = "Module for raster to vector conversion";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_DOCUMENTATION = "";

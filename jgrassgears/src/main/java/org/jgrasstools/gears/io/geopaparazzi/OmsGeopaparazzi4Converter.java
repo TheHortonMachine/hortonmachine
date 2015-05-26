@@ -35,11 +35,49 @@
  */
 package org.jgrasstools.gears.io.geopaparazzi;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.MultiLineString;
-import com.vividsolutions.jts.geom.Point;
-import oms3.annotations.*;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_TAGS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doLoglines_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doLogpoints_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doMedia_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doNotes_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_outData_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_METADATA;
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_NOTES;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.imageio.ImageIO;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
+
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -47,8 +85,14 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.geopaparazzi.forms.Utilities;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsPoint;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Image;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTableFields;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.MetadataTableFields;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
@@ -62,20 +106,10 @@ import org.json.JSONObject;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.*;
-import java.util.Map.Entry;
-
-import static org.jgrasstools.gears.i18n.GearsMessages.*;
-import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.*;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.Point;
 
 @Description(OmsGeopaparazzi4Converter.DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
@@ -111,7 +145,6 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In
     public String outFolder = null;
-
 
     // VARS DOCS START
     public static final String THE_GEOPAPARAZZI_DATABASE_FILE = "The geopaparazzi database file (*.gpap).";
@@ -156,6 +189,9 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         }
 
         File outputFolderFile = new File(outFolder);
+        if (!outputFolderFile.exists()) {
+            outputFolderFile.mkdirs();
+        }
         File mediaFolderFile = new File(outputFolderFile, MEDIA_FOLDER_NAME);
         mediaFolderFile.mkdir();
         chartsFolderFile = new File(outputFolderFile, CHARTS_FOLDER_NAME);
@@ -171,9 +207,9 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 simpleNotesToShapefile(connection, outputFolderFile, pm);
                 complexNotesToShapefile(connection, outputFolderFile, pm);
             }
-                /*
-                 * import gps logs as shapefiles, once as lines and once as points
-                 */
+            /*
+             * import gps logs as shapefiles, once as lines and once as points
+             */
             gpsLogToShapefiles(connection, outputFolderFile, pm);
             /*
              * import media as point shapefile, containing the path
@@ -183,11 +219,11 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
     }
 
-    private void projectInfo(Connection connection, File outputFolderFile) throws Exception {
+    private void projectInfo( Connection connection, File outputFolderFile ) throws Exception {
         try (Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
-            String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " +//
+            String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
                     MetadataTableFields.COLUMN_VALUE.getFieldName() + " from " + TABLE_METADATA;
 
             StringBuilder sb = new StringBuilder();
@@ -195,7 +231,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             sb.append("----------------------\n\n");
 
             ResultSet rs = statement.executeQuery(sql);
-            while (rs.next()) {
+            while( rs.next() ) {
                 String key = rs.getString(MetadataTableFields.COLUMN_KEY.getFieldName());
                 String value = rs.getString(MetadataTableFields.COLUMN_VALUE.getFieldName());
 
@@ -216,7 +252,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         }
     }
 
-    private void simpleNotesToShapefile(Connection connection, File outputFolderFile, IJGTProgressMonitor pm) throws Exception {
+    private void simpleNotesToShapefile( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
         File outputShapeFile = new File(outputFolderFile, "notes_simple.shp");
 
         String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
@@ -252,7 +288,6 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         SimpleFeatureType featureType = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
 
-
         pm.beginTask("Import simple notes...", -1);
         SimpleFeatureCollection newCollection = new DefaultFeatureCollection();
 
@@ -261,7 +296,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
             ResultSet rs = statement.executeQuery(sql);
-            while (rs.next()) {
+            while( rs.next() ) {
                 String form = rs.getString(formFN);
                 if (form != null && form.trim().length() != 0) {
                     continue;
@@ -274,7 +309,8 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
                 String text = rs.getString(textFN);
                 String descr = rs.getString(descFN);
-                if (descr == null) descr = EMPTY_STRING;
+                if (descr == null)
+                    descr = EMPTY_STRING;
                 int isDirty = rs.getInt(dirtyFN);
 
                 if (lat == 0 || lon == 0) {
@@ -295,7 +331,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         dumpVector(newCollection, outputShapeFile.getAbsolutePath());
     }
 
-    private void complexNotesToShapefile(Connection connection, File outputFolderFile, IJGTProgressMonitor pm) throws Exception {
+    private void complexNotesToShapefile( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
         pm.beginTask("Import complex notes...", -1);
 
         String tsFN = NotesTableFields.COLUMN_TS.getFieldName();
@@ -319,7 +355,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
             ResultSet rs = statement.executeQuery(sql);
-            while (rs.next()) {
+            while( rs.next() ) {
                 String formString = rs.getString(formFN);
                 if (formString == null || formString.trim().length() == 0) {
                     continue;
@@ -346,12 +382,12 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
                 LinkedHashMap<String, String> valuesMap = new LinkedHashMap<>();
                 LinkedHashMap<String, String> typesMap = new LinkedHashMap<>();
-                for (String formName : formNames4Section) {
+                for( String formName : formNames4Section ) {
                     JSONObject form4Name = Utilities.getForm4Name(formName, sectionObject);
                     JSONArray formItems = Utilities.getFormItems(form4Name);
 
                     int length = formItems.length();
-                    for (int i = 0; i < length; i++) {
+                    for( int i = 0; i < length; i++ ) {
                         JSONObject jsonObject = formItems.getJSONObject(i);
 
                         if (!jsonObject.has(TAG_KEY)) {
@@ -386,7 +422,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                     b.add(tsFN, String.class); //$NON-NLS-1$
                     b.add(altimFN, Double.class); //$NON-NLS-1$
                     b.add(dirtyFN, Integer.class); //$NON-NLS-1$
-                    for (Entry<String, String> entry : entrySet) {
+                    for( Entry<String, String> entry : entrySet ) {
                         String key = entry.getKey();
                         key = key.replaceAll("\\s+", "_");
                         if (key.length() > 10) {
@@ -413,7 +449,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 values[2] = altim;
                 values[3] = isDirty;
                 int i = 4;
-                for (Entry<String, String> entry : entrySet) {
+                for( Entry<String, String> entry : entrySet ) {
                     String key = entry.getKey();
 
                     String value = entry.getValue();
@@ -423,9 +459,10 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                         // extract images to media folder
                         String[] imageSplit = value.split(OmsGeopaparazziProject3To4Converter.IMAGE_ID_SEPARATOR);
                         StringBuilder sb = new StringBuilder();
-                        for (String image : imageSplit) {
+                        for( String image : imageSplit ) {
                             image = image.trim();
-                            if (image.length() == 0) continue;
+                            if (image.length() == 0)
+                                continue;
                             long imageId = Long.parseLong(image);
                             String imageName = DaoImages.getImageName(connection, imageId);
                             sb.append(OmsGeopaparazziProject3To4Converter.IMAGE_ID_SEPARATOR);
@@ -451,7 +488,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             }
 
             Set<Entry<String, BuilderAndCollectionPair>> entrySet = forms2PropertiesMap.entrySet();
-            for (Entry<String, BuilderAndCollectionPair> entry : entrySet) {
+            for( Entry<String, BuilderAndCollectionPair> entry : entrySet ) {
                 String name = entry.getKey();
                 SimpleFeatureCollection collection = entry.getValue().collection;
 
@@ -463,7 +500,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         }
     }
 
-    private boolean isMedia(String type) {
+    private boolean isMedia( String type ) {
         return type.equals("pictures") || type.equals("map") || type.equals("sketch");
     }
 
@@ -472,69 +509,13 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         DefaultFeatureCollection collection;
     }
 
-    private void gpsLogToShapefiles(Connection connection, File outputFolderFile, IJGTProgressMonitor pm) throws Exception {
-        List<GpsLog> logsList = new ArrayList<>();
-        try (Statement statement = connection.createStatement()) {
-            statement.setQueryTimeout(30); // set timeout to 30 sec.
-
-            String sql = "select " + //
-                    GpsLogsTableFields.COLUMN_ID.getFieldName() + "," + //
-                    GpsLogsTableFields.COLUMN_LOG_STARTTS.getFieldName() + "," + //
-                    GpsLogsTableFields.COLUMN_LOG_ENDTS.getFieldName() + "," + //
-                    GpsLogsTableFields.COLUMN_LOG_TEXT.getFieldName() + //
-                    " from " + TABLE_GPSLOGS; //
-
-
-            // first get the logs
-            ResultSet rs = statement.executeQuery(sql);
-            while (rs.next()) {
-                long id = rs.getLong(1);
-
-                long startDateTimeString = rs.getLong(2);
-                long endDateTimeString = rs.getLong(3);
-                String text = rs.getString(4);
-
-                GpsLog log = new GpsLog();
-                log.id = id;
-                log.startTime = startDateTimeString;
-                log.endTime = endDateTimeString;
-                log.text = text;
-                logsList.add(log);
-            }
-        }
+    private void gpsLogToShapefiles( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
+        List<GpsLog> logsList = DaoGpsLog.getLogsList(connection);
 
         try {
             // then the log data
-            for (GpsLog log : logsList) {
-                long logId = log.id;
-
-                String query = "select " + //
-                        GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + "," + //
-                        GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + "," + //
-                        GpsLogsDataTableFields.COLUMN_DATA_ALTIM.getFieldName() + "," + //
-                        GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName() + //
-                        " from " + TABLE_GPSLOG_DATA + " where " +  //
-                        GpsLogsDataTableFields.COLUMN_LOGID.getFieldName() + " = " + logId + " order by " + GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName();
-
-                try (Statement newStatement = connection.createStatement()) {
-                    newStatement.setQueryTimeout(30);
-                    ResultSet result = newStatement.executeQuery(query);
-
-                    while (result.next()) {
-                        double lat = result.getDouble(1);
-                        double lon = result.getDouble(2);
-                        double altim = result.getDouble(3);
-                        long ts = result.getLong(4);
-
-                        GpsPoint gPoint = new GpsPoint();
-                        gPoint.lon = lon;
-                        gPoint.lat = lat;
-                        gPoint.altim = altim;
-                        gPoint.utctime = ts;
-                        log.points.add(gPoint);
-                    }
-                }
-
+            for( GpsLog log : logsList ) {
+                DaoGpsLog.collectDataForLog(connection, log);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -558,13 +539,13 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             featureType = b.buildFeatureType();
             pm.beginTask("Import gps to lines...", logsList.size());
             DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
-            for (GpsLog log : logsList) {
+            for( GpsLog log : logsList ) {
                 List<GpsPoint> points = log.points;
 
                 List<Coordinate> coordList = new ArrayList<>();
                 String startDate = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(log.startTime));
                 String endDate = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(log.endTime));
-                for (GpsPoint gpsPoint : points) {
+                for( GpsPoint gpsPoint : points ) {
                     Coordinate c = new Coordinate(gpsPoint.lon, gpsPoint.lat);
                     coordList.add(c);
                 }
@@ -602,9 +583,9 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             pm.beginTask("Import gps to points...", logsList.size());
             DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
             int index = 0;
-            for (GpsLog log : logsList) {
+            for( GpsLog log : logsList ) {
                 List<GpsPoint> gpsPointList = log.points;
-                for (GpsPoint gpsPoint : gpsPointList) {
+                for( GpsPoint gpsPoint : gpsPointList ) {
                     Coordinate c = new Coordinate(gpsPoint.lon, gpsPoint.lat);
                     Point point = gf.createPoint(c);
 
@@ -623,75 +604,99 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             dumpVector(newCollection, outputPointsShapeFile.getAbsolutePath());
         }
 
-        /*
-         * create charts for logs
-         */
-        pm.beginTask("Create log charts...", logsList.size());
-        for (GpsLog log : logsList) {
-            String logName = log.text;
+        if (doLoglines) {
+            /*
+             * create charts for logs
+             */
+            pm.beginTask("Create log charts...", logsList.size());
+            for( GpsLog log : logsList ) {
+                String logName = log.text;
+                int size = log.points.size();
+                pm.message("Processing log: " + logName + " with " + size + " points.");
 
-            File profileFile = new File(chartsFolderFile, logName + "_profile.png");
-            File planimetricFile = new File(chartsFolderFile, logName + "_planimetric.png");
+                String fileName = FileUtilities.getSafeFileName(logName);
 
-            GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
-            int size = log.points.size();
-            double[] xProfile = new double[size];
-            double[] yProfile = new double[size];
-            double[] xPlanim = new double[size];
-            double[] yPlanim = new double[size];
-            double runningDistance = 0;
-            for (int i = 0; i < size - 1; i++) {
-                GpsPoint p1 = log.points.get(i);
-                GpsPoint p2 = log.points.get(i + 1);
-                double lon1 = p1.lon;
-                double lat1 = p1.lat;
-                double altim1 = p1.altim;
-                double lon2 = p2.lon;
-                double lat2 = p2.lat;
-                double altim2 = p2.altim;
+                File profileFile = new File(chartsFolderFile, fileName + "_profile.png");
+                File planimetricFile = new File(chartsFolderFile, fileName + "_planimetric.png");
+                File csvFile = new File(chartsFolderFile, fileName + ".csv");
 
-                gc.setStartingGeographicPoint(lon1, lat1);
-                gc.setDestinationGeographicPoint(lon2, lat2);
-                double distance = gc.getOrthodromicDistance();
-                runningDistance += distance;
+                GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
+                double[] xProfile = new double[size];
+                double[] yProfile = new double[size];
+                double[] xPlanim = new double[size];
+                double[] yPlanim = new double[size];
+                long[] timestampArray = new long[size];
+                double runningDistance = 0;
+                for( int i = 0; i < size - 1; i++ ) {
+                    GpsPoint p1 = log.points.get(i);
+                    GpsPoint p2 = log.points.get(i + 1);
+                    double lon1 = p1.lon;
+                    double lat1 = p1.lat;
+                    double altim1 = p1.altim;
+                    long utc1 = p1.utctime;
+                    double lon2 = p2.lon;
+                    double lat2 = p2.lat;
+                    double altim2 = p2.altim;
+                    long utc2 = p2.utctime;
 
-                if (i == 0) {
-                    xProfile[i] = 0.0;
-                    yProfile[i] = altim1;
+                    gc.setStartingGeographicPoint(lon1, lat1);
+                    gc.setDestinationGeographicPoint(lon2, lat2);
+                    double distance = gc.getOrthodromicDistance();
+                    runningDistance += distance;
 
-                    xPlanim[i] = lon1;
-                    yPlanim[i] = lat1;
+                    if (i == 0) {
+                        xProfile[i] = 0.0;
+                        yProfile[i] = altim1;
+
+                        xPlanim[i] = lon1;
+                        yPlanim[i] = lat1;
+
+                        timestampArray[i] = utc1;
+                    }
+                    xProfile[i + 1] = runningDistance;
+                    yProfile[i + 1] = altim2;
+
+                    xPlanim[i + 1] = lon2;
+                    yPlanim[i + 1] = lat2;
+                    timestampArray[i + 1] = utc2;
                 }
-                xProfile[i + 1] = runningDistance;
-                yProfile[i + 1] = altim2;
 
-                xPlanim[i + 1] = lon2;
-                yPlanim[i + 1] = lat2;
+                Scatter scatterProfile = new Scatter("Profile " + logName);
+                scatterProfile.addSeries("profile", xProfile, yProfile);
+                scatterProfile.setShowLines(true);
+                scatterProfile.setXLabel("progressive distance [m]");
+                scatterProfile.setYLabel("elevation [m]");
+                BufferedImage imageProfile = scatterProfile.getImage(1000, 800);
+                ImageIO.write(imageProfile, "png", profileFile);
+
+                Scatter scatterPlanim = new Scatter("Planimetry " + logName);
+                scatterPlanim.addSeries("planimetry", xPlanim, yPlanim);
+                scatterPlanim.setShowLines(false);
+                scatterPlanim.setXLabel("longitude");
+                scatterPlanim.setYLabel("latitude");
+                BufferedImage imagePlanim = scatterPlanim.getImage(1000, 800);
+                ImageIO.write(imagePlanim, "png", planimetricFile);
+
+                StringBuilder csvBuilder = new StringBuilder();
+                csvBuilder.append("#x,y,progressive,elevation,utctimestamp\n");
+                for( int j = 0; j < timestampArray.length; j++ ) {
+                    String line = String.valueOf(xPlanim[j]).replace(',', '.');
+                    line = line + "," + String.valueOf(yPlanim[j]).replace(',', '.');
+                    line = line + "," + String.valueOf(xProfile[j]).replace(',', '.');
+                    line = line + "," + String.valueOf(yProfile[j]).replace(',', '.');
+                    line = line + "," + timestampArray[j] + "\n";
+                    csvBuilder.append(line);
+                }
+                FileUtilities.writeFile(csvBuilder.toString(), csvFile);
+
+                pm.worked(1);
             }
-
-            Scatter scatterProfile = new Scatter("Profile " + logName);
-            scatterProfile.addSeries("profile", xProfile, yProfile);
-            scatterProfile.setShowLines(true);
-            scatterProfile.setXLabel("progressive distance [m]");
-            scatterProfile.setYLabel("elevation [m]");
-            BufferedImage imageProfile = scatterProfile.getImage(1000, 800);
-            ImageIO.write(imageProfile, "png", profileFile);
-
-            Scatter scatterPlanim = new Scatter("Planimetry " + logName);
-            scatterPlanim.addSeries("planimetry", xPlanim, yPlanim);
-            scatterPlanim.setShowLines(false);
-            scatterPlanim.setXLabel("longitude");
-            scatterPlanim.setYLabel("latitude");
-            BufferedImage imagePlanim = scatterPlanim.getImage(1000, 800);
-            ImageIO.write(imagePlanim, "png", planimetricFile);
-
-            pm.worked(1);
+            pm.done();
         }
-        pm.done();
 
     }
 
-    private void mediaToShapeFile(Connection connection, File mediaFolderFile, IJGTProgressMonitor pm) throws Exception {
+    private void mediaToShapeFile( Connection connection, File mediaFolderFile, IJGTProgressMonitor pm ) throws Exception {
         try {
 
             /*
@@ -715,11 +720,10 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
             DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
 
-
             List<Image> imagesList = DaoImages.getImagesList(connection);
             pm.beginTask("Importing media...", imagesList.size());
 
-            for (Image image : imagesList) {
+            for( Image image : imagesList ) {
                 File newImageFile = new File(mediaFolderFile, image.getName());
 
                 byte[] imageData = DaoImages.getImageData(connection, image.getImageDataId());
@@ -748,22 +752,6 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             pm.done();
         }
 
-
-    }
-
-    private static class GpsPoint {
-        public double lat;
-        public double lon;
-        public double altim;
-        public long utctime;
-    }
-
-    private static class GpsLog {
-        public long id;
-        public long startTime;
-        public long endTime;
-        public String text;
-        public List<GpsPoint> points = new ArrayList<>();
     }
 
 }

@@ -17,7 +17,7 @@
  */
 package org.jgrasstools.gears.utils.math;
 
-import static org.jgrasstools.gears.libs.modules.ModelsEngine.doubleNMoment;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calculateNthMoment;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.split2realvectors;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.vectorizeDoubleMatrix;
 
@@ -114,13 +114,13 @@ public class CoupledFieldsMoments {
         if (binmode == 1) // always true for now, other modes not implemented yet
         {
             for( int h = 0; h < theSplit.splitIndex.length; h++ ) {
-                outCb[h][0] = doubleNMoment(theSplit.splitValues1[h], (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
+                outCb[h][0] = calculateNthMoment(theSplit.splitValues1[h], (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
                 outCb[h][1] = theSplit.splitIndex[h];
-                outCb[h][2] = doubleNMoment(theSplit.splitValues2[h], (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
+                outCb[h][2] = calculateNthMoment(theSplit.splitValues2[h], (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
                 if (pFirst == 1)
                     pFirst++;
                 for( int k = pFirst; k <= pLast; k++ ) {
-                    outCb[h][k - pFirst + 3] = doubleNMoment(theSplit.splitValues2[h], (int) theSplit.splitIndex[h], outCb[h][1],
+                    outCb[h][k - pFirst + 3] = calculateNthMoment(theSplit.splitValues2[h], (int) theSplit.splitIndex[h], outCb[h][1],
                             (double) k, pm);
                 }
             }

@@ -17,19 +17,17 @@
  */
 package org.jgrasstools.hortonmachine.modules.basin.basinshape;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.BASIN;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_inBasins_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_inElev_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_outBasins_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.basin.basinshape.OmsBasinShape.OMSBASINSHAPE_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.modules.basin.basinshape.OmsBasinShape.OMSBASINSHAPE_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.modules.basin.basinshape.OmsBasinShape.OMSBASINSHAPE_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.basin.basinshape.OmsBasinShape.OMSBASINSHAPE_KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.basin.basinshape.OmsBasinShape.OMSBASINSHAPE_LABEL;
+import static org.jgrasstools.hortonmachine.modules.basin.basinshape.OmsBasinShape.OMSBASINSHAPE_LICENSE;
+import static org.jgrasstools.hortonmachine.modules.basin.basinshape.OmsBasinShape.OMSBASINSHAPE_NAME;
+import static org.jgrasstools.hortonmachine.modules.basin.basinshape.OmsBasinShape.OMSBASINSHAPE_STATUS;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -79,7 +77,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @Author(name = OMSBASINSHAPE_AUTHORNAMES, contact = OMSBASINSHAPE_AUTHORCONTACTS)
 @Keywords(OMSBASINSHAPE_KEYWORDS)
 @Label(OMSBASINSHAPE_LABEL)
-@Name(OMSBASINSHAPE_NAME)
+@Name("_" + OMSBASINSHAPE_NAME)
 @Status(OMSBASINSHAPE_STATUS)
 @License(OMSBASINSHAPE_LICENSE)
 public class OmsBasinShape extends JGTModel {
@@ -95,6 +93,21 @@ public class OmsBasinShape extends JGTModel {
     @Description(OMSBASINSHAPE_outBasins_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outBasins = null;
+
+    // VARS DOC START
+    public static final String OMSBASINSHAPE_DESCRIPTION = "Creates a Feature collection of the subbasins created with the netnumbering module.";
+    public static final String OMSBASINSHAPE_DOCUMENTATION = "OmsBasinShape.html";
+    public static final String OMSBASINSHAPE_KEYWORDS = "Basin, Geomorphology";
+    public static final String OMSBASINSHAPE_LABEL = BASIN;
+    public static final String OMSBASINSHAPE_NAME = "basinshape";
+    public static final int OMSBASINSHAPE_STATUS = 40;
+    public static final String OMSBASINSHAPE_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSBASINSHAPE_AUTHORNAMES = "Erica Ghesla, Andrea Antonello";
+    public static final String OMSBASINSHAPE_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSBASINSHAPE_inElev_DESCRIPTION = "The elevation map.";
+    public static final String OMSBASINSHAPE_inBasins_DESCRIPTION = "The map of the numbered basins.";
+    public static final String OMSBASINSHAPE_outBasins_DESCRIPTION = "The extracted basins vector map.";
+    // VARS DOC END
 
     private int nCols;
     private int nRows;
@@ -157,7 +170,7 @@ public class OmsBasinShape extends JGTModel {
         // build the type
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-        
+
         outBasins = new DefaultFeatureCollection();
 
         // for each stream correct problems with basins and create geometries

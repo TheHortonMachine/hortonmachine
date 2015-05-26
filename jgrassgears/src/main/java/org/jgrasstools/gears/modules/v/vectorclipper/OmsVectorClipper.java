@@ -173,32 +173,5 @@ public class OmsVectorClipper extends JGTModel {
         outMap = new DefaultFeatureCollection();
         ((DefaultFeatureCollection) outMap).addAll(newFeatures);
     }
-    // public static void main( String[] args ) throws Exception {
-    // PrintStream ps = System.out;
-    // EggClock c = new EggClock("Time passed: ", " seconds\n");
-    // c.startAndPrint(ps);
-    //
-    // // String basePath = "D:/TMP/CLIPPING_CONTEST/ContourClipTest/";
-    // String basePath = "/home/ubuntu/development/ContourClipTest/";
-    //
-    // SimpleFeatureCollection clip = OmsVectorReader.readVector(basePath +
-    // "StudyArea1MileBuffer.shp");
-    // SimpleFeatureCollection data = OmsVectorReader.readVector(basePath + "Contours20Ft.shp");
-    //
-    // c.printTimePassedInSeconds(ps);
-    //
-    // OmsVectorClipper clipper = new OmsVectorClipper();
-    // clipper.inMap = data;
-    // clipper.inClipper = clip;
-    // clipper.pMaxThreads = 32;
-    // clipper.process();
-    // SimpleFeatureCollection outMap2 = clipper.outMap;
-    //
-    // c.printTimePassedInSeconds(ps);
-    //
-    // OmsVectorWriter.writeVector(basePath + "clipped.shp", outMap2);
-    //
-    // c.printTimePassedInSeconds(ps);
-    // }
 
 }

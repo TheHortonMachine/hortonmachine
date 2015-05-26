@@ -82,6 +82,7 @@ public class LasWriter extends ALasWriter {
     private byte[] previousReturnBytes = null;
     private long offsetToData = 227;
     private int recordLengthPosition;
+    private boolean pointFormatHasBeenSet = false;
 
     /**
      * A las file writer.
@@ -105,7 +106,7 @@ public class LasWriter extends ALasWriter {
     @Override
     public void setScales( double xScale, double yScale, double zScale ) {
         if (openCalled) {
-            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, this);
         }
         this.xScale = xScale;
         this.yScale = yScale;
@@ -115,7 +116,7 @@ public class LasWriter extends ALasWriter {
     @Override
     public void setOffset( double xOffset, double yOffset, double zOffset ) {
         if (openCalled) {
-            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, this);
         }
         this.xOffset = xOffset;
         this.yOffset = yOffset;
@@ -123,9 +124,15 @@ public class LasWriter extends ALasWriter {
     }
 
     @Override
+    public void setPointFormat( int pointFormat ) {
+        this.pointFormat = pointFormat;
+        pointFormatHasBeenSet = true;
+    }
+
+    @Override
     public void setBounds( double xMin, double xMax, double yMin, double yMax, double zMin, double zMax ) {
         if (openCalled) {
-            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, this);
         }
         this.xMin = xMin;
         this.yMin = yMin;
@@ -283,7 +290,7 @@ public class LasWriter extends ALasWriter {
         fos.write(getDouble(zOffset));
         hLength = hLength + 3 * 8;
 
-        //  x,y,z - min/max
+        // x,y,z - min/max
         fos.write(getDouble(xMax));
         fos.write(getDouble(xMin));
         fos.write(getDouble(yMax));
@@ -356,7 +363,14 @@ public class LasWriter extends ALasWriter {
         if (record.gpsTime > 0) {
             fos.write(getDouble(record.gpsTime));
             length = length + 8;
-            pointFormat = 1;
+            if (!pointFormatHasBeenSet)
+                pointFormat = 1;
+        }
+        if (pointFormat == 3 || pointFormat == 2) {
+            fos.write(getShort(record.color[0]));
+            fos.write(getShort(record.color[1]));
+            fos.write(getShort(record.color[2]));
+            length = length + 6;
         }
 
         recordLength = (short) length;

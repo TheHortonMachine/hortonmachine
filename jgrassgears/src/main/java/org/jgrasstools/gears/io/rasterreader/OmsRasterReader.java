@@ -211,10 +211,16 @@ public class OmsRasterReader extends JGTModel {
     private double internalFileNovalue = -9999.0;
     private double internalGeodataNovalue = doubleNovalue;
 
+    private boolean doLegacyGrassAutoBoxed = false;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outRaster == null, doReset)) {
             return;
+        }
+
+        if (doLegacyGrass != null && doLegacyGrass) {
+            doLegacyGrassAutoBoxed = true;
         }
 
         if (fileNovalue != null) {
@@ -312,7 +318,7 @@ public class OmsRasterReader extends JGTModel {
         if (!doEnvelope) {
             int r = readRegion.getRows();
             int c = readRegion.getCols();
-            if (!JGTConstants.doesOverFlow(r, c) && !doLegacyGrass) {
+            if (!JGTConstants.doesOverFlow(r, c) && !doLegacyGrassAutoBoxed) {
                 if (generalParameter == null) {
                     generalParameter = createGridGeometryGeneralParameter(readRegion.getCols(), readRegion.getRows(),
                             readRegion.getNorth(), readRegion.getSouth(), readRegion.getEast(), readRegion.getWest(), crs);

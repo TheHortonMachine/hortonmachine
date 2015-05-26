@@ -697,19 +697,6 @@ public class HortonMessages {
     public static final String OMSRESCALEDDISTANCE_pRatio_DESCRIPTION = "Ratio between the velocity in the channel and in the hillslope.";
     public static final String OMSRESCALEDDISTANCE_outRescaled_DESCRIPTION = "The map of the rescaled distances.";
 
-    public static final String OMSBASINSHAPE_DESCRIPTION = "Creates a Feature collection of the subbasins created with the netnumbering module.";
-    public static final String OMSBASINSHAPE_DOCUMENTATION = "OmsBasinShape.html";
-    public static final String OMSBASINSHAPE_KEYWORDS = "Basin, Geomorphology";
-    public static final String OMSBASINSHAPE_LABEL = BASIN;
-    public static final String OMSBASINSHAPE_NAME = "basinshape";
-    public static final int OMSBASINSHAPE_STATUS = 40;
-    public static final String OMSBASINSHAPE_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSBASINSHAPE_AUTHORNAMES = "Erica Ghesla, Andrea Antonello";
-    public static final String OMSBASINSHAPE_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSBASINSHAPE_inElev_DESCRIPTION = "The elevation map.";
-    public static final String OMSBASINSHAPE_inBasins_DESCRIPTION = "The map of the numbered basins.";
-    public static final String OMSBASINSHAPE_outBasins_DESCRIPTION = "The extracted basins vector map.";
-
     public static final String OMSNETWORKATTRIBUTESBUILDER_DESCRIPTION = "Extracts network attributes and the vector network based on a raster network.";
     public static final String OMSNETWORKATTRIBUTESBUILDER_DOCUMENTATION = "";
     public static final String OMSNETWORKATTRIBUTESBUILDER_KEYWORDS = "Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope";
@@ -1264,23 +1251,6 @@ public class HortonMessages {
     public static final String OMSCB_pFirst_DESCRIPTION = "The first moment to calculate.";
     public static final String OMSCB_pLast_DESCRIPTION = "The last moment to calculate.";
     public static final String OMSCB_outCb_DESCRIPTION = "A matrix containing 1) the mean value of the data in abscissa; 2) the number of elements in each interval; 3) the mean value of the data in ordinate; n+2) the n-esimal moment of the data in ordinate.";
-
-    public static final String OMSINTENSITYCLASSIFIER_DESCRIPTION = "Module for the calculation of the flooding intensity.";
-    public static final String OMSINTENSITYCLASSIFIER_DOCUMENTATION = "";
-    public static final String OMSINTENSITYCLASSIFIER_KEYWORDS = "Raster, Flooding";
-    public static final String OMSINTENSITYCLASSIFIER_LABEL = HYDROGEOMORPHOLOGY;
-    public static final String OMSINTENSITYCLASSIFIER_NAME = "intensityclassifier";
-    public static final int OMSINTENSITYCLASSIFIER_STATUS = 5;
-    public static final String OMSINTENSITYCLASSIFIER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSINTENSITYCLASSIFIER_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
-    public static final String OMSINTENSITYCLASSIFIER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION = "The map of the water depth.";
-    public static final String OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION = "The map of the water velocity.";
-    public static final String OMSINTENSITYCLASSIFIER_pUpperThresWaterdepth_DESCRIPTION = "The upper threshold value for the water depth.";
-    public static final String OMSINTENSITYCLASSIFIER_pUpperThresVelocityWaterdepth_DESCRIPTION = "The upper threshold value for the product of water depth and velocity.";
-    public static final String OMSINTENSITYCLASSIFIER_pLowerThresWaterdepth_DESCRIPTION = "The lower threshold value for the water depth.";
-    public static final String OMSINTENSITYCLASSIFIER_pLowerThresVelocityWaterdepth_DESCRIPTION = "The lower threshold value for the product of water depth and velocity.";
-    public static final String OMSINTENSITYCLASSIFIER_outIntensity_DESCRIPTION = "The map of flooding intensity.";
 
     public static final String OMSEPANETPARAMETERSOPTIONS_DESCRIPTION = "The options parameters of the epanet inp file";
     public static final String OMSEPANETPARAMETERSOPTIONS_DOCUMENTATION = "";

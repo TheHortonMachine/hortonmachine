@@ -247,6 +247,22 @@ public class RegionMap extends HashMap<String, Double> {
         return regionMap;
     }
 
+    /**
+     * Creates a new {@link RegionMap} cropped on the new bounds and snapped on the original grid.
+     * 
+     * <p><b>The supplied bounds are contained in the resulting region.</b></p>
+     * 
+     * @param envelope the envelope to snap.
+     * @return the new {@link RegionMap}.
+     */
+    public RegionMap toSubRegion( Envelope envelope ) {
+        double w = envelope.getMinX();
+        double s = envelope.getMinY();
+        double e = envelope.getMaxX();
+        double n = envelope.getMaxY();
+        return toSubRegion(n, s, w, e);
+    }
+
     public String toStringJGT() {
         StringBuilder sb = new StringBuilder();
         sb.append("North = ").append(getNorth()).append("\n");
@@ -260,4 +276,5 @@ public class RegionMap extends HashMap<String, Double> {
 
         return sb.toString();
     }
+
 }

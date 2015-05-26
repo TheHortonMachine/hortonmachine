@@ -17,39 +17,39 @@
  */
 package org.jgrasstools.gears.utils.chart;
 
-import java.awt.Dimension;
-
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.ui.ApplicationFrame;
-import org.jfree.ui.RefineryUtilities;
 
 /**
  * A simple category histogram plotter.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class CategoryHistogram extends ApplicationFrame {
+public class CategoryHistogram implements IChart {
 
-    private static final long serialVersionUID = 1L;
     private String[] categories;
     private double[] values;
     private DefaultCategoryDataset dataset;
+    private String title;
+    private JFreeChart chart;
 
     public CategoryHistogram( String[] categories, double[] values ) {
         this("Histogram", categories, values);
     }
 
     public CategoryHistogram( String title, String[] categories, double[] values ) {
-        super(title);
+        this.title = title;
         this.categories = categories;
         this.values = values;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     private void createDataset() {
@@ -59,45 +59,41 @@ public class CategoryHistogram extends ApplicationFrame {
         }
     }
 
-    public void plot() {
-        createDataset();
+    public JFreeChart getChart() {
+        if (chart == null) {
+            createDataset();
+            chart = ChartFactory.createBarChart(title,
+            // chart title
+                    "Category",
+                    // domain axis label
+                    "Value",
+                    // range axis label
+                    dataset,
+                    // data
+                    PlotOrientation.VERTICAL,
+                    // orientation
+                    false,
+                    // include legend
+                    true,
+                    // tooltips?
+                    false
+            // URLs?
+                    );
 
-        JFreeChart chart = ChartFactory.createBarChart(getTitle(),
-        // chart title
-                "Category",
-                // domain axis label
-                "Value",
-                // range axis label
-                dataset,
-                // data
-                PlotOrientation.VERTICAL,
-                // orientation
-                false,
-                // include legend
-                true,
-                // tooltips?
-                false
-        // URLs?
-                );
-
-        CategoryPlot plot = (CategoryPlot) chart.getPlot();
-        CategoryAxis rangeAxis = plot.getDomainAxis();
-        rangeAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-
-        ChartPanel chartPanel = new ChartPanel(chart, false);
-        chartPanel.setPreferredSize(new Dimension(500, 270));
-        setContentPane(chartPanel);
-
-        pack();
-        RefineryUtilities.centerFrameOnScreen(this);
-        setVisible(true);
+            CategoryPlot plot = (CategoryPlot) chart.getPlot();
+            CategoryAxis rangeAxis = plot.getDomainAxis();
+            rangeAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+        }
+        return chart;
     }
 
     public static void main( String[] args ) {
         String[] asd = {"a", "b", "c", "d", "e", "f", "g"};
         double[] qwe = {1, 2, 3, 2.5, 5.5, 1, 2};
         CategoryHistogram categoryHistogram = new CategoryHistogram(asd, qwe);
-        categoryHistogram.plot();
+        PlotFrame frame = new PlotFrame(categoryHistogram);
+        frame.setDimension(1600, 1000);
+        frame.plot();
     }
 
 }

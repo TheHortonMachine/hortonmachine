@@ -10,8 +10,6 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.joda.time.DateTime;
 
-import com.vividsolutions.jts.geom.Coordinate;
-
 /**
  * Test las utils.
  * 
@@ -95,6 +93,40 @@ public class TestLasUtilities extends HMTestCase {
         assertEquals(8.0, avg[2][0], DELTA);
         assertEquals(1.0, avg[2][1], DELTA);
         assertEquals(1.0, avg[2][2], DELTA);
+    }
+
+    public void testLastVisiblePointData() throws Exception {
+        LasRecord r1 = new LasRecord();
+        r1.x = 1.5;
+        r1.y = 1.5;
+        r1.z = 1.0;
+
+        LasRecord r2 = new LasRecord();
+        r2.x = 2.0;
+        r2.y = 2.0;
+        r2.z = 4.0;
+
+        LasRecord r3 = new LasRecord();
+        r3.x = 4.0;
+        r3.y = 2.5;
+        r3.z = 3.0;
+
+        LasRecord base = new LasRecord();
+        base.x = 1.0;
+        base.y = 0.5;
+        base.z = 2.0;
+
+        double[] lastVisiblePointData = LasUtils.getLastVisiblePointData(base, Arrays.asList(r1, r2, r3), false);
+        assertEquals(4.0, lastVisiblePointData[0], DELTA);
+        assertEquals(2.0, lastVisiblePointData[1], DELTA);
+        assertEquals(2.0, lastVisiblePointData[2], DELTA);
+        assertEquals(1.8027756377319946, lastVisiblePointData[3], DELTA);
+        assertEquals(42.03111377419729, lastVisiblePointData[4], DELTA);
+        assertEquals(1.0, lastVisiblePointData[5], DELTA);
+        assertEquals(1.5, lastVisiblePointData[6], DELTA);
+        assertEquals(1.5, lastVisiblePointData[7], DELTA);
+        assertEquals(1.118033988749895, lastVisiblePointData[8], DELTA);
+        assertEquals(131.8103148957786, lastVisiblePointData[9], DELTA);
     }
 
 }

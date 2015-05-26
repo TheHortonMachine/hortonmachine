@@ -46,6 +46,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 
@@ -102,7 +103,15 @@ public class OmsCb extends JGTModel {
         }
 
         outCb = new CoupledFieldsMoments().process(map1RI, map2RI, pBins, pFirst, pLast, pm, binmode);
-
+    }
+    
+    public static void main( String[] args ) throws Exception {
+        OmsCb cb = new OmsCb();
+        cb.inRaster1 = OmsRasterReader.readRaster("/home/hydrologis/Dropbox/TMP/test_jgtools/Archive/rainfall.asc");
+        cb.inRaster2 = OmsRasterReader.readRaster("/home/hydrologis/Dropbox/TMP/test_jgtools/Archive/subbasin.asc");
+        cb.process();
+        
+        
     }
 
 }

@@ -33,11 +33,10 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.jgrasstools.gears.io.las.core.ALasReader;
-import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -69,6 +68,7 @@ public class LasUtils {
     private static final GeometryFactory gf = GeometryUtilities.gf();
 
     public static final String THE_GEOM = "the_geom";
+    public static final String ID = "rid"; // record id
     public static final String ELEVATION = "elev";
     public static final String INTENSITY = "intensity";
     public static final String CLASSIFICATION = "classifica";
@@ -167,6 +167,7 @@ public class LasUtils {
             b.setName("lasdata");
             b.setCRS(crs);
             b.add(THE_GEOM, Point.class);
+            b.add(ID, Integer.class);
             b.add(ELEVATION, Double.class);
             b.add(INTENSITY, Double.class);
             b.add(CLASSIFICATION, Integer.class);
@@ -178,13 +179,25 @@ public class LasUtils {
         return lasSimpleFeatureBuilder;
     }
 
-    public static SimpleFeature tofeature( LasRecord r, CoordinateReferenceSystem crs ) {
+    /**
+     * Convert a record to a feature.
+     * 
+     * @param r the record to convert.
+     * @param featureId an optional feature id, if not available, the id is set to -1.
+     * @param crs the crs to apply.
+     * @return the feature.
+     */
+    public static SimpleFeature tofeature( LasRecord r, Integer featureId, CoordinateReferenceSystem crs ) {
         final Point point = toGeometry(r);
         double elev = r.z;
         if (!Double.isNaN(r.groundElevation)) {
             elev = r.groundElevation;
         }
-        final Object[] values = new Object[]{point, elev, r.intensity, r.classification, r.returnNumber, r.numberOfReturns};
+        if (featureId == null) {
+            featureId = -1;
+        }
+        final Object[] values = new Object[]{point, featureId, elev, r.intensity, r.classification, r.returnNumber,
+                r.numberOfReturns};
         SimpleFeatureBuilder lasFeatureBuilder = getLasFeatureBuilder(crs);
         lasFeatureBuilder.addAll(values);
         final SimpleFeature feature = lasFeatureBuilder.buildFeature(null);
@@ -195,7 +208,17 @@ public class LasUtils {
         return gf.createPoint(new Coordinate(r.x, r.y));
     }
 
-    public static List<LasRecord> getLasRecordsFromFeatureCollection( SimpleFeatureCollection lasCollection ) {
+    /**
+     * Create a {@link LasRecord} from a collection.
+     * 
+     * <p><b>The collection has to be created with the methods of this class previously,
+     * else some fields will be missing.</b>
+     * 
+     * @param lasCollection the collection to convert.
+     * @param elevIsGround if <code>true</code>, the elevation is the ground height.
+     * @return the list of las records.
+     */
+    public static List<LasRecord> getLasRecordsFromFeatureCollection( SimpleFeatureCollection lasCollection, boolean elevIsGround ) {
         List<SimpleFeature> featuresList = FeatureUtilities.featureCollectionToList(lasCollection);
         List<LasRecord> lasList = new ArrayList<LasRecord>();
         for( SimpleFeature lasFeature : featuresList ) {
@@ -205,6 +228,9 @@ public class LasUtils {
             r.y = coordinate.y;
             double elevation = ((Number) lasFeature.getAttribute(ELEVATION)).doubleValue();
             r.z = elevation;
+            if (elevIsGround) {
+                r.groundElevation = elevation;
+            }
             short intensity = ((Number) lasFeature.getAttribute(INTENSITY)).shortValue();
             r.intensity = intensity;
             byte classification = ((Number) lasFeature.getAttribute(CLASSIFICATION)).byteValue();
@@ -252,7 +278,7 @@ public class LasUtils {
         if (gpsTimeType == 0) {
             String[] split = String.valueOf(gpsTime).split("\\.");
             int week = Integer.parseInt(split[0]);
-//            int seconds = Integer.parseInt(split[1]);
+            // int seconds = Integer.parseInt(split[1]);
             long seconds = Long.parseLong(split[1]);
             double standardGpsTimeSeconds = week * 604800 + seconds;
             double standardGpsTimeMillis = standardGpsTimeSeconds * 1000;
@@ -565,6 +591,26 @@ public class LasUtils {
             }
             pm.done();
         }
+
+        pm.beginTask("Triangulation1...", -1);
+        List<Coordinate> lasCoordinates2 = new ArrayList<Coordinate>();
+        for( Geometry g : trianglesList ) {
+            Coordinate[] c = g.getCoordinates();
+            lasCoordinates2.add(c[0]);
+            lasCoordinates2.add(c[1]);
+            lasCoordinates2.add(c[2]);
+        }
+        trianglesList.clear();
+        DelaunayTriangulationBuilder triangulationBuilder1 = new DelaunayTriangulationBuilder();
+        triangulationBuilder1.setSites(lasCoordinates2);
+        Geometry triangles1 = triangulationBuilder1.getTriangles(gf);
+        pm.done();
+        numTriangles = triangles1.getNumGeometries();
+        // no true dsm to be calculated
+        for( int i = 0; i < numTriangles; i++ ) {
+            Geometry geometryN = triangles1.getGeometryN(i);
+            trianglesList.add(geometryN);
+        }
         return trianglesList;
     }
 
@@ -578,6 +624,7 @@ public class LasUtils {
      * @param idwBuffer the buffer around the points to consider for smoothing.
      * @param pm the monitor.
      */
+    @SuppressWarnings("unchecked")
     public static void smoothIDW( List<LasRecord> lasPoints, boolean useGround, double idwBuffer, IJGTProgressMonitor pm ) {
         List<Coordinate> coordinatesList = new ArrayList<Coordinate>();
         if (useGround) {
@@ -622,6 +669,84 @@ public class LasUtils {
             pm.worked(1);
         }
         pm.done();
+    }
+
+    /**
+     * Return last visible point data for a las records points list from a given position.
+     * 
+     * <p>For the profile the min and max angles of "sight" are
+     * calculated. The min azimuth angle represents the "upper"
+     * line of sight, as thought from the zenith.
+     * <p>The max azimuth angle represents the "below the earth" line
+     * of sight (think of a viewer looking in direction nadir).
+     * <p>The return values are in an array of doubles containing:
+     * <ul>
+     * <li>[0] min point elev, </li>
+     * <li>[1] min point x, </li>
+     * <li>[2] min point y, </li>
+     * <li>[3] min point progressive, </li>
+     * <li>[4] min point azimuth, </li>
+     * <li>[5] max point elev, </li>
+     * <li>[6] max point x, </li>
+     * <li>[7] max point y, </li>
+     * <li>[8] max point progressive, </li>
+     * <li>[9] max point azimuth </li>
+     * </ul>
+     * 
+     * @param baseRecord the record to use as center point.
+     * @param lasRecords the {@link LasRecord} points sorted by nearest from the center dot.
+     * @param useGround if <code>true</code>, use the ground info instead of z elevation.
+     * @return the last visible point parameters.
+     */
+    public static double[] getLastVisiblePointData( LasRecord baseRecord, List<LasRecord> lasRecords, boolean useGround ) {
+        if (lasRecords.size() < 1) {
+            throw new IllegalArgumentException("This needs to have at least 1 point.");
+        }
+        double baseElev = useGround ? baseRecord.groundElevation : baseRecord.z;
+        Coordinate baseCoord = new Coordinate(0, 0);
+
+        double minAzimuthAngle = Double.POSITIVE_INFINITY;
+        double maxAzimuthAngle = Double.NEGATIVE_INFINITY;
+        LasRecord minAzimuthPoint = null;
+        LasRecord maxAzimuthPoint = null;
+        for( int i = 0; i < lasRecords.size(); i++ ) {
+            LasRecord currentPoint = lasRecords.get(i);
+            double currentElev = useGround ? currentPoint.groundElevation : currentPoint.z;
+            if (JGTConstants.isNovalue(currentElev)) {
+                continue;
+            }
+            currentElev = currentElev - baseElev;
+            double currentProg = LasUtils.distance(baseRecord, currentPoint);
+            Coordinate currentCoord = new Coordinate(currentProg, currentElev);
+
+            double azimuth = GeometryUtilities.azimuth(baseCoord, currentCoord);
+            if (azimuth <= minAzimuthAngle) {
+                minAzimuthAngle = azimuth;
+                minAzimuthPoint = currentPoint;
+            }
+            if (azimuth >= maxAzimuthAngle) {
+                maxAzimuthAngle = azimuth;
+                maxAzimuthPoint = currentPoint;
+            }
+        }
+
+        if (minAzimuthPoint == null || maxAzimuthPoint == null) {
+            return null;
+        }
+
+        return new double[]{//
+        /*    */useGround ? minAzimuthPoint.groundElevation : minAzimuthPoint.z, //
+                minAzimuthPoint.x, //
+                minAzimuthPoint.y, //
+                LasUtils.distance(baseRecord, minAzimuthPoint), //
+                minAzimuthAngle, //
+                useGround ? maxAzimuthPoint.groundElevation : maxAzimuthPoint.z, //
+                maxAzimuthPoint.x, //
+                maxAzimuthPoint.y, //
+                LasUtils.distance(baseRecord, maxAzimuthPoint), //
+                maxAzimuthAngle, //
+        };
+
     }
 
     /**
