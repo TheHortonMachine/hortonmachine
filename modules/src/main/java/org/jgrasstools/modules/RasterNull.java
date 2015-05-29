@@ -67,7 +67,7 @@ public class RasterNull extends JGTModel {
 
     @Description(OMSRASTERNULL_pNull_DESCRIPTION)
     @In
-    public Double pNull = Double.NaN;
+    public Double pNull = null;
 
     @Description(OMSRASTERNULL_outRaster_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
