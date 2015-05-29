@@ -29,6 +29,7 @@ import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.intensity
 import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.intensityclassifier.OmsHazardClassifier.inIntensityTr200_DESCR;
 import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.intensityclassifier.OmsHazardClassifier.inIntensityTr30_DESCR;
 import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.intensityclassifier.OmsHazardClassifier.outHazardIP1_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.intensityclassifier.OmsHazardClassifier.outHazardIP2_DESCR;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -74,6 +75,7 @@ public class HazardClassifier extends JGTModel {
     public String outHazardIP1 = null;
 
     @UI(JGTConstants.FILEOUT_UI_HINT)
+    @Description(outHazardIP2_DESCR)
     @In
     public String outHazardIP2 = null;
 
