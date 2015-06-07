@@ -27,12 +27,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.time.EggClock;
 import org.sqlite.SQLiteConfig;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 
@@ -199,7 +202,7 @@ public class SpatialiteDb implements AutoCloseable {
         double y2 = envelope.getMaxY();
 
         String sql = "SELECT ST_AsBinary(" + geomFieldName + ") FROM " + tableName + " WHERE ";
-        sql += "ST_Intersects(" + geomFieldName + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + ")) = 1";
+        sql += getSpatialindexBBoxWherePiece(tableName, x1, y1, x2, y2);
 
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
@@ -258,7 +261,8 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws SQLException
      * @throws ParseException
      */
-    public List<TableRecord> geTableRecordsIn( String tableName, Envelope envelope ) throws SQLException, ParseException {
+    @SuppressWarnings("unused")
+    public List<TableRecord> getTableRecordsIn( String tableName, Envelope envelope ) throws SQLException, ParseException {
         List<TableRecord> tableRecords = new ArrayList<TableRecord>();
 
         List<String> tableColumns = getTableColumns(tableName);
@@ -275,8 +279,8 @@ public class SpatialiteDb implements AutoCloseable {
             sql += ",";
             sql += tableColumns.get(i);
         }
-        sql += " FROM " + tableName + " WHERE " //
-                + "ST_Intersects(" + geomFieldName + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + ")) = 1";
+        sql += " FROM " + tableName + " WHERE "; //
+        sql += getSpatialindexBBoxWherePiece(tableName, x1, y1, x2, y2);
 
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
@@ -295,6 +299,23 @@ public class SpatialiteDb implements AutoCloseable {
         }
         return tableRecords;
     }
+
+    /**
+     * @param tableName
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @return
+     */
+    private String getSpatialindexBBoxWherePiece( String tableName, double x1, double y1, double x2, double y2 ) {
+        String sql = "ST_Intersects(" + geomFieldName + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + ")) = 1 AND "
+                + tableName + ".ROWID IN ( SELECT ROWID FROM SpatialIndex WHERE "//
+                + "f_table_name = '" + tableName + "' AND " //
+                + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
+        return sql;
+    }
+
     /**
      * Get the bounds of a table.
      * 
@@ -319,29 +340,6 @@ public class SpatialiteDb implements AutoCloseable {
             return env;
         }
         return null;
-    }
-
-    private String getBboxIntersectingFeaturesQuery( String spatialTable, double n, double s, double e, double w ) {
-        StringBuilder sbQ = new StringBuilder();
-        sbQ.append("SELECT ");
-        sbQ.append("ST_AsBinary(");
-        sbQ.append(geomFieldName);
-        sbQ.append(")");
-        sbQ.append(" FROM ").append(spatialTable);
-        sbQ.append(" WHERE ST_Intersects(");
-        sbQ.append("BuildMBR(");
-        sbQ.append(w);
-        sbQ.append(",");
-        sbQ.append(s);
-        sbQ.append(",");
-        sbQ.append(e);
-        sbQ.append(",");
-        sbQ.append(n);
-        sbQ.append("),");
-        sbQ.append(geomFieldName);
-        sbQ.append(");");
-        String query = sbQ.toString();
-        return query;
     }
 
     /**
@@ -393,21 +391,24 @@ public class SpatialiteDb implements AutoCloseable {
             Envelope q = new Envelope(c);
             q.expandBy(0.0001);
 
-            // List<Geometry> geometriesIn = db.getGeometriesIn(tableName, q);
-            // System.out.println(geometriesIn.size());
-            // clock.printTimePassedInSeconds(System.out);
-
-            List<TableRecord> recordsIn = db.geTableRecordsIn(tableName, q);
+            List<Geometry> geoms = new ArrayList<Geometry>();
+            List<TableRecord> recordsIn = db.getTableRecordsIn(tableName, q);
             System.out.println(recordsIn.size());
             for( TableRecord tableRecord : recordsIn ) {
-                System.out.println(tableRecord.geometry);
-                for( Object obj : tableRecord.data ) {
-                    System.out.print(obj.toString() + ",");
-                }
-                System.out.println();
+                geoms.add(tableRecord.geometry);
+                // for( Object obj : tableRecord.data ) {
+                // System.out.print(obj.toString() + ",");
+                // }
+                // System.out.println();
             }
+            GeometryCollection gc = new GeometryCollection(geoms.toArray(GeometryUtilities.TYPE_GEOMETRY), new GeometryFactory());
+            System.out.println(gc.toText());
             clock.printTimePassedInSeconds(System.out);
 
+            List<Geometry> geometriesIn = db.getGeometriesIn(tableName, q);
+            gc = new GeometryCollection(geometriesIn.toArray(GeometryUtilities.TYPE_GEOMETRY), new GeometryFactory());
+            System.out.println(gc.toText());
+            clock.printTimePassedInSeconds(System.out);
         }
 
     }
