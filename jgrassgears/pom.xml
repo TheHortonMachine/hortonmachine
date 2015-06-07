@@ -22,7 +22,7 @@
 			<version>0.7.9-SNAPSHOT</version>
 		</dependency>
 
-		<!-- Java Advanced Imaging (JAI) -->
+		<!-- Java Advanced Imaging (JAI) 
 		<dependency>
 			<groupId>javax.media</groupId>
 			<artifactId>jai_core</artifactId>
@@ -38,7 +38,7 @@
 			<artifactId>jai_imageio</artifactId>
 			<version>1.1</version>
 		</dependency>
-
+-->
 		<!-- other stuff -->
 
 		<dependency>
@@ -187,9 +187,9 @@
 		<dependency>
 			<groupId>org.xerial</groupId>
 			<artifactId>sqlite-jdbc</artifactId>
-			<version>3.7.2</version>
+			<version>3.8.10.1</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
