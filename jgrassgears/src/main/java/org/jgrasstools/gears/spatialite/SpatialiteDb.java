@@ -185,33 +185,46 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     /**
-     * Get the geometries of a table inside a given envelope.
+     * Get the list of available tables.
      * 
-     * @param tableName
-     * @param envelope
-     * @return
+     * @param doOrder if <code>true</code>, the names are ordered.
+     * @return the list of names.
      * @throws SQLException
-     * @throws ParseException
      */
-    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws SQLException, ParseException {
-        List<Geometry> geoms = new ArrayList<Geometry>();
-
-        double x1 = envelope.getMinX();
-        double y1 = envelope.getMinY();
-        double x2 = envelope.getMaxX();
-        double y2 = envelope.getMaxY();
-
-        String sql = "SELECT ST_AsBinary(" + geomFieldName + ") FROM " + tableName + " WHERE ";
-        sql += getSpatialindexBBoxWherePiece(tableName, x1, y1, x2, y2);
-
+    public List<String> getTables( boolean doOrder ) throws SQLException {
+        List<String> tableNames = new ArrayList<String>();
+        String orderBy = " ORDER BY name";
+        if (!doOrder) {
+            orderBy = "";
+        }
+        String sql = "SELECT name FROM sqlite_master WHERE type='table'" + orderBy;
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         while( rs.next() ) {
-            byte[] geomBytes = rs.getBytes(1);
-            Geometry geometry = wkbReader.read(geomBytes);
-            geoms.add(geometry);
+            String tabelName = rs.getString(1);
+            tableNames.add(tabelName);
         }
-        return geoms;
+        return tableNames;
+    }
+
+    /**
+     * Checks if the table is available.
+     * 
+     * @param tableName the name of the table.
+     * @return <code>true</code> if the table exists.
+     * @throws SQLException
+     */
+    public boolean hasTable( String tableName ) throws SQLException {
+        String sql = "SELECT name FROM sqlite_master WHERE type='table'";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        while( rs.next() ) {
+            String name = rs.getString(1);
+            if (name.equals(tableName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -222,15 +235,15 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws SQLException
      */
     public List<String> getTableColumns( String tableName ) throws SQLException {
-        List<String> tableNames = new ArrayList<String>();
+        List<String> columnNames = new ArrayList<String>();
         String sql = "PRAGMA table_info(" + tableName + ")";
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         while( rs.next() ) {
             String columnName = rs.getString(2);
-            tableNames.add(columnName);
+            columnNames.add(columnName);
         }
-        return tableNames;
+        return columnNames;
     }
 
     /**
@@ -241,15 +254,15 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws SQLException
      */
     public List<String> getTableColumnTypes( String tableName ) throws SQLException {
-        List<String> tableNames = new ArrayList<String>();
+        List<String> columnTypes = new ArrayList<String>();
         String sql = "PRAGMA table_info(" + tableName + ")";
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         while( rs.next() ) {
             String columnType = rs.getString(3);
-            tableNames.add(columnType);
+            columnTypes.add(columnType);
         }
-        return tableNames;
+        return columnTypes;
     }
 
     /**
@@ -298,6 +311,36 @@ public class SpatialiteDb implements AutoCloseable {
             tableRecords.add(rec);
         }
         return tableRecords;
+    }
+
+    /**
+     * Get the geometries of a table inside a given envelope.
+     * 
+     * @param tableName
+     * @param envelope
+     * @return
+     * @throws SQLException
+     * @throws ParseException
+     */
+    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws SQLException, ParseException {
+        List<Geometry> geoms = new ArrayList<Geometry>();
+
+        double x1 = envelope.getMinX();
+        double y1 = envelope.getMinY();
+        double x2 = envelope.getMaxX();
+        double y2 = envelope.getMaxY();
+
+        String sql = "SELECT ST_AsBinary(" + geomFieldName + ") FROM " + tableName + " WHERE ";
+        sql += getSpatialindexBBoxWherePiece(tableName, x1, y1, x2, y2);
+
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        while( rs.next() ) {
+            byte[] geomBytes = rs.getBytes(1);
+            Geometry geometry = wkbReader.read(geomBytes);
+            geoms.add(geometry);
+        }
+        return geoms;
     }
 
     /**
@@ -378,13 +421,16 @@ public class SpatialiteDb implements AutoCloseable {
             System.out.println(Arrays.toString(db.getDbInfo()));
             clock.printTimePassedInSeconds(System.out);
 
+            List<String> tableNames = db.getTables(true);
+            System.out.println("Tables:" + Arrays.toString(tableNames.toArray()));
+            clock.printTimePassedInSeconds(System.out);
+
+            System.out.println("Has table roads:" + db.hasTable("roads"));
+            clock.printTimePassedInSeconds(System.out);
+
             String tableName = "roads";
             List<String> tableColumns = db.getTableColumns(tableName);
             System.out.println(Arrays.toString(tableColumns.toArray()));
-            clock.printTimePassedInSeconds(System.out);
-
-            Envelope tableBounds = db.getTableBounds(tableName);
-            System.out.println(tableBounds);
             clock.printTimePassedInSeconds(System.out);
 
             Coordinate c = new Coordinate(11.33134, 46.48275);
@@ -408,6 +454,10 @@ public class SpatialiteDb implements AutoCloseable {
             List<Geometry> geometriesIn = db.getGeometriesIn(tableName, q);
             gc = new GeometryCollection(geometriesIn.toArray(GeometryUtilities.TYPE_GEOMETRY), new GeometryFactory());
             System.out.println(gc.toText());
+            clock.printTimePassedInSeconds(System.out);
+
+            Envelope tableBounds = db.getTableBounds(tableName);
+            System.out.println(tableBounds);
             clock.printTimePassedInSeconds(System.out);
         }
 
