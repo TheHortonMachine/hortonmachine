@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.spatialite;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -48,6 +49,7 @@ import com.vividsolutions.jts.io.WKBReader;
 public class SpatialiteDb implements AutoCloseable {
 
     static {
+        System.setProperty("java.io.tmpdir", "D:/TMP/");
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
@@ -55,11 +57,13 @@ public class SpatialiteDb implements AutoCloseable {
         }
     }
 
-    private static final String PK_UID = "PK_UID";
-    private Connection conn = null;
-    private String geomFieldName = "the_geom";
+    public static final String PK_UID = "PK_UID";
+    public static final String geomFieldName = "the_geom";
 
-    private WKBReader wkbReader = new WKBReader();
+    protected Connection conn = null;
+
+    protected WKBReader wkbReader = new WKBReader();
+    private String dbPath;
 
     /**
      * Open the connection to a database.
@@ -68,6 +72,12 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws SQLException
      */
     public void open( String dbPath ) throws SQLException {
+        this.dbPath = dbPath;
+
+        File dbFile = new File(dbPath);
+        if (dbFile.exists()) {
+            System.out.println("Database exists");
+        }
         // enabling dynamic extension loading
         // absolutely required by SpatiaLite
         SQLiteConfig config = new SQLiteConfig();
@@ -78,6 +88,13 @@ public class SpatialiteDb implements AutoCloseable {
         stmt.setQueryTimeout(30); // set timeout to 30 sec.
         // load SpatiaLite
         stmt.execute("SELECT load_extension('mod_spatialite')");
+    }
+
+    /**
+     * @return the path to the database. 
+     */
+    public String getDatabasePath() {
+        return dbPath;
     }
 
     /**
@@ -138,6 +155,30 @@ public class SpatialiteDb implements AutoCloseable {
         stmt.execute(sb.toString());
     }
 
+    /**
+     * Create an single column index.
+     * 
+     * @param tableName the table.
+     * @param column the column. 
+     * @param isUnique if <code>true</code>, a unique index will be created.
+     * @throws SQLException
+     */
+    public void createIndex( String tableName, String column, boolean isUnique )  {
+        String unique = "UNIQUE ";
+        if (!isUnique) {
+            unique = "";
+        }
+        String indexName = tableName + "__" + column + "_idx";
+        String sql = "CREATE " + unique + "INDEX " + indexName + " on " + tableName + "(" + column + ");";
+
+        System.out.println(sql);
+        try {
+            Statement stmt = conn.createStatement();
+            stmt.executeUpdate(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * Adds a geometry column to a table. 
      * 
@@ -266,6 +307,24 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     /**
+     * Get the record count of a table.
+     * 
+     * @param tableName the name of the table.
+     * @return the record count or -1.
+     * @throws SQLException
+     */
+    public long getCount( String tableName ) throws SQLException {
+        String sql = "select count(*) from " + tableName;
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        while( rs.next() ) {
+            long count = rs.getLong(1);
+            return count;
+        }
+        return -1;
+    }
+
+    /**
      * Get the table records with geometry in the given envelope.
      * 
      * @param tableName the table name.
@@ -293,7 +352,7 @@ public class SpatialiteDb implements AutoCloseable {
             sql += tableColumns.get(i);
         }
         sql += " FROM " + tableName + " WHERE "; //
-        sql += getSpatialindexBBoxWherePiece(tableName, x1, y1, x2, y2);
+        sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
 
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
@@ -307,6 +366,55 @@ public class SpatialiteDb implements AutoCloseable {
             for( String columnName : tableColumns ) {
                 Object object = rs.getObject(i++);
                 rec.data.add(object);
+            }
+            tableRecords.add(rec);
+        }
+        return tableRecords;
+    }
+
+    /**
+     * Get the table records map with geometry in the given envelope.
+     * 
+     * @param tableName the table name.
+     * @param envelope the envelope to check.
+     * @return the list of found records.
+     * @throws SQLException
+     * @throws ParseException
+     */
+    public List<TableRecordMap> getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID )
+            throws SQLException, ParseException {
+        List<TableRecordMap> tableRecords = new ArrayList<TableRecordMap>();
+
+        List<String> tableColumns = getTableColumns(tableName);
+        tableColumns.remove(geomFieldName);
+        if (!alsoPK_UID)
+            tableColumns.remove(PK_UID);
+
+        double x1 = envelope.getMinX();
+        double y1 = envelope.getMinY();
+        double x2 = envelope.getMaxX();
+        double y2 = envelope.getMaxY();
+
+        String sql = "SELECT ST_AsBinary(" + geomFieldName + ") AS " + geomFieldName;
+        for( int i = 0; i < tableColumns.size(); i++ ) {
+            sql += ",";
+            sql += tableColumns.get(i);
+        }
+        sql += " FROM " + tableName + " WHERE "; //
+        sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
+        
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        while( rs.next() ) {
+            int i = 1;
+            byte[] geomBytes = rs.getBytes(i++);
+            Geometry geometry = wkbReader.read(geomBytes);
+            TableRecordMap rec = new TableRecordMap();
+            rec.geometry = geometry;
+
+            for( String columnName : tableColumns ) {
+                Object object = rs.getObject(i++);
+                rec.data.put(columnName, object);
             }
             tableRecords.add(rec);
         }
@@ -331,7 +439,7 @@ public class SpatialiteDb implements AutoCloseable {
         double y2 = envelope.getMaxY();
 
         String sql = "SELECT ST_AsBinary(" + geomFieldName + ") FROM " + tableName + " WHERE ";
-        sql += getSpatialindexBBoxWherePiece(tableName, x1, y1, x2, y2);
+        sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
 
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
@@ -344,21 +452,30 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     /**
-     * @param tableName
-     * @param x1
-     * @param y1
-     * @param x2
-     * @param y2
-     * @return
+     * Get the where cause of a Spatialindex based BBOX query.
+     * 
+     * @param tableName the name of the table.
+     * @param x1 west bound.
+     * @param y1 south bound.
+     * @param x2 east bound.
+     * @param y2 north bound.
+     * @return the sql piece.
      */
-    private String getSpatialindexBBoxWherePiece( String tableName, double x1, double y1, double x2, double y2 ) {
-        String sql = "ST_Intersects(" + geomFieldName + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + ")) = 1 AND "
-                + tableName + ".ROWID IN ( SELECT ROWID FROM SpatialIndex WHERE "//
+    public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 ) {
+        String rowid = "";
+        if (alias == null) {
+            alias = "";
+            rowid = tableName + ".ROWID";
+        } else {
+            rowid = alias + ".ROWID";
+            alias = alias + ".";
+        }
+        String sql = "ST_Intersects(" + alias + geomFieldName + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2
+                + ")) = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
                 + "f_table_name = '" + tableName + "' AND " //
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
     }
-
     /**
      * Get the bounds of a table.
      * 
@@ -367,12 +484,29 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws SQLException
      */
     public Envelope getTableBounds( String tableName ) throws SQLException {
+
+        String trySql = "SELECT extent_min_x, extent_min_y, extent_max_x, extent_max_y FROM vector_layers_statistics WHERE table_name='"
+                + tableName + "' AND geometry_column='" + geomFieldName + "'";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(trySql);
+        while( rs.next() ) {
+            double minX = rs.getDouble(1);
+            double minY = rs.getDouble(2);
+            double maxX = rs.getDouble(3);
+            double maxY = rs.getDouble(4);
+
+            Envelope env = new Envelope(minX, maxX, minY, maxY);
+            return env;
+        }
+
+        // OR DO FULL GEOMETRIES SCAN
+
         String sql = "SELECT Min(MbrMinX(" + geomFieldName + ")) AS min_x, Min(MbrMinY(" + geomFieldName + ")) AS min_y,"
                 + "Max(MbrMaxX(" + geomFieldName + ")) AS max_x, Max(MbrMaxY(" + geomFieldName + ")) AS max_y " + "FROM "
                 + tableName;
 
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery(sql);
         while( rs.next() ) {
             double minX = rs.getDouble(1);
             double minY = rs.getDouble(2);
