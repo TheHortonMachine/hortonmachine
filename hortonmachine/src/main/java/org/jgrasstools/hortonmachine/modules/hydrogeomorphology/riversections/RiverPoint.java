@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras;
+package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,16 +24,23 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
 
 /**
- * A Hecras point on the network.
+ * A river point with all section information.
+ * 
+ * <p>RiverPoints are comparable by progressive distance.
+ * 
  * 
  * @author Andrea Antonello (www.hydrologis.com)
+ * @author Silvia Franceschi (www.hydrologis.com)
  */
-public class NetworkPoint implements Comparable<NetworkPoint> {
+public class RiverPoint implements Comparable<RiverPoint> {
 
+    /**
+     * Coordinate of the section on the river.
+     */
     public Coordinate point;
 
     /**
-     * Progressive distance of section on the reach.
+     * Progressive distance of section on the river.
      */
     public double progressiveDistance = -1;
 
@@ -54,7 +61,7 @@ public class NetworkPoint implements Comparable<NetworkPoint> {
     public List<Double> sectionProgressive = null;
 
     /**
-     * Creates a {@link NetworkPoint}.
+     * Creates a {@link RiverPoint}.
      * 
      * @param point the point on the mainstream.
      * @param progressiveDistance the cumulated distance from the most upstream point.
@@ -62,7 +69,7 @@ public class NetworkPoint implements Comparable<NetworkPoint> {
      *          The line has to be constructed of 3d {@link Coordinate}s that 
      *          go from left to right  looking downstream.
      */
-    public NetworkPoint( Coordinate point, double progressiveDistance, LineString sectionGeometry ) {
+    public RiverPoint( Coordinate point, double progressiveDistance, LineString sectionGeometry ) {
         this.point = point;
         this.progressiveDistance = progressiveDistance;
         if (sectionGeometry != null) {
@@ -81,15 +88,15 @@ public class NetworkPoint implements Comparable<NetworkPoint> {
 
             // default bank positions
             bankPositions = new ArrayList<Double>();
-            bankPositions.add(Double.valueOf(0.0D));
-            bankPositions.add(Double.valueOf(1.0D));
-            bankPositions.add(Double.valueOf(sectionProgressive.get(0)));
-            bankPositions.add(Double.valueOf(sectionProgressive.get(sectionProgressive.size() - 1)));
+            bankPositions.add(0.0);
+            bankPositions.add(1.0);
+            bankPositions.add(sectionProgressive.get(0));
+            bankPositions.add(sectionProgressive.get(sectionProgressive.size() - 1));
 
             hasSection = true;
         }
     }
-    
+
     /**
      * Sets the section id for the current section.
      * 
@@ -100,7 +107,7 @@ public class NetworkPoint implements Comparable<NetworkPoint> {
     public void setSectionId( int sectionId ) {
         this.sectionId = sectionId;
     }
-    
+
     /**
      * Gets the section id for the current section.
      * 
@@ -112,7 +119,7 @@ public class NetworkPoint implements Comparable<NetworkPoint> {
         return sectionId;
     }
 
-    public int compareTo( NetworkPoint o ) {
+    public int compareTo( RiverPoint o ) {
         if (progressiveDistance < o.progressiveDistance) {
             return -1;
         } else if (progressiveDistance > o.progressiveDistance) {
