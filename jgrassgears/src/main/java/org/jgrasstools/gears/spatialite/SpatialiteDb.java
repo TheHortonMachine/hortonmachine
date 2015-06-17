@@ -49,7 +49,7 @@ import com.vividsolutions.jts.io.WKBReader;
 public class SpatialiteDb implements AutoCloseable {
 
     static {
-        System.setProperty("java.io.tmpdir", "D:/TMP/");
+        // System.setProperty("java.io.tmpdir", "D:/TMP/");
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
@@ -62,7 +62,6 @@ public class SpatialiteDb implements AutoCloseable {
 
     protected Connection conn = null;
 
-    protected WKBReader wkbReader = new WKBReader();
     private String dbPath;
 
     /**
@@ -155,6 +154,16 @@ public class SpatialiteDb implements AutoCloseable {
         stmt.execute(sb.toString());
     }
 
+    public void deleteTable( String tableName ) throws SQLException {
+        Statement stmt = conn.createStatement();
+
+        String sql = "SELECT DisableSpatialIndex('" + tableName + "', '" + geomFieldName + "');";
+        stmt.execute(sql);
+
+        sql = "drop table " + tableName + ";";
+        stmt.execute(sql);
+    }
+
     /**
      * Create an single column index.
      * 
@@ -163,7 +172,7 @@ public class SpatialiteDb implements AutoCloseable {
      * @param isUnique if <code>true</code>, a unique index will be created.
      * @throws SQLException
      */
-    public void createIndex( String tableName, String column, boolean isUnique )  {
+    public void createIndex( String tableName, String column, boolean isUnique ) {
         String unique = "UNIQUE ";
         if (!isUnique) {
             unique = "";
@@ -179,6 +188,18 @@ public class SpatialiteDb implements AutoCloseable {
             e.printStackTrace();
         }
     }
+
+    public void printIndexSql( String tableName, String column, boolean isUnique ) {
+        String unique = "UNIQUE ";
+        if (!isUnique) {
+            unique = "";
+        }
+        String indexName = tableName + "__" + column + "_idx";
+        String sql = "CREATE " + unique + "INDEX " + indexName + " on " + tableName + "(" + column + ");";
+
+        System.out.println(sql);
+    }
+
     /**
      * Adds a geometry column to a table. 
      * 
@@ -354,6 +375,7 @@ public class SpatialiteDb implements AutoCloseable {
         sql += " FROM " + tableName + " WHERE "; //
         sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
 
+        WKBReader wkbReader = new WKBReader();
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         while( rs.next() ) {
@@ -402,7 +424,8 @@ public class SpatialiteDb implements AutoCloseable {
         }
         sql += " FROM " + tableName + " WHERE "; //
         sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
-        
+
+        WKBReader wkbReader = new WKBReader();
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         while( rs.next() ) {
@@ -441,6 +464,7 @@ public class SpatialiteDb implements AutoCloseable {
         String sql = "SELECT ST_AsBinary(" + geomFieldName + ") FROM " + tableName + " WHERE ";
         sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
 
+        WKBReader wkbReader = new WKBReader();
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         while( rs.next() ) {
@@ -533,14 +557,37 @@ public class SpatialiteDb implements AutoCloseable {
         }
     }
 
-    public static String escapeSql( String str ) {
+    /**
+     * Escape sql.
+     * 
+     * @param sql 
+     * @return
+     */
+    public static String escapeSql( String sql ) {
         // ' --> ''
-        str = str.replaceAll("'", "''");
+        sql = sql.replaceAll("'", "''");
         // " --> ""
-        str = str.replaceAll("\"", "\"\"");
+        sql = sql.replaceAll("\"", "\"\"");
         // \ --> (remove backslashes)
-        str = str.replaceAll("\\\\", "");
-        return str;
+        sql = sql.replaceAll("\\\\", "");
+        return sql;
+    }
+
+    /**
+     * Compose the formatter for unix timstamps in queries.
+     * 
+     * <p>The default format is: <b>2015-06-11 03:14:51</b>, as
+     * given by pattern: <b>%Y-%m-%d %H:%M:%S</b>.</p>
+     * 
+     * @param columnName the timestamp column in the db.
+     * @param datePattern the datepattern.
+     * @return the query piece.
+     */
+    public static String getTimestampQuery( String columnName, String datePattern ) {
+        if (datePattern == null)
+            datePattern = "%Y-%m-%d %H:%M:%S";
+        String sql = "strftime('" + datePattern + "', " + columnName + " / 1000, 'unixepoch')";
+        return sql;
     }
 
     public static void main( String[] args ) throws Exception {
