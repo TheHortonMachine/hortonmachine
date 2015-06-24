@@ -154,13 +154,16 @@ public class SpatialiteDb implements AutoCloseable {
         stmt.execute(sb.toString());
     }
 
-    public void deleteTable( String tableName ) throws SQLException {
+    /**
+     * Delete a geo-table with all attached indexes and stuff.
+     * 
+     * @param tableName
+     * @throws SQLException
+     */
+    public void deleteGeoTable( String tableName ) throws SQLException {
         Statement stmt = conn.createStatement();
 
-        String sql = "SELECT DisableSpatialIndex('" + tableName + "', '" + geomFieldName + "');";
-        stmt.execute(sql);
-
-        sql = "drop table " + tableName + ";";
+        String sql = "SELECT DropGeoTable('" + tableName + ");";
         stmt.execute(sql);
     }
 
@@ -189,7 +192,7 @@ public class SpatialiteDb implements AutoCloseable {
         }
     }
 
-    public void printIndexSql( String tableName, String column, boolean isUnique ) {
+    public String getIndexSql( String tableName, String column, boolean isUnique ) {
         String unique = "UNIQUE ";
         if (!isUnique) {
             unique = "";
@@ -197,7 +200,7 @@ public class SpatialiteDb implements AutoCloseable {
         String indexName = tableName + "__" + column + "_idx";
         String sql = "CREATE " + unique + "INDEX " + indexName + " on " + tableName + "(" + column + ");";
 
-        System.out.println(sql);
+        return sql;
     }
 
     /**
