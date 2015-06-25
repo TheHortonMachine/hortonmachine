@@ -58,7 +58,8 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     public static final String PK_UID = "PK_UID";
-    public static final String geomFieldName = "the_geom";
+
+    protected String geomFieldName = "the_geom";
 
     protected Connection conn = null;
 
@@ -84,9 +85,19 @@ public class SpatialiteDb implements AutoCloseable {
         // create a database connection
         conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath, config.toProperties());
         Statement stmt = conn.createStatement();
-        stmt.setQueryTimeout(30); // set timeout to 30 sec.
+        // set timeout to 30 sec.
+        stmt.setQueryTimeout(30);
         // load SpatiaLite
         stmt.execute("SELECT load_extension('mod_spatialite')");
+    }
+
+    /**
+     * Setter for the geometry field name (default is <b>the_geom</b>).
+     *  
+     * @param geomFieldName the new name to use.
+     */
+    public void setGeometryFieldName( String geomFieldName ) {
+        this.geomFieldName = geomFieldName;
     }
 
     /**
@@ -175,23 +186,20 @@ public class SpatialiteDb implements AutoCloseable {
      * @param isUnique if <code>true</code>, a unique index will be created.
      * @throws SQLException
      */
-    public void createIndex( String tableName, String column, boolean isUnique ) {
-        String unique = "UNIQUE ";
-        if (!isUnique) {
-            unique = "";
-        }
-        String indexName = tableName + "__" + column + "_idx";
-        String sql = "CREATE " + unique + "INDEX " + indexName + " on " + tableName + "(" + column + ");";
-
-        System.out.println(sql);
-        try {
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void createIndex( String tableName, String column, boolean isUnique ) throws SQLException {
+        String sql = getIndexSql(tableName, column, isUnique);
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate(sql);
     }
 
+    /**
+     * Get the sql to create an index.
+     * 
+     * @param tableName the table.
+     * @param column the column. 
+     * @param isUnique if <code>true</code>, a unique index will be created.
+     * @return the index sql.
+     */
     public String getIndexSql( String tableName, String column, boolean isUnique ) {
         String unique = "UNIQUE ";
         if (!isUnique) {
@@ -199,7 +207,6 @@ public class SpatialiteDb implements AutoCloseable {
         }
         String indexName = tableName + "__" + column + "_idx";
         String sql = "CREATE " + unique + "INDEX " + indexName + " on " + tableName + "(" + column + ");";
-
         return sql;
     }
 
@@ -349,55 +356,6 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     /**
-     * Get the table records with geometry in the given envelope.
-     * 
-     * @param tableName the table name.
-     * @param envelope the envelope to check.
-     * @return the list of found records.
-     * @throws SQLException
-     * @throws ParseException
-     */
-    @SuppressWarnings("unused")
-    public List<TableRecord> getTableRecordsIn( String tableName, Envelope envelope ) throws SQLException, ParseException {
-        List<TableRecord> tableRecords = new ArrayList<TableRecord>();
-
-        List<String> tableColumns = getTableColumns(tableName);
-        tableColumns.remove(geomFieldName);
-        tableColumns.remove(PK_UID);
-
-        double x1 = envelope.getMinX();
-        double y1 = envelope.getMinY();
-        double x2 = envelope.getMaxX();
-        double y2 = envelope.getMaxY();
-
-        String sql = "SELECT ST_AsBinary(" + geomFieldName + ") AS " + geomFieldName;
-        for( int i = 0; i < tableColumns.size(); i++ ) {
-            sql += ",";
-            sql += tableColumns.get(i);
-        }
-        sql += " FROM " + tableName + " WHERE "; //
-        sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
-
-        WKBReader wkbReader = new WKBReader();
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        while( rs.next() ) {
-            int i = 1;
-            byte[] geomBytes = rs.getBytes(i++);
-            Geometry geometry = wkbReader.read(geomBytes);
-            TableRecord rec = new TableRecord();
-            rec.geometry = geometry;
-
-            for( String columnName : tableColumns ) {
-                Object object = rs.getObject(i++);
-                rec.data.add(object);
-            }
-            tableRecords.add(rec);
-        }
-        return tableRecords;
-    }
-
-    /**
      * Get the table records map with geometry in the given envelope.
      * 
      * @param tableName the table name.
@@ -450,8 +408,8 @@ public class SpatialiteDb implements AutoCloseable {
     /**
      * Get the geometries of a table inside a given envelope.
      * 
-     * @param tableName
-     * @param envelope
+     * @param tableName the table name.
+     * @param envelope the envelope to check.
      * @return
      * @throws SQLException
      * @throws ParseException
@@ -503,6 +461,7 @@ public class SpatialiteDb implements AutoCloseable {
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
     }
+    
     /**
      * Get the bounds of a table.
      * 
@@ -563,8 +522,8 @@ public class SpatialiteDb implements AutoCloseable {
     /**
      * Escape sql.
      * 
-     * @param sql 
-     * @return
+     * @param sql the sql code to escape. 
+     * @return the escaped sql.
      */
     public static String escapeSql( String sql ) {
         // ' --> ''
@@ -577,7 +536,7 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     /**
-     * Compose the formatter for unix timstamps in queries.
+     * Composes the formatter for unix timstamps in queries.
      * 
      * <p>The default format is: <b>2015-06-11 03:14:51</b>, as
      * given by pattern: <b>%Y-%m-%d %H:%M:%S</b>.</p>
@@ -622,9 +581,9 @@ public class SpatialiteDb implements AutoCloseable {
             q.expandBy(0.0001);
 
             List<Geometry> geoms = new ArrayList<Geometry>();
-            List<TableRecord> recordsIn = db.getTableRecordsIn(tableName, q);
+            List<TableRecordMap> recordsIn = db.getTableRecordsMapIn(tableName, q, false);
             System.out.println(recordsIn.size());
-            for( TableRecord tableRecord : recordsIn ) {
+            for( TableRecordMap tableRecord : recordsIn ) {
                 geoms.add(tableRecord.geometry);
                 // for( Object obj : tableRecord.data ) {
                 // System.out.print(obj.toString() + ",");

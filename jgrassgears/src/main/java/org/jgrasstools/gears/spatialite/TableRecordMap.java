@@ -22,7 +22,9 @@ import java.util.HashMap;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * A simple table record representation as hashmap with the column name
+ * A simple table record representation as hashmap with the column name.
+ * 
+ * <p>If performance is needed, this should not be used.</p>
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
