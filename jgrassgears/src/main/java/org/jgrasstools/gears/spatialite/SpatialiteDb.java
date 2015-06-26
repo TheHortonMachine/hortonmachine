@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -65,6 +66,21 @@ public class SpatialiteDb implements AutoCloseable {
 
     private String dbPath;
 
+    private List<String> metaTables = Arrays.asList("SpatialIndex", //
+            "geom_cols_ref_sys", //
+            "spatial_ref_sys", //
+            "spatialite_history", //
+            "sql_statements_log", //
+            "sqlite_sequence");
+
+    private String[] startsWithMetaTables = {//
+    "geometry_columns", //
+            "idx_", //
+            "vector_layers",//
+            "views_geometry_columns",//
+            "virts_geometry_columns"//
+    };
+
     /**
      * Open the connection to a database.
      * 
@@ -98,6 +114,13 @@ public class SpatialiteDb implements AutoCloseable {
      */
     public void setGeometryFieldName( String geomFieldName ) {
         this.geomFieldName = geomFieldName;
+    }
+
+    /**
+     * @return the geometry field name.
+     */
+    public String getGeomFieldName() {
+        return geomFieldName;
     }
 
     /**
@@ -269,7 +292,7 @@ public class SpatialiteDb implements AutoCloseable {
         if (!doOrder) {
             orderBy = "";
         }
-        String sql = "SELECT name FROM sqlite_master WHERE type='table'" + orderBy;
+        String sql = "SELECT name FROM sqlite_master WHERE type='table' or type='view'" + orderBy;
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         while( rs.next() ) {
@@ -277,6 +300,36 @@ public class SpatialiteDb implements AutoCloseable {
             tableNames.add(tabelName);
         }
         return tableNames;
+    }
+
+    /**
+     * Get the list of available user tables, removing system tables.
+     * 
+     * @param doOrder
+     * @return
+     * @throws SQLException
+     */
+    public List<String> getUserTables( boolean doOrder ) throws SQLException {
+        List<String> tableNames = getTables(doOrder);
+        List<String> userTableNames = new ArrayList<String>();
+
+        for( String tableName : tableNames ) {
+            if (metaTables.contains(tableName)) {
+                continue;
+            }
+            boolean add = true;
+            for( String startsWith : startsWithMetaTables ) {
+                if (tableName.startsWith(startsWith)) {
+                    add = false;
+                    break;
+                }
+            }
+            if (!add)
+                continue;
+            userTableNames.add(tableName);
+        }
+
+        return userTableNames;
     }
 
     /**
@@ -319,6 +372,26 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     /**
+     * Checks if a table is geometric.
+     * 
+     * @param tableName the table to check.
+     * @return <code>true</code> if the geometry column is present.
+     * @throws SQLException
+     */
+    public boolean isTableGeometric( String tableName ) throws SQLException {
+        String sql = "PRAGMA table_info(" + tableName + ")";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        while( rs.next() ) {
+            String columnName = rs.getString(2);
+            if (columnName.equals(geomFieldName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Get the column types of a table.
      * 
      * @param tableName the table to check.
@@ -358,47 +431,112 @@ public class SpatialiteDb implements AutoCloseable {
     /**
      * Get the table records map with geometry in the given envelope.
      * 
+     * <p>If the table is not geometric, the geom is set to null.
+     * 
      * @param tableName the table name.
      * @param envelope the envelope to check.
+     * @param limit if > 0 a limit is set.
+     * @param alsoPK_UID if <code>true</code>, also the PK_UID column is considered.
      * @return the list of found records.
      * @throws SQLException
      * @throws ParseException
      */
-    public List<TableRecordMap> getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID )
+    public List<TableRecordMap> getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit )
             throws SQLException, ParseException {
         List<TableRecordMap> tableRecords = new ArrayList<TableRecordMap>();
 
         List<String> tableColumns = getTableColumns(tableName);
-        tableColumns.remove(geomFieldName);
+        boolean hasGeom = false;
+        if (tableColumns.contains(geomFieldName)) {
+            tableColumns.remove(geomFieldName);
+            hasGeom = true;
+        }
         if (!alsoPK_UID)
             tableColumns.remove(PK_UID);
 
-        double x1 = envelope.getMinX();
-        double y1 = envelope.getMinY();
-        double x2 = envelope.getMaxX();
-        double y2 = envelope.getMaxY();
-
-        String sql = "SELECT ST_AsBinary(" + geomFieldName + ") AS " + geomFieldName;
+        String sql = "SELECT ";
+        if (hasGeom) {
+            sql += "ST_AsBinary(" + geomFieldName + ") AS " + geomFieldName;
+        }
         for( int i = 0; i < tableColumns.size(); i++ ) {
-            sql += ",";
+            if (hasGeom || i != 0)
+                sql += ",";
             sql += tableColumns.get(i);
         }
-        sql += " FROM " + tableName + " WHERE "; //
-        sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
-
+        sql += " FROM " + tableName;
+        if (envelope != null) {
+            double x1 = envelope.getMinX();
+            double y1 = envelope.getMinY();
+            double x2 = envelope.getMaxX();
+            double y2 = envelope.getMaxY();
+            sql += " WHERE "; //
+            sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
+        }
+        if (limit > 0) {
+            sql += " LIMIT " + limit;
+        }
         WKBReader wkbReader = new WKBReader();
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         while( rs.next() ) {
             int i = 1;
-            byte[] geomBytes = rs.getBytes(i++);
-            Geometry geometry = wkbReader.read(geomBytes);
             TableRecordMap rec = new TableRecordMap();
-            rec.geometry = geometry;
-
+            if (hasGeom) {
+                byte[] geomBytes = rs.getBytes(i++);
+                Geometry geometry = wkbReader.read(geomBytes);
+                rec.geometry = geometry;
+            }
             for( String columnName : tableColumns ) {
                 Object object = rs.getObject(i++);
                 rec.data.put(columnName, object);
+            }
+            tableRecords.add(rec);
+        }
+        return tableRecords;
+    }
+
+    /**
+     * Execute a query from raw sql.
+     * 
+     * @param sql the sql to run.
+     * @param limit a limit, ignored if < 1
+     * @param columnNames a list that will be filled with the column names.
+     * @return the resulting records.
+     * @throws SQLException
+     * @throws ParseException
+     */
+    public List<TableRecordMap> getTableRecordsMapFromRawSql( String sql, int limit, List<String> columnNames )
+            throws SQLException, ParseException {
+        List<TableRecordMap> tableRecords = new ArrayList<TableRecordMap>();
+        if (limit > 0 && !sql.toUpperCase().replaceAll("\n", " ").contains(" LIMIT ")) {
+            sql += " LIMIT " + limit;
+        }
+        WKBReader wkbReader = new WKBReader();
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnCount = rsmd.getColumnCount();
+        if (columnNames != null) {
+            for( int i = 1; i <= columnCount; i++ ) {
+                columnNames.add(rsmd.getColumnName(i));
+            }
+        }
+        while( rs.next() ) {
+            TableRecordMap rec = new TableRecordMap();
+            for( int j = 1; j <= columnCount; j++ ) {
+                String columnName = rsmd.getColumnName(j);
+                if (columnName.equals(geomFieldName)) {
+                    byte[] geomBytes = rs.getBytes(j);
+                    try {
+                        Geometry geometry = wkbReader.read(geomBytes);
+                        rec.geometry = geometry;
+                    } catch (Exception e) {
+                        // ignore this, it could be missing ST_AsBinary() in the sql
+                    }
+                } else {
+                    Object object = rs.getObject(j);
+                    rec.data.put(columnName, object);
+                }
             }
             tableRecords.add(rec);
         }
@@ -461,7 +599,7 @@ public class SpatialiteDb implements AutoCloseable {
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
     }
-    
+
     /**
      * Get the bounds of a table.
      * 
@@ -553,7 +691,7 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     public static void main( String[] args ) throws Exception {
-        String dbPath = "D:/data/italy.sqlite";
+        String dbPath = "D:/data/trapani.sqlite";
 
         try (SpatialiteDb db = new SpatialiteDb()) {
             db.open(dbPath);
@@ -565,7 +703,16 @@ public class SpatialiteDb implements AutoCloseable {
             clock.printTimePassedInSeconds(System.out);
 
             List<String> tableNames = db.getTables(true);
-            System.out.println("Tables:" + Arrays.toString(tableNames.toArray()));
+            System.out.println("Tables:");
+            for( String tableName : tableNames ) {
+                System.out.println(tableName);
+            }
+            clock.printTimePassedInSeconds(System.out);
+            tableNames = db.getUserTables(true);
+            System.out.println("User Tables:");
+            for( String tableName : tableNames ) {
+                System.out.println(tableName);
+            }
             clock.printTimePassedInSeconds(System.out);
 
             System.out.println("Has table roads:" + db.hasTable("roads"));
@@ -581,7 +728,7 @@ public class SpatialiteDb implements AutoCloseable {
             q.expandBy(0.0001);
 
             List<Geometry> geoms = new ArrayList<Geometry>();
-            List<TableRecordMap> recordsIn = db.getTableRecordsMapIn(tableName, q, false);
+            List<TableRecordMap> recordsIn = db.getTableRecordsMapIn(tableName, q, false, 10);
             System.out.println(recordsIn.size());
             for( TableRecordMap tableRecord : recordsIn ) {
                 geoms.add(tableRecord.geometry);
@@ -602,6 +749,13 @@ public class SpatialiteDb implements AutoCloseable {
             Envelope tableBounds = db.getTableBounds(tableName);
             System.out.println(tableBounds);
             clock.printTimePassedInSeconds(System.out);
+
+            List<TableRecordMap> tableRecordsMapFromRawSql = db.getTableRecordsMapFromRawSql("SELECT *  FROM sql_statements_log",
+                    -1, null);
+            System.out.println("sql history");
+            for( TableRecordMap tableRecordMap : tableRecordsMapFromRawSql ) {
+                System.out.println(tableRecordMap.data.get("sql_statement"));
+            }
         }
 
     }
