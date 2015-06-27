@@ -27,7 +27,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.time.EggClock;
@@ -65,21 +67,6 @@ public class SpatialiteDb implements AutoCloseable {
     protected Connection conn = null;
 
     private String dbPath;
-
-    private List<String> metaTables = Arrays.asList("SpatialIndex", //
-            "geom_cols_ref_sys", //
-            "spatial_ref_sys", //
-            "spatialite_history", //
-            "sql_statements_log", //
-            "sqlite_sequence");
-
-    private String[] startsWithMetaTables = {//
-    "geometry_columns", //
-            "idx_", //
-            "vector_layers",//
-            "views_geometry_columns",//
-            "virts_geometry_columns"//
-    };
 
     /**
      * Open the connection to a database.
@@ -303,33 +290,29 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     /**
-     * Get the list of available user tables, removing system tables.
+     * Get the list of available tables, mapped by type.
+     * 
+     * <p>
+     * Supported types are:
+     * <ul>
+     * <li>{@value SpatialiteTableNames#INTERNALDATA} </li>
+     * <li>{@value SpatialiteTableNames#METADATA} </li>
+     * <li>{@value SpatialiteTableNames#SPATIALINDEX} </li>
+     * <li>{@value SpatialiteTableNames#STYLE} </li>
+     * <li>{@value SpatialiteTableNames#USERDATA} </li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
+     * </ul>
      * 
      * @param doOrder
-     * @return
+     * @return the map of tables sorted by aggregated type:
      * @throws SQLException
      */
-    public List<String> getUserTables( boolean doOrder ) throws SQLException {
+    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws SQLException {
         List<String> tableNames = getTables(doOrder);
-        List<String> userTableNames = new ArrayList<String>();
-
-        for( String tableName : tableNames ) {
-            if (metaTables.contains(tableName)) {
-                continue;
-            }
-            boolean add = true;
-            for( String startsWith : startsWithMetaTables ) {
-                if (tableName.startsWith(startsWith)) {
-                    add = false;
-                    break;
-                }
-            }
-            if (!add)
-                continue;
-            userTableNames.add(tableName);
-        }
-
-        return userTableNames;
+        HashMap<String, List<String>> tablesMap = SpatialiteTableNames.getTablesSorted(tableNames, doOrder);
+        return tablesMap;
     }
 
     /**
@@ -708,10 +691,12 @@ public class SpatialiteDb implements AutoCloseable {
                 System.out.println(tableName);
             }
             clock.printTimePassedInSeconds(System.out);
-            tableNames = db.getUserTables(true);
-            System.out.println("User Tables:");
-            for( String tableName : tableNames ) {
-                System.out.println(tableName);
+            HashMap<String, List<String>> tablesMap = db.getTablesMap(true);
+            for( Entry<String, List<String>> entry : tablesMap.entrySet() ) {
+                System.out.println(entry.getKey() + ": ");
+                for( String tableName : entry.getValue() ) {
+                    System.out.println("\t->" + tableName);
+                }
             }
             clock.printTimePassedInSeconds(System.out);
 
