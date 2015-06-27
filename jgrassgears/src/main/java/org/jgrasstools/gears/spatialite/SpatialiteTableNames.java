@@ -3,7 +3,7 @@ package org.jgrasstools.gears.spatialite;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class SpatialiteTableNames {
@@ -27,6 +27,8 @@ public class SpatialiteTableNames {
             "raster_coverages_ref_sys",//
             "raster_coverages_srid",//
             "spatial_ref_sys", //
+            "spatial_ref_sys_all", //
+            "spatial_ref_sys_aux", //
             "spatialite_history", //
             "vector_coverages",//
             "vector_coverages_keyword",//
@@ -40,6 +42,7 @@ public class SpatialiteTableNames {
     // INTERNAL DATA
     public static final String INTERNALDATA = "Internal Data";
     public static final List<String> internalDataTables = Arrays.asList(//
+            "ElementaryGeometries", //
             "geometry_columns_auth", //
             "geometry_columns_field_infos", //
             "geometry_columns_statistics", //
@@ -55,51 +58,59 @@ public class SpatialiteTableNames {
             "virts_geometry_columns_field_infos", //
             "virts_geometry_columns_statistics");
 
-    public static HashMap<String, List<String>> getTablesSorted( List<String> allTableNames, boolean doSort ) {
-        HashMap<String, List<String>> tablesMap = new HashMap<>();
+    public static final List<String> ALL_TYPES_LIST = Arrays.asList(//
+            USERDATA, SPATIALINDEX, STYLE, METADATA, INTERNALDATA);
+
+    /**
+     * Sorts all supplied table names by type.
+     * 
+     * <p>
+     * Supported types are:
+     * <ul>
+     * <li>{@value SpatialiteTableNames#INTERNALDATA} </li>
+     * <li>{@value SpatialiteTableNames#METADATA} </li>
+     * <li>{@value SpatialiteTableNames#SPATIALINDEX} </li>
+     * <li>{@value SpatialiteTableNames#STYLE} </li>
+     * <li>{@value SpatialiteTableNames#USERDATA} </li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
+     * </ul>
+     * 
+     * @param allTableNames list of all tables.
+     * @param doSort if <code>true</code>, table names are alphabetically sorted.
+     * @return the {@link LinkedHashMap}.
+     */
+    public static LinkedHashMap<String, List<String>> getTablesSorted( List<String> allTableNames, boolean doSort ) {
+        LinkedHashMap<String, List<String>> tablesMap = new LinkedHashMap<>();
+        tablesMap.put(USERDATA, new ArrayList<String>());
+        tablesMap.put(STYLE, new ArrayList<String>());
+        tablesMap.put(METADATA, new ArrayList<String>());
+        tablesMap.put(INTERNALDATA, new ArrayList<String>());
+        tablesMap.put(SPATIALINDEX, new ArrayList<String>());
 
         for( String tableName : allTableNames ) {
             if (tableName.equals(spatialIndex) || tableName.startsWith(startsWithIndexTables)) {
                 List<String> list = tablesMap.get(SPATIALINDEX);
-                if (list == null) {
-                    list = new ArrayList<String>();
-                    tablesMap.put(SPATIALINDEX, list);
-                }
                 list.add(tableName);
                 continue;
             }
             if (tableName.startsWith(startsWithStyleTables)) {
                 List<String> list = tablesMap.get(STYLE);
-                if (list == null) {
-                    list = new ArrayList<String>();
-                    tablesMap.put(STYLE, list);
-                }
                 list.add(tableName);
                 continue;
             }
             if (metadataTables.contains(tableName)) {
                 List<String> list = tablesMap.get(METADATA);
-                if (list == null) {
-                    list = new ArrayList<String>();
-                    tablesMap.put(METADATA, list);
-                }
                 list.add(tableName);
                 continue;
             }
             if (internalDataTables.contains(tableName)) {
                 List<String> list = tablesMap.get(INTERNALDATA);
-                if (list == null) {
-                    list = new ArrayList<String>();
-                    tablesMap.put(INTERNALDATA, list);
-                }
                 list.add(tableName);
                 continue;
             }
             List<String> list = tablesMap.get(USERDATA);
-            if (list == null) {
-                list = new ArrayList<String>();
-                tablesMap.put(USERDATA, list);
-            }
             list.add(tableName);
         }
 

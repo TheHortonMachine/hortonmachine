@@ -31,8 +31,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.utils.CrsUtilities;
+import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.time.EggClock;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.sqlite.SQLiteConfig;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -40,6 +47,12 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 
@@ -184,7 +197,7 @@ public class SpatialiteDb implements AutoCloseable {
     public void deleteGeoTable( String tableName ) throws SQLException {
         Statement stmt = conn.createStatement();
 
-        String sql = "SELECT DropGeoTable('" + tableName + ");";
+        String sql = "SELECT DropGeoTable('" + tableName + "');";
         stmt.execute(sql);
     }
 
@@ -627,6 +640,58 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     /**
+     * Create a spatial table using a shapefile as schema.
+     * 
+     * @param shapeFile the shapefile to use.
+     * @throws Exception
+     */
+    public void createTableFromShp( File shapeFile ) throws Exception {
+        SimpleFeatureCollection fc = OmsVectorReader.readVector(shapeFile.getAbsolutePath());
+        SimpleFeatureType schema = fc.getSchema();
+        GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();
+
+        String shpName = FileUtilities.getNameWithoutExtention(shapeFile);
+
+        List<String> attrSql = new ArrayList<String>();
+        List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
+        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+            String attrName = attributeDescriptor.getLocalName();
+            Class< ? > binding = attributeDescriptor.getType().getBinding();
+            if (binding.isAssignableFrom(Double.class) || binding.isAssignableFrom(Float.class)) {
+                attrSql.add(attrName + " REAL");
+            } else if (binding.isAssignableFrom(Long.class) || binding.isAssignableFrom(Integer.class)) {
+                attrSql.add(attrName + " INTEGER");
+            } else if (binding.isAssignableFrom(String.class)) {
+                attrSql.add(attrName + " TEXT");
+            }
+        }
+
+        createTable(shpName, attrSql.toArray(new String[0]));
+
+        String typeString = null;
+        org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
+        Class< ? > binding = type.getBinding();
+        if (binding.isAssignableFrom(MultiPolygon.class)) {
+            typeString = "MULTIPOLYGON";
+        } else if (binding.isAssignableFrom(Polygon.class)) {
+            typeString = "POLYGON";
+        } else if (binding.isAssignableFrom(MultiLineString.class)) {
+            typeString = "MULTILINESTRING";
+        } else if (binding.isAssignableFrom(LineString.class)) {
+            typeString = "LINESTRING";
+        } else if (binding.isAssignableFrom(MultiPoint.class)) {
+            typeString = "MULTIPOINT";
+        } else if (binding.isAssignableFrom(Point.class)) {
+            typeString = "POINT";
+        }
+        if (typeString != null) {
+            String codeFromCrs = CrsUtilities.getCodeFromCrs(schema.getCoordinateReferenceSystem());
+            codeFromCrs = codeFromCrs.replaceFirst("EPSG:", "");
+            addGeometryXYColumnAndIndex(shpName, typeString, codeFromCrs);
+        }
+    }
+
+    /**
      * @return the connection to the database.
      */
     public Connection getConnection() {
@@ -741,6 +806,11 @@ public class SpatialiteDb implements AutoCloseable {
             for( TableRecordMap tableRecordMap : tableRecordsMapFromRawSql ) {
                 System.out.println(tableRecordMap.data.get("sql_statement"));
             }
+            clock.printTimePassedInSeconds(System.out);
+
+            db.deleteGeoTable("ne_10m_admin_1_states_provinces");
+//            db.createTableFromShp(new File("D:/data/naturalearth/ne_10m_admin_1_states_provinces.shp"));
+            clock.printTimePassedInSeconds(System.out);
         }
 
     }
