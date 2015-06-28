@@ -31,7 +31,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.geotools.data.FileDataStore;
+import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -75,7 +78,7 @@ public class SpatialiteDb implements AutoCloseable {
 
     public static final String PK_UID = "PK_UID";
 
-    protected String geomFieldName = "the_geom";
+    protected String defaultGeomFieldName = "the_geom";
 
     protected Connection conn = null;
 
@@ -105,22 +108,6 @@ public class SpatialiteDb implements AutoCloseable {
         stmt.setQueryTimeout(30);
         // load SpatiaLite
         stmt.execute("SELECT load_extension('mod_spatialite')");
-    }
-
-    /**
-     * Setter for the geometry field name (default is <b>the_geom</b>).
-     *  
-     * @param geomFieldName the new name to use.
-     */
-    public void setGeometryFieldName( String geomFieldName ) {
-        this.geomFieldName = geomFieldName;
-    }
-
-    /**
-     * @return the geometry field name.
-     */
-    public String getGeomFieldName() {
-        return geomFieldName;
     }
 
     /**
@@ -251,12 +238,12 @@ public class SpatialiteDb implements AutoCloseable {
             geomTypeStr = geomType;
         }
 
-        String sql = "SELECT AddGeometryColumn('" + tableName + "','" + geomFieldName + "', " + epsgStr + ", '" + geomTypeStr
-                + "', 'XY')";
+        String sql = "SELECT AddGeometryColumn('" + tableName + "','" + defaultGeomFieldName + "', " + epsgStr + ", '"
+                + geomTypeStr + "', 'XY')";
         Statement stmt = conn.createStatement();
         stmt.execute(sql);
 
-        sql = "SELECT CreateSpatialIndex('" + tableName + "', '" + geomFieldName + "');";
+        sql = "SELECT CreateSpatialIndex('" + tableName + "', '" + defaultGeomFieldName + "');";
         stmt.execute(sql);
     }
 
@@ -273,7 +260,9 @@ public class SpatialiteDb implements AutoCloseable {
         if (epsg == null) {
             epsgStr = epsg;
         }
-        String sql = "INSERT INTO " + tableName + " (" + geomFieldName + ") VALUES (GeomFromText(?, " + epsgStr + "))";
+
+        SpatialiteGeometryColumns gc = getGeometryColumnsForTable(tableName);
+        String sql = "INSERT INTO " + tableName + " (" + gc.f_geometry_column + ") VALUES (GeomFromText(?, " + epsgStr + "))";
         PreparedStatement pStmt = conn.prepareStatement(sql);
         pStmt.setString(1, geometry.toText());
         pStmt.executeUpdate();
@@ -368,23 +357,50 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     /**
-     * Checks if a table is geometric.
+     * Get the geometry column definition for a given table.
      * 
      * @param tableName the table to check.
-     * @return <code>true</code> if the geometry column is present.
+     * @return the {@link SpatialiteGeometryColumns column info}.
+     * @throws Exception
+     */
+    public SpatialiteGeometryColumns getGeometryColumnsForTable( String tableName ) throws SQLException {
+        String sql = "select f_table_name, f_geometry_column, geometry_type,"
+                + "coord_dimension, srid, spatial_index_enabled from geometry_columns" //
+                + " where f_table_name='" + tableName + "'";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        if (rs.next()) {
+            SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();
+            gc.f_table_name = rs.getString(1);
+            gc.f_geometry_column = rs.getString(2);
+            gc.geometry_type = rs.getInt(3);
+            gc.coord_dimension = rs.getInt(4);
+            gc.srid = rs.getInt(5);
+            gc.spatial_index_enabled = rs.getInt(6);
+            return gc;
+        }
+        return null;
+    }
+
+    /**
+     * Checks if a table is spatial.
+     * 
+     * @param tableName the table to check.
+     * @return <code>true</code> if a geometry column is present.
      * @throws SQLException
      */
     public boolean isTableGeometric( String tableName ) throws SQLException {
-        String sql = "PRAGMA table_info(" + tableName + ")";
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        while( rs.next() ) {
-            String columnName = rs.getString(2);
-            if (columnName.equals(geomFieldName)) {
-                return true;
-            }
-        }
-        return false;
+        SpatialiteGeometryColumns geometryColumns = getGeometryColumnsForTable(tableName);
+        // String sql = "PRAGMA table_info(" + tableName + ")";
+        // Statement stmt = conn.createStatement();
+        // ResultSet rs = stmt.executeQuery(sql);
+        // while( rs.next() ) {
+        // String columnName = rs.getString(2);
+        // if (columnName.equals(geomFieldName)) {
+        // return true;
+        // }
+        // }
+        return geometryColumns != null;
     }
 
     /**
@@ -441,18 +457,19 @@ public class SpatialiteDb implements AutoCloseable {
             throws SQLException, ParseException {
         List<TableRecordMap> tableRecords = new ArrayList<TableRecordMap>();
 
+        SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
+        boolean hasGeom = gCol != null;
+
         List<String> tableColumns = getTableColumns(tableName);
-        boolean hasGeom = false;
-        if (tableColumns.contains(geomFieldName)) {
-            tableColumns.remove(geomFieldName);
-            hasGeom = true;
+        if (hasGeom) {
+            tableColumns.remove(gCol.f_geometry_column);
         }
         if (!alsoPK_UID)
             tableColumns.remove(PK_UID);
 
         String sql = "SELECT ";
         if (hasGeom) {
-            sql += "ST_AsBinary(" + geomFieldName + ") AS " + geomFieldName;
+            sql += "ST_AsBinary(" + gCol.f_geometry_column + ") AS " + gCol.f_geometry_column;
         }
         for( int i = 0; i < tableColumns.size(); i++ ) {
             if (hasGeom || i != 0)
@@ -521,7 +538,7 @@ public class SpatialiteDb implements AutoCloseable {
             TableRecordMap rec = new TableRecordMap();
             for( int j = 1; j <= columnCount; j++ ) {
                 String columnName = rsmd.getColumnName(j);
-                if (columnName.equals(geomFieldName)) {
+                if (columnName.equals(defaultGeomFieldName)) {
                     byte[] geomBytes = rs.getBytes(j);
                     try {
                         Geometry geometry = wkbReader.read(geomBytes);
@@ -551,12 +568,14 @@ public class SpatialiteDb implements AutoCloseable {
     public List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws SQLException, ParseException {
         List<Geometry> geoms = new ArrayList<Geometry>();
 
+        SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
+
         double x1 = envelope.getMinX();
         double y1 = envelope.getMinY();
         double x2 = envelope.getMaxX();
         double y2 = envelope.getMaxY();
 
-        String sql = "SELECT ST_AsBinary(" + geomFieldName + ") FROM " + tableName + " WHERE ";
+        String sql = "SELECT ST_AsBinary(" + gCol.f_geometry_column + ") FROM " + tableName + " WHERE ";
         sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
 
         WKBReader wkbReader = new WKBReader();
@@ -579,8 +598,10 @@ public class SpatialiteDb implements AutoCloseable {
      * @param x2 east bound.
      * @param y2 north bound.
      * @return the sql piece.
+     * @throws SQLException 
      */
-    public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 ) {
+    public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 )
+            throws SQLException {
         String rowid = "";
         if (alias == null) {
             alias = "";
@@ -589,7 +610,8 @@ public class SpatialiteDb implements AutoCloseable {
             rowid = alias + ".ROWID";
             alias = alias + ".";
         }
-        String sql = "ST_Intersects(" + alias + geomFieldName + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2
+        SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
+        String sql = "ST_Intersects(" + alias + gCol.f_geometry_column + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2
                 + ")) = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
                 + "f_table_name = '" + tableName + "' AND " //
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
@@ -604,6 +626,8 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws SQLException
      */
     public Envelope getTableBounds( String tableName ) throws SQLException {
+        SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
+        String geomFieldName = gCol.f_geometry_column;
 
         String trySql = "SELECT extent_min_x, extent_min_y, extent_max_x, extent_max_y FROM vector_layers_statistics WHERE table_name='"
                 + tableName + "' AND geometry_column='" + geomFieldName + "'";
@@ -646,8 +670,9 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws Exception
      */
     public void createTableFromShp( File shapeFile ) throws Exception {
-        SimpleFeatureCollection fc = OmsVectorReader.readVector(shapeFile.getAbsolutePath());
-        SimpleFeatureType schema = fc.getSchema();
+        FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
+        SimpleFeatureSource featureSource = store.getFeatureSource();
+        SimpleFeatureType schema = featureSource.getSchema();
         GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();
 
         String shpName = FileUtilities.getNameWithoutExtention(shapeFile);
@@ -760,7 +785,13 @@ public class SpatialiteDb implements AutoCloseable {
             for( Entry<String, List<String>> entry : tablesMap.entrySet() ) {
                 System.out.println(entry.getKey() + ": ");
                 for( String tableName : entry.getValue() ) {
-                    System.out.println("\t->" + tableName);
+                    SpatialiteGeometryColumns gc = db.getGeometryColumnsForTable(tableName);
+                    if (gc == null) {
+                        System.out.println("\t->" + tableName);
+                    } else {
+                        System.out.println("\t->" + tableName + " / geom col: " + gc.f_geometry_column + " / srid: " + gc.srid
+                                + " / geom type: " + SpatialiteGeometryType.forValue(gc.geometry_type));
+                    }
                 }
             }
             clock.printTimePassedInSeconds(System.out);
@@ -808,9 +839,10 @@ public class SpatialiteDb implements AutoCloseable {
             }
             clock.printTimePassedInSeconds(System.out);
 
-            db.deleteGeoTable("ne_10m_admin_1_states_provinces");
-//            db.createTableFromShp(new File("D:/data/naturalearth/ne_10m_admin_1_states_provinces.shp"));
-            clock.printTimePassedInSeconds(System.out);
+            // db.deleteGeoTable("ne_10m_admin_1_states_provinces");
+            // db.createTableFromShp(new
+            // File("D:/data/naturalearth/ne_10m_admin_1_states_provinces.shp"));
+            // clock.printTimePassedInSeconds(System.out);
         }
 
     }
