@@ -543,6 +543,19 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     /**
+     * Execute an update, insert or delete by sql.
+     * 
+     * @param sql the sql to run.
+     * @return the result code of the update.
+     * @throws SQLException
+     */
+    public int executeInsertUpdateDeleteSql( String sql ) throws SQLException {
+        Statement stmt = conn.createStatement();
+        int executeUpdate = stmt.executeUpdate(sql);
+        return executeUpdate;
+    }
+
+    /**
      * Get the geometries of a table inside a given envelope.
      * 
      * @param tableName the table name.
