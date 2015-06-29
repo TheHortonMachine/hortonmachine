@@ -17,13 +17,26 @@
  */
 package org.jgrasstools.gears.spatialite;
 
+/**
+ * Class representing a geometry_columns record.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ */
 public class SpatialiteGeometryColumns {
+    // COLUMN NAMES
+    public static final String TABLENAME = "geometry_columns";
+    public static final String F_TABLE_NAME = "f_table_name";
+    public static final String F_GEOMETRY_COLUMN = "f_geometry_column";
+    public static final String GEOMETRY_TYPE = "geometry_type";
+    public static final String COORD_DIMENSION = "coord_dimension";
+    public static final String SRID = "srid";
+    public static final String SPATIAL_INDEX_ENABLED = "spatial_index_enabled";
 
+    // VARIABLES
     public String f_table_name;
     public String f_geometry_column;
     public int geometry_type;
     public int coord_dimension;
     public int srid;
     public int spatial_index_enabled;
-
 }
