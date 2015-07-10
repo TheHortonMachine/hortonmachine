@@ -150,7 +150,7 @@ public class RiverSectionsFromDtmExtractor extends ARiverSectionsExtractor {
             Coordinate position = profilePoint.getPosition();
             if (envelope.intersects(position)) {
                 position.z = profilePoint.getElevation();
-                RiverPoint netPoint = new RiverPoint(position, profilePoint.getProgressive(), null);
+                RiverPoint netPoint = new RiverPoint(position, profilePoint.getProgressive(), null, null);
                 riverPointsList.add(netPoint);
             }
         }
@@ -194,7 +194,7 @@ public class RiverSectionsFromDtmExtractor extends ARiverSectionsExtractor {
         int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, null);
         double elev = elevIter.getSampleDouble(colRow[0], colRow[1], 0);
         coordinate.z = elev;
-        RiverPoint netPoint = new RiverPoint(coordinate, progressiveDistance, bridgeLine3d);
+        RiverPoint netPoint = new RiverPoint(coordinate, progressiveDistance, bridgeLine3d, null);
         return netPoint;
     }
 

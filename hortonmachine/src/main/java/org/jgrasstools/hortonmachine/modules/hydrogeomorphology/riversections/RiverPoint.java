@@ -58,7 +58,23 @@ public class RiverPoint implements Comparable<RiverPoint> {
 
     public List<Double> bankPositions = null;
 
-    public List<Double> sectionProgressive = null;
+    private List<Double> sectionProgressive = null;
+
+    private List<Double> sectionGauklerStrickler = null;
+
+    private Coordinate[] sectionCoordinates = null;
+
+    /**
+     * The min elevation of the section.
+     */
+    private double minElevation = -9999.0;
+    /**
+     * The max elevation of the section.
+     */
+    private double maxElevation = -9999.0;
+
+    private int startNodeIndex = 0;
+    private int endNodeIndex = 0;
 
     /**
      * Creates a {@link RiverPoint}.
@@ -69,19 +85,23 @@ public class RiverPoint implements Comparable<RiverPoint> {
      *          The line has to be constructed of 3d {@link Coordinate}s that 
      *          go from left to right  looking downstream.
      */
-    public RiverPoint( Coordinate point, double progressiveDistance, LineString sectionGeometry ) {
+    public RiverPoint( Coordinate point, double progressiveDistance, LineString sectionGeometry,
+            List<Double> sectionGauklerStrickler ) {
         this.point = point;
         this.progressiveDistance = progressiveDistance;
+        
         if (sectionGeometry != null) {
             this.sectionGeometry = sectionGeometry;
 
-            Coordinate[] coordinates = sectionGeometry.getCoordinates();
+            sectionCoordinates = sectionGeometry.getCoordinates();
             sectionProgressive = new ArrayList<Double>();
-            for( int i = 0; i < coordinates.length; i++ ) {
+            for( int i = 0; i < sectionCoordinates.length; i++ ) {
+                minElevation = Math.min(minElevation, sectionCoordinates[i].z);
+                maxElevation = Math.min(maxElevation, sectionCoordinates[i].z);
                 if (i == 0) {
                     sectionProgressive.add(0.0);
                 } else {
-                    double distance = sectionProgressive.get(i - 1) + coordinates[i - 1].distance(coordinates[i]);
+                    double distance = sectionProgressive.get(i - 1) + sectionCoordinates[i - 1].distance(sectionCoordinates[i]);
                     sectionProgressive.add(distance);
                 }
             }
@@ -93,8 +113,63 @@ public class RiverPoint implements Comparable<RiverPoint> {
             bankPositions.add(sectionProgressive.get(0));
             bankPositions.add(sectionProgressive.get(sectionProgressive.size() - 1));
 
+            // TODO make this better, for now it takes the whole section
+            startNodeIndex = 0;
+            endNodeIndex = sectionProgressive.size() - 1;
+
+            if (sectionGauklerStrickler==null) {
+                sectionGauklerStrickler = new ArrayList<>();
+                // TODO make this more custom. For now ok for testing 
+                for( int i = 0; i < sectionProgressive.size(); i++ ) {
+                    sectionGauklerStrickler.add(30.0);
+                }
+            }
+            this.sectionGauklerStrickler = sectionGauklerStrickler;
+            
             hasSection = true;
         }
+    }
+
+    public Coordinate[] getSectionCoordinates() {
+        return sectionCoordinates;
+    }
+
+    public List<Double> getSectionProgressive() {
+        return sectionProgressive;
+    }
+    
+    public List<Double> getSectionGauklerStrickler() {
+        return sectionGauklerStrickler;
+    }
+
+    /**
+     * @return the xyz coordinate of the talweg.
+     */
+    public Coordinate getTalWeg() {
+        return point;
+    }
+
+    /**
+     * @return the progressive distance of the section along the river.
+     */
+    public double getProgressiveDistance() {
+        return progressiveDistance;
+    }
+
+    public double getMinElevation() {
+        return minElevation;
+    }
+
+    public double getMaxElevation() {
+        return maxElevation;
+    }
+
+    public int getStartNodeIndex() {
+        return startNodeIndex;
+    }
+
+    public int getEndNodeIndex() {
+        return endNodeIndex;
     }
 
     /**

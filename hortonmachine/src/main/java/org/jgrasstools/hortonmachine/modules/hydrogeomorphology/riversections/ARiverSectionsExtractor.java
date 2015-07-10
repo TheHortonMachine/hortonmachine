@@ -17,18 +17,25 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
@@ -136,7 +143,7 @@ public abstract class ARiverSectionsExtractor {
                 ((DefaultFeatureCollection) sectionsCollection).add(sectionFeature);
 
                 Coordinate[] coordinates = sectionGeometry.getCoordinates();
-                List<Double> sectionProgressive = netPoint.sectionProgressive;
+                List<Double> sectionProgressive = netPoint.getSectionProgressive();
                 for( int i = 0; i < coordinates.length; i++ ) {
                     Point point = gf.createPoint(coordinates[i]);
 
@@ -158,5 +165,100 @@ public abstract class ARiverSectionsExtractor {
             }
             index++;
         }
+    }
+
+    /**
+     * Get the river info as produced by the {@link OmsRiverSectionsExtractor}.
+     * 
+     * @param riverPointsFeatures the river points. 
+     * @param sectionFeatures the extracted sections.
+     * @param sectionPointsFeatures the section points.
+     * @return the {@link RiverInfo}.
+     */
+    public static RiverInfo getRiverInfo( List<SimpleFeature> riverPointsFeatures, List<SimpleFeature> sectionFeatures,
+            List<SimpleFeature> sectionPointsFeatures ) {
+        RiverInfo riverInfo = new RiverInfo();
+
+        for( SimpleFeature riverFeature : riverPointsFeatures ) {
+            int sectionId = ((Number) riverFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTION_ID)).intValue();
+            riverInfo.orderedRiverPoints.put(sectionId, riverFeature);
+        }
+        int count = 0;
+        riverInfo.riverCoords = new Coordinate[riverInfo.orderedRiverPoints.size()];
+        for( Entry<Integer, SimpleFeature> riverEntry : riverInfo.orderedRiverPoints.entrySet() ) {
+            SimpleFeature riverPoint = riverEntry.getValue();
+            Coordinate coordinate = ((Geometry) riverPoint.getDefaultGeometry()).getCoordinate();
+            double elev = ((Number) riverPoint.getAttribute(ARiverSectionsExtractor.FIELD_ELEVATION)).doubleValue();
+            riverInfo.riverCoords[count++] = new Coordinate(coordinate.x, coordinate.y, elev);
+        }
+        GeometryFactory gf = new GeometryFactory();
+        LineString riverGeometry = gf.createLineString(riverInfo.riverCoords);
+
+        for( SimpleFeature sectionFeature : sectionFeatures ) {
+            int sectionId = ((Number) sectionFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTION_ID)).intValue();
+            riverInfo.orderedSections.put(sectionId, sectionFeature);
+        }
+
+        HashMap<Integer, TreeMap<Integer, SimpleFeature>> sectionId2PointId2PointMap = new HashMap<>();
+        for( SimpleFeature pointFeature : sectionPointsFeatures ) {
+            int sectionId = ((Number) pointFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTION_ID)).intValue();
+            TreeMap<Integer, SimpleFeature> pointId2PointMap = sectionId2PointId2PointMap.get(sectionId);
+            if (pointId2PointMap == null) {
+                pointId2PointMap = new TreeMap<>();
+                sectionId2PointId2PointMap.put(sectionId, pointId2PointMap);
+            }
+            int pointId = ((Number) pointFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTIONPOINT_INDEX)).intValue();
+            pointId2PointMap.put(pointId, pointFeature);
+        }
+
+        for( Entry<Integer, SimpleFeature> sectionEntry : riverInfo.orderedSections.entrySet() ) {
+            Integer sectionId = sectionEntry.getKey();
+            SimpleFeature sectionFeature = sectionEntry.getValue();
+            double progressive = ((Number) sectionFeature.getAttribute(ARiverSectionsExtractor.FIELD_PROGRESSIVE)).doubleValue();
+            Geometry sectionLine = (Geometry) sectionFeature.getDefaultGeometry();
+
+            Geometry intersectionPoint = riverGeometry.intersection(sectionLine);
+            if (intersectionPoint == null) {
+                throw new ModelsRuntimeException("All sections have to intersect the river line.",
+                        "ARiverSectionsExtractor#getRiverInfo");
+            }
+
+            TreeMap<Integer, SimpleFeature> sectionPoints = sectionId2PointId2PointMap.get(sectionId);
+            Coordinate[] sectionCoords = new Coordinate[sectionPoints.size()];
+            count = 0;
+            for( Entry<Integer, SimpleFeature> pointEntry : sectionPoints.entrySet() ) {
+                SimpleFeature sectionPoint = pointEntry.getValue();
+                sectionCoords[count++] = ((Geometry) sectionPoint.getDefaultGeometry()).getCoordinate();
+            }
+            LineString sectionLineWithPoints = gf.createLineString(sectionCoords);
+            RiverPoint rp = new RiverPoint(intersectionPoint.getCoordinate(), progressive, sectionLineWithPoints, null);
+            riverInfo.orderedNetworkPoints.add(rp);
+        }
+        riverInfo.extractedSectionsCount = riverInfo.orderedNetworkPoints.size();
+
+        for( Entry<Integer, SimpleFeature> riverEntry : riverInfo.orderedRiverPoints.entrySet() ) {
+            SimpleFeature riverPoint = riverEntry.getValue();
+            Coordinate coordinate = ((Geometry) riverPoint.getDefaultGeometry()).getCoordinate();
+            double progressive = ((Number) riverPoint.getAttribute(ARiverSectionsExtractor.FIELD_PROGRESSIVE)).doubleValue();
+            RiverPoint rp = new RiverPoint(coordinate, progressive, null, null);
+            riverInfo.orderedNetworkPoints.add(rp);
+        }
+
+        Collections.sort(riverInfo.orderedNetworkPoints);
+        return riverInfo;
+    }
+
+    public static List<RiverPoint> riverInfo2RiverPoints( RiverInfo riverInfo ) {
+        List<RiverPoint> sectionPoints = new ArrayList<RiverPoint>();
+        int orderedNetworkPointsSize = riverInfo.orderedNetworkPoints.size();
+        for( int i = 0; i < orderedNetworkPointsSize; i++ ) {
+            int iRev = orderedNetworkPointsSize - 1 - i;
+            RiverPoint currentNetworkPoint = riverInfo.orderedNetworkPoints.get(i);
+            if (currentNetworkPoint.hasSection) {
+                sectionPoints.add(currentNetworkPoint);
+                currentNetworkPoint.setSectionId(iRev);
+            }
+        }
+        return sectionPoints;
     }
 }

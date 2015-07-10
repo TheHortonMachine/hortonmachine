@@ -28,11 +28,7 @@ import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras.Om
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -47,18 +43,16 @@ import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.ARiverSectionsExtractor;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.RiverInfo;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.RiverPoint;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
 
 @Description(DESCRIPTION)
 @Author(name = AUTHORNAMES, contact = AUTHORCONTACTS)
@@ -112,77 +106,10 @@ public class OmsHecrasInputBuilder extends JGTModel {
     public void process() throws Exception {
         checkNull(inRiverPoints, inSectionPoints, inSections);
 
-        List<SimpleFeature> riverFeatures = FeatureUtilities.featureCollectionToList(inRiverPoints);
-        TreeMap<Integer, SimpleFeature> orderedRiverPoints = new TreeMap<>();
-        for( SimpleFeature riverFeature : riverFeatures ) {
-            int sectionId = ((Number) riverFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTION_ID)).intValue();
-            orderedRiverPoints.put(sectionId, riverFeature);
-        }
-        int count = 0;
-        Coordinate[] riverCoords = new Coordinate[orderedRiverPoints.size()];
-        for( Entry<Integer, SimpleFeature> riverEntry : orderedRiverPoints.entrySet() ) {
-            SimpleFeature riverPoint = riverEntry.getValue();
-            Coordinate coordinate = ((Geometry) riverPoint.getDefaultGeometry()).getCoordinate();
-            double elev = ((Number) riverPoint.getAttribute(ARiverSectionsExtractor.FIELD_ELEVATION)).doubleValue();
-            riverCoords[count++] = new Coordinate(coordinate.x, coordinate.y, elev);
-        }
-        LineString riverGeometry = gf.createLineString(riverCoords);
-
+        List<SimpleFeature> riverPointsFeatures = FeatureUtilities.featureCollectionToList(inRiverPoints);
         List<SimpleFeature> sectionFeatures = FeatureUtilities.featureCollectionToList(inSections);
-        List<SimpleFeature> sectionPointFeatures = FeatureUtilities.featureCollectionToList(inSectionPoints);
-
-        TreeMap<Integer, SimpleFeature> orderedSections = new TreeMap<>();
-        for( SimpleFeature sectionFeature : sectionFeatures ) {
-            int sectionId = ((Number) sectionFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTION_ID)).intValue();
-            orderedSections.put(sectionId, sectionFeature);
-        }
-
-        HashMap<Integer, TreeMap<Integer, SimpleFeature>> sectionId2PointId2PointMap = new HashMap<>();
-        for( SimpleFeature pointFeature : sectionPointFeatures ) {
-            int sectionId = ((Number) pointFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTION_ID)).intValue();
-            TreeMap<Integer, SimpleFeature> pointId2PointMap = sectionId2PointId2PointMap.get(sectionId);
-            if (pointId2PointMap == null) {
-                pointId2PointMap = new TreeMap<>();
-                sectionId2PointId2PointMap.put(sectionId, pointId2PointMap);
-            }
-            int pointId = ((Number) pointFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTIONPOINT_INDEX)).intValue();
-            pointId2PointMap.put(pointId, pointFeature);
-        }
-
-        List<RiverPoint> orderedNetworkPoints = new ArrayList<>();// sectionsExtractor.getOrderedNetworkPoints();
-        for( Entry<Integer, SimpleFeature> sectionEntry : orderedSections.entrySet() ) {
-            Integer sectionId = sectionEntry.getKey();
-            SimpleFeature sectionFeature = sectionEntry.getValue();
-            double progressive = ((Number) sectionFeature.getAttribute(ARiverSectionsExtractor.FIELD_PROGRESSIVE)).doubleValue();
-            Geometry sectionLine = (Geometry) sectionFeature.getDefaultGeometry();
-
-            Geometry intersectionPoint = riverGeometry.intersection(sectionLine);
-            if (intersectionPoint == null) {
-                throw new ModelsRuntimeException("All sections have to intersect the river line.", this);
-            }
-
-            TreeMap<Integer, SimpleFeature> sectionPoints = sectionId2PointId2PointMap.get(sectionId);
-            Coordinate[] sectionCoords = new Coordinate[sectionPoints.size()];
-            count = 0;
-            for( Entry<Integer, SimpleFeature> pointEntry : sectionPoints.entrySet() ) {
-                SimpleFeature sectionPoint = pointEntry.getValue();
-                sectionCoords[count++] = ((Geometry) sectionPoint.getDefaultGeometry()).getCoordinate();
-            }
-            LineString sectionLineWithPoints = gf.createLineString(sectionCoords);
-            RiverPoint rp = new RiverPoint(intersectionPoint.getCoordinate(), progressive, sectionLineWithPoints);
-            orderedNetworkPoints.add(rp);
-        }
-        int sectionsCount = orderedNetworkPoints.size();
-
-        for( Entry<Integer, SimpleFeature> riverEntry : orderedRiverPoints.entrySet() ) {
-            SimpleFeature riverPoint = riverEntry.getValue();
-            Coordinate coordinate = ((Geometry) riverPoint.getDefaultGeometry()).getCoordinate();
-            double progressive = ((Number) riverPoint.getAttribute(ARiverSectionsExtractor.FIELD_PROGRESSIVE)).doubleValue();
-            RiverPoint rp = new RiverPoint(coordinate, progressive, null);
-            orderedNetworkPoints.add(rp);
-        }
-
-        Collections.sort(orderedNetworkPoints);
+        List<SimpleFeature> sectionPointsFeatures = FeatureUtilities.featureCollectionToList(inSectionPoints);
+        RiverInfo riverInfo = ARiverSectionsExtractor.getRiverInfo(riverPointsFeatures, sectionFeatures, sectionPointsFeatures);
 
         StringBuilder outBuf = new StringBuilder();
 
@@ -192,7 +119,7 @@ public class OmsHecrasInputBuilder extends JGTModel {
         outBuf.append("# Number of reaches\r\n");
         outBuf.append("NUMBER OF REACHES: 1\r\n");
         outBuf.append("# Number of cross sections\r\n");
-        outBuf.append("NUMBER OF CROSS-SECTIONS:\r\n" + sectionsCount + "\r\n");
+        outBuf.append("NUMBER OF CROSS-SECTIONS:\r\n" + riverInfo.extractedSectionsCount + "\r\n");
         outBuf.append("# Unit system used\r\n");
         outBuf.append("UNITS: METRIC\r\n");
         outBuf.append("END HEADER:\r\n");
@@ -200,6 +127,7 @@ public class OmsHecrasInputBuilder extends JGTModel {
 
         outBuf.append("BEGIN STREAM NETWORK:\r\n");
         outBuf.append("# List of all endpoint of the multiline that represents the river\r\n");
+        Coordinate[] riverCoords = riverInfo.riverCoords;
         outBuf.append("ENDPOINT:\t" + riverCoords[0].x + "," + riverCoords[0].y + "," + riverCoords[0].z + ",\t1\r\n");
         outBuf.append("ENDPOINT:\t" + riverCoords[(riverCoords.length - 1)].x + "," + riverCoords[(riverCoords.length - 1)].y
                 + "," + riverCoords[(riverCoords.length - 1)].z + ",\t2\r\n");
@@ -219,11 +147,11 @@ public class OmsHecrasInputBuilder extends JGTModel {
         outBuf.append("\r\n");
         outBuf.append("CENTERLINE:\r\n");
 
-        int orderedNetworkPointsSize = orderedNetworkPoints.size();
+        int orderedNetworkPointsSize = riverInfo.orderedNetworkPoints.size();
         for( int i = 0; i < orderedNetworkPointsSize; ++i ) {
             // mind, the reach points and the sections need to walk in reverse order!
             int iRev = orderedNetworkPointsSize - 1 - i;
-            RiverPoint networkPoint = orderedNetworkPoints.get(i);
+            RiverPoint networkPoint = riverInfo.orderedNetworkPoints.get(i);
             if (networkPoint.hasSection) {
                 continue;
             }
@@ -242,7 +170,7 @@ public class OmsHecrasInputBuilder extends JGTModel {
         List<Integer> sectionIndexes = new ArrayList<Integer>();
         for( int i = 0; i < orderedNetworkPointsSize; i++ ) {
             int iRev = orderedNetworkPointsSize - 1 - i;
-            RiverPoint currentNetworkPoint = orderedNetworkPoints.get(i);
+            RiverPoint currentNetworkPoint = riverInfo.orderedNetworkPoints.get(i);
             if (currentNetworkPoint.hasSection) {
                 sectionPoints.add(currentNetworkPoint);
                 sectionIndexes.add(iRev);
@@ -311,7 +239,7 @@ public class OmsHecrasInputBuilder extends JGTModel {
         FileUtilities.writeFile(outString, new File(outHecras));
 
     }
-    
+
     public static void main( String[] args ) throws Exception {
         String base = "";
 
@@ -322,7 +250,6 @@ public class OmsHecrasInputBuilder extends JGTModel {
         h.inSectionPoints = OmsVectorReader.readVector(base + "sectionpoints_test2.shp");
         h.outHecras = base + "hecras.txt";
         h.process();
-        
-        
+
     }
 }

@@ -104,7 +104,7 @@ public class OmsRiverSectionsExtractor extends JGTModel {
     @Out
     public SimpleFeatureCollection outRiverPoints = null;
 
-    public static final String DESCRIPTION = "Module that prepares data for Hecras.";
+    public static final String DESCRIPTION = "Module that extract sections starting from a DTM and a main line (stream river, breakline,, ...).";
     public static final String DOCUMENTATION = "";
     public static final String KEYWORDS = "Sections, Raster, Vector, Hydraulic";
     public static final String LABEL = HYDROGEOMORPHOLOGY;
@@ -124,7 +124,7 @@ public class OmsRiverSectionsExtractor extends JGTModel {
     public static final String fBridgeWidth_DESCRIPTION = "The bridge width.";
     public static final String outSections_DESCRIPTION = "The extracted section lines.";
     public static final String outSectionPoints_DESCRIPTION = "The extracted section points (with the elevation in the attribute table).";
-    public static final String outRiverPoints_DESCRIPTION = "The extracted river points (with the elevation in the attribute table).";
+    public static final String outRiverPoints_DESCRIPTION = "The extracted main stream points (with the elevation in the attribute table).";
 
     @Execute
     public void process() throws Exception {
@@ -179,22 +179,22 @@ public class OmsRiverSectionsExtractor extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
 
-        String base = "";
+        String base = "D:/lavori_tmp/2015_07_GSoC/";
 
         OmsRiverSectionsExtractor ex = new OmsRiverSectionsExtractor();
-        ex.inElev = OmsRasterReader.readRaster(base + "dtm_04.asc");
-        ex.inRiver = OmsVectorReader.readVector(base + "net_10000_daiano_11.shp");
-        ex.inSections = OmsVectorReader.readVector(base + "sections_test.shp");
-        ex.pSectionsIntervalDistance = 10;
-        ex.pSectionsWidth = 30;
+        ex.inElev = OmsRasterReader.readRaster(base + "DTM/dtm_adige.asc");
+        ex.inRiver = OmsVectorReader.readVector("D:/Dropbox/hydrologis/lavori/2015_phd_bz/gSoC2015/data/data_saintgeo_newage/fiume_adige.shp");
+        ex.inSections = OmsVectorReader.readVector(base + "shape/sections_adige_75.shp");
+        ex.pSectionsIntervalDistance = 20;
+        ex.pSectionsWidth = 75;
         ex.process();
         SimpleFeatureCollection outSections2 = ex.outSections;
         SimpleFeatureCollection outSectionsPoints2 = ex.outSectionPoints;
         SimpleFeatureCollection outRiverPoints2 = ex.outRiverPoints;
 
-        OmsVectorWriter.writeVector(base + "sections_test2.shp", outSections2);
-        OmsVectorWriter.writeVector(base + "sectionpoints_test2.shp", outSectionsPoints2);
-        OmsVectorWriter.writeVector(base + "riverpoints_test2.shp", outRiverPoints2);
+        OmsVectorWriter.writeVector(base + "shape/sections_adige_75_rev.shp", outSections2);
+        OmsVectorWriter.writeVector(base + "shape/sectionpoints_adige_75_rev.shp", outSectionsPoints2);
+        OmsVectorWriter.writeVector(base + "shape/riverpoints_adige_75_rev.shp", outRiverPoints2);
 
         // OmsRiverSectionsExtractor ex = new OmsRiverSectionsExtractor();
         // ex.inElev = OmsRasterReader.readRaster(base + "dtm_04.asc");
