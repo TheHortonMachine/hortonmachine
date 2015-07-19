@@ -119,7 +119,7 @@ public class SaintGeo extends JGTModel {
 
     private LinearAlgebra linearAlgebra = new LinearAlgebra();
     private double DELT = -1;
-    // TODO verify where and how these variables are set 
+    // TODO verify where and how these variables are set
     private int SCELTA_A_MONTE;
     private int SCELTA_A_VALLE;
 
@@ -136,6 +136,9 @@ public class SaintGeo extends JGTModel {
     public void process() throws Exception {
         checkNull(inDischarge, inRiverPoints, inSectionPoints, inSections);
 
+        /*
+         * FIXME: INSERT THE BOUNDARY CONDITIONS AS INPUT PARAMETERS 
+         */
         SCELTA_A_MONTE = 1;
         SCELTA_A_VALLE = 2;
         DELT = pDeltaTMillis / 1000.0;
@@ -212,7 +215,7 @@ public class SaintGeo extends JGTModel {
                      *  assign the initial discharge in all the sections with the
                      *  value of the first head discharge
                      */
-                   
+
                     for( int i = 0; i < sectionsCount - 1; i++ ) {
                         discharge[i] = qHead;
                         DELXM[i] = riverPoints.get(i + 1).getProgressiveDistance() - riverPoints.get(i).getProgressiveDistance();
@@ -247,7 +250,7 @@ public class SaintGeo extends JGTModel {
                         }
                         conta_cicli = conta_cicli + 1;
                     }
-                    pm.message("Number of cicles for the steady flow condition " + conta_cicli); 
+                    pm.message("Number of cicles for the steady flow condition " + conta_cicli);
 
                     /*
                      * START THE MAIN FLOW
@@ -390,8 +393,7 @@ public class SaintGeo extends JGTModel {
                 idrgeo = wettedArea(level, sectionsList);
                 val_sx = q - idrgeo[i][0] * idrgeo[i][4] * Math.pow(IF, (0.5)) * Math.pow(idrgeo[i][2], (2.0 / 3.0));
                 if ((val_dx * val_sx) > 0) {
-                    pm.errorMessage("Evaluation of the steady flow not possible for the section "  + i + 
-                            "solution not found.");
+                    pm.errorMessage("Evaluation of the steady flow not possible for the section " + i + "solution not found.");
                 }
                 tir_med = (tir_dx + tir_sx) / 2.0;
                 level[i] = tir_med;
@@ -409,81 +411,69 @@ public class SaintGeo extends JGTModel {
 
     /**
      * <p>
-     * Questa funzione calcola
+     * This method calculates
      * </p>
      * <ul>
-     * <li> l'area bagnata </li>
-     * <li> il perimetro bagnato </li>
-     * <li> il raggio idraulico </li>
-     * <li> la larghezza della superficie libera </li>
-     * <li> la scabrezza efficace </li>
-     * <li> il coeff. alfa di Coriolis </li>
+     * <li> wetted area </li>
+     * <li> wetted perimeter </li>
+     * <li> hydraulic radius </li>
+     * <li> width of water surface </li>
+     * <li> roughness </li>
+     * <li> alpha coefficient of Coriolis </li>
      * </ul>
-     * in ogni sezione noto il tirante.
+     * in each section starting from the water depth.
      * <p>
-     * La funzione restituisce una matrice che ha come elementi di ogni colonna della i-esima
-     * riga le grandezze precedenti relative alla i-esima sezione nello stesso ordine in cui sono
-     * state elencate.
-     * </p>
-     * <p>
-     * La funzione ha come argomenti:
-     * </p>
+     * The method returns a matrix with:
      * <ul>
-     * <li>il vettore dei tiranti</li>
-     * <li>il vettore che contiene le sezioni di calcolo.</li>
+     * <li> rows: the sections </li>
+     * <li> cols: the variables above. </li>
      * </ul>
-     * <p>
-     * <b>L'area bagnata</b> e' calcolata come somma dei trapezi che si ottengono tracciando da
-     * ogni punto di stazione delle suddivioni verticali; ogni trapezio e' definito da una base
-     * destra (base_dx) una base sinistra (base_sx) e un'altezza (altezza).
      * </p>
+     * The method calculates
      * <p>
-     * <b>Il perimetro bagnato</b> e' calcolato come somma dei tratti bagnati del fondo alveo.
-     * </p>
-     * <p>
-     * <b>Il raggio idraulico</b> e' calcolato direttamente come da definizione.
-     * </p>
-     * <p>
-     * <b>La larghezza della superficie libera</b> coincide con l'altezza dei trapezi definiti per
-     * calcolare l'area bagnata.
-     * </p>
-     * <p>
-     * <b>Il coefficiente di scabrezza efficace</b> e' calcolato con il metodo di Egelund.
-     * Suddivisa la sezione come per il calcolo dell'area bagnata per ogni trapezio si calcola la
-     * quantita' <b>Ks(j)*Y(j)^(5/3)*B(j)</b> dove:
+     * <b>wetted area</b> calculated as the sum of the trapezoids obtained by tracing a vertical
+     * line starting from each points of the sections; each trapezoid has a base
+     * on the right (base_dx) and a base on the left (base_sx) and an height (altezza). 
+     * <b>wetted perimeter</b> as the sum of all the wetted segments of the river ground
+     * <b>hydraulic radius</b> using the definition formula
+     * <b>width of water surface</b> height of the trapezoids defined to calculate the wetted area
+     * <b>roughness coefficient</b> using the Engelund method: the section is divided into trapezoids
+     * as for the wetted area and for each trapezoid this quantity is calculated:
+     * <b>Ks(j)*Y(j)^(5/3)*B(j)</b> where:
      * </p>
      * <ul>
-     * <li><b>Ks(j)</b> e' il coeff. di Gaukler-Strickler per il tratto j-esimo</li>
-     * <li><b>Y(j)</b> e' l'altezza idrica nel trapezio j-esimo che si ottiene come rapporto fra
-     * l'area del trapezio j-esimo e la relativa larghezza sulla superficie libera</li>
-     * <li><b>B(j)</b> e' la larghezza della superficie libera relativa al trapezio j-esimo</li>
+     * <li><b>Ks(j)</b> Gaukler-Strickler coefficient for the segment j</li>
+     * <li><b>Y(j)</b> water depth for the trapezoid j obtained as the ratio between the 
+     * area and the width of the water surface for each trapezoid </li>
+     * <li><b>B(j)</b> is the width of the water surface of the trapezoid j</li>
      * </ul>
      * <p>
-     * n.b. il raggio idraulico del trapezio j-esimo si ritiene approsimabile con l'altezza idrica,
-     * cio' e' lecito solo nell'ipotesi di sezione larga
+     * NOTE: the hydraulic radius of the trapezoid j is approximated with the water depth even if this
+     * is recommended only with large sections.
      * </p>
      * <p>
-     * <b>Il coefficiente di scabrezza efficace</b> si ottiene dividendo la somma di tutte le
-     * quantita' per <b>(A*RH^(2/3))</b>, dove A e' l'area bagnata complessiva e RH e' il raggio
-     * idraulico riferito all'intera sezione.</li>
+     * The <b>roughness coefficient</b> is obtained dividing the sum of all the quantities
+     * with <b>(A*RH^(2/3))</b>, where A is the total wetted area and RH the hydraulic radius
+     * referred to the whole section.
      * </p>
      * <p>
-     * <b>Il coefficiente alfa di Coriolis</b> e' calcolato con il seguente metodo: suddivisa la
-     * sezione come per il calcolo dell'area bagnata per ogni trapezio si calcola la quantita'
-     * <b>Ks(j)^2*A(j)^(7/3)/P(j)^(4/3)</b> dove:
+     * <b>The alpha coefficient of Coriolis</b> is calculated using the same subdivision of the
+     * section used for the calculation of the wetted area and for each trapezoid this quantity
+     * is evaluated: 
+     * <b>Ks(j)^2*A(j)^(7/3)/P(j)^(4/3)</b> where:
      * </p>
      * <ul>
-     * <li><b>Ks(j)</b> e' il coeff. di G-S per il tratto j-esimo</li>
-     * <li><b>A(j)</b> e' l'area del trapezio j-esimo</li>
-     * <li><b>P(j)</b> e' il contorno bagnato relativo al trapezio j-esimo</li>
+     * <li><b>Ks(j)</b> the Gaukler-Strickler coefficient for the segment j</li>
+     * <li><b>A(j)</b> the area of the trapezoid j</li>
+     * <li><b>P(j)</b> the wetted perimeter of the trapezoid j</li>
      * </ul>
      * <p>
-     * <b>Il coefficiente di Coriolis</b> si ottiene dividendo la somma di tutte le quantita' per
-     * <b>(ATOT*KsTOT^2*RHTOT^(4/3))</b> dove:
+     * This is then calculated by dividing the sum of all the quantities for 
+     * <b>(ATOT*KsTOT^2*RHTOT^(4/3))</b> where:
      * <ul>
-     * <li>ATOT l'area dell'intera sezione</li>
-     * <li>KsTOT il coefficiente di scabrezza efficace </li>
-     * <li>RHTOT il raggio idraulico della sezione</li>
+     * <li>ATOT the area of the whole section</li>
+     * <li>KsTOT the roughness total coefficient  </li>
+     * <li>RHTOT the hydraulic radius of the whole section</li>
      * </ul>
      * </p>
      * 
@@ -500,7 +490,7 @@ public class SaintGeo extends JGTModel {
      */
     private double[][] wettedArea( double[] waterLevel, List<RiverPoint> riverPoints ) {
         /* right and left limits of the main channel */
-        double dx, sx; 
+        double dx, sx;
         double area_b, base_dx, base_sx, altezza;
         double peri_b;
         double larghe_b;
@@ -603,16 +593,16 @@ public class SaintGeo extends JGTModel {
                                 / Math.pow(peri_loc, (4.0 / 3.0));
                     }
                     alfa_den = alfa_den + gau_loc * area_loc * Math.pow(peri_loc, (2.0 / 3.0));
-                  
+
                     /* no one of these values can be null */
                     /*
                      * if ( base_dx<0 || base_sx<0 || altezza<0 ) { print("POSIZIONE " + i " -
                      * TIRANTE " + waterLevel[i] + "Error in the evaluation of the wetted area"};
                      */
-                    
+
                 }
                 /* case 3: completely wetted */
-                
+
                 if (sectionCoordinates[j + 1].z < waterLevel[i] && sectionCoordinates[j].z < waterLevel[i]) {
                     base_dx = waterLevel[i] - sectionCoordinates[j].z;
                     base_sx = waterLevel[i] - sectionCoordinates[j + 1].z;
@@ -633,7 +623,7 @@ public class SaintGeo extends JGTModel {
                         alfa_num = alfa_num + 0;
                     }
                     alfa_den = alfa_den + gau_loc * area_loc * Math.pow(peri_loc, (2.0 / 3.0));
-                   
+
                     /* no one of these values can be null */
                     /*
                      * if ( base_dx<0 || base_sx<0 || altezza<0 ) { print("POSIZIONE " + i " -
@@ -665,13 +655,548 @@ public class SaintGeo extends JGTModel {
         return tirase;
     }
 
+    /*
+     * calculates the value of the water depth for the current timestep
+     */
     private void new_tirante( List<RiverPoint> riverPoints, double[] tirante, double[] Q, double[] U, double[] DELXM,
             int SCELTA_A_MONTE, double qin, double qin_old, int SCELTA_A_VALLE, double tiranteout, double[] ql ) {
+
+        double uu;
+        double base, C1, C2, Ci, C_old, dx;
+        double omegam, zetam;
+        double minsez, mindx, umax;
+        int ds, sx;
+        double T1, T2, A1dx, A2dx, A1sx, A2sx;
+        double l, c;
+        int imax = riverPoints.size();
+        double[][] geomid = new double[imax - 1][6];
+        double[] U_I = new double[imax];
+        double[] GAM = new double[imax];
+        double[] F_Q = new double[imax - 1];
+        double[] D = new double[imax];
+        double[] DS = new double[imax - 1];
+        double[] DI = new double[imax - 1];
+        double[] B = new double[imax];
+        double[] tirante_old = new double[imax];
+        double[] qs = new double[imax - 1];
+
+        // FIXME does it have to be initialized
+        double tirantein = 0;
+
+        /*
+         * Execute the method wettedArea
+         * the variable idrgeo contains all the quantities related to water depth and section
+         */
+        double[][] idrgeo = wettedArea(tirante, riverPoints);
+        /*
+         * goemid contains all the quantities related to intermediate sections, linear interpolation
+         * between the values calculated for the given sections
+         */
+        for( int i = 0; i < imax - 1; i++ ) {
+            for( int j = 0; j < 6; j++ ) {
+                geomid[i][j] = (idrgeo[i][j] + idrgeo[i + 1][j]) / 2.0;
+            }
+        }
+        /*
+         * Calculate the average velocity for the main sections U_I[] and also for the 
+         * intermediate ones U[] 
+         */
+        U[0] = Q[0] / geomid[0][0];
+        for( int i = 1; i < imax - 1; i++ ) {
+            U[i] = Q[i] / geomid[i][0];
+            U_I[i] = 0.5 * (U[i - 1] + U[i]);
+        }
+        U_I[0] = 0.5 * (U[0] + qin / (2.0 * idrgeo[0][0] - geomid[0][0]));
+        /*
+         * Calculate the gamma coefficient.
+         */
         
         /*
-         * TODO calculate the solution to the Saint Venant equations
+         * fino a questo simbolo sostituisco la portata sfiorata dall'argine con la portata sfiorata
+         * per il problema della griglia
          */
+        for( int i = 0; i < imax - 1; i++ ) {
+            uu = U[i];
+            GAM[i] = G * Math.abs(uu) / (Math.pow(geomid[i][2], 4.0 / 3.0) * Math.pow(geomid[i][4], 2.0));
+            GAM[i] = GAM[i] + ql[i] / geomid[i][0];
+        }
+
+        /*
+         * Verify to respect the Courant condition
+         */
+
+        /* Look for the minimum spatial interval and the maximum velocity */
+        mindx = DELXM[0];
+        umax = Math.abs(U[0]);
+        for( int i = 0; i < imax - 2; i++ ) {
+            dx = (DELXM[i] + DELXM[i + 1]) / 2.0;
+            if (dx <= mindx)
+                mindx = dx;
+            if (Math.abs(U[i]) >= umax)
+                umax = Math.abs(U[i]);
+        }
+        DELT = 0.1 * mindx / umax;
+
+        // Does it have to be initialized?
+        double qout = Q[imax - 2];
+        /*
+         * Apply the FQ function to solve the finite difference schema.
+         */
+        // if (SCELTA_A_VALLE != 3)
+        // qout = Q[imax - 2];
+        FQ(F_Q, Q, U_I, U, idrgeo, riverPoints, DELT, qin, qout);
+
+        /*
+         * Calculate the overflow discharge for each section
+         */
+        for( int i = 0; i < imax - 1; i++ ) {
+            //current section
+            RiverPoint section_i = riverPoints.get(i);
+            //next section (downstream)
+            RiverPoint section_ip = riverPoints.get(i + 1);
+            Coordinate[] sectionCoordinates_i = section_i.getSectionCoordinates();
+            Coordinate[] sectionCoordinates_ip = section_ip.getSectionCoordinates();
+            qs[i] = 0; //overflow discharge
+            
+            //define the height of the water surface and the banks on the left side
+            T1 = tirante[i];
+            T2 = tirante[i + 1];
+            ds = section_i.getStartNodeIndex();
+            // TODO: check the banks position!!
+            // height of the point outside the bank on the left for the current and for the next section
+            A1dx = sectionCoordinates_i[ds - 1].z;
+            ds = section_ip.getStartNodeIndex();
+            A2dx = sectionCoordinates_ip[ds - 1].z;
+            /* calculate the outflow discharge on the right */
+            if (T1 > A1dx && T2 > A2dx) {
+                l = DELXM[i];
+                c = (T2 - T1 - A2dx + A1dx) / l;
+                qs[i] = (Cq / (2.5 * c)) * (Math.pow((T2 - A2dx), (5.0 / 2.0)) - Math.pow((T1 - A1dx), (5.0 / 2.0)));
+            } else if (T1 > A1dx && T2 <= A2dx) {
+                l = DELXM[i];
+                c = (T2 - T1 - A2dx + A1dx) / l;
+                qs[i] = (Cq / (2.5 * c)) * (-Math.pow((T1 - A1dx), (5.0 / 2.0)));
+            } else if (T1 <= A1dx && T2 > A2dx) {
+                l = DELXM[i];
+                c = (T2 - T1 - A2dx + A1dx) / l;
+                qs[i] = (Cq / (2.5 * c)) * (Math.pow((T2 - A2dx), (5.0 / 2.0)));
+            }
+            //define the height of the water surface and the banks on the right side
+//            T1 = tirante[i];
+//            T2 = tirante[i + 1];
+            sx = section_i.getEndNodeIndex();
+            A1sx = sectionCoordinates_i[sx - 1].z;
+            sx = section_ip.getEndNodeIndex();
+            A2sx = sectionCoordinates_ip[sx - 1].z;
+            /* calculate the outflow discharge on the right */
+            if (T1 > A1sx && T2 > A2sx) {
+                l = DELXM[i];
+                c = (T2 - T1 - A2sx + A1sx) / l;
+                qs[i] = qs[i] + (Cq / (2.5 * c)) * (Math.pow((T2 - A2sx), (5.0 / 2.0)) - Math.pow((T1 - A1sx), (5.0 / 2.0)));
+            } else if (T1 > A1sx && T2 <= A2sx) {
+                l = DELXM[i];
+                c = (T2 - T1 - A2sx + A1sx) / l;
+                qs[i] = qs[i] + (Cq / (2.5 * c)) * (-Math.pow((T1 - A1sx), (5.0 / 2.0)));
+            } else if (T1 <= A1sx && T2 > A2sx) {
+                l = DELXM[i];
+                c = (T2 - T1 - A2sx + A1sx) / l;
+                qs[i] = qs[i] + (Cq / (2.5 * c)) * (Math.pow((T2 - A2sx), (5.0 / 2.0)));
+            }
+        }
+
+        /*******************************************************************************************
+         * Define the coefficient of the matrix and the denominate number considering the
+         * upstream and downstream assigned conditions. 
+         * ******************************************************************************************
+         * FIRST CASE: UPSTREAM CONDITION 1 DOWNSTREAM CONDITION 1
+         ******************************************************************************************/
+        if (SCELTA_A_MONTE == 1 && SCELTA_A_VALLE == 1) {
+            tirante[imax - 1] = tiranteout;
+            /* the coefficients of the first line */
+            dx = DELXM[0];
+            base = (idrgeo[0][3] + geomid[0][3]) / 2.0;
+            C1 = (G * DELT * geomid[0][0]) / (DELXM[0] * (1.0 + DELT * GAM[0]));
+            DS[0] = -C1 / dx;
+            D[0] = C1 / dx + base / DELT;
+            B[0] = (base / DELT) * tirante[0] - F_Q[0] / (dx * (1.0 + DELT * GAM[0])) + qin / dx + ql[imax - 2] - qs[imax - 2];
+            /* the coefficients of the second line */
+            dx = (DELXM[1] + DELXM[0]) / 2.0;
+            Ci = C1;
+            for( int i = 1; i < imax - 2; i++ ) {
+                dx = (DELXM[i] + DELXM[i - 1]) / 2.0;
+                base = (geomid[i - 1][3] + geomid[i][3]) / 2.0;
+                C_old = Ci;
+                Ci = (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i]));
+                D[i] = Ci / dx + C_old / dx + (base / DELT);
+                DI[i - 1] = -C_old / dx;
+                DS[i] = -Ci / dx;
+                B[i] = (base / DELT) * tirante[i] - F_Q[i] / (dx * (1.0 + DELT * GAM[i])) + F_Q[i - 1]
+                        / (dx * (1.0 + DELT * GAM[i - 1])) + ql[i] - qs[i];
+            }
+            /* the coefficients of the last line */
+            // FIXME check if imax -2 and imax -1 are correct
+            dx = (DELXM[imax - 3] + DELXM[imax - 2]) / 2.0;
+            base = (geomid[imax - 3][3] + geomid[imax - 2][3]) / 2.0;
+            C_old = (G * DELT * geomid[imax - 3][0]) / (DELXM[imax - 3] * (1.0 + DELT * GAM[imax - 3]));
+            Ci = (G * DELT * geomid[imax - 2][0]) / (DELXM[imax - 2] * (1.0 + DELT * GAM[imax - 2]));
+            DI[imax - 3] = -C_old / dx;
+            DS[imax - 2] = 0;
+            D[imax - 2] = C_old / dx + Ci / dx + base / DELT;
+            B[imax - 2] = base / DELT * tirante[imax - 2] + Ci / dx * tiranteout - F_Q[imax - 2]
+                    / (dx * (1.0 + DELT * GAM[imax - 2])) + F_Q[imax - 3] / (dx * (1.0 + DELT * GAM[imax - 3])) + ql[imax - 2]
+                    - qs[imax - 2];
+            /* Move the values of the water height at time n in the vector tirante_old[] */
+            for( int i = 0; i < imax; i++ )
+                tirante_old[i] = tirante[i];
+            /*
+             * The function ris_sistema calculates the values of the water height at time n+1
+             * and save them in the vector tirante[]
+             */
+            linearAlgebra.ris_sistema(D, DS, DI, B, tirante, imax - 1);
+
+            /*
+             * Check on the water depth: if during the elaborations the height of the water depth
+             * is less than the minimum, this minimum value is assigned
+             */
+            for( int i = 0; i < imax; i++ ) {
+                minsez = riverPoints.get(i).getMinElevation();
+                if (minsez >= tirante[i])
+                    tirante[i] = minsez + h_DEF;
+            }
+            tirante[imax - 1] = tiranteout;
+            /* Calculate the discharge and the velocities at time n+1. */
+            for( int i = 0; i < imax - 1; i++ ) {
+                Q[i] = F_Q[i] / (1.0 + (DELT * GAM[i])) - (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i]))
+                        * (tirante[i + 1] - tirante[i]);
+            }
+            dx = (DELXM[imax - 2] + DELXM[imax - 3]) / 2.0;
+            base = (geomid[imax - 3][3] + geomid[imax - 2][3]) / 2.0;
+            Q[imax - 2] = Q[imax - 3];
+        }
+
+        /*******************************************************************************************
+         * SECOND CASE: UPSTREAM CONDITION 1 DOWNSTREAM CONDITION 2
+         ******************************************************************************************/
+        if (SCELTA_A_MONTE == 1 && SCELTA_A_VALLE == 2) {
+            /* the coefficients of the first line */
+            dx = DELXM[0];
+            base = (idrgeo[0][3] + geomid[0][3]) / 2.0;
+            C1 = (G * DELT * geomid[0][0]) / (DELXM[0] * (1.0 + DELT * GAM[0]));
+            DS[0] = -C1 / dx;
+            D[0] = C1 / dx + base / DELT;
+            B[0] = (base / DELT) * tirante[0] - F_Q[0] / (dx * (1.0 + DELT * GAM[0])) + qin / dx + ql[0] - qs[0];
+            /* the coefficients of the second line */
+            dx = (DELXM[1] + DELXM[0]) / 2.0;
+            Ci = C1;
+            for( int i = 1; i < imax - 1; i++ ) {
+                dx = (DELXM[i] + DELXM[i - 1]) / 2.0;
+                base = (geomid[i - 1][3] + geomid[i][3]) / 2.0;
+                C_old = Ci;
+                Ci = (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i]));
+                D[i] = Ci / dx + C_old / dx + (base / DELT);
+                DI[i - 1] = -C_old / dx;
+                DS[i] = -Ci / dx;
+                B[i] = (base / DELT) * tirante[i] - F_Q[i] / (dx * (1.0 + DELT * GAM[i])) + F_Q[i - 1]
+                        / (dx * (1.0 + DELT * GAM[i - 1])) + ql[i] - qs[i];
+            }
+            /* the coefficients of the last line */
+            dx = DELXM[imax - 2];
+            base = (geomid[imax - 2][3] + idrgeo[imax - 1][3]) / 2.0;
+            // FIXME what is correct formula for zetam?
+            // zetam = sez.get(imax - 1).getElevationAt(1);
+            zetam = tirante[imax - 1] - ((idrgeo[imax - 1][0] + geomid[imax - 2][0]) / 2.0) / base;
+
+            omegam = base * Math.sqrt(G * (tirante[imax - 1] - zetam));
+            C_old = (G * DELT * geomid[imax - 2][0]) / (DELXM[imax - 2] * (1.0 + DELT * GAM[imax - 2]));
+            DI[imax - 2] = -C_old / dx;
+            D[imax - 1] = base / DELT + C_old / dx + omegam / dx;
+            B[imax - 1] = base / DELT * tirante[imax - 1] + F_Q[imax - 2] / (dx * (1.0 + DELT * GAM[imax - 2])) + omegam * zetam
+                    / dx + ql[imax - 2] - qs[imax - 2];
+            
+            /* Move the values of the water height at time n in the vector tirante_old[] */
+            for( int i = 0; i < imax; i++ )
+                tirante_old[i] = tirante[i];
+            /*
+             * The function ris_sistema calculates the values of the water height at time n+1
+             * and save them in the vector tirante[]
+             */
+            linearAlgebra.ris_sistema(D, DS, DI, B, tirante, imax);
+            /* Calculate the discharge and the velocities at time n+1. */
+            for( int i = 0; i < imax - 1; i++ ) {
+                Q[i] = F_Q[i] / (1.0 + (DELT * GAM[i])) - (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i]))
+                        * (tirante[i + 1] - tirante[i]);
+            }
+            /*
+             * Check on the water depth: if during the elaborations the height of the water depth
+             * is less than the minimum, this minimum value is assigned
+             */
+            for( int i = 0; i < imax; i++ ) {
+                minsez = riverPoints.get(i).getMinElevation();
+                if (minsez >= tirante[i])
+                    tirante[i] = minsez + h_DEF;
+            }
+        }
+        /*
+         * TODO: add the calculation of water depth and velocity
+         */
+
+        /*******************************************************************************************
+         * THIRD CASE: UPSTREAM CONDITION 1 DOWNSTREAM CONDITION 3
+         ******************************************************************************************/
+        if (SCELTA_A_MONTE == 1 && SCELTA_A_VALLE == 3) {
+            /* the coefficients of the first line */
+            dx = DELXM[0];
+            base = (idrgeo[0][3] + geomid[0][3]) / 2.0;
+            C1 = (G * DELT * geomid[0][0]) / (DELXM[0] * (1.0 + DELT * GAM[0]));
+            DS[0] = -C1 / dx;
+            D[0] = C1 / dx + base / DELT;
+            B[0] = (base / DELT) * tirante[0] - F_Q[0] / (dx * (1.0 + DELT * GAM[0])) + qin / dx + ql[0] - qs[0];
+            /* the coefficients from the second to the penultimate line */
+            dx = (DELXM[1] + DELXM[0]) / 2.0;
+            Ci = C1;
+            for( int i = 1; i < imax - 1; i++ ) {
+                dx = (DELXM[i] + DELXM[i - 1]) / 2.0;
+                base = (geomid[i - 1][3] + geomid[i][3]) / 2.0;
+                C_old = Ci;
+                Ci = (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i]));
+                D[i] = Ci / dx + C_old / dx + (base / DELT);
+                DI[i - 1] = -C_old / dx;
+                DS[i] = -Ci / dx;
+                B[i] = (base / DELT) * tirante[i] - F_Q[i] / (dx * (1.0 + DELT * GAM[i])) + F_Q[i - 1]
+                        / (dx * (1 + DELT * GAM[i - 1])) + ql[i] - qs[i];
+            }
+            /* the coefficients of the last line */
+            dx = DELXM[imax - 2];
+            base = (geomid[imax - 2][3] + idrgeo[imax - 1][3]) / 2.0;
+            C_old = (G * DELT * geomid[imax - 2][0]) / (DELXM[imax - 2] * (1.0 + DELT * GAM[imax - 2]));
+            DI[imax - 2] = -C_old / dx;
+            D[imax - 1] = base / DELT + C_old / dx;
+            B[imax - 1] = base / DELT * tirante[imax - 1] - Q[imax - 2] / DELXM[imax - 2] + F_Q[imax - 2]
+                    / (dx * (1.0 + DELT * GAM[imax - 2])) + ql[imax - 2] - qs[imax - 2];
+            /* Move the values of the water height at time n in the vector tirante_old[] */
+            for( int i = 0; i < imax; i++ )
+                tirante_old[i] = tirante[i];
+            /*
+             * The function ris_sistema calculates the values of the water height at time n+1
+             * and save them in the vector tirante[]
+             */
+            // FIXME check the last parameter in all ris_sistema calls (needs to be one less?)
+            linearAlgebra.ris_sistema(D, DS, DI, B, tirante, imax - 1);
+            /* Calculate the discharge and the velocities at time n+1. */
+            Q[0] = qin;
+            for( int i = 1; i < imax - 2; i++ ) {
+                Q[i] = F_Q[i] / (1.0 + (DELT * GAM[i])) - (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i]))
+                        * (tirante[i + 1] - tirante[i]);
+            }
+            Q[imax - 2] = Q[imax - 3];
+            
+            /*
+             * Check on the water depth: if during the elaborations the height of the water depth
+             * is less than the minimum, this minimum value is assigned
+             */
+            for( int i = 0; i < imax; i++ ) {
+                minsez = riverPoints.get(i).getMinElevation();
+                if (minsez >= tirante[i]) {
+                    tirante[i] = minsez + h_DEF;
+                }
+                if (i == imax - 1) {
+                    tirante[imax - 1] = minsez + geomid[imax - 2][0] / geomid[imax - 2][3];
+                }
+            }
+            /*
+             * TODO: add the calculation of water depth and velocity
+             */
+        }
+
+        /*******************************************************************************************
+         * FOURTH CASE: UPSTREAM CONDITION 2 DOWNSTREAM CONDITION 1
+         ******************************************************************************************/
+        if (SCELTA_A_MONTE == 2 && SCELTA_A_VALLE == 1) {
+            /* the coefficients of the first line */
+            C1 = (G * DELT * geomid[0][0]) / (2.0 * DELXM[0] * DELXM[0] * (1.0 + DELT * GAM[0]));
+            DS[0] = -C1;
+            D[0] = 0;
+            B[0] = -(idrgeo[0][3] / DELT + C1) * tirantein + (idrgeo[0][3] / DELT - C1) * tirante[0] + C1 * tirante[1] - F_Q[0]
+                    / (DELXM[0] * (1.0 + DELT * GAM[0])) + (qin - Q[0] + qin_old) / DELXM[0];
+            
+            /* the coefficients of the second line */
+            dx = (DELXM[0] + DELXM[1]) / 2.0;
+            C1 = (G * DELT * geomid[0][0]) / (4.0 * dx * DELXM[0] * (1.0 + DELT * GAM[0]));
+            C2 = (G * DELT * geomid[1][0]) / (4.0 * dx * DELXM[1] * (1.0 + DELT * GAM[1]));
+            D[1] = (idrgeo[1][3] / DELT + C1 + C2);
+            DS[1] = -C2;
+            DI[0] = 0;
+            B[1] = (idrgeo[1][3] / DELT - C1 - C2) * tirante[1] + C2 * tirante[2] + C1 * (tirantein + tirante[0]) - F_Q[1]
+                    / (2.0 * dx * (1.0 + DELT * GAM[1])) + F_Q[0] / (2.0 * dx * (1.0 + DELT * GAM[0])) - (Q[1] - Q[0])
+                    / (2.0 * dx);
+          
+            /* the coefficients of the third last line */
+            dx = (DELXM[1] + DELXM[0]) / 2.0;
+            Ci = (G * DELT * geomid[1][0]) / (4.0 * dx * DELXM[1] * (1.0 + DELT * GAM[1]));
+            for( int i = 2; i < imax - 2; i++ ) {
+                dx = (DELXM[i] + DELXM[i - 1]) / 2.0;
+                C_old = Ci;
+                Ci = (G * DELT * geomid[i][0]) / (4.0 * dx * DELXM[i] * (1.0 + DELT * GAM[i]));
+                D[i] = Ci + C_old + (idrgeo[i][3] / DELT);
+                DI[i - 1] = -C_old;
+                DS[i] = -Ci;
+                B[i] = (idrgeo[i][3] / DELT - Ci - C_old) * tirante[i] + Ci * tirante[i + 1] + C_old * tirante[i - 1] - F_Q[i]
+                        / (2.0 * dx * (1.0 + DELT * GAM[i])) + F_Q[i - 1] / (2.0 * dx * (1.0 + DELT * GAM[i - 1]))
+                        - (Q[i] - Q[i - 1]) / (2.0 * dx);
+            }
+           
+            /* the coefficients of the penultimate line */
+            dx = (DELXM[imax - 3] + DELXM[imax - 2]) / 2.0;
+            C_old = (G * DELT * geomid[imax - 3][0]) / (4.0 * dx * DELXM[imax - 3] * (1.0 + DELT * GAM[imax - 3]));
+            Ci = (G * DELT * geomid[imax - 2][0]) / (4.0 * dx * DELXM[imax - 2] * (1.0 + DELT * GAM[imax - 2]));
+            DI[imax - 3] = -C_old;
+            DS[imax - 2] = 0;
+            D[imax - 2] = C_old + Ci + (idrgeo[imax - 2][3]) / DELT;
+            B[imax - 2] = (-C_old - Ci + (idrgeo[imax - 2][3]) / DELT) * tirante[imax - 2] + Ci
+                    * (tiranteout + tirante[imax - 1]) + C_old * tirante[imax - 3] - F_Q[imax - 2]
+                    / (2.0 * dx * (1.0 + DELT * GAM[imax - 2])) + F_Q[imax - 3] / (2.0 * dx * (1.0 + DELT * GAM[imax - 3]))
+                    - (Q[imax - 2] - Q[imax - 3]) / (2.0 * dx);
+           
+            /* the coefficients of the last line */
+            dx = DELXM[imax - 2];
+            C_old = (G * DELT * geomid[imax - 2][0]) / (2.0 * dx * dx * (1.0 + DELT * GAM[imax - 2]));
+            DI[imax - 2] = -C_old;
+            D[imax - 1] = 1.0 / dx;
+            B[imax - 1] = -C_old * (tiranteout + tirante[imax - 1] - tirante[imax - 2]) - (idrgeo[imax - 1][3] / DELT)
+                    * (tiranteout - tirante[imax - 1]) + F_Q[imax - 2] / (dx * (1.0 + DELT * GAM[imax - 2]))
+                    - (qout - Q[imax - 2]) / dx;
+        }
+
+        /*******************************************************************************************
+         * FIFTH CASE: UPSTREAM CONDITION 2 DOWNSTREAM CONDITION 2
+         ******************************************************************************************/
+        if (SCELTA_A_MONTE == 2 && SCELTA_A_VALLE == 2) {
+            /* the coefficients of the first line */
+            C1 = (G * DELT * geomid[0][0]) / (2.0 * DELXM[0] * DELXM[0] * (1.0 + DELT * GAM[0]));
+            DS[0] = -C1;
+            D[0] = 0;
+            B[0] = -(idrgeo[0][3] / DELT + C1) * tirantein + (idrgeo[0][3] / DELT - C1) * tirante[0] + C1 * tirante[1] - F_Q[0]
+                    / (DELXM[0] * (1.0 + DELT * GAM[0])) + (qin - Q[0] + qin_old) / DELXM[0];
+            
+            /* the coefficients of the second line */
+            dx = (DELXM[0] + DELXM[1]) / 2.0;
+            C1 = (G * DELT * geomid[0][0]) / (4.0 * dx * DELXM[0] * (1.0 + DELT * GAM[0]));
+            C2 = (G * DELT * geomid[1][0]) / (4.0 * dx * DELXM[1] * (1.0 + DELT * GAM[1]));
+            D[1] = (idrgeo[1][3] / DELT + C1 + C2);
+            DS[1] = -C2;
+            DI[0] = 0;
+            B[1] = (idrgeo[1][3] / DELT - C1 - C2) * tirante[1] + C2 * tirante[2] + C1 * (tirantein + tirante[0]) - F_Q[1]
+                    / (2.0 * dx * (1.0 + DELT * GAM[1])) + F_Q[0] / (2.0 * dx * (1.0 + DELT * GAM[0])) - (Q[1] - Q[0])
+                    / (2.0 * dx);
+            /* the coefficients from the third to the penultimate line */
+            dx = (DELXM[1] + DELXM[0]) / 2.0;
+            Ci = (G * DELT * geomid[0][0]) / (4.0 * dx * DELXM[0] * (1.0 + DELT * GAM[0]));
+            for( int i = 1; i < imax - 1; i++ ) {
+                dx = (DELXM[i] + DELXM[i - 1]) / 2.0;
+                C_old = Ci;
+                Ci = (G * DELT * geomid[i][0]) / (4.0 * dx * DELXM[i] * (1.0 + DELT * GAM[i]));
+                D[i] = Ci + C_old + (idrgeo[i][3] / DELT);
+                DI[i - 1] = -C_old;
+                DS[i] = -Ci;
+                B[i] = (idrgeo[i][3] / DELT - Ci - C_old) * tirante[i] + Ci * tirante[i + 1] + C_old * tirante[i - 1] - F_Q[i]
+                        / (2.0 * dx * (1 + DELT * GAM[i])) + F_Q[i - 1] / (2.0 * dx * (1.0 + DELT * GAM[i - 1]))
+                        - (Q[i] - Q[i - 1]) / (2.0 * dx);
+            }
+            /* the coefficients of the last line */
+            omegam = Math.sqrt(G * idrgeo[imax - 1][0] * idrgeo[imax - 1][3]);
+            zetam = tirante[imax - 1] - idrgeo[imax - 1][0] / idrgeo[imax - 1][3];
+            dx = DELXM[imax - 2];
+            C_old = (G * DELT * geomid[imax - 2][0]) / (2.0 * dx * dx * (1.0 + DELT * GAM[imax - 2]));
+            DI[imax - 2] = -C_old;
+            D[imax - 1] = idrgeo[imax - 1][3] / DELT + C_old + omegam;
+            B[imax - 1] = (idrgeo[imax - 1][3] / DELT - C_old) * tirante[imax - 1] + C_old * tirante[imax - 2] + F_Q[imax - 2]
+                    / (dx * (1.0 + DELT * GAM[imax - 2])) + (-qout + Q[imax - 2] + omegam * zetam) / dx;
+        }
+
+        /*******************************************************************************************
+         * SIXTH CASE: UPSTREAM CONDITION 2 DOWNSTREAM CONDITION 3
+         ******************************************************************************************/
+        if (SCELTA_A_MONTE == 2 && SCELTA_A_VALLE == 3) {
+            /* the coefficients of the first line */
+            C1 = (G * DELT * geomid[0][0]) / (2.0 * DELXM[0] * DELXM[0] * (1.0 + DELT * GAM[0]));
+            DS[0] = -C1;
+            D[0] = 0;
+            B[0] = -(idrgeo[0][3] / DELT + C1) * tirantein + (idrgeo[0][3] / DELT - C1) * tirante[0] + C1 * tirante[1] - F_Q[0]
+                    / (DELXM[0] * (1.0 + DELT * GAM[0])) + (qin - Q[0] + qin_old) / DELXM[0];
+            /* the coefficients of the second line */
+            dx = (DELXM[0] + DELXM[1]) / 2.0;
+            C1 = (G * DELT * geomid[0][0]) / (4.0 * dx * DELXM[0] * (1.0 + DELT * GAM[0]));
+            C2 = (G * DELT * geomid[1][0]) / (4.0 * dx * DELXM[1] * (1.0 + DELT * GAM[1]));
+            D[1] = (idrgeo[1][3] / DELT + C1 + C2);
+            DS[1] = -C2;
+            DI[0] = 0;
+            B[1] = (idrgeo[1][3] / DELT - C1 - C2) * tirante[1] + C2 * tirante[2] + C1 * (tirantein + tirante[0]) - F_Q[1]
+                    / (2.0 * dx * (1.0 + DELT * GAM[1])) + F_Q[0] / (2.0 * dx * (1.0 + DELT * GAM[0])) - (Q[1] - Q[0])
+                    / (2.0 * dx);
+            /* the coefficients from the third to the penultimate line */
+            dx = (DELXM[1] + DELXM[0]) / 2.0;
+            Ci = (G * DELT * geomid[0][0]) / (4.0 * dx * DELXM[0] * (1.0 + DELT * GAM[0]));
+            for( int i = 1; i < imax - 1; i++ ) {
+                dx = (DELXM[i] + DELXM[i - 1]) / 2.0;
+                C_old = Ci;
+                Ci = (G * DELT * geomid[i][0]) / (4.0 * dx * DELXM[i] * (1.0 + DELT * GAM[i]));
+                D[i] = Ci + C_old + (idrgeo[i][3] / DELT);
+                DI[i - 1] = -C_old;
+                DS[i] = -Ci;
+                B[i] = (idrgeo[i][3] / DELT - Ci - C_old) * tirante[i] + Ci * tirante[i + 1] + C_old * tirante[i - 1] - F_Q[i]
+                        / (2.0 * dx * (1.0 + DELT * GAM[i])) + F_Q[i - 1] / (2.0 * dx * (1.0 + DELT * GAM[i - 1]))
+                        - (Q[i] - Q[i - 1]) / (2.0 * dx);
+            }
+            /* the coefficients of the last line */
+            dx = DELXM[imax - 2];
+            base = (geomid[imax - 2][3] + idrgeo[imax - 1][3]) / 2.0;
+            C_old = (G * DELT * geomid[imax - 2][0]) / (DELXM[imax - 2] * (1.0 + DELT * GAM[imax - 2]));
+            DI[imax - 2] = -C_old / dx;
+            D[imax - 1] = base / DELT + C_old / dx;
+            B[imax - 1] = base / DELT * tirante[imax - 1] + F_Q[imax - 2] / (dx * (1.0 + DELT * GAM[imax - 2])) - Q[imax - 2]
+                    / DELXM[imax - 2] + ql[imax - 2] - qs[imax - 2];
+            /* Move the values of the water height at time n in the vector tirante_old[] */
+            for( int i = 0; i < imax; i++ )
+                tirante_old[i] = tirante[i];
+           
+            /*
+             * The function ris_sistema calculates the values of the water height at time n+1
+             * and save them in the vector tirante[]
+             */
+            linearAlgebra.ris_sistema(D, DS, DI, B, tirante, imax);
+            /* Calculate the discharge and the velocities at time n+1. */
+            /* Q[1]=qin; */
+            for( int i = 0; i < imax - 1; i++ ) {
+                Q[i] = F_Q[i] / (1.0 + (DELT * GAM[i])) - (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i]))
+                        * (tirante[i + 1] - tirante[i]);
+            }
+            /*
+             * Check on the water depth: if during the elaborations the height of the water depth
+             * is less than the minimum, this minimum value is assigned
+             */
+            for( int i = 0; i < imax; i++ ) {
+                minsez = riverPoints.get(i).getMinElevation();
+                if (minsez >= tirante[i]) {
+                    tirante[i] = minsez + h_DEF;
+                }
+                if (i == imax - 1) {
+                    tirante[imax - 1] = minsez + geomid[imax - 2][0] / geomid[imax - 2][3];
+                }
+            }
+
+        }
     }
-    
+
+    /*
+     * Finite difference operator with a discretization upwind
+     */
+    private void FQ( double[] F_Q, double[] Q, double[] U_I, double[] U, double[][] idrgeo, List<RiverPoint> riverPoints,
+            double delta_T, double qin, double qout ) {
+
+        /*
+         * TODO: to be implemented
+         */
+
+    }
 
 }
