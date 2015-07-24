@@ -937,7 +937,7 @@ public class SaintGeo extends JGTModel {
             }
         }
         /*
-         * TODO: add the calculation of water depth and velocity
+         * TODO: add the calculation of water depth and velocity and the check on the water depth (min_value)
          */
 
         /*******************************************************************************************
@@ -1004,7 +1004,7 @@ public class SaintGeo extends JGTModel {
                 }
             }
             /*
-             * TODO: add the calculation of water depth and velocity
+             * TODO: add the calculation of water depth and velocity and the check on the water depth (min_value)
              */
         }
 
@@ -1187,15 +1187,99 @@ public class SaintGeo extends JGTModel {
         }
     }
 
-    /*
-     * Finite difference operator with a discretization upwind
+    /**
+     * Finite difference operator with a discretization upwind.
+     * 
+     * <pre>
+     *  This method calculates the value of FQ for the time n and in the position i+1/2
+     *  where F is the difference operatore using a discretization upwind.
+     * </pre>
+     * 
+     * @param F_Q
+     * @param Q discharge at time n;
+     * @param U_I average velocity in the measured sections;
+     * @param U
+     * @param idrgeo containing all the values for the sections i, i+1, ... at time n;
+     * @param riverPoints contains all the values related to the measured sections;
+     * @param delta_T internal timestep;
+     * @param qin input discharge;
+     * @param qout output discharge.
      */
     private void FQ( double[] F_Q, double[] Q, double[] U_I, double[] U, double[][] idrgeo, List<RiverPoint> riverPoints,
             double delta_T, double qin, double qout ) {
 
-        /*
-         * TODO: to be implemented
-         */
+        double coeff;
+        /* Coefficient of Coriolis in the sections i e i+1 */
+        double alfa, alfa_i, alfa_ii; 
+        /* Average velocity in the sections i e i+1 */
+        double u, u_i, u_ii; 
+        /* Discharge in the sections i-0.5, i+0.5, i+1.5 */
+        double q, q_i, q_ii; 
+
+        /* First element of FQ */
+        /* Defines the velocities and the Coriolis coefficients */
+        u_i = U[0];
+        q_i = Q[0];
+        alfa_i = 1;
+        u_ii = U[1];
+        q_ii = Q[1];
+        alfa_ii = 1;
+        q = qin;
+        u = qin / idrgeo[0][0];
+        alfa = 1;
+        if ((u_i) >= 0) {
+            coeff = delta_T / ((riverPoints.get(1).getProgressiveDistance() - riverPoints.get(0).getProgressiveDistance()));
+            F_Q[0] = q_i - coeff * (alfa_i * u_i * q_i - alfa * u * q);
+        } else {
+            coeff = 2 * delta_T / ((riverPoints.get(2).getProgressiveDistance() - riverPoints.get(0).getProgressiveDistance()));
+            F_Q[0] = q_i - coeff * (alfa_ii * u_ii * q_ii - alfa_i * u_i * q_i);
+        }
+        int imax = riverPoints.size();
+       
+        /* Intermediate elements */
+        for( int i = 1; i < imax - 2; i++ ) {
+            /* Defines the velocities and the Coriolis coefficients */
+            u_i = U[i];
+            q_i = Q[i];
+            alfa_i = 1;
+            u_ii = U[i + 1];
+            q_ii = Q[i + 1];
+            alfa_ii = 1;
+            u = U[i - 1];
+            q = Q[i - 1];
+            alfa = 1;
+            if ((u_i) >= 0) {
+                coeff = 2 * delta_T
+                        / ((riverPoints.get(i + 1).getProgressiveDistance() - riverPoints.get(i - 1).getProgressiveDistance()));
+                F_Q[i] = q_i - coeff * (alfa_i * u_i * q_i - alfa * u * q);
+            } else {
+                coeff = 2 * delta_T
+                        / ((riverPoints.get(i + 2).getProgressiveDistance() - riverPoints.get(i).getProgressiveDistance()));
+                F_Q[i] = q_i - coeff * (alfa_ii * u_ii * q_ii - alfa_i * u_i * q_i);
+            }
+        }
+        /* Last element */
+        /* Defines the velocities and the Coriolis coefficients */
+        u_i = U[imax - 2];
+        q_i = Q[imax - 2];
+        alfa_i = 1;
+        u_ii = qout / idrgeo[imax - 1][0];
+        q_ii = qout;
+        alfa_ii = 1;
+        coeff = delta_T
+                / ((riverPoints.get(imax - 1).getProgressiveDistance() - riverPoints.get(imax - 2).getProgressiveDistance()));
+        u = U[imax - 3];
+        q = Q[imax - 3];
+        alfa = 1;
+        if ((u_i) >= 0) {
+            coeff = 2 * delta_T
+                    / ((riverPoints.get(imax - 1).getProgressiveDistance() - riverPoints.get(imax - 3).getProgressiveDistance()));
+            F_Q[imax - 2] = q_i - coeff * (alfa_i * u_i * q_i - alfa * u * q);
+        } else {
+            coeff = delta_T
+                    / ((riverPoints.get(imax - 1).getProgressiveDistance() - riverPoints.get(imax - 2).getProgressiveDistance()));
+            F_Q[imax - 2] = q_i - coeff * (alfa_ii * u_ii * q_ii - alfa_i * u_i * q_i);
+        }
 
     }
 
