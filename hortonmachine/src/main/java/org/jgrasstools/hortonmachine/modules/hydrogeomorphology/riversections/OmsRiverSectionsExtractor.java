@@ -184,7 +184,7 @@ public class OmsRiverSectionsExtractor extends JGTModel {
         OmsRiverSectionsExtractor ex = new OmsRiverSectionsExtractor();
         ex.inElev = OmsRasterReader.readRaster(base + "DTM/dtm_adige.asc");
         ex.inRiver = OmsVectorReader.readVector("D:/Dropbox/hydrologis/lavori/2015_phd_bz/gSoC2015/data/data_saintgeo_newage/fiume_adige.shp");
-        ex.inSections = OmsVectorReader.readVector(base + "shape/sections_adige_75.shp");
+        //ex.inSections = OmsVectorReader.readVector(base + "shape/sections_adige_75.shp");
         ex.pSectionsIntervalDistance = 20;
         ex.pSectionsWidth = 75;
         ex.process();

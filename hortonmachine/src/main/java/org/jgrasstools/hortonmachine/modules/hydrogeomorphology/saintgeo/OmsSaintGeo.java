@@ -47,14 +47,14 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
-@Description(SaintGeo.DESCRIPTION)
-@Author(name = SaintGeo.AUTHORNAMES, contact = SaintGeo.AUTHORCONTACTS)
-@Keywords(SaintGeo.KEYWORDS)
-@Label(SaintGeo.LABEL)
-@Name(SaintGeo.NAME)
-@Status(SaintGeo.STATUS)
-@License(SaintGeo.LICENSE)
-public class SaintGeo extends JGTModel {
+@Description(OmsSaintGeo.DESCRIPTION)
+@Author(name = OmsSaintGeo.AUTHORNAMES, contact = OmsSaintGeo.AUTHORCONTACTS)
+@Keywords(OmsSaintGeo.KEYWORDS)
+@Label(OmsSaintGeo.LABEL)
+@Name(OmsSaintGeo.NAME)
+@Status(OmsSaintGeo.STATUS)
+@License(OmsSaintGeo.LICENSE)
+public class OmsSaintGeo extends JGTModel {
     @Description(inRiver_DESCRIPTION)
     @In
     public SimpleFeatureCollection inRiverPoints = null;
@@ -67,11 +67,11 @@ public class SaintGeo extends JGTModel {
     @In
     public SimpleFeatureCollection inSectionPoints = null;
 
-    @Description("Input head discharge.")
+    @Description(inDischarge_DESCRIPTION)
     @In
     public double[] inDischarge;
 
-    @Description("Input downstream level.")
+    @Description(inDownstreamLevel_DESCRIPTION)
     @In
     public double[] inDownstreamLevel;
 
@@ -79,7 +79,7 @@ public class SaintGeo extends JGTModel {
     // @In
     // public HashMap<Integer, Double> inLateralId2ProgressiveMap;
 
-    @Description("Lateral discharge tribute or offtake section discharge values for each id.")
+    @Description(inLateralId2DischargeMap_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inLateralId2DischargeMap;
 
@@ -87,16 +87,16 @@ public class SaintGeo extends JGTModel {
     // @In
     // public HashMap<Integer, Double> inConfluenceId2ProgressiveMap;
 
-    @Description("Lateral immission from confluences discharge values for each id.")
+    @Description(inConfluenceId2DischargeMap_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inConfluenceId2DischargeMap;
 
-    @Description("Time interval.")
-    @Unit("millisec")
+    @Description(pDeltaTMillis_DESCRIPTION)
+    @Unit(pDeltaTMillis_UNIT)
     @In
     public long pDeltaTMillis = 5000;
 
-    @Description("Output file.")
+    @Description(outputFile_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outputFile;
@@ -115,6 +115,13 @@ public class SaintGeo extends JGTModel {
     public static final String inRiver_DESCRIPTION = "The main stream river points (with the elevation in the attribute table).";
     public static final String inSections_DESCRIPTION = "The section lines.";
     public static final String inSectionPoints_DESCRIPTION = "The section points (with the elevation in the attribute table).";
+    public static final String pDeltaTMillis_UNIT = "millisec";
+    public static final String outputFile_DESCRIPTION = "Output file.";
+    public static final String pDeltaTMillis_DESCRIPTION = "Time interval.";
+    public static final String inConfluenceId2DischargeMap_DESCRIPTION = "Lateral immission from confluences discharge values for each id.";
+    public static final String inLateralId2DischargeMap_DESCRIPTION = "Lateral discharge tribute or offtake section discharge values for each id.";
+    public static final String inDownstreamLevel_DESCRIPTION = "Input downstream level.";
+    public static final String inDischarge_DESCRIPTION = "Input head discharge.";
     // VARS DOC END
 
     private LinearAlgebra linearAlgebra = new LinearAlgebra();
@@ -536,7 +543,8 @@ public class SaintGeo extends JGTModel {
                 // alfa_den = alfa_den + 0;
                 // }
                 /* 
-                 * case 1: only partially wetted (right side dry) */
+                 * case 1: only partially wetted (right side dry) 
+                 */
 
                 if (sectionCoordinates[j].z >= waterLevel[i] && sectionCoordinates[j + 1].z < waterLevel[i]) {
                     /* the area of the triangle */
@@ -710,7 +718,7 @@ public class SaintGeo extends JGTModel {
         /*
          * Calculate the gamma coefficient.
          */
-        
+
         /*
          * fino a questo simbolo sostituisco la portata sfiorata dall'argine con la portata sfiorata
          * per il problema della griglia
@@ -750,20 +758,21 @@ public class SaintGeo extends JGTModel {
          * Calculate the overflow discharge for each section
          */
         for( int i = 0; i < imax - 1; i++ ) {
-            //current section
+            // current section
             RiverPoint section_i = riverPoints.get(i);
-            //next section (downstream)
+            // next section (downstream)
             RiverPoint section_ip = riverPoints.get(i + 1);
             Coordinate[] sectionCoordinates_i = section_i.getSectionCoordinates();
             Coordinate[] sectionCoordinates_ip = section_ip.getSectionCoordinates();
-            qs[i] = 0; //overflow discharge
-            
-            //define the height of the water surface and the banks on the left side
+            qs[i] = 0; // overflow discharge
+
+            // define the height of the water surface and the banks on the left side
             T1 = tirante[i];
             T2 = tirante[i + 1];
             ds = section_i.getStartNodeIndex();
             // TODO: check the banks position!!
-            // height of the point outside the bank on the left for the current and for the next section
+            // height of the point outside the bank on the left for the current and for the next
+            // section
             A1dx = sectionCoordinates_i[ds - 1].z;
             ds = section_ip.getStartNodeIndex();
             A2dx = sectionCoordinates_ip[ds - 1].z;
@@ -781,9 +790,9 @@ public class SaintGeo extends JGTModel {
                 c = (T2 - T1 - A2dx + A1dx) / l;
                 qs[i] = (Cq / (2.5 * c)) * (Math.pow((T2 - A2dx), (5.0 / 2.0)));
             }
-            //define the height of the water surface and the banks on the right side
-//            T1 = tirante[i];
-//            T2 = tirante[i + 1];
+            // define the height of the water surface and the banks on the right side
+            // T1 = tirante[i];
+            // T2 = tirante[i + 1];
             sx = section_i.getEndNodeIndex();
             A1sx = sectionCoordinates_i[sx - 1].z;
             sx = section_ip.getEndNodeIndex();
@@ -912,7 +921,7 @@ public class SaintGeo extends JGTModel {
             D[imax - 1] = base / DELT + C_old / dx + omegam / dx;
             B[imax - 1] = base / DELT * tirante[imax - 1] + F_Q[imax - 2] / (dx * (1.0 + DELT * GAM[imax - 2])) + omegam * zetam
                     / dx + ql[imax - 2] - qs[imax - 2];
-            
+
             /* Move the values of the water height at time n in the vector tirante_old[] */
             for( int i = 0; i < imax; i++ )
                 tirante_old[i] = tirante[i];
@@ -989,7 +998,7 @@ public class SaintGeo extends JGTModel {
                         * (tirante[i + 1] - tirante[i]);
             }
             Q[imax - 2] = Q[imax - 3];
-            
+
             /*
              * Check on the water depth: if during the elaborations the height of the water depth
              * is less than the minimum, this minimum value is assigned
@@ -1018,7 +1027,7 @@ public class SaintGeo extends JGTModel {
             D[0] = 0;
             B[0] = -(idrgeo[0][3] / DELT + C1) * tirantein + (idrgeo[0][3] / DELT - C1) * tirante[0] + C1 * tirante[1] - F_Q[0]
                     / (DELXM[0] * (1.0 + DELT * GAM[0])) + (qin - Q[0] + qin_old) / DELXM[0];
-            
+
             /* the coefficients of the second line */
             dx = (DELXM[0] + DELXM[1]) / 2.0;
             C1 = (G * DELT * geomid[0][0]) / (4.0 * dx * DELXM[0] * (1.0 + DELT * GAM[0]));
@@ -1029,7 +1038,7 @@ public class SaintGeo extends JGTModel {
             B[1] = (idrgeo[1][3] / DELT - C1 - C2) * tirante[1] + C2 * tirante[2] + C1 * (tirantein + tirante[0]) - F_Q[1]
                     / (2.0 * dx * (1.0 + DELT * GAM[1])) + F_Q[0] / (2.0 * dx * (1.0 + DELT * GAM[0])) - (Q[1] - Q[0])
                     / (2.0 * dx);
-          
+
             /* the coefficients of the third last line */
             dx = (DELXM[1] + DELXM[0]) / 2.0;
             Ci = (G * DELT * geomid[1][0]) / (4.0 * dx * DELXM[1] * (1.0 + DELT * GAM[1]));
@@ -1044,7 +1053,7 @@ public class SaintGeo extends JGTModel {
                         / (2.0 * dx * (1.0 + DELT * GAM[i])) + F_Q[i - 1] / (2.0 * dx * (1.0 + DELT * GAM[i - 1]))
                         - (Q[i] - Q[i - 1]) / (2.0 * dx);
             }
-           
+
             /* the coefficients of the penultimate line */
             dx = (DELXM[imax - 3] + DELXM[imax - 2]) / 2.0;
             C_old = (G * DELT * geomid[imax - 3][0]) / (4.0 * dx * DELXM[imax - 3] * (1.0 + DELT * GAM[imax - 3]));
@@ -1056,7 +1065,7 @@ public class SaintGeo extends JGTModel {
                     * (tiranteout + tirante[imax - 1]) + C_old * tirante[imax - 3] - F_Q[imax - 2]
                     / (2.0 * dx * (1.0 + DELT * GAM[imax - 2])) + F_Q[imax - 3] / (2.0 * dx * (1.0 + DELT * GAM[imax - 3]))
                     - (Q[imax - 2] - Q[imax - 3]) / (2.0 * dx);
-           
+
             /* the coefficients of the last line */
             dx = DELXM[imax - 2];
             C_old = (G * DELT * geomid[imax - 2][0]) / (2.0 * dx * dx * (1.0 + DELT * GAM[imax - 2]));
@@ -1077,7 +1086,7 @@ public class SaintGeo extends JGTModel {
             D[0] = 0;
             B[0] = -(idrgeo[0][3] / DELT + C1) * tirantein + (idrgeo[0][3] / DELT - C1) * tirante[0] + C1 * tirante[1] - F_Q[0]
                     / (DELXM[0] * (1.0 + DELT * GAM[0])) + (qin - Q[0] + qin_old) / DELXM[0];
-            
+
             /* the coefficients of the second line */
             dx = (DELXM[0] + DELXM[1]) / 2.0;
             C1 = (G * DELT * geomid[0][0]) / (4.0 * dx * DELXM[0] * (1.0 + DELT * GAM[0]));
@@ -1158,7 +1167,7 @@ public class SaintGeo extends JGTModel {
             /* Move the values of the water height at time n in the vector tirante_old[] */
             for( int i = 0; i < imax; i++ )
                 tirante_old[i] = tirante[i];
-           
+
             /*
              * The function ris_sistema calculates the values of the water height at time n+1
              * and save them in the vector tirante[]
@@ -1210,11 +1219,11 @@ public class SaintGeo extends JGTModel {
 
         double coeff;
         /* Coefficient of Coriolis in the sections i e i+1 */
-        double alfa, alfa_i, alfa_ii; 
+        double alfa, alfa_i, alfa_ii;
         /* Average velocity in the sections i e i+1 */
-        double u, u_i, u_ii; 
+        double u, u_i, u_ii;
         /* Discharge in the sections i-0.5, i+0.5, i+1.5 */
-        double q, q_i, q_ii; 
+        double q, q_i, q_ii;
 
         /* First element of FQ */
         /* Defines the velocities and the Coriolis coefficients */
@@ -1235,7 +1244,7 @@ public class SaintGeo extends JGTModel {
             F_Q[0] = q_i - coeff * (alfa_ii * u_ii * q_ii - alfa_i * u_i * q_i);
         }
         int imax = riverPoints.size();
-       
+
         /* Intermediate elements */
         for( int i = 1; i < imax - 2; i++ ) {
             /* Defines the velocities and the Coriolis coefficients */
