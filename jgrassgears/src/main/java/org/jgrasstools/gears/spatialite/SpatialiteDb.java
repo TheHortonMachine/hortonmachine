@@ -322,20 +322,40 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     /**
-     * Get the column names of a table.
+     * Get the column [name, type, pk] values of a table.
      * 
      * @param tableName the table to check.
-     * @return the list of column names.
+     * @return the list of column [name, type, pk].
      * @throws SQLException
      */
-    public List<String> getTableColumns( String tableName ) throws SQLException {
-        List<String> columnNames = new ArrayList<String>();
+    public List<String[]> getTableColumns( String tableName ) throws SQLException {
+        List<String[]> columnNames = new ArrayList<String[]>();
         String sql = "PRAGMA table_info(" + tableName + ")";
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnCount = rsmd.getColumnCount();
+        int nameIndex = -1;
+        int typeIndex = -1;
+        int pkIndex = -1;
+        for( int i = 1; i <= columnCount; i++ ) {
+            String columnName = rsmd.getColumnName(i);
+            if (columnName.equals("name")) {
+                nameIndex = i;
+            } else if (columnName.equals("type")) {
+                typeIndex = i;
+            } else if (columnName.equals("pk")) {
+                pkIndex = i;
+            }
+        }
+
         while( rs.next() ) {
-            String columnName = rs.getString(2);
-            columnNames.add(columnName);
+            String name = rs.getString(nameIndex);
+            String type = rs.getString(typeIndex);
+            String pk = "0";
+            if (pkIndex > 0)
+                pk = rs.getString(pkIndex);
+            columnNames.add(new String[]{name, type, pk});
         }
         return columnNames;
     }
@@ -384,22 +404,47 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     /**
-     * Get the column types of a table.
+     * Get the foreign keys from a table.
      * 
-     * @param tableName the table to check.
-     * @return the list of column type.
+     * @param tableName the table to check on.
+     * @return the list of keys.
      * @throws SQLException
      */
-    public List<String> getTableColumnTypes( String tableName ) throws SQLException {
-        List<String> columnTypes = new ArrayList<String>();
-        String sql = "PRAGMA table_info(" + tableName + ")";
+    public List<ForeignKey> getForeignKeys( String tableName ) throws SQLException {
+        List<ForeignKey> fKeys = new ArrayList<ForeignKey>();
+        String sql = "PRAGMA foreign_key_list(" + tableName + ")";
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
-        while( rs.next() ) {
-            String columnType = rs.getString(3);
-            columnTypes.add(columnType);
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnCount = rsmd.getColumnCount();
+        int fromIndex = -1;
+        int toIndex = -1;
+        int toTableIndex = -1;
+        for( int i = 1; i <= columnCount; i++ ) {
+            String columnName = rsmd.getColumnName(i);
+            if (columnName.equals("from")) {
+                fromIndex = i;
+            } else if (columnName.equals("to")) {
+                toIndex = i;
+            } else if (columnName.equals("table")) {
+                toTableIndex = i;
+            }
         }
-        return columnTypes;
+        while( rs.next() ) {
+            ForeignKey fKey = new ForeignKey();
+            Object fromObj = rs.getObject(fromIndex);
+            Object toObj = rs.getObject(toIndex);
+            Object toTableObj = rs.getObject(toTableIndex);
+            if (fromObj != null && toObj != null && toTableObj != null) {
+                fKey.from = fromObj.toString();
+                fKey.to = toObj.toString();
+                fKey.table = toTableObj.toString();
+            } else {
+                continue;
+            }
+            fKeys.add(fKey);
+        }
+        return fKeys;
     }
 
     /**
@@ -440,7 +485,11 @@ public class SpatialiteDb implements AutoCloseable {
         SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
         boolean hasGeom = gCol != null;
 
-        List<String> tableColumns = getTableColumns(tableName);
+        List<String[]> tableInfo = getTableColumns(tableName);
+        List<String> tableColumns = new ArrayList<>();
+        for( String[] info : tableInfo ) {
+            tableColumns.add(info[0]);
+        }
         if (hasGeom) {
             tableColumns.remove(gCol.f_geometry_column);
         }
@@ -479,9 +528,9 @@ public class SpatialiteDb implements AutoCloseable {
                 Geometry geometry = wkbReader.read(geomBytes);
                 rec.geometry = geometry;
             }
-            for( String columnName : tableColumns ) {
+            for( String column : tableColumns ) {
                 Object object = rs.getObject(i++);
-                rec.data.put(columnName, object);
+                rec.data.put(column, object);
             }
             tableRecords.add(rec);
         }
@@ -741,7 +790,7 @@ public class SpatialiteDb implements AutoCloseable {
             clock.printTimePassedInSeconds(System.out);
 
             String tableName = "roads";
-            List<String> tableColumns = db.getTableColumns(tableName);
+            List<String[]> tableColumns = db.getTableColumns(tableName);
             System.out.println(Arrays.toString(tableColumns.toArray()));
             clock.printTimePassedInSeconds(System.out);
 

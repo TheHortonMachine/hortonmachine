@@ -124,7 +124,11 @@ public class SpatialiteImportUtils {
         SimpleFeatureCollection features = featureSource.getFeatures();
         SimpleFeatureIterator featureIterator = features.features();
 
-        List<String> tableColumns = db.getTableColumns(tableName);
+        List<String[]> tableInfo = db.getTableColumns(tableName);
+        List<String> tableColumns = new ArrayList<>();
+        for( String[] item : tableInfo ) {
+            tableColumns.add(item[0]);
+        }
         SpatialiteGeometryColumns geometryColumns = db.getGeometryColumnsForTable(tableName);
         String gCol = geometryColumns.f_geometry_column;
 
