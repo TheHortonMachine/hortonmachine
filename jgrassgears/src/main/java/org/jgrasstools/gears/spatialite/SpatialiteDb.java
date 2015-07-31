@@ -348,18 +348,12 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws Exception
      */
     public SpatialiteGeometryColumns getGeometryColumnsForTable( String tableName ) throws SQLException {
-        String sql = "select " + SpatialiteGeometryColumns.F_TABLE_NAME
-                + ", " //
-                + SpatialiteGeometryColumns.F_GEOMETRY_COLUMN
-                + ", " //
-                + SpatialiteGeometryColumns.GEOMETRY_TYPE
-                + "," //
-                + SpatialiteGeometryColumns.COORD_DIMENSION
-                + ", " //
-                + SpatialiteGeometryColumns.SRID
-                + ", " //
-                + SpatialiteGeometryColumns.SPATIAL_INDEX_ENABLED
-                + " from " //
+        String sql = "select " + SpatialiteGeometryColumns.F_TABLE_NAME + ", " //
+                + SpatialiteGeometryColumns.F_GEOMETRY_COLUMN + ", " //
+                + SpatialiteGeometryColumns.GEOMETRY_TYPE + "," //
+                + SpatialiteGeometryColumns.COORD_DIMENSION + ", " //
+                + SpatialiteGeometryColumns.SRID + ", " //
+                + SpatialiteGeometryColumns.SPATIAL_INDEX_ENABLED + " from " //
                 + SpatialiteGeometryColumns.TABLENAME + " where " + SpatialiteGeometryColumns.F_TABLE_NAME + "='" + tableName
                 + "'";
         Statement stmt = conn.createStatement();
@@ -507,9 +501,6 @@ public class SpatialiteDb implements AutoCloseable {
     public List<TableRecordMap> getTableRecordsMapFromRawSql( String sql, int limit, List<String> columnNames )
             throws SQLException, ParseException {
         List<TableRecordMap> tableRecords = new ArrayList<TableRecordMap>();
-        if (limit > 0 && !sql.toUpperCase().replaceAll("\n", " ").contains(" LIMIT ")) {
-            sql += " LIMIT " + limit;
-        }
         WKBReader wkbReader = new WKBReader();
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
@@ -520,6 +511,7 @@ public class SpatialiteDb implements AutoCloseable {
                 columnNames.add(rsmd.getColumnName(i));
             }
         }
+        int count = 0;
         while( rs.next() ) {
             TableRecordMap rec = new TableRecordMap();
             for( int j = 1; j <= columnCount; j++ ) {
@@ -538,6 +530,9 @@ public class SpatialiteDb implements AutoCloseable {
                 }
             }
             tableRecords.add(rec);
+            if (limit > 0 && ++count > (limit - 1)) {
+                break;
+            }
         }
         return tableRecords;
     }
