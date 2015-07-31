@@ -129,33 +129,32 @@ public class OmsKriging extends JGTModel {
     public String fPointZ = null;
 
     /**
-     * Define the mode. It is possible 4 alternatives: <li>mode ==0, the value
-     * to calculate are in a non-regular grid (the coordinates are stored in a
-     * {@link FeatureCollection}, pointsToInterpolate. This is a 2-D
-     * interpolation, so the z coordinates are null. <li>mode ==1, the value to
-     * calculate are in a non-regular grid (the coordinates are stored in a
-     * {@link FeatureCollection}, pointsToInterpolate. This is a 3-D
-     * interpolation.. <li>mode ==2, the value to calculate are in a regular
-     * grid (the coordinates are stored in a {@link GridCoverage2D},
-     * gridToInterpolate. This is a 2-D interpolation. <li>mode ==3, the value
-     * to calculate are in a regular grid (the coordinates are stored in a
-     * {@link GridCoverage2D}, gridToInterpolate. This is a 3-D interpolation,
-     * so the grid have to contains a dem.
+     * Define the calculation mode. It can be 0 or 1.
+     *
+     * <li>When mode == 0, the values to calculate are in a non-regular 
+     * grid (the coordinates are stored in a {@link FeatureCollection}, 
+     * so parameters inInterpolate and fInterpolateid must be set, and
+     * the calculated values will be in the outData field.
+     *
+     * <li>When mode == 1, the values are in a regular grid (the coordinates 
+     * are stored in a {@link GridCoverage2D), so parameter gridToInterpolate
+     * must be set, and the calculated values will be in the outGrid field.
      */
     @Description(OMSKRIGING_pMode_DESCRIPTION)
     @In
     public int pMode = 0;
 
     /**
-     * The integral scale, this is necessary to calculate the variogram if the
-     * program use {@link Kriging2.variogram(rx,ry,rz)}.
+     * The integral scale, used when defaultVariogramMode is 0. Must be
+     * a 3-element double array containing the scaling factor for the
+     * x, y and z dimensions in the elements 0, 1 and 2, respectively.
      */
     @Description(OMSKRIGING_pIntegralscale_DESCRIPTION)
     @In
     public double[] pIntegralscale = null;
 
     /**
-     * Variance of the measure field.
+     * Variance of the measure field. Used when defaultVariogramMode is 0.
      */
     @Description(OMSKRIGING_pVariance_DESCRIPTION)
     @In
@@ -491,10 +490,6 @@ public class OmsKriging extends JGTModel {
         if (pMode < 0 || pMode > 1) {
             throw new IllegalArgumentException(msg.message("kriging.defaultMode"));
         }
-        // if (pMode == 0 && (fStationsZ == null || fPointZ == null)) {
-        // pm.errorMessage(msg.message("kriging.noElevation"));
-        // throw new IllegalArgumentException(msg.message("kriging.noElevation"));
-        // }
 
         if (defaultVariogramMode != 0 && defaultVariogramMode != 1) {
             throw new IllegalArgumentException(msg.message("kriging.variogramMode"));
