@@ -524,8 +524,8 @@ public class OmsSaintGeo extends JGTModel {
             alfa_num = 0;
             alfa_den = 0;
 
-            dx = section.getStartNodeIndex();
-            sx = section.getEndNodeIndex();
+            dx = section.getStartNodeIndex()+1;
+            sx = section.getEndNodeIndex()-1;
 
             Coordinate[] sectionCoordinates = section.getSectionCoordinates();
             List<Double> sectionProgressives = section.getSectionProgressive();
@@ -720,8 +720,8 @@ public class OmsSaintGeo extends JGTModel {
          */
 
         /*
-         * fino a questo simbolo sostituisco la portata sfiorata dall'argine con la portata sfiorata
-         * per il problema della griglia
+         * TODO: fino a questo simbolo sostituisco la portata sfiorata dall'argine con la portata 
+         * sfiorata per il problema della griglia
          */
         for( int i = 0; i < imax - 1; i++ ) {
             uu = U[i];
@@ -773,9 +773,9 @@ public class OmsSaintGeo extends JGTModel {
             // TODO: check the banks position!!
             // height of the point outside the bank on the left for the current and for the next
             // section
-            A1dx = sectionCoordinates_i[ds - 1].z;
+            A1dx = sectionCoordinates_i[ds + 1].z;
             ds = section_ip.getStartNodeIndex();
-            A2dx = sectionCoordinates_ip[ds - 1].z;
+            A2dx = sectionCoordinates_ip[ds + 1].z;
             /* calculate the outflow discharge on the right */
             if (T1 > A1dx && T2 > A2dx) {
                 l = DELXM[i];

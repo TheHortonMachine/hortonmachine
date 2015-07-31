@@ -67,11 +67,11 @@ public class RiverPoint implements Comparable<RiverPoint> {
     /**
      * The min elevation of the section.
      */
-    private double minElevation = -9999.0;
+    private double minElevation = Double.POSITIVE_INFINITY;
     /**
      * The max elevation of the section.
      */
-    private double maxElevation = -9999.0;
+    private double maxElevation = Double.NEGATIVE_INFINITY;
 
     private int startNodeIndex = 0;
     private int endNodeIndex = 0;
@@ -97,7 +97,7 @@ public class RiverPoint implements Comparable<RiverPoint> {
             sectionProgressive = new ArrayList<Double>();
             for( int i = 0; i < sectionCoordinates.length; i++ ) {
                 minElevation = Math.min(minElevation, sectionCoordinates[i].z);
-                maxElevation = Math.min(maxElevation, sectionCoordinates[i].z);
+                maxElevation = Math.max(maxElevation, sectionCoordinates[i].z);
                 if (i == 0) {
                     sectionProgressive.add(0.0);
                 } else {
