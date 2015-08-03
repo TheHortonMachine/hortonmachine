@@ -96,10 +96,15 @@ public class OmsSaintGeo extends JGTModel {
     @In
     public long pDeltaTMillis = 5000;
 
-    @Description(outputFile_DESCRIPTION)
+    @Description(outputLevelFile_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
-    public String outputFile;
+    public String outputLevelFile;
+
+    @Description(outputDischargeFile_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
+    @In
+    public String outputDischargeFile;
 
     // VARS DOC START
     public static final String DESCRIPTION = "A simple 1D hydraulic model based on the equations of Saint Venant.";
@@ -116,7 +121,8 @@ public class OmsSaintGeo extends JGTModel {
     public static final String inSections_DESCRIPTION = "The section lines.";
     public static final String inSectionPoints_DESCRIPTION = "The section points (with the elevation in the attribute table).";
     public static final String pDeltaTMillis_UNIT = "millisec";
-    public static final String outputFile_DESCRIPTION = "Output file.";
+    public static final String outputLevelFile_DESCRIPTION = "Output file with levels.";
+    public static final String outputDischargeFile_DESCRIPTION = "Output file with the quantities related to discharge.";
     public static final String pDeltaTMillis_DESCRIPTION = "Time interval.";
     public static final String inConfluenceId2DischargeMap_DESCRIPTION = "Lateral immission from confluences discharge values for each id.";
     public static final String inLateralId2DischargeMap_DESCRIPTION = "Lateral discharge tribute or offtake section discharge values for each id.";
@@ -158,7 +164,8 @@ public class OmsSaintGeo extends JGTModel {
 
         int sectionsCount = riverPoints.size();
 
-        try (BufferedWriter outputWriter = new BufferedWriter(new FileWriter(outputFile))) {
+        try (BufferedWriter outputLevelWriter = new BufferedWriter(new FileWriter(outputLevelFile));
+                BufferedWriter outputDischargeWriter = new BufferedWriter(new FileWriter(outputDischargeFile));) {
 
             double[] waterLevel = null;
             double[] waterLevelPrevious = null;
@@ -296,49 +303,65 @@ public class OmsSaintGeo extends JGTModel {
                 new_tirante(riverPoints, waterLevel, discharge, celerity, DELXM, SCELTA_A_MONTE, qHead, qHeadPrevious,
                         SCELTA_A_VALLE, downstreamLevel, ql);
 
-                /* write the output file 1 second (temporary) */
                 idrgeo = wettedArea(waterLevel, riverPoints);
 
-                StringBuilder sb = new StringBuilder();
+                /* write the output file with levels */
+                StringBuilder sbLevel = new StringBuilder();
                 for( int i = 0; i < sectionsCount - 1; i++ ) {
                     RiverPoint section = riverPoints.get(i);
                     Coordinate[] sectionCoordinates = section.getSectionCoordinates();
-                    sb.append(section.getSectionId()).append(";");
-                    sb.append(section.getProgressiveDistance()).append(";");
-                    double froudeNumber = (Math.abs(celerity[i]) / Math.sqrt(G * (idrgeo[i][0] / idrgeo[i][3])));
-                    sb.append(froudeNumber).append(";");
-                    sb.append(discharge[i] < 0.0 ? 0.0 : discharge[i]).append(";");
-                    sb.append(celerity[i] < 0.0 ? 0.0 : celerity[i]).append(";");
-                    sb.append(waterLevel[i]).append(";");
-                    sb.append(idrgeo[i][0]).append(";");
+                    sbLevel.append(section.getSectionId()).append(";");
+                    sbLevel.append(section.getProgressiveDistance()).append(";");
+                    sbLevel.append(waterLevel[i]).append(";");
                     double minsez = section.getMinElevation();
-                    sb.append(minsez).append(";");
+                    sbLevel.append(minsez).append(";");
                     int dx = section.getStartNodeIndex();
-                    sb.append(sectionCoordinates[dx].z).append(";");
+                    sbLevel.append(sectionCoordinates[dx].z).append(";");
                     int sx = section.getEndNodeIndex();
-                    sb.append(sectionCoordinates[sx].z).append(";");
+                    sbLevel.append(sectionCoordinates[sx].z).append(";");
                 }
                 RiverPoint section = riverPoints.get(sectionsCount - 1);
                 Coordinate[] sectionCoordinates = section.getSectionCoordinates();
+                sbLevel.append(section.getSectionId()).append(";");
+                sbLevel.append(section.getProgressiveDistance()).append(";");
+                sbLevel.append(waterLevel[sectionsCount - 1]).append(";");
+                double minsez = section.getMinElevation();
+                sbLevel.append(minsez).append(";");
+                int dx = section.getStartNodeIndex();
+                sbLevel.append(sectionCoordinates[dx].z).append(";");
+                int sx = section.getEndNodeIndex();
+                sbLevel.append(sectionCoordinates[sx].z);
+
+                outputLevelWriter.write(sbLevel.toString() + "\n");
+                pm.message(sbLevel.toString());
+                
+                /* write the output file with discharge */
+                StringBuilder sbDischarge = new StringBuilder();
+                for( int i = 0; i < sectionsCount - 1; i++ ) {
+                    RiverPoint sectionDischarge = riverPoints.get(i);
+                    sbDischarge.append(sectionDischarge.getSectionId()).append(";");
+                    sbDischarge.append(sectionDischarge.getProgressiveDistance()).append(";");
+                    double froudeNumber = (Math.abs(celerity[i]) / Math.sqrt(G * (idrgeo[i][0] / idrgeo[i][3])));
+                    sbDischarge.append(froudeNumber).append(";");
+                    sbDischarge.append(discharge[i] < 0.0 ? 0.0 : discharge[i]).append(";");
+                    sbDischarge.append(celerity[i] < 0.0 ? 0.0 : celerity[i]).append(";");
+                    sbDischarge.append(idrgeo[i][0]).append(";");
+                }
+                RiverPoint sectionDischarge = riverPoints.get(sectionsCount - 1);
                 double froudeNumber = (Math.abs(discharge[sectionsCount - 2] / idrgeo[sectionsCount - 1][0]) / Math.sqrt(G
                         * (idrgeo[sectionsCount - 1][0] / idrgeo[sectionsCount - 1][3])));
-                sb.append(section.getSectionId()).append(";");
-                sb.append(section.getProgressiveDistance()).append(";");
-                sb.append(froudeNumber).append(";");
-                sb.append(discharge[sectionsCount - 2] < 0.0 ? 0.0 : discharge[sectionsCount - 2]).append(";");
-                double cel = discharge[sectionsCount - 2] / idrgeo[sectionsCount - 1][0];
-                sb.append(cel < 0.0 ? 0.0 : cel).append(";");
-                sb.append(waterLevel[sectionsCount - 1]).append(";");
-                sb.append(idrgeo[sectionsCount - 1][0]).append(";");
-                double minsez = section.getMinElevation();
-                sb.append(minsez).append(";");
-                int dx = section.getStartNodeIndex();
-                sb.append(sectionCoordinates[dx].z).append(";");
-                int sx = section.getEndNodeIndex();
-                sb.append(sectionCoordinates[sx].z);
-
-                outputWriter.write(sb.toString() + "\n");
-                pm.message(sb.toString());
+                sbDischarge.append(sectionDischarge.getSectionId()).append(";");
+                sbDischarge.append(sectionDischarge.getProgressiveDistance()).append(";");
+                sbDischarge.append(froudeNumber).append(";");
+                sbDischarge.append(discharge[sectionsCount - 2] < 0.0 ? 0.0 : discharge[sectionsCount -
+                 2]).append(";");
+                double celDischarge = discharge[sectionsCount - 2] / idrgeo[sectionsCount - 1][0];
+                sbDischarge.append(celDischarge < 0.0 ? 0.0 : celDischarge).append(";");
+                sbDischarge.append(idrgeo[sectionsCount - 1][0]).append(";");
+                
+                outputDischargeWriter.write(sbDischarge.toString() + "\n");
+                pm.message(sbDischarge.toString());
+                
                 pm.worked(1);
             }
             pm.done();
@@ -524,8 +547,8 @@ public class OmsSaintGeo extends JGTModel {
             alfa_num = 0;
             alfa_den = 0;
 
-            dx = section.getStartNodeIndex()+1;
-            sx = section.getEndNodeIndex()-1;
+            dx = section.getStartNodeIndex() + 1;
+            sx = section.getEndNodeIndex() - 1;
 
             Coordinate[] sectionCoordinates = section.getSectionCoordinates();
             List<Double> sectionProgressives = section.getSectionProgressive();

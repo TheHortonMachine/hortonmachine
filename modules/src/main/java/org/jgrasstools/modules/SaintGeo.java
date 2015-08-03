@@ -32,7 +32,8 @@ import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.
 import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.inRiver_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.inSectionPoints_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.inSections_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.outputFile_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.outputLevelFile_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.outputDischargeFile_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.pDeltaTMillis_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.pDeltaTMillis_UNIT;
 
@@ -103,10 +104,15 @@ public class SaintGeo extends JGTModel {
     @In
     public long pDeltaTMillis = 5000;
 
-    @Description(outputFile_DESCRIPTION)
+    @Description(outputLevelFile_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
-    public String outputFile;
+    public String outputLevelFile;
+    
+    @Description(outputDischargeFile_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
+    @In
+    public String outputDischargeFile;
 
     @Execute
     public void process() throws Exception {
@@ -126,7 +132,8 @@ public class SaintGeo extends JGTModel {
         }
 
         saintGeo.pDeltaTMillis = pDeltaTMillis;
-        saintGeo.outputFile = outputFile;
+        saintGeo.outputLevelFile = outputLevelFile;
+        saintGeo.outputDischargeFile = outputDischargeFile;
         saintGeo.process();
     }
 
@@ -152,7 +159,8 @@ public class SaintGeo extends JGTModel {
         String inRiv = base + "riverpoints_adige_75_rev.shp";
         String inDischarge = base + "head_discharge.csv";
         String inLevel = base + "downstream_waterlevel.csv";
-        String outFile = base + "saintgeo_out.csv";
+        String outLevelFile = base + "saintgeo_level_out.csv";
+        String outDischargeFile = base + "saintgeo_discharge_out.csv";
 
         SaintGeo sg = new SaintGeo();
         sg.inRiverPoints = inRiv;
@@ -163,7 +171,8 @@ public class SaintGeo extends JGTModel {
 
         sg.pDeltaTMillis = 5000;
 
-        sg.outputFile = outFile;
+        sg.outputLevelFile = outLevelFile;
+        sg.outputDischargeFile = outDischargeFile;
 
         sg.process();
 
