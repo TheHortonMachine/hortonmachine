@@ -528,7 +528,7 @@ public class SpatialiteDb implements AutoCloseable {
             queryResult.names.add(columnName);
             String columnTypeName = rsmd.getColumnTypeName(i);
             queryResult.types.add(columnTypeName);
-            if (columnName.equals(gCol.f_geometry_column)) {
+            if (hasGeom && columnName.equals(gCol.f_geometry_column)) {
                 queryResult.geometryIndex = i - 1;
             }
         }
@@ -544,7 +544,7 @@ public class SpatialiteDb implements AutoCloseable {
             }
             for( int j = i; j <= columnCount; j++ ) {
                 Object object = rs.getObject(j);
-                rec[i - 1] = object;
+                rec[j - 1] = object;
             }
             queryResult.data.add(rec);
         }
