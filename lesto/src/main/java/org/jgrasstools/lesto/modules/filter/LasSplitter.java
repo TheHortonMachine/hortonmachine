@@ -16,14 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.lesto.modules.filter;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-
 import java.io.File;
-import java.io.FilenameFilter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import org.geotools.geometry.jts.ReferencedEnvelope3D;
+import org.jgrasstools.gears.io.las.core.ALasReader;
+import org.jgrasstools.gears.io.las.core.ALasWriter;
+import org.jgrasstools.gears.io.las.core.ILasHeader;
+import org.jgrasstools.gears.io.las.core.LasRecord;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.index.strtree.STRtree;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -35,28 +44,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.geometry.jts.ReferencedEnvelope3D;
-import org.jgrasstools.gears.io.las.core.ALasReader;
-import org.jgrasstools.gears.io.las.core.ALasWriter;
-import org.jgrasstools.gears.io.las.core.ILasHeader;
-import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
-import org.jgrasstools.gears.io.las.utils.LasUtils;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.jgrasstools.gears.utils.math.NumericsUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.prep.PreparedGeometry;
-import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
-import com.vividsolutions.jts.index.strtree.STRtree;
 
 @Description("A module that splits a las file into smaller pieces.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -79,6 +66,7 @@ public class LasSplitter extends JGTModel {
     @In
     public int pCols;
 
+    @SuppressWarnings("unchecked")
     @Execute
     public void process() throws Exception {
         checkNull(inFile);
@@ -149,6 +137,12 @@ public class LasSplitter extends JGTModel {
         }
     }
 
-
+    public static void main( String[] args ) throws Exception {
+        LasSplitter splitter = new LasSplitter();
+        splitter.inFile = "/media/hydrologis/FATBOTTOMED/dati_unibz/2015_06_rilievo_drone/20150609_it-valaur_aoi683_merged_gcp_all.laz";
+        splitter.pCols = 5;
+        splitter.pRows = 5;
+        splitter.process();
+    }
 
 }

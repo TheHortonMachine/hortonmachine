@@ -17,19 +17,19 @@
  */
 package org.jgrasstools.gears.spatialite;
 
-import java.util.HashMap;
-
-import com.vividsolutions.jts.geom.Geometry;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * A simple table record representation as hashmap with the column name.
+ * A simple table info.
  * 
  * <p>If performance is needed, this should not be used.</p>
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TableRecordMap {
-    public Geometry geometry;
-
-    public HashMap<String, Object> data = new HashMap<String, Object>();
+public class QueryResult {
+    public int geometryIndex = -1;
+    public List<String> names = new ArrayList<>();
+    public List<String> types = new ArrayList<>();
+    public List<Object[]> data = new ArrayList<>();
 }

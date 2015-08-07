@@ -211,7 +211,7 @@ public enum SpatialiteGeometryType {
             default:
                 break;
         }
-        throw new IllegalArgumentException("No geometry type of value: " + value);
+        return null;
     }
 
     /**
@@ -308,6 +308,6 @@ public enum SpatialiteGeometryType {
         } else if (name.toUpperCase().startsWith("GEOMETRYCOLLECTION")) {
             return GEOMETRYCOLLECTION_XY.getType();
         }
-        throw new IllegalArgumentException("No geometry type of value: " + name);
+        return -1;
     }
 }
