@@ -132,7 +132,6 @@ public class OmsSaintGeo extends JGTModel {
 
     private LinearAlgebra linearAlgebra = new LinearAlgebra();
     private double DELT = -1;
-    // TODO verify where and how these variables are set
     private int SCELTA_A_MONTE;
     private int SCELTA_A_VALLE;
 

@@ -37,8 +37,14 @@ import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.
 import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.pDeltaTMillis_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.pDeltaTMillis_UNIT;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -51,6 +57,9 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
+import oms3.io.CSTable;
+import oms3.io.DataIO;
+import oms3.io.TableIterator;
 
 import org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -92,12 +101,14 @@ public class SaintGeo extends JGTModel {
     public String inDownstreamLevel;
 
     @Description(inLateralId2DischargeMap_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public HashMap<Integer, double[]> inLateralId2DischargeMap;
+    public String inLateralId2Discharge;
 
     @Description(inConfluenceId2DischargeMap_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public HashMap<Integer, double[]> inConfluenceId2DischargeMap;
+    public String inConfluenceId2Discharge;
 
     @Description(pDeltaTMillis_DESCRIPTION)
     @Unit(pDeltaTMillis_UNIT)
@@ -108,7 +119,7 @@ public class SaintGeo extends JGTModel {
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outputLevelFile;
-    
+
     @Description(outputDischargeFile_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
@@ -130,11 +141,65 @@ public class SaintGeo extends JGTModel {
             double[] level = readToArray(inDownstreamLevel);
             saintGeo.inDownstreamLevel = level;
         }
+        
+        if (inLateralId2Discharge!=null) {
+            HashMap<Integer, double[]> lateralData = readIdData(inLateralId2Discharge);
+            saintGeo.inLateralId2DischargeMap = lateralData;
+        }
+        if (inConfluenceId2Discharge!=null) {
+            HashMap<Integer, double[]> confluenceData = readIdData(inConfluenceId2Discharge);
+            saintGeo.inConfluenceId2DischargeMap = confluenceData;
+        }
 
         saintGeo.pDeltaTMillis = pDeltaTMillis;
         saintGeo.outputLevelFile = outputLevelFile;
         saintGeo.outputDischargeFile = outputDischargeFile;
         saintGeo.process();
+    }
+
+    private HashMap<Integer, double[]> readIdData( String path ) throws Exception {
+        CSTable table = DataIO.table(new File(path), null);
+        HashMap<Integer, List<Double>> dataMap = new HashMap<>();
+        int columnCount = table.getColumnCount();
+        int[] ids = new int[columnCount - 1]; // minus type and timestamp
+        for( int i = 2; i <= columnCount; i++ ) {
+            Map<String, String> columnInfo = table.getColumnInfo(i);
+            String idStr = columnInfo.get("id");
+            int id = Integer.parseInt(idStr);
+            ids[i - 2] = id;
+        }
+        TableIterator<String[]> rowsIterator = (TableIterator<String[]>) table.rows().iterator();
+        while( rowsIterator.hasNext() ) {
+            String[] row = rowsIterator.next();
+            for( int i = 2; i < row.length; i++ ) {
+                List<Double> dataList = dataMap.get(ids[i - 2]);
+                if (dataList == null) {
+                    dataList = new ArrayList<>();
+                    dataMap.put(ids[i - 2], dataList);
+                }
+                double value = -1;
+                if (row[i] == null || row[i].length() == 0) {
+                    value = JGTConstants.doubleNovalue;
+                } else {
+                    String valueStr = row[i];
+                    value = Double.parseDouble(valueStr);
+                }
+                dataList.add(value);
+            }
+        }
+
+        HashMap<Integer, double[]> outDataMap = new HashMap<>();
+        for( Entry<Integer, List<Double>> entry : dataMap.entrySet() ) {
+            Integer id = entry.getKey();
+            List<Double> valueList = entry.getValue();
+            double[] values = new double[valueList.size()];
+            for( int i = 0; i < values.length; i++ ) {
+                values[i] = valueList.get(i);
+            }
+            outDataMap.put(id, values);
+        }
+
+        return outDataMap;
     }
 
     private double[] readToArray( String file ) throws IOException {
@@ -159,6 +224,7 @@ public class SaintGeo extends JGTModel {
         String inRiv = base + "riverpoints_adige_75_rev.shp";
         String inDischarge = base + "head_discharge.csv";
         String inLevel = base + "downstream_waterlevel.csv";
+        String inLateral = base + "q_lateral.csv";
         String outLevelFile = base + "saintgeo_level_out.csv";
         String outDischargeFile = base + "saintgeo_discharge_out.csv";
 
@@ -168,6 +234,7 @@ public class SaintGeo extends JGTModel {
         sg.inSections = inSec;
         sg.inDischarge = inDischarge;
         sg.inDownstreamLevel = inLevel;
+        sg.inLateralId2Discharge = inLateral;
 
         sg.pDeltaTMillis = 5000;
 
