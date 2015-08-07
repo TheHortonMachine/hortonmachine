@@ -315,10 +315,10 @@ public class OmsSaintGeo extends JGTModel {
                     sbLevel.append(waterLevel[i]).append(";");
                     double minsez = section.getMinElevation();
                     sbLevel.append(minsez).append(";");
-                    int dx = section.getStartNodeIndex();
-                    sbLevel.append(sectionCoordinates[dx].z).append(";");
-                    int sx = section.getEndNodeIndex();
-                    sbLevel.append(sectionCoordinates[sx].z).append(";");
+//                    int dx = section.getStartNodeIndex();
+//                    sbLevel.append(sectionCoordinates[dx].z).append(";");
+//                    int sx = section.getEndNodeIndex();
+//                    sbLevel.append(sectionCoordinates[sx].z).append(";");
                 }
                 RiverPoint section = riverPoints.get(sectionsCount - 1);
                 Coordinate[] sectionCoordinates = section.getSectionCoordinates();
@@ -327,10 +327,10 @@ public class OmsSaintGeo extends JGTModel {
                 sbLevel.append(waterLevel[sectionsCount - 1]).append(";");
                 double minsez = section.getMinElevation();
                 sbLevel.append(minsez).append(";");
-                int dx = section.getStartNodeIndex();
-                sbLevel.append(sectionCoordinates[dx].z).append(";");
-                int sx = section.getEndNodeIndex();
-                sbLevel.append(sectionCoordinates[sx].z);
+//                int dx = section.getStartNodeIndex();
+//                sbLevel.append(sectionCoordinates[dx].z).append(";");
+//                int sx = section.getEndNodeIndex();
+//                sbLevel.append(sectionCoordinates[sx].z);
 
                 outputLevelWriter.write(sbLevel.toString() + "\n");
                 pm.message(sbLevel.toString());

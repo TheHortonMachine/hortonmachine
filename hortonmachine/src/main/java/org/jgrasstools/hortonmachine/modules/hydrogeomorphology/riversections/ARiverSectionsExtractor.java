@@ -179,9 +179,9 @@ public abstract class ARiverSectionsExtractor {
             List<SimpleFeature> sectionPointsFeatures ) {
         RiverInfo riverInfo = new RiverInfo();
 
-        for( SimpleFeature riverFeature : riverPointsFeatures ) {
-            int sectionId = ((Number) riverFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTION_ID)).intValue();
-            riverInfo.orderedRiverPoints.put(sectionId, riverFeature);
+        for( SimpleFeature riverPointFeature : riverPointsFeatures ) {
+            int sectionId = ((Number) riverPointFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTION_ID)).intValue();
+            riverInfo.orderedRiverPoints.put(sectionId, riverPointFeature);
         }
         int count = 0;
         riverInfo.riverCoords = new Coordinate[riverInfo.orderedRiverPoints.size()];
@@ -232,6 +232,7 @@ public abstract class ARiverSectionsExtractor {
             }
             LineString sectionLineWithPoints = gf.createLineString(sectionCoords);
             RiverPoint rp = new RiverPoint(intersectionPoint.getCoordinate(), progressive, sectionLineWithPoints, null);
+            rp.setSectionId(sectionId);
             riverInfo.orderedNetworkPoints.add(rp);
         }
         riverInfo.extractedSectionsCount = riverInfo.orderedNetworkPoints.size();
@@ -241,6 +242,7 @@ public abstract class ARiverSectionsExtractor {
             Coordinate coordinate = ((Geometry) riverPoint.getDefaultGeometry()).getCoordinate();
             double progressive = ((Number) riverPoint.getAttribute(ARiverSectionsExtractor.FIELD_PROGRESSIVE)).doubleValue();
             RiverPoint rp = new RiverPoint(coordinate, progressive, null, null);
+            rp.setSectionId(riverEntry.getKey());
             riverInfo.orderedNetworkPoints.add(rp);
         }
 
@@ -251,12 +253,11 @@ public abstract class ARiverSectionsExtractor {
     public static List<RiverPoint> riverInfo2RiverPoints( RiverInfo riverInfo ) {
         List<RiverPoint> sectionPoints = new ArrayList<RiverPoint>();
         int orderedNetworkPointsSize = riverInfo.orderedNetworkPoints.size();
+        // TODO check order or reverse order
         for( int i = 0; i < orderedNetworkPointsSize; i++ ) {
-            int iRev = orderedNetworkPointsSize - 1 - i;
             RiverPoint currentNetworkPoint = riverInfo.orderedNetworkPoints.get(i);
             if (currentNetworkPoint.hasSection) {
                 sectionPoints.add(currentNetworkPoint);
-                currentNetworkPoint.setSectionId(iRev);
             }
         }
         return sectionPoints;
