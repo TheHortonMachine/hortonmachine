@@ -253,7 +253,6 @@ public abstract class ARiverSectionsExtractor {
     public static List<RiverPoint> riverInfo2RiverPoints( RiverInfo riverInfo ) {
         List<RiverPoint> sectionPoints = new ArrayList<RiverPoint>();
         int orderedNetworkPointsSize = riverInfo.orderedNetworkPoints.size();
-        // TODO check order or reverse order
         for( int i = 0; i < orderedNetworkPointsSize; i++ ) {
             RiverPoint currentNetworkPoint = riverInfo.orderedNetworkPoints.get(i);
             if (currentNetworkPoint.hasSection) {

@@ -307,6 +307,7 @@ public class OmsSaintGeo extends JGTModel {
 
                 /* write the output file with levels */
                 StringBuilder sbLevel = new StringBuilder();
+                sbLevel.append("\n#timestep: " + timeIndex+ "\n");
                 for( int i = 0; i < sectionsCount - 1; i++ ) {
                     RiverPoint section = riverPoints.get(i);
                     Coordinate[] sectionCoordinates = section.getSectionCoordinates();
@@ -315,10 +316,10 @@ public class OmsSaintGeo extends JGTModel {
                     sbLevel.append(waterLevel[i]).append(";");
                     double minsez = section.getMinElevation();
                     sbLevel.append(minsez).append(";");
-//                    int dx = section.getStartNodeIndex();
-//                    sbLevel.append(sectionCoordinates[dx].z).append(";");
-//                    int sx = section.getEndNodeIndex();
-//                    sbLevel.append(sectionCoordinates[sx].z).append(";");
+                    int dx = section.getStartNodeIndex();
+                    sbLevel.append(sectionCoordinates[dx].z).append(";");
+                    int sx = section.getEndNodeIndex();
+                    sbLevel.append(sectionCoordinates[sx].z).append("\n");
                 }
                 RiverPoint section = riverPoints.get(sectionsCount - 1);
                 Coordinate[] sectionCoordinates = section.getSectionCoordinates();
@@ -327,16 +328,17 @@ public class OmsSaintGeo extends JGTModel {
                 sbLevel.append(waterLevel[sectionsCount - 1]).append(";");
                 double minsez = section.getMinElevation();
                 sbLevel.append(minsez).append(";");
-//                int dx = section.getStartNodeIndex();
-//                sbLevel.append(sectionCoordinates[dx].z).append(";");
-//                int sx = section.getEndNodeIndex();
-//                sbLevel.append(sectionCoordinates[sx].z);
+                int dx = section.getStartNodeIndex();
+                sbLevel.append(sectionCoordinates[dx].z).append(";");
+                int sx = section.getEndNodeIndex();
+                sbLevel.append(sectionCoordinates[sx].z);
 
                 outputLevelWriter.write(sbLevel.toString() + "\n");
                 pm.message(sbLevel.toString());
                 
                 /* write the output file with discharge */
                 StringBuilder sbDischarge = new StringBuilder();
+                sbDischarge.append("\n#timestep: " + timeIndex+ "\n");
                 for( int i = 0; i < sectionsCount - 1; i++ ) {
                     RiverPoint sectionDischarge = riverPoints.get(i);
                     sbDischarge.append(sectionDischarge.getSectionId()).append(";");
@@ -345,7 +347,7 @@ public class OmsSaintGeo extends JGTModel {
                     sbDischarge.append(froudeNumber).append(";");
                     sbDischarge.append(discharge[i] < 0.0 ? 0.0 : discharge[i]).append(";");
                     sbDischarge.append(celerity[i] < 0.0 ? 0.0 : celerity[i]).append(";");
-                    sbDischarge.append(idrgeo[i][0]).append(";");
+                    sbDischarge.append(idrgeo[i][0]).append("\n");
                 }
                 RiverPoint sectionDischarge = riverPoints.get(sectionsCount - 1);
                 double froudeNumber = (Math.abs(discharge[sectionsCount - 2] / idrgeo[sectionsCount - 1][0]) / Math.sqrt(G
@@ -711,7 +713,7 @@ public class OmsSaintGeo extends JGTModel {
         double[] tirante_old = new double[imax];
         double[] qs = new double[imax - 1];
 
-        // FIXME does it have to be initialized
+        // FIXME check how it will be used
         double tirantein = 0;
 
         /*
@@ -740,11 +742,6 @@ public class OmsSaintGeo extends JGTModel {
         U_I[0] = 0.5 * (U[0] + qin / (2.0 * idrgeo[0][0] - geomid[0][0]));
         /*
          * Calculate the gamma coefficient.
-         */
-
-        /*
-         * TODO: fino a questo simbolo sostituisco la portata sfiorata dall'argine con la portata 
-         * sfiorata per il problema della griglia
          */
         for( int i = 0; i < imax - 1; i++ ) {
             uu = U[i];
@@ -793,12 +790,11 @@ public class OmsSaintGeo extends JGTModel {
             T1 = tirante[i];
             T2 = tirante[i + 1];
             ds = section_i.getStartNodeIndex();
-            // TODO: check the banks position!!
             // height of the point outside the bank on the left for the current and for the next
             // section
-            A1dx = sectionCoordinates_i[ds + 1].z;
+            A1dx = sectionCoordinates_i[ds].z;
             ds = section_ip.getStartNodeIndex();
-            A2dx = sectionCoordinates_ip[ds + 1].z;
+            A2dx = sectionCoordinates_ip[ds].z;
             /* calculate the outflow discharge on the right */
             if (T1 > A1dx && T2 > A2dx) {
                 l = DELXM[i];
@@ -817,9 +813,9 @@ public class OmsSaintGeo extends JGTModel {
             // T1 = tirante[i];
             // T2 = tirante[i + 1];
             sx = section_i.getEndNodeIndex();
-            A1sx = sectionCoordinates_i[sx - 1].z;
+            A1sx = sectionCoordinates_i[sx].z;
             sx = section_ip.getEndNodeIndex();
-            A2sx = sectionCoordinates_ip[sx - 1].z;
+            A2sx = sectionCoordinates_ip[sx].z;
             /* calculate the outflow discharge on the right */
             if (T1 > A1sx && T2 > A2sx) {
                 l = DELXM[i];
@@ -934,8 +930,6 @@ public class OmsSaintGeo extends JGTModel {
             /* the coefficients of the last line */
             dx = DELXM[imax - 2];
             base = (geomid[imax - 2][3] + idrgeo[imax - 1][3]) / 2.0;
-            // FIXME what is correct formula for zetam?
-            // zetam = sez.get(imax - 1).getElevationAt(1);
             zetam = tirante[imax - 1] - ((idrgeo[imax - 1][0] + geomid[imax - 2][0]) / 2.0) / base;
 
             omegam = base * Math.sqrt(G * (tirante[imax - 1] - zetam));
@@ -968,9 +962,6 @@ public class OmsSaintGeo extends JGTModel {
                     tirante[i] = minsez + h_DEF;
             }
         }
-        /*
-         * TODO: add the calculation of water depth and velocity and the check on the water depth (min_value)
-         */
 
         /*******************************************************************************************
          * THIRD CASE: UPSTREAM CONDITION 1 DOWNSTREAM CONDITION 3
@@ -1012,7 +1003,6 @@ public class OmsSaintGeo extends JGTModel {
              * The function ris_sistema calculates the values of the water height at time n+1
              * and save them in the vector tirante[]
              */
-            // FIXME check the last parameter in all ris_sistema calls (needs to be one less?)
             linearAlgebra.ris_sistema(D, DS, DI, B, tirante, imax - 1);
             /* Calculate the discharge and the velocities at time n+1. */
             Q[0] = qin;
