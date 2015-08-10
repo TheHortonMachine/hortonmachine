@@ -17,7 +17,10 @@
  */
 package org.jgrasstools.gears.spatialite;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -35,7 +38,6 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.time.EggClock;
 import org.sqlite.SQLiteConfig;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
@@ -602,6 +604,68 @@ public class SpatialiteDb implements AutoCloseable {
             }
         }
         return queryResult;
+    }
+
+    /**
+     * Execute a query from raw sql and put the result in a csv file.
+     * 
+     * @param sql the sql to run.
+     * @param csvFile the output file.
+     * @param doHeader if <code>true</code>, the header is written.
+     * @param separator the separator (if null, ";" is used).
+     * @throws SQLException
+     * @throws ParseException
+     * @throws IOException 
+     */
+    public void runRawSqlToCsv( String sql, File csvFile, boolean doHeader, String separator )
+            throws SQLException, ParseException, IOException {
+        WKBReader wkbReader = new WKBReader();
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnCount = rsmd.getColumnCount();
+        int geometryIndex = -1;
+        for( int i = 1; i <= columnCount; i++ ) {
+            int columnType = rsmd.getColumnType(i);
+            String columnTypeName = rsmd.getColumnTypeName(i);
+            if (columnTypeName.equals("BLOB") && SpatialiteGeometryType.forValue(columnType) != null) {
+                geometryIndex = i;
+            }
+        }
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {
+            while( rs.next() ) {
+                for( int j = 1; j <= columnCount; j++ ) {
+                    if (j > 1) {
+                        bw.write(separator);
+                    }
+                    if (j == geometryIndex) {
+                        byte[] geomBytes = rs.getBytes(j);
+                        if (geomBytes != null) {
+                            try {
+                                Geometry geometry = wkbReader.read(geomBytes);
+                                bw.write(geometry.toText());
+                            } catch (Exception e) {
+                                // write it as it comes
+                                Object object = rs.getObject(j);
+                                if (object != null) {
+                                    bw.write(object.toString());
+                                } else {
+                                    bw.write("");
+                                }
+                            }
+                        }
+                    } else {
+                        Object object = rs.getObject(j);
+                        if (object != null) {
+                            bw.write(object.toString());
+                        } else {
+                            bw.write("");
+                        }
+                    }
+                }
+                bw.write("\n");
+            }
+        }
     }
 
     /**
