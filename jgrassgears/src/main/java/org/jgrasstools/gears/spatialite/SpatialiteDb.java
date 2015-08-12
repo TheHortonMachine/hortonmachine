@@ -619,20 +619,26 @@ public class SpatialiteDb implements AutoCloseable {
      */
     public void runRawSqlToCsv( String sql, File csvFile, boolean doHeader, String separator )
             throws SQLException, ParseException, IOException {
-        WKBReader wkbReader = new WKBReader();
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        ResultSetMetaData rsmd = rs.getMetaData();
-        int columnCount = rsmd.getColumnCount();
-        int geometryIndex = -1;
-        for( int i = 1; i <= columnCount; i++ ) {
-            int columnType = rsmd.getColumnType(i);
-            String columnTypeName = rsmd.getColumnTypeName(i);
-            if (columnTypeName.equals("BLOB") && SpatialiteGeometryType.forValue(columnType) != null) {
-                geometryIndex = i;
-            }
-        }
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {
+            WKBReader wkbReader = new WKBReader();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int columnCount = rsmd.getColumnCount();
+            int geometryIndex = -1;
+            for( int i = 1; i <= columnCount; i++ ) {
+                if (i > 1) {
+                    bw.write(separator);
+                }
+                int columnType = rsmd.getColumnType(i);
+                String columnTypeName = rsmd.getColumnTypeName(i);
+                String columnName = rsmd.getColumnName(i);
+                bw.write(columnName);
+                if (columnTypeName.equals("BLOB") && SpatialiteGeometryType.forValue(columnType) != null) {
+                    geometryIndex = i;
+                }
+            }
+            bw.write("\n");
             while( rs.next() ) {
                 for( int j = 1; j <= columnCount; j++ ) {
                     if (j > 1) {
