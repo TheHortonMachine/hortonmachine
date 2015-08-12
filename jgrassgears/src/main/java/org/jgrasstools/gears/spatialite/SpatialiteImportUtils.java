@@ -155,35 +155,36 @@ public class SpatialiteImportUtils {
         String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
 
         Connection conn = db.getConnection();
-        PreparedStatement pStmt = conn.prepareStatement(sql);
-        int count = 0;
-        while( featureIterator.hasNext() ) {
-            SimpleFeature f = (SimpleFeature) featureIterator.next();
-            List<Object> attributes = f.getAttributes();
-            for( int i = 0; i < attributes.size(); i++ ) {
-                Object object = attributes.get(i);
-                int iPlus = i + 1;
-                if (object instanceof Double) {
-                    pStmt.setDouble(iPlus, (Double) object);
-                } else if (object instanceof Float) {
-                    pStmt.setFloat(iPlus, (Float) object);
-                } else if (object instanceof Integer) {
-                    pStmt.setInt(iPlus, (Integer) object);
-                } else if (object instanceof String) {
-                    pStmt.setString(iPlus, (String) object);
-                } else if (object instanceof Geometry) {
-                    pStmt.setString(iPlus, ((Geometry) object).toText());
-                } else {
-                    pStmt.setString(iPlus, object.toString());
+        try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
+            int count = 0;
+            while( featureIterator.hasNext() ) {
+                SimpleFeature f = (SimpleFeature) featureIterator.next();
+                List<Object> attributes = f.getAttributes();
+                for( int i = 0; i < attributes.size(); i++ ) {
+                    Object object = attributes.get(i);
+                    int iPlus = i + 1;
+                    if (object instanceof Double) {
+                        pStmt.setDouble(iPlus, (Double) object);
+                    } else if (object instanceof Float) {
+                        pStmt.setFloat(iPlus, (Float) object);
+                    } else if (object instanceof Integer) {
+                        pStmt.setInt(iPlus, (Integer) object);
+                    } else if (object instanceof String) {
+                        pStmt.setString(iPlus, (String) object);
+                    } else if (object instanceof Geometry) {
+                        pStmt.setString(iPlus, ((Geometry) object).toText());
+                    } else {
+                        pStmt.setString(iPlus, object.toString());
+                    }
+                }
+                pStmt.executeUpdate();
+
+                count++;
+                if (limit > 0 && count > limit) {
+                    break;
                 }
             }
-            pStmt.executeUpdate();
-
-            count++;
-            if (limit > 0 && count > limit) {
-                break;
-            }
+            featureIterator.close();
         }
-        featureIterator.close();
     }
 }
