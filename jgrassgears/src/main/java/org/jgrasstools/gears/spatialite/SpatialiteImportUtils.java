@@ -28,12 +28,15 @@ import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.data.store.ReprojectingFeatureCollection;
+import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
@@ -68,6 +71,9 @@ public class SpatialiteImportUtils {
         List<String> attrSql = new ArrayList<String>();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
         for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+            if (attributeDescriptor instanceof GeometryDescriptor) {
+                continue;
+            }
             String attrName = attributeDescriptor.getLocalName();
             Class< ? > binding = attributeDescriptor.getType().getBinding();
             if (binding.isAssignableFrom(Double.class) || binding.isAssignableFrom(Float.class)) {
@@ -75,6 +81,8 @@ public class SpatialiteImportUtils {
             } else if (binding.isAssignableFrom(Long.class) || binding.isAssignableFrom(Integer.class)) {
                 attrSql.add(attrName + " INTEGER");
             } else if (binding.isAssignableFrom(String.class)) {
+                attrSql.add(attrName + " TEXT");
+            } else {
                 attrSql.add(attrName + " TEXT");
             }
         }
@@ -99,6 +107,9 @@ public class SpatialiteImportUtils {
         }
         if (typeString != null) {
             String codeFromCrs = CrsUtilities.getCodeFromCrs(schema.getCoordinateReferenceSystem());
+            if (codeFromCrs == null || codeFromCrs.toLowerCase().contains("null")) {
+                codeFromCrs = "4326"; // fallback on 4326
+            }
             codeFromCrs = codeFromCrs.replaceFirst("EPSG:", "");
             db.addGeometryXYColumnAndIndex(shpName, typeString, codeFromCrs);
         }
@@ -117,12 +128,9 @@ public class SpatialiteImportUtils {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
-        String codeFromCrs = CrsUtilities.getCodeFromCrs(schema.getCoordinateReferenceSystem());
-        codeFromCrs = codeFromCrs.replaceFirst("EPSG:", "");
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
 
         SimpleFeatureCollection features = featureSource.getFeatures();
-        SimpleFeatureIterator featureIterator = features.features();
 
         List<String[]> tableInfo = db.getTableColumns(tableName);
         List<String> tableColumns = new ArrayList<>();
@@ -131,6 +139,11 @@ public class SpatialiteImportUtils {
         }
         SpatialiteGeometryColumns geometryColumns = db.getGeometryColumnsForTable(tableName);
         String gCol = geometryColumns.f_geometry_column;
+
+        int epsg = geometryColumns.srid;
+        CoordinateReferenceSystem crs = CRS.decode("EPSG:" + epsg);
+        ReprojectingFeatureCollection repFeatures = new ReprojectingFeatureCollection(features, crs);
+        SimpleFeatureIterator featureIterator = repFeatures.features();
 
         String valueNames = "";
         String qMarks = "";
@@ -141,7 +154,7 @@ public class SpatialiteImportUtils {
             }
             if (attributeDescriptor instanceof GeometryDescriptor) {
                 valueNames += "," + gCol;
-                qMarks += ",GeomFromText(?, " + codeFromCrs + ")";
+                qMarks += ",GeomFromText(?, " + epsg + ")";
             } else {
                 if (!tableColumns.contains(attrName)) {
                     throw new IllegalArgumentException("The imported shapefile doesn't seem to match the table's schema.");
@@ -162,6 +175,9 @@ public class SpatialiteImportUtils {
                 List<Object> attributes = f.getAttributes();
                 for( int i = 0; i < attributes.size(); i++ ) {
                     Object object = attributes.get(i);
+                    if (object == null) {
+                        continue;
+                    }
                     int iPlus = i + 1;
                     if (object instanceof Double) {
                         pStmt.setDouble(iPlus, (Double) object);
