@@ -41,7 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -224,9 +223,9 @@ public class SaintGeo extends JGTModel {
         String inRiv = base + "riverpoints_adige_75_rev.shp";
         String inDischarge = base + "head_discharge.csv";
         String inLevel = base + "downstream_waterlevel.csv";
-        String inLateral = base + "q_lateral.csv";
-        String outLevelFile = base + "saintgeo_level_out.csv";
-        String outDischargeFile = base + "saintgeo_discharge_out.csv";
+        String inLateral = base + "q_lateral_offtakes.csv";
+        String outLevelFile = base + "saintgeo_level_out_offtakes.csv";
+        String outDischargeFile = base + "saintgeo_discharge_out_offtakes.csv";
 
         SaintGeo sg = new SaintGeo();
         sg.inRiverPoints = inRiv;

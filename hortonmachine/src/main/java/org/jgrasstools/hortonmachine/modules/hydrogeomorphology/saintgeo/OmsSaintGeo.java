@@ -108,7 +108,7 @@ public class OmsSaintGeo extends JGTModel {
 
     // VARS DOC START
     public static final String DESCRIPTION = "A simple 1D hydraulic model based on the equations of Saint Venant.";
-    public static final String DOCUMENTATION = "";
+    public static final String DOCUMENTATION = "OmsSaintGeo.html";
     public static final String KEYWORDS = "1D, Hydraulic";
     public static final String LABEL = HYDROGEOMORPHOLOGY;
     public static final String NAME = "SaintGeo";
@@ -712,7 +712,7 @@ public class OmsSaintGeo extends JGTModel {
         double[] tirante_old = new double[imax];
         double[] qs = new double[imax - 1];
 
-        // FIXME check how it will be used
+        // FIXME not sure it is correct
         double tirantein = 0;
 
         /*
@@ -861,7 +861,6 @@ public class OmsSaintGeo extends JGTModel {
                         / (dx * (1.0 + DELT * GAM[i - 1])) + ql[i] - qs[i];
             }
             /* the coefficients of the last line */
-            // FIXME check if imax -2 and imax -1 are correct
             dx = (DELXM[imax - 3] + DELXM[imax - 2]) / 2.0;
             base = (geomid[imax - 3][3] + geomid[imax - 2][3]) / 2.0;
             C_old = (G * DELT * geomid[imax - 3][0]) / (DELXM[imax - 3] * (1.0 + DELT * GAM[imax - 3]));
