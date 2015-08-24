@@ -117,11 +117,7 @@ public class LasSplitter extends JGTModel {
 
                 List<ALasWriter> result = envelopeTree.query(new Envelope(coord));
                 int size = result.size();
-                if (size > 1) {
-                    System.out.println("aaaaaaaaaaaa");
-                }
                 if (size == 0) {
-                    System.out.println("bbbbbbbbbbbbbb: " + coord);
                     continue;
                 }
 
@@ -135,14 +131,6 @@ public class LasSplitter extends JGTModel {
                 writer.close();
             }
         }
-    }
-
-    public static void main( String[] args ) throws Exception {
-        LasSplitter splitter = new LasSplitter();
-        splitter.inFile = "/media/hydrologis/FATBOTTOMED/dati_unibz/2015_06_rilievo_drone/20150609_it-valaur_aoi683_merged_gcp_all.laz";
-        splitter.pCols = 5;
-        splitter.pRows = 5;
-        splitter.process();
     }
 
 }

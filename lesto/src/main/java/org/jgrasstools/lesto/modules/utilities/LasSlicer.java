@@ -257,16 +257,4 @@ public class LasSlicer extends JGTModel {
 
     }
 
-    public static void main( String[] args ) throws Exception {
-        LasSlicer l = new LasSlicer();
-        l.inLas = "/home/hydrologis/data/rilievo_tls/avgres/las/index.lasfolder";
-        l.inDtm = "/home/hydrologis/data/rilievo_tls/avgres/dem.asc";
-        l.pInterval = 2.0;
-        l.pThickness = 0.4;
-        l.pGroundThreshold = 0.5;
-        l.pMode = "raster";
-        l.pResolution = 0.02;
-        l.process();
-    }
-
 }
