@@ -112,4 +112,16 @@ public class LasInfo extends JGTModel {
         }
     }
 
+    /**
+     * Utility method to run info.
+     * 
+     * @param filePath the file to print info of.
+     * @throws Exception
+     */
+    public static void printInfo( String filePath ) throws Exception {
+        LasInfo lasInfo = new LasInfo();
+        lasInfo.inLas = filePath;
+        lasInfo.process();
+    }
+
 }
