@@ -111,7 +111,7 @@ public class SpatialiteImportUtils {
                 codeFromCrs = "4326"; // fallback on 4326
             }
             codeFromCrs = codeFromCrs.replaceFirst("EPSG:", "");
-            db.addGeometryXYColumnAndIndex(shpName, typeString, codeFromCrs);
+            db.addGeometryXYColumnAndIndex(shpName, null, typeString, codeFromCrs);
         }
     }
 

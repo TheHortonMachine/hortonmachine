@@ -217,11 +217,13 @@ public class SpatialiteDb implements AutoCloseable {
      * Adds a geometry column to a table. 
      * 
      * @param tableName the table name.
+     * @param geomColName TODO
      * @param geomType the geometry type (ex. LINESTRING);
      * @param epsg the optional epsg code (default is 4326);
      * @throws SQLException
      */
-    public void addGeometryXYColumnAndIndex( String tableName, String geomType, String epsg ) throws SQLException {
+    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg )
+            throws SQLException {
         String epsgStr = "4326";
         if (epsg != null) {
             epsgStr = epsg;
@@ -231,12 +233,16 @@ public class SpatialiteDb implements AutoCloseable {
             geomTypeStr = geomType;
         }
 
+        if (geomColName == null) {
+            geomColName = defaultGeomFieldName;
+        }
+
         try (Statement stmt = conn.createStatement()) {
-            String sql = "SELECT AddGeometryColumn('" + tableName + "','" + defaultGeomFieldName + "', " + epsgStr + ", '"
-                    + geomTypeStr + "', 'XY')";
+            String sql = "SELECT AddGeometryColumn('" + tableName + "','" + geomColName + "', " + epsgStr + ", '" + geomTypeStr
+                    + "', 'XY')";
             stmt.execute(sql);
 
-            sql = "SELECT CreateSpatialIndex('" + tableName + "', '" + defaultGeomFieldName + "');";
+            sql = "SELECT CreateSpatialIndex('" + tableName + "', '" + geomColName + "');";
             stmt.execute(sql);
         }
     }
@@ -382,12 +388,18 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws Exception
      */
     public SpatialiteGeometryColumns getGeometryColumnsForTable( String tableName ) throws SQLException {
-        String sql = "select " + SpatialiteGeometryColumns.F_TABLE_NAME + ", " //
-                + SpatialiteGeometryColumns.F_GEOMETRY_COLUMN + ", " //
-                + SpatialiteGeometryColumns.GEOMETRY_TYPE + "," //
-                + SpatialiteGeometryColumns.COORD_DIMENSION + ", " //
-                + SpatialiteGeometryColumns.SRID + ", " //
-                + SpatialiteGeometryColumns.SPATIAL_INDEX_ENABLED + " from " //
+        String sql = "select " + SpatialiteGeometryColumns.F_TABLE_NAME
+                + ", " //
+                + SpatialiteGeometryColumns.F_GEOMETRY_COLUMN
+                + ", " //
+                + SpatialiteGeometryColumns.GEOMETRY_TYPE
+                + "," //
+                + SpatialiteGeometryColumns.COORD_DIMENSION
+                + ", " //
+                + SpatialiteGeometryColumns.SRID
+                + ", " //
+                + SpatialiteGeometryColumns.SPATIAL_INDEX_ENABLED
+                + " from " //
                 + SpatialiteGeometryColumns.TABLENAME + " where " + SpatialiteGeometryColumns.F_TABLE_NAME + "='" + tableName
                 + "'";
         try (Statement stmt = conn.createStatement()) {
@@ -634,8 +646,8 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws ParseException
      * @throws IOException 
      */
-    public void runRawSqlToCsv( String sql, File csvFile, boolean doHeader, String separator )
-            throws SQLException, ParseException, IOException {
+    public void runRawSqlToCsv( String sql, File csvFile, boolean doHeader, String separator ) throws SQLException,
+            ParseException, IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {
             WKBReader wkbReader = new WKBReader();
             try (Statement stmt = conn.createStatement()) {
