@@ -251,7 +251,15 @@ public class SpatialiteLasWriter extends JGTModel {
                 DirectPosition wPoint = new DirectPosition2D(dot.x, dot.y);
                 GridCoordinates2D gridCoord = gridGeometry.worldToGrid(wPoint);
                 int x = gridCoord.x;
+                if (x < 0)
+                    x = 0;
+                if (x > cols - 1)
+                    x = cols - 1;
                 int y = gridCoord.y;
+                if (y < 0)
+                    y = 0;
+                if (y > rows - 1)
+                    y = rows - 1;
                 if (dotOnMatrix[x][y] == null) {
                     dotOnMatrix[x][y] = new ArrayList<>();
                 }
@@ -279,10 +287,10 @@ public class SpatialiteLasWriter extends JGTModel {
                     double maxElev = Double.NEGATIVE_INFINITY;
                     byte[] position = new byte[8 * 3 * pointCount];
                     ByteBuffer positionBuffer = ByteBuffer.wrap(position);
-                    
-                    // TODO check, maybe here a median would be more appropriate 
+
+                    // TODO check, maybe here a median would be more appropriate
                     double avgIntensity = 0.0;
-                    
+
                     short minIntensity = 30000;
                     short maxIntensity = -1;
                     byte[] intensClass = new byte[2 * 2 * pointCount];
@@ -378,11 +386,4 @@ public class SpatialiteLasWriter extends JGTModel {
     public void close() throws Exception {
     }
 
-    public static void main( String[] args ) throws Exception {
-        SpatialiteLasWriter w = new SpatialiteLasWriter();
-        w.inFolder = "I:/UNIBZ/aurina_spatialite/las";
-        w.inSpatialite = "I:/UNIBZ/aurina_spatialite/las_aurina.sqlite";
-        w.pCellsize = 5;
-        w.process();
-    }
 }

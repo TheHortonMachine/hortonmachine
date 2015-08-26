@@ -246,4 +246,98 @@ public class LasCellsTable {
             return lasCells;
         }
     }
+
+    /**
+     * Query the las cell table on a geometry intersection.
+     *
+     * @param db the db to use.
+     * @param geometry an optional {@link Geometry} to query spatially.
+     * @param doPosition if <code>true</code> position info is extracted.
+     * @param doIntensity if <code>true</code> intensity and classification info is extracted.
+     * @param doReturns  if <code>true</code> return info is extracted.
+     * @param doTime  if <code>true</code> time info is extracted.
+     * @param doColor if <code>true</code> color info is extracted.
+     * @return the list of extracted points
+     * @throws Exception
+     */
+    public static List<LasCell> getLasCells( SpatialiteDb db, Geometry geometry, boolean doPosition, boolean doIntensity,
+            boolean doReturns, boolean doTime, boolean doColor ) throws Exception {
+        List<LasCell> lasCells = new ArrayList<>();
+        String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
+                + COLUMN_POINTS_COUNT;
+
+        if (doPosition)
+            sql += "," + COLUMN_AVG_ELEV + "," + //
+                    COLUMN_MIN_ELEV + "," + //
+                    COLUMN_MAX_ELEV + "," + //
+                    COLUMN_POSITION_BLOB;//
+
+        if (doIntensity)
+            sql += "," + COLUMN_AVG_INTENSITY + "," + //
+                    COLUMN_MIN_INTENSITY + "," + //
+                    COLUMN_MAX_INTENSITY + "," + //
+                    COLUMN_INTENS_CLASS_BLOB;//
+
+        if (doReturns)
+            sql += "," + COLUMN_RETURNS_BLOB;
+
+        if (doTime)
+            sql += "," + COLUMN_MIN_GPSTIME + "," + //
+                    COLUMN_MAX_GPSTIME + "," + //
+                    COLUMN_GPSTIME_BLOB;
+        if (doColor)
+            sql += "," + COLUMN_COLORS_BLOB;
+
+        sql += " FROM " + TABLENAME;
+
+        if (geometry != null) {
+            sql += " WHERE " + db.getSpatialindexGeometryWherePiece(TABLENAME, null, geometry);
+        }
+
+        Connection conn = db.getConnection();
+        WKBReader wkbReader = new WKBReader();
+        try (Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery(sql);
+            while( rs.next() ) {
+                LasCell lasCell = new LasCell();
+                int i = 1;
+                byte[] geomBytes = rs.getBytes(i++);
+                Geometry tmpGeometry = wkbReader.read(geomBytes);
+                if (tmpGeometry instanceof Polygon) {
+                    Polygon polygon = (Polygon) tmpGeometry;
+                    lasCell.polygon = polygon;
+                    lasCell.id = rs.getLong(i++);
+                    lasCell.sourceId = rs.getLong(i++);
+                    lasCell.pointsCount = rs.getInt(i++);
+
+                    if (doPosition) {
+                        lasCell.avgElev = rs.getDouble(i++);
+                        lasCell.minElev = rs.getDouble(i++);
+                        lasCell.maxElev = rs.getDouble(i++);
+                        lasCell.xzys = rs.getBytes(i++);
+                    }
+
+                    if (doIntensity) {
+                        lasCell.avgIntensity = rs.getShort(i++);
+                        lasCell.minIntensity = rs.getShort(i++);
+                        lasCell.maxIntensity = rs.getShort(i++);
+                        lasCell.intensitiesClassifications = rs.getBytes(i++);
+                    }
+
+                    if (doReturns)
+                        lasCell.returns = rs.getBytes(i++);
+
+                    if (doTime) {
+                        lasCell.minGpsTime = rs.getDouble(i++);
+                        lasCell.maxGpsTime = rs.getDouble(i++);
+                        lasCell.gpsTimes = rs.getBytes(i++);
+                    }
+                    if (doColor)
+                        lasCell.colors = rs.getBytes(i++);
+                    lasCells.add(lasCell);
+                }
+            }
+            return lasCells;
+        }
+    }
 }
