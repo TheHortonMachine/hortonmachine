@@ -782,6 +782,41 @@ public class SpatialiteDb implements AutoCloseable {
     }
 
     /**
+     * Get the where query piece based on a geometry intersection.
+     * 
+     * @param tableName the table to query.
+     * @param alias optinal alias.
+     * @param geometry the geometry to intersect.
+     * @return the query piece.
+     * @throws SQLException
+     */
+    public String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry )
+            throws SQLException {
+        String rowid = "";
+        if (alias == null) {
+            alias = "";
+            rowid = tableName + ".ROWID";
+        } else {
+            rowid = alias + ".ROWID";
+            alias = alias + ".";
+        }
+        
+        Envelope envelope = geometry.getEnvelopeInternal();
+        double x1 = envelope.getMinX();
+        double x2 = envelope.getMaxX();
+        double y1 = envelope.getMinY();
+        double y2 = envelope.getMaxY();
+        
+        SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
+        String sql = "ST_Intersects(" + alias + gCol.f_geometry_column + ", "
+                +"GeomFromText('" + geometry.toText() + "')"
+                + ") = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
+                + "f_table_name = '" + tableName + "' AND " //
+                + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
+        return sql;
+    }
+
+    /**
      * Get the bounds of a table.
      * 
      * @param tableName the table to query.
