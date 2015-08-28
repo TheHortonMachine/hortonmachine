@@ -43,7 +43,7 @@ public class LasCell {
     /**
      * The byte array containing [x1,y1,z1,x2,y2,z2,...] in amount of pointsCount. 
      */
-    public byte[] xzys;
+    public byte[] xyzs;
 
     public short avgIntensity;
     public short minIntensity;

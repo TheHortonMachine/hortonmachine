@@ -346,7 +346,7 @@ public class SpatialiteLasWriter extends JGTModel {
                     lasCell.avgElev = avgElev;
                     lasCell.minElev = minElev;
                     lasCell.maxElev = maxElev;
-                    lasCell.xzys = position;
+                    lasCell.xyzs = position;
                     lasCell.avgIntensity = (short) Math.round(avgIntensity);
                     lasCell.minIntensity = minIntensity;
                     lasCell.maxIntensity = maxIntensity;
