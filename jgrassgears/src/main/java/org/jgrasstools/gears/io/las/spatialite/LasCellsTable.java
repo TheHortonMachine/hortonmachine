@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.jgrasstools.gears.spatialite.SpatialiteDb;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
@@ -343,30 +342,29 @@ public class LasCellsTable {
         }
     }
 
-    public double[][] getCellPositions( LasCell cell ) {
-        int rows = cell.xyzs.length / 3;
-        double[][] xyzRows = new double[rows][3];
+    public static double[][] getCellPositions( LasCell cell ) {
+        int points = cell.pointsCount;
+        double[][] xyzPoints = new double[points][3];
         ByteBuffer buffer = ByteBuffer.wrap(cell.xyzs);
 
-        for( int i = 0; i < rows; i++ ) {
-            xyzRows[i][0] = buffer.getDouble();
-            xyzRows[i][1] = buffer.getDouble();
-            xyzRows[i][2] = buffer.getDouble();
+        for( int i = 0; i < points; i++ ) {
+            xyzPoints[i][0] = buffer.getDouble();
+            xyzPoints[i][1] = buffer.getDouble();
+            xyzPoints[i][2] = buffer.getDouble();
         }
-        return xyzRows;
+        return xyzPoints;
     }
 
-    public short[][] getCellIntensityClass( LasCell cell ) {
-        int rows = cell.intensitiesClassifications.length / 2;
-        short[][] intensClassRows = new short[rows][3];
+    public static short[][] getCellIntensityClass( LasCell cell ) {
+        int points = cell.pointsCount;
+        short[][] intensClassPoints = new short[points][3];
         ByteBuffer buffer = ByteBuffer.wrap(cell.intensitiesClassifications);
 
-        for( int i = 0; i < rows; i++ ) {
-            intensClassRows[i][0] = buffer.getShort();
-            intensClassRows[i][1] = buffer.getShort();
-            intensClassRows[i][2] = buffer.getShort();
+        for( int i = 0; i < points; i++ ) {
+            intensClassPoints[i][0] = buffer.getShort();
+            intensClassPoints[i][1] = buffer.getShort();
         }
-        return intensClassRows;
+        return intensClassPoints;
     }
 
 }
