@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.io.las.spatialite;
 
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,6 +28,7 @@ import java.util.List;
 
 import org.jgrasstools.gears.spatialite.SpatialiteDb;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
@@ -66,21 +68,21 @@ public class LasCellsTable {
     public static void createTable( SpatialiteDb db, int srid ) throws SQLException {
         if (!db.hasTable(TABLENAME)) {
             String[] creates = {//
-            COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT",//
-                    COLUMN_SOURCE_ID + " INTEGER",//
-                    COLUMN_POINTS_COUNT + " INTEGER",//
-                    COLUMN_AVG_ELEV + " REAL",//
-                    COLUMN_MIN_ELEV + " REAL",//
-                    COLUMN_MAX_ELEV + " REAL",//
-                    COLUMN_POSITION_BLOB + " BLOB",//
-                    COLUMN_AVG_INTENSITY + " INTEGER",//
-                    COLUMN_MIN_INTENSITY + " INTEGER",//
-                    COLUMN_MAX_INTENSITY + " INTEGER",//
-                    COLUMN_INTENS_CLASS_BLOB + " BLOB",//
-                    COLUMN_RETURNS_BLOB + " BLOB",//
-                    COLUMN_MIN_GPSTIME + " REAL",//
-                    COLUMN_MAX_GPSTIME + " REAL",//
-                    COLUMN_GPSTIME_BLOB + " BLOB",//
+                    COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT", //
+                    COLUMN_SOURCE_ID + " INTEGER", //
+                    COLUMN_POINTS_COUNT + " INTEGER", //
+                    COLUMN_AVG_ELEV + " REAL", //
+                    COLUMN_MIN_ELEV + " REAL", //
+                    COLUMN_MAX_ELEV + " REAL", //
+                    COLUMN_POSITION_BLOB + " BLOB", //
+                    COLUMN_AVG_INTENSITY + " INTEGER", //
+                    COLUMN_MIN_INTENSITY + " INTEGER", //
+                    COLUMN_MAX_INTENSITY + " INTEGER", //
+                    COLUMN_INTENS_CLASS_BLOB + " BLOB", //
+                    COLUMN_RETURNS_BLOB + " BLOB", //
+                    COLUMN_MIN_GPSTIME + " REAL", //
+                    COLUMN_MAX_GPSTIME + " REAL", //
+                    COLUMN_GPSTIME_BLOB + " BLOB", //
                     COLUMN_COLORS_BLOB + " BLOB"//
             };
             db.createTable(TABLENAME, creates);
@@ -130,7 +132,7 @@ public class LasCellsTable {
             pStmt.setDouble(i++, cell.avgElev);
             pStmt.setDouble(i++, cell.minElev);
             pStmt.setDouble(i++, cell.maxElev);
-            pStmt.setBytes(i++, cell.xzys);
+            pStmt.setBytes(i++, cell.xyzs);
 
             pStmt.setShort(i++, cell.avgIntensity);
             pStmt.setShort(i++, cell.minIntensity);
@@ -220,7 +222,7 @@ public class LasCellsTable {
                         lasCell.avgElev = rs.getDouble(i++);
                         lasCell.minElev = rs.getDouble(i++);
                         lasCell.maxElev = rs.getDouble(i++);
-                        lasCell.xzys = rs.getBytes(i++);
+                        lasCell.xyzs = rs.getBytes(i++);
                     }
 
                     if (doIntensity) {
@@ -314,7 +316,7 @@ public class LasCellsTable {
                         lasCell.avgElev = rs.getDouble(i++);
                         lasCell.minElev = rs.getDouble(i++);
                         lasCell.maxElev = rs.getDouble(i++);
-                        lasCell.xzys = rs.getBytes(i++);
+                        lasCell.xyzs = rs.getBytes(i++);
                     }
 
                     if (doIntensity) {
@@ -340,4 +342,31 @@ public class LasCellsTable {
             return lasCells;
         }
     }
+
+    public double[][] getCellPositions( LasCell cell ) {
+        int rows = cell.xyzs.length / 3;
+        double[][] xyzRows = new double[rows][3];
+        ByteBuffer buffer = ByteBuffer.wrap(cell.xyzs);
+
+        for( int i = 0; i < rows; i++ ) {
+            xyzRows[i][0] = buffer.getDouble();
+            xyzRows[i][1] = buffer.getDouble();
+            xyzRows[i][2] = buffer.getDouble();
+        }
+        return xyzRows;
+    }
+
+    public short[][] getCellIntensityClass( LasCell cell ) {
+        int rows = cell.intensitiesClassifications.length / 2;
+        short[][] intensClassRows = new short[rows][3];
+        ByteBuffer buffer = ByteBuffer.wrap(cell.intensitiesClassifications);
+
+        for( int i = 0; i < rows; i++ ) {
+            intensClassRows[i][0] = buffer.getShort();
+            intensClassRows[i][1] = buffer.getShort();
+            intensClassRows[i][2] = buffer.getShort();
+        }
+        return intensClassRows;
+    }
+
 }
