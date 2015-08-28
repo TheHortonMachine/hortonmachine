@@ -2,6 +2,7 @@ org.jgrasstools.lesto.modules.buildings.LasOnDtmBuildingsExtractor
 org.jgrasstools.lesto.modules.filter.LasHeightDistribution
 org.jgrasstools.lesto.modules.filter.LasHistogram
 org.jgrasstools.lesto.modules.filter.LasMerger
+org.jgrasstools.lesto.modules.filter.LasSplitter
 org.jgrasstools.lesto.modules.filter.LasThresholder
 org.jgrasstools.lesto.modules.flightlines.FlightLinesExtractor
 org.jgrasstools.lesto.modules.flightlines.FlightLinesIntensityNormalizer
@@ -12,6 +13,7 @@ org.jgrasstools.lesto.modules.raster.LasOnRasterMapper
 org.jgrasstools.lesto.modules.raster.LasTriangulation2Dsm
 org.jgrasstools.lesto.modules.utilities.LasFromFaroTlsXyz
 org.jgrasstools.lesto.modules.utilities.LasInfo
+org.jgrasstools.lesto.modules.utilities.LasMover
 org.jgrasstools.lesto.modules.utilities.LasOverviewCreator
 org.jgrasstools.lesto.modules.utilities.LasPointDensityExtractor
 org.jgrasstools.lesto.modules.utilities.LasSlicer

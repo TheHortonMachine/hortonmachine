@@ -27,6 +27,8 @@ org.jgrasstools.gears.io.gridgeometryreader.OmsGridGeometryReader
 org.jgrasstools.gears.io.json.OmsJsonFeatureReader
 org.jgrasstools.gears.io.las.index.LasIndexer
 org.jgrasstools.gears.io.las.index.OmsLasIndexReader
+org.jgrasstools.gears.io.las.spatialite.SpatialiteLasWriter
+org.jgrasstools.gears.io.nmea.OmsNmeaFeatureReader
 org.jgrasstools.gears.io.properties.OmsPropertiesFeatureReader
 org.jgrasstools.gears.io.rasterreader.OmsRasterReader
 org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter
@@ -44,6 +46,8 @@ org.jgrasstools.gears.modules.r.connectivity.OmsDownSlopeConnectivity
 org.jgrasstools.gears.modules.r.cutout.OmsCutOut
 org.jgrasstools.gears.modules.r.edgedetection.OmsCannyEdgeDetector
 org.jgrasstools.gears.modules.r.filter.OmsBiasedSigmaFilter
+org.jgrasstools.gears.modules.r.houghes.OmsHoughCirclesRaster
+org.jgrasstools.gears.modules.r.houghes.OmsHoughCirclesRasterCleaner
 org.jgrasstools.gears.modules.r.imagemosaic.OmsImageMosaicCreator
 org.jgrasstools.gears.modules.r.interpolation2d.OmsSurfaceInterpolator
 org.jgrasstools.gears.modules.r.labeler.OmsLabeler
