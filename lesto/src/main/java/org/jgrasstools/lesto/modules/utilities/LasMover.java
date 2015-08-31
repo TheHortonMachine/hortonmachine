@@ -58,7 +58,7 @@ public class LasMover extends JGTModel {
     @In
     public double pDeltaY = 0;
 
-    @Description("The northing translation to apply.")
+    @Description("The elevation translation to apply.")
     @In
     public double pDeltaZ = 0;
 
@@ -89,7 +89,7 @@ public class LasMover extends JGTModel {
                         env.getMaxY() + pDeltaY, env.getMinZ() + pDeltaZ, env.getMaxZ() + pDeltaZ);
                 writer.open();
 
-                pm.beginTask("Moving file...", (int) recordsNum);
+                pm.beginTask("Moving las...", (int) recordsNum);
                 while( reader.hasNextPoint() ) {
                     LasRecord dot = reader.getNextPoint();
                     dot.x += pDeltaX;

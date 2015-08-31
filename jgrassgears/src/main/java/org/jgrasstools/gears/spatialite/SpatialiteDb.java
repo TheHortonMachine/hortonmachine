@@ -923,14 +923,16 @@ public class SpatialiteDb implements AutoCloseable {
                 + tableName + "' AND geometry_column='" + geomFieldName + "'";
         try (Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(trySql);
-            while( rs.next() ) {
+            if (rs.next()) {
                 double minX = rs.getDouble(1);
                 double minY = rs.getDouble(2);
                 double maxX = rs.getDouble(3);
                 double maxY = rs.getDouble(4);
 
                 Envelope env = new Envelope(minX, maxX, minY, maxY);
-                return env;
+                if (env.getWidth() != 0.0 && env.getHeight() != 0.0) {
+                    return env;
+                }
             }
         }
 
