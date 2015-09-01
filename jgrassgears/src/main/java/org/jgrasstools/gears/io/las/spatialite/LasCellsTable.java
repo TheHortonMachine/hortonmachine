@@ -357,7 +357,7 @@ public class LasCellsTable {
 
     public static short[][] getCellIntensityClass( LasCell cell ) {
         int points = cell.pointsCount;
-        short[][] intensClassPoints = new short[points][3];
+        short[][] intensClassPoints = new short[points][2];
         ByteBuffer buffer = ByteBuffer.wrap(cell.intensitiesClassifications);
 
         for( int i = 0; i < points; i++ ) {
