@@ -150,6 +150,61 @@ public class LasCellsTable {
         }
     }
 
+    public static void insertLasCells( SpatialiteDb db, int srid, List<LasCell> cells ) throws SQLException {
+        String sql = "INSERT INTO " + TABLENAME//
+                + " (" + //
+                COLUMN_GEOM + "," + //
+                COLUMN_SOURCE_ID + "," + //
+                COLUMN_POINTS_COUNT + "," + //
+                COLUMN_AVG_ELEV + "," + //
+                COLUMN_MIN_ELEV + "," + //
+                COLUMN_MAX_ELEV + "," + //
+                COLUMN_POSITION_BLOB + "," + //
+                COLUMN_AVG_INTENSITY + "," + //
+                COLUMN_MIN_INTENSITY + "," + //
+                COLUMN_MAX_INTENSITY + "," + //
+                COLUMN_INTENS_CLASS_BLOB + "," + //
+                COLUMN_RETURNS_BLOB + "," + //
+                COLUMN_MIN_GPSTIME + "," + //
+                COLUMN_MAX_GPSTIME + "," + //
+                COLUMN_GPSTIME_BLOB + "," + //
+                COLUMN_COLORS_BLOB + //
+                ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+        Connection conn = db.getConnection();
+        boolean autoCommit = conn.getAutoCommit();
+        conn.setAutoCommit(false);
+        try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
+            for( LasCell cell : cells ) {
+                int i = 1;
+                pStmt.setString(i++, cell.polygon.toText());
+                pStmt.setLong(i++, cell.sourceId);
+                pStmt.setInt(i++, cell.pointsCount);
+                pStmt.setDouble(i++, cell.avgElev);
+                pStmt.setDouble(i++, cell.minElev);
+                pStmt.setDouble(i++, cell.maxElev);
+                pStmt.setBytes(i++, cell.xyzs);
+
+                pStmt.setShort(i++, cell.avgIntensity);
+                pStmt.setShort(i++, cell.minIntensity);
+                pStmt.setShort(i++, cell.maxIntensity);
+                pStmt.setBytes(i++, cell.intensitiesClassifications);
+
+                pStmt.setBytes(i++, cell.returns);
+
+                pStmt.setDouble(i++, cell.minGpsTime);
+                pStmt.setDouble(i++, cell.maxGpsTime);
+                pStmt.setBytes(i++, cell.gpsTimes);
+
+                pStmt.setBytes(i++, cell.colors);
+                pStmt.addBatch();
+            }
+            pStmt.executeBatch();
+            conn.commit();
+            conn.setAutoCommit(autoCommit);
+        }
+    }
+
     /**
      * Query the las cell table.
      *

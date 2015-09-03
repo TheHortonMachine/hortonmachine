@@ -77,14 +77,17 @@ public class SpatialiteDb implements AutoCloseable {
      * Open the connection to a database.
      * 
      * @param dbPath the database path.
+     * @return <code>true</code> if the database did already exist.
      * @throws SQLException
      */
-    public void open( String dbPath ) throws SQLException {
+    public boolean open( String dbPath ) throws SQLException {
         this.dbPath = dbPath;
 
+        boolean dbExists = false;
         File dbFile = new File(dbPath);
         if (dbFile.exists()) {
             System.out.println("Database exists");
+            dbExists = true;
         }
         // enabling dynamic extension loading
         // absolutely required by SpatiaLite
@@ -98,6 +101,7 @@ public class SpatialiteDb implements AutoCloseable {
             // load SpatiaLite
             stmt.execute("SELECT load_extension('mod_spatialite')");
         }
+        return dbExists;
     }
 
     /**
@@ -117,10 +121,13 @@ public class SpatialiteDb implements AutoCloseable {
         if (options == null) {
             options = "";
         }
+        boolean autoCommit = conn.getAutoCommit();
+        conn.setAutoCommit(false);
         String sql = "SELECT InitSpatialMetadata(" + options + ")";
         try (Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
         }
+        conn.setAutoCommit(autoCommit);
     }
 
     /**
