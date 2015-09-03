@@ -115,10 +115,9 @@ public class SpatialiteLasWriter extends JGTModel {
             throw new ModelsIllegalargumentException("The inFolder parameter has to be valid.", this);
         }
 
-        File spatialiteFile = new File(inSpatialite);
         try (SpatialiteDb spatialiteDb = new SpatialiteDb()) {
-            spatialiteDb.open(inSpatialite);
-            if (!spatialiteFile.exists()) {
+            boolean existed = spatialiteDb.open(inSpatialite);
+            if (!existed) {
                 pm.beginTask("Create new spatialite database...", IJGTProgressMonitor.UNKNOWN);
                 spatialiteDb.initSpatialMetadata(null);
                 pm.done();
@@ -146,8 +145,8 @@ public class SpatialiteLasWriter extends JGTModel {
                     srid = Integer.parseInt(pCode);
                 }
             } catch (Exception e1) {
-                throw new ModelsIllegalargumentException("An error occurred while reading the projection definition: "
-                        + e1.getLocalizedMessage(), this);
+                throw new ModelsIllegalargumentException(
+                        "An error occurred while reading the projection definition: " + e1.getLocalizedMessage(), this);
             }
 
             if (srid == -9999) {
@@ -269,6 +268,7 @@ public class SpatialiteLasWriter extends JGTModel {
             pm.done();
 
             ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+            List<LasCell> cellsList = new ArrayList<>();
             pm.beginTask("Write las data...", cols * rows);
             for( int c = 0; c < cols; c++ ) {
                 for( int r = 0; r < rows; r++ ) {
@@ -357,18 +357,39 @@ public class SpatialiteLasWriter extends JGTModel {
                     lasCell.gpsTimes = gpsTimes;
                     lasCell.colors = colors;
 
-                    // add data to db in a thread to fasten up things
-                    singleThreadExecutor.execute(new Runnable(){
-                        public void run() {
-                            try {
-                                LasCellsTable.insertLasCell(spatialiteDb, srid, lasCell);
-                                pm.worked(1);
-                            } catch (SQLException e) {
-                                e.printStackTrace();
+                    cellsList.add(lasCell);
+
+                    if (cellsList.size() > 100000) {
+                        // add data to db in a thread to fasten up things
+                        final List<LasCell> processCells = cellsList;
+                        singleThreadExecutor.execute(new Runnable(){
+                            public void run() {
+                                try {
+                                    LasCellsTable.insertLasCells(spatialiteDb, srid, processCells);
+                                    pm.worked(processCells.size());
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
                             }
-                        }
-                    });
+                        });
+                        cellsList = new ArrayList<>();
+                    }
                 }
+            }
+            if (cellsList.size() > 0) {
+                // add data to db in a thread to fasten up things
+                final List<LasCell> processCells = cellsList;
+                singleThreadExecutor.execute(new Runnable(){
+                    public void run() {
+                        try {
+                            LasCellsTable.insertLasCells(spatialiteDb, srid, processCells);
+                            pm.worked(processCells.size());
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                cellsList = new ArrayList<>();
             }
             try {
                 singleThreadExecutor.shutdown();
