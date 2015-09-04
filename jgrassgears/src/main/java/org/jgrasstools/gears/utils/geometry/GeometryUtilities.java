@@ -84,7 +84,6 @@ public class GeometryUtilities {
     public static Point[] TYPE_POINT = new Point[0];
     public static MultiPoint[] TYPE_MULTIPOINT = new MultiPoint[0];
 
-
     private static GeometryFactory geomFactory;
     private static PrecisionModel precModel;
 
@@ -151,11 +150,13 @@ public class GeometryUtilities {
     }
 
     public static Polygon createPolygonFromEnvelope( Envelope env ) {
-        Coordinate[] c = new Coordinate[]{new Coordinate(env.getMinX(), env.getMinY()),
-                new Coordinate(env.getMinX(), env.getMaxY()), new Coordinate(env.getMaxX(), env.getMaxY()),
-                new Coordinate(env.getMaxX(), env.getMinY()), new Coordinate(env.getMinX(), env.getMinY())};
-        LinearRing linearRing = gf().createLinearRing(c);
-        return gf().createPolygon(linearRing, null);
+        double minX = env.getMinX();
+        double minY = env.getMinY();
+        double maxY = env.getMaxY();
+        double maxX = env.getMaxX();
+        Coordinate[] c = new Coordinate[]{new Coordinate(minX, minY), new Coordinate(minX, maxY), new Coordinate(maxX, maxY),
+                new Coordinate(maxX, minY), new Coordinate(minX, minY)};
+        return gf().createPolygon(c);
     }
 
     public static List<Geometry> extractSubGeometries( Geometry geometry ) {
@@ -686,8 +687,8 @@ public class GeometryUtilities {
             Coordinate centerCoordinate = indexedLine.extractPoint(runningLength);
             Coordinate leftCoordinate = indexedLine.extractPoint(runningLength, -halfWidth);
             Coordinate rightCoordinate = indexedLine.extractPoint(runningLength, halfWidth);
-            LineString lineString = geomFactory.createLineString(new Coordinate[]{leftCoordinate, centerCoordinate,
-                    rightCoordinate});
+            LineString lineString = geomFactory
+                    .createLineString(new Coordinate[]{leftCoordinate, centerCoordinate, rightCoordinate});
             linesList.add(lineString);
             runningLength = runningLength + interval;
         }
@@ -878,8 +879,8 @@ public class GeometryUtilities {
         double[] rDC = {c.x - d.x, c.y - d.y, c.z - d.z};
 
         double[] n = {//
-        /*    */rDB[1] * rDC[2] - rDC[1] * rDB[2], //
-                -1 * (rDB[0] * rDC[2] - rDC[0] * rDB[2]),//
+                /*    */rDB[1] * rDC[2] - rDC[1] * rDB[2], //
+                -1 * (rDB[0] * rDC[2] - rDC[0] * rDB[2]), //
                 rDB[0] * rDC[1] - rDC[0] * rDB[1]//
         };
 
@@ -953,8 +954,8 @@ public class GeometryUtilities {
         double[] rCA = {C.x - A.x, C.y - A.y, C.z - A.z};
 
         double[] crossProduct = {//
-        /*    */rBA[1] * rCA[2] - rBA[2] * rCA[1], //
-                -1 * (rBA[0] * rCA[2] - rBA[2] * rCA[0]),//
+                /*    */rBA[1] * rCA[2] - rBA[2] * rCA[1], //
+                -1 * (rBA[0] * rCA[2] - rBA[2] * rCA[0]), //
                 rBA[0] * rCA[1] - rBA[1] * rCA[0] //
         };
 
