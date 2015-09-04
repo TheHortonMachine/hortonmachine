@@ -99,12 +99,17 @@ public class SpatialiteLasWriter extends JGTModel {
     @In
     public double pCellsize = 3;
 
+    @Description("Number of data summary levels to add.")
+    @In
+    public int pLevels = 2;
+
+    @Description("The size multiplication factor to use for subsequent levels.")
+    @In
+    public int pFactor = 5;
+
     private CoordinateReferenceSystem crs;
 
     private int srid = -9999;
-
-    private int levels = 2;
-    private double factor = 5.0;
 
     @Execute
     public void process() throws Exception {
@@ -194,7 +199,7 @@ public class SpatialiteLasWriter extends JGTModel {
 
                     Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(envelope);
 
-                    long id = LasSourcesTable.insertLasSource(spatialiteDb, srid, levels, pCellsize, polygon, lasName,
+                    long id = LasSourcesTable.insertLasSource(spatialiteDb, srid, pLevels, pCellsize, polygon, lasName,
                             envelope.getMinZ(), envelope.getMaxZ());
                     processFile(spatialiteDb, lasFile, id);
                 }
@@ -394,8 +399,8 @@ public class SpatialiteLasWriter extends JGTModel {
             }
             pm.done();
 
-            if (levels > 0) {
-                for( int level = 1; level <= levels; level++ ) {
+            if (pLevels > 0) {
+                for( int level = 1; level <= pLevels; level++ ) {
                     LasLevelsTable.createTable(spatialiteDb, srid, level);
                     if (level == 1) {
                         insertFirstLevel(spatialiteDb, sourceID, north, south, east, west, level);
@@ -412,7 +417,7 @@ public class SpatialiteLasWriter extends JGTModel {
     private void insertFirstLevel( final SpatialiteDb spatialiteDb, long sourceID, double north, double south, double east,
             double west, int level ) throws Exception, SQLException {
         List<LasLevel> levelsList = new ArrayList<>();
-        double levelCellsize = pCellsize * level * factor;
+        double levelCellsize = pCellsize * level * pFactor;
         double[] xRangesLevel = NumericsUtilities.range2Bins(west, east, levelCellsize, false);
         double[] yRangesLevel = NumericsUtilities.range2Bins(south, north, levelCellsize, false);
         int size = (xRangesLevel.length - 1) * (yRangesLevel.length - 1);
@@ -422,11 +427,11 @@ public class SpatialiteLasWriter extends JGTModel {
             double xmax = xRangesLevel[x + 1];
             for( int y = 0; y < yRangesLevel.length - 1; y++ ) {
                 double ymin = yRangesLevel[y];
-                double ymax = yRangesLevel[y];
+                double ymax = yRangesLevel[y + 1];
                 Envelope levelEnv = new Envelope(xmin, xmax, ymin, ymax);
                 Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(levelEnv);
-                
-                List<LasCell> lasCells = LasCellsTable.getLasCells(spatialiteDb, levelEnv, true, true, false, false, false);
+
+                List<LasCell> lasCells = LasCellsTable.getLasCells(spatialiteDb, polygon, true, true, false, false, false);
 
                 double avgElev = 0.0;
                 double minElev = Double.POSITIVE_INFINITY;
@@ -483,20 +488,20 @@ public class SpatialiteLasWriter extends JGTModel {
             double west, int level ) throws Exception, SQLException {
         int previousLevelNum = level - 1;
         List<LasLevel> levelsList = new ArrayList<>();
-        double levelCellsize = pCellsize * level * factor;
+        double levelCellsize = pCellsize * level * pFactor;
         double[] xRangesLevel = NumericsUtilities.range2Bins(west, east, levelCellsize, false);
         double[] yRangesLevel = NumericsUtilities.range2Bins(south, north, levelCellsize, false);
         int size = (xRangesLevel.length - 1) * (yRangesLevel.length - 1);
-        pm.beginTask("Creating level " + level + " with " + size + "tiles...", xRangesLevel.length - 1);
+        pm.beginTask("Creating level " + level + " with " + size + " tiles...", xRangesLevel.length - 1);
         for( int x = 0; x < xRangesLevel.length - 1; x++ ) {
             double xmin = xRangesLevel[x];
             double xmax = xRangesLevel[x + 1];
             for( int y = 0; y < yRangesLevel.length - 1; y++ ) {
                 double ymin = yRangesLevel[y];
-                double ymax = yRangesLevel[y];
+                double ymax = yRangesLevel[y + 1];
                 Envelope levelEnv = new Envelope(xmin, xmax, ymin, ymax);
                 Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(levelEnv);
-                
+
                 List<LasLevel> lasLevels = LasLevelsTable.getLasLevels(spatialiteDb, previousLevelNum, levelEnv);
 
                 double avgElev = 0.0;
