@@ -27,6 +27,21 @@ import com.vividsolutions.jts.geom.Polygon;
  */
 public class LasSource {
     public long id;
+    
+    /**
+     * Number of levels produced for this source.
+     * 
+     * <p>tables are named like <b>laslevelN</b> with N starting with 1
+     * being the level that summarizes the {@link LasCell}s data.
+     *  
+     */
+    public int levels;
+
+    /**
+     * The cell resolution in the sources srid units.
+     */
+    public double resolution;
+    
     public Polygon polygon;
     public String name;
     public double minElev;

@@ -20,57 +20,23 @@ package org.jgrasstools.gears.io.las.spatialite;
 import com.vividsolutions.jts.geom.Polygon;
 
 /**
- * A cell of las data.
+ * A level of las average data.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LasCell {
+public class LasLevel {
     public long id;
     public long sourceId;
-    /**
-     * The cell bounds.
-     */
+
+    public int level;
+
     public Polygon polygon;
-    
-    /**
-     * Number of points in the cell.
-     */
-    public int pointsCount;
 
     public double avgElev;
     public double minElev;
     public double maxElev;
 
-    /**
-     * The byte array containing [x1,y1,z1,x2,y2,z2,...] in amount of pointsCount. 
-     */
-    public byte[] xyzs;
-
     public short avgIntensity;
     public short minIntensity;
     public short maxIntensity;
-
-    /**
-     * The array containing [intensities1, classification1, ...] in amount of pointsCount. 
-     */
-    public byte[] intensitiesClassifications;
-
-    /**
-     * The array containing [returnNumber1,numberOfReturns1,returnNumber2,numberOfReturns2,...]  in amount of pointsCount. 
-     */
-    public byte[] returns;
-
-    public double minGpsTime;
-    public double maxGpsTime;
-
-    /**
-     * The array containing [gpsTime1, gpsTime2, ...] in amount of pointsCount. 
-     */
-    public byte[] gpsTimes;
-
-    /**
-     * The array containing [r1, g1, b1, r2, g2, b2, ...]  rgb info for stylings.
-     */
-    public byte[] colors;
-
 }

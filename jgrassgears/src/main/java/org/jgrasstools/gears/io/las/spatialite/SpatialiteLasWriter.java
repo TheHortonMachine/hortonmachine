@@ -103,6 +103,9 @@ public class SpatialiteLasWriter extends JGTModel {
 
     private int srid = -9999;
 
+    private int levels = 2;
+    private double factor = 5.0;
+
     @Execute
     public void process() throws Exception {
         checkNull(inFolder, inSpatialite);
@@ -173,21 +176,17 @@ public class SpatialiteLasWriter extends JGTModel {
             iter.process();
 
             List<File> filesList = iter.filesList;
-            List<File> filesListToAdd = new ArrayList<File>();
-            List<Long> sourceIds = new ArrayList<Long>();
             List<LasSource> lasSources = LasSourcesTable.getLasSources(spatialiteDb);
-            List<String> names = new ArrayList<String>();
+            List<String> existingLasSourcesNames = new ArrayList<String>();
             for( LasSource lasSource : lasSources ) {
-                names.add(lasSource.name);
+                existingLasSourcesNames.add(lasSource.name);
             }
-            pm.beginTask("Creating sources index...", filesList.size());
             for( File lasFile : filesList ) {
                 String lasName = FileUtilities.getNameWithoutExtention(lasFile);
-                if (names.contains(lasName)) {
+                if (existingLasSourcesNames.contains(lasName)) {
                     pm.errorMessage("Not inserting already existing file in database: " + lasName);
                     continue;
                 }
-                filesListToAdd.add(lasFile);
                 try (ALasReader reader = ALasReader.getReader(lasFile, crs)) {
                     reader.open();
                     ILasHeader header = reader.getHeader();
@@ -195,19 +194,12 @@ public class SpatialiteLasWriter extends JGTModel {
 
                     Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(envelope);
 
-                    long id = LasSourcesTable.insertLasSource(spatialiteDb, srid, polygon, lasName, envelope.getMinZ(),
-                            envelope.getMaxZ());
-                    sourceIds.add(id);
+                    long id = LasSourcesTable.insertLasSource(spatialiteDb, srid, levels, pCellsize, polygon, lasName,
+                            envelope.getMinZ(), envelope.getMaxZ());
+                    processFile(spatialiteDb, lasFile, id);
                 }
-                pm.worked(1);
             }
-            pm.done();
 
-            for( int i = 0; i < filesListToAdd.size(); i++ ) {
-                File file = filesListToAdd.get(i);
-                long sourceId = sourceIds.get(i);
-                processFile(spatialiteDb, file, sourceId);
-            }
         }
     }
 
@@ -243,7 +235,8 @@ public class SpatialiteLasWriter extends JGTModel {
             GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(north, south, east, west, cols, rows,
                     reader.getHeader().getCrs());
 
-            List<LasRecord>[][] dotOnMatrix = new ArrayList[cols][rows];
+            List<LasRecord>[][] dotOnMatrixXY = new ArrayList[cols][rows];
+            LasCell[][] lasCellsOnMatrixXY = new LasCell[cols][rows];
             pm.beginTask("Sorting points for " + name, (int) recordsCount);
             while( reader.hasNextPoint() ) {
                 LasRecord dot = reader.getNextPoint();
@@ -259,10 +252,10 @@ public class SpatialiteLasWriter extends JGTModel {
                     y = 0;
                 if (y > rows - 1)
                     y = rows - 1;
-                if (dotOnMatrix[x][y] == null) {
-                    dotOnMatrix[x][y] = new ArrayList<>();
+                if (dotOnMatrixXY[x][y] == null) {
+                    dotOnMatrixXY[x][y] = new ArrayList<>();
                 }
-                dotOnMatrix[x][y].add(dot);
+                dotOnMatrixXY[x][y].add(dot);
                 pm.worked(1);
             }
             pm.done();
@@ -272,7 +265,7 @@ public class SpatialiteLasWriter extends JGTModel {
             pm.beginTask("Write las data...", cols * rows);
             for( int c = 0; c < cols; c++ ) {
                 for( int r = 0; r < rows; r++ ) {
-                    List<LasRecord> dotsList = dotOnMatrix[c][r];
+                    List<LasRecord> dotsList = dotOnMatrixXY[c][r];
                     if (dotsList == null || dotsList.size() == 0) {
                         continue;
                     }
@@ -288,7 +281,6 @@ public class SpatialiteLasWriter extends JGTModel {
                     byte[] position = new byte[8 * 3 * pointCount];
                     ByteBuffer positionBuffer = ByteBuffer.wrap(position);
 
-                    // TODO check, maybe here a median would be more appropriate
                     double avgIntensity = 0.0;
 
                     short minIntensity = 30000;
@@ -358,6 +350,7 @@ public class SpatialiteLasWriter extends JGTModel {
                     lasCell.colors = colors;
 
                     cellsList.add(lasCell);
+                    lasCellsOnMatrixXY[c][r] = lasCell;
 
                     if (cellsList.size() > 100000) {
                         // add data to db in a thread to fasten up things
@@ -391,6 +384,7 @@ public class SpatialiteLasWriter extends JGTModel {
                 });
                 cellsList = new ArrayList<>();
             }
+
             try {
                 singleThreadExecutor.shutdown();
                 singleThreadExecutor.awaitTermination(30, TimeUnit.DAYS);
@@ -399,8 +393,161 @@ public class SpatialiteLasWriter extends JGTModel {
                 ex.printStackTrace();
             }
             pm.done();
+
+            if (levels > 0) {
+                for( int level = 1; level <= levels; level++ ) {
+                    LasLevelsTable.createTable(spatialiteDb, srid, level);
+                    if (level == 1) {
+                        insertFirstLevel(spatialiteDb, sourceID, north, south, east, west, level);
+                    } else {
+                        insertLevel(spatialiteDb, sourceID, north, south, east, west, level);
+                    }
+                }
+            }
+
         }
 
+    }
+
+    private void insertFirstLevel( final SpatialiteDb spatialiteDb, long sourceID, double north, double south, double east,
+            double west, int level ) throws Exception, SQLException {
+        List<LasLevel> levelsList = new ArrayList<>();
+        double levelCellsize = pCellsize * level * factor;
+        double[] xRangesLevel = NumericsUtilities.range2Bins(west, east, levelCellsize, false);
+        double[] yRangesLevel = NumericsUtilities.range2Bins(south, north, levelCellsize, false);
+        int size = (xRangesLevel.length - 1) * (yRangesLevel.length - 1);
+        pm.beginTask("Creating level " + level + " with " + size + " tiles...", xRangesLevel.length - 1);
+        for( int x = 0; x < xRangesLevel.length - 1; x++ ) {
+            double xmin = xRangesLevel[x];
+            double xmax = xRangesLevel[x + 1];
+            for( int y = 0; y < yRangesLevel.length - 1; y++ ) {
+                double ymin = yRangesLevel[y];
+                double ymax = yRangesLevel[y];
+                Envelope levelEnv = new Envelope(xmin, xmax, ymin, ymax);
+                Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(levelEnv);
+                
+                List<LasCell> lasCells = LasCellsTable.getLasCells(spatialiteDb, levelEnv, true, true, false, false, false);
+
+                double avgElev = 0.0;
+                double minElev = Double.POSITIVE_INFINITY;
+                double maxElev = Double.NEGATIVE_INFINITY;
+                short avgIntensity = 0;
+                short minIntensity = 30000;
+                short maxIntensity = -1;
+
+                int count = 0;
+                for( LasCell cell : lasCells ) {
+                    avgElev += cell.avgElev;
+                    minElev = min(cell.minElev, minElev);
+                    maxElev = max(cell.maxElev, maxElev);
+
+                    avgIntensity += cell.avgIntensity;
+                    minIntensity = (short) min(cell.minIntensity, minIntensity);
+                    maxIntensity = (short) max(cell.maxIntensity, maxIntensity);
+
+                    count++;
+                }
+                if (count == 0) {
+                    continue;
+                }
+                avgElev /= count;
+                avgIntensity /= count;
+
+                LasLevel lasLevel = new LasLevel();
+                lasLevel.polygon = polygon;
+                lasLevel.level = level;
+                lasLevel.avgElev = avgElev;
+                lasLevel.minElev = minElev;
+                lasLevel.maxElev = maxElev;
+                lasLevel.avgIntensity = avgIntensity;
+                lasLevel.minIntensity = minIntensity;
+                lasLevel.maxIntensity = maxIntensity;
+                lasLevel.sourceId = sourceID;
+
+                levelsList.add(lasLevel);
+
+                if (levelsList.size() > 10000) {
+                    LasLevelsTable.insertLasLevels(spatialiteDb, srid, levelsList);
+                    levelsList = new ArrayList<>();
+                }
+            }
+            pm.worked(1);
+        }
+        if (levelsList.size() > 0) {
+            LasLevelsTable.insertLasLevels(spatialiteDb, srid, levelsList);
+        }
+        pm.done();
+    }
+
+    private void insertLevel( final SpatialiteDb spatialiteDb, long sourceID, double north, double south, double east,
+            double west, int level ) throws Exception, SQLException {
+        int previousLevelNum = level - 1;
+        List<LasLevel> levelsList = new ArrayList<>();
+        double levelCellsize = pCellsize * level * factor;
+        double[] xRangesLevel = NumericsUtilities.range2Bins(west, east, levelCellsize, false);
+        double[] yRangesLevel = NumericsUtilities.range2Bins(south, north, levelCellsize, false);
+        int size = (xRangesLevel.length - 1) * (yRangesLevel.length - 1);
+        pm.beginTask("Creating level " + level + " with " + size + "tiles...", xRangesLevel.length - 1);
+        for( int x = 0; x < xRangesLevel.length - 1; x++ ) {
+            double xmin = xRangesLevel[x];
+            double xmax = xRangesLevel[x + 1];
+            for( int y = 0; y < yRangesLevel.length - 1; y++ ) {
+                double ymin = yRangesLevel[y];
+                double ymax = yRangesLevel[y];
+                Envelope levelEnv = new Envelope(xmin, xmax, ymin, ymax);
+                Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(levelEnv);
+                
+                List<LasLevel> lasLevels = LasLevelsTable.getLasLevels(spatialiteDb, previousLevelNum, levelEnv);
+
+                double avgElev = 0.0;
+                double minElev = Double.POSITIVE_INFINITY;
+                double maxElev = Double.NEGATIVE_INFINITY;
+                short avgIntensity = 0;
+                short minIntensity = 30000;
+                short maxIntensity = -1;
+
+                int count = 0;
+                for( LasLevel lasLevel : lasLevels ) {
+                    avgElev += lasLevel.avgElev;
+                    minElev = min(lasLevel.minElev, minElev);
+                    maxElev = max(lasLevel.maxElev, maxElev);
+
+                    avgIntensity += lasLevel.avgIntensity;
+                    minIntensity = (short) min(lasLevel.minIntensity, minIntensity);
+                    maxIntensity = (short) max(lasLevel.maxIntensity, maxIntensity);
+
+                    count++;
+                }
+                if (count == 0) {
+                    continue;
+                }
+                avgElev /= count;
+                avgIntensity /= count;
+
+                LasLevel lasLevel = new LasLevel();
+                lasLevel.polygon = polygon;
+                lasLevel.level = level;
+                lasLevel.avgElev = avgElev;
+                lasLevel.minElev = minElev;
+                lasLevel.maxElev = maxElev;
+                lasLevel.avgIntensity = avgIntensity;
+                lasLevel.minIntensity = minIntensity;
+                lasLevel.maxIntensity = maxIntensity;
+                lasLevel.sourceId = sourceID;
+
+                levelsList.add(lasLevel);
+
+                if (levelsList.size() > 10000) {
+                    LasLevelsTable.insertLasLevels(spatialiteDb, srid, levelsList);
+                    levelsList = new ArrayList<>();
+                }
+            }
+            pm.worked(1);
+        }
+        if (levelsList.size() > 0) {
+            LasLevelsTable.insertLasLevels(spatialiteDb, srid, levelsList);
+        }
+        pm.done();
     }
 
     @Finalize

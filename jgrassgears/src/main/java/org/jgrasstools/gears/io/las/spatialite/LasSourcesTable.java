@@ -42,15 +42,19 @@ public class LasSourcesTable {
     public static final String COLUMN_ID = "id";
     public static final String COLUMN_GEOM = "the_geom";
     public static final String COLUMN_NAME = "name";
+    public static final String COLUMN_RESOLUTION = "resolution";
+    public static final String COLUMN_LEVELS = "levels";
     public static final String COLUMN_MINZ = "minelev";
     public static final String COLUMN_MAXZ = "maxelev";
 
     public static void createTable( SpatialiteDb db, int srid ) throws SQLException {
         if (!db.hasTable(TABLENAME)) {
             String[] creates = {//
-            COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT",//
-                    COLUMN_NAME + " TEXT",//
-                    COLUMN_MINZ + " REAL",//
+                    COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT", //
+                    COLUMN_NAME + " TEXT", //
+                    COLUMN_RESOLUTION + " REAL", //
+                    COLUMN_LEVELS + " INTEGER", //
+                    COLUMN_MINZ + " REAL", //
                     COLUMN_MAXZ + " REAL"//
             };
             db.createTable(TABLENAME, creates);
@@ -69,18 +73,21 @@ public class LasSourcesTable {
      * @param maxElev the max elevation.
      * @throws SQLException
      */
-    public static long insertLasSource( SpatialiteDb db, int srid, Polygon polygon, String name, double minElev, double maxElev )
-            throws SQLException {
+    public static long insertLasSource( SpatialiteDb db, int srid, int levels, double resolution, Polygon polygon, String name,
+            double minElev, double maxElev ) throws SQLException {
         String sql = "INSERT INTO " + TABLENAME//
-                + " (" + COLUMN_GEOM + "," + COLUMN_NAME + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + //
-                ") VALUES (GeomFromText(?, " + srid + "),?,?,?)";
+                + " (" + COLUMN_GEOM + "," + COLUMN_NAME + "," + COLUMN_RESOLUTION + "," //
+                + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + //
+                ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?)";
 
         Connection conn = db.getConnection();
         try (PreparedStatement pStmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pStmt.setString(1, polygon.toText());
             pStmt.setString(2, name);
-            pStmt.setDouble(3, minElev);
-            pStmt.setDouble(4, maxElev);
+            pStmt.setDouble(3, resolution);
+            pStmt.setInt(4, levels);
+            pStmt.setDouble(5, minElev);
+            pStmt.setDouble(6, maxElev);
 
             pStmt.executeUpdate();
             ResultSet rs = pStmt.getGeneratedKeys();
@@ -101,7 +108,7 @@ public class LasSourcesTable {
     public static List<LasSource> getLasSources( SpatialiteDb db ) throws Exception {
         List<LasSource> sources = new ArrayList<>();
         String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_NAME + ","
-                + COLUMN_MINZ + "," + COLUMN_MAXZ + " FROM " + TABLENAME;
+                + COLUMN_RESOLUTION + "," + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + " FROM " + TABLENAME;
 
         Connection conn = db.getConnection();
         WKBReader wkbReader = new WKBReader();
@@ -117,6 +124,8 @@ public class LasSourcesTable {
                     lasSource.polygon = polygon;
                     lasSource.id = rs.getLong(i++);
                     lasSource.name = rs.getString(i++);
+                    lasSource.resolution = rs.getDouble(i++);
+                    lasSource.levels = rs.getInt(i++);
                     lasSource.minElev = rs.getDouble(i++);
                     lasSource.maxElev = rs.getDouble(i++);
                     sources.add(lasSource);
