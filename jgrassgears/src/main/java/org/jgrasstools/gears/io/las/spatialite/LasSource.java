@@ -41,6 +41,11 @@ public class LasSource {
      * The cell resolution in the sources srid units.
      */
     public double resolution;
+
+    /**
+     * The level multiplication factor.
+     */
+    public double levelFactor;
     
     public Polygon polygon;
     public String name;

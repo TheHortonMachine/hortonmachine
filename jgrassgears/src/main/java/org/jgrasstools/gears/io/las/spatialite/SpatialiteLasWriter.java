@@ -199,7 +199,7 @@ public class SpatialiteLasWriter extends JGTModel {
 
                     Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(envelope);
 
-                    long id = LasSourcesTable.insertLasSource(spatialiteDb, srid, pLevels, pCellsize, polygon, lasName,
+                    long id = LasSourcesTable.insertLasSource(spatialiteDb, srid, pLevels, pCellsize, pFactor, polygon, lasName,
                             envelope.getMinZ(), envelope.getMaxZ());
                     processFile(spatialiteDb, lasFile, id);
                 }
