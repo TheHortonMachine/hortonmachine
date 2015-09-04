@@ -154,4 +154,18 @@ public class LasSourcesTable {
         }
     }
 
+    /**
+     * Checks if the db is a las database readable by jgrasstools.
+     * 
+     * @param db the database to check.
+     * @return <code>true</code> if the db can be read.
+     * @throws Exception
+     */
+    public static boolean isLasDatabase( SpatialiteDb db ) throws Exception {
+        if (!db.hasTable(TABLENAME) || !db.hasTable(LasCellsTable.TABLENAME)) {
+            return false;
+        }
+        return true;
+    }
+
 }
