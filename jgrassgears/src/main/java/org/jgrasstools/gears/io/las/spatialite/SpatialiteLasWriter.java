@@ -171,7 +171,7 @@ public class SpatialiteLasWriter extends JGTModel {
             iter.fileFilter = new FileFilter(){
                 public boolean accept( File file ) {
                     String name = file.getName();
-                    boolean isLas = name.toLowerCase().endsWith(".las");
+                    boolean isLas = name.toLowerCase().endsWith(".las") && !name.toLowerCase().endsWith("indexed.las");
                     if (isLas) {
                         pm.message("   " + name);
                     }
