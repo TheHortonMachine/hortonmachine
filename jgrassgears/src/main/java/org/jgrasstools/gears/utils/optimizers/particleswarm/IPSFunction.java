@@ -35,6 +35,19 @@ public interface IPSFunction {
      * @throws Exception 
      */
     public double evaluate( int iterationStep, int particleNum, double[] parameters, double[]... ranges ) throws Exception;
+    
+    /**
+     * apply the optimization function.
+     * 
+     * @param parameters the parameters needed.
+     * @return the optimized value;
+     */
+    public double optimization(double... parameters);
+
+    /**
+     * @return a description for the applied optimization function.
+     */
+    public String optimizationDescription();
 
     /**
      * Evaluates if the supplied value is better than the supplied best.
