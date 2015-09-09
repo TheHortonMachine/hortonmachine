@@ -71,6 +71,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
+import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -376,11 +377,18 @@ public class SpatialiteLasWriter extends JGTModel {
 
                         if (ortoGC != null) {
                             pos.setLocation(dot.x, dot.y);
-                            ortoGC.evaluate(pos, ortoValues);
+                            try {
+                                ortoGC.evaluate(pos, ortoValues);
+                                colorsBuffer.putShort((short) ortoValues[0]);
+                                colorsBuffer.putShort((short) ortoValues[1]);
+                                colorsBuffer.putShort((short) ortoValues[2]);
+                            } catch (PointOutsideCoverageException poce) {
+                                // insert white
+                                colorsBuffer.putShort((short) 255);
+                                colorsBuffer.putShort((short) 255);
+                                colorsBuffer.putShort((short) 255);
+                            }
 
-                            colorsBuffer.putShort((short) ortoValues[0]);
-                            colorsBuffer.putShort((short) ortoValues[1]);
-                            colorsBuffer.putShort((short) ortoValues[2]);
                         } else if (dot.color != null) {
                             colorsBuffer.putShort(dot.color[0]);
                             colorsBuffer.putShort(dot.color[1]);
