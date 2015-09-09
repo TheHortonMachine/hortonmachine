@@ -422,4 +422,17 @@ public class LasCellsTable {
         return intensClassPoints;
     }
 
+    public static short[][] getCellColors( LasCell cell ) {
+        int points = cell.pointsCount;
+        short[][] colorPoints = new short[points][3];
+        ByteBuffer buffer = ByteBuffer.wrap(cell.colors);
+        
+        for( int i = 0; i < points; i++ ) {
+            colorPoints[i][0] = buffer.getShort();
+            colorPoints[i][1] = buffer.getShort();
+            colorPoints[i][2] = buffer.getShort();
+        }
+        return colorPoints;
+    }
+
 }

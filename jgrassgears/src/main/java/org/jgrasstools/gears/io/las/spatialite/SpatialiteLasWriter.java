@@ -20,12 +20,15 @@ package org.jgrasstools.gears.io.las.spatialite;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,7 +47,11 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.coverage.grid.io.GridFormatFinder;
+import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -65,6 +72,7 @@ import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -90,6 +98,11 @@ public class SpatialiteLasWriter extends JGTModel {
     @In
     public String inSpatialite;
 
+    @Description("The optional image mosaic of ortophoto to take the color from (has to be 3-band).")
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    @In
+    public String inOrtophoto;
+
     @Description("The optional code defining the target coordinate reference system. This is needed only if the file has no prj file. If set, it will be used over the prj file.")
     @UI(JGTConstants.CRS_UI_HINT)
     @In
@@ -111,6 +124,11 @@ public class SpatialiteLasWriter extends JGTModel {
 
     private int srid = -9999;
 
+    private double ortoXRes;
+    private double ortoYRes;
+
+    private ImageMosaicReader ortoReader;
+
     @Execute
     public void process() throws Exception {
         checkNull(inFolder, inSpatialite);
@@ -121,6 +139,23 @@ public class SpatialiteLasWriter extends JGTModel {
 
         if (!new File(inFolder).exists()) {
             throw new ModelsIllegalargumentException("The inFolder parameter has to be valid.", this);
+        }
+
+        if (inOrtophoto != null) {
+            File ortoFile = new File(inOrtophoto);
+            if (ortoFile.exists()) {
+                URL imageMosaicUrl = ortoFile.toURI().toURL();
+                final AbstractGridFormat imageMosaicFormat = (AbstractGridFormat) GridFormatFinder.findFormat(imageMosaicUrl);
+                ortoReader = (ImageMosaicReader) imageMosaicFormat.getReader(imageMosaicUrl);
+                File propertiesFile = FileUtilities.substituteExtention(ortoFile, "properties");
+                HashMap<String, String> propertiesMap = FileUtilities.readFileToHashMap(propertiesFile.getAbsolutePath(), null,
+                        false);
+
+                String xyREs = propertiesMap.get("Levels");
+                String[] split = xyREs.split(",");
+                ortoXRes = Double.parseDouble(split[0]);
+                ortoYRes = Double.parseDouble(split[1]);
+            }
         }
 
         try (SpatialiteDb spatialiteDb = new SpatialiteDb()) {
@@ -196,12 +231,22 @@ public class SpatialiteLasWriter extends JGTModel {
                     reader.open();
                     ILasHeader header = reader.getHeader();
                     ReferencedEnvelope3D envelope = header.getDataEnvelope();
-
                     Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(envelope);
+
+                    GridCoverage2D ortoGC = null;
+                    if (ortoReader != null) {
+                        double west = envelope.getMinX();
+                        double east = envelope.getMaxX();
+                        double south = envelope.getMinY();
+                        double north = envelope.getMaxY();
+                        GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities
+                                .createGridGeometryGeneralParameter(ortoXRes, ortoYRes, north, south, east, west, crs);
+                        ortoGC = ortoReader.read(readGeneralParameterValues);
+                    }
 
                     long id = LasSourcesTable.insertLasSource(spatialiteDb, srid, pLevels, pCellsize, pFactor, polygon, lasName,
                             envelope.getMinZ(), envelope.getMaxZ());
-                    processFile(spatialiteDb, lasFile, id);
+                    processFile(spatialiteDb, lasFile, id, ortoGC);
                 }
             }
 
@@ -209,7 +254,8 @@ public class SpatialiteLasWriter extends JGTModel {
     }
 
     @SuppressWarnings("unchecked")
-    private void processFile( final SpatialiteDb spatialiteDb, File file, long sourceID ) throws Exception {
+    private void processFile( final SpatialiteDb spatialiteDb, File file, long sourceID, GridCoverage2D ortoGC )
+            throws Exception {
         String name = file.getName();
         pm.message("Processing file: " + name);
 
@@ -267,6 +313,8 @@ public class SpatialiteLasWriter extends JGTModel {
 
             ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
             List<LasCell> cellsList = new ArrayList<>();
+            final Point2D.Double pos = new Point2D.Double();
+            final int[] ortoValues = new int[3];
             pm.beginTask("Write las data...", cols * rows);
             for( int c = 0; c < cols; c++ ) {
                 for( int r = 0; r < rows; r++ ) {
@@ -276,6 +324,7 @@ public class SpatialiteLasWriter extends JGTModel {
                     }
                     int pointCount = dotsList.size();
                     Coordinate coord = CoverageUtilities.coordinateFromColRow(c, r, gridGeometry);
+
                     Envelope env = new Envelope(coord);
                     env.expandBy(pCellsize / 2.0, pCellsize / 2.0);
                     Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(env);
@@ -302,6 +351,7 @@ public class SpatialiteLasWriter extends JGTModel {
                     ByteBuffer colorsBuffer = ByteBuffer.wrap(colors);
 
                     int count = 0;
+
                     for( LasRecord dot : dotsList ) {
                         avgElev += dot.z;
                         minElev = min(dot.z, minElev);
@@ -324,7 +374,14 @@ public class SpatialiteLasWriter extends JGTModel {
 
                         gpsTimesBuffer.putDouble(dot.gpsTime);
 
-                        if (dot.color != null) {
+                        if (ortoGC != null) {
+                            pos.setLocation(dot.x, dot.y);
+                            ortoGC.evaluate(pos, ortoValues);
+
+                            colorsBuffer.putShort((short) ortoValues[0]);
+                            colorsBuffer.putShort((short) ortoValues[1]);
+                            colorsBuffer.putShort((short) ortoValues[2]);
+                        } else if (dot.color != null) {
                             colorsBuffer.putShort(dot.color[0]);
                             colorsBuffer.putShort(dot.color[1]);
                             colorsBuffer.putShort(dot.color[2]);
