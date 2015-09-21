@@ -126,8 +126,8 @@ public class HortonMessages {
     public static final String OMSKRIGING_pA_DESCRIPTION = "The range if the models runs with the gaussian variogram.";
     public static final String OMSKRIGING_pS_DESCRIPTION = "The sill if the models runs with the gaussian variogram.";
     public static final String OMSKRIGING_pNug_DESCRIPTION = "Is the nugget if the models runs with the gaussian variogram.";
-    public static final String OMSKRIGING_outGrid_DESCRIPTION = "The interpolated gridded data (for mode 2 and 3.";
-    public static final String OMSKRIGING_outData_DESCRIPTION = "The interpolated data (for mode 0 and 1).";
+    public static final String OMSKRIGING_outGrid_DESCRIPTION = "The interpolated gridded data (for pMode == 1).";
+    public static final String OMSKRIGING_outData_DESCRIPTION = "The interpolated data (for pMode == 0).";
 
     public static final String OMSNETNUMBERING_DESCRIPTION = "Assigns the numbers to the network's links.";
     public static final String OMSNETNUMBERING_DOCUMENTATION = "OmsNetNumbering.html";

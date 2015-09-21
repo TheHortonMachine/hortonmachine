@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.media.jai.iterator.RandomIterFactory;
@@ -67,13 +68,13 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
+import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
-import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -84,9 +85,7 @@ import org.jgrasstools.gears.utils.math.matrixes.ColumnVector;
 import org.jgrasstools.gears.utils.math.matrixes.LinearSystem;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.referencing.operation.MathTransform;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -129,17 +128,19 @@ public class OmsKriging extends JGTModel {
     public String fPointZ = null;
 
     /**
-     * Define the calculation mode. It can be 0 or 1.
-     *
-     * <li>When mode == 0, the values to calculate are in a non-regular 
-     * grid (the coordinates are stored in a {@link FeatureCollection}, 
-     * so parameters inInterpolate and fInterpolateid must be set, and
-     * the calculated values will be in the outData field.
-     *
-     * <li>When mode == 1, the values are in a regular grid (the coordinates 
-     * are stored in a {@link GridCoverage2D), so parameter gridToInterpolate
-     * must be set, and the calculated values will be in the outGrid field.
-     */
+	 * Define the calculation mode. It can be 0 or 1.
+	 *
+	 * <p>
+	 * When mode == 0, the values to calculate are in a non-regular grid (the
+	 * coordinates are stored in a {@link FeatureCollection}, so parameters
+	 * inInterpolate and fInterpolateid must be set, and the calculated values
+	 * will be in the outData field.
+	 *
+	 * <p>
+	 * When mode == 1, the values are in a regular grid (the coordinates are
+	 * stored in a {@link GridCoverage2D}, so parameter gridToInterpolate must
+	 * be set, and the calculated values will be in the outGrid field.
+	 */
     @Description(OMSKRIGING_pMode_DESCRIPTION)
     @In
     public int pMode = 0;
@@ -168,9 +169,21 @@ public class OmsKriging extends JGTModel {
     @In
     public boolean doLogarithmic = false;
 
+    /**
+     * The grid of points to interpolate, used when pMode == 1.
+     * 
+     * @see #pMode
+     */
     @Description(OMSKRIGING_inInterpolationGrid_DESCRIPTION)
     @In
     public GridGeometry2D inInterpolationGrid = null;
+    
+    /**
+	 * The internal coverage name GeoTools will put in the generated coverage
+	 * when pMode == 1 ({@linkplain #outGrid} field).
+	 */
+    @In
+    public String pInterpolatedGridName = "InterpolatedValuesRaster";
 
     public int defaultVariogramMode = 0;
 
@@ -216,6 +229,12 @@ public class OmsKriging extends JGTModel {
     private double west;
     private double xres;
     private double yres;
+    
+    /**
+	 * The map of point id -> {@linkplain OmsGridPoint} extracted from the
+	 * provided inInterpolationGrid when pMode == 1.
+	 */
+    private Map<Integer, OmsGridPoint> pointIdToGridPoint;
 
     /**
      * Executing ordinary kriging.
@@ -357,30 +376,21 @@ public class OmsKriging extends JGTModel {
                 }
             }
         }
-        LinkedHashMap<Integer, Coordinate> pointsToInterpolateId2Coordinates = null;
-        // vecchio int numPointToInterpolate = getNumPoint(inInterpolate);
-        int numPointToInterpolate = 0;
-
-        /*
-         * if the isLogarithmic is true then execute the model with log value.
-         */
-        // vecchio double[] result = new double[numPointToInterpolate];
 
         if (pMode == 0) {
-            pointsToInterpolateId2Coordinates = getCoordinate(numPointToInterpolate, inInterpolate, fInterpolateid);
+            getCoordinate(inInterpolate, fInterpolateid);
         } else if (pMode == 1) {
-            pointsToInterpolateId2Coordinates = getCoordinate(inInterpolationGrid);
-            numPointToInterpolate = pointsToInterpolateId2Coordinates.size();
+            getCoordinate(inInterpolationGrid);
         } else {
             throw new ModelsIllegalargumentException("The parameter pMode can only be 0 or 1.", this, pm);
         }
 
-        Set<Integer> pointsToInterpolateIdSet = pointsToInterpolateId2Coordinates.keySet();
+        Set<Integer> pointsToInterpolateIdSet = pointIdToGridPoint.keySet();
         Iterator<Integer> idIterator = pointsToInterpolateIdSet.iterator();
         int j = 0;
-        // vecchio int[] idArray = new int[inInterpolate.size()];
-        int[] idArray = new int[pointsToInterpolateId2Coordinates.size()];
-        double[] result = new double[pointsToInterpolateId2Coordinates.size()];
+
+        int[] idArray = new int[pointIdToGridPoint.size()];
+        double[] result = new double[pointIdToGridPoint.size()];
         if (n1 != 0) {
             if (doLogarithmic) {
                 for( int i = 0; i < nStaz; i++ ) {
@@ -408,7 +418,7 @@ public class OmsKriging extends JGTModel {
                     double sum = 0.;
                     int id = idIterator.next();
                     idArray[j] = id;
-                    Coordinate coordinate = (Coordinate) pointsToInterpolateId2Coordinates.get(id);
+                    Coordinate coordinate = (Coordinate) pointIdToGridPoint.get(id).getWorldCoordinates();
                     xStation[n1] = coordinate.x;
                     yStation[n1] = coordinate.y;
                     zStation[n1] = coordinate.z;
@@ -460,7 +470,7 @@ public class OmsKriging extends JGTModel {
             if (pMode == 0) {
                 storeResult(result, idArray);
             } else {
-                storeResult(result, pointsToInterpolateId2Coordinates);
+                storeResult(result);
             }
         } else {
             pm.errorMessage("No rain for this time step");
@@ -475,7 +485,7 @@ public class OmsKriging extends JGTModel {
             if (pMode == 0) {
                 storeResult(result, idArray);
             } else {
-                storeResult(result, pointsToInterpolateId2Coordinates);
+                storeResult(result);
             }
         }
     }
@@ -523,55 +533,44 @@ public class OmsKriging extends JGTModel {
     }
 
     /**
-     * Store the result in a HashMap (if the mode is 0 or 1)
-     * 
-     * @param result2
-     *            the result of the model
-     * @param id
-     *            the associated id of the calculating points.
-     * @throws SchemaException
-     * @throws SchemaException
-     */
-    private void storeResult( double[] result2, int[] id ) throws SchemaException {
+	 * Store the result in a HashMap (if pMode == 0)
+	 * 
+	 * @param interpolatedValues
+	 *            the result of the model
+	 * @param id
+	 *            the associated id of the calculated points.
+	 */
+    private void storeResult( double[] interpolatedValues, int[] id ) {
         outData = new HashMap<Integer, double[]>();
-        for( int i = 0; i < result2.length; i++ ) {
-            outData.put(id[i], new double[]{checkResultValue(result2[i])});
+        for( int i = 0; i < interpolatedValues.length; i++ ) {
+            outData.put(id[i], new double[]{checkResultValue(interpolatedValues[i])});
         }
     }
 
-    private void storeResult( double[] interpolatedValues, HashMap<Integer, Coordinate> interpolatedCoordinatesMap )
+    private void storeResult( double[] interpolatedValues )
             throws MismatchedDimensionException, Exception {
 
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
-        Set<Integer> pointsToInterpolateIdSett = interpolatedCoordinatesMap.keySet();
-        Iterator<Integer> idIterator = pointsToInterpolateIdSett.iterator();
+        Set<Integer> pointsToInterpolateIdSet = pointIdToGridPoint.keySet();
+        Iterator<Integer> idIterator = pointsToInterpolateIdSet.iterator();
         int c = 0;
-        MathTransform transf = inInterpolationGrid.getCRSToGrid2D();
-
-        final DirectPosition gridPoint = new DirectPosition2D();
-
+        
         while( idIterator.hasNext() ) {
+        	// Advance iterator
             int id = idIterator.next();
-            Coordinate coordinate = (Coordinate) interpolatedCoordinatesMap.get(id);
-
-            DirectPosition point = new DirectPosition2D(inInterpolationGrid.getCoordinateReferenceSystem(), coordinate.x,
-                    coordinate.y);
-            transf.transform(point, gridPoint);
-
-            double[] gridCoord = gridPoint.getCoordinate();
-            int x = (int) gridCoord[0];
-            int y = (int) gridCoord[1];
-
-            outIter.setSample(x, y, 0, checkResultValue(interpolatedValues[c]));
+            
+            // Get grid coordinates and set sample
+            GridCoordinates2D coords = pointIdToGridPoint.get(id).getGridCoordinates();
+			outIter.setSample(coords.x, coords.y, 0, checkResultValue(interpolatedValues[c]));
             c++;
-
         }
 
-        RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(inInterpolationGrid);
-
-        outGrid = CoverageUtilities
-                .buildCoverage("gridded", outWR, regionMap, inInterpolationGrid.getCoordinateReferenceSystem());
+        // Build the output coverage grid
+		RegionMap regionMap = CoverageUtilities
+				.gridGeometry2RegionParamsMap(inInterpolationGrid);
+		outGrid = CoverageUtilities.buildCoverage(pInterpolatedGridName, outWR,
+				regionMap, inInterpolationGrid.getCoordinateReferenceSystem());
 
     }
 
@@ -584,6 +583,8 @@ public class OmsKriging extends JGTModel {
 
     private LinkedHashMap<Integer, Coordinate> getCoordinate( GridGeometry2D grid ) {
         LinkedHashMap<Integer, Coordinate> out = new LinkedHashMap<Integer, Coordinate>();
+        pointIdToGridPoint = new LinkedHashMap<Integer, OmsGridPoint>();
+        
         int count = 0;
         RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(grid);
         cols = regionMap.getCols();
@@ -600,11 +601,25 @@ public class OmsKriging extends JGTModel {
         for( int i = 0; i < cols; i++ ) {
             easting = easting + xres;
             for( int j = 0; j < rows; j++ ) {
+            	// Calculate world coordinate
+            	Coordinate worldCoordinate = new Coordinate();
                 northing = northing + yres;
-                Coordinate coordinate = new Coordinate();
-                coordinate.x = west + i * xres;
-                coordinate.y = south + j * yres;
-                out.put(count, coordinate);
+                worldCoordinate.x = west + i * xres;
+                worldCoordinate.y = south + j * yres;
+                
+                // Pre-calculate grid coordinate and put it on the map
+                GridCoordinates2D gridCoordinates = new GridCoordinates2D(i, rows - j - 1);
+                
+                // Create the OmsGridPoint object
+                OmsGridPoint gridPoint = new OmsGridPoint();
+                gridPoint.setGridGeometry(inInterpolationGrid);
+                gridPoint.setWorldCoordinates(worldCoordinate);
+                gridPoint.setGridCoordinates(gridCoordinates);
+                
+                // Add the point to the map
+                pointIdToGridPoint.put(count, gridPoint);
+                
+                // Advance count
                 count++;
             }
         }
@@ -616,14 +631,13 @@ public class OmsKriging extends JGTModel {
      * Extract the coordinate of a FeatureCollection in a HashMap with an ID as
      * a key.
      * 
-     * @param nStaz
      * @param collection
      * @throws Exception
      *             if a fiel of elevation isn't the same of the collection
      */
-    private LinkedHashMap<Integer, Coordinate> getCoordinate( int nStaz, SimpleFeatureCollection collection, String idField )
+    private void getCoordinate( SimpleFeatureCollection collection, String idField )
             throws Exception {
-        LinkedHashMap<Integer, Coordinate> id2CoordinatesMap = new LinkedHashMap<Integer, Coordinate>();
+        pointIdToGridPoint = new LinkedHashMap<Integer, OmsGridPoint>();
         FeatureIterator<SimpleFeature> iterator = collection.features();
         Coordinate coordinate = null;
         try {
@@ -641,13 +655,16 @@ public class OmsKriging extends JGTModel {
                     }
                 }
                 coordinate.z = z;
-                id2CoordinatesMap.put(name, coordinate);
+                
+                // Create the point
+                OmsGridPoint point = new OmsGridPoint();
+                point.setWorldCoordinates(coordinate);
+                
+                pointIdToGridPoint.put(name, point);
             }
         } finally {
             iterator.close();
         }
-
-        return id2CoordinatesMap;
     }
 
     /**

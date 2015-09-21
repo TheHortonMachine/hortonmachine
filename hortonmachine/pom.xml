@@ -7,9 +7,8 @@
     <version>0.7.9-SNAPSHOT</version>
   </parent>
 
-	<groupId>org.jgrasstools</groupId>
 	<artifactId>jgt-hortonmachine</artifactId>
-    <version>0.7.9-SNAPSHOT</version>    
+    <version>0.7.9-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>The Horton Machine</name>
 
