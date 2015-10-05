@@ -677,22 +677,16 @@ public class SpatialiteDb implements AutoCloseable {
                         if (j > 1) {
                             bw.write(separator);
                         }
+                        byte[] geomBytes = null;
                         if (j == geometryIndex) {
-                            byte[] geomBytes = rs.getBytes(j);
-                            if (geomBytes != null) {
-                                try {
-                                    Geometry geometry = wkbReader.read(geomBytes);
-                                    bw.write(geometry.toText());
-                                } catch (Exception e) {
-                                    // write it as it comes
-                                    Object object = rs.getObject(j);
-                                    if (object != null) {
-                                        bw.write(object.toString());
-                                    } else {
-                                        bw.write("");
-                                    }
-                                }
-                            } else {
+                            geomBytes = rs.getBytes(j);
+                        }
+                        if (geomBytes != null) {
+                            try {
+                                Geometry geometry = wkbReader.read(geomBytes);
+                                bw.write(geometry.toText());
+                            } catch (Exception e) {
+                                // write it as it comes
                                 Object object = rs.getObject(j);
                                 if (object != null) {
                                     bw.write(object.toString());
@@ -700,9 +694,16 @@ public class SpatialiteDb implements AutoCloseable {
                                     bw.write("");
                                 }
                             }
+                        } else {
+                            Object object = rs.getObject(j);
+                            if (object != null) {
+                                bw.write(object.toString());
+                            } else {
+                                bw.write("");
+                            }
                         }
-                        bw.write("\n");
                     }
+                    bw.write("\n");
                 }
             }
         }
