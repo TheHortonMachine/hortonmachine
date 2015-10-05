@@ -121,13 +121,30 @@ public class SpatialiteDb implements AutoCloseable {
         if (options == null) {
             options = "";
         }
-        boolean autoCommit = conn.getAutoCommit();
-        conn.setAutoCommit(false);
+        enableAutocommit(false);
         String sql = "SELECT InitSpatialMetadata(" + options + ")";
         try (Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
         }
-        conn.setAutoCommit(autoCommit);
+        enableAutocommit(true);
+    }
+
+    /**
+     * toggle autocommit mode.
+     * 
+     * @param enable if <code>true</code>, autocommit is enabled if not already enabled.
+     *          Vice versa if <code>false</code>.
+     * @throws SQLException
+     */
+    public void enableAutocommit( boolean enable ) throws SQLException {
+        boolean autoCommitEnabled = conn.getAutoCommit();
+        if (enable && !autoCommitEnabled) {
+            // do enable if not already enabled
+            conn.setAutoCommit(true);
+        } else if (!enable && autoCommitEnabled) {
+            // disable if not already disabled
+            conn.setAutoCommit(false);
+        }
     }
 
     /**
