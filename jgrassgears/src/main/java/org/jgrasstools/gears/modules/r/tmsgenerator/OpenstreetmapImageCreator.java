@@ -17,29 +17,29 @@
  */
 package org.jgrasstools.gears.modules.r.tmsgenerator;
 
-import static java.lang.Math.round;
-
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
 
+import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 public class OpenstreetmapImageCreator {
 
     private static final String EPSG_MERCATOR = "EPSG:3857";
-    private static final String EPSG_LATLONG = "EPSG:4326";
     private String inServiceUrl;
     private int zoomLevel;
     private ReferencedEnvelope mercatorBounds;
@@ -66,32 +66,33 @@ public class OpenstreetmapImageCreator {
     public void generate() throws Exception {
 
         CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
-        // CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
+        CoordinateReferenceSystem latLongCrs = DefaultGeographicCRS.WGS84;
 
-        double w = mercatorBounds.getMinX();
-        double e = mercatorBounds.getMaxX();
-        double s = mercatorBounds.getMinY();
-        double n = mercatorBounds.getMaxY();
+        ReferencedEnvelope llBounds = mercatorBounds.transform(latLongCrs, true);
 
-        GlobalMercator mercator = new GlobalMercator();
+        double w = llBounds.getMinX();
+        double e = llBounds.getMaxX();
+        double s = llBounds.getMinY();
+        double n = llBounds.getMaxY();
 
-        int[] llTileNumber = mercator.MetersToTile(w, s, zoomLevel);
-        int[] urTileNumber = mercator.MetersToTile(e, n, zoomLevel);
+        int[] ulTileNumber = getTileXY(n, w, zoomLevel);
+        int[] lrTileNumber = getTileXY(s, e, zoomLevel);
 
-        int startXTile = llTileNumber[0];
-        int startYTile = llTileNumber[1];
-        int endXTile = urTileNumber[0] + 1;
-        int endYTile = urTileNumber[1] + 1;
+        int startXTile = ulTileNumber[0];
+        int startYTile = ulTileNumber[1];
 
-        double[] extractedLL = mercator.TileBounds(startXTile, startYTile, zoomLevel);
-        double[] extractedUR = mercator.TileBounds(endXTile, endYTile, zoomLevel);
-        double imageW = extractedLL[0];
-        double imageN = extractedUR[3];
-        double imageE = extractedUR[2];
-        double imageS = extractedLL[1];
+        int endXTile = lrTileNumber[0];
+        int endYTile = lrTileNumber[1];
 
-        int tileCols = endXTile - startXTile;
-        int tileRows = endYTile - startYTile;
+        BoundingBox bbUL = tile2boundingBox(startXTile, startYTile, zoomLevel);
+        double imageW = bbUL.west;
+        double imageN = bbUL.north;
+        BoundingBox bbLR = tile2boundingBox(endXTile, endYTile, zoomLevel);
+        double imageS = bbLR.south;
+        double imageE = bbLR.east;
+
+        int tileCols = endXTile - startXTile + 1;
+        int tileRows = endYTile - startYTile + 1;
 
         int tileSize = 256;
 
@@ -104,14 +105,14 @@ public class OpenstreetmapImageCreator {
                 (endXTile - startXTile + 1));
         int runningX = 0;
         for( int x = startXTile; x <= endXTile; x++ ) {
-            int runningY = height - tileSize;
+            int runningY = 0;
             for( int y = startYTile; y <= endYTile; y++ ) {
 
-                int[] tmsNUms = mercator.TMSTileFromGoogleTile(x, y, zoomLevel);
+                // int[] tmsNUms = getTileXY(y, x, zoomLevel);
 
                 String tmp = inServiceUrl.replaceFirst("ZZZ", String.valueOf(zoomLevel));
-                tmp = tmp.replaceFirst("XXX", String.valueOf(tmsNUms[0]));
-                tmp = tmp.replaceFirst("YYY", String.valueOf(tmsNUms[1]));
+                tmp = tmp.replaceFirst("XXX", String.valueOf(x));
+                tmp = tmp.replaceFirst("YYY", String.valueOf(y));
 
                 URL url = new URL(tmp);
                 try {
@@ -122,7 +123,7 @@ public class OpenstreetmapImageCreator {
                 } catch (Exception ex) {
                     pm.errorMessage("Unable to get image: " + tmp);
                 }
-                runningY -= tileSize;
+                runningY += tileSize;
             }
             runningX += tileSize;
             pm.worked(1);
@@ -131,18 +132,32 @@ public class OpenstreetmapImageCreator {
 
         g2d.dispose();
 
-        ImageIO.write(outImage, "tiff", outFile);
+        String nameL = outFile.getName().toLowerCase();
+        if (nameL.endsWith("png")) {
+            ImageIO.write(outImage, "png", outFile);
+        } else if (nameL.endsWith("jpg")) {
+            ImageIO.write(outImage, "jpg", outFile);
+        } else if (nameL.endsWith("tiff")) {
+            ImageIO.write(outImage, "tiff", outFile);
+        }
+
+        MathTransform transform = CRS.findMathTransform(latLongCrs, mercatorCrs);
+
+        Coordinate llES = new Coordinate(imageE, imageS);
+        Coordinate llWN = new Coordinate(imageW, imageN);
+        Coordinate osmES = JTS.transform(llES, null, transform);
+        Coordinate osmWN = JTS.transform(llWN, null, transform);
 
         // create tfw
-        double dx = (imageE - imageW) / width;
-        double dy = (imageN - imageS) / height;
+        double dx = (osmES.x - osmWN.x) / width;
+        double dy = (osmWN.y - osmES.y) / height;
         StringBuilder sb = new StringBuilder();
         sb.append(dx).append("\n");
         sb.append("0.00000000").append("\n");
         sb.append("0.00000000").append("\n");
         sb.append(-dy).append("\n");
-        sb.append(imageW).append("\n");
-        sb.append(imageN).append("\n");
+        sb.append(osmWN.x).append("\n");
+        sb.append(osmWN.y).append("\n");
 
         String fileName = FileUtilities.getNameWithoutExtention(outFile);
 
@@ -158,7 +173,7 @@ public class OpenstreetmapImageCreator {
 
     }
 
-    public static String getTileNumber( final double lat, final double lon, final int zoom ) {
+    private static int[] getTileXY( final double lat, final double lon, final int zoom ) {
         int xtile = (int) Math.floor((lon + 180) / 360 * (1 << zoom));
         int ytile = (int) Math.floor(
                 (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2 * (1 << zoom));
@@ -170,16 +185,17 @@ public class OpenstreetmapImageCreator {
             ytile = 0;
         if (ytile >= (1 << zoom))
             ytile = ((1 << zoom) - 1);
-        return ("" + zoom + "/" + xtile + "/" + ytile);
+        return new int[]{xtile, ytile};
     }
 
-    class BoundingBox {
+    private class BoundingBox {
         double north;
         double south;
         double east;
         double west;
     }
-    BoundingBox tile2boundingBox( final int x, final int y, final int zoom ) {
+
+    private BoundingBox tile2boundingBox( final int x, final int y, final int zoom ) {
         BoundingBox bb = new BoundingBox();
         bb.north = tile2lat(y, zoom);
         bb.south = tile2lat(y + 1, zoom);
@@ -188,17 +204,17 @@ public class OpenstreetmapImageCreator {
         return bb;
     }
 
-    static double tile2lon( int x, int z ) {
-        return x / Math.pow(2.0, z) * 360.0 - 180;
+    private static double tile2lon( int x, int z ) {
+        return x / Math.pow(2.0, z) * 360.0 - 180.0;
     }
 
-    static double tile2lat( int y, int z ) {
+    private static double tile2lat( int y, int z ) {
         double n = Math.PI - (2.0 * Math.PI * y) / Math.pow(2.0, z);
         return Math.toDegrees(Math.atan(Math.sinh(n)));
     }
-    
+
     public static void main( String[] args ) throws Exception {
-        String outFile = "/home/hydrologis/Dropbox/hydrologis/lavori/2015_05_bim_sarcamincio/shape_3857/image_output/osm12.tiff";
+        String outFile = "/home/hydrologis/Dropbox/hydrologis/lavori/2015_05_bim_sarcamincio/shape_3857/image_output/osm15.png";
 
         String bounds = "/home/hydrologis/Dropbox/hydrologis/lavori/2015_05_bim_sarcamincio/shape_3857/area.shp";
         String inServiceUrl = "http://a.tile.opencyclemap.org/cycle/ZZZ/XXX/YYY.png";
@@ -206,7 +222,7 @@ public class OpenstreetmapImageCreator {
 
         ReferencedEnvelope env = OmsVectorReader.readVector(bounds).getBounds();
 
-        OpenstreetmapImageCreator c = new OpenstreetmapImageCreator(inServiceUrl, 12, env, new File(outFile),
+        OpenstreetmapImageCreator c = new OpenstreetmapImageCreator(inServiceUrl, 15, env, new File(outFile),
                 new LogProgressMonitor());
         c.generate();
 
