@@ -800,29 +800,6 @@ public class GearsMessages {
     public static final String OMSID2VALUEARRAYWRITER_fileNovalue_DESCRIPTION = "The file novalue.";
     public static final String OMSID2VALUEARRAYWRITER_data_DESCRIPTION = "The map of ids and values arrays to write.";
 
-    public static final String OMSONLINETILESDOWNLOADER_DESCRIPTION = "Module for the downloading of map tiles.";
-    public static final String OMSONLINETILESDOWNLOADER_DOCUMENTATION = "";
-    public static final String OMSONLINETILESDOWNLOADER_KEYWORDS = "Raster, Vector, TMS, Tiles";
-    public static final String OMSONLINETILESDOWNLOADER_LABEL = RASTERPROCESSING;
-    public static final String OMSONLINETILESDOWNLOADER_NAME = "tmsdownloader";
-    public static final int OMSONLINETILESDOWNLOADER_STATUS = 10;
-    public static final String OMSONLINETILESDOWNLOADER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSONLINETILESDOWNLOADER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSONLINETILESDOWNLOADER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSONLINETILESDOWNLOADER_UI = "hide";
-    public static final String OMSONLINETILESDOWNLOADER_inServiceUrl_DESCRIPTION = "An optional online tile service to include (XXX, YYY, ZZZ will be substituted by tile indexes and zoom level).";
-    public static final String OMSONLINETILESDOWNLOADER_pType_DESCRIPTION = "The type of tile source (0 = TMS, 1 = google).";
-    public static final String OMSONLINETILESDOWNLOADER_pName_DESCRIPTION = "A name of the tile source.";
-    public static final String OMSONLINETILESDOWNLOADER_pMinzoom_DESCRIPTION = "The min zoom for which to generate tiles.";
-    public static final String OMSONLINETILESDOWNLOADER_pMaxzoom_DESCRIPTION = "The max zoom for which to generate tiles.";
-    public static final String OMSONLINETILESDOWNLOADER_pNorth_DESCRIPTION = "The north bound of the region to consider.";
-    public static final String OMSONLINETILESDOWNLOADER_pSouth_DESCRIPTION = "The south bound of the region to consider.";
-    public static final String OMSONLINETILESDOWNLOADER_pWest_DESCRIPTION = "The west bound of the region to consider.";
-    public static final String OMSONLINETILESDOWNLOADER_pEast_DESCRIPTION = "The east bound of the region to consider.";
-    public static final String OMSONLINETILESDOWNLOADER_pEpsg_DESCRIPTION = "The coordinate reference system of the bound coordinates (ex. EPSG:4328).";
-    public static final String OMSONLINETILESDOWNLOADER_doLenient_DESCRIPTION = "Switch that set to true allows for some error due to different datums. If set to false, it won't reproject without Bursa Wolf parameters.";
-    public static final String OMSONLINETILESDOWNLOADER_inPath_DESCRIPTION = "The folder inside which to create the tiles.";
-
     public static final String OMSINTERSECTIONFINDER_DESCRIPTION = "Finds intersection geometries in feature collections";
     public static final String OMSINTERSECTIONFINDER_DOCUMENTATION = "";
     public static final String OMSINTERSECTIONFINDER_KEYWORDS = "Vector";
