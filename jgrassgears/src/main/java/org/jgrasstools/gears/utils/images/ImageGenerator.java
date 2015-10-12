@@ -660,18 +660,17 @@ public class ImageGenerator {
         int imageHeight = (int) (paperFormat.height() / 25.4 * dpi);
 
         BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, 0);
+        Graphics2D graphics = (Graphics2D) dumpImage.getGraphics();
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         if (shapesFile != null && shapesFile.exists()) {
-            applyShapes(dumpImage);
+            applyShapes(graphics);
         }
         if (legend != null) {
-            Graphics2D graphics = (Graphics2D) dumpImage.getGraphics();
             graphics.drawImage(legend, null, legendX, legendY);
         }
 
         if (scalePrefix != null) {
-            Graphics2D graphics = (Graphics2D) dumpImage.getGraphics();
-
             Font scaleFont = graphics.getFont().deriveFont(scaleSize);
             graphics.setFont(scaleFont);
 
@@ -690,14 +689,11 @@ public class ImageGenerator {
             graphics.drawString(scaleString, (int) scaleX + 5, (int) scaleY);
 
         }
-
         ImageIO.write(dumpImage, "png", new File(imagePath));
 
     }
 
-    private void applyShapes( BufferedImage image ) throws Exception {
-        Graphics2D graphics = (Graphics2D) image.getGraphics();
-
+    private void applyShapes( Graphics2D graphics ) throws Exception {
         Stream<String> lines = Files.lines(Paths.get(shapesFile.toURI())).distinct()//
                 .filter(l -> l.trim().length() != 0);
         lines.forEach(l -> {
