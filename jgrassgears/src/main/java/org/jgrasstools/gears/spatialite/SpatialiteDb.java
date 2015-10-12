@@ -21,6 +21,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -29,15 +31,19 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -121,13 +127,30 @@ public class SpatialiteDb implements AutoCloseable {
         if (options == null) {
             options = "";
         }
-        boolean autoCommit = conn.getAutoCommit();
-        conn.setAutoCommit(false);
+        enableAutocommit(false);
         String sql = "SELECT InitSpatialMetadata(" + options + ")";
         try (Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
         }
-        conn.setAutoCommit(autoCommit);
+        enableAutocommit(true);
+    }
+
+    /**
+     * Toggle autocommit mode.
+     * 
+     * @param enable if <code>true</code>, autocommit is enabled if not already enabled.
+     *          Vice versa if <code>false</code>.
+     * @throws SQLException
+     */
+    public void enableAutocommit( boolean enable ) throws SQLException {
+        boolean autoCommitEnabled = conn.getAutoCommit();
+        if (enable && !autoCommitEnabled) {
+            // do enable if not already enabled
+            conn.setAutoCommit(true);
+        } else if (!enable && autoCommitEnabled) {
+            // disable if not already disabled
+            conn.setAutoCommit(false);
+        }
     }
 
     /**
@@ -227,7 +250,7 @@ public class SpatialiteDb implements AutoCloseable {
      * Adds a geometry column to a table. 
      * 
      * @param tableName the table name.
-     * @param geomColName TODO
+     * @param geomColName the geometry column name.
      * @param geomType the geometry type (ex. LINESTRING);
      * @param epsg the optional epsg code (default is 4326);
      * @throws SQLException
@@ -677,22 +700,16 @@ public class SpatialiteDb implements AutoCloseable {
                         if (j > 1) {
                             bw.write(separator);
                         }
+                        byte[] geomBytes = null;
                         if (j == geometryIndex) {
-                            byte[] geomBytes = rs.getBytes(j);
-                            if (geomBytes != null) {
-                                try {
-                                    Geometry geometry = wkbReader.read(geomBytes);
-                                    bw.write(geometry.toText());
-                                } catch (Exception e) {
-                                    // write it as it comes
-                                    Object object = rs.getObject(j);
-                                    if (object != null) {
-                                        bw.write(object.toString());
-                                    } else {
-                                        bw.write("");
-                                    }
-                                }
-                            } else {
+                            geomBytes = rs.getBytes(j);
+                        }
+                        if (geomBytes != null) {
+                            try {
+                                Geometry geometry = wkbReader.read(geomBytes);
+                                bw.write(geometry.toText());
+                            } catch (Exception e) {
+                                // write it as it comes
                                 Object object = rs.getObject(j);
                                 if (object != null) {
                                     bw.write(object.toString());
@@ -700,9 +717,16 @@ public class SpatialiteDb implements AutoCloseable {
                                     bw.write("");
                                 }
                             }
+                        } else {
+                            Object object = rs.getObject(j);
+                            if (object != null) {
+                                bw.write(object.toString());
+                            } else {
+                                bw.write("");
+                            }
                         }
-                        bw.write("\n");
                     }
+                    bw.write("\n");
                 }
             }
         }
@@ -803,6 +827,51 @@ public class SpatialiteDb implements AutoCloseable {
             }
         }
         return fc;
+    }
+
+    /**
+     * Execute a insert/update sql file. 
+     * 
+     * @param file the file to run on this db.
+     * @param chunks commit interval.
+     * @throws Exception 
+     */
+    public void executeSqlFile( File file, int chunks, boolean eachLineAnSql ) throws Exception {
+        boolean autoCommit = conn.getAutoCommit();
+        conn.setAutoCommit(false);
+
+        Predicate<String> validSqlLine = s -> s.length() != 0 //
+                && !s.startsWith("BEGIN") //
+                && !s.startsWith("COMMIT") //
+                ;
+        Predicate<String> commentPredicate = s -> !s.startsWith("--");
+
+        try (Statement pStmt = conn.createStatement()) {
+            final int[] counter = {1};
+            Stream<String> linesStream = null;
+            if (eachLineAnSql) {
+                linesStream = Files.lines(Paths.get(file.getAbsolutePath())).map(s -> s.trim()).filter(commentPredicate)
+                        .filter(validSqlLine);
+            } else {
+                linesStream = Arrays.stream(Files.lines(Paths.get(file.getAbsolutePath())).filter(commentPredicate)
+                        .collect(Collectors.joining()).split(";")).filter(validSqlLine);
+            }
+
+            Consumer<String> executeAction = s -> {
+                try {
+                    pStmt.executeUpdate(s);
+                    counter[0]++;
+                    if (counter[0] % chunks == 0) {
+                        conn.commit();
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            };
+            linesStream.forEach(executeAction);
+            conn.commit();
+        }
+        conn.setAutoCommit(autoCommit);
     }
 
     /**
@@ -1011,112 +1080,4 @@ public class SpatialiteDb implements AutoCloseable {
         return sql;
     }
 
-    public static void main( String[] args ) throws Exception {
-        String dbPath = "/media/hydrologis/HYDRO/UNIBZ/aurina_spatialite/las_aurina_3m_plusindex.sqlite";
-        String shpPath = "/media/hydrologis/HYDRO/UNIBZ/aurina_spatialite/las_aurina_3m_plusindex_lassources.shp";
-
-        try (SpatialiteDb db = new SpatialiteDb()) {
-            db.open(dbPath);
-
-            // String sql = "select the_geom, id, name from lassources";
-            String sql = "select ST_AsBinary(the_geom) as the_geom, id, name from lassources";
-            DefaultFeatureCollection fc = db.runRawSqlToFeatureCollection(sql);
-            OmsVectorWriter.writeVector(shpPath, fc);
-
-            // EggClock clock = new EggClock("time:", "\n");
-            // clock.startAndPrint(System.out);
-            //
-            // System.out.println(Arrays.toString(db.getDbInfo()));
-            // clock.printTimePassedInSeconds(System.out);
-            //
-            // List<String> tableNames = db.getTables(true);
-            // System.out.println("Tables:");
-            // for( String tableName : tableNames ) {
-            // System.out.println(tableName);
-            // }
-            // clock.printTimePassedInSeconds(System.out);
-            // HashMap<String, List<String>> tablesMap = db.getTablesMap(true);
-            // for( Entry<String, List<String>> entry : tablesMap.entrySet() ) {
-            // System.out.println(entry.getKey() + ": ");
-            // for( String tableName : entry.getValue() ) {
-            // SpatialiteGeometryColumns gc = db.getGeometryColumnsForTable(tableName);
-            // if (gc == null) {
-            // System.out.println("\t->" + tableName);
-            // } else {
-            // System.out.println("\t->" + tableName + " / geom col: " + gc.f_geometry_column + " /
-            // srid: " + gc.srid
-            // + " / geom type: " + SpatialiteGeometryType.forValue(gc.geometry_type));
-            // }
-            // }
-            // }
-            // clock.printTimePassedInSeconds(System.out);
-            //
-            // System.out.println("Has table roads:" + db.hasTable("roads"));
-            // clock.printTimePassedInSeconds(System.out);
-            //
-            // String tableName = "roads";
-            // List<String[]> tableColumns = db.getTableColumns(tableName);
-            // System.out.println(Arrays.toString(tableColumns.toArray()));
-            // clock.printTimePassedInSeconds(System.out);
-            //
-            // // Coordinate c = new Coordinate(11.33134, 46.48275);
-            // // Envelope q = new Envelope(c);
-            // // q.expandBy(0.1);
-            //
-            // List<Geometry> geoms = new ArrayList<Geometry>();
-            // QueryResult recordsIn = db.getTableRecordsMapIn(tableName, null, false, 10);
-            // System.out.println(recordsIn.data.size());
-            // if (recordsIn.geometryIndex != -1)
-            // for( Object[] tableRecord : recordsIn.data ) {
-            // geoms.add((Geometry) tableRecord[recordsIn.geometryIndex]);
-            // }
-            // GeometryCollection gc = new
-            // GeometryCollection(geoms.toArray(GeometryUtilities.TYPE_GEOMETRY), new
-            // GeometryFactory());
-            // System.out.println(gc.toText());
-            // clock.printTimePassedInSeconds(System.out);
-            //
-            // String sql = "SELECT ST_AsBinary(the_geom) AS
-            // the_geom,osm_id,name,ref,type,oneway,bridge,tunnel,maxspeed FROM roads LIMIT 10";
-            // QueryResult recordsIn1 = db.getTableRecordsMapFromRawSql(sql, 10);
-            // System.out.println(recordsIn1.data.size());
-            // if (recordsIn1.geometryIndex != -1)
-            // for( Object[] tableRecord : recordsIn1.data ) {
-            // geoms.add((Geometry) tableRecord[recordsIn1.geometryIndex]);
-            // }
-            // gc = new GeometryCollection(geoms.toArray(GeometryUtilities.TYPE_GEOMETRY), new
-            // GeometryFactory());
-            // System.out.println(gc.toText());
-            // clock.printTimePassedInSeconds(System.out);
-            //
-            // List<Geometry> geometriesIn = db.getGeometriesIn(tableName, null);
-            // gc = new GeometryCollection(geometriesIn.toArray(GeometryUtilities.TYPE_GEOMETRY),
-            // new GeometryFactory());
-            // System.out.println(gc.toText());
-            // clock.printTimePassedInSeconds(System.out);
-            //
-            // Envelope tableBounds = db.getTableBounds(tableName);
-            // System.out.println(tableBounds);
-            // clock.printTimePassedInSeconds(System.out);
-            //
-            // QueryResult tableRecordsMapFromRawSql = db.getTableRecordsMapFromRawSql("SELECT *
-            // FROM sql_statements_log", -1);
-            // System.out.println("sql history");
-            // int indexOf = tableRecordsMapFromRawSql.names.indexOf("sql_statement");
-            // if (indexOf != -1)
-            // for( Object[] tableRecordMap : tableRecordsMapFromRawSql.data ) {
-            // System.out.println(tableRecordMap[indexOf]);
-            // }
-            // clock.printTimePassedInSeconds(System.out);
-            //
-            // // db.deleteGeoTable("ne_10m_admin_1_states_provinces");
-            // // db.createTableFromShp(new
-            // // File("D:/data/naturalearth/ne_10m_admin_1_states_provinces.shp"));
-            // // SpatialiteImportUtils.importShapefile(db, new
-            // // File("D:/data/naturalearth/ne_10m_admin_0_countries.shp"),
-            // // "ne_10m_admin_0_countries", -1);
-            // // clock.printTimePassedInSeconds(System.out);
-        }
-
-    }
 }
