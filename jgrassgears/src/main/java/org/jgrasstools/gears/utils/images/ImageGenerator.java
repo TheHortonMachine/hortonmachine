@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.utils.images;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -29,10 +30,13 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 
@@ -70,6 +74,7 @@ import org.jgrasstools.gears.io.grasslegacy.map.color.GrassColorTable;
 import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.ColorUtilities;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -118,6 +123,8 @@ public class ImageGenerator {
     private MapContent content;
 
     private StreamingRenderer renderer;
+
+    private File shapesFile;
 
     public ImageGenerator( IJGTProgressMonitor monitor ) {
         if (monitor != null)
@@ -176,6 +183,27 @@ public class ImageGenerator {
             }
             featureFilter.add(filter);
         }
+    }
+
+    /**
+     * Method to add a file that contains a list of shapes/texts to add.
+     * 
+     * <p><b>This is applied on top of the final image. Positions are in pixel.</b> 
+     * </p>
+     * </p>
+     * <p>
+     * Supported are:</br>
+     * <ul>
+     *  <li>text;x;y;mytext;colorrgba;size</li>
+     * <li>box;x;y;w;h;strokewidth;fillrgba;strokergba</li>
+     * <li>roundedbox;x;y;w;h;round;strokewidth;fillrgba;strokergba</li>
+     *  <li>...</li>
+     * </ul>
+     * </p>
+     * 
+     */
+    public void addShapesPath( String shapesPath ) {
+        this.shapesFile = new File(shapesPath);
     }
 
     // private void setTransforms( final ReferencedEnvelope envelope, int width, int height ) {
@@ -607,12 +635,12 @@ public class ImageGenerator {
      * @param scaleSize a size for the scale.
      * @param scaleX the X position of the scale in the final image.
      * @param scaleY the X position of the scale in the final image.
-     * @throws IOException
+     * @throws Exception 
      * @since 0.7.6
      */
     public void dumpPngImageForScaleAndPaper( String imagePath, ReferencedEnvelope bounds, double scale, PaperFormat paperFormat,
             Double dpi, BufferedImage legend, int legendX, int legendY, String scalePrefix, float scaleSize, int scaleX,
-            int scaleY ) throws IOException {
+            int scaleY ) throws Exception {
         if (dpi == null) {
             dpi = 72.0;
         }
@@ -633,6 +661,9 @@ public class ImageGenerator {
 
         BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, 0);
 
+        if (shapesFile != null && shapesFile.exists()) {
+            applyShapes(dumpImage);
+        }
         if (legend != null) {
             Graphics2D graphics = (Graphics2D) dumpImage.getGraphics();
             graphics.drawImage(legend, null, legendX, legendY);
@@ -661,6 +692,66 @@ public class ImageGenerator {
         }
 
         ImageIO.write(dumpImage, "png", new File(imagePath));
+
+    }
+
+    private void applyShapes( BufferedImage image ) throws Exception {
+        Graphics2D graphics = (Graphics2D) image.getGraphics();
+
+        Stream<String> lines = Files.lines(Paths.get(shapesFile.toURI())).distinct()//
+                .filter(l -> l.trim().length() != 0);
+        lines.forEach(l -> {
+            if (l.startsWith("text")) {
+                // text;x;y;mytext;colorrgba;size
+               String[] split = l.split(";");
+               int x = Integer.parseInt(split[1]);
+               int y = Integer.parseInt(split[2]);
+               String msg = split[3];
+               Color color = ColorUtilities.colorFromRbgString(split[4]);
+               int size = Integer.parseInt(split[5]);
+               
+               graphics.setColor(color);
+               graphics.setFont(new Font("Arial", Font.PLAIN, size));
+               graphics.drawString(msg, x, y);
+            } else if (l.startsWith("box")) {
+                // box;x;y;w;h;strokewidth;fillrgba;strokergba
+                String[] split = l.split(";");
+                int x = Integer.parseInt(split[1]);
+                int y = Integer.parseInt(split[2]);
+                int w = Integer.parseInt(split[3]);
+                int h = Integer.parseInt(split[4]);
+                int strokeWidth = Integer.parseInt(split[5]);
+                Color colorFill = ColorUtilities.colorFromRbgString(split[6]);
+                Color colorStroke = ColorUtilities.colorFromRbgString(split[7]);
+                
+                graphics.setColor(colorFill);
+                graphics.fillRect(x, y, w, h);
+
+                BasicStroke stroke = new BasicStroke(strokeWidth);
+                graphics.setStroke(stroke);
+                graphics.setColor(colorStroke);
+                graphics.drawRect(x, y, w, h);
+            } else if (l.startsWith("roundedbox")) {
+                // roundedbox;x;y;w;h;round;strokewidth;fillrgba;strokergba
+                String[] split = l.split(";");
+                int x = Integer.parseInt(split[1]);
+                int y = Integer.parseInt(split[2]);
+                int w = Integer.parseInt(split[3]);
+                int h = Integer.parseInt(split[4]);
+                int round = Integer.parseInt(split[5]);
+                int strokeWidth = Integer.parseInt(split[6]);
+                Color colorFill = ColorUtilities.colorFromRbgString(split[7]);
+                Color colorStroke = ColorUtilities.colorFromRbgString(split[8]);
+                
+                graphics.setColor(colorFill);
+                graphics.fillRoundRect(x, y, w, h, round, round);
+                
+                BasicStroke stroke = new BasicStroke(strokeWidth);
+                graphics.setStroke(stroke);
+                graphics.setColor(colorStroke);
+                graphics.drawRoundRect(x, y, w, h, round, round);
+            }
+        });
 
     }
 
@@ -713,8 +804,8 @@ public class ImageGenerator {
                 // Double.parseDouble(toValueStr)};
                 // double opacity = 1.0;
 
-                Expression fromColorExpr = sB.colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(),
-                        fromColor.getBlue(), 255));
+                Expression fromColorExpr = sB
+                        .colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor.getBlue(), 255));
                 // Expression toColorExpr = sB.colorExpression(new java.awt.Color(toColor.getRed(),
                 // toColor.getGreen(), toColor
                 // .getBlue(), 255));
@@ -739,8 +830,8 @@ public class ImageGenerator {
             Color fromColor = colorsList.get(0);
             // double opacity = 1.0;
 
-            Expression fromColorExpr = sB.colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor
-                    .getBlue(), 255));
+            Expression fromColorExpr = sB
+                    .colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor.getBlue(), 255));
             Expression fromExpr = sB.literalExpression(Double.parseDouble(fromValueStr));
             // Expression opacityExpr = sB.literalExpression(opacity);
 
