@@ -59,9 +59,9 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
-@Description("Print out information of a las file or las data folder.")
+@Description("Clustering of point data.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
-@Keywords("info, lidar, las")
+@Keywords("cluster, lidar, las")
 @Label(JGTConstants.LESTO + "/utilities")
 @Name("lasinfo")
 @Status(OMSHYDRO_DRAFT)
