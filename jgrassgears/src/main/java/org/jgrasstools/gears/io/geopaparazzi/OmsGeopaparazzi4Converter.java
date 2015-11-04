@@ -224,36 +224,51 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     }
 
     private void projectInfo( Connection connection, File outputFolderFile ) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append("PROJECT INFO\n");
+        sb.append("----------------------\n\n");
+
+        LinkedHashMap<String, String> metadataMap = getMetadataMap(connection);
+        for( Entry<String, String> entry : metadataMap.entrySet() ) {
+            sb.append(entry.getKey()).append(" = ").append(entry.getValue()).append("\n");
+        }
+
+        FileUtilities.writeFile(sb.toString(), new File(outputFolderFile, "project_info.txt"));
+    }
+
+    /**
+     * Get the map of metadata of the project.
+     * 
+     * @param connection the db connection. 
+     * @return the map of metadata.
+     * @throws SQLException
+     */
+    public static LinkedHashMap<String, String> getMetadataMap( Connection connection ) throws SQLException {
+        LinkedHashMap<String, String> metadataMap = new LinkedHashMap<>();
         try (Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
             String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
                     MetadataTableFields.COLUMN_VALUE.getFieldName() + " from " + TABLE_METADATA;
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("PROJECT INFO\n");
-            sb.append("----------------------\n\n");
-
             ResultSet rs = statement.executeQuery(sql);
             while( rs.next() ) {
                 String key = rs.getString(MetadataTableFields.COLUMN_KEY.getFieldName());
                 String value = rs.getString(MetadataTableFields.COLUMN_VALUE.getFieldName());
-
                 if (!key.endsWith("ts")) {
-                    sb.append(key).append(" = ").append(value).append("\n");
+                    metadataMap.put(key, value);
                 } else {
                     try {
                         long ts = Long.parseLong(value);
                         String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
-                        sb.append(key).append(" = ").append(dateTimeString).append("\n");
+                        metadataMap.put(key, dateTimeString);
                     } catch (Exception e) {
-                        sb.append(key).append(" = ").append(value).append("\n");
+                        metadataMap.put(key, value);
                     }
                 }
             }
 
-            FileUtilities.writeFile(sb.toString(), new File(outputFolderFile, "project_info.txt"));
         }
+        return metadataMap;
     }
 
     private void simpleNotesToShapefile( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
