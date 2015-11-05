@@ -451,7 +451,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
                         String value = null;
                         if (jsonObject.has(TAG_VALUE)) {
-                            value = jsonObject.getString(TAG_VALUE).trim();
+                            value = jsonObject.get(TAG_VALUE).toString().trim();
                         }
                         String type = null;
                         if (jsonObject.has(TAG_TYPE)) {
