@@ -69,6 +69,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 
@@ -516,6 +517,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 }
 
                 Set<Entry<String, String>> entrySet = valuesMap.entrySet();
+                TreeMap<String, Integer> namesMap = new TreeMap<String, Integer>();
                 // check if there is a builder already
                 BuilderAndCollectionPair builderAndCollectionPair = forms2PropertiesMap.get(sectionName);
                 if (builderAndCollectionPair == null) {
@@ -532,6 +534,19 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                         if (key.length() > 10) {
                             pm.errorMessage("Need to trim key: " + key);
                             key = key.substring(0, 10);
+                        }
+                        Integer nCount = namesMap.get(key);
+                        if (nCount == null) {
+                            nCount = 1;
+                            namesMap.put(key, 1);
+                        } else {
+                            nCount++;
+                            namesMap.put(key, nCount);
+                            if (nCount < 10) {
+                                key = key.substring(0, key.length() - 1) + nCount;
+                            } else {
+                                key = key.substring(0, key.length() - 2) + nCount;
+                            }
                         }
                         b.add(key, String.class);
                     }
