@@ -46,6 +46,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOGS;
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_IMAGES;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_METADATA;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_NOTES;
 
@@ -293,6 +295,54 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             pm.worked(1);
         }
         pm.done();
+    }
+
+    /**
+     * @return the list of potential layers.
+     * @throws SQLException 
+     */
+    public static List<String> getLayerNamesList( Connection connection ) throws SQLException {
+        List<String> layerNames = new ArrayList<>();
+        String sql = "select count(*) from " + TABLE_NOTES;
+        int count = countRows(connection, sql);
+        if (count > 0)
+            layerNames.add("Simple Notes");
+
+        sql = "select count(*) from " + TABLE_IMAGES;
+        count = countRows(connection, sql);
+        if (count > 0)
+            layerNames.add("Media Notes");
+
+        sql = "select count(*) from " + TABLE_GPSLOGS;
+        count = countRows(connection, sql);
+        if (count > 0)
+            layerNames.add("GPS logs");
+
+        String formFN = NotesTableFields.COLUMN_FORM.getFieldName();
+        String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
+        sql = "select distinct " + textFN + " from " + TABLE_NOTES + " where " + formFN + " is not null and " + formFN + "<>''";
+        try (Statement statement = connection.createStatement()) {
+            statement.setQueryTimeout(30); // set timeout to 30 sec.
+
+            ResultSet rs = statement.executeQuery(sql);
+            while( rs.next() ) {
+                String formName = rs.getString(1);
+                layerNames.add(formName);
+            }
+        }
+
+        return layerNames;
+    }
+
+    private static int countRows( Connection connection, String sql ) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            ResultSet rs = statement.executeQuery(sql);
+            if (rs.next()) {
+                int notesCount = rs.getInt(1);
+                return notesCount;
+            }
+        }
+        return 0;
     }
 
     /**
