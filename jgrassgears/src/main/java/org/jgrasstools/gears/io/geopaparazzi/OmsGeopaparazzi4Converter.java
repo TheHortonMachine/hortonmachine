@@ -791,11 +791,11 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
     }
 
-    private SimpleFeatureCollection media2FeatureCollection( Connection connection, File mediaFolderFile, IJGTProgressMonitor pm )
-            throws Exception, IOException, FileNotFoundException {
-        DefaultFeatureCollection newCollection;
+    public static SimpleFeatureCollection media2FeatureCollection( Connection connection, File mediaFolderFile,
+            IJGTProgressMonitor pm ) throws Exception, IOException, FileNotFoundException {
+        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
         try {
-
+            GeometryFactory gf = GeometryUtilities.gf();
             /*
              * create the points shapefile
              */
