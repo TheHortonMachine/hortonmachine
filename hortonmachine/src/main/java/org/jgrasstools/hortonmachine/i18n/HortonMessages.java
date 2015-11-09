@@ -442,27 +442,6 @@ public class HortonMessages {
     public static final String OMSSLOPE_doHandleNegativeSlope_DESCRIPTION = "If true, negative slopes will be set to the minimum positive value.";
     public static final String OMSSLOPE_outSlope_DESCRIPTION = "The map of gradient.";
 
-    public static final String OMSEPANET_DESCRIPTION = "The main OmsEpanet module";
-    public static final String OMSEPANET_DOCUMENTATION = "";
-    public static final String OMSEPANET_KEYWORDS = "OmsEpanet";
-    public static final String OMSEPANET_LABEL = OTHER;
-    public static final String OMSEPANET_NAME = "";
-    public static final int OMSEPANET_STATUS = 10;
-    public static final String OMSEPANET_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSEPANET_AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
-    public static final String OMSEPANET_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSEPANET_inDll_DESCRIPTION = "The epanet dynamic lib file.";
-    public static final String OMSEPANET_inInp_DESCRIPTION = "The inp file.";
-    public static final String OMSEPANET_tStart_DESCRIPTION = "The start time.";
-    public static final String OMSEPANET_tCurrent_DESCRIPTION = "The current time.";
-    public static final String OMSEPANET_pipesList_DESCRIPTION = "The pipes result data.";
-    public static final String OMSEPANET_junctionsList_DESCRIPTION = "The junctions result data.";
-    public static final String OMSEPANET_pumpsList_DESCRIPTION = "The pumps result data.";
-    public static final String OMSEPANET_valvesList_DESCRIPTION = "The valves result data.";
-    public static final String OMSEPANET_tanksList_DESCRIPTION = "The tanks result data.";
-    public static final String OMSEPANET_reservoirsList_DESCRIPTION = "The reservoirs result data.";
-    public static final String OMSEPANET_warnings_DESCRIPTION = "Warning messages for the run.";
-
     public static final String OMSFAOETPMODEL_DESCRIPTION = "Calculates evapotranspiration.";
     public static final String OMSFAOETPMODEL_DOCUMENTATION = "";
     public static final String OMSFAOETPMODEL_KEYWORDS = "Evapotranspiration, Hydrologic";

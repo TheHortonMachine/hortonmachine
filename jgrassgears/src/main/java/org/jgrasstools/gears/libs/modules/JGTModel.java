@@ -45,6 +45,7 @@ import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.exceptions.ModelsUserCancelException;
 import org.jgrasstools.gears.libs.monitor.GeotoolsProgressMonitorAdapter;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
@@ -92,7 +93,7 @@ public class JGTModel implements Process {
     }
 
     @Description(//
-    en = PROGRESS_MONITOR_EN,//
+    en = PROGRESS_MONITOR_EN, //
     it = PROGRESS_MONITOR_EN//
     )
     @In
@@ -153,6 +154,7 @@ public class JGTModel implements Process {
      * 
      * @param pm the {@link IJGTProgressMonitor progress monitor}.
      * @return true if the process was stopped.
+     * @deprecated use directly the pm.isCanceled() or {@link #checkCancel()} instead.
      */
     protected boolean isCanceled( IJGTProgressMonitor pm ) {
         if (pm.isCanceled()) {
@@ -160,6 +162,17 @@ public class JGTModel implements Process {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Check if the process has been canceled.
+     * 
+     * <p>If canceled a ModelsUserCancelException will be thrown.</p>
+     */
+    protected void checkCancel() {
+        if (pm != null && pm.isCanceled()) {
+            throw new ModelsUserCancelException();
+        }
     }
 
     public Map<String, Object> execute( Map<String, Object> input, ProgressListener monitor ) throws ProcessException {
@@ -218,8 +231,8 @@ public class JGTModel implements Process {
     protected void checkNull( Object... objects ) {
         for( Object object : objects ) {
             if (object == null) {
-                throw new ModelsIllegalargumentException("Mandatory input argument is missing. Check your syntax...", this
-                        .getClass().getSimpleName(), pm);
+                throw new ModelsIllegalargumentException("Mandatory input argument is missing. Check your syntax...",
+                        this.getClass().getSimpleName(), pm);
             }
         }
     }
