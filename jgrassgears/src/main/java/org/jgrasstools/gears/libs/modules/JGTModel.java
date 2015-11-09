@@ -169,7 +169,7 @@ public class JGTModel implements Process {
      * 
      * <p>If canceled a ModelsUserCancelException will be thrown.</p>
      */
-    protected void checkCancel() {
+    public void checkCancel() {
         if (pm != null && pm.isCanceled()) {
             throw new ModelsUserCancelException();
         }
