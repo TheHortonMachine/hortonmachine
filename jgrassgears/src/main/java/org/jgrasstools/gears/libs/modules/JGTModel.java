@@ -138,7 +138,7 @@ public class JGTModel implements Process {
      * A switch that can enable module resetting.
      * 
      * <p>
-     * This variable might be usefull in the case in which 
+     * This variable might be useful in the case in which 
      * NON-timedependent modules at a certain point should anyways
      * re-read or re-process the data. For example in the case in which
      * a map was already calculated but at a certain point should 
