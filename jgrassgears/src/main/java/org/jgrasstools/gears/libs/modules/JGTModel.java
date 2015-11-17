@@ -282,7 +282,7 @@ public class JGTModel implements Process {
      * @throws Exception
      */
     public GridCoverage2D getRaster( String source ) throws Exception {
-        if (source == null)
+        if (source == null || source.trim().length() == 0)
             return null;
         OmsRasterReader reader = new OmsRasterReader();
         reader.pm = pm;
@@ -303,7 +303,7 @@ public class JGTModel implements Process {
      * @throws Exception
      */
     public SimpleFeatureCollection getVector( String source ) throws Exception {
-        if (source == null)
+        if (source == null || source.trim().length() == 0)
             return null;
         OmsVectorReader reader = new OmsVectorReader();
         reader.pm = pm;
