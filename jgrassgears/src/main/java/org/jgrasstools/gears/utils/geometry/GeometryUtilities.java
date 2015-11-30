@@ -40,6 +40,7 @@ import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.GeometryDescriptor;
 
 import com.vividsolutions.jts.algorithm.PointLocator;
@@ -67,6 +68,7 @@ import com.vividsolutions.jts.linearref.LengthIndexedLine;
 import com.vividsolutions.jts.noding.IntersectionAdder;
 import com.vividsolutions.jts.noding.MCIndexNoder;
 import com.vividsolutions.jts.noding.NodedSegmentString;
+import com.vividsolutions.jts.operation.linemerge.LineMerger;
 import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 
 /**
@@ -992,5 +994,26 @@ public class GeometryUtilities {
         AffineTransform2D scaleTransform = new AffineTransform2D(scaleAT);
         polygon = JTS.transform(polygon, scaleTransform);
         return polygon;
+    }
+
+    /**
+     * Tries to merge multilines when they are snapped properly.
+     * 
+     * @param multiLines the lines to merge.
+     * @return the list of lines, ideally containing a single line,merged. 
+     */
+    @SuppressWarnings("unchecked")
+    public static List<LineString> mergeLinestrings( List<LineString> multiLines ) {
+        LineMerger lseq = new LineMerger();
+        for( int i = 0; i < multiLines.size(); i++ ) {
+            Geometry line = multiLines.get(i);
+            lseq.add(line);
+        }
+        Collection<Geometry> merged = lseq.getMergedLineStrings();
+        List<LineString> mergedList = new ArrayList<>();
+        for( Geometry geom : merged ) {
+            mergedList.add((LineString) geom);
+        }
+        return mergedList;
     }
 }
