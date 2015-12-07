@@ -63,7 +63,6 @@ import com.vividsolutions.jts.io.WKBReader;
 public class SpatialiteDb implements AutoCloseable {
 
     static {
-        // System.setProperty("java.io.tmpdir", "D:/TMP/");
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
@@ -893,7 +892,7 @@ public class SpatialiteDb implements AutoCloseable {
      * 
      * @param tableName the table name.
      * @param envelope the envelope to check.
-     * @return
+     * @return The list of geometries intersecting the envelope.
      * @throws SQLException
      * @throws ParseException
      */
