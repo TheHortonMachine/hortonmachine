@@ -86,9 +86,9 @@ import org.jgrasstools.gui.utils.GuiUtilities;
 public class SpatialtoolboxController extends SpatialtoolboxView {
     private static final long serialVersionUID = 1L;
 
-    private ParametersPanel pPanel;
+    protected ParametersPanel pPanel;
 
-    private HashMap<String, String> prefsMap = new HashMap<>();
+    protected HashMap<String, String> prefsMap = new HashMap<>();
 
     private GuiBridgeHandler guiBridge;
 
