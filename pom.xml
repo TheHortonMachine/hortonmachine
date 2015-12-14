@@ -24,7 +24,8 @@
         <module>hortonmachine</module>
         <module>lesto</module>
         <module>grass</module>
-    <module>modules</module>
+        <module>modules</module>
+        <module>gui</module>
   </modules>
 
 	<issueManagement>
@@ -175,6 +176,21 @@
 			</execution>
 		    </executions>
             </plugin>
+
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${session.executionRootDirectory}/libs-exported</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+		</plugin>
         </plugins>
     </build>
 
