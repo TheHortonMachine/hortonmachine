@@ -797,8 +797,8 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
         JGrasstoolsModulesManager.getInstance().init();
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
         gBridge.setLibsFolder(new File("/home/hydrologis/development/jgrasstools-git/libs-exported/"));
-        SpatialtoolboxController controller = new SpatialtoolboxController(gBridge);
-        JFrame frame = gBridge.showWindow(controller.asJComponent(), "JGrasstools' Spatial Toolbox");
+        final SpatialtoolboxController controller = new SpatialtoolboxController(gBridge);
+        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "JGrasstools' Spatial Toolbox");
 
         WindowListener exitListener = new WindowAdapter(){
             @Override
