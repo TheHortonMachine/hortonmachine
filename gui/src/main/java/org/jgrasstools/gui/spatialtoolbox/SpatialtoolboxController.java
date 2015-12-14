@@ -107,6 +107,15 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
 
     @SuppressWarnings({"unchecked", "serial"})
     private void init() {
+        ImageIcon processingIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/processingregion.png"));
+        ImageIcon startIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/start.gif"));
+        ImageIcon runScriptIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/run_script.gif"));
+        ImageIcon generateScriptIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/generate_script.gif"));
+        ImageIcon trashIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/trash.gif"));
+        final ImageIcon categoryIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/category.gif"));
+        final ImageIcon moduleIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/module.gif"));
+        final ImageIcon moduleExpIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/module_exp.gif"));
+
         parametersPanel.setLayout(new BorderLayout());
 
         addComponentListener(new ComponentListener(){
@@ -138,7 +147,8 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
             public void actionPerformed( ActionEvent e ) {
             }
         });
-        processingRegionButton.setIcon(new ImageIcon("processingregion"));
+
+        processingRegionButton.setIcon(processingIcon);
 
         // TODO enable when used
         processingRegionButton.setVisible(false);
@@ -157,7 +167,8 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
                 }
             }
         });
-        startButton.setIcon(new ImageIcon("start"));
+
+        startButton.setIcon(startIcon);
 
         runScriptButton.setToolTipText("Run a script from file.");
         runScriptButton.addActionListener(new ActionListener(){
@@ -193,7 +204,8 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
 
             }
         });
-        runScriptButton.setIcon(new ImageIcon("run_script.gif"));
+
+        runScriptButton.setIcon(runScriptIcon);
 
         generateScriptButton.setToolTipText("Save the current module as a script to file.");
         generateScriptButton.addActionListener(new ActionListener(){
@@ -217,7 +229,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
                 }
             }
         });
-        generateScriptButton.setIcon(new ImageIcon("generate_script.gif"));
+        generateScriptButton.setIcon(generateScriptIcon);
 
         clearFilterButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
@@ -225,7 +237,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
                 layoutTree(false);
             }
         });
-        clearFilterButton.setIcon(new ImageIcon("trash.gif"));
+        clearFilterButton.setIcon(trashIcon);
 
         loadExperimentalCheckbox.setSelected(true);
         loadExperimentalCheckbox.addActionListener(new ActionListener(){
@@ -253,10 +265,6 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
                 layoutTree(true);
             }
         });
-
-        final ImageIcon categoryIcon = new ImageIcon("category.gif");
-        final ImageIcon moduleIcon = new ImageIcon("module.gif");
-        final ImageIcon moduleExpIcon = new ImageIcon("module_exp.gif");
 
         try {
             modulesTree.setCellRenderer(new DefaultTreeCellRenderer(){
