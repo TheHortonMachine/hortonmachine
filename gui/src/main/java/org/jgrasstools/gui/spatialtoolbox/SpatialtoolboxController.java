@@ -114,14 +114,15 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
     private void init() {
         preInit();
 
-        ImageIcon processingIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/processingregion.png"));
-        ImageIcon startIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/start.gif"));
-        ImageIcon runScriptIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/run_script.gif"));
-        ImageIcon generateScriptIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/generate_script.gif"));
-        ImageIcon trashIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/trash.gif"));
-        final ImageIcon categoryIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/category.gif"));
-        final ImageIcon moduleIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/module.gif"));
-        final ImageIcon moduleExpIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/module_exp.gif"));
+        Class<SpatialtoolboxController> class1 = SpatialtoolboxController.class;
+        ImageIcon processingIcon = new ImageIcon(class1.getResource("/org/jgrasstools/images/processingregion.png"));
+        ImageIcon startIcon = new ImageIcon(class1.getResource("/org/jgrasstools/images/start.gif"));
+        ImageIcon runScriptIcon = new ImageIcon(class1.getResource("/org/jgrasstools/images/run_script.gif"));
+        ImageIcon generateScriptIcon = new ImageIcon(class1.getResource("/org/jgrasstools/images/generate_script.gif"));
+        ImageIcon trashIcon = new ImageIcon(class1.getResource("/org/jgrasstools/images/trash.gif"));
+        final ImageIcon categoryIcon = new ImageIcon(class1.getResource("/org/jgrasstools/images/category.gif"));
+        final ImageIcon moduleIcon = new ImageIcon(class1.getResource("/org/jgrasstools/images/module.gif"));
+        final ImageIcon moduleExpIcon = new ImageIcon(class1.getResource("/org/jgrasstools/images/module_exp.gif"));
 
         parametersPanel.setLayout(new BorderLayout());
 
@@ -804,7 +805,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
         WindowListener exitListener = new WindowAdapter(){
             @Override
             public void windowClosing( WindowEvent e ) {
-                int confirm = JOptionPane.showOptionDialog(frame, "Are You Sure to Close this Application?", "Exit Confirmation",
+                int confirm = JOptionPane.showOptionDialog(frame, "Are you sure you want to exit?", "Exit Confirmation",
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
                 if (confirm == JOptionPane.YES_OPTION) {
                     controller.freeResources();
