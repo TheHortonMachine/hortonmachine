@@ -30,6 +30,10 @@ public class ProcessLogConsoleController extends ProcessLogConsoleView implement
     }
 
     private void init() {
+        ImageIcon trashIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/trash.gif"));
+        ImageIcon copyIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/copy_edit.gif"));
+        ImageIcon stopIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/progress_stop.gif"));
+        
         logPane = new JTextPane();
         scrollPane = new JScrollPane(logPane);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -50,21 +54,21 @@ public class ProcessLogConsoleController extends ProcessLogConsoleView implement
                 }
             }
         });
-        clearButton.setIcon(new ImageIcon("trash.gif"));
+        clearButton.setIcon(trashIcon);
 
         copyButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
                 GuiUtilities.copyToClipboard(logPane.getText());
             }
         });
-        copyButton.setIcon(new ImageIcon("copy_edit.gif"));
+        copyButton.setIcon(copyIcon);
 
         stopButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
                 killProcess();
             }
         });
-        stopButton.setIcon(new ImageIcon("progress_stop"));
+        stopButton.setIcon(stopIcon);
 
         setPreferredSize(new Dimension(480, 320));
 
