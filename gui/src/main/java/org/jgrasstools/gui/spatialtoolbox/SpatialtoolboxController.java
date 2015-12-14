@@ -25,6 +25,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -756,7 +757,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
      * 
      * @param component the component that listens to mouse interaction.
      */
-    protected void addMouseListenerToContext( JComponent component ) {
+    protected void addMouseListenerToContext( MouseListener mouseListener ) {
         // default does nothing.
     }
 
@@ -765,7 +766,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
      * 
      * @param component the component to remove that listens to mouse interaction.
      */
-    protected void removeMouseListenerFromContext( JComponent component ) {
+    protected void removeMouseListenerFromContext( MouseListener mouseListener ) {
         // default does nothing.
     }
 
