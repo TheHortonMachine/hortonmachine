@@ -106,7 +106,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
     }
 
     @SuppressWarnings({"unchecked", "serial"})
-    private void init() {
+    protected void init() {
         ImageIcon processingIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/processingregion.png"));
         ImageIcon startIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/start.gif"));
         ImageIcon runScriptIcon = new ImageIcon(getClass().getResource("/org/jgrasstools/images/run_script.gif"));
