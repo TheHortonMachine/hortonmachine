@@ -27,13 +27,16 @@ public class ItemBoolean implements Item {
     private String description;
     private String defaultValue;
     private boolean isMandatory;
+    private String key;
 
     /**
+     * @param key TODO
      * @param description
      * @param defaultValue a default value: <b>false</b> or <b>true</b>.
      * @param isMandatory
      */
-    public ItemBoolean( String description, String defaultValue, boolean isMandatory ) {
+    public ItemBoolean( String key, String description, String defaultValue, boolean isMandatory ) {
+        this.key = key;
         this.isMandatory = isMandatory;
         if (defaultValue == null) {
             defaultValue = "false";
@@ -46,7 +49,12 @@ public class ItemBoolean implements Item {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("        {\n");
-        sb.append("             \"key\": \"").append(description).append("\",\n");
+        if (key != null && key.trim().length() > 0) {
+            sb.append("             \"key\": \"").append(key).append("\",\n");
+            sb.append("             \"label\": \"").append(description).append("\",\n");
+        }else{
+            sb.append("             \"key\": \"").append(description).append("\",\n");
+        }
         sb.append("             \"value\": \"").append(defaultValue).append("\",\n");
         sb.append("             \"type\": \"").append("boolean").append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");

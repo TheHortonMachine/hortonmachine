@@ -32,8 +32,10 @@ public class ItemDate implements Item {
     private String defaultValueStr;
 
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+    private String key;
 
-    public ItemDate( String description, Date defaultValue, boolean isMandatory ) {
+    public ItemDate( String key, String description, Date defaultValue, boolean isMandatory ) {
+        this.key = key;
         if (defaultValue == null) {
             defaultValueStr = "";
         } else {
@@ -46,7 +48,12 @@ public class ItemDate implements Item {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("        {\n");
-        sb.append("             \"key\": \"").append(description).append("\",\n");
+        if (key != null && key.trim().length() > 0) {
+            sb.append("             \"key\": \"").append(key).append("\",\n");
+            sb.append("             \"label\": \"").append(description).append("\",\n");
+        }else{
+            sb.append("             \"key\": \"").append(description).append("\",\n");
+        }
         sb.append("             \"value\": \"").append(defaultValueStr).append("\",\n");
         sb.append("             \"type\": \"").append("date").append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");

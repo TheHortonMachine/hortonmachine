@@ -33,9 +33,11 @@ public class ItemConnectedCombo implements Item {
     private boolean isMandatory;
     private String defaultValue;
     private LinkedHashMap<String, List<String>> dataMap;
+    private String key;
 
-    public ItemConnectedCombo( String description, LinkedHashMap<String, List<String>> dataMap, String defaultValue,
-            boolean isMandatory ) {
+    public ItemConnectedCombo( String key, String description, LinkedHashMap<String, List<String>> dataMap,
+            String defaultValue, boolean isMandatory ) {
+        this.key = key;
         this.dataMap = dataMap;
         if (defaultValue == null) {
             defaultValue = "";
@@ -48,7 +50,12 @@ public class ItemConnectedCombo implements Item {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("        {\n");
-        sb.append("             \"key\": \"").append(description).append("\",\n");
+        if (key != null && key.trim().length() > 0) {
+            sb.append("             \"key\": \"").append(key).append("\",\n");
+            sb.append("             \"label\": \"").append(description).append("\",\n");
+        }else{
+            sb.append("             \"key\": \"").append(description).append("\",\n");
+        }
         sb.append("             \"values\": {\n");
 
         StringBuilder tmp = new StringBuilder();

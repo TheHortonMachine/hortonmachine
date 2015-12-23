@@ -28,8 +28,10 @@ public class ItemTextArea implements Item {
     private boolean isMandatory;
     private String defaultValue;
     private boolean isLabel;
+    private String key;
 
-    public ItemTextArea( String description, String defaultValue, boolean isMandatory, boolean isLabel ) {
+    public ItemTextArea( String key, String description, String defaultValue, boolean isMandatory, boolean isLabel ) {
+        this.key = key;
         this.isLabel = isLabel;
         if (defaultValue == null) {
             defaultValue = "";
@@ -42,7 +44,12 @@ public class ItemTextArea implements Item {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("        {\n");
-        sb.append("             \"key\": \"").append(description).append("\",\n");
+        if (key != null && key.trim().length() > 0) {
+            sb.append("             \"key\": \"").append(key).append("\",\n");
+            sb.append("             \"label\": \"").append(description).append("\",\n");
+        }else{
+            sb.append("             \"key\": \"").append(description).append("\",\n");
+        }
         sb.append("             \"value\": \"").append(defaultValue).append("\",\n");
         if (isLabel)
             sb.append("             \"islabel\": \"").append("true").append("\",\n");

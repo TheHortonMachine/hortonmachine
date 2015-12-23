@@ -32,8 +32,10 @@ public class ItemTime implements Item {
     private String defaultValueStr;
 
     private SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm:ss");
+    private String key;
 
-    public ItemTime( String description, Date defaultValue, boolean isMandatory ) {
+    public ItemTime( String key, String description, Date defaultValue, boolean isMandatory ) {
+        this.key = key;
         if (defaultValue == null) {
             defaultValueStr = "";
         } else {
@@ -46,7 +48,12 @@ public class ItemTime implements Item {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("        {\n");
-        sb.append("             \"key\": \"").append(description).append("\",\n");
+        if (key != null && key.trim().length() > 0) {
+            sb.append("             \"key\": \"").append(key).append("\",\n");
+            sb.append("             \"label\": \"").append(description).append("\",\n");
+        }else{
+            sb.append("             \"key\": \"").append(description).append("\",\n");
+        }
         sb.append("             \"value\": \"").append(defaultValueStr).append("\",\n");
         sb.append("             \"type\": \"").append("time").append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");

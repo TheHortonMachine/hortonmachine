@@ -47,35 +47,35 @@ public class TestGeopaparazziFormUtilities extends HMTestCase {
 
         Form textForm = new Form("text");
         section.addForms(textForm);
-        ItemText someText = new ItemText("some text", "", false, false);
+        ItemText someText = new ItemText(null, "some text", "", false, false);
         textForm.addItem(someText);
 
         Form numericForm = new Form("numeric text");
         section.addForms(numericForm);
-        ItemDouble doubleText = new ItemDouble("a number", null, false, false);
+        ItemDouble doubleText = new ItemDouble(null, "a number", null, false, false);
         numericForm.addItem(doubleText);
-        ItemInteger intText = new ItemInteger("an integer number", null, false, false);
+        ItemInteger intText = new ItemInteger(null, "an integer number", null, false, false);
         numericForm.addItem(intText);
 
         Form dateForm = new Form("date");
         section.addForms(dateForm);
-        ItemDate dateText = new ItemDate("a date", null, false);
+        ItemDate dateText = new ItemDate(null, "a date", null, false);
         dateForm.addItem(dateText);
 
         Form timeForm = new Form("time");
         section.addForms(timeForm);
-        ItemTime timeText = new ItemTime("a time", null, false);
+        ItemTime timeText = new ItemTime(null, "a time", null, false);
         timeForm.addItem(timeText);
 
         Form booleanForm = new Form("boolean");
         section.addForms(booleanForm);
-        ItemBoolean booleanText = new ItemBoolean("a boolean choice", null, false);
+        ItemBoolean booleanText = new ItemBoolean(null, "a boolean choice", null, false);
         booleanForm.addItem(booleanText);
 
         Form combosForm = new Form("combos");
         section.addForms(combosForm);
         String[] comboItems = {"choice 1", "choice 2", "choice 3", "choice 4", "choice 5"};
-        ItemCombo simpleCombo = new ItemCombo("a single choice combo", comboItems, null, false);
+        ItemCombo simpleCombo = new ItemCombo(null, "a single choice combo", comboItems, null, false);
         combosForm.addItem(simpleCombo);
 
         String[] comboItems1 = {"choice 1 of 1", "choice 2 of 1", "choice 3 of 1", "choice 4 of 1", "choice 5 of 1"};
@@ -83,7 +83,7 @@ public class TestGeopaparazziFormUtilities extends HMTestCase {
         LinkedHashMap<String, List<String>> dataMap = new LinkedHashMap<String, List<String>>();
         dataMap.put("items 1", Arrays.asList(comboItems1));
         dataMap.put("items 2", Arrays.asList(comboItems2));
-        ItemConnectedCombo connectedCombo = new ItemConnectedCombo("two connected combos", dataMap, null, false);
+        ItemConnectedCombo connectedCombo = new ItemConnectedCombo(null, "two connected combos", dataMap, null, false);
         combosForm.addItem(connectedCombo);
 
         String replaced = mainFrame.toString().replaceAll("\\s+", "").replaceAll("\"", "");

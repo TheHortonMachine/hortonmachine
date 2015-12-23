@@ -18,27 +18,26 @@
 package org.jgrasstools.gears.io.geopaparazzi.forms.items;
 
 /**
- * A double item.
+ * A text item that allows addition of multiple texts.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class ItemInteger implements Item {
+public class ItemDynamicText implements Item {
 
     private String description;
     private boolean isMandatory;
-    private String defaultValueStr;
+    private String defaultValue;
     private boolean isLabel;
     private String key;
 
-    public ItemInteger( String key, String description, Integer defaultValue, boolean isMandatory, boolean isLabel ) {
+    public ItemDynamicText(String key, String description, String defaultValue, boolean isMandatory, boolean isLabel ) {
         this.key = key;
         this.isLabel = isLabel;
         if (defaultValue == null) {
-            defaultValueStr = "";
-        } else {
-            this.defaultValueStr = defaultValue.toString();
+            defaultValue = "";
         }
         this.description = description;
+        this.defaultValue = defaultValue;
         this.isMandatory = isMandatory;
     }
 
@@ -51,10 +50,13 @@ public class ItemInteger implements Item {
         }else{
             sb.append("             \"key\": \"").append(description).append("\",\n");
         }
-        sb.append("             \"value\": \"").append(defaultValueStr).append("\",\n");
+        
+        sb.append("             \"value\": \"").append(defaultValue).append("\",\n");
+
         if (isLabel)
             sb.append("             \"islabel\": \"").append("true").append("\",\n");
-        sb.append("             \"type\": \"").append("integer").append("\",\n");
+        String type = "dynamicstring";
+        sb.append("             \"type\": \"").append(type).append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();
@@ -67,11 +69,11 @@ public class ItemInteger implements Item {
 
     @Override
     public void setValue( String value ) {
-        defaultValueStr = value;
+        defaultValue = value;
     }
 
     @Override
     public String getValue() {
-        return defaultValueStr;
+        return defaultValue;
     }
 }
