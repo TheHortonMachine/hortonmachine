@@ -7,9 +7,8 @@
     <version>0.7.9-SNAPSHOT</version>
   </parent>
 
-	<groupId>org.jgrasstools</groupId>
 	<artifactId>jgt-hortonmachine</artifactId>
-    <version>0.7.9-SNAPSHOT</version>    
+    <version>0.7.9-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>The Horton Machine</name>
 
@@ -88,4 +87,9 @@
 		</plugins>
 	</build>
 -->
+
+    <properties>
+       <maven.compiler.source>1.7</maven.compiler.source>
+       <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
 </project>
