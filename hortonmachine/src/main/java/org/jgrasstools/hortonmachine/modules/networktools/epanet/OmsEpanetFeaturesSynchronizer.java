@@ -148,18 +148,34 @@ public class OmsEpanetFeaturesSynchronizer extends JGTModel {
         List<SimpleFeature> junctionsList = toList(inJunctions);
         List<SimpleFeature> pipesList = toList(inPipes);
 
+        if (junctionsList.size() == 0 || pipesList.size() == 0) {
+            throw new ModelsIllegalargumentException("For the module to run pipes and junctions have to be available.", this);
+        }
+
         List<SimpleFeature> tanksList = new ArrayList<SimpleFeature>();
         if (inTanks != null)
             tanksList = toList(inTanks);
+        if (tanksList.size() == 0) {
+            inTanks = null;
+        }
         List<SimpleFeature> reservoirsList = new ArrayList<SimpleFeature>();
         if (inReservoirs != null)
             reservoirsList = toList(inReservoirs);
+        if (reservoirsList.size() == 0) {
+            inReservoirs = null;
+        }
         List<SimpleFeature> pumpsList = new ArrayList<SimpleFeature>();
         if (inPumps != null)
             pumpsList = toList(inPumps);
+        if (pumpsList.size() == 0) {
+            inPumps = null;
+        }
         List<SimpleFeature> valvesList = new ArrayList<SimpleFeature>();
         if (inValves != null)
             valvesList = toList(inValves);
+        if (valvesList.size() == 0) {
+            inValves = null;
+        }
 
         /*
          * check field names
@@ -168,8 +184,8 @@ public class OmsEpanetFeaturesSynchronizer extends JGTModel {
                 Junctions.ELEVATION.getAttributeName());
         String junctionIDAttributeName = FeatureUtilities.findAttributeName(inJunctions.getSchema(),
                 Junctions.ID.getAttributeName());
-        pipesStartNodeAttributeName = FeatureUtilities
-                .findAttributeName(inPipes.getSchema(), Pipes.START_NODE.getAttributeName());
+        pipesStartNodeAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(),
+                Pipes.START_NODE.getAttributeName());
         pipesEndNodeAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(), Pipes.END_NODE.getAttributeName());
         pipesIdAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(), Pipes.ID.getAttributeName());
         lengthAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(), Pipes.LENGTH.getAttributeName());
@@ -190,8 +206,8 @@ public class OmsEpanetFeaturesSynchronizer extends JGTModel {
         if (inPumps != null) {
             pumpsStartNodeAttributeName = FeatureUtilities.findAttributeName(inPumps.getSchema(),
                     Pumps.START_NODE.getAttributeName());
-            pumpsEndNodeAttributeName = FeatureUtilities
-                    .findAttributeName(inPumps.getSchema(), Pumps.END_NODE.getAttributeName());
+            pumpsEndNodeAttributeName = FeatureUtilities.findAttributeName(inPumps.getSchema(),
+                    Pumps.END_NODE.getAttributeName());
             pumpsIdAttributeName = FeatureUtilities.findAttributeName(inPumps.getSchema(), Pumps.ID.getAttributeName());
         }
         if (inValves != null) {
