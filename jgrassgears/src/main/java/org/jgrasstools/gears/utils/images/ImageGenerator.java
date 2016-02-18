@@ -449,6 +449,32 @@ public class ImageGenerator {
 
         return dumpImage;
     }
+
+    public void drawImage( Graphics2D g2d, ReferencedEnvelope ref, int imageWidth, int imageHeight, double buffer ) {
+        checkMapContent();
+
+        if (buffer > 0.0)
+            ref.expandBy(buffer, buffer);
+
+        Rectangle2D refRect = new Rectangle2D.Double(ref.getMinX(), ref.getMinY(), ref.getWidth(), ref.getHeight());
+        Rectangle2D imageRect = new Rectangle2D.Double(0, 0, imageWidth, imageHeight);
+
+        GeometryUtilities.scaleToRatio(imageRect, refRect, false);
+
+        ReferencedEnvelope newRef = new ReferencedEnvelope(refRect, ref.getCoordinateReferenceSystem());
+
+        Rectangle imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
+        Color white = Color.white;
+        g2d.setColor(new Color(white.getRed(), white.getGreen(), white.getBlue(), 0));
+        g2d.fillRect(0, 0, imageWidth, imageHeight);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        synchronized (renderer) {
+            content.getViewport().setBounds(newRef);
+            renderer.paint(g2d, imageBounds, newRef);
+        }
+    }
+
     /**
      * Draw the map on an image creating a new MapContent.
      * 
