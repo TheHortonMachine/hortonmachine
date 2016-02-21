@@ -1179,28 +1179,6 @@ public class HortonMessages {
     public static final String OMSDEBRISFLOW_outMcs_DESCRIPTION = "The output inundation map.";
     public static final String OMSDEBRISFLOW_outDepo_DESCRIPTION = "The output deposit map.";
 
-    public static final String OMSHECRASINPUTBUILDER_DESCRIPTION = "Module that prepares data for Hecras.";
-    public static final String OMSHECRASINPUTBUILDER_DOCUMENTATION = "";
-    public static final String OMSHECRASINPUTBUILDER_KEYWORDS = "Hecras, Raster, Vector, Hydraulic";
-    public static final String OMSHECRASINPUTBUILDER_LABEL = HYDROGEOMORPHOLOGY;
-    public static final String OMSHECRASINPUTBUILDER_NAME = "inhecras";
-    public static final int OMSHECRASINPUTBUILDER_STATUS = 5;
-    public static final String OMSHECRASINPUTBUILDER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSHECRASINPUTBUILDER_AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
-    public static final String OMSHECRASINPUTBUILDER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSHECRASINPUTBUILDER_inElev_DESCRIPTION = "The map of elevation.";
-    public static final String OMSHECRASINPUTBUILDER_inRiver_DESCRIPTION = "The map of the river.";
-    public static final String OMSHECRASINPUTBUILDER_inBridges_DESCRIPTION = "The map of bridges to consider.";
-    public static final String OMSHECRASINPUTBUILDER_inSections_DESCRIPTION = "The map of sections to consider. If supplied, they are used instead of extracting at a given interval. The sections need to be created with this same module.";
-    public static final String OMSHECRASINPUTBUILDER_pTitle_DESCRIPTION = "The id of the river/simulation.";
-    public static final String OMSHECRASINPUTBUILDER_pSectionsIntervalDistance_DESCRIPTION = "The sections interval distance.";
-    public static final String OMSHECRASINPUTBUILDER_pSectionsWidth_DESCRIPTION = "The section width.";
-    public static final String OMSHECRASINPUTBUILDER_pBridgeBuffer_DESCRIPTION = "The bridge buffer.";
-    public static final String OMSHECRASINPUTBUILDER_fBridgeWidth_DESCRIPTION = "The bridge width.";
-    public static final String OMSHECRASINPUTBUILDER_inHecras_DESCRIPTION = "The path to the generated hecras.";
-    public static final String OMSHECRASINPUTBUILDER_outSections_DESCRIPTION = "The extracted section lines.";
-    public static final String OMSHECRASINPUTBUILDER_outSectionPoints_DESCRIPTION = "The extracted section points (with the elevation in the attribute table).";
-
     public static final String OMSMULTITCA_DESCRIPTION = "It calculates the contributing areas differently in convex and concave areas";
     public static final String OMSMULTITCA_DOCUMENTATION = "OmsMultiTca.html";
     public static final String OMSMULTITCA_KEYWORDS = "Geomorphology, OmsDrainDir, Pitfiller, OmsAb";

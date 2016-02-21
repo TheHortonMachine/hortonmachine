@@ -17,28 +17,15 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_fBridgeWidth_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_inBridges_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_inElev_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_inHecras_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_inRiver_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_inSections_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_outSectionPoints_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_outSections_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_pBridgeBuffer_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_pSectionsIntervalDistance_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_pSectionsWidth_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_pTitle_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.LABEL;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.LICENSE;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.NAME;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.STATUS;
 
-import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,132 +38,78 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.ARiverSectionsExtractor;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.RiverInfo;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.RiverPoint;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
 
-@Description(OMSHECRASINPUTBUILDER_DESCRIPTION)
-@Author(name = OMSHECRASINPUTBUILDER_AUTHORNAMES, contact = OMSHECRASINPUTBUILDER_AUTHORCONTACTS)
-@Keywords(OMSHECRASINPUTBUILDER_KEYWORDS)
-@Label(OMSHECRASINPUTBUILDER_LABEL)
-@Name(OMSHECRASINPUTBUILDER_NAME)
-@Status(OMSHECRASINPUTBUILDER_STATUS)
-@License(OMSHECRASINPUTBUILDER_LICENSE)
+@Description(DESCRIPTION)
+@Author(name = AUTHORNAMES, contact = AUTHORCONTACTS)
+@Keywords(KEYWORDS)
+@Label(LABEL)
+@Name(NAME)
+@Status(STATUS)
+@License(LICENSE)
 public class OmsHecrasInputBuilder extends JGTModel {
-
-    @Description(OMSHECRASINPUTBUILDER_inElev_DESCRIPTION)
+    @Description(inRiver_DESCRIPTION)
     @In
-    public GridCoverage2D inElev = null;
+    public SimpleFeatureCollection inRiverPoints = null;
 
-    @Description(OMSHECRASINPUTBUILDER_inRiver_DESCRIPTION)
-    @In
-    public SimpleFeatureCollection inRiver = null;
-
-    @Description(OMSHECRASINPUTBUILDER_inBridges_DESCRIPTION)
-    @In
-    public SimpleFeatureCollection inBridges = null;
-
-    @Description(OMSHECRASINPUTBUILDER_inSections_DESCRIPTION)
+    @Description(inSections_DESCRIPTION)
     @In
     public SimpleFeatureCollection inSections = null;
 
-    @Description(OMSHECRASINPUTBUILDER_pTitle_DESCRIPTION)
+    @Description(inSectionPoints_DESCRIPTION)
+    @In
+    public SimpleFeatureCollection inSectionPoints = null;
+
+    @Description(pTitle_DESCRIPTION)
     @In
     public String pTitle = "DEFAULTID";
 
-    @Description(OMSHECRASINPUTBUILDER_pSectionsIntervalDistance_DESCRIPTION)
-    @In
-    public double pSectionsIntervalDistance = 0.0D;
-
-    @Description(OMSHECRASINPUTBUILDER_pSectionsWidth_DESCRIPTION)
-    @In
-    public double pSectionsWidth = 0.0D;
-
-    @Description(OMSHECRASINPUTBUILDER_pBridgeBuffer_DESCRIPTION)
-    @In
-    public double pBridgeBuffer = 0.0D;
-
-    @Description(OMSHECRASINPUTBUILDER_fBridgeWidth_DESCRIPTION)
-    @In
-    public String fBridgeWidth;
-
-    @Description(OMSHECRASINPUTBUILDER_inHecras_DESCRIPTION)
+    @Description(outHecras_DESCRIPTION)
     @In
     @UI(JGTConstants.FILEIN_UI_HINT)
-    public String inHecras = null;
+    public String outHecras = null;
 
-    @Description(OMSHECRASINPUTBUILDER_outSections_DESCRIPTION)
-    @Out
-    public SimpleFeatureCollection outSections = null;
-
-    @Description(OMSHECRASINPUTBUILDER_outSectionPoints_DESCRIPTION)
-    @Out
-    public SimpleFeatureCollection outSectionPoints = null;
-
-    private GeometryFactory gf;
+    public static final String DESCRIPTION = "Module that prepares input data for Hecras.";
+    public static final String DOCUMENTATION = "";
+    public static final String KEYWORDS = "Hecras, Raster, Vector, Hydraulic";
+    public static final String LABEL = JGTConstants.HYDROGEOMORPHOLOGY;
+    public static final String NAME = "inhecras";
+    public static final int STATUS = 5;
+    public static final String LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
+    public static final String AUTHORCONTACTS = "www.hydrologis.com";
+    public static final String inRiver_DESCRIPTION = "The river points with elevation.";
+    public static final String inSections_DESCRIPTION = "The section lines.";
+    public static final String inSectionPoints_DESCRIPTION = "The section points (with the elevation in the attribute table).";
+    public static final String pTitle_DESCRIPTION = "The id of the river/simulation.";
+    public static final String pSectionsIntervalDistance_DESCRIPTION = "The sections interval distance.";
+    public static final String pSectionsWidth_DESCRIPTION = "The section width.";
+    public static final String pBridgeBuffer_DESCRIPTION = "The bridge buffer.";
+    public static final String fBridgeWidth_DESCRIPTION = "The bridge width.";
+    public static final String outHecras_DESCRIPTION = "The path to the generated hecras.";
 
     @Execute
     public void process() throws Exception {
-        checkNull(inElev, inRiver);
+        checkNull(inRiverPoints, inSectionPoints, inSections);
 
-        gf = GeometryUtilities.gf();
-
-        List<SimpleFeature> riverFeatures = FeatureUtilities.featureCollectionToList(inRiver);
-        SimpleFeature riverFeature = riverFeatures.get(0);
-
-        /*
-         * TODO support for custom sections
-         */
-        // String asciiSectionsFolder = null;
-
-        /*
-         * END: TODO support for custom sections
-         */
-
-        Geometry geometry = (Geometry) riverFeature.getDefaultGeometry();
-        Coordinate[] riverCoordinates = geometry.getCoordinates();
-
-        pm.beginTask("Building reach geometry...", riverCoordinates.length);
-        Point2D.Double point = new Point2D.Double();
-        double[] extracted = new double[1];
-        for( int i = 0; i < riverCoordinates.length; i++ ) {
-            point.setLocation(riverCoordinates[i].x, riverCoordinates[i].y);
-            inElev.evaluate(point, extracted);
-
-            riverCoordinates[i] = new Coordinate(riverCoordinates[i].x, riverCoordinates[i].y, extracted[0]);
-            pm.worked(1);
-        }
-        pm.done();
-
-        LineString riverGeometry3d = gf.createLineString(riverCoordinates);
-
-        List<FeatureMate> bridgesList = FeatureUtilities.featureCollectionToMatesList(inBridges);
-
-        HecrasSectionsExtractor sectionsExtractor;
-        if (inSections == null) {
-            sectionsExtractor = new HecrasSectionsFromDtmExtractor(riverGeometry3d, inElev, pSectionsIntervalDistance,
-                    pSectionsWidth, bridgesList, fBridgeWidth, pBridgeBuffer, pm);
-        } else {
-            List<FeatureMate> sectionsList = FeatureUtilities.featureCollectionToMatesList(inSections);
-            sectionsExtractor = new HecrasSectionsFromFeaturesExtractor(riverGeometry3d, inElev, sectionsList, pm);
-        }
-
-        List<NetworkPoint> orderedNetworkPoints = sectionsExtractor.getOrderedNetworkPoints();
+        List<SimpleFeature> riverPointsFeatures = FeatureUtilities.featureCollectionToList(inRiverPoints);
+        List<SimpleFeature> sectionFeatures = FeatureUtilities.featureCollectionToList(inSections);
+        List<SimpleFeature> sectionPointsFeatures = FeatureUtilities.featureCollectionToList(inSectionPoints);
+        RiverInfo riverInfo = ARiverSectionsExtractor.getRiverInfo(riverPointsFeatures, sectionFeatures, sectionPointsFeatures);
 
         StringBuilder outBuf = new StringBuilder();
 
@@ -186,8 +119,7 @@ public class OmsHecrasInputBuilder extends JGTModel {
         outBuf.append("# Number of reaches\r\n");
         outBuf.append("NUMBER OF REACHES: 1\r\n");
         outBuf.append("# Number of cross sections\r\n");
-        int sectionsCount = sectionsExtractor.getSectionsNum();
-        outBuf.append("NUMBER OF CROSS-SECTIONS:\r\n" + sectionsCount + "\r\n");
+        outBuf.append("NUMBER OF CROSS-SECTIONS:\r\n" + riverInfo.extractedSectionsCount + "\r\n");
         outBuf.append("# Unit system used\r\n");
         outBuf.append("UNITS: METRIC\r\n");
         outBuf.append("END HEADER:\r\n");
@@ -195,11 +127,10 @@ public class OmsHecrasInputBuilder extends JGTModel {
 
         outBuf.append("BEGIN STREAM NETWORK:\r\n");
         outBuf.append("# List of all endpoint of the multiline that represents the river\r\n");
-        outBuf.append("ENDPOINT:\t" + riverCoordinates[0].x + "," + riverCoordinates[0].y + "," + riverCoordinates[0].z
-                + ",\t1\r\n");
-        outBuf.append("ENDPOINT:\t" + riverCoordinates[(riverCoordinates.length - 1)].x + ","
-                + riverCoordinates[(riverCoordinates.length - 1)].y + "," + riverCoordinates[(riverCoordinates.length - 1)].z
-                + ",\t2\r\n");
+        Coordinate[] riverCoords = riverInfo.riverCoords;
+        outBuf.append("ENDPOINT:\t" + riverCoords[0].x + "," + riverCoords[0].y + "," + riverCoords[0].z + ",\t1\r\n");
+        outBuf.append("ENDPOINT:\t" + riverCoords[(riverCoords.length - 1)].x + "," + riverCoords[(riverCoords.length - 1)].y
+                + "," + riverCoords[(riverCoords.length - 1)].z + ",\t2\r\n");
 
         outBuf.append("# Description of the river reach\r\n");
         outBuf.append("REACH:\r\n");
@@ -216,11 +147,11 @@ public class OmsHecrasInputBuilder extends JGTModel {
         outBuf.append("\r\n");
         outBuf.append("CENTERLINE:\r\n");
 
-        int orderedNetworkPointsSize = orderedNetworkPoints.size();
+        int orderedNetworkPointsSize = riverInfo.orderedNetworkPoints.size();
         for( int i = 0; i < orderedNetworkPointsSize; ++i ) {
             // mind, the reach points and the sections need to walk in reverse order!
             int iRev = orderedNetworkPointsSize - 1 - i;
-            NetworkPoint networkPoint = orderedNetworkPoints.get(i);
+            RiverPoint networkPoint = riverInfo.orderedNetworkPoints.get(i);
             if (networkPoint.hasSection) {
                 continue;
             }
@@ -235,11 +166,11 @@ public class OmsHecrasInputBuilder extends JGTModel {
         outBuf.append("\r\n");
 
         // get only sections with their indexes
-        List<NetworkPoint> sectionPoints = new ArrayList<NetworkPoint>();
+        List<RiverPoint> sectionPoints = new ArrayList<RiverPoint>();
         List<Integer> sectionIndexes = new ArrayList<Integer>();
         for( int i = 0; i < orderedNetworkPointsSize; i++ ) {
             int iRev = orderedNetworkPointsSize - 1 - i;
-            NetworkPoint currentNetworkPoint = orderedNetworkPoints.get(i);
+            RiverPoint currentNetworkPoint = riverInfo.orderedNetworkPoints.get(i);
             if (currentNetworkPoint.hasSection) {
                 sectionPoints.add(currentNetworkPoint);
                 sectionIndexes.add(iRev);
@@ -249,8 +180,8 @@ public class OmsHecrasInputBuilder extends JGTModel {
 
         pm.beginTask("Building cross-sections geometry...", sectionPoints.size());
         for( int i = 0; i < sectionPoints.size(); i++ ) {
-            NetworkPoint currentNetworkPoint = sectionPoints.get(i);
-            NetworkPoint nextNetworkPoint = currentNetworkPoint;
+            RiverPoint currentNetworkPoint = sectionPoints.get(i);
+            RiverPoint nextNetworkPoint = currentNetworkPoint;
             if (i + 1 != sectionPoints.size()) {
                 nextNetworkPoint = sectionPoints.get(i + 1);
             }
@@ -305,9 +236,20 @@ public class OmsHecrasInputBuilder extends JGTModel {
         outBuf.append("END CROSS-SECTIONS:\r\n");
 
         String outString = outBuf.toString();
-        FileUtilities.writeFile(outString, new File(inHecras));
+        FileUtilities.writeFile(outString, new File(outHecras));
 
-        outSections = sectionsExtractor.getSectionsCollection();
-        outSectionPoints = sectionsExtractor.getSectionPointsCollection();
+    }
+
+    public static void main( String[] args ) throws Exception {
+        String base = "";
+
+        OmsHecrasInputBuilder h = new OmsHecrasInputBuilder();
+        h.pTitle = "Testsim";
+        h.inRiverPoints = OmsVectorReader.readVector(base + "riverpoints_test2.shp");
+        h.inSections = OmsVectorReader.readVector(base + "sections_test2.shp");
+        h.inSectionPoints = OmsVectorReader.readVector(base + "sectionpoints_test2.shp");
+        h.outHecras = base + "hecras.txt";
+        h.process();
+
     }
 }

@@ -177,19 +177,19 @@
 		    </executions>
             </plugin>
 
-			<plugin>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>install</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${session.executionRootDirectory}/libs-exported</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
+		<plugin>
+			<artifactId>maven-dependency-plugin</artifactId>
+			<executions>
+				<execution>
+					<phase>install</phase>
+					<goals>
+						<goal>copy-dependencies</goal>
+					</goals>
+					<configuration>
+						<outputDirectory>${session.executionRootDirectory}/libs-exported</outputDirectory>
+					</configuration>
+				</execution>
+			</executions>
 		</plugin>
         </plugins>
     </build>

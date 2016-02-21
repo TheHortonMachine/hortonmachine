@@ -1444,7 +1444,7 @@ public class GearsMessages {
     public static final String OMSTIMESERIESREADER_NAME = "tsreader";
     public static final int OMSTIMESERIESREADER_STATUS = 40;
     public static final String OMSTIMESERIESREADER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSTIMESERIESREADER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSTIMESERIESREADER_AUTHORNAMES = "Andrea Antonello and Silvia Franceschi";
     public static final String OMSTIMESERIESREADER_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSTIMESERIESREADER_file_DESCRIPTION = "The csv file to read from.";
     public static final String OMSTIMESERIESREADER_fileNovalue_DESCRIPTION = "The file novalue to be translated into the internal novalue (defaults to -9999.0). Can be also a string.";
