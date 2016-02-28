@@ -4,9 +4,11 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -14,7 +16,7 @@ import javax.imageio.ImageIO;
 
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 
-public class MBTilesHelper {
+public class MBTilesHelper implements AutoCloseable {
     static {
         try {
             // make sure sqlite drivers are there
@@ -30,6 +32,9 @@ public class MBTilesHelper {
     public final static String COL_TILES_TILE_COLUMN = "tile_column";
     public final static String COL_TILES_TILE_ROW = "tile_row";
     public final static String COL_TILES_TILE_DATA = "tile_data";
+
+    public final static String SELECTQUERY = "SELECT " + COL_TILES_TILE_DATA + " from " + TABLE_TILES + " where "
+            + COL_TILES_ZOOM_LEVEL + "=? AND " + COL_TILES_TILE_COLUMN + "=? AND " + COL_TILES_TILE_ROW + "=?";
 
     private final static String CREATE_TILES = //
     "CREATE TABLE " + TABLE_TILES + "( " + //
@@ -190,10 +195,28 @@ public class MBTilesHelper {
         }
     }
 
-    // public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ) {
-    // db.execSQL("DROP TABLE IF EXISTS " + TABLE_TILES);
-    // db.execSQL("DROP TABLE IF EXISTS " + TABLE_METADATA);
-    // onCreate(db);
-    // }
-
+    /**
+     * Get a Tile image from the database.
+     * 
+     * @param x
+     * @param y
+     * @param z
+     * @return
+     * @throws Exception
+     */
+    public BufferedImage getTile( int x, int y, int z ) throws Exception {
+        try (PreparedStatement statement = connection.prepareStatement(SELECTQUERY)) {
+            statement.setInt(1, z);
+            statement.setInt(2, x);
+            statement.setInt(3, y);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                byte[] imageBytes = resultSet.getBytes(1);
+                InputStream in = new ByteArrayInputStream(imageBytes);
+                BufferedImage bufferedImage = ImageIO.read(in);
+                return bufferedImage;
+            }
+        }
+        return null;
+    }
 }

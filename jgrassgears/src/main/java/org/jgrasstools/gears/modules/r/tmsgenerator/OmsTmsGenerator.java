@@ -435,6 +435,7 @@ public class OmsTmsGenerator extends JGTModel {
         }
 
         if (mbtilesHelper != null) {
+            mbtilesHelper.createIndexes();
             mbtilesHelper.close();
         } else {
             CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
