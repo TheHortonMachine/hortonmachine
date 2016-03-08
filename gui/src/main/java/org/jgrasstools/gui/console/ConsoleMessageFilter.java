@@ -19,6 +19,7 @@ package org.jgrasstools.gui.console;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Utility to help filter out messages from the console.
@@ -27,33 +28,36 @@ import java.util.List;
  */
 public class ConsoleMessageFilter {
 
-    private static List<String> containsStrings = new ArrayList<String>();
-    private static List<String> endStrings = new ArrayList<String>();
-
+    private static Stream<String> containsStream;
+    private static Stream<String> endsStream;
     static {
+        List<String> containsStrings = new ArrayList<String>();
         containsStrings.add("Kakadu");
         containsStrings.add("Error while parsing JAI registry");
         containsStrings.add("A descriptor is already registered");
         containsStrings.add("Error in registry file");
 
+        containsStream = containsStrings.parallelStream();
+
+        List<String> endStrings = new ArrayList<String>();
         endStrings.add("factory.epsg.ThreadedEpsgFactory <init>");
         endStrings.add("to a 1800000ms timeout");
         endStrings.add("Native library load failed.");
         endStrings.add("gdalframework.GDALUtilities loadGDAL");
         endStrings.add("org.gdal.gdal.gdalJNI.HasThreadSupport()I");
         endStrings.add("org.gdal.gdal.gdalJNI.VersionInfo__SWIG_0(Ljava/lang/String;)Ljava/lang/String;");
+
+        endsStream = endStrings.parallelStream();
     }
 
-    public static boolean doRemove( String line ) {
-        for( String string : endStrings ) {
-            if (line.endsWith(string)) {
-                return true;
-            }
+    public static boolean doRemove( final String line ) {
+        boolean isPresent = endsStream.filter(string -> line.endsWith(string)).findFirst().isPresent();
+        if (isPresent) {
+            return true;
         }
-        for( String string : containsStrings ) {
-            if (line.contains(string)) {
-                return true;
-            }
+        isPresent = containsStream.filter(string -> line.contains(string)).findFirst().isPresent();
+        if (isPresent) {
+            return true;
         }
         return false;
     }

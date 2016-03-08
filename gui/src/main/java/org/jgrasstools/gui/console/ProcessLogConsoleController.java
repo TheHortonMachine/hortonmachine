@@ -91,6 +91,7 @@ public class ProcessLogConsoleController extends ProcessLogConsoleView implement
 
         stopButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
+                stopButton.setEnabled(false);
                 killProcess();
             }
         });

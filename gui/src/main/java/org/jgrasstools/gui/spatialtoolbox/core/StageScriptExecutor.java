@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
+import org.jgrasstools.gears.libs.exceptions.ModelsUserCancelException;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gui.console.ConsoleMessageFilter;
 import org.jgrasstools.gui.console.IProcessListener;
@@ -260,7 +261,7 @@ public class StageScriptExecutor {
         logBuilder.setLength(0);
 
         StringBuilder preCommentsBuilder = new StringBuilder();
-        preCommentsBuilder.append("Process started: " + TimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.format(new Date()));
+        preCommentsBuilder.append("Process started: " + SpatialToolboxConstants.dateTimeFormatterYYYYMMDDHHMMSS.format(new Date()));
         preCommentsBuilder.append(nl);
 
         // command launched
@@ -339,6 +340,7 @@ public class StageScriptExecutor {
             public void run() {
                 BufferedReader br = null;
                 try {
+                    String userCanceled = ModelsUserCancelException.class.getCanonicalName();
                     InputStream is = process.getErrorStream();
                     InputStreamReader isr = new InputStreamReader(is);
                     br = new BufferedReader(isr);
@@ -350,6 +352,9 @@ public class StageScriptExecutor {
                          */
                         if (ConsoleMessageFilter.doRemove(line)) {
                             continue;
+                        }
+                        if (line.startsWith(userCanceled)) {
+                            line = "Process cancelled by user.";
                         }
                         printMessage(line, LogStyle.ERROR);
                     }

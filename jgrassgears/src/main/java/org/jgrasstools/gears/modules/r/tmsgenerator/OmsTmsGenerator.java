@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.modules.r.tmsgenerator;
 
+import static org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper.TILESIZE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_DESCRIPTION;
@@ -71,6 +72,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.exceptions.ModelsUserCancelException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -193,266 +195,283 @@ public class OmsTmsGenerator extends JGTModel {
     private static final String EPSG_MERCATOR = "EPSG:3857";
     private static final String EPSG_LATLONG = "EPSG:4326";
 
-    private int TILESIZE = 256;
-
     private PreparedGeometry zoomLimitGeometry;
 
     private MBTilesHelper mbtilesHelper;
 
     public CoordinateReferenceSystem dataCrs;
 
+    private volatile boolean cancelModule = false;
+
     @Execute
     public void process() throws Exception {
-        checkNull(inPath, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
+        try {
+            checkNull(inPath, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
 
-        if (dataCrs == null) {
-            if (pEpsg != null) {
-                dataCrs = CRS.decode(pEpsg);
-            } else {
-                String wkt = FileUtilities.readFile(inPrj);
-                dataCrs = CRS.parseWKT(wkt);
+            if (dataCrs == null) {
+                if (pEpsg != null) {
+                    dataCrs = CRS.decode(pEpsg);
+                } else {
+                    String wkt = FileUtilities.readFile(inPrj);
+                    dataCrs = CRS.parseWKT(wkt);
+                }
             }
-        }
-        String format = null;
-        if (doMbtiles) {
-            mbtilesHelper = new MBTilesHelper();
-            File dbFolder = new File(inPath);
-            File dbFile = new File(dbFolder, pName + ".mbtiles");
+            String format = null;
+            if (doMbtiles) {
+                mbtilesHelper = new MBTilesHelper();
+                File dbFolder = new File(inPath);
+                File dbFile = new File(dbFolder, pName + ".mbtiles");
+
+                ReferencedEnvelope dataBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, dataCrs);
+                MathTransform data2LLTransform = CRS.findMathTransform(dataCrs, DefaultGeographicCRS.WGS84);
+
+                Envelope llEnvelope = JTS.transform(dataBounds, data2LLTransform);
+                float n = (float) llEnvelope.getMaxY();
+                float s = (float) llEnvelope.getMinY();
+                float w = (float) llEnvelope.getMinX();
+                float e = (float) llEnvelope.getMaxX();
+
+                format = pImagetype == 0 ? "png" : "jpg";
+                mbtilesHelper.open(dbFile);
+                mbtilesHelper.createTables(false);
+                mbtilesHelper.fillMetadata(n, s, w, e, pName, format, pMinzoom, pMaxzoom);
+            }
+
+            int threads = getDefaultThreadsNum() * 5;
+
+            String ext = "png";
+            if (pImagetype == 1) {
+                ext = "jpg";
+            }
+
+            checkCancel();
+            List<String> inVectors = null;
+            if (inVectorFile != null && new File(inVectorFile).exists())
+                inVectors = FileUtilities.readFileToLinesList(new File(inVectorFile));
+
+            checkCancel();
+            List<String> inRasters = null;
+            if (inRasterFile != null && new File(inRasterFile).exists())
+                inRasters = FileUtilities.readFileToLinesList(new File(inRasterFile));
+
+            if (inRasters == null && inVectors == null) {
+                throw new ModelsIllegalargumentException("No raster and vector input maps available. check your inputs.", this,
+                        pm);
+            }
+
+            if (dataCrs == null && pEpsg == null && inPrj == null) {
+                throw new ModelsIllegalargumentException("No projection info available. check your inputs.", this, pm);
+            }
+
+            final CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
 
             ReferencedEnvelope dataBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, dataCrs);
-            MathTransform data2LLTransform = CRS.findMathTransform(dataCrs, DefaultGeographicCRS.WGS84);
+            MathTransform data2MercatorTransform = CRS.findMathTransform(dataCrs, mercatorCrs);
 
-            Envelope llEnvelope = JTS.transform(dataBounds, data2LLTransform);
-            float n = (float) llEnvelope.getMaxY();
-            float s = (float) llEnvelope.getMinY();
-            float w = (float) llEnvelope.getMinX();
-            float e = (float) llEnvelope.getMaxX();
+            Envelope mercatorEnvelope = JTS.transform(dataBounds, data2MercatorTransform);
+            ReferencedEnvelope mercatorBounds = new ReferencedEnvelope(mercatorEnvelope, mercatorCrs);
 
-            format = pImagetype == 0 ? "png" : "jpg";
-            mbtilesHelper.open(dbFile);
-            mbtilesHelper.createTables(true);
-            mbtilesHelper.fillMetadata(n, s, w, e, pName, format, pMinzoom, pMaxzoom);
-        }
-
-        int threads = getDefaultThreadsNum() * 5;
-
-        String ext = "png";
-        if (pImagetype == 1) {
-            ext = "jpg";
-        }
-
-        List<String> inVectors = null;
-        if (inVectorFile != null && new File(inVectorFile).exists())
-            inVectors = FileUtilities.readFileToLinesList(new File(inVectorFile));
-
-        List<String> inRasters = null;
-        if (inRasterFile != null && new File(inRasterFile).exists())
-            inRasters = FileUtilities.readFileToLinesList(new File(inRasterFile));
-
-        if (inRasters == null && inVectors == null) {
-            throw new ModelsIllegalargumentException("No raster and vector input maps available. check your inputs.", this, pm);
-        }
-
-        if (dataCrs == null && pEpsg == null && inPrj == null) {
-            throw new ModelsIllegalargumentException("No projection info available. check your inputs.", this, pm);
-        }
-
-        final CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
-
-        ReferencedEnvelope dataBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, dataCrs);
-        MathTransform data2MercatorTransform = CRS.findMathTransform(dataCrs, mercatorCrs);
-
-        Envelope mercatorEnvelope = JTS.transform(dataBounds, data2MercatorTransform);
-        ReferencedEnvelope mercatorBounds = new ReferencedEnvelope(mercatorEnvelope, mercatorCrs);
-
-        if (inZoomLimitVector != null) {
-            SimpleFeatureCollection zoomLimitVector = OmsVectorReader.readVector(inZoomLimitVector);
-            List<Geometry> geoms = FeatureUtilities.featureCollectionToGeometriesList(zoomLimitVector, true, null);
-            MultiPolygon multiPolygon = gf.createMultiPolygon(geoms.toArray(GeometryUtilities.TYPE_POLYGON));
-            // convert to mercator
-            Geometry multiPolygonGeom = JTS.transform(multiPolygon, data2MercatorTransform);
-            zoomLimitGeometry = PreparedGeometryFactory.prepare(multiPolygonGeom);
-        }
-
-        File inFolder = new File(inPath);
-        final File baseFolder = new File(inFolder, pName);
-
-        final ImageGenerator imgGen = new ImageGenerator(pm);
-        if (inWMS != null) {
-            imgGen.setWMS(inWMS);
-        }
-        imgGen.doLegacyGrass = doLegacyGrass;
-
-        String notLoading = "Not loading non-existing file: ";
-        if (inRasters != null)
-            for( String rasterPath : inRasters ) {
-                File file = new File(rasterPath);
-                if (file.exists()) {
-                    imgGen.addCoveragePath(rasterPath);
-                } else {
-                    pm.errorMessage(notLoading + rasterPath);
-                }
+            checkCancel();
+            if (inZoomLimitVector != null) {
+                SimpleFeatureCollection zoomLimitVector = OmsVectorReader.readVector(inZoomLimitVector);
+                List<Geometry> geoms = FeatureUtilities.featureCollectionToGeometriesList(zoomLimitVector, true, null);
+                MultiPolygon multiPolygon = gf.createMultiPolygon(geoms.toArray(GeometryUtilities.TYPE_POLYGON));
+                // convert to mercator
+                Geometry multiPolygonGeom = JTS.transform(multiPolygon, data2MercatorTransform);
+                zoomLimitGeometry = PreparedGeometryFactory.prepare(multiPolygonGeom);
             }
-        if (inRasterBounds != null)
-            for( GridGeometry2D rasterBounds : inRasterBounds ) {
-                imgGen.addCoverageRegion(rasterBounds);
+
+            File inFolder = new File(inPath);
+            final File baseFolder = new File(inFolder, pName);
+
+            final ImageGenerator imgGen = new ImageGenerator(pm);
+            if (inWMS != null) {
+                imgGen.setWMS(inWMS);
             }
-        if (inVectors != null)
-            for( String vectorPath : inVectors ) {
-                File file = new File(vectorPath);
-                if (file.exists()) {
-                    imgGen.addFeaturePath(vectorPath, null);
-                } else {
-                    pm.errorMessage(notLoading + vectorPath);
-                }
-            }
-        imgGen.setLayers();
+            imgGen.doLegacyGrass = doLegacyGrass;
 
-        double w = mercatorBounds.getMinX();
-        double s = mercatorBounds.getMinY();
-        double e = mercatorBounds.getMaxX();
-        double n = mercatorBounds.getMaxY();
-
-        final GlobalMercator mercator = new GlobalMercator();
-
-        for( int z = pMinzoom; z <= pMaxzoom; z++ ) {
-
-            // get ul and lr tile number
-            int[] llTileNumber = mercator.MetersToTile(w, s, z);
-            int[] urTileNumber = mercator.MetersToTile(e, n, z);
-
-            int startXTile = llTileNumber[0];
-            int startYTile = llTileNumber[1];
-            int endXTile = urTileNumber[0];
-            int endYTile = urTileNumber[1];
-
-            int tileNum = 0;
-
-            final ReferencedEnvelope levelBounds = new ReferencedEnvelope(mercatorCrs);
-
-            ExecutorService fixedThreadPool = Executors.newFixedThreadPool(threads);
-
-            pm.beginTask("Generating tiles at zoom level: " + z, (endXTile - startXTile + 1) * (endYTile - startYTile + 1));
-            for( int i = startXTile; i <= endXTile; i++ ) {
-
-                for( int j = startYTile; j <= endYTile; j++ ) {
-
-                    double[] bounds = mercator.TileBounds(i, j, z);
-                    double west = bounds[0];
-                    double south = bounds[1];
-                    double east = bounds[2];
-                    double north = bounds[3];
-
-                    final ReferencedEnvelope tmpBounds = new ReferencedEnvelope(west, east, south, north, mercatorCrs);
-                    levelBounds.expandToInclude(tmpBounds);
-
-                    // if there is a zoom level geometry limitation, apply it
-                    if (zoomLimitGeometry != null && z > pZoomLimit) {
-                        double safeExtend = tmpBounds.getWidth() > tmpBounds.getHeight() ? tmpBounds.getWidth() : tmpBounds
-                                .getHeight();
-                        final ReferencedEnvelope tmp = new ReferencedEnvelope(tmpBounds);
-                        tmp.expandBy(safeExtend);
-                        Polygon polygon = FeatureUtilities.envelopeToPolygon(tmp);
-                        if (!zoomLimitGeometry.intersects(polygon)) {
-                            pm.worked(1);
-                            continue;
-                        }
-                    }
-
-                    if (mbtilesHelper != null) {
-                        final int x = i;
-                        final int y = j;
-                        final int zz = z;
-                        final String fformat = format;
-                        tileNum++;
-                        Runnable runner = new Runnable(){
-                            public void run() {
-                                try {
-                                    BufferedImage image = imgGen.getImageWithCheck(tmpBounds, TILESIZE, TILESIZE, 0.0,
-                                            pCheckcolor);
-                                    if (image != null) {
-                                        mbtilesHelper.addTile(x, y, zz, image, fformat);
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                pm.worked(1);
-                            }
-                        };
-                        fixedThreadPool.execute(runner);
-
+            String notLoading = "Not loading non-existing file: ";
+            if (inRasters != null)
+                for( String rasterPath : inRasters ) {
+                    File file = new File(rasterPath);
+                    if (file.exists()) {
+                        imgGen.addCoveragePath(rasterPath);
                     } else {
-                        File imageFolder = new File(baseFolder, z + "/" + i);
-                        if (!imageFolder.exists()) {
-                            if (!imageFolder.mkdirs()) {
-                                throw new ModelsIOException("Unable to create folder:" + imageFolder, this);
+                        pm.errorMessage(notLoading + rasterPath);
+                    }
+                }
+            if (inRasterBounds != null)
+                for( GridGeometry2D rasterBounds : inRasterBounds ) {
+                    imgGen.addCoverageRegion(rasterBounds);
+                }
+            if (inVectors != null)
+                for( String vectorPath : inVectors ) {
+                    File file = new File(vectorPath);
+                    if (file.exists()) {
+                        imgGen.addFeaturePath(vectorPath, null);
+                    } else {
+                        pm.errorMessage(notLoading + vectorPath);
+                    }
+                }
+            imgGen.setLayers();
+
+            double w = mercatorBounds.getMinX();
+            double s = mercatorBounds.getMinY();
+            double e = mercatorBounds.getMaxX();
+            double n = mercatorBounds.getMaxY();
+
+            final GlobalMercator mercator = new GlobalMercator();
+
+            for( int z = pMinzoom; z <= pMaxzoom; z++ ) {
+                checkCancel();
+
+                // get ul and lr tile number
+                int[] llTileNumber = mercator.MetersToTile(w, s, z);
+                int[] urTileNumber = mercator.MetersToTile(e, n, z);
+
+                int startXTile = llTileNumber[0];
+                int startYTile = llTileNumber[1];
+                int endXTile = urTileNumber[0];
+                int endYTile = urTileNumber[1];
+
+                int tileNum = 0;
+
+                final ReferencedEnvelope levelBounds = new ReferencedEnvelope(mercatorCrs);
+
+                ExecutorService fixedThreadPool = Executors.newFixedThreadPool(threads);
+
+                pm.beginTask("Generating tiles at zoom level: " + z, (endXTile - startXTile + 1) * (endYTile - startYTile + 1));
+                for( int i = startXTile; i <= endXTile; i++ ) {
+                    checkCancel();
+                    for( int j = startYTile; j <= endYTile; j++ ) {
+                        checkCancel();
+                        double[] bounds = mercator.TileBounds(i, j, z);
+                        double west = bounds[0];
+                        double south = bounds[1];
+                        double east = bounds[2];
+                        double north = bounds[3];
+
+                        final ReferencedEnvelope tmpBounds = new ReferencedEnvelope(west, east, south, north, mercatorCrs);
+                        levelBounds.expandToInclude(tmpBounds);
+
+                        // if there is a zoom level geometry limitation, apply it
+                        if (zoomLimitGeometry != null && z > pZoomLimit) {
+                            double safeExtend = tmpBounds.getWidth() > tmpBounds.getHeight()
+                                    ? tmpBounds.getWidth()
+                                    : tmpBounds.getHeight();
+                            final ReferencedEnvelope tmp = new ReferencedEnvelope(tmpBounds);
+                            tmp.expandBy(safeExtend);
+                            Polygon polygon = FeatureUtilities.envelopeToPolygon(tmp);
+                            if (!zoomLimitGeometry.intersects(polygon)) {
+                                pm.worked(1);
+                                continue;
                             }
                         }
 
-                        File ignoreMediaFile = new File(imageFolder, ".nomedia");
-                        ignoreMediaFile.createNewFile();
-
-                        final File imageFile = new File(imageFolder, j + "." + ext);
-                        if (imageFile.exists()) {
-                            pm.worked(1);
-                            continue;
-                        }
-                        tileNum++;
-                        final String imagePath = imageFile.getAbsolutePath();
-                        final ReferencedEnvelope finalBounds = tmpBounds;
-                        Runnable runner = new Runnable(){
-                            public void run() {
-                                try {
-                                    if (pImagetype == 1) {
-                                        imgGen.dumpJpgImage(imagePath, finalBounds, TILESIZE, TILESIZE, 0.0, pCheckcolor);
-                                    } else {
-                                        imgGen.dumpPngImage(imagePath, finalBounds, TILESIZE, TILESIZE, 0.0, pCheckcolor);
+                        if (mbtilesHelper != null) {
+                            final int x = i;
+                            final int y = j;
+                            final int zz = z;
+                            final String fformat = format;
+                            tileNum++;
+                            Runnable runner = new Runnable(){
+                                public void run() {
+                                    if (!cancelModule) {
+                                        try {
+                                            checkCancel();
+                                            BufferedImage image = imgGen.getImageWithCheck(tmpBounds, TILESIZE, TILESIZE, 0.0,
+                                                    pCheckcolor);
+                                            if (image != null) {
+                                                mbtilesHelper.addTile(x, y, zz, image, fformat);
+                                            }
+                                        } catch (Exception e) {
+                                            pm.errorMessage(e.getMessage());
+                                            cancelModule = true;
+                                        }
                                     }
                                     pm.worked(1);
-                                } catch (Exception ex) {
-                                    ex.printStackTrace();
+                                }
+                            };
+                            fixedThreadPool.execute(runner);
+
+                        } else {
+                            File imageFolder = new File(baseFolder, z + "/" + i);
+                            if (!imageFolder.exists()) {
+                                if (!imageFolder.mkdirs()) {
+                                    throw new ModelsIOException("Unable to create folder:" + imageFolder, this);
                                 }
                             }
-                        };
-                        fixedThreadPool.execute(runner);
+
+                            File ignoreMediaFile = new File(imageFolder, ".nomedia");
+                            ignoreMediaFile.createNewFile();
+
+                            final File imageFile = new File(imageFolder, j + "." + ext);
+                            if (imageFile.exists()) {
+                                pm.worked(1);
+                                continue;
+                            }
+                            tileNum++;
+                            final String imagePath = imageFile.getAbsolutePath();
+                            final ReferencedEnvelope finalBounds = tmpBounds;
+                            Runnable runner = new Runnable(){
+                                public void run() {
+                                    if (!cancelModule) {
+                                        try {
+                                            if (pImagetype == 1) {
+                                                imgGen.dumpJpgImage(imagePath, finalBounds, TILESIZE, TILESIZE, 0.0, pCheckcolor);
+                                            } else {
+                                                imgGen.dumpPngImage(imagePath, finalBounds, TILESIZE, TILESIZE, 0.0, pCheckcolor);
+                                            }
+                                            pm.worked(1);
+                                        } catch (Exception ex) {
+                                            pm.errorMessage(ex.getMessage());
+                                            cancelModule = true;
+                                        }
+                                    }
+                                }
+                            };
+                            fixedThreadPool.execute(runner);
+                        }
                     }
                 }
-            }
-            try {
-                fixedThreadPool.shutdown();
-                while( !fixedThreadPool.isTerminated() ) {
-                    Thread.sleep(100);
+                try {
+                    fixedThreadPool.shutdown();
+                    while( !fixedThreadPool.isTerminated() ) {
+                        Thread.sleep(100);
+                    }
+                } catch (InterruptedException exx) {
+                    exx.printStackTrace();
                 }
-            } catch (InterruptedException exx) {
-                exx.printStackTrace();
+                pm.done();
+
+                pm.message("Zoom level: " + z + " has " + tileNum + " tiles.");
+                // pm.message("Boundary covered at Zoom level: " + z + ": " + levelBounds);
+                // pm.message("Total boundary wanted: " + mercatorBounds);
+
             }
-            pm.done();
 
-            pm.message("Zoom level: " + z + " has " + tileNum + " tiles.");
-            // pm.message("Boundary covered at Zoom level: " + z + ": " + levelBounds);
-            // pm.message("Total boundary wanted: " + mercatorBounds);
+            if (mbtilesHelper != null) {
+                mbtilesHelper.createIndexes();
+                mbtilesHelper.close();
+            } else {
+                CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
+                MathTransform transform = CRS.findMathTransform(mercatorCrs, latLongCrs);
+                Envelope latLongBounds = JTS.transform(mercatorBounds, transform);
+                Coordinate latLongCentre = latLongBounds.centre();
 
-        }
+                StringBuilder properties = new StringBuilder();
 
-        if (mbtilesHelper != null) {
-            mbtilesHelper.createIndexes();
-            mbtilesHelper.close();
-        } else {
-            CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
-            MathTransform transform = CRS.findMathTransform(mercatorCrs, latLongCrs);
-            Envelope latLongBounds = JTS.transform(mercatorBounds, transform);
-            Coordinate latLongCentre = latLongBounds.centre();
+                properties.append("url=").append(pName).append("/ZZZ/XXX/YYY.").append(ext).append("\n");
+                properties.append("minzoom=").append(pMinzoom).append("\n");
+                properties.append("maxzoom=").append(pMaxzoom).append("\n");
+                properties.append("center=").append(latLongCentre.y).append(" ").append(latLongCentre.x).append("\n");
+                properties.append("type=tms").append("\n");
 
-            StringBuilder properties = new StringBuilder();
-
-            properties.append("url=").append(pName).append("/ZZZ/XXX/YYY.").append(ext).append("\n");
-            properties.append("minzoom=").append(pMinzoom).append("\n");
-            properties.append("maxzoom=").append(pMaxzoom).append("\n");
-            properties.append("center=").append(latLongCentre.y).append(" ").append(latLongCentre.x).append("\n");
-            properties.append("type=tms").append("\n");
-
-            File propFile = new File(inFolder, pName + ".mapurl");
-            FileUtilities.writeFile(properties.toString(), propFile);
+                File propFile = new File(inFolder, pName + ".mapurl");
+                FileUtilities.writeFile(properties.toString(), propFile);
+            }
+        } catch (ModelsUserCancelException e) {
+            pm.errorMessage(ModelsUserCancelException.DEFAULTMESSAGE);
         }
     }
 }

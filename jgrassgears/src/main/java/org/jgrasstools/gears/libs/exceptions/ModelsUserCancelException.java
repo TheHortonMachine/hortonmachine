@@ -26,5 +26,5 @@ package org.jgrasstools.gears.libs.exceptions;
 public class ModelsUserCancelException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public static String DEFAULTMESSAGE = "Operation canceled by user.";
+    public static String DEFAULTMESSAGE = "Operation cancelled by user.";
 }
