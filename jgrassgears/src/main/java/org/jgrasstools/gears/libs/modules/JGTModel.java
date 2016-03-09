@@ -34,6 +34,7 @@ import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
+import oms3.annotations.Out;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -132,6 +133,8 @@ public class JGTModel implements Process {
      */
     // TODO check this out???? @Out
     @UI(JGTConstants.ITERATOR_UI_HINT)
+    @In
+    @Out
     public boolean doProcess = false;
 
     /**
