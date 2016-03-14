@@ -51,13 +51,17 @@ public class ConsoleMessageFilter {
     }
 
     public static boolean doRemove( final String line ) {
-        boolean isPresent = endsStream.filter(string -> line.endsWith(string)).findFirst().isPresent();
-        if (isPresent) {
-            return true;
-        }
-        isPresent = containsStream.filter(string -> line.contains(string)).findFirst().isPresent();
-        if (isPresent) {
-            return true;
+        try {
+            boolean isPresent = endsStream.filter(string -> line.endsWith(string)).findFirst().isPresent();
+            if (isPresent) {
+                return true;
+            }
+            isPresent = containsStream.filter(string -> line.contains(string)).findFirst().isPresent();
+            if (isPresent) {
+                return true;
+            }
+        } catch (Exception e) {
+            // ignore
         }
         return false;
     }
