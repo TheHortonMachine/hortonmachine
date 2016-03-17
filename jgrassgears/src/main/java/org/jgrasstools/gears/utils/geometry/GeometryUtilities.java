@@ -40,7 +40,6 @@ import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.GeometryDescriptor;
 
 import com.vividsolutions.jts.algorithm.PointLocator;
