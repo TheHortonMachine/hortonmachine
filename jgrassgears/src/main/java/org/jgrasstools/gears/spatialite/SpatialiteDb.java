@@ -35,6 +35,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -44,6 +46,8 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.utils.OsCheck;
+import org.jgrasstools.gears.utils.OsCheck.OSType;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -78,6 +82,8 @@ public class SpatialiteDb implements AutoCloseable {
 
     private String dbPath;
 
+    public boolean printInfos = true;
+
     /**
      * Open the connection to a database.
      * 
@@ -85,13 +91,14 @@ public class SpatialiteDb implements AutoCloseable {
      * @return <code>true</code> if the database did already exist.
      * @throws SQLException
      */
-    public boolean open( String dbPath ) throws SQLException {
+    public boolean open( String dbPath ) throws Exception {
         this.dbPath = dbPath;
 
         boolean dbExists = false;
         File dbFile = new File(dbPath);
         if (dbFile.exists()) {
-            System.out.println("Database exists");
+            if (printInfos)
+                System.out.println("Database exists");
             dbExists = true;
         }
         // enabling dynamic extension loading
@@ -100,11 +107,37 @@ public class SpatialiteDb implements AutoCloseable {
         config.enableLoadExtension(true);
         // create a database connection
         conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath, config.toProperties());
+        if (printInfos)
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("SELECT sqlite_version()");
+                ResultSet rs = stmt.executeQuery("SELECT sqlite_version() AS 'SQLite Version';");
+                while( rs.next() ) {
+                    String sqliteVersion = rs.getString(1);
+                    System.out.println("SQLite Version: " + sqliteVersion);
+                }
+            }
         try (Statement stmt = conn.createStatement()) {
             // set timeout to 30 sec.
             stmt.setQueryTimeout(30);
             // load SpatiaLite
-            stmt.execute("SELECT load_extension('mod_spatialite')");
+            try {
+                OSType operatingSystemType = OsCheck.getOperatingSystemType();
+                switch( operatingSystemType ) {
+                case Linux:
+                case MacOS:
+                    stmt.execute("SELECT load_extension('mod_spatialite.so', 'sqlite3_modspatialite_init')");
+                    break;
+                default:
+                    stmt.execute("SELECT load_extension('mod_spatialite', 'sqlite3_modspatialite_init')");
+                    break;
+                }
+            } catch (Exception e) {
+                throw e;
+                // Map<String, String> getenv = System.getenv();
+                // for( Entry<String, String> entry : getenv.entrySet() ) {
+                // System.out.println(entry.getKey() + ": " + entry.getValue());
+                // }
+            }
         }
         return dbExists;
     }
