@@ -140,7 +140,7 @@ public class Task {
      */
     public List<Parameter> getParameter() {
         if (parameter == null) {
-            parameter = new ArrayList<Parameter>();
+            parameter = new ArrayList<>();
         }
         return this.parameter;
     }
@@ -169,7 +169,7 @@ public class Task {
      */
     public List<Flag> getFlag() {
         if (flag == null) {
-            flag = new ArrayList<Flag>();
+            flag = new ArrayList<>();
         }
         return this.flag;
     }
@@ -198,7 +198,7 @@ public class Task {
      */
     public List<ParameterGroup> getParameterGroup() {
         if (parameterGroup == null) {
-            parameterGroup = new ArrayList<ParameterGroup>();
+            parameterGroup = new ArrayList<>();
         }
         return this.parameterGroup;
     }

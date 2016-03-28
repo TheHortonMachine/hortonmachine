@@ -54,7 +54,7 @@ public class Values {
      */
     public List<Value> getValue() {
         if (value == null) {
-            value = new ArrayList<Value>();
+            value = new ArrayList<>();
         }
         return this.value;
     }
