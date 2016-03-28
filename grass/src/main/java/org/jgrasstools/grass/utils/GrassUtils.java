@@ -52,84 +52,84 @@ public class GrassUtils {
     /**
      * Prefix for parameter variables names. 
      */
-    public static String VARIABLE_PARAMETER_PREFIX = "$$";
-    public static String VARIABLE_PARAMETER_PREFIX_REGEX = "\\$\\$";
+    public static final String VARIABLE_PARAMETER_PREFIX = "$$";
+    public static final String VARIABLE_PARAMETER_PREFIX_REGEX = "\\$\\$";
 
     /**
      * Prefix for flag variables names. 
      */
-    public static String VARIABLE_FLAG_PREFIX = "$$";
-    public static String VARIABLE_FLAG_PREFIX_REGEX = "\\$\\$";
+    public static final String VARIABLE_FLAG_PREFIX = "$$";
+    public static final String VARIABLE_FLAG_PREFIX_REGEX = "\\$\\$";
 
     /**
      * Suffix for parameter variables names. 
      */
-    public static String VARIABLE_PARAMETER_SUFFIX = "PARAMETER";
+    public static final String VARIABLE_PARAMETER_SUFFIX = "PARAMETER";
 
     /**
      * Suffix for flag variables names. 
      */
-    public static String VARIABLE_FLAG_SUFFIX = "FLAG";
+    public static final String VARIABLE_FLAG_SUFFIX = "FLAG";
 
     /**
      * Substitution string from dots in parameters names. 
      */
-    public static String VARIABLE_DOT_SUBSTITUTION = "__";
-    public static String VARIABLE_DOT_SUBSTITUTION_REG = "\\_\\_";
+    public static final String VARIABLE_DOT_SUBSTITUTION = "__";
+    public static final String VARIABLE_DOT_SUBSTITUTION_REG = "\\_\\_";
 
     /**
      * Key used to set and retrieve the grass installation location.
      * 
      * <p>Example on linux: /usr/lib/grass64
      */
-    public static String GRASS_ENVIRONMENT_GISBASE_KEY = "jgt-grass.gisbase";
+    public static final String GRASS_ENVIRONMENT_GISBASE_KEY = "jgt-grass.gisbase";
 
     /**
      * Key used to set and retrieve the grass shell.
      * 
      * <p>Example on linux: /usr/bin/sh
      */
-    public static String GRASS_ENVIRONMENT_SHELL_KEY = "jgt-grass.shell";
+    public static final String GRASS_ENVIRONMENT_SHELL_KEY = "jgt-grass.shell";
 
     /**
      * Category to use for raster processing.
      */
-    public static String GRASS_RASTER_CATEGORY = "Grass/Raster Modules";
+    public static final String GRASS_RASTER_CATEGORY = "Grass/Raster Modules";
 
     /**
      * Category to use for raster 3d processing.
      */
-    public static String GRASS_RASTER3D_CATEGORY = "Grass/Raster 3D Modules";
+    public static final String GRASS_RASTER3D_CATEGORY = "Grass/Raster 3D Modules";
 
     /**
      * Category to use for vector processing.
      */
-    public static String GRASS_VECTOR_CATEGORY = "Grass/Vector Modules";
+    public static final String GRASS_VECTOR_CATEGORY = "Grass/Vector Modules";
 
     /**
      * Category to use for imagery.
      */
-    public static String GRASS_IMAGERY_CATEGORY = "Grass/Imagery Modules";
+    public static final String GRASS_IMAGERY_CATEGORY = "Grass/Imagery Modules";
 
     /**
      * Category to use for imagery.
      */
-    public static String GRASS_DISPLAY_CATEGORY = "Grass/Display Modules";
+    public static final String GRASS_DISPLAY_CATEGORY = "Grass/Display Modules";
 
     /**
      * Category to use for generic.
      */
-    public static String GRASS_GENERAL_CATEGORY = "Grass/General Modules";
+    public static final String GRASS_GENERAL_CATEGORY = "Grass/General Modules";
 
     /**
      * Category to use for database.
      */
-    public static String GRASS_DATABASE_CATEGORY = "Grass/Database Modules";
+    public static final String GRASS_DATABASE_CATEGORY = "Grass/Database Modules";
 
     /**
      * Category to use for otherl modules.
      */
-    public static String GRASS_OTHER_CATEGORY = "Grass";
+    public static final String GRASS_OTHER_CATEGORY = "Grass";
 
     /**
      * GUI hint: item is an existing file path.
