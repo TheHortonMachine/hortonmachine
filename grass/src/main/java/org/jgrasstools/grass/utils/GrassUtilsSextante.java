@@ -15,6 +15,9 @@ import java.util.UUID;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class GrassUtilsSextante {
+
+    private GrassUtilsSextante() {}
+
     /**
      * Creates a compact startup script for GRASS. 
      * 
@@ -93,9 +96,11 @@ public class GrassUtilsSextante {
             output.write("MAPSET: " + mapset + "\n");
             output.write("GRASS_GUI: text\n");
         } catch (final Exception e) {
-            return (null);
+            return null;
         } finally {
-            output.close();
+            if(output != null) {
+                output.close();
+            }
         }
 
         // Write the startup script
@@ -114,7 +119,6 @@ public class GrassUtilsSextante {
                 output.write("export GRASS_MESSAGE_FORMAT=text\n");
                 output.write("export GRASS_SH=" + shell + "\n");
                 output.write("export GRASS_PERL=/usr/bin/perl\n");
-                // output.write("export GRASS_VERSION=\"" + getGrassVersion() + "\"\n");
                 output.write("export GIS_LOCK=$$\n");
                 output.write("\n");
                 output.write("if [ \"$LC_ALL\" ] ; then\n");
@@ -174,13 +178,11 @@ public class GrassUtilsSextante {
                 output.write("g.gisenv set=\"GISDBASE=" + gisdbase + "\"\n");
                 output.write("g.gisenv set=\"GRASS_GUI=text\"\n");
                 output.write("\n");
-                // output.write("\"" + gisBase + File.separator + "etc" + File.separator + "run\" "
-                // + "\"$GRASS_BATCH_JOB\" 1>&2\n");
                 output.write("\n");
                 output.write(grassCommand + "\n");
                 output.write("\n");
             } catch (final Exception e) {
-                return (null);
+                return null;
             } finally {
                 output.close();
             }
@@ -226,7 +228,6 @@ public class GrassUtilsSextante {
                 output.write("if \"%GRASS_ADDON_PATH%\"==\"\" set PATH=%WINGISBASE%\\bin;%WINGISBASE%\\lib;%PATH%\n");
                 output.write("if not \"%GRASS_ADDON_PATH%\"==\"\" set PATH=%WINGISBASE%\\bin;%WINGISBASE%\\lib;%GRASS_ADDON_PATH%;%PATH%\n");
                 output.write("\n");
-                // output.write("set GRASS_VERSION=" + getGrassVersion() + "\n");
                 output.write("if not \"%LANG%\"==\"\" goto langset\n");
                 output.write("FOR /F \"usebackq delims==\" %%i IN (`\"%WINGISBASE%\\etc\\winlocale\"`) DO @set LANG=%%i\n");
                 output.write(":langset\n");
@@ -240,16 +241,12 @@ public class GrassUtilsSextante {
                 output.write("g.gisenv.exe set=\"GISDBASE=" + gisdbase + "\"\n");
                 output.write("g.gisenv.exe set=\"GRASS_GUI=text\"\n");
                 output.write("\n");
-                // output.write("call \"%GRASS_BATCH_JOB%\"\n");
-                // output.write("call \"%GRASS_BATCH_JOB%\" > " + m_ComFile.getAbsolutePath() +
-                // " 2>&1\n");
                 output.write("\n");
                 output.write(grassCommand + "\n");
                 output.write("\n");
-                // output.write("exit\n");
                 output.close();
             } catch (final Exception e) {
-                return (null);
+                return null;
             }
         }
 
