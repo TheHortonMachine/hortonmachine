@@ -43,7 +43,7 @@ public class GearsProcessFactory implements ProcessFactory {
 
     private static final String VERSION_STRING = "0.1-SNAPSHOT";
     private static final String namespace = "org.jgrasstools.gears";
-    private LinkedHashMap<String, Class< ? >> modulename2class;
+    private Map<String, Class< ? >> modulename2class;
 
     public Process create( Name name ) {
         String moduleName = name.getLocalPart();
@@ -78,7 +78,7 @@ public class GearsProcessFactory implements ProcessFactory {
 
     public Map<String, Parameter< ? >> getParameterInfo( Name name ) {
         String moduleName = name.getLocalPart();
-        LinkedHashMap<String, List<ClassField>> modulename2fields = JGrassGears.getInstance().moduleName2Fields;
+        Map<String, List<ClassField>> modulename2fields = JGrassGears.getInstance().moduleName2Fields;
         List<ClassField> list = modulename2fields.get(moduleName);
 
         Map<String, Parameter< ? >> input = new LinkedHashMap<String, Parameter< ? >>();
@@ -96,7 +96,7 @@ public class GearsProcessFactory implements ProcessFactory {
     public Map<String, Parameter< ? >> getResultInfo( Name name, Map<String, Object> parameters ) throws IllegalArgumentException {
 
         String moduleName = name.getLocalPart();
-        LinkedHashMap<String, List<ClassField>> modulename2fields = JGrassGears.getInstance().moduleName2Fields;
+        Map<String, List<ClassField>> modulename2fields = JGrassGears.getInstance().moduleName2Fields;
         List<ClassField> list = modulename2fields.get(moduleName);
 
         Map<String, Parameter< ? >> output = new LinkedHashMap<String, Parameter< ? >>();

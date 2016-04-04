@@ -22,6 +22,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import oms3.annotations.Author;
@@ -61,10 +62,10 @@ public class WikiModulesCreator {
 
     public static void createModulesPages() throws Exception {
 
-        LinkedHashMap<String, List<ClassField>> hmModules = HortonMachine.getInstance().moduleName2Fields;
-        LinkedHashMap<String, List<ClassField>> jggModules = JGrassGears.getInstance().moduleName2Fields;
-        LinkedHashMap<String, Class< ? >> hmModulesClasses = HortonMachine.getInstance().moduleName2Class;
-        LinkedHashMap<String, Class< ? >> jggModulesClasses = JGrassGears.getInstance().moduleName2Class;
+        Map<String, List<ClassField>> hmModules = HortonMachine.getInstance().moduleName2Fields;
+        Map<String, List<ClassField>> jggModules = JGrassGears.getInstance().moduleName2Fields;
+        Map<String, Class< ? >> hmModulesClasses = HortonMachine.getInstance().moduleName2Class;
+        Map<String, Class< ? >> jggModulesClasses = JGrassGears.getInstance().moduleName2Class;
 
         dump(hmModules, hmModulesClasses, IMAGES_HM_BASEURL, TESTCASES_HM_BASEURL, TESTCASES_HM_BASEPACKAGE);
 
@@ -72,8 +73,8 @@ public class WikiModulesCreator {
 
     }
 
-    private static void dump( LinkedHashMap<String, List<ClassField>> modulesMap,
-            LinkedHashMap<String, Class< ? >> modulesClassesMap, String imagesBaseurl, String testcasesBaseurl,
+    private static void dump( Map<String, List<ClassField>> modulesMap,
+            Map<String, Class< ? >> modulesClassesMap, String imagesBaseurl, String testcasesBaseurl,
             String testcasesHmBasepackage ) throws Exception {
 
         Set<String> nameSet = modulesClassesMap.keySet();

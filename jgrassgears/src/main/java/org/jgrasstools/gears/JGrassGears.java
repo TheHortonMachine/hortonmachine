@@ -55,19 +55,60 @@ import org.scannotation.ClasspathUrlFinder;
 @SuppressWarnings("nls")
 public class JGrassGears {
 
+    /**
+     * A {@link LinkedHashMap map} of all the class names and the class itself.
+     */
+    public final Map<String, Class< ? >> moduleName2Class = new LinkedHashMap<>();
+
+    /**
+     * A {@link LinkedHashMap map} of all the class names and their fields.
+     */
+    public final Map<String, List<ClassField>> moduleName2Fields = new LinkedHashMap<>();
+
+    private static final String PUBLIC_STATIC_FINAL_STRING = "public static final String ";
+
+    private static final String QUOTATION_MARK_SEMICOLON_NEW_LINE = "\";\n";
+
     private static JGrassGears jgrassGears = null;
 
+    /**
+     * An array of all the fields used in the modules.
+     */
+    private String[] allFields;
+
+    /**
+     * An array of all the class names of the modules.
+     */
+    private String[] allClasses;
+
     private URL baseclassUrl;
+
     private JGrassGears( URL baseclassUrl ) {
         this.baseclassUrl = baseclassUrl;
     }
 
-    /**
+    public String[] getAllFields() {
+		return allFields;
+	}
+
+	public void setAllFields(String[] allFields) {
+		this.allFields = allFields;
+	}
+
+	public String[] getAllClasses() {
+		return allClasses;
+	}
+
+	public void setAllClasses(String[] allClasses) {
+		this.allClasses = allClasses;
+	}
+
+	/**
      * Retrieves the {@link JGrassGears}. If it exists, that instance is returned.
      * 
      * @return the JGrassGears annotations class.
      */
-    public synchronized static JGrassGears getInstance() {
+    public static synchronized JGrassGears getInstance() {
         if (jgrassGears == null) {
             jgrassGears = new JGrassGears(null);
             jgrassGears.gatherInformations();
@@ -94,26 +135,6 @@ public class JGrassGears {
         jgrassGears.gatherInformations();
         return jgrassGears;
     }
-
-    /**
-     * A {@link LinkedHashMap map} of all the class names and the class itself.
-     */
-    public final LinkedHashMap<String, Class< ? >> moduleName2Class = new LinkedHashMap<String, Class< ? >>();
-
-    /**
-     * A {@link LinkedHashMap map} of all the class names and their fields.
-     */
-    public final LinkedHashMap<String, List<ClassField>> moduleName2Fields = new LinkedHashMap<String, List<ClassField>>();
-
-    /**
-     * An array of all the fields used in the modules.
-     */
-    public String[] allFields = null;
-
-    /**
-     * An array of all the class names of the modules.
-     */
-    public String[] allClasses = null;
 
     private void gatherInformations() {
 
@@ -144,8 +165,8 @@ public class JGrassGears {
             /*
              * extract all classes and fields
              */
-            List<String> classNames = new ArrayList<String>();
-            List<String> fieldNamesList = new ArrayList<String>();
+            List<String> classNames = new ArrayList<>();
+            List<String> fieldNamesList = new ArrayList<>();
 
             Set<Entry<String, Class< ? >>> moduleName2ClassEntries = moduleName2Class.entrySet();
             for( Entry<String, Class< ? >> moduleName2ClassEntry : moduleName2ClassEntries ) {
@@ -156,7 +177,7 @@ public class JGrassGears {
                     System.out.println("Missing status: " + moduleClass.getCanonicalName());
                     continue;
                 }
-                String statusString = null;
+                String statusString;
                 int status = annotation.value();
                 switch( status ) {
                 case Status.CERTIFIED:
@@ -175,7 +196,7 @@ public class JGrassGears {
 
                 classNames.add(moduleName);
 
-                List<ClassField> tmpfields = new ArrayList<ClassField>();
+                List<ClassField> tmpfields = new ArrayList<>();
                 Object annotatedObject = moduleClass.newInstance();
                 ComponentAccess cA = new ComponentAccess(annotatedObject);
                 Collection<Access> inputs = cA.inputs();
@@ -251,9 +272,8 @@ public class JGrassGears {
         for( Entry<String, Class< ? >> cl : cls ) {
             System.out.println(cl.getValue().getCanonicalName());
         }
-        if(true)return;
-        LinkedHashMap<String, List<ClassField>> moduleName2Fields = jgr.moduleName2Fields;
-        LinkedHashMap<String, Class< ? >> moduleName2Class = jgr.moduleName2Class;
+        Map<String, List<ClassField>> moduleName2Fields = jgr.moduleName2Fields;
+        Map<String, Class< ? >> moduleName2Class = jgr.moduleName2Class;
 
         Set<Entry<String, List<ClassField>>> entrySet = moduleName2Fields.entrySet();
         for( Entry<String, List<ClassField>> entry : entrySet ) {
@@ -263,8 +283,8 @@ public class JGrassGears {
 
             Class< ? > moduleClass = moduleName2Class.get(moduleName);
             Description description = moduleClass.getAnnotation(Description.class);
-            sb.append("public static final String " + moduleName.toUpperCase() + "_DESCRIPTION = \"" + description.value()
-                    + "\";\n");
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_DESCRIPTION = \"" + description.value()
+                    + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             Documentation documentation = moduleClass.getAnnotation(Documentation.class);
             String doc;
             if (documentation == null) {
@@ -272,7 +292,7 @@ public class JGrassGears {
             } else {
                 doc = documentation.value();
             }
-            sb.append("public static final String " + moduleName.toUpperCase() + "_DOCUMENTATION = \"" + doc + "\";\n");
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_DOCUMENTATION = \"" + doc + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             Keywords keywords = moduleClass.getAnnotation(Keywords.class);
             String k;
             if (keywords == null) {
@@ -280,7 +300,7 @@ public class JGrassGears {
             } else {
                 k = keywords.value();
             }
-            sb.append("public static final String " + moduleName.toUpperCase() + "_KEYWORDS = \"" + k + "\";\n");
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_KEYWORDS = \"" + k + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             Label label = moduleClass.getAnnotation(Label.class);
             String lab;
             if (label == null) {
@@ -288,7 +308,7 @@ public class JGrassGears {
             } else {
                 lab = label.value();
             }
-            sb.append("public static final String " + moduleName.toUpperCase() + "_LABEL = \"" + lab + "\";\n");
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_LABEL = \"" + lab + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             Name name = moduleClass.getAnnotation(Name.class);
             String n;
             if (name == null) {
@@ -296,42 +316,21 @@ public class JGrassGears {
             } else {
                 n = name.value();
             }
-            sb.append("public static final String " + moduleName.toUpperCase() + "_NAME = \"" + n + "\";\n");
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_NAME = \"" + n + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             Status status = moduleClass.getAnnotation(Status.class);
-            // String st = "";
-            // switch( status.value() ) {
-            // case 5:
-            // st = "EXPERIMENTAL";
-            // break;
-            // case 10:
-            // st = "DRAFT";
-            // break;
-            // case 20:
-            // st = "TESTED";
-            // break;
-            // case 30:
-            // st = "VALIDATED";
-            // break;
-            // case 40:
-            // st = "CERTIFIED";
-            // break;
-            // default:
-            // st = "DRAFT";
-            // break;
-            // }
 
             sb.append("public static final int " + moduleName.toUpperCase() + "_STATUS = " + status.value() + ";\n");
             License license = moduleClass.getAnnotation(License.class);
-            sb.append("public static final String " + moduleName.toUpperCase() + "_LICENSE = \"" + license.value() + "\";\n");
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_LICENSE = \"" + license.value() + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             Author author = moduleClass.getAnnotation(Author.class);
             String authorName = author.name();
-            sb.append("public static final String " + moduleName.toUpperCase() + "_AUTHORNAMES = \"" + authorName + "\";\n");
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_AUTHORNAMES = \"" + authorName + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             String authorContact = author.contact();
-            sb.append("public static final String " + moduleName.toUpperCase() + "_AUTHORCONTACTS = \"" + authorContact + "\";\n");
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_AUTHORCONTACTS = \"" + authorContact + QUOTATION_MARK_SEMICOLON_NEW_LINE);
 
             UI ui = moduleClass.getAnnotation(UI.class);
             if (ui != null) {
-                sb.append("public static final String " + moduleName.toUpperCase() + "_UI = \"" + ui.value() + "\";\n");
+                sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_UI = \"" + ui.value() + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             }
 
             List<ClassField> value = entry.getValue();
@@ -342,20 +341,13 @@ public class JGrassGears {
                 }
                 String fieldDescription = classField.fieldDescription;
 
-                String str = "public static final String " + moduleName.toUpperCase() + "_" + fieldName + "_DESCRIPTION = \""
-                        + fieldDescription + "\";\n";
+                String str = PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_" + fieldName + "_DESCRIPTION = \""
+                        + fieldDescription + QUOTATION_MARK_SEMICOLON_NEW_LINE;
                 sb.append(str);
             }
             System.out.println(sb.toString());
             System.out.println();
         }
-
-        // for( String className : jgr.allClasses ) {
-        // System.out.println(className);
-        // }
-        // for( String fieldName : jgr.allFields ) {
-        // System.out.println(fieldName);
-        // }
     }
 
 }
