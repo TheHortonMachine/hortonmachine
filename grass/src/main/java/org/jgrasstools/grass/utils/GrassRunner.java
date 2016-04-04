@@ -32,11 +32,11 @@ import java.util.Map;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class GrassRunner {
-    private List<GrassRunnerListener> listeners = new ArrayList<GrassRunnerListener>();
+    private List<GrassRunnerListener> listeners = new ArrayList<>();
     private final PrintStream outputStream;
     private final PrintStream errorStream;
-    private StringBuffer outSb = new StringBuffer();
-    private StringBuffer errSb = new StringBuffer();
+    private StringBuilder outSb = new StringBuilder();
+    private StringBuilder errSb = new StringBuilder();
 
     public GrassRunner( final PrintStream outputStream, final PrintStream errorStream ) {
         this.outputStream = outputStream;
@@ -65,7 +65,6 @@ public class GrassRunner {
         if (GrassUtils.isWindows()) {
             environment.put("PATH", "%PATH%;%GISBASE%/bin:%GISBASE%/scripts");
         } else {
-            // environment.put("PATH", "$PATH:$GISBASE/bin:$GISBASE/scripts");
             String path = "";
             if (environment.containsKey("Path")) {
                 path = environment.get("Path");
@@ -114,7 +113,7 @@ public class GrassRunner {
                 } finally {
                     errorDone[0] = true;
                 }
-            };
+            }
         };
 
         outputThread.start();
@@ -159,7 +158,7 @@ public class GrassRunner {
         } else {
             outSb.append(line).append("\n");
         }
-    };
+    }
 
     private void printErr( String line ) {
         if (errorStream != null) {
@@ -167,14 +166,8 @@ public class GrassRunner {
         } else {
             errSb.append(line).append("\n");
         }
-    };
+    }
 
-    // @Override
-    // public void processfinished( String mapsetFolder ) {
-    // GrassUtils.deleteTempMapset(mapsetFolder);
-    // }
-    
-    
     public static void main(String[] args) throws Exception {
 
         System.setProperty("PATH", "/home/moovida/TMP/test/");
