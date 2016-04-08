@@ -26,10 +26,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_pNull_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_pValue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_P_NULL_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_P_VALUE_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
@@ -67,11 +67,11 @@ import org.jgrasstools.gears.utils.math.NumericsUtilities;
 @License(OMSRASTERNULL_LICENSE)
 public class OmsRasterNull extends JGTModel {
 
-    @Description(OMSRASTERNULL_inRaster_DESCRIPTION)
+    @Description(OMSRASTERNULL_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSRASTERNULL_pValue_DESCRIPTION)
+    @Description(OMSRASTERNULL_P_VALUE_DESCRIPTION)
     @In
     public Double pValue = null;
 
@@ -79,11 +79,11 @@ public class OmsRasterNull extends JGTModel {
     @In
     public boolean doInverse = false;
 
-    @Description(OMSRASTERNULL_pNull_DESCRIPTION)
+    @Description(OMSRASTERNULL_P_NULL_DESCRIPTION)
     @In
     public Double pNull = null;
 
-    @Description(OMSRASTERNULL_outRaster_DESCRIPTION)
+    @Description(OMSRASTERNULL_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 

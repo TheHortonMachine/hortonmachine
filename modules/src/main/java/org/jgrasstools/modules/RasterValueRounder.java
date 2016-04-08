@@ -25,9 +25,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_LAB
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_pPattern_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_P_PATTERN_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -52,16 +52,16 @@ import org.jgrasstools.gears.modules.r.rastervaluerounder.OmsRasterValueRounder;
 @License(OMSRASTERVALUEROUNDER_LICENSE)
 public class RasterValueRounder extends JGTModel {
 
-    @Description(OMSRASTERVALUEROUNDER_inRaster_DESCRIPTION)
+    @Description(OMSRASTERVALUEROUNDER_IN_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster;
 
-    @Description(OMSRASTERVALUEROUNDER_pPattern_DESCRIPTION)
+    @Description(OMSRASTERVALUEROUNDER_P_PATTERN_DESCRIPTION)
     @In
     public String pPattern = null;
 
-    @Description(OMSRASTERVALUEROUNDER_outRaster_DESCRIPTION)
+    @Description(OMSRASTERVALUEROUNDER_OUT_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster;

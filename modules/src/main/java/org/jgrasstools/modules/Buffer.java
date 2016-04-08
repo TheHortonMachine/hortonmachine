@@ -25,12 +25,12 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_doSinglesided_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_inMap_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_outMap_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_pBuffer_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_pCapstyle_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_pJoinstyle_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_DO_SINGLE_SIDED_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_IN_MAP_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_OUT_MAP_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_P_BUFFER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_P_CAP_STYLE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_P_JOIN_STYLE_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.Variables.CAP_FLAT;
 import static org.jgrasstools.gears.libs.modules.Variables.CAP_ROUND;
 import static org.jgrasstools.gears.libs.modules.Variables.CAP_SQUARE;
@@ -61,30 +61,30 @@ import org.jgrasstools.gears.modules.v.vectoroperations.OmsBuffer;
 @License(OMSBUFFER_LICENSE)
 public class Buffer extends JGTModel {
 
-    @Description(OMSBUFFER_inMap_DESCRIPTION)
+    @Description(OMSBUFFER_IN_MAP_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap = null;
 
-    @Description(OMSBUFFER_pBuffer_DESCRIPTION)
+    @Description(OMSBUFFER_P_BUFFER_DESCRIPTION)
     @In
     public double pBuffer = 10.0;
 
-    @Description(OMSBUFFER_doSinglesided_DESCRIPTION)
+    @Description(OMSBUFFER_DO_SINGLE_SIDED_DESCRIPTION)
     @In
     public boolean doSinglesided = false;
 
-    @Description(OMSBUFFER_pJoinstyle_DESCRIPTION)
+    @Description(OMSBUFFER_P_JOIN_STYLE_DESCRIPTION)
     @UI("combo:" + JOIN_ROUND + "," + JOIN_MITRE + "," + JOIN_BEVEL)
     @In
     public String pJoinstyle = JOIN_ROUND;
 
-    @Description(OMSBUFFER_pCapstyle_DESCRIPTION)
+    @Description(OMSBUFFER_P_CAP_STYLE_DESCRIPTION)
     @UI("combo:" + CAP_ROUND + "," + CAP_FLAT + "," + CAP_SQUARE)
     @In
     public String pCapstyle = CAP_ROUND;
 
-    @Description(OMSBUFFER_outMap_DESCRIPTION)
+    @Description(OMSBUFFER_OUT_MAP_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outMap = null;

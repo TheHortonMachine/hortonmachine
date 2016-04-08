@@ -26,11 +26,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_LABE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_fCommon_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_pFields_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_tabledata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_F_COMMON_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_P_FIELDS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_TABLEDATA_DESCRIPTION;
 
 import java.util.HashMap;
 import java.util.List;
@@ -64,23 +64,23 @@ import org.opengis.feature.simple.SimpleFeature;
 @License(OMSVECTORTABLEJOINER_LICENSE)
 public class OmsVectorTableJoiner extends JGTModel {
 
-    @Description(OMSVECTORTABLEJOINER_inVector_DESCRIPTION)
+    @Description(OMSVECTORTABLEJOINER_IN_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description(OMSVECTORTABLEJOINER_tabledata_DESCRIPTION)
+    @Description(OMSVECTORTABLEJOINER_TABLEDATA_DESCRIPTION)
     @In
     public HashMap<String, List<Object>> tabledata = null;
 
-    @Description(OMSVECTORTABLEJOINER_fCommon_DESCRIPTION)
+    @Description(OMSVECTORTABLEJOINER_F_COMMON_DESCRIPTION)
     @In
     public String fCommon = null;
 
-    @Description(OMSVECTORTABLEJOINER_pFields_DESCRIPTION)
+    @Description(OMSVECTORTABLEJOINER_P_FIELDS_DESCRIPTION)
     @In
     public String pFields = null;
 
-    @Description(OMSVECTORTABLEJOINER_outVector_DESCRIPTION)
+    @Description(OMSVECTORTABLEJOINER_OUT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 

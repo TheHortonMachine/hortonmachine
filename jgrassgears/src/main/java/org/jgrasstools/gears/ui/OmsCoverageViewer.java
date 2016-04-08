@@ -27,7 +27,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_LICENSE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_raster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_RASTER_DESCRIPTION;
 
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
@@ -75,7 +75,7 @@ import org.opengis.filter.expression.Expression;
 @UI(OMSCOVERAGEVIEWER_UI)
 public class OmsCoverageViewer extends JGTModel {
 
-    @Description(OMSCOVERAGEVIEWER_raster_DESCRIPTION)
+    @Description(OMSCOVERAGEVIEWER_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D raster = null;
 

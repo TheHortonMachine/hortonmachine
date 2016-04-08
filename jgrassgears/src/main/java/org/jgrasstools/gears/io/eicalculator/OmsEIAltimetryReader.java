@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_LABE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_outAltimetry_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_pSeparator_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_OUT_ALTIMETRY_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_P_SEPARATOR_DESCRIPTION;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -61,16 +61,16 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSEIALTIMETRYREADER_LICENSE)
 public class OmsEIAltimetryReader extends JGTModel {
 
-    @Description(OMSEIALTIMETRYREADER_file_DESCRIPTION)
+    @Description(OMSEIALTIMETRYREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSEIALTIMETRYREADER_pSeparator_DESCRIPTION)
+    @Description(OMSEIALTIMETRYREADER_P_SEPARATOR_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Description(OMSEIALTIMETRYREADER_outAltimetry_DESCRIPTION)
+    @Description(OMSEIALTIMETRYREADER_OUT_ALTIMETRY_DESCRIPTION)
     @Out
     public List<EIAltimetry> outAltimetry;
 

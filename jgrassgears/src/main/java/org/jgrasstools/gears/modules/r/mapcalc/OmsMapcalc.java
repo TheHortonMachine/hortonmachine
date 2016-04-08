@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_inRasters_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_pFunction_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_IN_RASTERS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_P_FUNCTION_DESCRIPTION;
 
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
@@ -77,16 +77,16 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License(OMSMAPCALC_LICENSE)
 public class OmsMapcalc extends JGTModel {
 
-    @Description(OMSMAPCALC_inRasters_DESCRIPTION)
+    @Description(OMSMAPCALC_IN_RASTERS_DESCRIPTION)
     @In
     public List<GridCoverage2D> inRasters;
 
-    @Description(OMSMAPCALC_pFunction_DESCRIPTION)
+    @Description(OMSMAPCALC_P_FUNCTION_DESCRIPTION)
     @UI(JGTConstants.MULTILINE_UI_HINT + "10," + JGTConstants.MAPCALC_UI_HINT)
     @In
     public String pFunction;
 
-    @Description(OMSMAPCALC_outRaster_DESCRIPTION)
+    @Description(OMSMAPCALC_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

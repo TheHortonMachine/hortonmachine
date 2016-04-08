@@ -26,10 +26,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_inClipper_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_inMap_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_outMap_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_pMaxThreads_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_IN_CLIPPER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_IN_MAP_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_OUT_MAP_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_P_MAX_THREADS_DESCRIPTION;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -75,19 +75,19 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 @License(OMSVECTORCLIPPER_LICENSE)
 public class OmsVectorClipper extends JGTModel {
 
-    @Description(OMSVECTORCLIPPER_inMap_DESCRIPTION)
+    @Description(OMSVECTORCLIPPER_IN_MAP_DESCRIPTION)
     @In
     public SimpleFeatureCollection inMap = null;
 
-    @Description(OMSVECTORCLIPPER_inClipper_DESCRIPTION)
+    @Description(OMSVECTORCLIPPER_IN_CLIPPER_DESCRIPTION)
     @In
     public SimpleFeatureCollection inClipper = null;
 
-    @Description(OMSVECTORCLIPPER_pMaxThreads_DESCRIPTION)
+    @Description(OMSVECTORCLIPPER_P_MAX_THREADS_DESCRIPTION)
     @In
     public int pMaxThreads = 1;
 
-    @Description(OMSVECTORCLIPPER_outMap_DESCRIPTION)
+    @Description(OMSVECTORCLIPPER_OUT_MAP_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outMap = null;
 

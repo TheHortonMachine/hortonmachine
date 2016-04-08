@@ -26,10 +26,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_LABE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_pTransX_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_pTransY_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_P_TRANS_X_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_P_TRANS_Y_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -54,20 +54,20 @@ import org.jgrasstools.gears.modules.v.vectortransformer.OmsVectorTransformer;
 @License(OMSVECTORTRANSFORMER_LICENSE)
 public class VectorTransformer extends JGTModel {
 
-    @Description(OMSVECTORTRANSFORMER_inVector_DESCRIPTION)
+    @Description(OMSVECTORTRANSFORMER_IN_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inVector;
 
-    @Description(OMSVECTORTRANSFORMER_pTransX_DESCRIPTION)
+    @Description(OMSVECTORTRANSFORMER_P_TRANS_X_DESCRIPTION)
     @In
     public double pTransX;
 
-    @Description(OMSVECTORTRANSFORMER_pTransY_DESCRIPTION)
+    @Description(OMSVECTORTRANSFORMER_P_TRANS_Y_DESCRIPTION)
     @In
     public double pTransY;
 
-    @Description(OMSVECTORTRANSFORMER_outVector_DESCRIPTION)
+    @Description(OMSVECTORTRANSFORMER_OUT_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outVector = null;

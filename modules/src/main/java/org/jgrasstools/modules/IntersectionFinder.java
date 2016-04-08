@@ -25,9 +25,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_LAB
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_inMap_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_outLinesMap_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_outPointsMap_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_IN_MAP_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_OUT_LINES_MAP_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_OUT_POINTS_MAP_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -52,17 +52,17 @@ import org.jgrasstools.gears.modules.v.intersections.OmsIntersectionFinder;
 @License(OMSINTERSECTIONFINDER_LICENSE)
 public class IntersectionFinder extends JGTModel {
 
-    @Description(OMSINTERSECTIONFINDER_inMap_DESCRIPTION)
+    @Description(OMSINTERSECTIONFINDER_IN_MAP_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap = null;
 
-    @Description(OMSINTERSECTIONFINDER_outPointsMap_DESCRIPTION)
+    @Description(OMSINTERSECTIONFINDER_OUT_POINTS_MAP_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outPointsMap = null;
 
-    @Description(OMSINTERSECTIONFINDER_outLinesMap_DESCRIPTION)
+    @Description(OMSINTERSECTIONFINDER_OUT_LINES_MAP_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outLinesMap = null;

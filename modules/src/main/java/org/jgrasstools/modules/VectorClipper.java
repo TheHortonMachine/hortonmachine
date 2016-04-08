@@ -25,10 +25,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_inClipper_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_inMap_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_outMap_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_pMaxThreads_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_IN_CLIPPER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_IN_MAP_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_OUT_MAP_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_P_MAX_THREADS_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -53,21 +53,21 @@ import org.jgrasstools.gears.modules.v.vectorclipper.OmsVectorClipper;
 @License(OMSVECTORCLIPPER_LICENSE)
 public class VectorClipper extends JGTModel {
 
-    @Description(OMSVECTORCLIPPER_inMap_DESCRIPTION)
+    @Description(OMSVECTORCLIPPER_IN_MAP_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap = null;
 
-    @Description(OMSVECTORCLIPPER_inClipper_DESCRIPTION)
+    @Description(OMSVECTORCLIPPER_IN_CLIPPER_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inClipper = null;
 
-    @Description(OMSVECTORCLIPPER_pMaxThreads_DESCRIPTION)
+    @Description(OMSVECTORCLIPPER_P_MAX_THREADS_DESCRIPTION)
     @In
     public int pMaxThreads = 1;
 
-    @Description(OMSVECTORCLIPPER_outMap_DESCRIPTION)
+    @Description(OMSVECTORCLIPPER_OUT_MAP_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outMap = null;

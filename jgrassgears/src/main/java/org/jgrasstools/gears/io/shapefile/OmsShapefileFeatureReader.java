@@ -26,8 +26,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_geodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_GEODATA_DESCRIPTION;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,12 +64,12 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @UI(OMSSHAPEFILEFEATUREREADER_UI)
 public class OmsShapefileFeatureReader extends JGTModel {
 
-    @Description(OMSSHAPEFILEFEATUREREADER_file_DESCRIPTION)
+    @Description(OMSSHAPEFILEFEATUREREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSSHAPEFILEFEATUREREADER_geodata_DESCRIPTION)
+    @Description(OMSSHAPEFILEFEATUREREADER_GEODATA_DESCRIPTION)
     @Out
     public SimpleFeatureCollection geodata = null;
 

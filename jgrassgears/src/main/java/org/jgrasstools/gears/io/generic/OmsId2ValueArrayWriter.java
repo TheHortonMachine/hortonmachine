@@ -27,10 +27,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_LI
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_data_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_fileNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_pSeparator_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_FILE_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_P_SEPARATOR_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.io.BufferedWriter;
@@ -65,20 +65,20 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @UI(OMSID2VALUEARRAYWRITER_UI)
 public class OmsId2ValueArrayWriter extends JGTModel {
 
-    @Description(OMSID2VALUEARRAYWRITER_file_DESCRIPTION)
+    @Description(OMSID2VALUEARRAYWRITER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSID2VALUEARRAYWRITER_pSeparator_DESCRIPTION)
+    @Description(OMSID2VALUEARRAYWRITER_P_SEPARATOR_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Description(OMSID2VALUEARRAYWRITER_fileNovalue_DESCRIPTION)
+    @Description(OMSID2VALUEARRAYWRITER_FILE_NOVALUE_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description(OMSID2VALUEARRAYWRITER_data_DESCRIPTION)
+    @Description(OMSID2VALUEARRAYWRITER_DATA_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> data;
 

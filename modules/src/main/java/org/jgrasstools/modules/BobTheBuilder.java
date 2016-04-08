@@ -25,15 +25,15 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_doErode_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_doPolygonborder_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_doUseOnlyInternal_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_fElevation_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_inArea_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_inElevations_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_pMaxbuffer_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_DO_ERODE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_DO_POLYGON_BORDER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_DO_USE_ONLY_INTERNAL_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_F_ELEVATION_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_IN_AREA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_IN_ELEVATIONS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_P_MAX_BUFFER_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -58,42 +58,42 @@ import org.jgrasstools.gears.modules.r.bobthebuilder.OmsBobTheBuilder;
 @License(OMSBOBTHEBUILDER_LICENSE)
 public class BobTheBuilder extends JGTModel {
 
-    @Description(OMSBOBTHEBUILDER_inRaster_DESCRIPTION)
+    @Description(OMSBOBTHEBUILDER_IN_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster = null;
 
-    @Description(OMSBOBTHEBUILDER_inArea_DESCRIPTION)
+    @Description(OMSBOBTHEBUILDER_IN_AREA_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inArea = null;
 
-    @Description(OMSBOBTHEBUILDER_inElevations_DESCRIPTION)
+    @Description(OMSBOBTHEBUILDER_IN_ELEVATIONS_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inElevations = null;
 
-    @Description(OMSBOBTHEBUILDER_pMaxbuffer_DESCRIPTION)
+    @Description(OMSBOBTHEBUILDER_P_MAX_BUFFER_DESCRIPTION)
     @In
     public double pMaxbuffer = -1;
 
-    @Description(OMSBOBTHEBUILDER_fElevation_DESCRIPTION)
+    @Description(OMSBOBTHEBUILDER_F_ELEVATION_DESCRIPTION)
     @In
     public String fElevation = null;
 
-    @Description(OMSBOBTHEBUILDER_doErode_DESCRIPTION)
+    @Description(OMSBOBTHEBUILDER_DO_ERODE_DESCRIPTION)
     @In
     public boolean doErode = false;
 
-    @Description(OMSBOBTHEBUILDER_doUseOnlyInternal_DESCRIPTION)
+    @Description(OMSBOBTHEBUILDER_DO_USE_ONLY_INTERNAL_DESCRIPTION)
     @In
     public boolean doUseOnlyInternal = false;
 
-    @Description(OMSBOBTHEBUILDER_doPolygonborder_DESCRIPTION)
+    @Description(OMSBOBTHEBUILDER_DO_POLYGON_BORDER_DESCRIPTION)
     @In
     public boolean doPolygonborder = false;
 
-    @Description(OMSBOBTHEBUILDER_outRaster_DESCRIPTION)
+    @Description(OMSBOBTHEBUILDER_OUT_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster = null;

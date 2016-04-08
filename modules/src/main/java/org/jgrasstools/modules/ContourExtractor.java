@@ -25,11 +25,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_LABEL
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_inCoverage_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_outGeodata_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_pInterval_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_pMax_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_pMin_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_IN_COVERAGE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_OUT_GEODATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_P_INTERVAL_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_P_MAX_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_P_MIN_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -54,24 +54,24 @@ import org.jgrasstools.gears.modules.v.contoursextractor.OmsContourExtractor;
 @License(OMSCONTOUREXTRACTOR_LICENSE)
 public class ContourExtractor extends JGTModel {
 
-    @Description(OMSCONTOUREXTRACTOR_inCoverage_DESCRIPTION)
+    @Description(OMSCONTOUREXTRACTOR_IN_COVERAGE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inCoverage;
 
-    @Description(OMSCONTOUREXTRACTOR_pMin_DESCRIPTION)
+    @Description(OMSCONTOUREXTRACTOR_P_MIN_DESCRIPTION)
     @In
     public Double pMin;
 
-    @Description(OMSCONTOUREXTRACTOR_pMax_DESCRIPTION)
+    @Description(OMSCONTOUREXTRACTOR_P_MAX_DESCRIPTION)
     @In
     public Double pMax;
 
-    @Description(OMSCONTOUREXTRACTOR_pInterval_DESCRIPTION)
+    @Description(OMSCONTOUREXTRACTOR_P_INTERVAL_DESCRIPTION)
     @In
     public Double pInterval;
 
-    @Description(OMSCONTOUREXTRACTOR_outGeodata_DESCRIPTION)
+    @Description(OMSCONTOUREXTRACTOR_OUT_GEODATA_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outGeodata = null;

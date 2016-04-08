@@ -25,16 +25,16 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_LAB
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_fCat_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pCols_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pRows_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pSouth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pValue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pWest_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_COLS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_EAST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_NORTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_ROWS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_SOUTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_WEST_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -61,50 +61,50 @@ import org.jgrasstools.gears.modules.r.summary.OmsRasterSummary;
 @License(OMSSCANLINERASTERIZER_LICENSE)
 public class ScanLineRasterizer extends JGTModel {
 
-    @Description(OMSSCANLINERASTERIZER_inVector_DESCRIPTION)
+    @Description(OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inVector = null;
 
-    @Description(OMSSCANLINERASTERIZER_pValue_DESCRIPTION)
+    @Description(OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION)
     @In
     public Double pValue = null;
 
-    @Description(OMSSCANLINERASTERIZER_fCat_DESCRIPTION)
+    @Description(OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION)
     @In
     public String fCat = null;
 
-    @Description(OMSSCANLINERASTERIZER_pNorth_DESCRIPTION)
+    @Description(OMSSCANLINERASTERIZER_P_NORTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description(OMSSCANLINERASTERIZER_pSouth_DESCRIPTION)
+    @Description(OMSSCANLINERASTERIZER_P_SOUTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description(OMSSCANLINERASTERIZER_pWest_DESCRIPTION)
+    @Description(OMSSCANLINERASTERIZER_P_WEST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description(OMSSCANLINERASTERIZER_pEast_DESCRIPTION)
+    @Description(OMSSCANLINERASTERIZER_P_EAST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description(OMSSCANLINERASTERIZER_pRows_DESCRIPTION)
+    @Description(OMSSCANLINERASTERIZER_P_ROWS_DESCRIPTION)
     @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
     @In
     public Integer pRows = null;
 
-    @Description(OMSSCANLINERASTERIZER_pCols_DESCRIPTION)
+    @Description(OMSSCANLINERASTERIZER_P_COLS_DESCRIPTION)
     @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer pCols = null;
 
-    @Description(OMSSCANLINERASTERIZER_outRaster_DESCRIPTION)
+    @Description(OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster;

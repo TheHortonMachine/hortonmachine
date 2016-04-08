@@ -55,72 +55,72 @@ import static org.jgrasstools.gears.i18n.GearsMessages.*;
 @License(OMSMOSAIC12_LICENSE)
 public class OmsMosaic12 extends JGTModel {
 
-    @Description(OMSMOSAIC12_inMap1_DESCRIPTION)
+    @Description(OMSMOSAIC12_IN_MAP1_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap1;
 
-    @Description(OMSMOSAIC12_inMap2_DESCRIPTION)
+    @Description(OMSMOSAIC12_IN_MAP2_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap2;
 
-    @Description(OMSMOSAIC12_inMap3_DESCRIPTION)
+    @Description(OMSMOSAIC12_IN_MAP3_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap3;
 
-    @Description(OMSMOSAIC12_inMap4_DESCRIPTION)
+    @Description(OMSMOSAIC12_IN_MAP4_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap4;
 
-    @Description(OMSMOSAIC12_inMap5_DESCRIPTION)
+    @Description(OMSMOSAIC12_IN_MAP5_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap5;
 
-    @Description(OMSMOSAIC12_inMap6_DESCRIPTION)
+    @Description(OMSMOSAIC12_IN_MAP6_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap6;
 
-    @Description(OMSMOSAIC12_inMap7_DESCRIPTION)
+    @Description(OMSMOSAIC12_IN_MAP7_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap7;
 
-    @Description(OMSMOSAIC12_inMap8_DESCRIPTION)
+    @Description(OMSMOSAIC12_IN_MAP8_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap8;
 
-    @Description(OMSMOSAIC12_inMap9_DESCRIPTION)
+    @Description(OMSMOSAIC12_IN_MAP9_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap9;
 
-    @Description(OMSMOSAIC12_inMap10_DESCRIPTION)
+    @Description(OMSMOSAIC12_IN_MAP10_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap10;
 
-    @Description(OMSMOSAIC12_inMap11_DESCRIPTION)
+    @Description(OMSMOSAIC12_IN_MAP11_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap11;
 
-    @Description(OMSMOSAIC12_inMap12_DESCRIPTION)
+    @Description(OMSMOSAIC12_IN_MAP12_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap12;
 
-    @Description(OMSMOSAIC12_pInterpolation_DESCRIPTION)
+    @Description(OMSMOSAIC12_P_INTERPOLATION_DESCRIPTION)
     @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
-    @Description(OMSMOSAIC12_outMap_DESCRIPTION)
+    @Description(OMSMOSAIC12_OUT_MAP_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outMap = null;

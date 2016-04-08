@@ -17,7 +17,7 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_OUT_RASTER_DESCRIPTION;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ public class Mapcalc extends OmsMapcalc {
     @In
     public String inRaster5;
 
-    @Description(OMSMAPCALC_outRaster_DESCRIPTION)
+    @Description(OMSMAPCALC_OUT_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster = null;

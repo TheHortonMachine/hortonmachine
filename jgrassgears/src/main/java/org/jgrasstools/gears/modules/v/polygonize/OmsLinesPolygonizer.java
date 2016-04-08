@@ -26,11 +26,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_LABEL
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_fId_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_fNewId_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_inMap_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_inPoints_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_outMap_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_F_ID_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_F_NEW_ID_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_IN_MAP_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_IN_POINTS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_OUT_MAP_DESCRIPTION;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -74,23 +74,23 @@ import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 @License(OMSLINESPOLYGONIZER_LICENSE)
 public class OmsLinesPolygonizer extends JGTModel {
 
-    @Description(OMSLINESPOLYGONIZER_inMap_DESCRIPTION)
+    @Description(OMSLINESPOLYGONIZER_IN_MAP_DESCRIPTION)
     @In
     public SimpleFeatureCollection inMap = null;
 
-    @Description(OMSLINESPOLYGONIZER_inPoints_DESCRIPTION)
+    @Description(OMSLINESPOLYGONIZER_IN_POINTS_DESCRIPTION)
     @In
     public SimpleFeatureCollection inPoints = null;
 
-    @Description(OMSLINESPOLYGONIZER_fId_DESCRIPTION)
+    @Description(OMSLINESPOLYGONIZER_F_ID_DESCRIPTION)
     @In
     public String fId = null;
 
-    @Description(OMSLINESPOLYGONIZER_fNewId_DESCRIPTION)
+    @Description(OMSLINESPOLYGONIZER_F_NEW_ID_DESCRIPTION)
     @In
     public String fNewId = "id";
 
-    @Description(OMSLINESPOLYGONIZER_outMap_DESCRIPTION)
+    @Description(OMSLINESPOLYGONIZER_OUT_MAP_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outMap = null;
 

@@ -25,8 +25,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_SOUTH_DESCRIPTI
 import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_WEST_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_X_RES_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_Y_RES_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_OUT_RASTER_DESCRIPTION;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -40,7 +40,7 @@ import org.jgrasstools.gears.modules.r.rasterconverter.OmsRasterConverter;
 @Name("rconvert")
 public class RasterConverter extends OmsRasterConverter {
 
-    @Description(OMSRASTERCONVERTER_inRaster_DESCRIPTION)
+    @Description(OMSRASTERCONVERTER_IN_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster;
@@ -85,7 +85,7 @@ public class RasterConverter extends OmsRasterConverter {
     @In
     public Integer pCols = null;
 
-    @Description(OMSRASTERCONVERTER_outRaster_DESCRIPTION)
+    @Description(OMSRASTERCONVERTER_OUT_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster;

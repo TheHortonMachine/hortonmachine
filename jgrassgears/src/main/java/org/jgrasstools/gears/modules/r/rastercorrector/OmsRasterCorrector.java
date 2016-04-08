@@ -52,16 +52,16 @@ import static org.jgrasstools.gears.i18n.GearsMessages.*;
 @License(OMSRASTERCORRECTOR_LICENSE)
 public class OmsRasterCorrector extends JGTModel {
 
-    @Description(OMSRASTERCORRECTOR_inRaster_DESCRIPTION)
+    @Description(OMSRASTERCORRECTOR_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSRASTERCORRECTOR_pCorrections_DESCRIPTION)
+    @Description(OMSRASTERCORRECTOR_P_CORRECTIONS_DESCRIPTION)
     @UI(JGTConstants.EASTINGNORTHING_UI_HINT)
     @In
     public String pCorrections;
 
-    @Description(OMSRASTERCORRECTOR_outRaster_DESCRIPTION)
+    @Description(OMSRASTERCORRECTOR_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 

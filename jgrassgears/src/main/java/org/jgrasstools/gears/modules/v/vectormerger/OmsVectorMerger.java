@@ -26,8 +26,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_inVectors_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_IN_VECTORS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_OUT_VECTOR_DESCRIPTION;
 
 import java.util.List;
 
@@ -63,11 +63,11 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @License(OMSVECTORMERGER_LICENSE)
 public class OmsVectorMerger extends JGTModel {
 
-    @Description(OMSVECTORMERGER_inVectors_DESCRIPTION)
+    @Description(OMSVECTORMERGER_IN_VECTORS_DESCRIPTION)
     @In
     public List<SimpleFeatureCollection> inVectors;
 
-    @Description(OMSVECTORMERGER_outVector_DESCRIPTION)
+    @Description(OMSVECTORMERGER_OUT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 

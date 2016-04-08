@@ -25,12 +25,12 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_LABE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_doLenient_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_doLongitudeFirst_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_pCode_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_pForceCode_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_DO_LENIENT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_DO_LONGITUDE_FIRST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_P_CODE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_P_FORCE_CODE_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -55,30 +55,30 @@ import org.jgrasstools.gears.modules.v.vectorreprojector.OmsVectorReprojector;
 @License(OMSVECTORREPROJECTOR_LICENSE)
 public class VectorReprojector extends JGTModel {
 
-    @Description(OMSVECTORREPROJECTOR_inVector_DESCRIPTION)
+    @Description(OMSVECTORREPROJECTOR_IN_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inVector;
 
-    @Description(OMSVECTORREPROJECTOR_pCode_DESCRIPTION)
+    @Description(OMSVECTORREPROJECTOR_P_CODE_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description(OMSVECTORREPROJECTOR_doLongitudeFirst_DESCRIPTION)
+    @Description(OMSVECTORREPROJECTOR_DO_LONGITUDE_FIRST_DESCRIPTION)
     @In
     public Boolean doLongitudeFirst = null;
 
-    @Description(OMSVECTORREPROJECTOR_pForceCode_DESCRIPTION)
+    @Description(OMSVECTORREPROJECTOR_P_FORCE_CODE_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pForceCode;
 
-    @Description(OMSVECTORREPROJECTOR_doLenient_DESCRIPTION)
+    @Description(OMSVECTORREPROJECTOR_DO_LENIENT_DESCRIPTION)
     @In
     public boolean doLenient = true;
 
-    @Description(OMSVECTORREPROJECTOR_outVector_DESCRIPTION)
+    @Description(OMSVECTORREPROJECTOR_OUT_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outVector = null;

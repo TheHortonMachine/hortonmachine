@@ -25,12 +25,12 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_doInverse_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_inMask_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_pMax_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_pMin_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_DO_INVERSE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_IN_MASK_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_P_MAX_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_P_MIN_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -55,29 +55,29 @@ import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
 @License(OMSCUTOUT_LICENSE)
 public class CutOut extends JGTModel {
 
-    @Description(OMSCUTOUT_inRaster_DESCRIPTION)
+    @Description(OMSCUTOUT_IN_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster;
 
-    @Description(OMSCUTOUT_inMask_DESCRIPTION)
+    @Description(OMSCUTOUT_IN_MASK_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMask;
 
-    @Description(OMSCUTOUT_pMax_DESCRIPTION)
+    @Description(OMSCUTOUT_P_MAX_DESCRIPTION)
     @In
     public Double pMax;
 
-    @Description(OMSCUTOUT_pMin_DESCRIPTION)
+    @Description(OMSCUTOUT_P_MIN_DESCRIPTION)
     @In
     public Double pMin;
 
-    @Description(OMSCUTOUT_doInverse_DESCRIPTION)
+    @Description(OMSCUTOUT_DO_INVERSE_DESCRIPTION)
     @In
     public boolean doInverse = false;
 
-    @Description(OMSCUTOUT_outRaster_DESCRIPTION)
+    @Description(OMSCUTOUT_OUT_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster = null;

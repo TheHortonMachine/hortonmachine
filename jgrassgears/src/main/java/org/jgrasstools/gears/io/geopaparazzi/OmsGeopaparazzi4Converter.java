@@ -41,7 +41,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_LOG_POINTS_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_MEDIA_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_NOTES_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_OUTDATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_OUT_DATA_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
@@ -149,7 +149,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     @In
     public boolean doMedia = true;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_OUTDATA_DESCRIPTION)
+    @Description(OMSGEOPAPARAZZICONVERTER_OUT_DATA_DESCRIPTION)
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In
     public String outFolder = null;
