@@ -27,11 +27,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_LA
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_buffer_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_fElevation_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_inContour_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_inLines_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_outPoints_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_BUFFER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_F_ELEVATION_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_IN_CONTOUR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_INLINES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_OUTPOINTS_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -74,23 +74,23 @@ import com.vividsolutions.jts.geom.Point;
 @License(OMSCONTOURLINESLABELER_LICENSE)
 public class OmsContourLinesLabeler extends JGTModel {
 
-    @Description(OMSCONTOURLINESLABELER_inContour_DESCRIPTION)
+    @Description(OMSCONTOURLINESLABELER_IN_CONTOUR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inContour;
 
-    @Description(OMSCONTOURLINESLABELER_fElevation_DESCRIPTION)
+    @Description(OMSCONTOURLINESLABELER_F_ELEVATION_DESCRIPTION)
     @In
     public String fElevation;
 
-    @Description(OMSCONTOURLINESLABELER_inLines_DESCRIPTION)
+    @Description(OMSCONTOURLINESLABELER_INLINES_DESCRIPTION)
     @In
     public SimpleFeatureCollection inLines;
 
-    @Description(OMSCONTOURLINESLABELER_buffer_DESCRIPTION)
+    @Description(OMSCONTOURLINESLABELER_BUFFER_DESCRIPTION)
     @In
     public double buffer;
 
-    @Description(OMSCONTOURLINESLABELER_outPoints_DESCRIPTION)
+    @Description(OMSCONTOURLINESLABELER_OUTPOINTS_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outPoints = null;
 

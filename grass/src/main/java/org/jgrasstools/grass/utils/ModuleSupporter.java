@@ -108,12 +108,6 @@ public class ModuleSupporter {
                         } else {
                             // TODO
                             throw new RuntimeException("Non grass files are not supported yet!");
-                            // String[] mapsetForRun = GrassUtils.prepareMapsetForRun(false);
-                            // GrassRunner tmpRunner = new GrassRunner(System.out, System.err);
-                            // tmpRunner.runModule(new String[]{"r.external", inPath,
-                            // inFile.getName()}, mapsetForRun[0],
-                            // mapsetForRun[1]);
-                            // mapset = mapsetForRun[0];
                         }
                     } else if (value.toLowerCase().contains("outfile")) {
                         String outPath = valueObj.toString();

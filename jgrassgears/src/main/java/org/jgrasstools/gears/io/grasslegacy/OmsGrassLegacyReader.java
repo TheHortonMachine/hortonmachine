@@ -26,11 +26,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_LICE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_doActive_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_geodata_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_inWindow_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_outGC_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_DOACTIVE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_GEO_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_IN_WINDOW_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_OUT_GC_DESCRIPTION;
 
 import java.io.File;
 
@@ -70,24 +70,24 @@ import com.vividsolutions.jts.geom.Coordinate;
 @UI(OMSGRASSLEGACYREADER_UI)
 public class OmsGrassLegacyReader extends JGTModel {
 
-    @Description(OMSGRASSLEGACYREADER_file_DESCRIPTION)
+    @Description(OMSGRASSLEGACYREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSGRASSLEGACYREADER_doActive_DESCRIPTION)
+    @Description(OMSGRASSLEGACYREADER_DOACTIVE_DESCRIPTION)
     @In
     public boolean doActive = true;
 
-    @Description(OMSGRASSLEGACYREADER_inWindow_DESCRIPTION)
+    @Description(OMSGRASSLEGACYREADER_IN_WINDOW_DESCRIPTION)
     @In
     public Window inWindow = null;
 
-    @Description(OMSGRASSLEGACYREADER_outGC_DESCRIPTION)
+    @Description(OMSGRASSLEGACYREADER_OUT_GC_DESCRIPTION)
     @Out
     public GridCoverage2D outGC = null;
 
-    @Description(OMSGRASSLEGACYREADER_geodata_DESCRIPTION)
+    @Description(OMSGRASSLEGACYREADER_GEO_DATA_DESCRIPTION)
     @Out
     public double[][] geodata = null;
 

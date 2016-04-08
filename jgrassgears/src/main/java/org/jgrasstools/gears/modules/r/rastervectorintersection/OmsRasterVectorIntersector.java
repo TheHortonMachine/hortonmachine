@@ -26,10 +26,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTO
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_doInverse_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_DO_INVERSE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_OUT_RASTER_DESCRIPTION;
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -64,19 +64,19 @@ import org.opengis.feature.type.GeometryType;
 @License(OMSRASTERVECTORINTERSECTOR_LICENSE)
 public class OmsRasterVectorIntersector extends JGTModel {
 
-    @Description(OMSRASTERVECTORINTERSECTOR_inVector_DESCRIPTION)
+    @Description(OMSRASTERVECTORINTERSECTOR_IN_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description(OMSRASTERVECTORINTERSECTOR_inRaster_DESCRIPTION)
+    @Description(OMSRASTERVECTORINTERSECTOR_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSRASTERVECTORINTERSECTOR_doInverse_DESCRIPTION)
+    @Description(OMSRASTERVECTORINTERSECTOR_DO_INVERSE_DESCRIPTION)
     @In
     public boolean doInverse = false;
 
-    @Description(OMSRASTERVECTORINTERSECTOR_outRaster_DESCRIPTION)
+    @Description(OMSRASTERVECTORINTERSECTOR_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 

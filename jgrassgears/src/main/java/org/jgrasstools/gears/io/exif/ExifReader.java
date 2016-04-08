@@ -26,8 +26,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_outTags_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_OUTTAGS_DESCRIPTION;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,11 +61,11 @@ import org.w3c.dom.NodeList;
 @License(EXIFREADER_LICENSE)
 public class ExifReader extends JGTModel {
 
-    @Description(EXIFREADER_file_DESCRIPTION)
+    @Description(EXIFREADER_FILE_DESCRIPTION)
     @In
     public String file = null;
 
-    @Description(EXIFREADER_outTags_DESCRIPTION)
+    @Description(EXIFREADER_OUTTAGS_DESCRIPTION)
     @Out
     public HashMap<String, ExifTag> outTags = null;
 

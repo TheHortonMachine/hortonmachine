@@ -16,6 +16,9 @@ import java.util.UUID;
  */
 public class GrassUtilsSextante {
 
+    private static final String ELSE = "else\n";
+    private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
+
     private GrassUtilsSextante() {}
 
     /**
@@ -52,7 +55,7 @@ public class GrassUtilsSextante {
         id = UUID.randomUUID();
         tmpPrefix = new String(GrassUtils.TMP_PREFIX);
         tmpSuffix = new String("_" + id);
-        tmpBase = new String(System.getProperty("java.io.tmpdir"));
+        tmpBase = new String(System.getProperty(JAVA_IO_TMPDIR));
         if (isWindows) {
             tmpExtension = new String("bat");
         } else {
@@ -70,7 +73,7 @@ public class GrassUtilsSextante {
         id = UUID.randomUUID();
         tmpPrefix = new String(GrassUtils.TMP_PREFIX);
         tmpSuffix = new String("_" + id);
-        tmpBase = new String(System.getProperty("java.io.tmpdir"));
+        tmpBase = new String(System.getProperty(JAVA_IO_TMPDIR));
         if (tmpBase.endsWith(File.separator)) {
             tmpName = new String(tmpBase + File.separator + tmpPrefix + tmpSuffix.replace('-', '_') + ".gisrc");
         } else {
@@ -125,13 +128,13 @@ public class GrassUtilsSextante {
                 output.write("\tLCL=`echo \"$LC_ALL\" | sed 's/\\(..\\)\\(.*\\)/\\1/'`\n");
                 output.write("elif [ \"$LC_MESSAGES\" ] ; then\n");
                 output.write("\tLCL=`echo \"$LC_MESSAGES\" | sed 's/\\(..\\)\\(.*\\)/\\1/'`\n");
-                output.write("else\n");
+                output.write(ELSE);
                 output.write("\tLCL=`echo \"$LANG\" | sed 's/\\(..\\)\\(.*\\)/\\1/'`\n");
                 output.write("fi\n");
                 output.write("\n");
                 output.write("if [ -n \"$GRASS_ADDON_PATH\" ] ; then\n");
                 output.write("\tPATH=\"" + gisBase + "/bin:" + gisBase + "/scripts:$GRASS_ADDON_PATH:$PATH\"\n");
-                output.write("else\n");
+                output.write(ELSE);
                 output.write("\tPATH=\"" + gisBase + "/bin:" + gisBase + "/scripts:$PATH\"\n");
                 output.write("fi\n");
                 output.write("export PATH\n");
@@ -139,14 +142,14 @@ public class GrassUtilsSextante {
                 if (isMac) {
                     output.write("if [ ! \"$DYLD_LIBRARY_PATH\" ] ; then\n");
                     output.write("\tDYLD_LIBRARY_PATH=\"$GISBASE/lib\"\n");
-                    output.write("else\n");
+                    output.write(ELSE);
                     output.write("\tDYLD_LIBRARY_PATH=\"$GISBASE/lib:$DYLD_LIBRARY_PATH\"\n");
                     output.write("fi\n");
                     output.write("export DYLD_LIBRARY_PATH\n");
                 } else {
                     output.write("if [ ! \"$LD_LIBRARY_PATH\" ] ; then\n");
                     output.write("\tLD_LIBRARY_PATH=\"$GISBASE/lib\"\n");
-                    output.write("else\n");
+                    output.write(ELSE);
                     output.write("\tLD_LIBRARY_PATH=\"$GISBASE/lib:$LD_LIBRARY_PATH\"\n");
                     output.write("fi\n");
                     output.write("export LD_LIBRARY_PATH\n");
@@ -158,7 +161,7 @@ public class GrassUtilsSextante {
                 output.write("export GRASS_PYTHON\n");
                 output.write("if [ ! \"$PYTHONPATH\" ] ; then\n");
                 output.write("\tPYTHONPATH=\"$GISBASE/etc/python\"\n");
-                output.write("else\n");
+                output.write(ELSE);
                 output.write("\tPYTHONPATH=\"$GISBASE/etc/python:$PYTHONPATH\"\n");
                 output.write("fi\n");
                 output.write("export PYTHONPATH\n");
@@ -192,7 +195,7 @@ public class GrassUtilsSextante {
             id = UUID.randomUUID();
             tmpPrefix = new String(GrassUtils.TMP_PREFIX);
             tmpSuffix = new String("_" + id);
-            tmpBase = new String(System.getProperty("java.io.tmpdir"));
+            tmpBase = new String(System.getProperty(JAVA_IO_TMPDIR));
             if (tmpBase.endsWith(File.separator)) {
                 tmpName = new String(tmpBase + File.separator + tmpPrefix + tmpSuffix.replace('-', '_') + ".msg");
             } else {

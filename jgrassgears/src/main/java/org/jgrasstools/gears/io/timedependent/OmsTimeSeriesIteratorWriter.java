@@ -25,12 +25,12 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRIT
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_fileNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_inData_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_inTablename_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_tStart_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_tTimestep_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_FILE_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_IN_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_IN_TABLENAME_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_T_START_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_T_TIMESTEP_DESCRIPTION;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,28 +69,28 @@ import org.joda.time.format.DateTimeFormatter;
 @License(OMSTIMESERIESITERATORWRITER_LICENSE)
 public class OmsTimeSeriesIteratorWriter extends JGTModel {
 
-    @Description(OMSTIMESERIESITERATORWRITER_file_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORWRITER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSTIMESERIESITERATORWRITER_inTablename_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORWRITER_IN_TABLENAME_DESCRIPTION)
     @In
     public String inTablename = "table";
 
-    @Description(OMSTIMESERIESITERATORWRITER_inData_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORWRITER_IN_DATA_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inData;
 
-    @Description(OMSTIMESERIESITERATORWRITER_tStart_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORWRITER_T_START_DESCRIPTION)
     @In
     public String tStart;
 
-    @Description(OMSTIMESERIESITERATORWRITER_tTimestep_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORWRITER_T_TIMESTEP_DESCRIPTION)
     @In
     public int tTimestep = -1;
 
-    @Description(OMSTIMESERIESITERATORWRITER_fileNovalue_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORWRITER_FILE_NOVALUE_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
