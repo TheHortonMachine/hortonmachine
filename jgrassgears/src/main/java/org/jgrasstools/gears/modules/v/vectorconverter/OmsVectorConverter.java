@@ -28,8 +28,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_LICENS
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_inGeodata_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_outGeodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_IN_GEODATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_OUT_GEODATA_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -57,11 +57,11 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @UI(OMSVECTORCONVERTER_UI)
 public class OmsVectorConverter extends JGTModel {
 
-    @Description(OMSVECTORCONVERTER_inGeodata_DESCRIPTION)
+    @Description(OMSVECTORCONVERTER_IN_GEODATA_DESCRIPTION)
     @In
     public SimpleFeatureCollection inGeodata;
 
-    @Description(OMSVECTORCONVERTER_outGeodata_DESCRIPTION)
+    @Description(OMSVECTORCONVERTER_OUT_GEODATA_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outGeodata;
 

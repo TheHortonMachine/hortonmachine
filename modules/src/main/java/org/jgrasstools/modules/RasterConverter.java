@@ -17,14 +17,14 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_pCols_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_pRows_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_pSouth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_pWest_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_pXres_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_pYres_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_COLS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_EAST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_NORTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_ROWS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_SOUTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_WEST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_X_RES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_Y_RES_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_inRaster_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_outRaster_DESCRIPTION;
 import oms3.annotations.Description;
@@ -45,42 +45,42 @@ public class RasterConverter extends OmsRasterConverter {
     @In
     public String inRaster;
 
-    @Description(GENERIC_pNorth_DESCRIPTION)
+    @Description(GENERIC_P_NORTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description(GENERIC_pSouth_DESCRIPTION)
+    @Description(GENERIC_P_SOUTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description(GENERIC_pWest_DESCRIPTION)
+    @Description(GENERIC_P_WEST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description(GENERIC_pEast_DESCRIPTION)
+    @Description(GENERIC_P_EAST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
     
-    @Description(GENERIC_pXres_DESCRIPTION)
+    @Description(GENERIC_P_X_RES_DESCRIPTION)
     @UI(JGTConstants.PROCESS_XRES_UI_HINT)
     @In
     public Double pXres = null;
 
-    @Description(GENERIC_pYres_DESCRIPTION)
+    @Description(GENERIC_P_Y_RES_DESCRIPTION)
     @UI(JGTConstants.PROCESS_YRES_UI_HINT)
     @In
     public Double pYres = null;
 
-    @Description(GENERIC_pRows_DESCRIPTION)
+    @Description(GENERIC_P_ROWS_DESCRIPTION)
     @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
     @In
     public Integer pRows = null;
 
-    @Description(GENERIC_pCols_DESCRIPTION)
+    @Description(GENERIC_P_COLS_DESCRIPTION)
     @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer pCols = null;

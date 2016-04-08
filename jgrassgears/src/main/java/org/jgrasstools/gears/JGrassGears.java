@@ -256,11 +256,7 @@ public class JGrassGears {
             allFields = (String[]) fieldNamesList.toArray(new String[fieldNamesList.size()]);
             Collections.sort(classNames);
             allClasses = (String[]) classNames.toArray(new String[classNames.size()]);
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (InstantiationException | IllegalAccessException | IOException e) {
             e.printStackTrace();
         }
     }

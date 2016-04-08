@@ -25,13 +25,13 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_L
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_pDensify_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_pLimit_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_pLookahead_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_pSimplify_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_pSlide_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_DENSIFY_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_LIMIT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_LOOK_AHEAD_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_SIMPLIFY_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_SLIDE_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -56,32 +56,32 @@ import org.jgrasstools.gears.modules.v.smoothing.OmsLineSmootherMcMaster;
 @License(OMSLINESMOOTHERMCMASTER_LICENSE)
 public class LineSmootherMcMaster extends JGTModel {
 
-    @Description(OMSLINESMOOTHERMCMASTER_inVector_DESCRIPTION)
+    @Description(OMSLINESMOOTHERMCMASTER_IN_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inVector;
 
-    @Description(OMSLINESMOOTHERMCMASTER_pLookahead_DESCRIPTION)
+    @Description(OMSLINESMOOTHERMCMASTER_P_LOOK_AHEAD_DESCRIPTION)
     @In
     public int pLookahead = 7;
 
-    @Description(OMSLINESMOOTHERMCMASTER_pLimit_DESCRIPTION)
+    @Description(OMSLINESMOOTHERMCMASTER_P_LIMIT_DESCRIPTION)
     @In
     public int pLimit = 0;
 
-    @Description(OMSLINESMOOTHERMCMASTER_pSlide_DESCRIPTION)
+    @Description(OMSLINESMOOTHERMCMASTER_P_SLIDE_DESCRIPTION)
     @In
     public double pSlide = 0.9;
 
-    @Description(OMSLINESMOOTHERMCMASTER_pDensify_DESCRIPTION)
+    @Description(OMSLINESMOOTHERMCMASTER_P_DENSIFY_DESCRIPTION)
     @In
     public Double pDensify = null;
 
-    @Description(OMSLINESMOOTHERMCMASTER_pSimplify_DESCRIPTION)
+    @Description(OMSLINESMOOTHERMCMASTER_P_SIMPLIFY_DESCRIPTION)
     @In
     public Double pSimplify = null;
 
-    @Description(OMSLINESMOOTHERMCMASTER_outVector_DESCRIPTION)
+    @Description(OMSLINESMOOTHERMCMASTER_OUT_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outVector;

@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_LABEL
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_fDefault_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_F_DEFAULT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_OUT_VECTOR_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
 
@@ -74,15 +74,15 @@ import com.vividsolutions.jts.geom.Point;
 @License(OMSPOINTSVECTORIZER_LICENSE)
 public class OmsPointsVectorizer extends JGTModel {
 
-    @Description(OMSPOINTSVECTORIZER_inRaster_DESCRIPTION)
+    @Description(OMSPOINTSVECTORIZER_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSPOINTSVECTORIZER_fDefault_DESCRIPTION)
+    @Description(OMSPOINTSVECTORIZER_F_DEFAULT_DESCRIPTION)
     @In
     public String fDefault = "value";
 
-    @Description(OMSPOINTSVECTORIZER_outVector_DESCRIPTION)
+    @Description(OMSPOINTSVECTORIZER_OUT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector = null;
 

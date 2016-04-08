@@ -26,13 +26,13 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_inGeodata_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_outGeodata_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_pCols_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_pMode_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_pRows_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_pXstep_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_pYstep_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_IN_GEODATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_OUT_GEODATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_P_COLS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_P_MODE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_P_ROWS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_P_X_STEP_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_P_Y_STEP_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -57,32 +57,32 @@ import org.jgrasstools.gears.modules.r.windowsampler.OmsWindowSampler;
 @License(OMSWINDOWSAMPLER_LICENSE)
 public class WindowSampler extends JGTModel {
 
-    @Description(OMSWINDOWSAMPLER_inGeodata_DESCRIPTION)
+    @Description(OMSWINDOWSAMPLER_IN_GEODATA_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inGeodata;
 
-    @Description(OMSWINDOWSAMPLER_pMode_DESCRIPTION)
+    @Description(OMSWINDOWSAMPLER_P_MODE_DESCRIPTION)
     @In
     public int pMode = 0;
 
-    @Description(OMSWINDOWSAMPLER_pRows_DESCRIPTION)
+    @Description(OMSWINDOWSAMPLER_P_ROWS_DESCRIPTION)
     @In
     public int pRows = 3;
 
-    @Description(OMSWINDOWSAMPLER_pCols_DESCRIPTION)
+    @Description(OMSWINDOWSAMPLER_P_COLS_DESCRIPTION)
     @In
     public int pCols = 3;
 
-    @Description(OMSWINDOWSAMPLER_pXstep_DESCRIPTION)
+    @Description(OMSWINDOWSAMPLER_P_X_STEP_DESCRIPTION)
     @In
     public Integer pXstep;
 
-    @Description(OMSWINDOWSAMPLER_pYstep_DESCRIPTION)
+    @Description(OMSWINDOWSAMPLER_P_Y_STEP_DESCRIPTION)
     @In
     public Integer pYstep;
 
-    @Description(OMSWINDOWSAMPLER_outGeodata_DESCRIPTION)
+    @Description(OMSWINDOWSAMPLER_OUT_GEODATA_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outGeodata;

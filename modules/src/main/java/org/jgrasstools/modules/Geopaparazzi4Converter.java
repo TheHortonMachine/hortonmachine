@@ -57,23 +57,23 @@ public class Geopaparazzi4Converter extends JGTModel {
     @In
     public String inGeopaparazzi = null;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_doNotes_DESCRIPTION)
+    @Description(OMSGEOPAPARAZZICONVERTER_DO_NOTES_DESCRIPTION)
     @In
     public boolean doNotes = true;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_doLoglines_DESCRIPTION)
+    @Description(OMSGEOPAPARAZZICONVERTER_DO_LOG_LINES_DESCRIPTION)
     @In
     public boolean doLoglines = true;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_doLogpoints_DESCRIPTION)
+    @Description(OMSGEOPAPARAZZICONVERTER_DO_LOG_POINTS_DESCRIPTION)
     @In
     public boolean doLogpoints = false;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_doMedia_DESCRIPTION)
+    @Description(OMSGEOPAPARAZZICONVERTER_DO_MEDIA_DESCRIPTION)
     @In
     public boolean doMedia = true;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_outData_DESCRIPTION)
+    @Description(OMSGEOPAPARAZZICONVERTER_OUTDATA_DESCRIPTION)
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In
     public String outData = null;

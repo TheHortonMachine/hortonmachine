@@ -34,6 +34,10 @@ import org.jgrasstools.grass.dtd64.Task;
  */
 public class Oms3CodeWrapper {
 
+    private static final String QUOTATION_MARK_BRACKET_NEWLINE = "\")\n";
+
+    private static final String DESCRIPTION = "@Description(\"";
+
     private StringBuilder codeBuilder = new StringBuilder();
 
     private String indent = "\t";
@@ -77,7 +81,7 @@ public class Oms3CodeWrapper {
         codeBuilder.append("import oms3.annotations.Status;").append("\n");
         codeBuilder.append("").append("\n");
         if (description != null)
-            codeBuilder.append("@Description(\"").append(description.trim()).append("\")").append("\n");
+            codeBuilder.append(DESCRIPTION).append(description.trim()).append("\")").append("\n");
         codeBuilder.append("@Author(name = \"Grass Developers Community\", contact = \"http://grass.osgeo.org\")").append("\n");
         if (keyWords != null)
             codeBuilder.append("@Keywords(\"").append(keyWords.trim()).append("\")").append("\n");
@@ -115,12 +119,12 @@ public class Oms3CodeWrapper {
                     guiHints = GrassUtils.getGuiHintsFromGisprompt(gisprompt);
 
                 if (guiHints != null)
-                    codeBuilder.append(indent).append("@UI(\"").append(guiHints).append("\")\n");
-                codeBuilder.append(indent).append("@Description(\"").append(parameterDescription);
+                    codeBuilder.append(indent).append("@UI(\"").append(guiHints).append(QUOTATION_MARK_BRACKET_NEWLINE);
+                codeBuilder.append(indent).append(DESCRIPTION).append(parameterDescription);
                 if (isRequired.trim().equals("no")) {
                     codeBuilder.append(" (optional)");
                 }
-                codeBuilder.append("\")\n");
+                codeBuilder.append(QUOTATION_MARK_BRACKET_NEWLINE);
                 codeBuilder.append(indent).append("@In\n");
                 codeBuilder.append(indent).append("public String ").append(parameterName);
                 if (defaultValue != null) {
@@ -145,7 +149,7 @@ public class Oms3CodeWrapper {
 
             String descr = flag.getDescription().trim();
             descr = cleanDescription(descr);
-            codeBuilder.append(indent).append("@Description(\"").append(descr).append("\")\n");
+            codeBuilder.append(indent).append(DESCRIPTION).append(descr).append(QUOTATION_MARK_BRACKET_NEWLINE);
             codeBuilder.append(indent).append("@In\n");
             codeBuilder.append(indent).append("public boolean ").append(flagName).append(" = false;\n\n");
         }
