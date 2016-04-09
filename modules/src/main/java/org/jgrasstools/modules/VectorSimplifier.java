@@ -25,10 +25,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_LABEL
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_pTolerance_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_pType_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_P_TOLERANCE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_P_TYPE_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -53,20 +53,20 @@ import org.jgrasstools.gears.modules.v.vectorsimplifier.OmsVectorSimplifier;
 @License(OMSVECTORSIMPLIFIER_LICENSE)
 public class VectorSimplifier extends JGTModel {
 
-    @Description(OMSVECTORSIMPLIFIER_inVector_DESCRIPTION)
+    @Description(OMSVECTORSIMPLIFIER_IN_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inVector;
 
-    @Description(OMSVECTORSIMPLIFIER_pType_DESCRIPTION)
+    @Description(OMSVECTORSIMPLIFIER_P_TYPE_DESCRIPTION)
     @In
     public int pType = 0;
 
-    @Description(OMSVECTORSIMPLIFIER_pTolerance_DESCRIPTION)
+    @Description(OMSVECTORSIMPLIFIER_P_TOLERANCE_DESCRIPTION)
     @In
     public double pTolerance = 0.2;
 
-    @Description(OMSVECTORSIMPLIFIER_outVector_DESCRIPTION)
+    @Description(OMSVECTORSIMPLIFIER_OUT_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outVector;

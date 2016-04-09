@@ -52,12 +52,12 @@ import static org.jgrasstools.gears.i18n.GearsMessages.*;
 @License(ADIGEBOUNDARYCONDITIONREADER_LICENSE)
 public class AdigeBoundaryConditionReader extends JGTModel {
 
-    @Description(ADIGEBOUNDARYCONDITIONREADER_file_DESCRIPTION)
+    @Description(ADIGEBOUNDARYCONDITIONREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(ADIGEBOUNDARYCONDITIONREADER_data_DESCRIPTION)
+    @Description(ADIGEBOUNDARYCONDITIONREADER_DATA_DESCRIPTION)
     @Out
     public HashMap<Integer, AdigeBoundaryCondition> data;
 

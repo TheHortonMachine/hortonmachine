@@ -26,16 +26,16 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_LABE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pCode_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pCols_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pInterpolation_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pRows_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pSouth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pWest_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_CODE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_COLS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_EAST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_INTERPOLATION_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_NORTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_ROWS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_SOUTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_WEST_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
 import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
 import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
@@ -75,51 +75,51 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License(OMSRASTERREPROJECTOR_LICENSE)
 public class OmsRasterReprojector extends JGTModel {
 
-    @Description(OMSRASTERREPROJECTOR_inRaster_DESCRIPTION)
+    @Description(OMSRASTERREPROJECTOR_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSRASTERREPROJECTOR_pNorth_DESCRIPTION)
+    @Description(OMSRASTERREPROJECTOR_P_NORTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description(OMSRASTERREPROJECTOR_pSouth_DESCRIPTION)
+    @Description(OMSRASTERREPROJECTOR_P_SOUTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description(OMSRASTERREPROJECTOR_pWest_DESCRIPTION)
+    @Description(OMSRASTERREPROJECTOR_P_WEST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description(OMSRASTERREPROJECTOR_pEast_DESCRIPTION)
+    @Description(OMSRASTERREPROJECTOR_P_EAST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description(OMSRASTERREPROJECTOR_pRows_DESCRIPTION)
+    @Description(OMSRASTERREPROJECTOR_P_ROWS_DESCRIPTION)
     @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
     @In
     public Integer pRows = null;
 
-    @Description(OMSRASTERREPROJECTOR_pCols_DESCRIPTION)
+    @Description(OMSRASTERREPROJECTOR_P_COLS_DESCRIPTION)
     @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer pCols = null;
 
-    @Description(OMSRASTERREPROJECTOR_pCode_DESCRIPTION)
+    @Description(OMSRASTERREPROJECTOR_P_CODE_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description(OMSRASTERREPROJECTOR_pInterpolation_DESCRIPTION)
+    @Description(OMSRASTERREPROJECTOR_P_INTERPOLATION_DESCRIPTION)
     @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
-    @Description(OMSRASTERREPROJECTOR_outRaster_DESCRIPTION)
+    @Description(OMSRASTERREPROJECTOR_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

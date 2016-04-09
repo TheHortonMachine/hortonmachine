@@ -25,9 +25,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_pType_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_P_TYPE_DESCRIPTION;
 
 import java.io.IOException;
 
@@ -56,16 +56,16 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSVECTORWRITER_LICENSE)
 public class VectorWriter extends JGTModel {
 
-    @Description(OMSVECTORWRITER_inVector_DESCRIPTION)
+    @Description(OMSVECTORWRITER_IN_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description(OMSVECTORWRITER_pType_DESCRIPTION)
+    @Description(OMSVECTORWRITER_P_TYPE_DESCRIPTION)
     @In
     // currently not used, for future compatibility
     public String pType = null;
 
-    @Description(OMSVECTORWRITER_file_DESCRIPTION)
+    @Description(OMSVECTORWRITER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;

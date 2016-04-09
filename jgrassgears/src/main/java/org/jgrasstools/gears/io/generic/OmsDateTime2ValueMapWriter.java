@@ -27,10 +27,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_data_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_fileNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_pSeparator_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_FILE_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_P_SEPARATOR_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.io.BufferedWriter;
@@ -66,20 +66,20 @@ import org.joda.time.DateTime;
 @UI(OMSDATETIME2VALUEMAPWRITER_UI)
 public class OmsDateTime2ValueMapWriter extends JGTModel {
 
-    @Description(OMSDATETIME2VALUEMAPWRITER_file_DESCRIPTION)
+    @Description(OMSDATETIME2VALUEMAPWRITER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSDATETIME2VALUEMAPWRITER_pSeparator_DESCRIPTION)
+    @Description(OMSDATETIME2VALUEMAPWRITER_P_SEPARATOR_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Description(OMSDATETIME2VALUEMAPWRITER_fileNovalue_DESCRIPTION)
+    @Description(OMSDATETIME2VALUEMAPWRITER_FILE_NOVALUE_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description(OMSDATETIME2VALUEMAPWRITER_data_DESCRIPTION)
+    @Description(OMSDATETIME2VALUEMAPWRITER_DATA_DESCRIPTION)
     @In
     public HashMap<DateTime, double[]> data;
 

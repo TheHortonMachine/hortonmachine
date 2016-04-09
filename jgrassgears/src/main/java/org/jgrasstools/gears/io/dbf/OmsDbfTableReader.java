@@ -25,8 +25,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_outTabledata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_OUT_TABLE_DATA_DESCRIPTION;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -61,12 +61,12 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSDBFTABLEREADER_LICENSE)
 public class OmsDbfTableReader extends JGTModel {
 
-    @Description(OMSDBFTABLEREADER_file_DESCRIPTION)
+    @Description(OMSDBFTABLEREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSDBFTABLEREADER_outTabledata_DESCRIPTION)
+    @Description(OMSDBFTABLEREADER_OUT_TABLE_DATA_DESCRIPTION)
     @Out
     public HashMap<String, List<Object>> outTabledata = null;
 

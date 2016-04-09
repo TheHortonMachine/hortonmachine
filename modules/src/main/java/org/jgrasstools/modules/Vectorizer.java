@@ -25,12 +25,12 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_doRegioncheck_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_fDefault_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_pThres_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_pValue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_DO_REGION_CHECK_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_F_DEFAULT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_P_THRES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_P_VALUE_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -55,28 +55,28 @@ import org.jgrasstools.gears.modules.v.vectorize.OmsVectorizer;
 @License(OMSVECTORIZER_LICENSE)
 public class Vectorizer extends JGTModel {
 
-    @Description(OMSVECTORIZER_inRaster_DESCRIPTION)
+    @Description(OMSVECTORIZER_IN_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster;
 
-    @Description(OMSVECTORIZER_pValue_DESCRIPTION)
+    @Description(OMSVECTORIZER_P_VALUE_DESCRIPTION)
     @In
     public Double pValue = null;
 
-    @Description(OMSVECTORIZER_fDefault_DESCRIPTION)
+    @Description(OMSVECTORIZER_F_DEFAULT_DESCRIPTION)
     @In
     public String fDefault = "value";
 
-    @Description(OMSVECTORIZER_pThres_DESCRIPTION)
+    @Description(OMSVECTORIZER_P_THRES_DESCRIPTION)
     @In
     public double pThres = 0;
 
-    @Description(OMSVECTORIZER_doRegioncheck_DESCRIPTION)
+    @Description(OMSVECTORIZER_DO_REGION_CHECK_DESCRIPTION)
     @In
     public boolean doRegioncheck = false;
 
-    @Description(OMSVECTORIZER_outVector_DESCRIPTION)
+    @Description(OMSVECTORIZER_OUT_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outVector = null;

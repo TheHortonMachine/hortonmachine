@@ -26,16 +26,16 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_LICENS
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_fileNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_novalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outData_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outFormats_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outIds_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outLabels_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outSubTitle_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outTitle_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outTypes_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_FILE_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_FORMATS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_IDS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_LABELS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_SUBTITLE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_TITLE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_TYPES_DESCRIPTION;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,44 +77,44 @@ import org.joda.time.format.DateTimeFormatter;
 @UI(OMSCSVMATRIXREADER_UI)
 public class OmsCsvMatrixReader extends JGTModel {
 
-    @Description(OMSCSVMATRIXREADER_file_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSCSVMATRIXREADER_fileNovalue_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_FILE_NOVALUE_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description(OMSCSVMATRIXREADER_novalue_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_NOVALUE_DESCRIPTION)
     @In
     public double novalue = JGTConstants.doubleNovalue;
 
-    @Description(OMSCSVMATRIXREADER_outData_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_DATA_DESCRIPTION)
     @Out
     public double[][] outData;
 
-    @Description(OMSCSVMATRIXREADER_outTitle_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_TITLE_DESCRIPTION)
     @Out
     public String outTitle;
 
-    @Description(OMSCSVMATRIXREADER_outSubTitle_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_SUBTITLE_DESCRIPTION)
     @Out
     public String outSubTitle;
 
-    @Description(OMSCSVMATRIXREADER_outIds_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_IDS_DESCRIPTION)
     @Out
     public String[] outIds;
 
-    @Description(OMSCSVMATRIXREADER_outLabels_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_LABELS_DESCRIPTION)
     @Out
     public String[] outLabels;
 
-    @Description(OMSCSVMATRIXREADER_outFormats_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_FORMATS_DESCRIPTION)
     @Out
     public String[] outFormats;
 
-    @Description(OMSCSVMATRIXREADER_outTypes_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_TYPES_DESCRIPTION)
     @Out
     public String[] outTypes;
 

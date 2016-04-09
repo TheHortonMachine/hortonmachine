@@ -27,19 +27,19 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_LABE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_doFlipHorizontal_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_doFlipVertical_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_outBounds_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pAngle_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pInterpolation_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pScaleX_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pScaleY_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pTransX_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pTransY_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_DO_FLIP_HORIZONTAL_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_DO_FLIP_VERTICAL_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_OUT_BOUNDS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_EAST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_INTERPOLATION_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_NORTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_SCALE_X_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_SCALE_Y_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_TRANS_X_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_TRANS_Y_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
 import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
 import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
@@ -102,61 +102,61 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 @Status(OMSRASTERTRANSFORMER_STATUS)
 @License(OMSRASTERTRANSFORMER_LICENSE)
 public class OmsRasterTransformer extends JGTModel {
-    @Description(OMSRASTERTRANSFORMER_inRaster_DESCRIPTION)
+    @Description(OMSRASTERTRANSFORMER_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSRASTERTRANSFORMER_pInterpolation_DESCRIPTION)
+    @Description(OMSRASTERTRANSFORMER_P_INTERPOLATION_DESCRIPTION)
     @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
-    @Description(OMSRASTERTRANSFORMER_pTransX_DESCRIPTION)
+    @Description(OMSRASTERTRANSFORMER_P_TRANS_X_DESCRIPTION)
     @Unit("m")
     @In
     public Double pTransX;
 
-    @Description(OMSRASTERTRANSFORMER_pTransY_DESCRIPTION)
+    @Description(OMSRASTERTRANSFORMER_P_TRANS_Y_DESCRIPTION)
     @Unit("m")
     @In
     public Double pTransY;
 
-    @Description(OMSRASTERTRANSFORMER_pScaleX_DESCRIPTION)
+    @Description(OMSRASTERTRANSFORMER_P_SCALE_X_DESCRIPTION)
     @In
     public Double pScaleX;
 
-    @Description(OMSRASTERTRANSFORMER_pScaleY_DESCRIPTION)
+    @Description(OMSRASTERTRANSFORMER_P_SCALE_Y_DESCRIPTION)
     @In
     public Double pScaleY;
 
-    @Description(OMSRASTERTRANSFORMER_doFlipHorizontal_DESCRIPTION)
+    @Description(OMSRASTERTRANSFORMER_DO_FLIP_HORIZONTAL_DESCRIPTION)
     @In
     public boolean doFlipHorizontal;
 
-    @Description(OMSRASTERTRANSFORMER_doFlipVertical_DESCRIPTION)
+    @Description(OMSRASTERTRANSFORMER_DO_FLIP_VERTICAL_DESCRIPTION)
     @In
     public boolean doFlipVertical;
 
-    @Description(OMSRASTERTRANSFORMER_pNorth_DESCRIPTION)
+    @Description(OMSRASTERTRANSFORMER_P_NORTH_DESCRIPTION)
     @UI(JGTConstants.NORTHING_UI_HINT)
     @In
     public Double pNorth;
 
-    @Description(OMSRASTERTRANSFORMER_pEast_DESCRIPTION)
+    @Description(OMSRASTERTRANSFORMER_P_EAST_DESCRIPTION)
     @UI(JGTConstants.EASTING_UI_HINT)
     @In
     public Double pEast;
 
-    @Description(OMSRASTERTRANSFORMER_pAngle_DESCRIPTION)
+    @Description(OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION)
     @Unit("degrees")
     @In
     public Double pAngle;
 
-    @Description(OMSRASTERTRANSFORMER_outRaster_DESCRIPTION)
+    @Description(OMSRASTERTRANSFORMER_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 
-    @Description(OMSRASTERTRANSFORMER_outBounds_DESCRIPTION)
+    @Description(OMSRASTERTRANSFORMER_OUT_BOUNDS_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outBounds = null;
 

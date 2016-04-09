@@ -25,19 +25,19 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_doLegacyGrass_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_fileNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_geodataNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pCols_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pRows_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pSouth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pWest_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pXres_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pYres_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_DO_LEGACY_GRASS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_FILE_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_GEO_DATA_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_COLS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_EAST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_NORTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_ROWS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_SOUTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_WEST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_X_RES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_Y_RES_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.AIG;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIF;
@@ -130,64 +130,64 @@ import com.vividsolutions.jts.geom.Envelope;
 @License(OMSRASTERREADER_LICENSE)
 public class OmsRasterReader extends JGTModel {
 
-    @Description(OMSRASTERREADER_file_DESCRIPTION)
+    @Description(OMSRASTERREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSRASTERREADER_fileNovalue_DESCRIPTION)
+    @Description(OMSRASTERREADER_FILE_NOVALUE_DESCRIPTION)
     @In
     public Double fileNovalue = -9999.0;
 
-    @Description(OMSRASTERREADER_geodataNovalue_DESCRIPTION)
+    @Description(OMSRASTERREADER_GEO_DATA_NOVALUE_DESCRIPTION)
     @In
     public Double geodataNovalue = doubleNovalue;
 
-    @Description(OMSRASTERREADER_pNorth_DESCRIPTION)
+    @Description(OMSRASTERREADER_P_NORTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description(OMSRASTERREADER_pSouth_DESCRIPTION)
+    @Description(OMSRASTERREADER_P_SOUTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description(OMSRASTERREADER_pWest_DESCRIPTION)
+    @Description(OMSRASTERREADER_P_WEST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description(OMSRASTERREADER_pEast_DESCRIPTION)
+    @Description(OMSRASTERREADER_P_EAST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description(OMSRASTERREADER_pXres_DESCRIPTION)
+    @Description(OMSRASTERREADER_P_X_RES_DESCRIPTION)
     @UI(JGTConstants.PROCESS_XRES_UI_HINT)
     @In
     public Double pXres = null;
 
-    @Description(OMSRASTERREADER_pYres_DESCRIPTION)
+    @Description(OMSRASTERREADER_P_Y_RES_DESCRIPTION)
     @UI(JGTConstants.PROCESS_YRES_UI_HINT)
     @In
     public Double pYres = null;
 
-    @Description(OMSRASTERREADER_pRows_DESCRIPTION)
+    @Description(OMSRASTERREADER_P_ROWS_DESCRIPTION)
     @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
     @In
     public Integer pRows = null;
 
-    @Description(OMSRASTERREADER_pCols_DESCRIPTION)
+    @Description(OMSRASTERREADER_P_COLS_DESCRIPTION)
     @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer pCols = null;
 
-    @Description(OMSRASTERREADER_doLegacyGrass_DESCRIPTION)
+    @Description(OMSRASTERREADER_DO_LEGACY_GRASS_DESCRIPTION)
     @In
     public Boolean doLegacyGrass = false;
 
-    @Description(OMSRASTERREADER_outRaster_DESCRIPTION)
+    @Description(OMSRASTERREADER_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

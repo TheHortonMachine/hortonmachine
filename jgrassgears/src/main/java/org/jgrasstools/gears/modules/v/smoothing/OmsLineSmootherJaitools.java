@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_L
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_pAlpha_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_P_ALPHA_DESCRIPTION;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,15 +69,15 @@ import com.vividsolutions.jts.geom.MultiLineString;
 @License(OMSLINESMOOTHERJAITOOLS_LICENSE)
 public class OmsLineSmootherJaitools extends JGTModel {
 
-    @Description(OMSLINESMOOTHERJAITOOLS_inVector_DESCRIPTION)
+    @Description(OMSLINESMOOTHERJAITOOLS_IN_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description(OMSLINESMOOTHERJAITOOLS_pAlpha_DESCRIPTION)
+    @Description(OMSLINESMOOTHERJAITOOLS_P_ALPHA_DESCRIPTION)
     @In
     public double pAlpha = 0;
 
-    @Description(OMSLINESMOOTHERJAITOOLS_outVector_DESCRIPTION)
+    @Description(OMSLINESMOOTHERJAITOOLS_OUT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 

@@ -27,11 +27,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_LI
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_data_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_fileNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_novalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_pSeparator_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_FILE_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_P_SEPARATOR_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
 import java.io.BufferedReader;
@@ -65,24 +65,24 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @UI(OMSPLAINID2VALUEREADER_UI)
 public class OmsPlainId2ValueReader extends JGTModel {
 
-    @Description(OMSPLAINID2VALUEREADER_file_DESCRIPTION)
+    @Description(OMSPLAINID2VALUEREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSPLAINID2VALUEREADER_pSeparator_DESCRIPTION)
+    @Description(OMSPLAINID2VALUEREADER_P_SEPARATOR_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Description(OMSPLAINID2VALUEREADER_fileNovalue_DESCRIPTION)
+    @Description(OMSPLAINID2VALUEREADER_FILE_NOVALUE_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description(OMSPLAINID2VALUEREADER_novalue_DESCRIPTION)
+    @Description(OMSPLAINID2VALUEREADER_NOVALUE_DESCRIPTION)
     @In
     public double novalue = doubleNovalue;
 
-    @Description(OMSPLAINID2VALUEREADER_data_DESCRIPTION)
+    @Description(OMSPLAINID2VALUEREADER_DATA_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> data;
 

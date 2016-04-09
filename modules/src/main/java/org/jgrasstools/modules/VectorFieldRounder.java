@@ -25,10 +25,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_LAB
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_fRound_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_pPattern_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_F_ROUND_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_P_PATTERN_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -53,20 +53,20 @@ import org.jgrasstools.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder;
 @License(OMSVECTORFIELDROUNDER_LICENSE)
 public class VectorFieldRounder extends JGTModel {
 
-    @Description(OMSVECTORFIELDROUNDER_inVector_DESCRIPTION)
+    @Description(OMSVECTORFIELDROUNDER_IN_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inVector;
 
-    @Description(OMSVECTORFIELDROUNDER_fRound_DESCRIPTION)
+    @Description(OMSVECTORFIELDROUNDER_F_ROUND_DESCRIPTION)
     @In
     public String fRound = null;
 
-    @Description(OMSVECTORFIELDROUNDER_pPattern_DESCRIPTION)
+    @Description(OMSVECTORFIELDROUNDER_P_PATTERN_DESCRIPTION)
     @In
     public String pPattern = null;
 
-    @Description(OMSVECTORFIELDROUNDER_outVector_DESCRIPTION)
+    @Description(OMSVECTORFIELDROUNDER_OUT_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outVector;

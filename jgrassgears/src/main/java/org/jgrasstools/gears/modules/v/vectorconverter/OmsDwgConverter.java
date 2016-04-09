@@ -26,14 +26,14 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_attributesVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_contourVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_lineVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_pCode_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_pointsVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_polygonVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_textVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_ATTRIBUTES_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_CONTOUR_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_LINE_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_P_CODE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_POINTS_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_POLYGON_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_TEXT_VECTOR_DESCRIPTION;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -73,37 +73,37 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License(OMSDWGCONVERTER_LICENSE)
 public class OmsDwgConverter extends JGTModel {
 
-    @Description(OMSDWGCONVERTER_file_DESCRIPTION)
+    @Description(OMSDWGCONVERTER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSDWGCONVERTER_pCode_DESCRIPTION)
+    @Description(OMSDWGCONVERTER_P_CODE_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description(OMSDWGCONVERTER_pointsVector_DESCRIPTION)
+    @Description(OMSDWGCONVERTER_POINTS_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection pointsVector = null;
 
-    @Description(OMSDWGCONVERTER_lineVector_DESCRIPTION)
+    @Description(OMSDWGCONVERTER_LINE_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection lineVector = null;
 
-    @Description(OMSDWGCONVERTER_polygonVector_DESCRIPTION)
+    @Description(OMSDWGCONVERTER_POLYGON_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection polygonVector = null;
 
-    @Description(OMSDWGCONVERTER_textVector_DESCRIPTION)
+    @Description(OMSDWGCONVERTER_TEXT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection textVector;
 
-    @Description(OMSDWGCONVERTER_attributesVector_DESCRIPTION)
+    @Description(OMSDWGCONVERTER_ATTRIBUTES_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection attributesVector;
 
-    @Description(OMSDWGCONVERTER_contourVector_DESCRIPTION)
+    @Description(OMSDWGCONVERTER_CONTOUR_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection contourVector;
 

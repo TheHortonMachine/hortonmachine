@@ -25,9 +25,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_pCql_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_P_CQL_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -52,16 +52,16 @@ import org.jgrasstools.gears.modules.v.vectorfilter.OmsVectorFilter;
 @License(OMSVECTORFILTER_LICENSE)
 public class VectorFilter extends JGTModel {
 
-    @Description(OMSVECTORFILTER_inVector_DESCRIPTION)
+    @Description(OMSVECTORFILTER_IN_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inVector;
 
-    @Description(OMSVECTORFILTER_pCql_DESCRIPTION)
+    @Description(OMSVECTORFILTER_P_CQL_DESCRIPTION)
     @In
     public String pCql = null;
 
-    @Description(OMSVECTORFILTER_outVector_DESCRIPTION)
+    @Description(OMSVECTORFILTER_OUT_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outVector;

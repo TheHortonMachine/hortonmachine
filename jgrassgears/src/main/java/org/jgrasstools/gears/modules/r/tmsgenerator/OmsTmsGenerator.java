@@ -27,23 +27,23 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_doLegacyGrass_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_doLenient_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_inPath_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_inRasterBounds_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_inRasterFile_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_inVectorFile_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_inWMS_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pCheckcolor_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pEpsg_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pImagetype_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pMaxzoom_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pMinzoom_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pName_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pSouth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pWest_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_DO_LEGACY_GRASS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_DO_LENIENT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_IN_PATH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_IN_RASTER_BOUNDS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_IN_RASTER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_IN_VECTOR_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_IN_WMS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_P_CHECK_COLOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_P_EAST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_P_EPSG_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_P_IMAGE_TYPE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_P_MAX_ZOOM_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_P_MIN_ZOOM_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_P_NAME_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_P_NORTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_P_SOUTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_P_WEST_DESCRIPTION;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -100,57 +100,57 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 @License(OMSTMSGENERATOR_LICENSE)
 public class OmsTmsGenerator extends JGTModel {
 
-    @Description(OMSTMSGENERATOR_inRasterFile_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_IN_RASTER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRasterFile = null;
 
-    @Description(OMSTMSGENERATOR_inRasterBounds_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_IN_RASTER_BOUNDS_DESCRIPTION)
     @In
     public List<GridGeometry2D> inRasterBounds = null;
 
-    @Description(OMSTMSGENERATOR_inVectorFile_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_IN_VECTOR_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inVectorFile = null;
 
-    @Description(OMSTMSGENERATOR_inWMS_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_IN_WMS_DESCRIPTION)
     @In
     public String inWMS = null;
 
-    @Description(OMSTMSGENERATOR_pName_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_P_NAME_DESCRIPTION)
     @In
     public String pName = "tmstiles";
 
-    @Description(OMSTMSGENERATOR_pMinzoom_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_P_MIN_ZOOM_DESCRIPTION)
     @In
     public Integer pMinzoom = null;
 
-    @Description(OMSTMSGENERATOR_pMaxzoom_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_P_MAX_ZOOM_DESCRIPTION)
     @In
     public Integer pMaxzoom = null;
 
-    @Description(OMSTMSGENERATOR_pNorth_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_P_NORTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description(OMSTMSGENERATOR_pSouth_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_P_SOUTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description(OMSTMSGENERATOR_pWest_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_P_WEST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description(OMSTMSGENERATOR_pEast_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_P_EAST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description(OMSTMSGENERATOR_pEpsg_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_P_EPSG_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pEpsg;
@@ -168,19 +168,19 @@ public class OmsTmsGenerator extends JGTModel {
     @In
     public double pZoomLimit = 17;
 
-    @Description(OMSTMSGENERATOR_doLenient_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_DO_LENIENT_DESCRIPTION)
     @In
     public boolean doLenient = true;
 
-    @Description(OMSTMSGENERATOR_pImagetype_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_P_IMAGE_TYPE_DESCRIPTION)
     @In
     public int pImagetype = 0;
 
-    @Description(OMSTMSGENERATOR_pCheckcolor_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_P_CHECK_COLOR_DESCRIPTION)
     @In
     public int[] pCheckcolor = new int[]{255, 255, 255};
 
-    @Description(OMSTMSGENERATOR_doLegacyGrass_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_DO_LEGACY_GRASS_DESCRIPTION)
     @In
     public Boolean doLegacyGrass = false;
 
@@ -188,7 +188,7 @@ public class OmsTmsGenerator extends JGTModel {
     @In
     public boolean doMbtiles = false;
 
-    @Description(OMSTMSGENERATOR_inPath_DESCRIPTION)
+    @Description(OMSTMSGENERATOR_IN_PATH_DESCRIPTION)
     @In
     public String inPath;
 

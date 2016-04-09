@@ -78,7 +78,7 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
     @In
     public boolean doMedia = true;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_OUTDATA_DESCRIPTION)
+    @Description(OMSGEOPAPARAZZICONVERTER_OUT_DATA_DESCRIPTION)
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In
     public String outData = null;

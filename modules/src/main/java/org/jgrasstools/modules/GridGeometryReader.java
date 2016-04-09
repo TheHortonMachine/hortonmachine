@@ -25,14 +25,14 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_LAB
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_outGridgeom_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pCode_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pSouth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pWest_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pXres_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pYres_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_OUT_GRID_GEOM_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_CODE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_EAST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_NORTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_SOUTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_WEST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_X_RES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_Y_RES_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -59,42 +59,42 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSGRIDGEOMETRYREADER_LICENSE)
 public class GridGeometryReader extends JGTModel {
 
-    @Description(OMSGRIDGEOMETRYREADER_pNorth_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_NORTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description(OMSGRIDGEOMETRYREADER_pSouth_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_SOUTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description(OMSGRIDGEOMETRYREADER_pWest_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_WEST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description(OMSGRIDGEOMETRYREADER_pEast_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_EAST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description(OMSGRIDGEOMETRYREADER_pXres_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_X_RES_DESCRIPTION)
     @UI(JGTConstants.PROCESS_XRES_UI_HINT)
     @In
     public Double pXres = null;
 
-    @Description(OMSGRIDGEOMETRYREADER_pYres_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_Y_RES_DESCRIPTION)
     @UI(JGTConstants.PROCESS_YRES_UI_HINT)
     @In
     public Double pYres = null;
 
-    @Description(OMSGRIDGEOMETRYREADER_pCode_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_CODE_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description(OMSGRIDGEOMETRYREADER_outGridgeom_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_OUT_GRID_GEOM_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridGeometry2D outGridgeom = null;

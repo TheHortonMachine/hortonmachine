@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_LICE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_geodata_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_inWindow_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_GEODATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_IN_WINDOW_DESCRIPTION;
 
 import java.io.File;
 
@@ -59,16 +59,16 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @UI(OMSGRASSLEGACYWRITER_UI)
 public class OmsGrassLegacyWriter extends JGTModel {
 
-    @Description(OMSGRASSLEGACYWRITER_geodata_DESCRIPTION)
+    @Description(OMSGRASSLEGACYWRITER_GEODATA_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public double[][] geodata = null;
 
-    @Description(OMSGRASSLEGACYWRITER_inWindow_DESCRIPTION)
+    @Description(OMSGRASSLEGACYWRITER_IN_WINDOW_DESCRIPTION)
     @In
     public Window inWindow = null;
 
-    @Description(OMSGRASSLEGACYWRITER_file_DESCRIPTION)
+    @Description(OMSGRASSLEGACYWRITER_FILE_DESCRIPTION)
     @In
     public String file = null;
 

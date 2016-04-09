@@ -26,18 +26,18 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_fileNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_geodataNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_inFiles_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_outGC_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pCols_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pRows_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pSouth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pWest_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pXres_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pYres_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_FILE_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_GEODATA_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_IN_FILES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_OUT_GC_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_P_COLS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_P_EAST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_P_NORTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_P_ROWS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_P_SOUTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_P_WEST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_P_X_RES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_P_Y_RES_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
 import java.util.ArrayList;
@@ -71,60 +71,60 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSCOVERAGELISTER_LICENSE)
 public class OmsCoverageLister extends JGTModel {
 
-    @Description(OMSCOVERAGELISTER_inFiles_DESCRIPTION)
+    @Description(OMSCOVERAGELISTER_IN_FILES_DESCRIPTION)
     @UI(JGTConstants.FILESPATHLIST_UI_HINT)
     @In
     public List<String> inFiles;
 
-    @Description(OMSCOVERAGELISTER_fileNovalue_DESCRIPTION)
+    @Description(OMSCOVERAGELISTER_FILE_NOVALUE_DESCRIPTION)
     @In
     public Double fileNovalue = -9999.0;
 
-    @Description(OMSCOVERAGELISTER_geodataNovalue_DESCRIPTION)
+    @Description(OMSCOVERAGELISTER_GEODATA_NOVALUE_DESCRIPTION)
     @In
     public Double geodataNovalue = doubleNovalue;
 
-    @Description(OMSCOVERAGELISTER_pNorth_DESCRIPTION)
+    @Description(OMSCOVERAGELISTER_P_NORTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description(OMSCOVERAGELISTER_pSouth_DESCRIPTION)
+    @Description(OMSCOVERAGELISTER_P_SOUTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description(OMSCOVERAGELISTER_pWest_DESCRIPTION)
+    @Description(OMSCOVERAGELISTER_P_WEST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description(OMSCOVERAGELISTER_pEast_DESCRIPTION)
+    @Description(OMSCOVERAGELISTER_P_EAST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description(OMSCOVERAGELISTER_pXres_DESCRIPTION)
+    @Description(OMSCOVERAGELISTER_P_X_RES_DESCRIPTION)
     @UI(JGTConstants.PROCESS_XRES_UI_HINT)
     @In
     public Double pXres = null;
 
-    @Description(OMSCOVERAGELISTER_pYres_DESCRIPTION)
+    @Description(OMSCOVERAGELISTER_P_Y_RES_DESCRIPTION)
     @UI(JGTConstants.PROCESS_YRES_UI_HINT)
     @In
     public Double pYres = null;
 
-    @Description(OMSCOVERAGELISTER_pRows_DESCRIPTION)
+    @Description(OMSCOVERAGELISTER_P_ROWS_DESCRIPTION)
     @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
     @In
     public Integer pRows = null;
 
-    @Description(OMSCOVERAGELISTER_pCols_DESCRIPTION)
+    @Description(OMSCOVERAGELISTER_P_COLS_DESCRIPTION)
     @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer pCols = null;
 
-    @Description(OMSCOVERAGELISTER_outGC_DESCRIPTION)
+    @Description(OMSCOVERAGELISTER_OUT_GC_DESCRIPTION)
     @Out
     public List<GridCoverage2D> outGC = null;
 

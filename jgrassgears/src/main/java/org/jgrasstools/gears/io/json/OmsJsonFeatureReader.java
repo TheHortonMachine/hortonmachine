@@ -25,8 +25,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSJSONFEATUREREADER_LABE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSJSONFEATUREREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSJSONFEATUREREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSJSONFEATUREREADER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSJSONFEATUREREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSJSONFEATUREREADER_geodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSJSONFEATUREREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSJSONFEATUREREADER_GEODATA_DESCRIPTION;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -72,12 +72,12 @@ import com.vividsolutions.jts.geom.Point;
 @UI(OMSJSONFEATUREREADER_UI)
 public class OmsJsonFeatureReader extends JGTModel {
 
-    @Description(OMSJSONFEATUREREADER_file_DESCRIPTION)
+    @Description(OMSJSONFEATUREREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSJSONFEATUREREADER_geodata_DESCRIPTION)
+    @Description(OMSJSONFEATUREREADER_GEODATA_DESCRIPTION)
     @Out
     public SimpleFeatureCollection geodata = null;
 

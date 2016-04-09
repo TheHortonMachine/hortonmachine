@@ -26,8 +26,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_L
 import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_data_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_FILE_DESCRIPTION;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,12 +61,12 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(VEGETATIONLIBRARYREADER_LICENSE)
 public class VegetationLibraryReader extends JGTModel {
 
-    @Description(VEGETATIONLIBRARYREADER_file_DESCRIPTION)
+    @Description(VEGETATIONLIBRARYREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(VEGETATIONLIBRARYREADER_data_DESCRIPTION)
+    @Description(VEGETATIONLIBRARYREADER_DATA_DESCRIPTION)
     @Out
     public HashMap<Integer, VegetationLibraryRecord> data;
 

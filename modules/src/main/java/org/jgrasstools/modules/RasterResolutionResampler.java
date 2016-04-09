@@ -25,11 +25,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMP
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_inGeodata_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_outGeodata_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_pInterpolation_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_pXres_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_pYres_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_IN_GEODATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_OUT_GEODATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_P_INTERPOLATION_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_P_X_RES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_P_Y_RES_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
 import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
 import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
@@ -57,25 +57,25 @@ import org.jgrasstools.gears.modules.r.transformer.OmsRasterResolutionResampler;
 @License(OMSRASTERRESOLUTIONRESAMPLER_LICENSE)
 public class RasterResolutionResampler extends JGTModel {
 
-    @Description(OMSRASTERRESOLUTIONRESAMPLER_inGeodata_DESCRIPTION)
+    @Description(OMSRASTERRESOLUTIONRESAMPLER_IN_GEODATA_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inGeodata;
 
-    @Description(OMSRASTERRESOLUTIONRESAMPLER_pInterpolation_DESCRIPTION)
+    @Description(OMSRASTERRESOLUTIONRESAMPLER_P_INTERPOLATION_DESCRIPTION)
     @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
-    @Description(OMSRASTERRESOLUTIONRESAMPLER_pXres_DESCRIPTION)
+    @Description(OMSRASTERRESOLUTIONRESAMPLER_P_X_RES_DESCRIPTION)
     @In
     public Double pXres;
 
-    @Description(OMSRASTERRESOLUTIONRESAMPLER_pYres_DESCRIPTION)
+    @Description(OMSRASTERRESOLUTIONRESAMPLER_P_Y_RES_DESCRIPTION)
     @In
     public Double pYres;
 
-    @Description(OMSRASTERRESOLUTIONRESAMPLER_outGeodata_DESCRIPTION)
+    @Description(OMSRASTERRESOLUTIONRESAMPLER_OUT_GEODATA_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outGeodata;
