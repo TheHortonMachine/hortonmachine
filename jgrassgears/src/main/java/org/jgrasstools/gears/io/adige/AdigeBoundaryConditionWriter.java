@@ -33,7 +33,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRI
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -76,7 +76,7 @@ public class AdigeBoundaryConditionWriter extends JGTModel {
 
     @Description(ADIGEBOUNDARYCONDITIONWRITER_DATA_DESCRIPTION)
     @In
-    public HashMap<Integer, AdigeBoundaryCondition> data;
+    public Map<Integer, AdigeBoundaryCondition> data;
 
     private MemoryTable memoryTable;
 
@@ -101,11 +101,11 @@ public class AdigeBoundaryConditionWriter extends JGTModel {
         for( Entry<Integer, AdigeBoundaryCondition> entry : entrySet ) {
             AdigeBoundaryCondition condition = entry.getValue();
             Object[] valuesRow = new Object[colNames.length];
-            valuesRow[0] = condition.basinId;
-            valuesRow[1] = condition.discharge;
-            valuesRow[2] = condition.dischargeSub;
-            valuesRow[3] = condition.S1;
-            valuesRow[4] = condition.S2;
+            valuesRow[0] = condition.getBasinId();
+            valuesRow[1] = condition.getDischarge();
+            valuesRow[2] = condition.getDischargeSub();
+            valuesRow[3] = condition.getS1();
+            valuesRow[4] = condition.getS2();
             memoryTable.addRow(valuesRow);
         }
     }

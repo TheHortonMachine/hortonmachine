@@ -1079,7 +1079,7 @@ public class GearsMessages {
     public static final String GRASSMOSAICLEGACY_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String GRASSMOSAICLEGACY_AUTHORNAMES = "Andrea Antonello";
     public static final String GRASSMOSAICLEGACY_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String GRASSMOSAICLEGACY_inFiles_DESCRIPTION = "The list of files that have to be patched (used if inGeodata is null).";
+    public static final String GRASSMOSAICLEGACY_IN_FILES_DESCRIPTION = "The list of files that have to be patched (used if inGeodata is null).";
     public static final String GRASSMOSAICLEGACY_P_RES_DESCRIPTION = "The output file resolution in meters.";
     public static final String GRASSMOSAICLEGACY_P_BOUNDS_DESCRIPTION = "The optional requested boundary coordinates as array of [n, s, w, e].";
     public static final String GRASSMOSAICLEGACY_OUT_GRASS_FILE_DESCRIPTION = "The GRASS file path to which to write to.";
@@ -1236,11 +1236,11 @@ public class GearsMessages {
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_AUTHORNAMES = "Andrea Antonello, Daniele Andreis";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_AUTHORCONTACTS = "www.hydrologis.com";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_UI = "hide";
-    public static final String OMSMARCHINGSQUARESVECTORIALIZER_inGeodata_DESCRIPTION = "The coverage that has to be converted.";
-    public static final String OMSMARCHINGSQUARESVECTORIALIZER_pValue_DESCRIPTION = "The value to use to trace the polygons. If it is null then all the value of the raster are used";
-    public static final String OMSMARCHINGSQUARESVECTORIALIZER_defaultFeatureField_DESCRIPTION = "The value to use as a name for the raster value in the Feature.";
-    public static final String OMSMARCHINGSQUARESVECTORIALIZER_pThres_DESCRIPTION = "A threshold on cell number to filter away polygons with cells less than that.";
-    public static final String OMSMARCHINGSQUARESVECTORIALIZER_outGeodata_DESCRIPTION = "The extracted features.";
+    public static final String OMSMARCHINGSQUARESVECTORIALIZER_IN_GEODATA_DESCRIPTION = "The coverage that has to be converted.";
+    public static final String OMSMARCHINGSQUARESVECTORIALIZER_P_VALUE_DESCRIPTION = "The value to use to trace the polygons. If it is null then all the value of the raster are used";
+    public static final String OMSMARCHINGSQUARESVECTORIALIZER_DEFAULT_FEATURE_FIELD_DESCRIPTION = "The value to use as a name for the raster value in the Feature.";
+    public static final String OMSMARCHINGSQUARESVECTORIALIZER_P_THRES_DESCRIPTION = "A threshold on cell number to filter away polygons with cells less than that.";
+    public static final String OMSMARCHINGSQUARESVECTORIALIZER_OUT_GEODATA_DESCRIPTION = "The extracted features.";
 
     public static final String OMSRASTERTRANSFORMER_DESCRIPTION = "Module for raster tranforms.";
     public static final String OMSRASTERTRANSFORMER_DOCUMENTATION = "";

@@ -32,6 +32,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_F
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -68,7 +69,7 @@ public class VegetationLibraryReader extends JGTModel {
 
     @Description(VEGETATIONLIBRARYREADER_DATA_DESCRIPTION)
     @Out
-    public HashMap<Integer, VegetationLibraryRecord> data;
+    public Map<Integer, VegetationLibraryRecord> data;
 
     private TableIterator<String[]> rowsIterator;
 
@@ -87,14 +88,14 @@ public class VegetationLibraryReader extends JGTModel {
             return;
         }
         ensureOpen();
-        data = new HashMap<Integer, VegetationLibraryRecord>();
+        data = new HashMap<>();
         while( rowsIterator.hasNext() ) {
             String[] row = rowsIterator.next();
 
             int i = 1;
             int vegetationIndex = (int) Double.parseDouble(row[i++]);
-            double architectural_resistance = Double.parseDouble(row[i++]);
-            double min_stomatal_resistanc = Double.parseDouble(row[i++]);
+            double architecturalResistance = Double.parseDouble(row[i++]);
+            double minStomatalResistanc = Double.parseDouble(row[i++]);
 
             double[] laiMonths = new double[12];
             for( int j = 0; j < laiMonths.length; j++ ) {
@@ -113,15 +114,15 @@ public class VegetationLibraryReader extends JGTModel {
                 displMonths[j] = Double.parseDouble(row[i++]);
             }
 
-            double wind_height = Double.parseDouble(row[i++]);
+            double windHeight = Double.parseDouble(row[i++]);
             double rgl = Double.parseDouble(row[i++]);
-            double rad_atten = Double.parseDouble(row[i++]);
-            double wind_atten = Double.parseDouble(row[i++]);
-            double trunk_ratio = Double.parseDouble(row[i]);
+            double radAtten = Double.parseDouble(row[i++]);
+            double windAtten = Double.parseDouble(row[i++]);
+            double trunkRatio = Double.parseDouble(row[i]);
 
-            VegetationLibraryRecord vegetation = new VegetationLibraryRecord(vegetationIndex, architectural_resistance,
-                    min_stomatal_resistanc, laiMonths, albedoMonths, roughMonths, displMonths, wind_height, wind_atten, rgl,
-                    rad_atten, trunk_ratio);
+            VegetationLibraryRecord vegetation = new VegetationLibraryRecord(vegetationIndex, architecturalResistance,
+                    minStomatalResistanc, laiMonths, albedoMonths, roughMonths, displMonths, windHeight, windAtten, rgl,
+                    radAtten, trunkRatio);
 
             data.put(vegetationIndex, vegetation);
         }
