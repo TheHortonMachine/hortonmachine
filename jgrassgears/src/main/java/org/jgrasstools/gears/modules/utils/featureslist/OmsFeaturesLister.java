@@ -26,8 +26,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_inFiles_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_outFC_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_IN_FILES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_OUT_FC_DESCRIPTION;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,12 +60,12 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSFEATURESLISTER_LICENSE)
 public class OmsFeaturesLister extends JGTModel {
 
-    @Description(OMSFEATURESLISTER_inFiles_DESCRIPTION)
+    @Description(OMSFEATURESLISTER_IN_FILES_DESCRIPTION)
     @UI(JGTConstants.FILESPATHLIST_UI_HINT)
     @In
     public List<String> inFiles;
 
-    @Description(OMSFEATURESLISTER_outFC_DESCRIPTION)
+    @Description(OMSFEATURESLISTER_OUT_FC_DESCRIPTION)
     @Out
     public List<SimpleFeatureCollection> outFC = null;
 

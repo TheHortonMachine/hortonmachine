@@ -25,9 +25,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_doRemovenv_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_inFile_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_DO_REMOVE_NV_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_IN_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_IN_RASTER_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -52,17 +52,17 @@ import org.jgrasstools.gears.modules.r.raster2xyz.OmsRaster2Xyz;
 @License(OMSRASTER2XYZ_LICENSE)
 public class Raster2Xyz extends JGTModel {
 
-    @Description(OMSRASTER2XYZ_inRaster_DESCRIPTION)
+    @Description(OMSRASTER2XYZ_IN_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster;
 
-    @Description(OMSRASTER2XYZ_inFile_DESCRIPTION)
+    @Description(OMSRASTER2XYZ_IN_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String inFile;
 
-    @Description(OMSRASTER2XYZ_doRemovenv_DESCRIPTION)
+    @Description(OMSRASTER2XYZ_DO_REMOVE_NV_DESCRIPTION)
     @In
     public boolean doRemovenv = true;
 

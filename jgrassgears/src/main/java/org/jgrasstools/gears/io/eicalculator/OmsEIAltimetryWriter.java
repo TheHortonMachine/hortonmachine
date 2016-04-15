@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_LABE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_inAltimetry_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_pSeparator_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_IN_ALTIMETRY_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_P_SEPARATOR_DESCRIPTION;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -59,16 +59,16 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSEIALTIMETRYWRITER_LICENSE)
 public class OmsEIAltimetryWriter extends JGTModel {
 
-    @Description(OMSEIALTIMETRYWRITER_inAltimetry_DESCRIPTION)
+    @Description(OMSEIALTIMETRYWRITER_IN_ALTIMETRY_DESCRIPTION)
     @In
     public List<EIAltimetry> inAltimetry;
 
-    @Description(OMSEIALTIMETRYWRITER_file_DESCRIPTION)
+    @Description(OMSEIALTIMETRYWRITER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSEIALTIMETRYWRITER_pSeparator_DESCRIPTION)
+    @Description(OMSEIALTIMETRYWRITER_P_SEPARATOR_DESCRIPTION)
     @In
     public String pSeparator = ",";
 

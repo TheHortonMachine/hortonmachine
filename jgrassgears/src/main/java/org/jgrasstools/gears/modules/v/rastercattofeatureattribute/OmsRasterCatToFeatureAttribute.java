@@ -26,11 +26,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTR
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_fNew_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_pPos_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_F_NEW_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_P_POS_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
@@ -86,23 +86,23 @@ import com.vividsolutions.jts.geom.Geometry;
 @License(OMSRASTERCATTOFEATUREATTRIBUTE_LICENSE)
 public class OmsRasterCatToFeatureAttribute extends JGTModel {
 
-    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_inRaster_DESCRIPTION)
+    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_inVector_DESCRIPTION)
+    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_IN_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_fNew_DESCRIPTION)
+    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_F_NEW_DESCRIPTION)
     @In
     public String fNew = "new";
 
-    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_pPos_DESCRIPTION)
+    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_P_POS_DESCRIPTION)
     @In
     public String pPos = MIDDLE;
 
-    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_outVector_DESCRIPTION)
+    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_OUT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector = null;
 

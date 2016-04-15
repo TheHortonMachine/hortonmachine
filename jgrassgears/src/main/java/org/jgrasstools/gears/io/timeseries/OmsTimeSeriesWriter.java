@@ -26,12 +26,12 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_LABEL
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_columns_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_doDates_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_inData_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_inMetadata_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_tablename_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_COLUMNS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_DO_DATES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_IN_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_IN_META_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_TABLE_NAME_DESCRIPTION;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,28 +73,28 @@ import org.joda.time.format.DateTimeFormatter;
 @License(OMSTIMESERIESWRITER_LICENSE)
 public class OmsTimeSeriesWriter extends JGTModel {
 
-    @Description(OMSTIMESERIESWRITER_file_DESCRIPTION)
+    @Description(OMSTIMESERIESWRITER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSTIMESERIESWRITER_tablename_DESCRIPTION)
+    @Description(OMSTIMESERIESWRITER_TABLE_NAME_DESCRIPTION)
     @In
     public String tablename = "table";
 
-    @Description(OMSTIMESERIESWRITER_inData_DESCRIPTION)
+    @Description(OMSTIMESERIESWRITER_IN_DATA_DESCRIPTION)
     @In
     public HashMap<DateTime, double[]> inData;
 
-    @Description(OMSTIMESERIESWRITER_doDates_DESCRIPTION)
+    @Description(OMSTIMESERIESWRITER_DO_DATES_DESCRIPTION)
     @In
     public boolean doDates = true;
 
-    @Description(OMSTIMESERIESWRITER_columns_DESCRIPTION)
+    @Description(OMSTIMESERIESWRITER_COLUMNS_DESCRIPTION)
     @In
     public String columns = null;
 
-    @Description(OMSTIMESERIESWRITER_inMetadata_DESCRIPTION)
+    @Description(OMSTIMESERIESWRITER_IN_META_DATA_DESCRIPTION)
     @In
     public List<List<String>> inMetadata = null;
 

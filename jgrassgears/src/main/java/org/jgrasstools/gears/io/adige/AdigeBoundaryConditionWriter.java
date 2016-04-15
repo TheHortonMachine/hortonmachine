@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRI
 import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_data_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_tablename_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_TABLENAME_DESCRIPTION;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,16 +65,16 @@ import org.joda.time.format.DateTimeFormatter;
 @License(ADIGEBOUNDARYCONDITIONWRITER_LICENSE)
 public class AdigeBoundaryConditionWriter extends JGTModel {
 
-    @Description(ADIGEBOUNDARYCONDITIONWRITER_file_DESCRIPTION)
+    @Description(ADIGEBOUNDARYCONDITIONWRITER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(ADIGEBOUNDARYCONDITIONWRITER_tablename_DESCRIPTION)
+    @Description(ADIGEBOUNDARYCONDITIONWRITER_TABLENAME_DESCRIPTION)
     @In
     public String tablename = "table";
 
-    @Description(ADIGEBOUNDARYCONDITIONWRITER_data_DESCRIPTION)
+    @Description(ADIGEBOUNDARYCONDITIONWRITER_DATA_DESCRIPTION)
     @In
     public HashMap<Integer, AdigeBoundaryCondition> data;
 

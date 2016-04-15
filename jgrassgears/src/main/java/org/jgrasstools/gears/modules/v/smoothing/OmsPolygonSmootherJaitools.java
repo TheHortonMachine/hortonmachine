@@ -25,9 +25,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOLYGONSMOOTHERJAITOOL
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOLYGONSMOOTHERJAITOOLS_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOLYGONSMOOTHERJAITOOLS_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOLYGONSMOOTHERJAITOOLS_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOLYGONSMOOTHERJAITOOLS_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOLYGONSMOOTHERJAITOOLS_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOLYGONSMOOTHERJAITOOLS_pAlpha_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOLYGONSMOOTHERJAITOOLS_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOLYGONSMOOTHERJAITOOLS_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOLYGONSMOOTHERJAITOOLS_P_ALPHA_DESCRIPTION;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,15 +66,15 @@ import com.vividsolutions.jts.geom.Polygon;
 @License(OMSPOLYGONSMOOTHERJAITOOLS_LICENSE)
 public class OmsPolygonSmootherJaitools extends JGTModel {
 
-    @Description(OMSPOLYGONSMOOTHERJAITOOLS_inVector_DESCRIPTION)
+    @Description(OMSPOLYGONSMOOTHERJAITOOLS_IN_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description(OMSPOLYGONSMOOTHERJAITOOLS_pAlpha_DESCRIPTION)
+    @Description(OMSPOLYGONSMOOTHERJAITOOLS_P_ALPHA_DESCRIPTION)
     @In
     public double pAlpha = 0;
 
-    @Description(OMSPOLYGONSMOOTHERJAITOOLS_outVector_DESCRIPTION)
+    @Description(OMSPOLYGONSMOOTHERJAITOOLS_OUT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 

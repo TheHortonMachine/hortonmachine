@@ -26,7 +26,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_LAB
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_inFolder_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_IN_FOLDER_DESCRIPTION;
 
 import java.io.File;
 
@@ -57,7 +57,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @License(OMSIMAGEMOSAICCREATOR_LICENSE)
 public class OmsImageMosaicCreator extends JGTModel {
 
-    @Description(OMSIMAGEMOSAICCREATOR_inFolder_DESCRIPTION)
+    @Description(OMSIMAGEMOSAICCREATOR_IN_FOLDER_DESCRIPTION)
     @UI(JGTConstants.FOLDERIN_UI_HINT)
     @In
     public String inFolder;

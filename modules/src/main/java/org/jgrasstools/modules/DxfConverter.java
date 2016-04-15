@@ -25,11 +25,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_lineVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_pCode_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_pointsVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_polygonVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_LINE_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_P_CODE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_POINTS_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_POLYGON_VECTOR_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -54,27 +54,27 @@ import org.jgrasstools.gears.modules.v.vectorconverter.OmsDxfConverter;
 @License(OMSDXFCONVERTER_LICENSE)
 public class DxfConverter extends JGTModel {
 
-    @Description(OMSDXFCONVERTER_file_DESCRIPTION)
+    @Description(OMSDXFCONVERTER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSDXFCONVERTER_pCode_DESCRIPTION)
+    @Description(OMSDXFCONVERTER_P_CODE_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description(OMSDXFCONVERTER_pointsVector_DESCRIPTION)
+    @Description(OMSDXFCONVERTER_POINTS_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String pointsVector = null;
 
-    @Description(OMSDXFCONVERTER_lineVector_DESCRIPTION)
+    @Description(OMSDXFCONVERTER_LINE_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String lineVector = null;
 
-    @Description(OMSDXFCONVERTER_polygonVector_DESCRIPTION)
+    @Description(OMSDXFCONVERTER_POLYGON_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String polygonVector = null;

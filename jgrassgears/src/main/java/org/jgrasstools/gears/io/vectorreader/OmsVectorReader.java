@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_pType_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_P_TYPE_DESCRIPTION;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,17 +67,17 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSVECTORREADER_LICENSE)
 public class OmsVectorReader extends JGTModel {
 
-    @Description(OMSVECTORREADER_pType_DESCRIPTION)
+    @Description(OMSVECTORREADER_P_TYPE_DESCRIPTION)
     @In
     // currently not used, for future compatibility
     public String pType = null;
 
-    @Description(OMSVECTORREADER_file_DESCRIPTION)
+    @Description(OMSVECTORREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSVECTORREADER_outVector_DESCRIPTION)
+    @Description(OMSVECTORREADER_OUT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector = null;
 

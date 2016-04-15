@@ -25,10 +25,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_pClasses_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_pRanges_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_P_CLASSES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_P_RANGES_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -53,20 +53,20 @@ import org.jgrasstools.gears.modules.r.rangelookup.OmsRangeLookup;
 @License(OMSRANGELOOKUP_LICENSE)
 public class RangeLookup extends JGTModel {
 
-    @Description(OMSRANGELOOKUP_inRaster_DESCRIPTION)
+    @Description(OMSRANGELOOKUP_IN_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster;
 
-    @Description(OMSRANGELOOKUP_pRanges_DESCRIPTION)
+    @Description(OMSRANGELOOKUP_P_RANGES_DESCRIPTION)
     @In
     public String pRanges;
 
-    @Description(OMSRANGELOOKUP_pClasses_DESCRIPTION)
+    @Description(OMSRANGELOOKUP_P_CLASSES_DESCRIPTION)
     @In
     public String pClasses;
 
-    @Description(OMSRANGELOOKUP_outRaster_DESCRIPTION)
+    @Description(OMSRANGELOOKUP_OUT_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster = null;

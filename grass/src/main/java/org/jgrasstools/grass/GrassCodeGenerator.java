@@ -36,15 +36,11 @@ import org.jgrasstools.grass.utils.Oms3CodeWrapper;
  */
 public class GrassCodeGenerator {
 
+    private GrassCodeGenerator() {}
+
     @SuppressWarnings("nls")
     public static void main( String[] args ) throws Exception {
 
-        // File generationFolder = new
-        // File("D:\\development\\jgrasstools-hg\\jgrasstools\\grass\\src\\main\\java\\");
-        // String gisbase = "C:\\OSGeo4W\\apps\\grass\\grass-6.4.1\\";
-        // String shell = "C:\\OSGeo4W\\apps\\msys\\bin\\sh.exe";
-
-        // LINUX
         File generationFolder = new File("/home/moovida/development/jgrasstools-hg/jgrasstools/grass/src/main/java/");
         String gisbase = "/usr/lib/grass64";
         String shell = "/bin/sh";
@@ -62,7 +58,7 @@ public class GrassCodeGenerator {
 
         String mapsetForRun = GrassUtils.prepareMapsetForRun(false);
 
-        List<File> allFiles = new ArrayList<File>();
+        List<File> allFiles = new ArrayList<>();
         File[] binFiles = binFolder.listFiles();
         List<File> binsList = Arrays.asList(binFiles);
         allFiles.addAll(binsList);
@@ -90,12 +86,6 @@ public class GrassCodeGenerator {
             }
 
             System.out.println("Generating class: " + binName);
-            // if (GrassUtils.incompatibleGrassModules.contains(binName)) {
-            // continue;
-            // }
-            // if (!binName.equals("r.cats")) {
-            // continue;
-            // }
 
             GrassModuleRunnerWithScript grassRunner = new GrassModuleRunnerWithScript(null, null);
             String result = grassRunner.runModule(new String[]{binFile.getAbsolutePath(), "--interface-description"},
@@ -130,7 +120,9 @@ public class GrassCodeGenerator {
                 classWriter = new BufferedWriter(new FileWriter(moduleFile));
                 classWriter.write(oms3Class);
             } finally {
-                classWriter.close();
+                if(classWriter != null ) {
+                    classWriter.close();
+                }
             }
         }
 

@@ -27,14 +27,14 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORREC
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_correctedFeatures_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_doReverse_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_errorFeatures_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_fSort_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_linesFeatures_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_pBuffer_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_pointFeatures_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_untouchedFeatures_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_CORRECTED_FEATURES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_DO_REVERSE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_ERROR_FEATURES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_F_SORT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_LINES_FEATURES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_P_BUFFER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_POINT_FEATURES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_UNTOUCHED_FEATURES_DESCRIPTION;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,35 +91,35 @@ import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 @License(OMSLINEINTERSECTIONCORRECTOR_LICENSE)
 public class OmsLineIntersectionCorrector extends JGTModel {
 
-    @Description(OMSLINEINTERSECTIONCORRECTOR_linesFeatures_DESCRIPTION)
+    @Description(OMSLINEINTERSECTIONCORRECTOR_LINES_FEATURES_DESCRIPTION)
     @In
     public SimpleFeatureCollection linesFeatures;
 
-    @Description(OMSLINEINTERSECTIONCORRECTOR_pointFeatures_DESCRIPTION)
+    @Description(OMSLINEINTERSECTIONCORRECTOR_POINT_FEATURES_DESCRIPTION)
     @In
     public SimpleFeatureCollection pointFeatures;
 
-    @Description(OMSLINEINTERSECTIONCORRECTOR_pBuffer_DESCRIPTION)
+    @Description(OMSLINEINTERSECTIONCORRECTOR_P_BUFFER_DESCRIPTION)
     @In
     public double pBuffer = 0.05;
 
-    @Description(OMSLINEINTERSECTIONCORRECTOR_fSort_DESCRIPTION)
+    @Description(OMSLINEINTERSECTIONCORRECTOR_F_SORT_DESCRIPTION)
     @In
     public String fSort = null;
 
-    @Description(OMSLINEINTERSECTIONCORRECTOR_doReverse_DESCRIPTION)
+    @Description(OMSLINEINTERSECTIONCORRECTOR_DO_REVERSE_DESCRIPTION)
     @In
     public boolean doReverse = true;
 
-    @Description(OMSLINEINTERSECTIONCORRECTOR_untouchedFeatures_DESCRIPTION)
+    @Description(OMSLINEINTERSECTIONCORRECTOR_UNTOUCHED_FEATURES_DESCRIPTION)
     @Out
     public SimpleFeatureCollection untouchedFeatures;
 
-    @Description(OMSLINEINTERSECTIONCORRECTOR_correctedFeatures_DESCRIPTION)
+    @Description(OMSLINEINTERSECTIONCORRECTOR_CORRECTED_FEATURES_DESCRIPTION)
     @Out
     public SimpleFeatureCollection correctedFeatures;
 
-    @Description(OMSLINEINTERSECTIONCORRECTOR_errorFeatures_DESCRIPTION)
+    @Description(OMSLINEINTERSECTIONCORRECTOR_ERROR_FEATURES_DESCRIPTION)
     @Out
     public SimpleFeatureCollection errorFeatures;
 

@@ -26,14 +26,14 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_fDepthLines_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_fDepthPolygons_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_inCarverLines_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_inCarverPolygons_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_pDepthLines_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_pDepthPolygons_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_F_DEPTH_LINES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_F_DEPTH_POLYGONS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_IN_CARVE_R_LINES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_IN_CARVE_R_POLYGONS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_P_DEPTH_LINES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_P_DEPTH_POLYGONS_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -74,15 +74,15 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @License(OMSCARVER_LICENSE)
 public class OmsCarver extends JGTModel {
 
-    @Description(OMSCARVER_inRaster_DESCRIPTION)
+    @Description(OMSCARVER_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster = null;
 
-    @Description(OMSCARVER_inCarverPolygons_DESCRIPTION)
+    @Description(OMSCARVER_IN_CARVE_R_POLYGONS_DESCRIPTION)
     @In
     public SimpleFeatureCollection inCarverPolygons = null;
 
-    @Description(OMSCARVER_inCarverLines_DESCRIPTION)
+    @Description(OMSCARVER_IN_CARVE_R_LINES_DESCRIPTION)
     @In
     public SimpleFeatureCollection inCarverLines = null;
 
@@ -95,23 +95,23 @@ public class OmsCarver extends JGTModel {
     // @In
     // public double pBuffer = 30.0;
 
-    @Description(OMSCARVER_fDepthLines_DESCRIPTION)
+    @Description(OMSCARVER_F_DEPTH_LINES_DESCRIPTION)
     @In
     public String fDepthLines = null;
 
-    @Description(OMSCARVER_pDepthLines_DESCRIPTION)
+    @Description(OMSCARVER_P_DEPTH_LINES_DESCRIPTION)
     @In
     public double pDepthLines = 6.0;
 
-    @Description(OMSCARVER_fDepthPolygons_DESCRIPTION)
+    @Description(OMSCARVER_F_DEPTH_POLYGONS_DESCRIPTION)
     @In
     public String fDepthPolygons = null;
 
-    @Description(OMSCARVER_pDepthPolygons_DESCRIPTION)
+    @Description(OMSCARVER_P_DEPTH_POLYGONS_DESCRIPTION)
     @In
     public double pDepthPolygons = 6.0;
 
-    @Description(OMSCARVER_outRaster_DESCRIPTION)
+    @Description(OMSCARVER_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

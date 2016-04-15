@@ -27,11 +27,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_LI
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_data_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_fileNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_pCols_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_pSeparator_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_FILE_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_P_COLS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_P_SEPARATOR_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
 import java.io.BufferedReader;
@@ -65,24 +65,24 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @UI(OMSID2VALUEARRAYREADER_UI)
 public class OmsId2ValueArrayReader extends JGTModel {
 
-    @Description(OMSID2VALUEARRAYREADER_file_DESCRIPTION)
+    @Description(OMSID2VALUEARRAYREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSID2VALUEARRAYREADER_pCols_DESCRIPTION)
+    @Description(OMSID2VALUEARRAYREADER_P_COLS_DESCRIPTION)
     @In
     public int pCols = -1;
 
-    @Description(OMSID2VALUEARRAYREADER_pSeparator_DESCRIPTION)
+    @Description(OMSID2VALUEARRAYREADER_P_SEPARATOR_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Description(OMSID2VALUEARRAYREADER_fileNovalue_DESCRIPTION)
+    @Description(OMSID2VALUEARRAYREADER_FILE_NOVALUE_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description(OMSID2VALUEARRAYREADER_data_DESCRIPTION)
+    @Description(OMSID2VALUEARRAYREADER_DATA_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> data;
 

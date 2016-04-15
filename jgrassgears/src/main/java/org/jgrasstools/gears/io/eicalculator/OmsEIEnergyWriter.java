@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_inEnergy_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_pSeparator_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_IN_ENERGY_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_P_SEPARATOR_DESCRIPTION;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -59,16 +59,16 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSEIENERGYWRITER_LICENSE)
 public class OmsEIEnergyWriter extends JGTModel {
 
-    @Description(OMSEIENERGYWRITER_inEnergy_DESCRIPTION)
+    @Description(OMSEIENERGYWRITER_IN_ENERGY_DESCRIPTION)
     @In
     public List<EIEnergy> inEnergy;
 
-    @Description(OMSEIENERGYWRITER_file_DESCRIPTION)
+    @Description(OMSEIENERGYWRITER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSEIENERGYWRITER_pSeparator_DESCRIPTION)
+    @Description(OMSEIENERGYWRITER_P_SEPARATOR_DESCRIPTION)
     @In
     public String pSeparator = ",";
 

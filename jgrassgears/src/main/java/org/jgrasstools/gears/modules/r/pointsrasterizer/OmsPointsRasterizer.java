@@ -26,10 +26,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_LABEL
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_fCat_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_inGrid_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_F_CAT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_IN_GRID_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_OUT_RASTER_DESCRIPTION;
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
 import java.awt.image.WritableRaster;
@@ -79,19 +79,19 @@ import com.vividsolutions.jts.geom.Geometry;
 @License(OMSPOINTSRASTERIZER_LICENSE)
 public class OmsPointsRasterizer extends JGTModel {
 
-    @Description(OMSPOINTSRASTERIZER_inVector_DESCRIPTION)
+    @Description(OMSPOINTSRASTERIZER_IN_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description(OMSPOINTSRASTERIZER_inGrid_DESCRIPTION)
+    @Description(OMSPOINTSRASTERIZER_IN_GRID_DESCRIPTION)
     @In
     public GridGeometry2D inGrid;
 
-    @Description(OMSPOINTSRASTERIZER_fCat_DESCRIPTION)
+    @Description(OMSPOINTSRASTERIZER_F_CAT_DESCRIPTION)
     @In
     public String fCat;
 
-    @Description(OMSPOINTSRASTERIZER_outRaster_DESCRIPTION)
+    @Description(OMSPOINTSRASTERIZER_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 

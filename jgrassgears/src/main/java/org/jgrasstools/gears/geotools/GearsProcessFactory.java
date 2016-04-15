@@ -42,8 +42,8 @@ import org.opengis.util.InternationalString;
 public class GearsProcessFactory implements ProcessFactory {
 
     private static final String VERSION_STRING = "0.1-SNAPSHOT";
-    private static final String namespace = "org.jgrasstools.gears";
-    private LinkedHashMap<String, Class< ? >> modulename2class;
+    private static final String NAMESPACE = "org.jgrasstools.gears";
+    private Map<String, Class< ? >> modulename2class;
 
     public Process create( Name name ) {
         String moduleName = name.getLocalPart();
@@ -51,12 +51,9 @@ public class GearsProcessFactory implements ProcessFactory {
         try {
             Object processObj = moduleClass.newInstance();
             if (processObj instanceof Process) {
-                Process process = (Process) processObj;
-                return process;
+                return (Process) processObj;
             }
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
         return null;
@@ -67,21 +64,21 @@ public class GearsProcessFactory implements ProcessFactory {
     }
 
     public Set<Name> getNames() {
-        Set<Name> names = new LinkedHashSet<Name>();
+        Set<Name> names = new LinkedHashSet<>();
         modulename2class = JGrassGears.getInstance().moduleName2Class;
         Set<String> modulesNames = modulename2class.keySet();
         for( String name : modulesNames ) {
-            names.add(new NameImpl(namespace, name));
+            names.add(new NameImpl(NAMESPACE, name));
         }
         return names;
     }
 
     public Map<String, Parameter< ? >> getParameterInfo( Name name ) {
         String moduleName = name.getLocalPart();
-        LinkedHashMap<String, List<ClassField>> modulename2fields = JGrassGears.getInstance().moduleName2Fields;
+        Map<String, List<ClassField>> modulename2fields = JGrassGears.getInstance().moduleName2Fields;
         List<ClassField> list = modulename2fields.get(moduleName);
 
-        Map<String, Parameter< ? >> input = new LinkedHashMap<String, Parameter< ? >>();
+        Map<String, Parameter< ? >> input = new LinkedHashMap<>();
         for( ClassField classField : list ) {
             if (classField.isIn) {
                 String fieldName = classField.fieldName;
@@ -96,10 +93,10 @@ public class GearsProcessFactory implements ProcessFactory {
     public Map<String, Parameter< ? >> getResultInfo( Name name, Map<String, Object> parameters ) throws IllegalArgumentException {
 
         String moduleName = name.getLocalPart();
-        LinkedHashMap<String, List<ClassField>> modulename2fields = JGrassGears.getInstance().moduleName2Fields;
+        Map<String, List<ClassField>> modulename2fields = JGrassGears.getInstance().moduleName2Fields;
         List<ClassField> list = modulename2fields.get(moduleName);
 
-        Map<String, Parameter< ? >> output = new LinkedHashMap<String, Parameter< ? >>();
+        Map<String, Parameter< ? >> output = new LinkedHashMap<>();
         for( ClassField classField : list ) {
             if (classField.isOut) {
                 String fieldName = classField.fieldName;

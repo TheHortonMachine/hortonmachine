@@ -27,11 +27,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_inRasters_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_inSld_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_inVectors_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_IN_RASTERS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_IN_S_L_D_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_IN_VECTORS_DESCRIPTION;
 
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
@@ -97,23 +97,23 @@ import org.opengis.filter.expression.Expression;
 @UI(OMSMAPSVIEWER_UI)
 public class OmsMapsViewer extends JGTModel {
 
-    @Description(OMSMAPSVIEWER_inRasters_DESCRIPTION)
+    @Description(OMSMAPSVIEWER_IN_RASTERS_DESCRIPTION)
     @In
     public GridCoverage2D[] inRasters = new GridCoverage2D[0];
 
-    @Description(OMSMAPSVIEWER_inRaster_DESCRIPTION)
+    @Description(OMSMAPSVIEWER_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster = null;
 
-    @Description(OMSMAPSVIEWER_inVectors_DESCRIPTION)
+    @Description(OMSMAPSVIEWER_IN_VECTORS_DESCRIPTION)
     @In
     public SimpleFeatureCollection[] inVectors = new SimpleFeatureCollection[0];
 
-    @Description(OMSMAPSVIEWER_inVector_DESCRIPTION)
+    @Description(OMSMAPSVIEWER_IN_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description(OMSMAPSVIEWER_inSld_DESCRIPTION)
+    @Description(OMSMAPSVIEWER_IN_S_L_D_DESCRIPTION)
     @In
     public String inSld = null;
 

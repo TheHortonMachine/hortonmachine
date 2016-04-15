@@ -25,9 +25,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_L
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_pAlpha_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_P_ALPHA_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -52,16 +52,16 @@ import org.jgrasstools.gears.modules.v.smoothing.OmsLineSmootherJaitools;
 @License(OMSLINESMOOTHERJAITOOLS_LICENSE)
 public class LineSmootherJaitools extends JGTModel {
 
-    @Description(OMSLINESMOOTHERJAITOOLS_inVector_DESCRIPTION)
+    @Description(OMSLINESMOOTHERJAITOOLS_IN_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inVector;
 
-    @Description(OMSLINESMOOTHERJAITOOLS_pAlpha_DESCRIPTION)
+    @Description(OMSLINESMOOTHERJAITOOLS_P_ALPHA_DESCRIPTION)
     @In
     public double pAlpha = 0;
 
-    @Description(OMSLINESMOOTHERJAITOOLS_outVector_DESCRIPTION)
+    @Description(OMSLINESMOOTHERJAITOOLS_OUT_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outVector;

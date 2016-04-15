@@ -26,10 +26,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_pNull_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_pValue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_P_NULL_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_P_VALUE_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -56,20 +56,20 @@ import org.jgrasstools.gears.modules.r.rasternull.OmsRasterNull;
 @License(OMSRASTERNULL_LICENSE)
 public class RasterNull extends JGTModel {
 
-    @Description(OMSRASTERNULL_inRaster_DESCRIPTION)
+    @Description(OMSRASTERNULL_IN_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster;
 
-    @Description(OMSRASTERNULL_pValue_DESCRIPTION)
+    @Description(OMSRASTERNULL_P_VALUE_DESCRIPTION)
     @In
     public Double pValue = null;
 
-    @Description(OMSRASTERNULL_pNull_DESCRIPTION)
+    @Description(OMSRASTERNULL_P_NULL_DESCRIPTION)
     @In
     public Double pNull = null;
 
-    @Description(OMSRASTERNULL_outRaster_DESCRIPTION)
+    @Description(OMSRASTERNULL_OUT_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster;

@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYREADER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYREADER_outEnergy_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYREADER_pSeparator_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYREADER_OUT_ENERGY_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYREADER_P_SEPARATOR_DESCRIPTION;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -61,16 +61,16 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSEIENERGYREADER_LICENSE)
 public class OmsEIEnergyReader extends JGTModel {
 
-    @Description(OMSEIENERGYREADER_file_DESCRIPTION)
+    @Description(OMSEIENERGYREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSEIENERGYREADER_pSeparator_DESCRIPTION)
+    @Description(OMSEIENERGYREADER_P_SEPARATOR_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Description(OMSEIENERGYREADER_outEnergy_DESCRIPTION)
+    @Description(OMSEIENERGYREADER_OUT_ENERGY_DESCRIPTION)
     @Out
     public List<EIEnergy> outEnergy;
 

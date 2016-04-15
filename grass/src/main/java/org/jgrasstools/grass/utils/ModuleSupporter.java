@@ -31,6 +31,8 @@ import oms3.annotations.UI;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class ModuleSupporter {
+    private ModuleSupporter() {}
+
     public static void processModule( Object owner ) throws IOException, IllegalAccessException, Exception {
 
         String gisBase = System.getProperty(GrassUtils.GRASS_ENVIRONMENT_GISBASE_KEY);
@@ -40,13 +42,10 @@ public class ModuleSupporter {
         String className = owner.getClass().getSimpleName();
         className = className.replaceAll(GrassUtils.VARIABLE_DOT_SUBSTITUTION, ".");
         File grassCommandFile = new File(gisBase, "bin/" + className);
-        // if (!grassCommandFile.exists()) {
-        // throw new IOException("Command does not exist: " + grassCommandFile.getAbsolutePath());
-        // }
 
         GrassModuleRunnerWithScript runner = new GrassModuleRunnerWithScript(System.out, System.err);
 
-        List<String> args = new ArrayList<String>();
+        List<String> args = new ArrayList<>();
         args.add(grassCommandFile.getName());
 
         Field[] fields = owner.getClass().getFields();
@@ -109,12 +108,6 @@ public class ModuleSupporter {
                         } else {
                             // TODO
                             throw new RuntimeException("Non grass files are not supported yet!");
-                            // String[] mapsetForRun = GrassUtils.prepareMapsetForRun(false);
-                            // GrassRunner tmpRunner = new GrassRunner(System.out, System.err);
-                            // tmpRunner.runModule(new String[]{"r.external", inPath,
-                            // inFile.getName()}, mapsetForRun[0],
-                            // mapsetForRun[1]);
-                            // mapset = mapsetForRun[0];
                         }
                     } else if (value.toLowerCase().contains("outfile")) {
                         String outPath = valueObj.toString();
@@ -161,7 +154,7 @@ public class ModuleSupporter {
         File cellFolderFile = file.getParentFile();
         File mapsetFile = cellFolderFile.getParentFile();
         File windFile = new File(mapsetFile, "WIND");
-        return cellFolderFile.getName().toLowerCase().equals("cell") && windFile.exists();
+        return cellFolderFile.getName().equalsIgnoreCase("cell") && windFile.exists();
     }
 
     public static String getLocationPath( String path ) {
@@ -174,8 +167,7 @@ public class ModuleSupporter {
     public static File getMapsetFile( String path ) {
         File file = new File(path);
         File cellFolderFile = file.getParentFile();
-        File mapsetFile = cellFolderFile.getParentFile();
-        return mapsetFile;
+        return cellFolderFile.getParentFile();
     }
 
     public static String getGrassRasterName( String path ) {

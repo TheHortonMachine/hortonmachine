@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_LAB
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_pPattern_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_P_PATTERN_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
@@ -65,15 +65,15 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @License(OMSRASTERVALUEROUNDER_LICENSE)
 public class OmsRasterValueRounder extends JGTModel {
 
-    @Description(OMSRASTERVALUEROUNDER_inRaster_DESCRIPTION)
+    @Description(OMSRASTERVALUEROUNDER_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSRASTERVALUEROUNDER_pPattern_DESCRIPTION)
+    @Description(OMSRASTERVALUEROUNDER_P_PATTERN_DESCRIPTION)
     @In
     public String pPattern = null;
 
-    @Description(OMSRASTERVALUEROUNDER_outRaster_DESCRIPTION)
+    @Description(OMSRASTERVALUEROUNDER_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 
