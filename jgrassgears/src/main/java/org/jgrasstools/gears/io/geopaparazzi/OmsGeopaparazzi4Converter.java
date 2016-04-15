@@ -94,6 +94,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.StringUtilities;
 import org.jgrasstools.gears.utils.chart.Scatter;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -289,9 +290,23 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         Set<Entry<String, SimpleFeatureCollection>> entrySet2 = name2CollectionMap.entrySet();
         for( Entry<String, SimpleFeatureCollection> entry : entrySet2 ) {
             String name = entry.getKey();
+            int lastUnderscore = name.lastIndexOf('_');
+            name = name.substring(0, lastUnderscore);
+
             SimpleFeatureCollection collection = entry.getValue();
 
             File outFile = new File(outputFolderFile, "notes_" + name + ".shp");
+            if (outFile.exists()) {
+                File[] listFiles = outputFolderFile.listFiles();
+                List<String> fileNames = new ArrayList<>();
+                for( File file : listFiles ) {
+                    fileNames.add(FileUtilities.getNameWithoutExtention(file));
+                }
+
+                String shpName = FileUtilities.getNameWithoutExtention(outFile);
+                String safeShpName = StringUtilities.checkSameName(fileNames, shpName);
+                outFile = new File(outputFolderFile, safeShpName + ".shp");
+            }
             dumpVector(collection, outFile.getAbsolutePath());
             pm.worked(1);
         }
@@ -438,6 +453,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         pm.beginTask("Import complex notes...", -1);
 
         GeometryFactory gf = GeometryUtilities.gf();
+        String idFN = NotesTableFields.COLUMN_ID.getFieldName();
         String tsFN = NotesTableFields.COLUMN_TS.getFieldName();
         String altimFN = NotesTableFields.COLUMN_ALTIM.getFieldName();
         String dirtyFN = NotesTableFields.COLUMN_ISDIRTY.getFieldName();
@@ -449,6 +465,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         HashMap<String, SimpleFeatureCollection> name2CollectionMap = new HashMap<>();
 
         String sql = "select " + //
+                idFN + "," + //
                 latFN + "," + //
                 lonFN + "," + //
                 altimFN + "," + //
@@ -461,6 +478,8 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
             ResultSet rs = statement.executeQuery(sql);
             while( rs.next() ) {
+                String idString = rs.getString(idFN);
+                System.out.println(idString);
                 String formString = rs.getString(formFN);
                 if (formString == null || formString.trim().length() == 0) {
                     continue;
@@ -519,7 +538,8 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 Set<Entry<String, String>> entrySet = valuesMap.entrySet();
                 TreeMap<String, Integer> namesMap = new TreeMap<String, Integer>();
                 // check if there is a builder already
-                BuilderAndCollectionPair builderAndCollectionPair = forms2PropertiesMap.get(sectionName);
+                String uniqueSectionName = sectionName + "_" + entrySet.size();
+                BuilderAndCollectionPair builderAndCollectionPair = forms2PropertiesMap.get(uniqueSectionName);
                 if (builderAndCollectionPair == null) {
                     SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
                     b.setName(sectionName); // $NON-NLS-1$
@@ -558,7 +578,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                     builderAndCollectionPair.builder = builder;
                     builderAndCollectionPair.collection = newCollection;
 
-                    forms2PropertiesMap.put(sectionName, builderAndCollectionPair);
+                    forms2PropertiesMap.put(uniqueSectionName, builderAndCollectionPair);
                 }
 
                 int size = entrySet.size();
@@ -601,7 +621,11 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                     values[i] = value;
                     i++;
                 }
-                builderAndCollectionPair.builder.addAll(values);
+                try {
+                    builderAndCollectionPair.builder.addAll(values);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 SimpleFeature feature = builderAndCollectionPair.builder.buildFeature(null);
                 builderAndCollectionPair.collection.add(feature);
             }

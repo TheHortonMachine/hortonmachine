@@ -125,10 +125,38 @@ public class SpatialiteDb implements AutoCloseable {
                 switch( operatingSystemType ) {
                 case Linux:
                 case MacOS:
-                    stmt.execute("SELECT load_extension('mod_spatialite.so', 'sqlite3_modspatialite_init')");
+                    try {
+                        stmt.execute("SELECT load_extension('mod_rasterlite2.so', 'sqlite3_modrasterlite_init')");
+                    } catch (Exception e) {
+                        if (printInfos) {
+                            System.out.println("Unable to load mod_rasterlite2.so: " + e.getMessage());
+                        }
+                    }
+                    try {
+                        stmt.execute("SELECT load_extension('mod_spatialite.so', 'sqlite3_modspatialite_init')");
+                    } catch (Exception e) {
+                        if (printInfos) {
+                            System.out.println("Unable to load mod_spatialite.so: " + e.getMessage());
+                        }
+                        throw e;
+                    }
                     break;
                 default:
-                    stmt.execute("SELECT load_extension('mod_spatialite', 'sqlite3_modspatialite_init')");
+                    try {
+                        stmt.execute("SELECT load_extension('mod_rasterlite2', 'sqlite3_modrasterlite_init')");
+                    } catch (Exception e) {
+                        if (printInfos) {
+                            System.out.println("Unable to load mod_rasterlite2: " + e.getMessage());
+                        }
+                    }
+                    try {
+                        stmt.execute("SELECT load_extension('mod_spatialite', 'sqlite3_modspatialite_init')");
+                    } catch (Exception e) {
+                        if (printInfos) {
+                            System.out.println("Unable to load mod_spatialite: " + e.getMessage());
+                        }
+                        throw e;
+                    }
                     break;
                 }
             } catch (Exception e) {
