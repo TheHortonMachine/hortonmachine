@@ -28,11 +28,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORI
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_defaultFeatureField_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_inGeodata_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_outGeodata_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_pThres_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_pValue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_DEFAULT_FEATURE_FIELD_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_IN_GEODATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_OUT_GEODATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_P_THRES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_P_VALUE_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
@@ -93,23 +93,23 @@ import com.vividsolutions.jts.geom.Polygon;
 @UI(OMSMARCHINGSQUARESVECTORIALIZER_UI)
 public class OmsMarchingSquaresVectorializer extends JGTModel {
 
-    @Description(OMSMARCHINGSQUARESVECTORIALIZER_inGeodata_DESCRIPTION)
+    @Description(OMSMARCHINGSQUARESVECTORIALIZER_IN_GEODATA_DESCRIPTION)
     @In
     public GridCoverage2D inGeodata;
 
-    @Description(OMSMARCHINGSQUARESVECTORIALIZER_pValue_DESCRIPTION)
+    @Description(OMSMARCHINGSQUARESVECTORIALIZER_P_VALUE_DESCRIPTION)
     @In
     public Double pValue = doubleNovalue;
 
-    @Description(OMSMARCHINGSQUARESVECTORIALIZER_defaultFeatureField_DESCRIPTION)
+    @Description(OMSMARCHINGSQUARESVECTORIALIZER_DEFAULT_FEATURE_FIELD_DESCRIPTION)
     @In
     public String defaultFeatureField = "value";
 
-    @Description(OMSMARCHINGSQUARESVECTORIALIZER_pThres_DESCRIPTION)
+    @Description(OMSMARCHINGSQUARESVECTORIALIZER_P_THRES_DESCRIPTION)
     @In
     public double pThres = 0;
 
-    @Description(OMSMARCHINGSQUARESVECTORIALIZER_outGeodata_DESCRIPTION)
+    @Description(OMSMARCHINGSQUARESVECTORIALIZER_OUT_GEODATA_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outGeodata = null;
 
