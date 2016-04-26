@@ -36,8 +36,7 @@ public class DwgHandler {
     }
 
     public DwgReader getDwgReader() throws Exception {
-        DwgReader dwgReader = new DwgReader(dwgFile, gTranslator);
-        return dwgReader;
+        return new DwgReader(dwgFile, gTranslator);
     }
 
     public List<String> getLayerTypes() throws Exception {
@@ -49,7 +48,7 @@ public class DwgHandler {
         dwgFile.blockManagement();
 
         List<String> layerNames = dwgFile.getLayerNames();
-        if (layerNames.size() < 1) {
+        if (layerNames.isEmpty()) {
             throw new IOException("No layer found in the file.");
         }
 
