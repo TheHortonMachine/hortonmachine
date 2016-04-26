@@ -1,6 +1,7 @@
 package org.jgrasstools.gears.modules;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.jgrasstools.gears.io.converters.IdValuesArray2IdValuesConverter;
 import org.jgrasstools.gears.utils.HMTestCase;
@@ -25,7 +26,7 @@ public class TestId2ValueConverters extends HMTestCase {
         IdValuesArray2IdValuesConverter converter = new IdValuesArray2IdValuesConverter();
         converter.inData = data;
         converter.convert();
-        HashMap<Integer, Double> outData = converter.outData;
+        Map<Integer, Double> outData = converter.outData;
 
         Double c1 = outData.get(1);
         Double c2 = outData.get(2);

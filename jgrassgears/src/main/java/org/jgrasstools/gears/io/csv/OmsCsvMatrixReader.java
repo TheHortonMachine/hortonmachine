@@ -124,12 +124,12 @@ public class OmsCsvMatrixReader extends JGTModel {
 
     private int columnCount;
 
-    private List<String> outIdsList = new ArrayList<String>();
-    private List<String> outLabelsList = new ArrayList<String>();
-    private List<String> outFormatsList = new ArrayList<String>();
-    private List<String> outTypesList = new ArrayList<String>();
+    private List<String> outIdsList = new ArrayList<>();
+    private List<String> outLabelsList = new ArrayList<>();
+    private List<String> outFormatsList = new ArrayList<>();
+    private List<String> outTypesList = new ArrayList<>();
 
-    private List<double[]> outDataList = new ArrayList<double[]>();
+    private List<double[]> outDataList = new ArrayList<>();
 
     private DateTimeFormatter dateFormatter;
 
@@ -143,7 +143,7 @@ public class OmsCsvMatrixReader extends JGTModel {
             for( Entry<String, String> entry : entrySet ) {
                 String key = entry.getKey();
                 String value = entry.getValue();
-                if (key.toLowerCase().equals("subtitle")) {
+                if ("subtitle".equalsIgnoreCase(key)) {
                     outSubTitle = value;
                 }
             }
@@ -161,13 +161,13 @@ public class OmsCsvMatrixReader extends JGTModel {
                     String key = entry.getKey();
                     String value = entry.getValue();
 
-                    if (key.toLowerCase().equals("label")) {
+                    if ("label".equalsIgnoreCase(key)) {
                         outLabelsList.add(value);
                     }
-                    if (key.toLowerCase().equals("format")) {
+                    if ("format".equalsIgnoreCase(key)) {
                         outFormatsList.add(value);
                     }
-                    if (key.toLowerCase().equals("type")) {
+                    if ("type".equalsIgnoreCase(key)) {
                         value = value.toLowerCase().trim();
                         if (value.length() == 0) {
                             value = "double";
@@ -177,17 +177,17 @@ public class OmsCsvMatrixReader extends JGTModel {
                 }
             }
 
-            if (outIdsList.size() > 0) {
+            if (!outIdsList.isEmpty()) {
                 outIds = outIdsList.toArray(new String[0]);
             }
-            if (outLabelsList.size() > 0) {
+            if (!outLabelsList.isEmpty()) {
                 outLabels = outLabelsList.toArray(new String[0]);
             }
-            if (outFormatsList.size() > 0) {
+            if (!outFormatsList.isEmpty()) {
                 outFormats = outFormatsList.toArray(new String[0]);
             }
 
-            if (outTypesList.size() == 0) {
+            if (outTypesList.isEmpty()) {
                 for( int i = 1; i <= columnCount; i++ ) {
                     outTypesList.add("double");
                 }
