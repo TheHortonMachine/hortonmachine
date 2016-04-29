@@ -223,4 +223,9 @@ public class LasHeader implements ILasHeader {
         return sb.toString();
     }
 
+	@Override
+	public double[] getPlainDataEnvelope() {
+		return new double[]{xMin, yMin, zMin, xMax, yMax, zMax};
+	}
+
 }
