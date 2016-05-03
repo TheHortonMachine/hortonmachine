@@ -228,7 +228,7 @@ public class LiblasHeader implements ILasHeader {
     }
     
 	@Override
-	public double[] getPlainDataEnvelope() {
+	public double[] getRawDataEnvelope() {
 		return new double[]{xMin, yMin, zMin, xMax, yMax, zMax};
 	}
 }
