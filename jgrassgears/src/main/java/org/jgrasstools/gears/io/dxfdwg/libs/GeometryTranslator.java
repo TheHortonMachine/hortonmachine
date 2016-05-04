@@ -49,6 +49,8 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
 public class GeometryTranslator {
+    private static final String LAYER = "layer";
+    private static final String THE_GEOM = "the_geom";
     private static GeometryFactory gF = new GeometryFactory();
     private final CoordinateReferenceSystem crs;
     public GeometryTranslator( CoordinateReferenceSystem crs ) {
@@ -97,16 +99,15 @@ public class GeometryTranslator {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(typeName);
         b.setCRS(crs);
-        b.add("the_geom", Point.class);
+        b.add(THE_GEOM, Point.class);
         b.add("text", String.class);
-        b.add("layer", String.class);
+        b.add(LAYER, String.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         Geometry point = gF.createPoint(coord);
         Object[] values = new Object[]{point, textString, layerName};
         builder.addAll(values);
-        SimpleFeature feature = builder.buildFeature(typeName + "." + id);
-        return feature;
+        return builder.buildFeature(typeName + "." + id);
     }
 
     /**
@@ -128,15 +129,14 @@ public class GeometryTranslator {
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
             b.setName(typeName);
             b.setCRS(crs);
-            b.add("the_geom", LineString.class);
-            b.add("layer", String.class);
+            b.add(THE_GEOM, LineString.class);
+            b.add(LAYER, String.class);
             SimpleFeatureType type = b.buildFeatureType();
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
             Geometry lineString = gF.createLineString(coordList.toCoordinateArray());
             Object[] values = new Object[]{lineString, layerName};
             builder.addAll(values);
-            SimpleFeature feature = builder.buildFeature(typeName + "." + id);
-            return feature;
+            return builder.buildFeature(typeName + "." + id);
         }
         return null;
     }
@@ -158,15 +158,14 @@ public class GeometryTranslator {
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
             b.setName(typeName);
             b.setCRS(crs);
-            b.add("the_geom", LineString.class);
-            b.add("layer", String.class);
+            b.add(THE_GEOM, LineString.class);
+            b.add(LAYER, String.class);
             SimpleFeatureType type = b.buildFeatureType();
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
             Geometry lineString = gF.createLineString(coordList.toCoordinateArray());
             Object[] values = new Object[]{lineString, layerName};
             builder.addAll(values);
-            SimpleFeature feature = builder.buildFeature(typeName + "." + id);
-            return feature;
+            return builder.buildFeature(typeName + "." + id);
         }
         return null;
     }
@@ -188,15 +187,14 @@ public class GeometryTranslator {
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
             b.setName(typeName);
             b.setCRS(crs);
-            b.add("the_geom", LineString.class);
-            b.add("layer", String.class);
+            b.add(THE_GEOM, LineString.class);
+            b.add(LAYER, String.class);
             SimpleFeatureType type = b.buildFeatureType();
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
             Geometry lineString = gF.createLineString(coordList.toCoordinateArray());
             Object[] values = new Object[]{lineString, layerName};
             builder.addAll(values);
-            SimpleFeature feature = builder.buildFeature(typeName + "." + id);
-            return feature;
+            return builder.buildFeature(typeName + "." + id);
         }
         return null;
     }
@@ -215,15 +213,14 @@ public class GeometryTranslator {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(typeName);
         b.setCRS(crs);
-        b.add("the_geom", MultiPoint.class);
-        b.add("layer", String.class);
+        b.add(THE_GEOM, MultiPoint.class);
+        b.add(LAYER, String.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         Geometry points = gF.createMultiPoint(coordList.toCoordinateArray());
         Object[] values = new Object[]{points, layerName};
         builder.addAll(values);
-        SimpleFeature feature = builder.buildFeature(typeName + "." + id);
-        return feature;
+        return builder.buildFeature(typeName + "." + id);
     }
 
     /**
@@ -244,15 +241,14 @@ public class GeometryTranslator {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(typeName);
         b.setCRS(crs);
-        b.add("the_geom", LineString.class);
-        b.add("layer", String.class);
+        b.add(THE_GEOM, LineString.class);
+        b.add(LAYER, String.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         Geometry lineString = gF.createLineString(coordList.toCoordinateArray());
         Object[] values = new Object[]{lineString, layerName};
         builder.addAll(values);
-        SimpleFeature feature = builder.buildFeature(typeName + "." + id);
-        return feature;
+        return builder.buildFeature(typeName + "." + id);
     }
 
     /**
@@ -280,16 +276,15 @@ public class GeometryTranslator {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(typeName);
         b.setCRS(crs);
-        b.add("the_geom", Polygon.class);
-        b.add("layer", String.class);
+        b.add(THE_GEOM, Polygon.class);
+        b.add(LAYER, String.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         LinearRing linearRing = gF.createLinearRing(coordList.toCoordinateArray());
         Geometry polygon = gF.createPolygon(linearRing, null);
         Object[] values = new Object[]{polygon, layerName};
         builder.addAll(values);
-        SimpleFeature feature = builder.buildFeature(typeName + "." + id);
-        return feature;
+        return builder.buildFeature(typeName + "." + id);
     }
 
     /**
@@ -314,16 +309,15 @@ public class GeometryTranslator {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(typeName);
         b.setCRS(crs);
-        b.add("the_geom", Polygon.class);
-        b.add("layer", String.class);
+        b.add(THE_GEOM, Polygon.class);
+        b.add(LAYER, String.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         LinearRing linearRing = gF.createLinearRing(coordList.toCoordinateArray());
         Geometry polygon = gF.createPolygon(linearRing, null);
         Object[] values = new Object[]{polygon, layerName};
         builder.addAll(values);
-        SimpleFeature feature = builder.buildFeature(typeName + "." + id);
-        return feature;
+        return builder.buildFeature(typeName + "." + id);
     }
 
     /**
@@ -346,14 +340,13 @@ public class GeometryTranslator {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(typeName);
         b.setCRS(crs);
-        b.add("the_geom", LineString.class);
-        b.add("layer", String.class);
+        b.add(THE_GEOM, LineString.class);
+        b.add(LAYER, String.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         Geometry lineString = gF.createLineString(coordList.toCoordinateArray());
         Object[] values = new Object[]{lineString, layerName};
         builder.addAll(values);
-        SimpleFeature feature = builder.buildFeature(typeName + "." + id);
-        return feature;
+        return builder.buildFeature(typeName + "." + id);
     }
 }

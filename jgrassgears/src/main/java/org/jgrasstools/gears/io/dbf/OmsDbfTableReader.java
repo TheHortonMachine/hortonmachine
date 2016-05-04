@@ -34,6 +34,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -68,7 +69,7 @@ public class OmsDbfTableReader extends JGTModel {
 
     @Description(OMSDBFTABLEREADER_OUT_TABLE_DATA_DESCRIPTION)
     @Out
-    public HashMap<String, List<Object>> outTabledata = null;
+    public Map<String, List<Object>> outTabledata = null;
 
     @Execute
     public void readTable() throws IOException {
@@ -84,7 +85,7 @@ public class OmsDbfTableReader extends JGTModel {
             dbfReader = new DbaseFileReader(fis.getChannel(), false, Charset.defaultCharset());
             final DbaseFileHeader header = dbfReader.getHeader();
             int numFields = header.getNumFields();
-            outTabledata = new HashMap<String, List<Object>>();
+            outTabledata = new HashMap<>();
             for( int i = 0; i < numFields; i++ ) {
                 String fieldName = header.getFieldName(i);
                 outTabledata.put(fieldName, new ArrayList<Object>());
@@ -116,7 +117,7 @@ public class OmsDbfTableReader extends JGTModel {
      * @return the read table.
      * @throws IOException
      */
-    public static HashMap<String, List<Object>> readDbf( String path ) throws IOException {
+    public static Map<String, List<Object>> readDbf( String path ) throws IOException {
 
         OmsDbfTableReader reader = new OmsDbfTableReader();
         reader.file = path;
