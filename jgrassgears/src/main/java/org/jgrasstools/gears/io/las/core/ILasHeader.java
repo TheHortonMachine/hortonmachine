@@ -41,6 +41,12 @@ public interface ILasHeader {
      * @return the 3D data envelope of the file.
      */
     public abstract ReferencedEnvelope3D getDataEnvelope();
+    
+    /**
+     * @return the 3D data envelope of the file, as an array
+     * of doubles: [xmin, ymin, zmin, xmax, ymax, zmax]
+     */
+    public abstract double[] getRawDataEnvelope();
 
     /**
      * @return the number of records.

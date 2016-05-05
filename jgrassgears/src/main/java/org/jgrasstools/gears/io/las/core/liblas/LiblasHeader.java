@@ -226,5 +226,9 @@ public class LiblasHeader implements ILasHeader {
     public int getGpsTimeType() {
         return gpsTimeType;
     }
-
+    
+	@Override
+	public double[] getRawDataEnvelope() {
+		return new double[]{xMin, yMin, zMin, xMax, yMax, zMax};
+	}
 }
