@@ -403,7 +403,7 @@ public class LasReader extends ALasReader {
     private long getLong4Bytes() throws IOException {
         longBb.clear();
         fc.read(longBb);
-        long arr2long = ByteUtilities.byteArrayToLongLE(longDataArray);
+        long arr2long = longBb.getInt(0);
         return arr2long;
     }
 
