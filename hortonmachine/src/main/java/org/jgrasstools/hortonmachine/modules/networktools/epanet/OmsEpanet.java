@@ -18,41 +18,10 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.epanet;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_inDll_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_inInp_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_junctionsList_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_pipesList_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_pumpsList_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_reservoirsList_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_tCurrent_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_tStart_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_tanksList_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_valvesList_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_warnings_DESCRIPTION;
-
+import static org.jgrasstools.gears.libs.modules.JGTConstants.OTHER;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Initialize;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -73,13 +42,25 @@ import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.types.Valv
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
-@Description(OMSEPANET_DESCRIPTION)
-@Author(name = OMSEPANET_AUTHORNAMES, contact = OMSEPANET_AUTHORCONTACTS)
-@Keywords(OMSEPANET_KEYWORDS)
-@Label(OMSEPANET_LABEL)
-@Name(OMSEPANET_NAME)
-@Status(OMSEPANET_STATUS)
-@License(OMSEPANET_LICENSE)
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Initialize;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+
+@Description(OmsEpanet.OMSEPANET_DESCRIPTION)
+@Author(name = OmsEpanet.OMSEPANET_AUTHORNAMES, contact = OmsEpanet.OMSEPANET_AUTHORCONTACTS)
+@Keywords(OmsEpanet.OMSEPANET_KEYWORDS)
+@Label(OmsEpanet.OMSEPANET_LABEL)
+@Name(OmsEpanet.OMSEPANET_NAME)
+@Status(OmsEpanet.OMSEPANET_STATUS)
+@License(OmsEpanet.OMSEPANET_LICENSE)
 public class OmsEpanet extends JGTModel {
 
     @Description(OMSEPANET_inDll_DESCRIPTION)
@@ -126,6 +107,29 @@ public class OmsEpanet extends JGTModel {
     @Out
     public String warnings = null;
 
+    // VARS DESCARIPTION START
+    public static final String OMSEPANET_DESCRIPTION = "The main OmsEpanet module";
+    public static final String OMSEPANET_DOCUMENTATION = "";
+    public static final String OMSEPANET_KEYWORDS = "OmsEpanet";
+    public static final String OMSEPANET_LABEL = OTHER;
+    public static final String OMSEPANET_NAME = "";
+    public static final int OMSEPANET_STATUS = 10;
+    public static final String OMSEPANET_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
+    public static final String OMSEPANET_AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
+    public static final String OMSEPANET_AUTHORCONTACTS = "www.hydrologis.com";
+    public static final String OMSEPANET_inDll_DESCRIPTION = "The epanet dynamic lib file.";
+    public static final String OMSEPANET_inInp_DESCRIPTION = "The inp file.";
+    public static final String OMSEPANET_tStart_DESCRIPTION = "The start time.";
+    public static final String OMSEPANET_tCurrent_DESCRIPTION = "The current time.";
+    public static final String OMSEPANET_pipesList_DESCRIPTION = "The pipes result data.";
+    public static final String OMSEPANET_junctionsList_DESCRIPTION = "The junctions result data.";
+    public static final String OMSEPANET_pumpsList_DESCRIPTION = "The pumps result data.";
+    public static final String OMSEPANET_valvesList_DESCRIPTION = "The valves result data.";
+    public static final String OMSEPANET_tanksList_DESCRIPTION = "The tanks result data.";
+    public static final String OMSEPANET_reservoirsList_DESCRIPTION = "The reservoirs result data.";
+    public static final String OMSEPANET_warnings_DESCRIPTION = "Warning messages for the run.";
+    // VARS DESCARIPTION END
+
     private EpanetWrapper ep;
 
     private long[] t = new long[1];
@@ -143,6 +147,8 @@ public class OmsEpanet extends JGTModel {
     @SuppressWarnings("nls")
     @Execute
     public void process() throws Exception {
+        checkCancel();
+
         StringBuilder sb = new StringBuilder("");
         if (ep == null) {
             if (inDll == null) {
@@ -215,6 +221,7 @@ public class OmsEpanet extends JGTModel {
     private void extractLinksData( EpanetWrapper ep ) throws EpanetException {
         int linksNum = ep.ENgetcount(Components.EN_LINKCOUNT);
         for( int i = 1; i <= linksNum; i++ ) {
+            checkCancel();
             LinkTypes type = ep.ENgetlinktype(i);
 
             switch( type ) {
@@ -265,6 +272,7 @@ public class OmsEpanet extends JGTModel {
     private void extractNodesData( EpanetWrapper ep ) throws EpanetException {
         int nodesNum = ep.ENgetcount(Components.EN_NODECOUNT);
         for( int i = 1; i <= nodesNum; i++ ) {
+            checkCancel();
             NodeTypes type = ep.ENgetnodetype(i);
 
             switch( type ) {

@@ -25,13 +25,13 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_fileFilter_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_filesList_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_inFolder_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_outCurrentfile_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_pCode_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_pRegex_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_pathsList_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_FILE_FILTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_FILES_LIST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_IN_FOLDER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_OUT_CURRENT_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_P_CODE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_P_REGEX_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_PATHS_LIST_DESCRIPTION;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -67,33 +67,33 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License(OMSFILEITERATOR_LICENSE)
 public class FileIterator extends JGTModel {
 
-    @Description(OMSFILEITERATOR_inFolder_DESCRIPTION)
+    @Description(OMSFILEITERATOR_IN_FOLDER_DESCRIPTION)
     @UI(JGTConstants.FOLDERIN_UI_HINT)
     @In
     public String inFolder;
 
-    @Description(OMSFILEITERATOR_pRegex_DESCRIPTION)
+    @Description(OMSFILEITERATOR_P_REGEX_DESCRIPTION)
     @In
     public String pRegex = null;
 
-    @Description(OMSFILEITERATOR_pCode_DESCRIPTION)
+    @Description(OMSFILEITERATOR_P_CODE_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description(OMSFILEITERATOR_fileFilter_DESCRIPTION)
+    @Description(OMSFILEITERATOR_FILE_FILTER_DESCRIPTION)
     @In
     public FileFilter fileFilter = null;
 
-    @Description(OMSFILEITERATOR_outCurrentfile_DESCRIPTION)
+    @Description(OMSFILEITERATOR_OUT_CURRENT_FILE_DESCRIPTION)
     @Out
     public String outCurrentfile = null;
 
-    @Description(OMSFILEITERATOR_filesList_DESCRIPTION)
+    @Description(OMSFILEITERATOR_FILES_LIST_DESCRIPTION)
     @Out
     public List<File> filesList = null;
 
-    @Description(OMSFILEITERATOR_pathsList_DESCRIPTION)
+    @Description(OMSFILEITERATOR_PATHS_LIST_DESCRIPTION)
     @Out
     public List<String> pathsList = null;
 

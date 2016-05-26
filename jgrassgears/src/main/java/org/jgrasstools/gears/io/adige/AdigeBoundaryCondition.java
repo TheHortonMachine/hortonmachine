@@ -24,9 +24,40 @@ package org.jgrasstools.gears.io.adige;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class AdigeBoundaryCondition {
-    public int basinId = -1;
-    public double discharge = Double.NaN;
-    public double dischargeSub = Double.NaN;
-    public double S1 = Double.NaN;
-    public double S2 = Double.NaN;
+    private int basinId = -1;
+    private double discharge = Double.NaN;
+    private double dischargeSub = Double.NaN;
+    private double s1 = Double.NaN;
+    private double s2 = Double.NaN;
+
+    public int getBasinId() {
+        return basinId;
+    }
+    public void setBasinId(int basinId) {
+        this.basinId = basinId;
+    }
+    public double getDischarge() {
+        return discharge;
+    }
+    public void setDischarge(double discharge) {
+        this.discharge = discharge;
+    }
+    public double getDischargeSub() {
+        return dischargeSub;
+    }
+    public void setDischargeSub(double dischargeSub) {
+        this.dischargeSub = dischargeSub;
+    }
+    public double getS1() {
+        return s1;
+    }
+    public void setS1(double s1) {
+        this.s1 = s1;
+    }
+    public double getS2() {
+        return s2;
+    }
+    public void setS2(double s2) {
+        this.s2 = s2;
+    }
 }

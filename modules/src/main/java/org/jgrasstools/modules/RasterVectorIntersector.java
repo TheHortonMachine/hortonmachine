@@ -25,10 +25,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTO
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_doInverse_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_DO_INVERSE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_OUT_RASTER_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -53,21 +53,21 @@ import org.jgrasstools.gears.modules.r.rastervectorintersection.OmsRasterVectorI
 @License(OMSRASTERVECTORINTERSECTOR_LICENSE)
 public class RasterVectorIntersector extends JGTModel {
 
-    @Description(OMSRASTERVECTORINTERSECTOR_inVector_DESCRIPTION)
+    @Description(OMSRASTERVECTORINTERSECTOR_IN_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inVector = null;
 
-    @Description(OMSRASTERVECTORINTERSECTOR_inRaster_DESCRIPTION)
+    @Description(OMSRASTERVECTORINTERSECTOR_IN_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster;
 
-    @Description(OMSRASTERVECTORINTERSECTOR_doInverse_DESCRIPTION)
+    @Description(OMSRASTERVECTORINTERSECTOR_DO_INVERSE_DESCRIPTION)
     @In
     public boolean doInverse = false;
 
-    @Description(OMSRASTERVECTORINTERSECTOR_outRaster_DESCRIPTION)
+    @Description(OMSRASTERVECTORINTERSECTOR_OUT_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster;

@@ -113,10 +113,10 @@ public class DuffyAdigeEngine implements IAdigeEngine {
                 if (index == null)
                     continue;
                 AdigeBoundaryCondition condition = entry.getValue();
-                initialConditions[index] = condition.discharge;
-                initialConditions[index + hillsSlopeNum] = condition.dischargeSub;
-                initialConditions[index + 2 * hillsSlopeNum] = condition.S1;
-                initialConditions[index + 3 * hillsSlopeNum] = condition.S2;
+                initialConditions[index] = condition.getDischarge();
+                initialConditions[index + hillsSlopeNum] = condition.getDischargeSub();
+                initialConditions[index + 2 * hillsSlopeNum] = condition.getS1();
+                initialConditions[index + 3 * hillsSlopeNum] = condition.getS2();
             }
         } else {
             double startSubsuperficialDischargeFraction = 1.0 - inDuffyInput.pStartSuperficialDischargeFraction;
@@ -188,11 +188,11 @@ public class DuffyAdigeEngine implements IAdigeEngine {
             }
             if (inDuffyInput.doBoundary) {
                 AdigeBoundaryCondition bc = new AdigeBoundaryCondition();
-                bc.basinId = basinId;
-                bc.discharge = discharge[0];
-                bc.dischargeSub = subdischarge[0];
-                bc.S1 = s1[0];
-                bc.S2 = s2[0];
+                bc.setBasinId(basinId);
+                bc.setDischarge(discharge[0]);
+                bc.setDischargeSub(subdischarge[0]);
+                bc.setS1(s1[0]);
+                bc.setS2(s2[0]);
                 inDuffyInput.outFinalconditions.put(basinId, bc);
             }
         }

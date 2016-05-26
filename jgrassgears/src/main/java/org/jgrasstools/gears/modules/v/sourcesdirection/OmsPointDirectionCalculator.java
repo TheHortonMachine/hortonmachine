@@ -28,10 +28,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULAT
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_inCoverage_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_inSources_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_outSources_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_pRes_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_IN_COVERAGE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_IN_SOURCES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_OUT_SOURCES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_P_RES_DESCRIPTION;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridToWorld;
 
 import java.awt.Rectangle;
@@ -80,19 +80,19 @@ import com.vividsolutions.jts.geom.Geometry;
 @License(OMSPOINTDIRECTIONCALCULATOR_LICENSE)
 public class OmsPointDirectionCalculator extends JGTModel {
 
-    @Description(OMSPOINTDIRECTIONCALCULATOR_inSources_DESCRIPTION)
+    @Description(OMSPOINTDIRECTIONCALCULATOR_IN_SOURCES_DESCRIPTION)
     @In
     public SimpleFeatureCollection inSources;
 
-    @Description(OMSPOINTDIRECTIONCALCULATOR_pRes_DESCRIPTION)
+    @Description(OMSPOINTDIRECTIONCALCULATOR_P_RES_DESCRIPTION)
     @In
     public double pRes = NaN;
 
-    @Description(OMSPOINTDIRECTIONCALCULATOR_inCoverage_DESCRIPTION)
+    @Description(OMSPOINTDIRECTIONCALCULATOR_IN_COVERAGE_DESCRIPTION)
     @In
     public GridCoverage2D inCoverage = null;
 
-    @Description(OMSPOINTDIRECTIONCALCULATOR_outSources_DESCRIPTION)
+    @Description(OMSPOINTDIRECTIONCALCULATOR_OUT_SOURCES_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outSources;
 

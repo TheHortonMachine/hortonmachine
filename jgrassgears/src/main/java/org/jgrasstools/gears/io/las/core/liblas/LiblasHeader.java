@@ -117,7 +117,6 @@ public class LiblasHeader implements ILasHeader {
         // WRAPPER.LASHeader_GetRecordsCount(headerHandle);
         pointDataFormat = WRAPPER.LASHeader_GetDataFormatId(headerHandle);
         // WRAPPER.LASHeader_GetPointRecordsByReturnCount(headerHandle, int returnNum );
-
     }
 
     public double[] getXYZScale() {
@@ -227,5 +226,9 @@ public class LiblasHeader implements ILasHeader {
     public int getGpsTimeType() {
         return gpsTimeType;
     }
-
+    
+	@Override
+	public double[] getRawDataEnvelope() {
+		return new double[]{xMin, yMin, zMin, xMax, yMax, zMax};
+	}
 }

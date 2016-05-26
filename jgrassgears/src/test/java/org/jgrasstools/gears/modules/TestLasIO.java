@@ -34,6 +34,7 @@ import org.jgrasstools.gears.io.las.core.liblas.LiblasWriter;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
 import org.jgrasstools.gears.io.las.utils.LasUtils;
+import org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator;
 import org.jgrasstools.gears.utils.HMTestCase;
 @SuppressWarnings("nls")
 public class TestLasIO extends HMTestCase {
@@ -262,4 +263,5 @@ public class TestLasIO extends HMTestCase {
         assertEquals(lasEnv.getMaxY(), tmpLasEnv.getMaxY(), DELTA);
         assertEquals(lasEnv.getMaxZ(), tmpLasEnv.getMaxZ(), DELTA);
     }
+    
 }

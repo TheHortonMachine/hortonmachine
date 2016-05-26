@@ -26,12 +26,12 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_fLineid_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_inCoordinates_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_outFolder_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_outProfile_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_F_LINE_ID_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_IN_COORDINATES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_OUT_FOLDER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_OUT_PROFILE_DESCRIPTION;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -73,27 +73,27 @@ import com.vividsolutions.jts.geom.Geometry;
 @License(OMSPROFILE_LICENSE)
 public class OmsProfile extends JGTModel {
 
-    @Description(OMSPROFILE_inRaster_DESCRIPTION)
+    @Description(OMSPROFILE_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSPROFILE_inCoordinates_DESCRIPTION)
+    @Description(OMSPROFILE_IN_COORDINATES_DESCRIPTION)
     @In
     public String inCoordinates;
 
-    @Description(OMSPROFILE_inVector_DESCRIPTION)
+    @Description(OMSPROFILE_IN_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description(OMSPROFILE_fLineid_DESCRIPTION)
+    @Description(OMSPROFILE_F_LINE_ID_DESCRIPTION)
     @In
     public String fLineid;
 
-    @Description(OMSPROFILE_outFolder_DESCRIPTION)
+    @Description(OMSPROFILE_OUT_FOLDER_DESCRIPTION)
     @In
     public String outFolder;
 
-    @Description(OMSPROFILE_outProfile_DESCRIPTION)
+    @Description(OMSPROFILE_OUT_PROFILE_DESCRIPTION)
     @Out
     public double[][] outProfile;
 

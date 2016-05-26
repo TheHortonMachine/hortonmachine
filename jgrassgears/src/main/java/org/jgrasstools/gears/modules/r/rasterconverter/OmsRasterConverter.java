@@ -26,8 +26,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_OUT_RASTER_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -53,11 +53,11 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSRASTERCONVERTER_LICENSE)
 public class OmsRasterConverter extends JGTModel {
 
-    @Description(OMSRASTERCONVERTER_inRaster_DESCRIPTION)
+    @Description(OMSRASTERCONVERTER_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSRASTERCONVERTER_outRaster_DESCRIPTION)
+    @Description(OMSRASTERCONVERTER_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 

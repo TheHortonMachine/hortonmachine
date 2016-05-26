@@ -26,10 +26,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_pCql_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_pRemove_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_P_CQL_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_P_REMOVE_DESCRIPTION;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -85,20 +85,20 @@ import com.vividsolutions.jts.geom.Geometry;
 @License(OMSVECTORRESHAPER_LICENSE)
 public class OmsVectorReshaper extends JGTModel {
 
-    @Description(OMSVECTORRESHAPER_inVector_DESCRIPTION)
+    @Description(OMSVECTORRESHAPER_IN_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description(OMSVECTORRESHAPER_pCql_DESCRIPTION)
+    @Description(OMSVECTORRESHAPER_P_CQL_DESCRIPTION)
     @UI(JGTConstants.MULTILINE_UI_HINT + "5")
     @In
     public String pCql = null;
 
-    @Description(OMSVECTORRESHAPER_pRemove_DESCRIPTION)
+    @Description(OMSVECTORRESHAPER_P_REMOVE_DESCRIPTION)
     @In
     public String pRemove = null;
 
-    @Description(OMSVECTORRESHAPER_outVector_DESCRIPTION)
+    @Description(OMSVECTORRESHAPER_OUT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 

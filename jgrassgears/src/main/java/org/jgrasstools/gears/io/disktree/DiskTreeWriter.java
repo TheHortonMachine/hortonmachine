@@ -128,22 +128,6 @@ public class DiskTreeWriter implements IDiskTree {
         ObjectOutputStream out = new ObjectOutputStream(bos);
         out.writeObject(obj);
         out.close();
-        byte[] treeBytes = bos.toByteArray();
-        return treeBytes;
+        return bos.toByteArray();
     }
-
-    // public static void main( String[] args ) throws ParseException, IOException {
-    //
-    // WKTReader r = new WKTReader();
-    // Geometry pol = r.read("POLYGON ((210 350, 230 310, 290 350, 290 350, 210 350))");
-    // pol.setUserData(1);
-    // Geometry line = r.read("LINESTRING (50 380, 90 210, 180 160, 240 40, 240 40)");
-    // line.setUserData(2);
-    // Geometry point = r.read("POINT (130 120)");
-    // point.setUserData(3);
-    //
-    // DiskTreeWriter writer = new DiskTreeWriter("/home/moovida/TMP/index.bin");
-    // writer.writeGeometries(new Geometry[]{pol, line, point});
-    //
-    // }
 }

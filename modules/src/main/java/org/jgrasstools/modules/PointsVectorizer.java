@@ -25,9 +25,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_LABEL
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_fDefault_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_F_DEFAULT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_OUT_VECTOR_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -52,16 +52,16 @@ import org.jgrasstools.gears.modules.v.vectorize.OmsPointsVectorizer;
 @License(OMSPOINTSVECTORIZER_LICENSE)
 public class PointsVectorizer extends JGTModel {
 
-    @Description(OMSPOINTSVECTORIZER_inRaster_DESCRIPTION)
+    @Description(OMSPOINTSVECTORIZER_IN_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster;
 
-    @Description(OMSPOINTSVECTORIZER_fDefault_DESCRIPTION)
+    @Description(OMSPOINTSVECTORIZER_F_DEFAULT_DESCRIPTION)
     @In
     public String fDefault = "value";
 
-    @Description(OMSPOINTSVECTORIZER_outVector_DESCRIPTION)
+    @Description(OMSPOINTSVECTORIZER_OUT_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outVector = null;

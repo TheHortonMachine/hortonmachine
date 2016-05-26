@@ -4,13 +4,13 @@
 	<parent>
 		<groupId>org.jgrasstools</groupId>
 		<artifactId>jgrasstools</artifactId>
-		<version>0.7.9-SNAPSHOT</version>
+		<version>0.8.0-SNAPSHOT</version>
 	</parent>
 
 
 	<groupId>org.jgrasstools</groupId>
 	<artifactId>jgt-jgrassgears</artifactId>
-	<version>0.7.9-SNAPSHOT</version>
+	<version>0.8.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>JGrass Gears</name>
 
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>org.jgrasstools</groupId>
 			<artifactId>jgt-oms3</artifactId>
-			<version>0.7.9-SNAPSHOT</version>
+			<version>0.8.0-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Java Advanced Imaging (JAI) 
@@ -41,11 +41,23 @@
 -->
 		<!-- other stuff -->
 
-		<dependency>
-			<groupId>net.sf.scannotation</groupId>
-			<artifactId>scannotation</artifactId>
-			<version>1.0.2</version>
-		</dependency>
+	<dependency>
+		<groupId>org.scannotation</groupId>
+		<artifactId>scannotation</artifactId>
+		<version>1.0.3</version>
+		<exclusions>
+            <exclusion>
+                <groupId>javassist</groupId>
+                <artifactId>javassist</artifactId>
+            </exclusion>
+        </exclusions>
+	</dependency>
+	<dependency>
+        <groupId>org.javassist</groupId>
+        <artifactId>javassist</artifactId>
+        <version>3.20.0-GA</version>
+    </dependency>
+
 
 		<!-- <dependency> <groupId>geoscript</groupId> <artifactId>geoscript-groovy</artifactId> 
 			<version>0.9</version> </dependency> -->
@@ -192,7 +204,7 @@
 		<dependency>
 			<groupId>org.xerial</groupId>
 			<artifactId>sqlite-jdbc</artifactId>
-			<version>3.8.10.1</version>
+			<version>3.8.11.2</version>
 		</dependency>
 		
 		<dependency>

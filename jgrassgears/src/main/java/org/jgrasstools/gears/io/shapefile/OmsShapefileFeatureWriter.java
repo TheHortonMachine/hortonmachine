@@ -26,10 +26,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_doIndex_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_geodata_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_pType_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_DO_INDEX_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_GEODATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_P_TYPE_DESCRIPTION;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,20 +70,20 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @UI(OMSSHAPEFILEFEATUREWRITER_UI)
 public class OmsShapefileFeatureWriter extends JGTModel {
 
-    @Description(OMSSHAPEFILEFEATUREWRITER_geodata_DESCRIPTION)
+    @Description(OMSSHAPEFILEFEATUREWRITER_GEODATA_DESCRIPTION)
     @In
     public SimpleFeatureCollection geodata = null;
 
-    @Description(OMSSHAPEFILEFEATUREWRITER_file_DESCRIPTION)
+    @Description(OMSSHAPEFILEFEATUREWRITER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSSHAPEFILEFEATUREWRITER_doIndex_DESCRIPTION)
+    @Description(OMSSHAPEFILEFEATUREWRITER_DO_INDEX_DESCRIPTION)
     @In
     public boolean doIndex = true;
 
-    @Description(OMSSHAPEFILEFEATUREWRITER_pType_DESCRIPTION)
+    @Description(OMSSHAPEFILEFEATUREWRITER_P_TYPE_DESCRIPTION)
     @In
     public SimpleFeatureType pType = null;
 

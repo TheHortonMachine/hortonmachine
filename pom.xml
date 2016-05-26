@@ -12,7 +12,7 @@
 
     <groupId>org.jgrasstools</groupId>
     <artifactId>jgrasstools</artifactId>
-    <version>0.7.9-SNAPSHOT</version>
+    <version>0.8.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
     <name>JGrasstools - uDig's geospatial toolbox (but not only)</name>
@@ -24,7 +24,8 @@
         <module>hortonmachine</module>
         <module>lesto</module>
         <module>grass</module>
-    <module>modules</module>
+        <module>modules</module>
+        <module>gui</module>
   </modules>
 
 	<issueManagement>
@@ -137,8 +138,8 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
@@ -149,7 +150,6 @@
                 </configuration>
             </plugin>
   
- <!--
 		    <plugin>
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
@@ -161,16 +161,36 @@
                 </executions>
             </plugin>
             <plugin>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-javadoc-plugin</artifactId>
+		    <version>2.9</version>
+		    <executions>
+			<execution>
+			    <id>attach-javadocs</id>
+			    <goals>
+				<goal>jar</goal>
+			    </goals>
+			    <configuration>
+				<additionalparam>-Xdoclint:none</additionalparam>
+			    </configuration>
+			</execution>
+		    </executions>
             </plugin>
-                   -->
+
+		<plugin>
+			<artifactId>maven-dependency-plugin</artifactId>
+			<executions>
+				<execution>
+					<phase>install</phase>
+					<goals>
+						<goal>copy-dependencies</goal>
+					</goals>
+					<configuration>
+						<outputDirectory>${session.executionRootDirectory}/libs-exported</outputDirectory>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
         </plugins>
     </build>
 

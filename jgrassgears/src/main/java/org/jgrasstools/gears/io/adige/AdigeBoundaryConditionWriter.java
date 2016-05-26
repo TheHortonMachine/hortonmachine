@@ -26,14 +26,14 @@ import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRI
 import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_data_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_tablename_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_TABLENAME_DESCRIPTION;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -65,18 +65,18 @@ import org.joda.time.format.DateTimeFormatter;
 @License(ADIGEBOUNDARYCONDITIONWRITER_LICENSE)
 public class AdigeBoundaryConditionWriter extends JGTModel {
 
-    @Description(ADIGEBOUNDARYCONDITIONWRITER_file_DESCRIPTION)
+    @Description(ADIGEBOUNDARYCONDITIONWRITER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(ADIGEBOUNDARYCONDITIONWRITER_tablename_DESCRIPTION)
+    @Description(ADIGEBOUNDARYCONDITIONWRITER_TABLENAME_DESCRIPTION)
     @In
     public String tablename = "table";
 
-    @Description(ADIGEBOUNDARYCONDITIONWRITER_data_DESCRIPTION)
+    @Description(ADIGEBOUNDARYCONDITIONWRITER_DATA_DESCRIPTION)
     @In
-    public HashMap<Integer, AdigeBoundaryCondition> data;
+    public Map<Integer, AdigeBoundaryCondition> data;
 
     private MemoryTable memoryTable;
 
@@ -101,11 +101,11 @@ public class AdigeBoundaryConditionWriter extends JGTModel {
         for( Entry<Integer, AdigeBoundaryCondition> entry : entrySet ) {
             AdigeBoundaryCondition condition = entry.getValue();
             Object[] valuesRow = new Object[colNames.length];
-            valuesRow[0] = condition.basinId;
-            valuesRow[1] = condition.discharge;
-            valuesRow[2] = condition.dischargeSub;
-            valuesRow[3] = condition.S1;
-            valuesRow[4] = condition.S2;
+            valuesRow[0] = condition.getBasinId();
+            valuesRow[1] = condition.getDischarge();
+            valuesRow[2] = condition.getDischargeSub();
+            valuesRow[3] = condition.getS1();
+            valuesRow[4] = condition.getS2();
             memoryTable.addRow(valuesRow);
         }
     }

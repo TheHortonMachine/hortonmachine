@@ -26,11 +26,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_inFile_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_pCode_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_pRes_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_pSeparator_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_IN_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_P_CODE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_P_RES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSXYZ2RASTER_P_SEPARATOR_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
@@ -75,25 +75,25 @@ import com.vividsolutions.jts.geom.Envelope;
 @License(OMSXYZ2RASTER_LICENSE)
 public class OmsXyz2Raster extends JGTModel {
 
-    @Description(OMSXYZ2RASTER_inFile_DESCRIPTION)
+    @Description(OMSXYZ2RASTER_IN_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inFile;
 
-    @Description(OMSXYZ2RASTER_pRes_DESCRIPTION)
+    @Description(OMSXYZ2RASTER_P_RES_DESCRIPTION)
     @In
     public Double pRes;
 
-    @Description(OMSXYZ2RASTER_pCode_DESCRIPTION)
+    @Description(OMSXYZ2RASTER_P_CODE_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description(OMSXYZ2RASTER_pSeparator_DESCRIPTION)
+    @Description(OMSXYZ2RASTER_P_SEPARATOR_DESCRIPTION)
     @In
     public String pSeparator;
 
-    @Description(OMSXYZ2RASTER_outRaster_DESCRIPTION)
+    @Description(OMSXYZ2RASTER_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 

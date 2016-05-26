@@ -26,12 +26,13 @@ import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCON
 import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_inData_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_outData_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_IN_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_OUT_DATA_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -60,18 +61,18 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @UI(JGTConstants.HIDE_UI_HINT)
 public class IdValuesArray2IdValuesConverter extends JGTModel {
 
-    @Description(IDVALUESARRAY2IDVALUESCONVERTER_inData_DESCRIPTION)
+    @Description(IDVALUESARRAY2IDVALUESCONVERTER_IN_DATA_DESCRIPTION)
     @In
-    public HashMap<Integer, double[]> inData;
+    public Map<Integer, double[]> inData;
 
-    @Description(IDVALUESARRAY2IDVALUESCONVERTER_outData_DESCRIPTION)
+    @Description(IDVALUESARRAY2IDVALUESCONVERTER_OUT_DATA_DESCRIPTION)
     @Out
-    public HashMap<Integer, Double> outData;
+    public Map<Integer, Double> outData;
 
     @Execute
     public void convert() throws IOException {
         if (outData == null) {
-            outData = new HashMap<Integer, Double>();
+            outData = new HashMap<>();
         }
         Set<Entry<Integer, double[]>> entries = inData.entrySet();
         for( Entry<Integer, double[]> entry : entries ) {

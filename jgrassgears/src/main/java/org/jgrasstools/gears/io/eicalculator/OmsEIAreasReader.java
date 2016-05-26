@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_outAreas_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_pSeparator_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_OUT_AREAS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_P_SEPARATOR_DESCRIPTION;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -61,16 +61,16 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSEIAREASREADER_LICENSE)
 public class OmsEIAreasReader extends JGTModel {
 
-    @Description(OMSEIAREASREADER_file_DESCRIPTION)
+    @Description(OMSEIAREASREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSEIAREASREADER_pSeparator_DESCRIPTION)
+    @Description(OMSEIAREASREADER_P_SEPARATOR_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Description(OMSEIAREASREADER_outAreas_DESCRIPTION)
+    @Description(OMSEIAREASREADER_OUT_AREAS_DESCRIPTION)
     @Out
     public List<EIAreas> outAreas;
 

@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_inFiles_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_pInterpolation_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_IN_FILES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_P_INTERPOLATION_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
 import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
 import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
@@ -82,16 +82,16 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License(OMSMOSAIC_LICENSE)
 public class OmsMosaic extends JGTModel {
 
-    @Description(OMSMOSAIC_inFiles_DESCRIPTION)
+    @Description(OMSMOSAIC_IN_FILES_DESCRIPTION)
     @In
     public List<File> inFiles;
 
-    @Description(OMSMOSAIC_pInterpolation_DESCRIPTION)
+    @Description(OMSMOSAIC_P_INTERPOLATION_DESCRIPTION)
     @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
-    @Description(OMSMOSAIC_outRaster_DESCRIPTION)
+    @Description(OMSMOSAIC_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

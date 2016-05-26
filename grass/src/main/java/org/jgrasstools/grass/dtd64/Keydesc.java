@@ -54,7 +54,7 @@ public class Keydesc {
      */
     public List<Item> getItem() {
         if (item == null) {
-            item = new ArrayList<Item>();
+            item = new ArrayList<>();
         }
         return this.item;
     }

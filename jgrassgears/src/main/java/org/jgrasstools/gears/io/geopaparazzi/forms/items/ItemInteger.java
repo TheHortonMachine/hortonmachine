@@ -28,8 +28,10 @@ public class ItemInteger implements Item {
     private boolean isMandatory;
     private String defaultValueStr;
     private boolean isLabel;
+    private String key;
 
-    public ItemInteger( String description, Integer defaultValue, boolean isMandatory, boolean isLabel ) {
+    public ItemInteger( String key, String description, Integer defaultValue, boolean isMandatory, boolean isLabel ) {
+        this.key = key;
         this.isLabel = isLabel;
         if (defaultValue == null) {
             defaultValueStr = "";
@@ -43,7 +45,12 @@ public class ItemInteger implements Item {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("        {\n");
-        sb.append("             \"key\": \"").append(description).append("\",\n");
+        if (key != null && key.trim().length() > 0) {
+            sb.append("             \"key\": \"").append(key).append("\",\n");
+            sb.append("             \"label\": \"").append(description).append("\",\n");
+        }else{
+            sb.append("             \"key\": \"").append(description).append("\",\n");
+        }
         sb.append("             \"value\": \"").append(defaultValueStr).append("\",\n");
         if (isLabel)
             sb.append("             \"islabel\": \"").append("true").append("\",\n");

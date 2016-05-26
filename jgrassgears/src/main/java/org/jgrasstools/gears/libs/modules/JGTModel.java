@@ -34,6 +34,7 @@ import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
+import oms3.annotations.Out;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -45,6 +46,7 @@ import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.exceptions.ModelsUserCancelException;
 import org.jgrasstools.gears.libs.monitor.GeotoolsProgressMonitorAdapter;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
@@ -92,7 +94,7 @@ public class JGTModel implements Process {
     }
 
     @Description(//
-    en = PROGRESS_MONITOR_EN,//
+    en = PROGRESS_MONITOR_EN, //
     it = PROGRESS_MONITOR_EN//
     )
     @In
@@ -131,13 +133,15 @@ public class JGTModel implements Process {
      */
     // TODO check this out???? @Out
     @UI(JGTConstants.ITERATOR_UI_HINT)
+    @In
+    @Out
     public boolean doProcess = false;
 
     /**
      * A switch that can enable module resetting.
      * 
      * <p>
-     * This variable might be usefull in the case in which 
+     * This variable might be useful in the case in which 
      * NON-timedependent modules at a certain point should anyways
      * re-read or re-process the data. For example in the case in which
      * a map was already calculated but at a certain point should 
@@ -153,6 +157,7 @@ public class JGTModel implements Process {
      * 
      * @param pm the {@link IJGTProgressMonitor progress monitor}.
      * @return true if the process was stopped.
+     * @deprecated use directly the pm.isCanceled() or {@link #checkCancel()} instead.
      */
     protected boolean isCanceled( IJGTProgressMonitor pm ) {
         if (pm.isCanceled()) {
@@ -160,6 +165,17 @@ public class JGTModel implements Process {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Check if the process has been canceled.
+     * 
+     * <p>If canceled a ModelsUserCancelException will be thrown.</p>
+     */
+    public void checkCancel() {
+        if (pm != null && pm.isCanceled()) {
+            throw new ModelsUserCancelException();
+        }
     }
 
     public Map<String, Object> execute( Map<String, Object> input, ProgressListener monitor ) throws ProcessException {
@@ -218,8 +234,8 @@ public class JGTModel implements Process {
     protected void checkNull( Object... objects ) {
         for( Object object : objects ) {
             if (object == null) {
-                throw new ModelsIllegalargumentException("Mandatory input argument is missing. Check your syntax...", this
-                        .getClass().getSimpleName(), pm);
+                throw new ModelsIllegalargumentException("Mandatory input argument is missing. Check your syntax...",
+                        this.getClass().getSimpleName(), pm);
             }
         }
     }
@@ -269,7 +285,7 @@ public class JGTModel implements Process {
      * @throws Exception
      */
     public GridCoverage2D getRaster( String source ) throws Exception {
-        if (source == null)
+        if (source == null || source.trim().length() == 0)
             return null;
         OmsRasterReader reader = new OmsRasterReader();
         reader.pm = pm;
@@ -290,7 +306,7 @@ public class JGTModel implements Process {
      * @throws Exception
      */
     public SimpleFeatureCollection getVector( String source ) throws Exception {
-        if (source == null)
+        if (source == null || source.trim().length() == 0)
             return null;
         OmsVectorReader reader = new OmsVectorReader();
         reader.pm = pm;

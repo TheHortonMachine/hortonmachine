@@ -26,16 +26,16 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_fCat_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_pCat_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_pCols_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_pRows_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_pSouth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_pWest_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_F_CAT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_CAT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_COLS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_EAST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_NORTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_ROWS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_SOUTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_WEST_DESCRIPTION;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionValues;
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
@@ -91,49 +91,49 @@ import com.vividsolutions.jts.geom.LineString;
 @License(OMSLINESRASTERIZER_LICENSE)
 public class OmsLinesRasterizer extends JGTModel {
 
-    @Description(OMSLINESRASTERIZER_inVector_DESCRIPTION)
+    @Description(OMSLINESRASTERIZER_IN_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description(OMSLINESRASTERIZER_fCat_DESCRIPTION)
+    @Description(OMSLINESRASTERIZER_F_CAT_DESCRIPTION)
     @In
     public String fCat;
 
-    @Description(OMSLINESRASTERIZER_pCat_DESCRIPTION)
+    @Description(OMSLINESRASTERIZER_P_CAT_DESCRIPTION)
     @In
     public double pCat = 1.0;
 
-    @Description(OMSLINESRASTERIZER_pNorth_DESCRIPTION)
+    @Description(OMSLINESRASTERIZER_P_NORTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description(OMSLINESRASTERIZER_pSouth_DESCRIPTION)
+    @Description(OMSLINESRASTERIZER_P_SOUTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description(OMSLINESRASTERIZER_pWest_DESCRIPTION)
+    @Description(OMSLINESRASTERIZER_P_WEST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description(OMSLINESRASTERIZER_pEast_DESCRIPTION)
+    @Description(OMSLINESRASTERIZER_P_EAST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description(OMSLINESRASTERIZER_pRows_DESCRIPTION)
+    @Description(OMSLINESRASTERIZER_P_ROWS_DESCRIPTION)
     @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
     @In
     public Integer pRows = null;
 
-    @Description(OMSLINESRASTERIZER_pCols_DESCRIPTION)
+    @Description(OMSLINESRASTERIZER_P_COLS_DESCRIPTION)
     @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer pCols = null;
 
-    @Description(OMSLINESRASTERIZER_outRaster_DESCRIPTION)
+    @Description(OMSLINESRASTERIZER_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 

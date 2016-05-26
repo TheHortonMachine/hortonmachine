@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.utils.images;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -29,10 +30,13 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 
@@ -70,6 +74,7 @@ import org.jgrasstools.gears.io.grasslegacy.map.color.GrassColorTable;
 import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.ColorUtilities;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -118,6 +123,8 @@ public class ImageGenerator {
     private MapContent content;
 
     private StreamingRenderer renderer;
+
+    private File shapesFile;
 
     public ImageGenerator( IJGTProgressMonitor monitor ) {
         if (monitor != null)
@@ -176,6 +183,27 @@ public class ImageGenerator {
             }
             featureFilter.add(filter);
         }
+    }
+
+    /**
+     * Method to add a file that contains a list of shapes/texts to add.
+     * 
+     * <p><b>This is applied on top of the final image. Positions are in pixel.</b> 
+     * </p>
+     * </p>
+     * <p>
+     * Supported are:</br>
+     * <ul>
+     *  <li>text;x;y;mytext;colorrgba;size</li>
+     * <li>box;x;y;w;h;strokewidth;fillrgba;strokergba</li>
+     * <li>roundedbox;x;y;w;h;round;strokewidth;fillrgba;strokergba</li>
+     *  <li>...</li>
+     * </ul>
+     * </p>
+     * 
+     */
+    public void addShapesPath( String shapesPath ) {
+        this.shapesFile = new File(shapesPath);
     }
 
     // private void setTransforms( final ReferencedEnvelope envelope, int width, int height ) {
@@ -449,6 +477,32 @@ public class ImageGenerator {
 
         return dumpImage;
     }
+
+    public void drawImage( Graphics2D g2d, ReferencedEnvelope ref, int imageWidth, int imageHeight, double buffer ) {
+        checkMapContent();
+
+        if (buffer > 0.0)
+            ref.expandBy(buffer, buffer);
+
+        Rectangle2D refRect = new Rectangle2D.Double(ref.getMinX(), ref.getMinY(), ref.getWidth(), ref.getHeight());
+        Rectangle2D imageRect = new Rectangle2D.Double(0, 0, imageWidth, imageHeight);
+
+        GeometryUtilities.scaleToRatio(imageRect, refRect, false);
+
+        ReferencedEnvelope newRef = new ReferencedEnvelope(refRect, ref.getCoordinateReferenceSystem());
+
+        Rectangle imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
+        Color white = Color.white;
+        g2d.setColor(new Color(white.getRed(), white.getGreen(), white.getBlue(), 0));
+        g2d.fillRect(0, 0, imageWidth, imageHeight);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        synchronized (renderer) {
+            content.getViewport().setBounds(newRef);
+            renderer.paint(g2d, imageBounds, newRef);
+        }
+    }
+
     /**
      * Draw the map on an image creating a new MapContent.
      * 
@@ -607,12 +661,12 @@ public class ImageGenerator {
      * @param scaleSize a size for the scale.
      * @param scaleX the X position of the scale in the final image.
      * @param scaleY the X position of the scale in the final image.
-     * @throws IOException
+     * @throws Exception 
      * @since 0.7.6
      */
     public void dumpPngImageForScaleAndPaper( String imagePath, ReferencedEnvelope bounds, double scale, PaperFormat paperFormat,
             Double dpi, BufferedImage legend, int legendX, int legendY, String scalePrefix, float scaleSize, int scaleX,
-            int scaleY ) throws IOException {
+            int scaleY ) throws Exception {
         if (dpi == null) {
             dpi = 72.0;
         }
@@ -632,15 +686,17 @@ public class ImageGenerator {
         int imageHeight = (int) (paperFormat.height() / 25.4 * dpi);
 
         BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, 0);
+        Graphics2D graphics = (Graphics2D) dumpImage.getGraphics();
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+        if (shapesFile != null && shapesFile.exists()) {
+            applyShapes(graphics);
+        }
         if (legend != null) {
-            Graphics2D graphics = (Graphics2D) dumpImage.getGraphics();
             graphics.drawImage(legend, null, legendX, legendY);
         }
 
         if (scalePrefix != null) {
-            Graphics2D graphics = (Graphics2D) dumpImage.getGraphics();
-
             Font scaleFont = graphics.getFont().deriveFont(scaleSize);
             graphics.setFont(scaleFont);
 
@@ -659,8 +715,138 @@ public class ImageGenerator {
             graphics.drawString(scaleString, (int) scaleX + 5, (int) scaleY);
 
         }
-
         ImageIO.write(dumpImage, "png", new File(imagePath));
+
+    }
+
+    /**
+     * Create an image for a given paper size and scale.
+     * 
+     * @param imagePath the path to which to write the image.
+     * @param bounds the area of interest. In this case only the center is considered. The bounds
+     *              are recalculated based in paper size and scale.
+     * @param scale the scale wanted for the map.
+     * @param paperFormat the paper format to use.
+     * @param dpi the wanted dpi. If <code>null</code>, 72dpi is used as default.
+     * @param legend an optional legend {@link BufferedImage image}.
+     * @param legendX the X position of the legend in the final image.
+     * @param legendY the Y position of the legend in the final image.
+     * @param scalePrefix if not <code>null</code>, this string will be added before the scale definition.
+     *                      If <code>null</code>, no scale definition will be added.
+     * @param scaleSize a size for the scale.
+     * @param scaleX the X position of the scale in the final image.
+     * @param scaleY the X position of the scale in the final image.
+     * @throws Exception 
+     * @since 0.7.6
+     */
+    public void dump2Graphics2D( Graphics2D graphics2d, ReferencedEnvelope bounds, double scale, PaperFormat paperFormat,
+            Double dpi, BufferedImage legend, int legendX, int legendY, String scalePrefix, float scaleSize, int scaleX,
+            int scaleY ) throws Exception {
+        if (dpi == null) {
+            dpi = 72.0;
+        }
+
+        // we use the bounds top find the center
+        Coordinate centre = bounds.centre();
+
+        double boundsXExtension = paperFormat.width() / 1000.0 * scale;
+        double boundsYExtension = paperFormat.height() / 1000.0 * scale;
+
+        Coordinate ll = new Coordinate(centre.x - boundsXExtension / 2.0, centre.y - boundsYExtension / 2.0);
+        Coordinate ur = new Coordinate(centre.x + boundsXExtension / 2.0, centre.y + boundsYExtension / 2.0);
+        Envelope tmpEnv = new Envelope(ll, ur);
+//        tmpEnv.expandBy(1000);
+        bounds = new ReferencedEnvelope(tmpEnv, bounds.getCoordinateReferenceSystem());
+
+        int imageWidth = (int) (paperFormat.width() / 25.4 * dpi);
+        int imageHeight = (int) (paperFormat.height() / 25.4 * dpi);
+
+        drawImage(graphics2d, bounds, imageWidth, imageHeight, 0);
+        graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        if (shapesFile != null && shapesFile.exists()) {
+            applyShapes(graphics2d);
+        }
+        if (legend != null) {
+            graphics2d.drawImage(legend, null, legendX, legendY);
+        }
+
+        if (scalePrefix != null) {
+            Font scaleFont = graphics2d.getFont().deriveFont(scaleSize);
+            graphics2d.setFont(scaleFont);
+
+            FontMetrics fontMetrics = graphics2d.getFontMetrics(scaleFont);
+            String scaleString = scalePrefix + "1:" + (int) scale;
+            Rectangle2D stringBounds = fontMetrics.getStringBounds(scaleString, graphics2d);
+
+            double width = stringBounds.getWidth();
+            double height = stringBounds.getHeight();
+            graphics2d.setColor(Color.white);
+            double border = 5;
+            graphics2d.fillRect((int) scaleX, (int) (scaleY - height + 2 * border), (int) (width + 3 * border),
+                    (int) (height + 2 * border));
+
+            graphics2d.setColor(Color.black);
+            graphics2d.drawString(scaleString, (int) scaleX + 5, (int) scaleY);
+
+        }
+    }
+
+    private void applyShapes( Graphics2D graphics ) throws Exception {
+        Stream<String> lines = Files.lines(Paths.get(shapesFile.toURI())).distinct()//
+                .filter(l -> l.trim().length() != 0);
+        lines.forEach(l -> {
+            if (l.startsWith("text")) {
+                // text;x;y;mytext;colorrgba;size
+                String[] split = l.split(";");
+                int x = Integer.parseInt(split[1]);
+                int y = Integer.parseInt(split[2]);
+                String msg = split[3];
+                Color color = ColorUtilities.colorFromRbgString(split[4]);
+                int size = Integer.parseInt(split[5]);
+
+                graphics.setColor(color);
+                graphics.setFont(new Font("Arial", Font.PLAIN, size));
+                graphics.drawString(msg, x, y);
+            } else if (l.startsWith("box")) {
+                // box;x;y;w;h;strokewidth;fillrgba;strokergba
+                String[] split = l.split(";");
+                int x = Integer.parseInt(split[1]);
+                int y = Integer.parseInt(split[2]);
+                int w = Integer.parseInt(split[3]);
+                int h = Integer.parseInt(split[4]);
+                int strokeWidth = Integer.parseInt(split[5]);
+                Color colorFill = ColorUtilities.colorFromRbgString(split[6]);
+                Color colorStroke = ColorUtilities.colorFromRbgString(split[7]);
+
+                graphics.setColor(colorFill);
+                graphics.fillRect(x, y, w, h);
+
+                BasicStroke stroke = new BasicStroke(strokeWidth);
+                graphics.setStroke(stroke);
+                graphics.setColor(colorStroke);
+                graphics.drawRect(x, y, w, h);
+            } else if (l.startsWith("roundedbox")) {
+                // roundedbox;x;y;w;h;round;strokewidth;fillrgba;strokergba
+                String[] split = l.split(";");
+                int x = Integer.parseInt(split[1]);
+                int y = Integer.parseInt(split[2]);
+                int w = Integer.parseInt(split[3]);
+                int h = Integer.parseInt(split[4]);
+                int round = Integer.parseInt(split[5]);
+                int strokeWidth = Integer.parseInt(split[6]);
+                Color colorFill = ColorUtilities.colorFromRbgString(split[7]);
+                Color colorStroke = ColorUtilities.colorFromRbgString(split[8]);
+
+                graphics.setColor(colorFill);
+                graphics.fillRoundRect(x, y, w, h, round, round);
+
+                BasicStroke stroke = new BasicStroke(strokeWidth);
+                graphics.setStroke(stroke);
+                graphics.setColor(colorStroke);
+                graphics.drawRoundRect(x, y, w, h, round, round);
+            }
+        });
 
     }
 
@@ -713,8 +899,8 @@ public class ImageGenerator {
                 // Double.parseDouble(toValueStr)};
                 // double opacity = 1.0;
 
-                Expression fromColorExpr = sB.colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(),
-                        fromColor.getBlue(), 255));
+                Expression fromColorExpr = sB
+                        .colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor.getBlue(), 255));
                 // Expression toColorExpr = sB.colorExpression(new java.awt.Color(toColor.getRed(),
                 // toColor.getGreen(), toColor
                 // .getBlue(), 255));
@@ -739,8 +925,8 @@ public class ImageGenerator {
             Color fromColor = colorsList.get(0);
             // double opacity = 1.0;
 
-            Expression fromColorExpr = sB.colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor
-                    .getBlue(), 255));
+            Expression fromColorExpr = sB
+                    .colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor.getBlue(), 255));
             Expression fromExpr = sB.literalExpression(Double.parseDouble(fromValueStr));
             // Expression opacityExpr = sB.literalExpression(opacity);
 

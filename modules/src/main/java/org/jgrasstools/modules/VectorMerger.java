@@ -25,9 +25,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_inVector1_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_inVector2_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_IN_VECTOR1_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_IN_VECTOR2_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_OUT_VECTOR_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.FILEIN_UI_HINT;
 
 import java.util.Arrays;
@@ -56,17 +56,17 @@ import org.jgrasstools.gears.modules.v.vectormerger.OmsVectorMerger;
 @License(OMSVECTORMERGER_LICENSE)
 public class VectorMerger extends JGTModel {
 
-    @Description(OMSVECTORMERGER_inVector1_DESCRIPTION)
+    @Description(OMSVECTORMERGER_IN_VECTOR1_DESCRIPTION)
     @UI(FILEIN_UI_HINT)
     @In
     public String inVector1;
 
-    @Description(OMSVECTORMERGER_inVector2_DESCRIPTION)
+    @Description(OMSVECTORMERGER_IN_VECTOR2_DESCRIPTION)
     @UI(FILEIN_UI_HINT)
     @In
     public String inVector2;
 
-    @Description(OMSVECTORMERGER_outVector_DESCRIPTION)
+    @Description(OMSVECTORMERGER_OUT_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outVector;

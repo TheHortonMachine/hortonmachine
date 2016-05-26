@@ -110,7 +110,7 @@ public class ParameterGroup {
      */
     public List<Parameter> getParameter() {
         if (parameter == null) {
-            parameter = new ArrayList<Parameter>();
+            parameter = new ArrayList<>();
         }
         return this.parameter;
     }
@@ -139,7 +139,7 @@ public class ParameterGroup {
      */
     public List<Flag> getFlag() {
         if (flag == null) {
-            flag = new ArrayList<Flag>();
+            flag = new ArrayList<>();
         }
         return this.flag;
     }

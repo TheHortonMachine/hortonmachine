@@ -26,10 +26,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_LABEL
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_fileNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_novalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_outData_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_FILE_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_OUT_DATA_DESCRIPTION;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,20 +68,20 @@ import org.joda.time.format.DateTimeFormatter;
 @License(OMSTIMESERIESREADER_LICENSE)
 public class OmsTimeSeriesReader extends JGTModel {
 
-    @Description(OMSTIMESERIESREADER_file_DESCRIPTION)
+    @Description(OMSTIMESERIESREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSTIMESERIESREADER_fileNovalue_DESCRIPTION)
+    @Description(OMSTIMESERIESREADER_FILE_NOVALUE_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description(OMSTIMESERIESREADER_novalue_DESCRIPTION)
+    @Description(OMSTIMESERIESREADER_NOVALUE_DESCRIPTION)
     @In
     public double novalue = JGTConstants.doubleNovalue;
 
-    @Description(OMSTIMESERIESREADER_outData_DESCRIPTION)
+    @Description(OMSTIMESERIESREADER_OUT_DATA_DESCRIPTION)
     @Out
     public HashMap<DateTime, double[]> outData;
 

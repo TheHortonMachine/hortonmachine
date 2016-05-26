@@ -37,25 +37,30 @@ package org.jgrasstools.gears.io.geopaparazzi;
 
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_TAGS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doLoglines_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doLogpoints_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doMedia_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doNotes_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_outData_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_LOG_LINES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_LOG_POINTS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_MEDIA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_NOTES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_OUT_DATA_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOGS;
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_IMAGES;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_METADATA;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_NOTES;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,19 +69,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -99,17 +94,31 @@ import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.StringUtilities;
 import org.jgrasstools.gears.utils.chart.Scatter;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description(OmsGeopaparazzi4Converter.DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
@@ -125,23 +134,23 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     @In
     public String inGeopaparazzi = null;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_doNotes_DESCRIPTION)
+    @Description(OMSGEOPAPARAZZICONVERTER_DO_NOTES_DESCRIPTION)
     @In
     public boolean doNotes = true;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_doLoglines_DESCRIPTION)
+    @Description(OMSGEOPAPARAZZICONVERTER_DO_LOG_LINES_DESCRIPTION)
     @In
     public boolean doLoglines = true;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_doLogpoints_DESCRIPTION)
+    @Description(OMSGEOPAPARAZZICONVERTER_DO_LOG_POINTS_DESCRIPTION)
     @In
     public boolean doLogpoints = false;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_doMedia_DESCRIPTION)
+    @Description(OMSGEOPAPARAZZICONVERTER_DO_MEDIA_DESCRIPTION)
     @In
     public boolean doMedia = true;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_outData_DESCRIPTION)
+    @Description(OMSGEOPAPARAZZICONVERTER_OUT_DATA_DESCRIPTION)
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In
     public String outFolder = null;
@@ -160,7 +169,6 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     private static final String TAG_VALUE = "value";
     private static final String TAG_TYPE = "type";
 
-    private final DefaultGeographicCRS crs = DefaultGeographicCRS.WGS84;
     private static boolean hasDriver = false;
 
     static {
@@ -220,41 +228,149 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     }
 
     private void projectInfo( Connection connection, File outputFolderFile ) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append("PROJECT INFO\n");
+        sb.append("----------------------\n\n");
+
+        LinkedHashMap<String, String> metadataMap = getMetadataMap(connection);
+        for( Entry<String, String> entry : metadataMap.entrySet() ) {
+            sb.append(entry.getKey()).append(" = ").append(entry.getValue()).append("\n");
+        }
+
+        FileUtilities.writeFile(sb.toString(), new File(outputFolderFile, "project_info.txt"));
+    }
+
+    /**
+     * Get the map of metadata of the project.
+     * 
+     * @param connection the db connection. 
+     * @return the map of metadata.
+     * @throws SQLException
+     */
+    public static LinkedHashMap<String, String> getMetadataMap( Connection connection ) throws SQLException {
+        LinkedHashMap<String, String> metadataMap = new LinkedHashMap<>();
         try (Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
             String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
                     MetadataTableFields.COLUMN_VALUE.getFieldName() + " from " + TABLE_METADATA;
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("PROJECT INFO\n");
-            sb.append("----------------------\n\n");
-
             ResultSet rs = statement.executeQuery(sql);
             while( rs.next() ) {
                 String key = rs.getString(MetadataTableFields.COLUMN_KEY.getFieldName());
                 String value = rs.getString(MetadataTableFields.COLUMN_VALUE.getFieldName());
-
                 if (!key.endsWith("ts")) {
-                    sb.append(key).append(" = ").append(value).append("\n");
+                    metadataMap.put(key, value);
                 } else {
                     try {
                         long ts = Long.parseLong(value);
                         String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
-                        sb.append(key).append(" = ").append(dateTimeString).append("\n");
+                        metadataMap.put(key, dateTimeString);
                     } catch (Exception e) {
-                        sb.append(key).append(" = ").append(value).append("\n");
+                        metadataMap.put(key, value);
                     }
                 }
             }
 
-            FileUtilities.writeFile(sb.toString(), new File(outputFolderFile, "project_info.txt"));
         }
+        return metadataMap;
     }
 
     private void simpleNotesToShapefile( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
         File outputShapeFile = new File(outputFolderFile, "notes_simple.shp");
 
+        SimpleFeatureCollection newCollection = simpleNotes2featurecollection(connection, pm);
+        dumpVector(newCollection, outputShapeFile.getAbsolutePath());
+    }
+
+    private void complexNotesToShapefile( Connection connection, File outputFolderFile, IJGTProgressMonitor pm )
+            throws Exception {
+        HashMap<String, SimpleFeatureCollection> name2CollectionMap = complexNotes2featurecollections(connection, pm);
+
+        pm.beginTask("Writing layers to shapefile...", name2CollectionMap.size());
+        Set<Entry<String, SimpleFeatureCollection>> entrySet2 = name2CollectionMap.entrySet();
+        for( Entry<String, SimpleFeatureCollection> entry : entrySet2 ) {
+            String name = entry.getKey();
+            int lastUnderscore = name.lastIndexOf('_');
+            name = name.substring(0, lastUnderscore);
+
+            SimpleFeatureCollection collection = entry.getValue();
+
+            File outFile = new File(outputFolderFile, "notes_" + name + ".shp");
+            if (outFile.exists()) {
+                File[] listFiles = outputFolderFile.listFiles();
+                List<String> fileNames = new ArrayList<>();
+                for( File file : listFiles ) {
+                    fileNames.add(FileUtilities.getNameWithoutExtention(file));
+                }
+
+                String shpName = FileUtilities.getNameWithoutExtention(outFile);
+                String safeShpName = StringUtilities.checkSameName(fileNames, shpName);
+                outFile = new File(outputFolderFile, safeShpName + ".shp");
+            }
+            dumpVector(collection, outFile.getAbsolutePath());
+            pm.worked(1);
+        }
+        pm.done();
+    }
+
+    /**
+     * @return the list of potential layers.
+     * @throws SQLException 
+     */
+    public static List<String> getLayerNamesList( Connection connection ) throws SQLException {
+        List<String> layerNames = new ArrayList<>();
+        String sql = "select count(*) from " + TABLE_NOTES;
+        int count = countRows(connection, sql);
+        if (count > 0)
+            layerNames.add("Simple Notes");
+
+        sql = "select count(*) from " + TABLE_IMAGES;
+        count = countRows(connection, sql);
+        if (count > 0)
+            layerNames.add("Media Notes");
+
+        sql = "select count(*) from " + TABLE_GPSLOGS;
+        count = countRows(connection, sql);
+        if (count > 0)
+            layerNames.add("GPS logs");
+
+        String formFN = NotesTableFields.COLUMN_FORM.getFieldName();
+        String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
+        sql = "select distinct " + textFN + " from " + TABLE_NOTES + " where " + formFN + " is not null and " + formFN + "<>''";
+        try (Statement statement = connection.createStatement()) {
+            statement.setQueryTimeout(30); // set timeout to 30 sec.
+
+            ResultSet rs = statement.executeQuery(sql);
+            while( rs.next() ) {
+                String formName = rs.getString(1);
+                layerNames.add(formName);
+            }
+        }
+
+        return layerNames;
+    }
+
+    private static int countRows( Connection connection, String sql ) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            ResultSet rs = statement.executeQuery(sql);
+            if (rs.next()) {
+                int notesCount = rs.getInt(1);
+                return notesCount;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * 
+     * 
+     * @param connection
+     * @param pm
+     * @return
+     * @throws SQLException
+     */
+    public static SimpleFeatureCollection simpleNotes2featurecollection( Connection connection, IJGTProgressMonitor pm )
+            throws SQLException {
         String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
         String descFN = NotesTableFields.COLUMN_DESCRIPTION.getFieldName();
         String tsFN = NotesTableFields.COLUMN_TS.getFieldName();
@@ -264,9 +380,10 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         String latFN = NotesTableFields.COLUMN_LAT.getFieldName();
         String lonFN = NotesTableFields.COLUMN_LON.getFieldName();
 
+        GeometryFactory gf = GeometryUtilities.gf();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("gpsimplenotes"); //$NON-NLS-1$
-        b.setCRS(crs);
+        b.setCRS(DefaultGeographicCRS.WGS84);
         b.add("the_geom", Point.class); //$NON-NLS-1$
         b.add(textFN, String.class);
         b.add(descFN, String.class);
@@ -288,7 +405,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         SimpleFeatureType featureType = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
 
-        pm.beginTask("Import simple notes...", -1);
+        pm.beginTask("Processing simple notes...", -1);
         SimpleFeatureCollection newCollection = new DefaultFeatureCollection();
 
         try (Statement statement = connection.createStatement()) {
@@ -328,12 +445,15 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             }
 
         }
-        dumpVector(newCollection, outputShapeFile.getAbsolutePath());
+        return newCollection;
     }
 
-    private void complexNotesToShapefile( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
+    public static HashMap<String, SimpleFeatureCollection> complexNotes2featurecollections( Connection connection,
+            IJGTProgressMonitor pm ) throws SQLException, Exception {
         pm.beginTask("Import complex notes...", -1);
 
+        GeometryFactory gf = GeometryUtilities.gf();
+        String idFN = NotesTableFields.COLUMN_ID.getFieldName();
         String tsFN = NotesTableFields.COLUMN_TS.getFieldName();
         String altimFN = NotesTableFields.COLUMN_ALTIM.getFieldName();
         String dirtyFN = NotesTableFields.COLUMN_ISDIRTY.getFieldName();
@@ -342,8 +462,10 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         String lonFN = NotesTableFields.COLUMN_LON.getFieldName();
 
         HashMap<String, BuilderAndCollectionPair> forms2PropertiesMap = new HashMap<>();
+        HashMap<String, SimpleFeatureCollection> name2CollectionMap = new HashMap<>();
 
         String sql = "select " + //
+                idFN + "," + //
                 latFN + "," + //
                 lonFN + "," + //
                 altimFN + "," + //
@@ -356,6 +478,8 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
             ResultSet rs = statement.executeQuery(sql);
             while( rs.next() ) {
+                String idString = rs.getString(idFN);
+                System.out.println(idString);
                 String formString = rs.getString(formFN);
                 if (formString == null || formString.trim().length() == 0) {
                     continue;
@@ -397,7 +521,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
                         String value = null;
                         if (jsonObject.has(TAG_VALUE)) {
-                            value = jsonObject.getString(TAG_VALUE).trim();
+                            value = jsonObject.get(TAG_VALUE).toString().trim();
                         }
                         String type = null;
                         if (jsonObject.has(TAG_TYPE)) {
@@ -412,22 +536,37 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 }
 
                 Set<Entry<String, String>> entrySet = valuesMap.entrySet();
+                TreeMap<String, Integer> namesMap = new TreeMap<String, Integer>();
                 // check if there is a builder already
-                BuilderAndCollectionPair builderAndCollectionPair = forms2PropertiesMap.get(sectionName);
+                String uniqueSectionName = sectionName + "_" + entrySet.size();
+                BuilderAndCollectionPair builderAndCollectionPair = forms2PropertiesMap.get(uniqueSectionName);
                 if (builderAndCollectionPair == null) {
                     SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-                    b.setName(sectionName); //$NON-NLS-1$
-                    b.setCRS(crs);
+                    b.setName(sectionName); // $NON-NLS-1$
+                    b.setCRS(DefaultGeographicCRS.WGS84);
                     b.add("the_geom", Point.class); //$NON-NLS-1$
-                    b.add(tsFN, String.class); //$NON-NLS-1$
-                    b.add(altimFN, Double.class); //$NON-NLS-1$
-                    b.add(dirtyFN, Integer.class); //$NON-NLS-1$
+                    b.add(tsFN, String.class); // $NON-NLS-1$
+                    b.add(altimFN, Double.class); // $NON-NLS-1$
+                    b.add(dirtyFN, Integer.class); // $NON-NLS-1$
                     for( Entry<String, String> entry : entrySet ) {
                         String key = entry.getKey();
                         key = key.replaceAll("\\s+", "_");
                         if (key.length() > 10) {
                             pm.errorMessage("Need to trim key: " + key);
                             key = key.substring(0, 10);
+                        }
+                        Integer nCount = namesMap.get(key);
+                        if (nCount == null) {
+                            nCount = 1;
+                            namesMap.put(key, 1);
+                        } else {
+                            nCount++;
+                            namesMap.put(key, nCount);
+                            if (nCount < 10) {
+                                key = key.substring(0, key.length() - 1) + nCount;
+                            } else {
+                                key = key.substring(0, key.length() - 2) + nCount;
+                            }
                         }
                         b.add(key, String.class);
                     }
@@ -439,7 +578,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                     builderAndCollectionPair.builder = builder;
                     builderAndCollectionPair.collection = newCollection;
 
-                    forms2PropertiesMap.put(sectionName, builderAndCollectionPair);
+                    forms2PropertiesMap.put(uniqueSectionName, builderAndCollectionPair);
                 }
 
                 int size = entrySet.size();
@@ -482,7 +621,11 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                     values[i] = value;
                     i++;
                 }
-                builderAndCollectionPair.builder.addAll(values);
+                try {
+                    builderAndCollectionPair.builder.addAll(values);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 SimpleFeature feature = builderAndCollectionPair.builder.buildFeature(null);
                 builderAndCollectionPair.collection.add(feature);
             }
@@ -491,25 +634,22 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             for( Entry<String, BuilderAndCollectionPair> entry : entrySet ) {
                 String name = entry.getKey();
                 SimpleFeatureCollection collection = entry.getValue().collection;
-
-                File outFile = new File(outputFolderFile, "notes_" + name + ".shp");
-                dumpVector(collection, outFile.getAbsolutePath());
+                name2CollectionMap.put(name, collection);
             }
         } finally {
             pm.done();
         }
+        return name2CollectionMap;
     }
 
-    private boolean isMedia( String type ) {
-        return type.equals("pictures") || type.equals("map") || type.equals("sketch");
-    }
-
-    private static class BuilderAndCollectionPair {
-        SimpleFeatureBuilder builder;
-        DefaultFeatureCollection collection;
-    }
-
-    private void gpsLogToShapefiles( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
+    /**
+     * Get the list of gps logs.
+     * 
+     * @param connection the db connection.
+     * @return the list of gps logs.
+     * @throws SQLException
+     */
+    public static List<GpsLog> getGpsLogsList( Connection connection ) throws SQLException {
         List<GpsLog> logsList = DaoGpsLog.getLogsList(connection);
 
         try {
@@ -519,8 +659,114 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ModelsRuntimeException("An error occurred while reading the gps logs.", this);
+            throw new ModelsRuntimeException("An error occurred while reading the gps logs.",
+                    OmsGeopaparazzi4Converter.class.getSimpleName());
         }
+        return logsList;
+    }
+
+    public static DefaultFeatureCollection getLogLinesFeatureCollection( IJGTProgressMonitor pm, List<GpsLog> logsList ) {
+        GeometryFactory gf = GeometryUtilities.gf();
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("geopaparazzilogs");
+        b.setCRS(DefaultGeographicCRS.WGS84);
+        b.add("the_geom", MultiLineString.class);
+        b.add("STARTDATE", String.class);
+        b.add("ENDDATE", String.class);
+        b.add("DESCR", String.class);
+        SimpleFeatureType featureType = b.buildFeatureType();
+        pm.beginTask("Import gps to lines...", logsList.size());
+        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
+        for( GpsLog log : logsList ) {
+            List<GpsPoint> points = log.points;
+
+            List<Coordinate> coordList = new ArrayList<>();
+            String startDate = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(log.startTime));
+            String endDate = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(log.endTime));
+            for( GpsPoint gpsPoint : points ) {
+                Coordinate c = new Coordinate(gpsPoint.lon, gpsPoint.lat);
+                coordList.add(c);
+            }
+            Coordinate[] coordArray = coordList.toArray(new Coordinate[coordList.size()]);
+            if (coordArray.length < 2) {
+                continue;
+            }
+            LineString lineString = gf.createLineString(coordArray);
+            MultiLineString multiLineString = gf.createMultiLineString(new LineString[]{lineString});
+
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+            Object[] values = new Object[]{multiLineString, startDate, endDate, log.text};
+            builder.addAll(values);
+            SimpleFeature feature = builder.buildFeature(null);
+
+            newCollection.add(feature);
+            pm.worked(1);
+        }
+        pm.done();
+        return newCollection;
+    }
+
+    public static boolean isMedia( String type ) {
+        return type.equals("pictures") || type.equals("map") || type.equals("sketch");
+    }
+
+    /**
+     * Extracts profile information from logs.
+     * 
+     * @param log the log to analyze.
+     * @param size the number of points in the log (as off: int size = log.points.size(); )
+     * @param xProfile the array of to put the progressive distance in.
+     * @param yProfile the array of to put the elevation in.
+     * @param xPlanim the array of to put the x coord in.
+     * @param yPlanim the array of to put the y coord in.
+     * @param timestampArray  the array of to put the times in.
+     */
+    public static void populateProfilesForSingleLog( GpsLog log, int size, double[] xProfile, double[] yProfile, double[] xPlanim,
+            double[] yPlanim, long[] timestampArray ) {
+        GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
+        double runningDistance = 0;
+        for( int i = 0; i < size - 1; i++ ) {
+            GpsPoint p1 = log.points.get(i);
+            GpsPoint p2 = log.points.get(i + 1);
+            double lon1 = p1.lon;
+            double lat1 = p1.lat;
+            double altim1 = p1.altim;
+            long utc1 = p1.utctime;
+            double lon2 = p2.lon;
+            double lat2 = p2.lat;
+            double altim2 = p2.altim;
+            long utc2 = p2.utctime;
+
+            gc.setStartingGeographicPoint(lon1, lat1);
+            gc.setDestinationGeographicPoint(lon2, lat2);
+            double distance = gc.getOrthodromicDistance();
+            runningDistance += distance;
+
+            if (i == 0) {
+                xProfile[i] = 0.0;
+                yProfile[i] = altim1;
+
+                xPlanim[i] = lon1;
+                yPlanim[i] = lat1;
+
+                timestampArray[i] = utc1;
+            }
+            xProfile[i + 1] = runningDistance;
+            yProfile[i + 1] = altim2;
+
+            xPlanim[i + 1] = lon2;
+            yPlanim[i + 1] = lat2;
+            timestampArray[i + 1] = utc2;
+        }
+    }
+
+    private static class BuilderAndCollectionPair {
+        SimpleFeatureBuilder builder;
+        DefaultFeatureCollection collection;
+    }
+
+    private void gpsLogToShapefiles( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
+        List<GpsLog> logsList = getGpsLogsList(connection);
 
         /*
          * create the lines shapefile
@@ -529,53 +775,18 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         SimpleFeatureType featureType;
 
         if (doLoglines) {
-            b = new SimpleFeatureTypeBuilder();
-            b.setName("geopaparazzinotes");
-            b.setCRS(crs);
-            b.add("the_geom", MultiLineString.class);
-            b.add("STARTDATE", String.class);
-            b.add("ENDDATE", String.class);
-            b.add("DESCR", String.class);
-            featureType = b.buildFeatureType();
-            pm.beginTask("Import gps to lines...", logsList.size());
-            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
-            for( GpsLog log : logsList ) {
-                List<GpsPoint> points = log.points;
-
-                List<Coordinate> coordList = new ArrayList<>();
-                String startDate = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(log.startTime));
-                String endDate = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(log.endTime));
-                for( GpsPoint gpsPoint : points ) {
-                    Coordinate c = new Coordinate(gpsPoint.lon, gpsPoint.lat);
-                    coordList.add(c);
-                }
-                Coordinate[] coordArray = coordList.toArray(new Coordinate[coordList.size()]);
-                if (coordArray.length < 2) {
-                    continue;
-                }
-                LineString lineString = gf.createLineString(coordArray);
-                MultiLineString multiLineString = gf.createMultiLineString(new LineString[]{lineString});
-
-                SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-                Object[] values = new Object[]{multiLineString, startDate, endDate, log.text};
-                builder.addAll(values);
-                SimpleFeature feature = builder.buildFeature(null);
-
-                newCollection.add(feature);
-                pm.worked(1);
-            }
-            pm.done();
+            DefaultFeatureCollection newCollection = getLogLinesFeatureCollection(pm, logsList);
             File outputLinesShapeFile = new File(outputFolderFile, "gpslines.shp");
             dumpVector(newCollection, outputLinesShapeFile.getAbsolutePath());
         }
 
         if (doLogpoints) {
             /*
-                 * create the points shapefile
-                 */
+             * create the points shapefile
+             */
             b = new SimpleFeatureTypeBuilder();
             b.setName("geopaparazzinotes");
-            b.setCRS(crs);
+            b.setCRS(DefaultGeographicCRS.WGS84);
             b.add("the_geom", Point.class);
             b.add("ALTIMETRY", Double.class);
             b.add("DATE", String.class);
@@ -620,46 +831,12 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 File planimetricFile = new File(chartsFolderFile, fileName + "_planimetric.png");
                 File csvFile = new File(chartsFolderFile, fileName + ".csv");
 
-                GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
                 double[] xProfile = new double[size];
                 double[] yProfile = new double[size];
                 double[] xPlanim = new double[size];
                 double[] yPlanim = new double[size];
                 long[] timestampArray = new long[size];
-                double runningDistance = 0;
-                for( int i = 0; i < size - 1; i++ ) {
-                    GpsPoint p1 = log.points.get(i);
-                    GpsPoint p2 = log.points.get(i + 1);
-                    double lon1 = p1.lon;
-                    double lat1 = p1.lat;
-                    double altim1 = p1.altim;
-                    long utc1 = p1.utctime;
-                    double lon2 = p2.lon;
-                    double lat2 = p2.lat;
-                    double altim2 = p2.altim;
-                    long utc2 = p2.utctime;
-
-                    gc.setStartingGeographicPoint(lon1, lat1);
-                    gc.setDestinationGeographicPoint(lon2, lat2);
-                    double distance = gc.getOrthodromicDistance();
-                    runningDistance += distance;
-
-                    if (i == 0) {
-                        xProfile[i] = 0.0;
-                        yProfile[i] = altim1;
-
-                        xPlanim[i] = lon1;
-                        yPlanim[i] = lat1;
-
-                        timestampArray[i] = utc1;
-                    }
-                    xProfile[i + 1] = runningDistance;
-                    yProfile[i + 1] = altim2;
-
-                    xPlanim[i + 1] = lon2;
-                    yPlanim[i + 1] = lat2;
-                    timestampArray[i + 1] = utc2;
-                }
+                populateProfilesForSingleLog(log, size, xProfile, yProfile, xPlanim, yPlanim, timestampArray);
 
                 Scatter scatterProfile = new Scatter("Profile " + logName);
                 scatterProfile.addSeries("profile", xProfile, yProfile);
@@ -697,15 +874,25 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     }
 
     private void mediaToShapeFile( Connection connection, File mediaFolderFile, IJGTProgressMonitor pm ) throws Exception {
-        try {
+        SimpleFeatureCollection newCollection = media2FeatureCollection(connection, mediaFolderFile, pm);
+        File outputPointsShapeFile = new File(mediaFolderFile.getParentFile(), "mediapoints.shp");
+        dumpVector(newCollection, outputPointsShapeFile.getAbsolutePath());
 
+    }
+
+    public static SimpleFeatureCollection media2FeatureCollection( Connection connection, File mediaFolderFile,
+            IJGTProgressMonitor pm ) throws Exception, IOException, FileNotFoundException {
+        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
+        try {
+            GeometryFactory gf = GeometryUtilities.gf();
             /*
              * create the points shapefile
              */
+            newCollection = new DefaultFeatureCollection();
 
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-            b.setName("geopaparazzinotes");
-            b.setCRS(crs);
+            b.setName("geopaparazzimediapoints");
+            b.setCRS(DefaultGeographicCRS.WGS84);
             b.add("the_geom", Point.class);
             String altimFN = ImageTableFields.COLUMN_ALTIM.getFieldName();
             String tsFN = ImageTableFields.COLUMN_TS.getFieldName();
@@ -715,10 +902,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             b.add(tsFN, String.class);
             b.add(azimFN, Double.class);
             b.add(imageNameFN, String.class);
-
             SimpleFeatureType featureType = b.buildFeatureType();
-
-            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
 
             List<Image> imagesList = DaoImages.getImagesList(connection);
             pm.beginTask("Importing media...", imagesList.size());
@@ -746,12 +930,65 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 pm.worked(1);
             }
 
-            File outputPointsShapeFile = new File(mediaFolderFile.getParentFile(), "mediapoints.shp");
-            dumpVector(newCollection, outputPointsShapeFile.getAbsolutePath());
         } finally {
             pm.done();
         }
+        return newCollection;
+    }
 
+    public static SimpleFeatureCollection media2IdBasedFeatureCollection( Connection connection, IJGTProgressMonitor pm )
+            throws Exception, IOException, FileNotFoundException {
+        try {
+
+            GeometryFactory gf = GeometryUtilities.gf();
+
+            /*
+             * create the points fc
+             */
+            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
+
+            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+            b.setName("geopaparazzimediapoints");
+            b.setCRS(DefaultGeographicCRS.WGS84);
+            b.add("the_geom", Point.class);
+            String altimFN = ImageTableFields.COLUMN_ALTIM.getFieldName();
+            String tsFN = ImageTableFields.COLUMN_TS.getFieldName();
+            String azimFN = ImageTableFields.COLUMN_AZIM.getFieldName();
+            b.add(altimFN, String.class);
+            b.add(tsFN, String.class);
+            b.add(azimFN, Double.class);
+            b.add("imageid", Long.class);
+            SimpleFeatureType featureType = b.buildFeatureType();
+
+            List<Image> imagesList = DaoImages.getImagesList(connection);
+            pm.beginTask("Importing media...", imagesList.size());
+
+            for( Image image : imagesList ) {
+                Point point = gf.createPoint(new Coordinate(image.getLon(), image.getLat()));
+                long ts = image.getTs();
+                String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
+
+                Object[] values = new Object[]{point, image.getAltim(), dateTimeString, image.getAzim(), image.getImageDataId()};
+
+                SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+                builder.addAll(values);
+                SimpleFeature feature = builder.buildFeature(null);
+                newCollection.add(feature);
+                pm.worked(1);
+            }
+            return newCollection;
+
+        } finally {
+            pm.done();
+        }
+    }
+
+    public static void writeImageFromId( Connection connection, long imageId, File newImageFile ) throws Exception {
+        byte[] imageData = DaoImages.getImageData(connection, imageId);
+
+        try (OutputStream outStream = new FileOutputStream(newImageFile)) {
+            outStream.write(imageData);
+        }
     }
 
 }

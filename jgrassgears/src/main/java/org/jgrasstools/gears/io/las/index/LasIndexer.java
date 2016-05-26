@@ -1,23 +1,5 @@
 /*
  * This file is part of JGrasstools (http://www.jgrasstools.org)
- * (C) HydroloGIS - www.hydrologis.com
- *
- * JGrasstools is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-/*
- * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
  * JGrasstools is free software: you can redistribute it and/or modify
@@ -35,9 +17,32 @@
  */
 package org.jgrasstools.gears.io.las.index;
 
-import com.vividsolutions.jts.geom.*;
+import static java.lang.Math.round;
 
-import oms3.annotations.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.Finalize;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -49,7 +54,6 @@ import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.io.las.ALasDataManager;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
@@ -68,15 +72,14 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import static java.lang.Math.round;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateList;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.geom.Polygon;
 
 @Description("Creates indexes for Las files.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")

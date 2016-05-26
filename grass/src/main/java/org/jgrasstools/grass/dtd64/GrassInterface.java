@@ -110,7 +110,7 @@ public class GrassInterface {
      */
     public List<Task> getTask() {
         if (task == null) {
-            task = new ArrayList<Task>();
+            task = new ArrayList<>();
         }
         return this.task;
     }

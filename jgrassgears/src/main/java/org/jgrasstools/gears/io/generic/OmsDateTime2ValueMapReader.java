@@ -27,11 +27,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_data_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_fileNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_pCols_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_pSeparator_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_FILE_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_P_COLS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_P_SEPARATOR_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
 import java.io.BufferedReader;
@@ -66,24 +66,24 @@ import org.joda.time.DateTime;
 @UI(OMSDATETIME2VALUEMAPREADER_UI)
 public class OmsDateTime2ValueMapReader extends JGTModel {
 
-    @Description(OMSDATETIME2VALUEMAPREADER_file_DESCRIPTION)
+    @Description(OMSDATETIME2VALUEMAPREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSDATETIME2VALUEMAPREADER_pCols_DESCRIPTION)
+    @Description(OMSDATETIME2VALUEMAPREADER_P_COLS_DESCRIPTION)
     @In
     public int pCols = 1;
 
-    @Description(OMSDATETIME2VALUEMAPREADER_pSeparator_DESCRIPTION)
+    @Description(OMSDATETIME2VALUEMAPREADER_P_SEPARATOR_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Description(OMSDATETIME2VALUEMAPREADER_fileNovalue_DESCRIPTION)
+    @Description(OMSDATETIME2VALUEMAPREADER_FILE_NOVALUE_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description(OMSDATETIME2VALUEMAPREADER_data_DESCRIPTION)
+    @Description(OMSDATETIME2VALUEMAPREADER_DATA_DESCRIPTION)
     @Out
     public LinkedHashMap<DateTime, double[]> data;
 

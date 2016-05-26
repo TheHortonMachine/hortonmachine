@@ -52,84 +52,84 @@ public class GrassUtils {
     /**
      * Prefix for parameter variables names. 
      */
-    public static String VARIABLE_PARAMETER_PREFIX = "$$";
-    public static String VARIABLE_PARAMETER_PREFIX_REGEX = "\\$\\$";
+    public static final String VARIABLE_PARAMETER_PREFIX = "$$";
+    public static final String VARIABLE_PARAMETER_PREFIX_REGEX = "\\$\\$";
 
     /**
      * Prefix for flag variables names. 
      */
-    public static String VARIABLE_FLAG_PREFIX = "$$";
-    public static String VARIABLE_FLAG_PREFIX_REGEX = "\\$\\$";
+    public static final String VARIABLE_FLAG_PREFIX = "$$";
+    public static final String VARIABLE_FLAG_PREFIX_REGEX = "\\$\\$";
 
     /**
      * Suffix for parameter variables names. 
      */
-    public static String VARIABLE_PARAMETER_SUFFIX = "PARAMETER";
+    public static final String VARIABLE_PARAMETER_SUFFIX = "PARAMETER";
 
     /**
      * Suffix for flag variables names. 
      */
-    public static String VARIABLE_FLAG_SUFFIX = "FLAG";
+    public static final String VARIABLE_FLAG_SUFFIX = "FLAG";
 
     /**
      * Substitution string from dots in parameters names. 
      */
-    public static String VARIABLE_DOT_SUBSTITUTION = "__";
-    public static String VARIABLE_DOT_SUBSTITUTION_REG = "\\_\\_";
+    public static final String VARIABLE_DOT_SUBSTITUTION = "__";
+    public static final String VARIABLE_DOT_SUBSTITUTION_REG = "\\_\\_";
 
     /**
      * Key used to set and retrieve the grass installation location.
      * 
      * <p>Example on linux: /usr/lib/grass64
      */
-    public static String GRASS_ENVIRONMENT_GISBASE_KEY = "jgt-grass.gisbase";
+    public static final String GRASS_ENVIRONMENT_GISBASE_KEY = "jgt-grass.gisbase";
 
     /**
      * Key used to set and retrieve the grass shell.
      * 
      * <p>Example on linux: /usr/bin/sh
      */
-    public static String GRASS_ENVIRONMENT_SHELL_KEY = "jgt-grass.shell";
+    public static final String GRASS_ENVIRONMENT_SHELL_KEY = "jgt-grass.shell";
 
     /**
      * Category to use for raster processing.
      */
-    public static String GRASS_RASTER_CATEGORY = "Grass/Raster Modules";
+    public static final String GRASS_RASTER_CATEGORY = "Grass/Raster Modules";
 
     /**
      * Category to use for raster 3d processing.
      */
-    public static String GRASS_RASTER3D_CATEGORY = "Grass/Raster 3D Modules";
+    public static final String GRASS_RASTER3D_CATEGORY = "Grass/Raster 3D Modules";
 
     /**
      * Category to use for vector processing.
      */
-    public static String GRASS_VECTOR_CATEGORY = "Grass/Vector Modules";
+    public static final String GRASS_VECTOR_CATEGORY = "Grass/Vector Modules";
 
     /**
      * Category to use for imagery.
      */
-    public static String GRASS_IMAGERY_CATEGORY = "Grass/Imagery Modules";
+    public static final String GRASS_IMAGERY_CATEGORY = "Grass/Imagery Modules";
 
     /**
      * Category to use for imagery.
      */
-    public static String GRASS_DISPLAY_CATEGORY = "Grass/Display Modules";
+    public static final String GRASS_DISPLAY_CATEGORY = "Grass/Display Modules";
 
     /**
      * Category to use for generic.
      */
-    public static String GRASS_GENERAL_CATEGORY = "Grass/General Modules";
+    public static final String GRASS_GENERAL_CATEGORY = "Grass/General Modules";
 
     /**
      * Category to use for database.
      */
-    public static String GRASS_DATABASE_CATEGORY = "Grass/Database Modules";
+    public static final String GRASS_DATABASE_CATEGORY = "Grass/Database Modules";
 
     /**
      * Category to use for otherl modules.
      */
-    public static String GRASS_OTHER_CATEGORY = "Grass";
+    public static final String GRASS_OTHER_CATEGORY = "Grass";
 
     /**
      * GUI hint: item is an existing file path.
@@ -164,7 +164,7 @@ public class GrassUtils {
     /**
      * Modules that can't be launched in non-interactive mode or simply do not make sense.
      */
-    public static final List<String> incompatibleGrassModules = Arrays.asList("v.build.polylines", "v.build", "v.category",
+    protected static final List<String> incompatibleGrassModules = Arrays.asList("v.build.polylines", "v.build", "v.category",
             "v.convert", "v.db.connect", "v.digit", "v.in.db", "v.in.sites", "v.kernel", "v.label.sa", "v.label", "v.lrs.create",
             "v.lrs.label", "v.lrs.segment", "v.lrs.where", "v.proj", "v.support", "v.to.rast3", "v.what", "v.what.rast",
             "r.compress", "r.random.surface", "r.region", "r.support", "r.support.stats", "r.timestamp", "r.to.rast3",
@@ -177,7 +177,7 @@ public class GrassUtils {
             "v.db.univar", "v.db.update", "v.in.e00", "v.in.sites.all", "v.univar.sh", "r.external", "v.external", "v.colors",
             "v.in.garmin", "v.in.gpsbabel", "v.out.gpsbabel", "r.proj", "v.proj", "r.category");
 
-    public static final List<String> reservedWords = Arrays
+    protected static final List<String> reservedWords = Arrays
             .asList("abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue",
                     "default", "double", "do", "else", "enum", "extends", "false", "final", "finally", "float", "for", "goto",
                     "if", "implements", "import", "instanceof", "int", "interface", "long", "native", "new", "null", "package",
@@ -194,6 +194,14 @@ public class GrassUtils {
     public static final String BASEPACKAGE = "org.osgeo.grass.";
 
     /**
+     * String Constants
+     */
+    private static final String PERMANENT = "PERMANENT";
+    private static final String OS_NAME = "os.name";
+
+    private GrassUtils() {}
+
+    /**
      * Get the jaxb grass {@link Task} for a given xml string.
      * 
      * @param grassXml te xml string to parse.
@@ -201,25 +209,23 @@ public class GrassUtils {
      * @throws Exception
      */
     public static Task getTask( String grassXml ) throws Exception {
-        String FEATURE_NAMESPACES = "http://xml.org/sax/features/namespaces";
-        String FEATURE_NAMESPACE_PREFIXES = "http://xml.org/sax/features/namespace-prefixes";
+        String featureNamespaces = "http://xml.org/sax/features/namespaces";
+        String featureNamespacePrefixes = "http://xml.org/sax/features/namespace-prefixes";
         JAXBContext jaxbContext = JAXBContext.newInstance(GrassInterface.class);
 
         XMLReader xmlreader = XMLReaderFactory.createXMLReader();
-        xmlreader.setFeature(FEATURE_NAMESPACES, true);
-        xmlreader.setFeature(FEATURE_NAMESPACE_PREFIXES, true);
+        xmlreader.setFeature(featureNamespaces, true);
+        xmlreader.setFeature(featureNamespacePrefixes, true);
         xmlreader.setEntityResolver(new EntityResolver(){
             public InputSource resolveEntity( String publicId, String systemId ) throws SAXException, IOException {
-                InputSource inputSource = new InputSource(GrassInterface.class.getResourceAsStream("/grass-interface.dtd"));
-                return inputSource;
+                return new InputSource(GrassInterface.class.getResourceAsStream("/grass-interface.dtd"));
             }
         });
 
         InputSource input = new InputSource(new StringReader(grassXml));
         Source source = new SAXSource(xmlreader, input);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        Task grassInterface = (Task) unmarshaller.unmarshal(source);
-        return grassInterface;
+        return (Task) unmarshaller.unmarshal(source);
     }
 
     /**
@@ -302,7 +308,7 @@ public class GrassUtils {
             }
             out.close();
         } catch (final IOException e) {
-            throw (e);
+            throw e;
         }
     }
 
@@ -357,14 +363,14 @@ public class GrassUtils {
 
         // FIXME add folder creation checks
         final String tmpFolder = new String(mapsetFolder.substring(0, mapsetFolder.lastIndexOf(File.separator)));
-        final boolean b = new File(tmpFolder).mkdir();
-        new File(tmpFolder + File.separator + "PERMANENT").mkdir();
+        new File(tmpFolder).mkdir();
+        new File(tmpFolder + File.separator + PERMANENT).mkdir();
         new File(tmpFolder + File.separator + "user").mkdir();
-        new File(tmpFolder + File.separator + "PERMANENT" + File.separator + ".tmp").mkdir();
-        writeGRASSWindow(tmpFolder + File.separator + "PERMANENT" + File.separator + "DEFAULT_WIND", isLatLon);
-        new File(tmpFolder + File.separator + "PERMANENT" + File.separator + "MYNAME").createNewFile();
+        new File(tmpFolder + File.separator + PERMANENT + File.separator + ".tmp").mkdir();
+        writeGRASSWindow(tmpFolder + File.separator + PERMANENT + File.separator + "DEFAULT_WIND", isLatLon);
+        new File(tmpFolder + File.separator + PERMANENT + File.separator + "MYNAME").createNewFile();
         try {
-            final FileWriter fstream = new FileWriter(tmpFolder + File.separator + "PERMANENT" + File.separator + "MYNAME");
+            final FileWriter fstream = new FileWriter(tmpFolder + File.separator + PERMANENT + File.separator + "MYNAME");
             final BufferedWriter out = new BufferedWriter(fstream);
             if (!isLatLon) {
                 /* XY location */
@@ -375,23 +381,23 @@ public class GrassUtils {
             }
             out.close();
         } catch (final IOException e) {
-            throw (e);
+            throw e;
         }
         if (isLatLon) {
-            new File(tmpFolder + File.separator + "PERMANENT" + File.separator + "PROJ_INFO").createNewFile();
+            new File(tmpFolder + File.separator + PERMANENT + File.separator + "PROJ_INFO").createNewFile();
             try {
-                final FileWriter fstream = new FileWriter(tmpFolder + File.separator + "PERMANENT" + File.separator + "PROJ_INFO");
+                final FileWriter fstream = new FileWriter(tmpFolder + File.separator + PERMANENT + File.separator + "PROJ_INFO");
                 final BufferedWriter out = new BufferedWriter(fstream);
                 out.write("name: Latitude-Longitude\n");
                 out.write("proj: ll\n");
                 out.write("ellps: wgs84\n");
                 out.close();
             } catch (final IOException e) {
-                throw (e);
+                throw e;
             }
-            new File(tmpFolder + File.separator + "PERMANENT" + File.separator + "PROJ_UNITS").createNewFile();
+            new File(tmpFolder + File.separator + PERMANENT + File.separator + "PROJ_UNITS").createNewFile();
             try {
-                final FileWriter fstream = new FileWriter(tmpFolder + File.separator + "PERMANENT" + File.separator
+                final FileWriter fstream = new FileWriter(tmpFolder + File.separator + PERMANENT + File.separator
                         + "PROJ_UNITS");
                 final BufferedWriter out = new BufferedWriter(fstream);
                 out.write("unit: degree\n");
@@ -399,10 +405,10 @@ public class GrassUtils {
                 out.write("meters: 1.0\n");
                 out.close();
             } catch (final IOException e) {
-                throw (e);
+                throw e;
             }
         }
-        writeGRASSWindow(tmpFolder + File.separator + "PERMANENT" + File.separator + "WIND", isLatLon);
+        writeGRASSWindow(tmpFolder + File.separator + PERMANENT + File.separator + "WIND", isLatLon);
         new File(tmpFolder + File.separator + "user" + File.separator + "dbf").mkdir();
         new File(tmpFolder + File.separator + "user" + File.separator + ".tmp").mkdir();
         new File(tmpFolder + File.separator + "user" + File.separator + "VAR").createNewFile();
@@ -413,7 +419,7 @@ public class GrassUtils {
             out.write("DB_DATABASE: $GISDBASE/$LOCATION_NAME/$MAPSET/dbf/\n");
             out.close();
         } catch (final IOException e) {
-            throw (e);
+            throw e;
         }
         writeGRASSWindow(tmpFolder + File.separator + "user" + File.separator + "WIND", isLatLon);
     }
@@ -432,7 +438,7 @@ public class GrassUtils {
                 }
             }
         }
-        return (path.delete());
+        return path.delete();
     }
 
     /**
@@ -453,8 +459,8 @@ public class GrassUtils {
      * @return "true", if we are running on Windows, "false" otherwise.
      */
     public static boolean isWindows() {
-        final String os = System.getProperty("os.name").toLowerCase();
-        return (os.indexOf("win") >= 0);
+        final String os = System.getProperty(OS_NAME).toLowerCase();
+        return os.indexOf("win") >= 0;
     }
 
     /**
@@ -463,8 +469,8 @@ public class GrassUtils {
      * @return "true", if we are running on Mac OS X, "false" otherwise.
      */
     public static boolean isMacOSX() {
-        final String os = System.getProperty("os.name").toLowerCase();
-        return (os.indexOf("mac") >= 0);
+        final String os = System.getProperty(OS_NAME).toLowerCase();
+        return os.indexOf("mac") >= 0;
     }
 
     /**
@@ -473,8 +479,8 @@ public class GrassUtils {
      * @return "true", if we are running on Unix/Linux, "false" otherwise.
      */
     public static boolean isUnix() {
-        final String os = System.getProperty("os.name").toLowerCase();
-        return ((os.indexOf("nix") >= 0) || (os.indexOf("nux") >= 0));
+        final String os = System.getProperty(OS_NAME).toLowerCase();
+        return (os.indexOf("nix") >= 0) || (os.indexOf("nux") >= 0);
     }
 
     /**
@@ -511,8 +517,6 @@ public class GrassUtils {
      */
     public static String getGuiHintsFromGisprompt( Gisprompt gisprompt ) {
         String age = gisprompt.getAge();
-        String element = gisprompt.getElement();
-        String prompt = gisprompt.getPrompt();
 
         if (age.trim().equals("old")) {
             // existing file == open file hint
@@ -524,11 +528,6 @@ public class GrassUtils {
             // mapset == open folder hint
             return FOLDERIN_UI_HINT;
         }
-        // else if (age.trim().equals("any")) {
-        // // ???
-        // return null;
-        // }
-
         return null;
     }
 
@@ -544,8 +543,7 @@ public class GrassUtils {
     public static String getModuleQualifiedStructure( String module ) {
         String[] split = module.split("\\_");
         String prefix = split[0];
-        String qualifiedName = BASEPACKAGE_PATH + prefix + "/" + module + ".java";
-        return qualifiedName;
+        return BASEPACKAGE_PATH + prefix + "/" + module + ".java";
     }
 
     /**
@@ -560,8 +558,7 @@ public class GrassUtils {
     public static String getModulePackage( String module ) {
         String[] split = module.split("\\_");
         String prefix = split[0];
-        String qualifiedName = BASEPACKAGE + prefix;
-        return qualifiedName;
+        return BASEPACKAGE + prefix;
     }
 
     /**

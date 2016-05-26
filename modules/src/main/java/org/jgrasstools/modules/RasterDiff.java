@@ -26,11 +26,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_doNegatives_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_inRaster1_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_inRaster2_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_pThreshold_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_DO_NEGATIVES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_IN_RASTER1_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_IN_RASTER2_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_P_THRESHOLD_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -57,25 +57,25 @@ import org.jgrasstools.gears.modules.r.rasterdiff.OmsRasterDiff;
 @License(OMSRASTERDIFF_LICENSE)
 public class RasterDiff extends JGTModel {
 
-    @Description(OMSRASTERDIFF_inRaster1_DESCRIPTION)
+    @Description(OMSRASTERDIFF_IN_RASTER1_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster1;
 
-    @Description(OMSRASTERDIFF_inRaster2_DESCRIPTION)
+    @Description(OMSRASTERDIFF_IN_RASTER2_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster2;
 
-    @Description(OMSRASTERDIFF_pThreshold_DESCRIPTION)
+    @Description(OMSRASTERDIFF_P_THRESHOLD_DESCRIPTION)
     @In
     public Double pThreshold;
     
-    @Description(OMSRASTERDIFF_doNegatives_DESCRIPTION)
+    @Description(OMSRASTERDIFF_DO_NEGATIVES_DESCRIPTION)
     @In
     public boolean doNegatives = true;
 
-    @Description(OMSRASTERDIFF_outRaster_DESCRIPTION)
+    @Description(OMSRASTERDIFF_OUT_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster;

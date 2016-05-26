@@ -27,8 +27,10 @@ public class ItemPicture implements Item {
     private String description;
     private boolean isMandatory;
     private String defaultValueStr;
+    private String key;
 
-    public ItemPicture( String description, String defaultValue, boolean isMandatory ) {
+    public ItemPicture( String key, String description, String defaultValue, boolean isMandatory ) {
+        this.key = key;
         if (defaultValue == null) {
             defaultValueStr = "";
         } else {
@@ -41,7 +43,12 @@ public class ItemPicture implements Item {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("        {\n");
-        sb.append("             \"key\": \"").append(description).append("\",\n");
+        if (key != null && key.trim().length() > 0) {
+            sb.append("             \"key\": \"").append(key).append("\",\n");
+            sb.append("             \"label\": \"").append(description).append("\",\n");
+        }else{
+            sb.append("             \"key\": \"").append(description).append("\",\n");
+        }
         sb.append("             \"value\": \"").append(defaultValueStr).append("\",\n");
         sb.append("             \"type\": \"").append("pictures").append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");

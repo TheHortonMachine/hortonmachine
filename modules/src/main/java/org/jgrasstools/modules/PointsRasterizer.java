@@ -17,13 +17,13 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pCode_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pSouth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pWest_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pXres_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pYres_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_CODE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_EAST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_NORTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_SOUTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_WEST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_X_RES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_Y_RES_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_DESCRIPTION;
@@ -32,9 +32,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_LABEL
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_fCat_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_F_CAT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_OUT_RASTER_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -61,51 +61,51 @@ import org.jgrasstools.gears.modules.r.pointsrasterizer.OmsPointsRasterizer;
 @License(OMSPOINTSRASTERIZER_LICENSE)
 public class PointsRasterizer extends JGTModel {
 
-    @Description(OMSPOINTSRASTERIZER_inVector_DESCRIPTION)
+    @Description(OMSPOINTSRASTERIZER_IN_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inVector = null;
 
-    @Description(OMSGRIDGEOMETRYREADER_pNorth_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_NORTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description(OMSGRIDGEOMETRYREADER_pSouth_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_SOUTH_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description(OMSGRIDGEOMETRYREADER_pWest_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_WEST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description(OMSGRIDGEOMETRYREADER_pEast_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_EAST_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description(OMSGRIDGEOMETRYREADER_pXres_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_X_RES_DESCRIPTION)
     @UI(JGTConstants.PROCESS_XRES_UI_HINT)
     @In
     public Double pXres = null;
 
-    @Description(OMSGRIDGEOMETRYREADER_pYres_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_Y_RES_DESCRIPTION)
     @UI(JGTConstants.PROCESS_YRES_UI_HINT)
     @In
     public Double pYres = null;
 
-    @Description(OMSGRIDGEOMETRYREADER_pCode_DESCRIPTION)
+    @Description(OMSGRIDGEOMETRYREADER_P_CODE_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description(OMSPOINTSRASTERIZER_fCat_DESCRIPTION)
+    @Description(OMSPOINTSRASTERIZER_F_CAT_DESCRIPTION)
     @In
     public String fCat;
 
-    @Description(OMSPOINTSRASTERIZER_outRaster_DESCRIPTION)
+    @Description(OMSPOINTSRASTERIZER_OUT_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster;

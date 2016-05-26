@@ -25,8 +25,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_outTabledata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_OUT_TABLE_DATA_DESCRIPTION;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,6 +34,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -61,14 +62,14 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSDBFTABLEREADER_LICENSE)
 public class OmsDbfTableReader extends JGTModel {
 
-    @Description(OMSDBFTABLEREADER_file_DESCRIPTION)
+    @Description(OMSDBFTABLEREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSDBFTABLEREADER_outTabledata_DESCRIPTION)
+    @Description(OMSDBFTABLEREADER_OUT_TABLE_DATA_DESCRIPTION)
     @Out
-    public HashMap<String, List<Object>> outTabledata = null;
+    public Map<String, List<Object>> outTabledata = null;
 
     @Execute
     public void readTable() throws IOException {
@@ -84,7 +85,7 @@ public class OmsDbfTableReader extends JGTModel {
             dbfReader = new DbaseFileReader(fis.getChannel(), false, Charset.defaultCharset());
             final DbaseFileHeader header = dbfReader.getHeader();
             int numFields = header.getNumFields();
-            outTabledata = new HashMap<String, List<Object>>();
+            outTabledata = new HashMap<>();
             for( int i = 0; i < numFields; i++ ) {
                 String fieldName = header.getFieldName(i);
                 outTabledata.put(fieldName, new ArrayList<Object>());
@@ -116,7 +117,7 @@ public class OmsDbfTableReader extends JGTModel {
      * @return the read table.
      * @throws IOException
      */
-    public static HashMap<String, List<Object>> readDbf( String path ) throws IOException {
+    public static Map<String, List<Object>> readDbf( String path ) throws IOException {
 
         OmsDbfTableReader reader = new OmsDbfTableReader();
         reader.file = path;

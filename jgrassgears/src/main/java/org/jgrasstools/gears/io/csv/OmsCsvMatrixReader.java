@@ -26,16 +26,16 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_LICENS
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_fileNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_novalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outData_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outFormats_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outIds_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outLabels_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outSubTitle_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outTitle_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outTypes_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_FILE_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_FORMATS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_IDS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_LABELS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_SUBTITLE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_TITLE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_OUT_TYPES_DESCRIPTION;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,44 +77,44 @@ import org.joda.time.format.DateTimeFormatter;
 @UI(OMSCSVMATRIXREADER_UI)
 public class OmsCsvMatrixReader extends JGTModel {
 
-    @Description(OMSCSVMATRIXREADER_file_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSCSVMATRIXREADER_fileNovalue_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_FILE_NOVALUE_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description(OMSCSVMATRIXREADER_novalue_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_NOVALUE_DESCRIPTION)
     @In
     public double novalue = JGTConstants.doubleNovalue;
 
-    @Description(OMSCSVMATRIXREADER_outData_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_DATA_DESCRIPTION)
     @Out
     public double[][] outData;
 
-    @Description(OMSCSVMATRIXREADER_outTitle_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_TITLE_DESCRIPTION)
     @Out
     public String outTitle;
 
-    @Description(OMSCSVMATRIXREADER_outSubTitle_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_SUBTITLE_DESCRIPTION)
     @Out
     public String outSubTitle;
 
-    @Description(OMSCSVMATRIXREADER_outIds_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_IDS_DESCRIPTION)
     @Out
     public String[] outIds;
 
-    @Description(OMSCSVMATRIXREADER_outLabels_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_LABELS_DESCRIPTION)
     @Out
     public String[] outLabels;
 
-    @Description(OMSCSVMATRIXREADER_outFormats_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_FORMATS_DESCRIPTION)
     @Out
     public String[] outFormats;
 
-    @Description(OMSCSVMATRIXREADER_outTypes_DESCRIPTION)
+    @Description(OMSCSVMATRIXREADER_OUT_TYPES_DESCRIPTION)
     @Out
     public String[] outTypes;
 
@@ -124,12 +124,12 @@ public class OmsCsvMatrixReader extends JGTModel {
 
     private int columnCount;
 
-    private List<String> outIdsList = new ArrayList<String>();
-    private List<String> outLabelsList = new ArrayList<String>();
-    private List<String> outFormatsList = new ArrayList<String>();
-    private List<String> outTypesList = new ArrayList<String>();
+    private List<String> outIdsList = new ArrayList<>();
+    private List<String> outLabelsList = new ArrayList<>();
+    private List<String> outFormatsList = new ArrayList<>();
+    private List<String> outTypesList = new ArrayList<>();
 
-    private List<double[]> outDataList = new ArrayList<double[]>();
+    private List<double[]> outDataList = new ArrayList<>();
 
     private DateTimeFormatter dateFormatter;
 
@@ -143,7 +143,7 @@ public class OmsCsvMatrixReader extends JGTModel {
             for( Entry<String, String> entry : entrySet ) {
                 String key = entry.getKey();
                 String value = entry.getValue();
-                if (key.toLowerCase().equals("subtitle")) {
+                if ("subtitle".equalsIgnoreCase(key)) {
                     outSubTitle = value;
                 }
             }
@@ -161,13 +161,13 @@ public class OmsCsvMatrixReader extends JGTModel {
                     String key = entry.getKey();
                     String value = entry.getValue();
 
-                    if (key.toLowerCase().equals("label")) {
+                    if ("label".equalsIgnoreCase(key)) {
                         outLabelsList.add(value);
                     }
-                    if (key.toLowerCase().equals("format")) {
+                    if ("format".equalsIgnoreCase(key)) {
                         outFormatsList.add(value);
                     }
-                    if (key.toLowerCase().equals("type")) {
+                    if ("type".equalsIgnoreCase(key)) {
                         value = value.toLowerCase().trim();
                         if (value.length() == 0) {
                             value = "double";
@@ -177,17 +177,17 @@ public class OmsCsvMatrixReader extends JGTModel {
                 }
             }
 
-            if (outIdsList.size() > 0) {
+            if (!outIdsList.isEmpty()) {
                 outIds = outIdsList.toArray(new String[0]);
             }
-            if (outLabelsList.size() > 0) {
+            if (!outLabelsList.isEmpty()) {
                 outLabels = outLabelsList.toArray(new String[0]);
             }
-            if (outFormatsList.size() > 0) {
+            if (!outFormatsList.isEmpty()) {
                 outFormats = outFormatsList.toArray(new String[0]);
             }
 
-            if (outTypesList.size() == 0) {
+            if (outTypesList.isEmpty()) {
                 for( int i = 1; i <= columnCount; i++ ) {
                     outTypesList.add("double");
                 }

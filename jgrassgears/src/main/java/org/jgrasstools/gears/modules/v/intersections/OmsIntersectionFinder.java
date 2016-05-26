@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_LAB
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_inMap_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_outLinesMap_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_outPointsMap_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_IN_MAP_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_OUT_LINES_MAP_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_OUT_POINTS_MAP_DESCRIPTION;
 
 import java.util.List;
 
@@ -71,15 +71,15 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 @License(OMSINTERSECTIONFINDER_LICENSE)
 public class OmsIntersectionFinder extends JGTModel {
 
-    @Description(OMSINTERSECTIONFINDER_inMap_DESCRIPTION)
+    @Description(OMSINTERSECTIONFINDER_IN_MAP_DESCRIPTION)
     @In
     public SimpleFeatureCollection inMap = null;
 
-    @Description(OMSINTERSECTIONFINDER_outPointsMap_DESCRIPTION)
+    @Description(OMSINTERSECTIONFINDER_OUT_POINTS_MAP_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outPointsMap = null;
 
-    @Description(OMSINTERSECTIONFINDER_outLinesMap_DESCRIPTION)
+    @Description(OMSINTERSECTIONFINDER_OUT_LINES_MAP_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outLinesMap = null;
 

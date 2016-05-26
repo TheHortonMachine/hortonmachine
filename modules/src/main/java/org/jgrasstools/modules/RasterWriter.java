@@ -25,8 +25,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_IN_RASTER_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -52,11 +52,11 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSRASTERWRITER_LICENSE)
 public class RasterWriter extends JGTModel {
 
-    @Description(OMSRASTERWRITER_inRaster_DESCRIPTION)
+    @Description(OMSRASTERWRITER_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster = null;
 
-    @Description(OMSRASTERWRITER_file_DESCRIPTION)
+    @Description(OMSRASTERWRITER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;

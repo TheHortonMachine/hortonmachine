@@ -86,7 +86,7 @@ public class Utilities {
                     value = split[3].trim();
                 }
 
-                ItemText item = new ItemText(field, value, Boolean.parseBoolean(mandatory), false);
+                ItemText item = new ItemText(null, field, value, Boolean.parseBoolean(mandatory), false);
                 currentForm.addItem(item);
             } else if (type.startsWith("textarea")) {
                 String field = split[1].trim();
@@ -96,7 +96,7 @@ public class Utilities {
                     value = split[3].trim();
                 }
 
-                ItemTextArea item = new ItemTextArea(field, value, Boolean.parseBoolean(mandatory), false);
+                ItemTextArea item = new ItemTextArea(null, field, value, Boolean.parseBoolean(mandatory), false);
                 currentForm.addItem(item);
             } else if (type.startsWith("combo")) {
                 String field = split[1].trim();
@@ -111,7 +111,7 @@ public class Utilities {
                     itemsSplit[j] = itemsSplit[j].trim();
                 }
 
-                ItemCombo combo = new ItemCombo(field, itemsSplit, value, Boolean.parseBoolean(mandatory));
+                ItemCombo combo = new ItemCombo(null, field, itemsSplit, value, Boolean.parseBoolean(mandatory));
                 currentForm.addItem(combo);
             } else if (type.equals("checkbox")) {
                 String field = split[1].trim();
@@ -121,7 +121,7 @@ public class Utilities {
                     value = split[3].trim();
                 }
 
-                ItemBoolean checkbox = new ItemBoolean(field, value, Boolean.parseBoolean(mandatory));
+                ItemBoolean checkbox = new ItemBoolean(null, field, value, Boolean.parseBoolean(mandatory));
                 currentForm.addItem(checkbox);
             } else if (type.equals("label")) {
                 String label = "";

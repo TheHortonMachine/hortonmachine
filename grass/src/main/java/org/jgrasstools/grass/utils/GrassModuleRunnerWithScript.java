@@ -32,11 +32,11 @@ import java.util.Map;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class GrassModuleRunnerWithScript {
-    private List<GrassRunnerListener> listeners = new ArrayList<GrassRunnerListener>();
+    private List<GrassRunnerListener> listeners = new ArrayList<>();
     private final PrintStream outputStream;
     private final PrintStream errorStream;
-    private StringBuffer outSb = new StringBuffer();
-    private StringBuffer errSb = new StringBuffer();
+    private StringBuilder outSb = new StringBuilder();
+    private StringBuilder errSb = new StringBuilder();
 
     public GrassModuleRunnerWithScript( final PrintStream outputStream, final PrintStream errorStream ) {
         this.outputStream = outputStream;
@@ -115,7 +115,7 @@ public class GrassModuleRunnerWithScript {
                 } finally {
                     errorDone[0] = true;
                 }
-            };
+            }
         };
 
         outputThread.start();
@@ -160,7 +160,7 @@ public class GrassModuleRunnerWithScript {
         } else {
             outSb.append(line).append("\n");
         }
-    };
+    }
 
     private void printErr( String line ) {
         if (errorStream != null) {
@@ -168,12 +168,7 @@ public class GrassModuleRunnerWithScript {
         } else {
             errSb.append(line).append("\n");
         }
-    };
-
-    // @Override
-    // public void processfinished( String mapsetFolder ) {
-    // GrassUtils.deleteTempMapset(mapsetFolder);
-    // }
+    }
 
     public static void main( String[] args ) throws Exception {
 

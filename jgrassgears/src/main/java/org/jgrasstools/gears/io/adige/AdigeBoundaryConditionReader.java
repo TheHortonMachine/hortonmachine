@@ -21,6 +21,7 @@ package org.jgrasstools.gears.io.adige;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -52,14 +53,14 @@ import static org.jgrasstools.gears.i18n.GearsMessages.*;
 @License(ADIGEBOUNDARYCONDITIONREADER_LICENSE)
 public class AdigeBoundaryConditionReader extends JGTModel {
 
-    @Description(ADIGEBOUNDARYCONDITIONREADER_file_DESCRIPTION)
+    @Description(ADIGEBOUNDARYCONDITIONREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(ADIGEBOUNDARYCONDITIONREADER_data_DESCRIPTION)
+    @Description(ADIGEBOUNDARYCONDITIONREADER_DATA_DESCRIPTION)
     @Out
-    public HashMap<Integer, AdigeBoundaryCondition> data;
+    public Map<Integer, AdigeBoundaryCondition> data;
 
     private TableIterator<String[]> rowsIterator;
     private CSTable table;
@@ -77,19 +78,19 @@ public class AdigeBoundaryConditionReader extends JGTModel {
             return;
         }
         ensureOpen();
-        data = new HashMap<Integer, AdigeBoundaryCondition>();
+        data = new HashMap<>();
         while( rowsIterator.hasNext() ) {
             String[] row = rowsIterator.next();
 
             AdigeBoundaryCondition condition = new AdigeBoundaryCondition();
             int i = 1;
-            condition.basinId = (int) Double.parseDouble(row[i++]);
-            condition.discharge = Double.parseDouble(row[i++]);
-            condition.dischargeSub = Double.parseDouble(row[i++]);
-            condition.S1 = Double.parseDouble(row[i++]);
-            condition.S2 = Double.parseDouble(row[i]);
+            condition.setBasinId( (int) Double.parseDouble(row[i++]));
+            condition.setDischarge(Double.parseDouble(row[i++]));
+            condition.setDischargeSub(Double.parseDouble(row[i++]));
+            condition.setS1(Double.parseDouble(row[i++]));
+            condition.setS2(Double.parseDouble(row[i]));
 
-            data.put(condition.basinId, condition);
+            data.put(condition.getBasinId(), condition);
         }
     }
 

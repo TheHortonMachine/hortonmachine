@@ -34,9 +34,13 @@ import org.jgrasstools.grass.dtd64.Task;
  */
 public class Oms3CodeWrapper {
 
+    private static final String QUOTATION_MARK_BRACKET_NEWLINE = "\")\n";
+
+    private static final String DESCRIPTION = "@Description(\"";
+
     private StringBuilder codeBuilder = new StringBuilder();
 
-    private String INDENT = "\t";
+    private String indent = "\t";
 
     private String classSafeName;
 
@@ -77,7 +81,7 @@ public class Oms3CodeWrapper {
         codeBuilder.append("import oms3.annotations.Status;").append("\n");
         codeBuilder.append("").append("\n");
         if (description != null)
-            codeBuilder.append("@Description(\"").append(description.trim()).append("\")").append("\n");
+            codeBuilder.append(DESCRIPTION).append(description.trim()).append("\")").append("\n");
         codeBuilder.append("@Author(name = \"Grass Developers Community\", contact = \"http://grass.osgeo.org\")").append("\n");
         if (keyWords != null)
             codeBuilder.append("@Keywords(\"").append(keyWords.trim()).append("\")").append("\n");
@@ -89,19 +93,19 @@ public class Oms3CodeWrapper {
         codeBuilder.append("public class ").append(classSafeName).append(" {").append("\n");
         codeBuilder.append("").append("\n");
 
-        TreeSet<String> namesMap = new TreeSet<String>();
+        TreeSet<String> namesMap = new TreeSet<>();
 
         /*
          * parameters
          */
         List<Parameter> parameterList = grassTask.getParameter();
-        if (parameterList.size() > 0) {
+        if (!parameterList.isEmpty()) {
             for( Parameter parameter : parameterList ) {
                 String parameterName = parameter.getName().trim();
                 parameterName = parameterName.replaceAll("\\.", VARIABLE_DOT_SUBSTITUTION);
                 parameterName = VARIABLE_PARAMETER_PREFIX + parameterName + VARIABLE_PARAMETER_SUFFIX;
                 if (!namesMap.add(parameterName)) {
-                    System.err.println(INDENT + "Found double parameter " + parameterName + " in " + name);
+                    System.err.println(indent + "Found double parameter " + parameterName + " in " + name);
                     continue;
                 }
 
@@ -115,33 +119,18 @@ public class Oms3CodeWrapper {
                     guiHints = GrassUtils.getGuiHintsFromGisprompt(gisprompt);
 
                 if (guiHints != null)
-                    codeBuilder.append(INDENT).append("@UI(\"").append(guiHints).append("\")\n");
-                codeBuilder.append(INDENT).append("@Description(\"").append(parameterDescription);
+                    codeBuilder.append(indent).append("@UI(\"").append(guiHints).append(QUOTATION_MARK_BRACKET_NEWLINE);
+                codeBuilder.append(indent).append(DESCRIPTION).append(parameterDescription);
                 if (isRequired.trim().equals("no")) {
                     codeBuilder.append(" (optional)");
                 }
-                codeBuilder.append("\")\n");
-                codeBuilder.append(INDENT).append("@In\n");
-                codeBuilder.append(INDENT).append("public String ").append(parameterName);
+                codeBuilder.append(QUOTATION_MARK_BRACKET_NEWLINE);
+                codeBuilder.append(indent).append("@In\n");
+                codeBuilder.append(indent).append("public String ").append(parameterName);
                 if (defaultValue != null) {
                     codeBuilder.append(" = \"").append(defaultValue.trim()).append("\"");
                 }
                 codeBuilder.append(";\n\n");
-
-                // String multiple = parameter.getMultiple().trim();
-                // System.out.println("\t\tMultiple: " + multiple);
-
-                // Values values = parameter.getValues();
-                // if (values != null) {
-                // System.out.println("\t\tValues:");
-                // List<Value> value = values.getValue();
-                // for( Value v : value ) {
-                // String name2 = v.getName().trim();
-                // System.out.print("\t\t\t" + name2 + " - ");
-                // String description = v.getDescription().trim();
-                // System.out.println(description);
-                // }
-                // }
             }
         }
 
@@ -154,25 +143,25 @@ public class Oms3CodeWrapper {
             flagName = flagName.replaceAll("\\.", VARIABLE_DOT_SUBSTITUTION);
             flagName = VARIABLE_FLAG_PREFIX + flagName + VARIABLE_FLAG_SUFFIX;
             if (!namesMap.add(flagName)) {
-                System.err.println(INDENT + "Found double flag " + flagName + " in " + name);
+                System.err.println(indent + "Found double flag " + flagName + " in " + name);
                 continue;
             }
 
             String descr = flag.getDescription().trim();
             descr = cleanDescription(descr);
-            codeBuilder.append(INDENT).append("@Description(\"").append(descr).append("\")\n");
-            codeBuilder.append(INDENT).append("@In\n");
-            codeBuilder.append(INDENT).append("public boolean ").append(flagName).append(" = false;\n\n");
+            codeBuilder.append(indent).append(DESCRIPTION).append(descr).append(QUOTATION_MARK_BRACKET_NEWLINE);
+            codeBuilder.append(indent).append("@In\n");
+            codeBuilder.append(indent).append("public boolean ").append(flagName).append(" = false;\n\n");
         }
 
         /*
          * execution method
          */
         codeBuilder.append("\n");
-        codeBuilder.append(INDENT).append("@Execute").append("\n");
-        codeBuilder.append(INDENT).append("public void process() throws Exception {").append("\n");
-        codeBuilder.append(INDENT).append(INDENT).append("ModuleSupporter.processModule(this);").append("\n");
-        codeBuilder.append(INDENT).append("}").append("\n\n");
+        codeBuilder.append(indent).append("@Execute").append("\n");
+        codeBuilder.append(indent).append("public void process() throws Exception {").append("\n");
+        codeBuilder.append(indent).append(indent).append("ModuleSupporter.processModule(this);").append("\n");
+        codeBuilder.append(indent).append("}").append("\n\n");
 
         codeBuilder.append("}").append("\n");
     }

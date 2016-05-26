@@ -122,7 +122,7 @@ public class OmsPointCloudMaximaFinder extends JGTModel {
     public static final String inDsmDtmDiff_DESCR = "An optional dsm-dtm difference raster to use to check on the extracted tops.";
     public static final String inRoi_DESCR = "A set of polygons to use as region of interest.";
     public static final String inDtm_DESCR = "A dtm raster to use for the area of interest and to calculate the elevation threshold.";
-    public static final String inLas_DESCR = "the input las.";
+    public static final String inLas_DESCR = "The input las.";
     public static final String NAME = "pointcloudmaximafinder";
     public static final String KEYWORDS = "Local maxima, las, lidar";
     public static final String DESCR = "Module that identifies local maxima in point clouds.";

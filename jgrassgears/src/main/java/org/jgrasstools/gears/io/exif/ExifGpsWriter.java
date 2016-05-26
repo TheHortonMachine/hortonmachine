@@ -26,13 +26,13 @@ import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_doEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_doNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_pAltitude_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_pLat_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_pLon_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_tTimestamp_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_DO_EAST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_DO_NORTH_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_P_ALTITUDE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_P_LAT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_P_LON_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_T_TIMESTAMP_DESCRIPTION;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -92,31 +92,31 @@ import com.sun.media.imageioimpl.plugins.tiff.TIFFIFD;
 @UI(JGTConstants.HIDE_UI_HINT)
 public class ExifGpsWriter extends JGTModel {
 
-    @Description(EXIFGPSWRITER_file_DESCRIPTION)
+    @Description(EXIFGPSWRITER_FILE_DESCRIPTION)
     @In
     public String file = null;
 
-    @Description(EXIFGPSWRITER_pLat_DESCRIPTION)
+    @Description(EXIFGPSWRITER_P_LAT_DESCRIPTION)
     @Out
     public Double pLat = null;
 
-    @Description(EXIFGPSWRITER_pLon_DESCRIPTION)
+    @Description(EXIFGPSWRITER_P_LON_DESCRIPTION)
     @Out
     public Double pLon = null;
 
-    @Description(EXIFGPSWRITER_tTimestamp_DESCRIPTION)
+    @Description(EXIFGPSWRITER_T_TIMESTAMP_DESCRIPTION)
     @Out
     public String tTimestamp = null;
 
-    @Description(EXIFGPSWRITER_pAltitude_DESCRIPTION)
+    @Description(EXIFGPSWRITER_P_ALTITUDE_DESCRIPTION)
     @Out
     public Double pAltitude = null;
 
-    @Description(EXIFGPSWRITER_doNorth_DESCRIPTION)
+    @Description(EXIFGPSWRITER_DO_NORTH_DESCRIPTION)
     @Out
     public boolean doNorth = true;
 
-    @Description(EXIFGPSWRITER_doEast_DESCRIPTION)
+    @Description(EXIFGPSWRITER_DO_EAST_DESCRIPTION)
     @Out
     public boolean doEast = true;
 

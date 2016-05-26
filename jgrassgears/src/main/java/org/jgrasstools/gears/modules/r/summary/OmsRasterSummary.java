@@ -26,16 +26,16 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_doHistogram_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outCb_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outMax_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outMean_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outMin_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outRange_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outSdev_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outSum_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_pBins_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_DO_HISTOGRAM_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_CB_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_MAX_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_MEAN_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_MIN_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_RANGE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_S_DEV_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_SUM_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_P_BINS_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.util.List;
@@ -75,43 +75,43 @@ import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 @License(OMSRASTERSUMMARY_LICENSE)
 public class OmsRasterSummary extends JGTModel {
 
-    @Description(OMSRASTERSUMMARY_inRaster_DESCRIPTION)
+    @Description(OMSRASTERSUMMARY_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSRASTERSUMMARY_pBins_DESCRIPTION)
+    @Description(OMSRASTERSUMMARY_P_BINS_DESCRIPTION)
     @In
     public int pBins = 100;
 
-    @Description(OMSRASTERSUMMARY_doHistogram_DESCRIPTION)
+    @Description(OMSRASTERSUMMARY_DO_HISTOGRAM_DESCRIPTION)
     @In
     public boolean doHistogram = false;
 
-    @Description(OMSRASTERSUMMARY_outMin_DESCRIPTION)
+    @Description(OMSRASTERSUMMARY_OUT_MIN_DESCRIPTION)
     @Out
     public Double outMin = null;
 
-    @Description(OMSRASTERSUMMARY_outMax_DESCRIPTION)
+    @Description(OMSRASTERSUMMARY_OUT_MAX_DESCRIPTION)
     @Out
     public Double outMax = null;
 
-    @Description(OMSRASTERSUMMARY_outMean_DESCRIPTION)
+    @Description(OMSRASTERSUMMARY_OUT_MEAN_DESCRIPTION)
     @Out
     public Double outMean = null;
 
-    @Description(OMSRASTERSUMMARY_outSdev_DESCRIPTION)
+    @Description(OMSRASTERSUMMARY_OUT_S_DEV_DESCRIPTION)
     @Out
     public Double outSdev = null;
 
-    @Description(OMSRASTERSUMMARY_outRange_DESCRIPTION)
+    @Description(OMSRASTERSUMMARY_OUT_RANGE_DESCRIPTION)
     @Out
     public Double outRange = null;
 
-    @Description(OMSRASTERSUMMARY_outSum_DESCRIPTION)
+    @Description(OMSRASTERSUMMARY_OUT_SUM_DESCRIPTION)
     @Out
     public Double outSum = null;
 
-    @Description(OMSRASTERSUMMARY_outCb_DESCRIPTION)
+    @Description(OMSRASTERSUMMARY_OUT_CB_DESCRIPTION)
     @Out
     public double[][] outCb = null;
 

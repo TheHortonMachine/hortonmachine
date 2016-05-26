@@ -25,9 +25,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_pCorrections_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_P_CORRECTIONS_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -52,17 +52,17 @@ import org.jgrasstools.gears.modules.r.rastercorrector.OmsRasterCorrector;
 @License(OMSRASTERCORRECTOR_LICENSE)
 public class RasterCorrector extends JGTModel {
 
-    @Description(OMSRASTERCORRECTOR_inRaster_DESCRIPTION)
+    @Description(OMSRASTERCORRECTOR_IN_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster;
 
-    @Description(OMSRASTERCORRECTOR_pCorrections_DESCRIPTION)
+    @Description(OMSRASTERCORRECTOR_P_CORRECTIONS_DESCRIPTION)
     @UI(JGTConstants.EASTINGNORTHING_UI_HINT)
     @In
     public String pCorrections;
 
-    @Description(OMSRASTERCORRECTOR_outRaster_DESCRIPTION)
+    @Description(OMSRASTERCORRECTOR_OUT_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster;

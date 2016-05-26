@@ -18,6 +18,7 @@
 package org.jgrasstools.lesto.modules.filter;
 import java.io.File;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -83,9 +84,10 @@ public class LasHistogram extends JGTModel {
         double max = Double.NEGATIVE_INFINITY;
         int recordsCount = 0;
         try (ALasReader reader = ALasReader.getReader(lasFile, crs)) {
+            reader.open();
             ILasHeader header = reader.getHeader();
             recordsCount = (int) header.getRecordsCount();
-            pm.beginTask("Calculating range...", (int) header.getRecordsCount());
+            pm.beginTask(MessageFormat.format("Calculating range of {0} points...", recordsCount), recordsCount);
             while( reader.hasNextPoint() ) {
                 LasRecord readNextLasDot = reader.getNextPoint();
                 double value = readNextLasDot.z;
@@ -101,6 +103,10 @@ public class LasHistogram extends JGTModel {
 
         pm.message("Max: " + max);
         pm.message("Min: " + min);
+        if (!Double.isFinite(max) || !Double.isFinite(min)) {
+            pm.errorMessage("A problem occurred while reading the data, exiting...");
+            return;
+        }
 
         double range = max - min;
         double step = range / pBin;

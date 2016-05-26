@@ -20,6 +20,7 @@ package org.jgrasstools.gears.io.dxfdwg.libs;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -57,6 +58,8 @@ public class DwgReader {
     FeatureIterator<SimpleFeature> enumeration;
     int chosenLayerType = -1;
 
+    private static final String LINES = "lines";
+
     // different feature types
     private DefaultFeatureCollection contourFeatures = new DefaultFeatureCollection();
     private DefaultFeatureCollection multiLineFeatures = new DefaultFeatureCollection();
@@ -86,7 +89,7 @@ public class DwgReader {
             String layerName = pFile.getLayerName(entity);
             if (entity instanceof DwgArc) {
                 DwgArc arc = (DwgArc) entity;
-                SimpleFeature feature = gTranslator.convertDwgArc("lines", layerName, arc, cat);
+                SimpleFeature feature = gTranslator.convertDwgArc(LINES, layerName, arc, cat);
                 multiLineFeatures.add(feature);
             } else if (entity instanceof DwgCircle) {
                 DwgCircle circle = (DwgCircle) entity;
@@ -94,7 +97,7 @@ public class DwgReader {
                 multiPolygonFeatures.add(feature);
             } else if (entity instanceof DwgLine) {
                 DwgLine line = (DwgLine) entity;
-                SimpleFeature feature = gTranslator.convertDwgLine("lines", layerName, line, cat);
+                SimpleFeature feature = gTranslator.convertDwgLine(LINES, layerName, line, cat);
                 multiLineFeatures.add(feature);
             } else if (entity instanceof DwgPoint) {
                 DwgPoint point = (DwgPoint) entity;
@@ -102,25 +105,24 @@ public class DwgReader {
                 multiPointFeatures.add(feature);
             } else if (entity instanceof DwgPolyline2D) {
                 DwgPolyline2D polyline2d = (DwgPolyline2D) entity;
-                SimpleFeature feature = gTranslator.convertDwgPolyline2D("lines", layerName, polyline2d, cat);
+                SimpleFeature feature = gTranslator.convertDwgPolyline2D(LINES, layerName, polyline2d, cat);
                 if (feature != null)
                     multiLineFeatures.add(feature);
             } else if (entity instanceof DwgPolyline3D) {
                 DwgPolyline3D polyline3d = (DwgPolyline3D) entity;
-                SimpleFeature feature = gTranslator.convertDwgPolyline3D("lines", layerName, polyline3d, cat);
+                SimpleFeature feature = gTranslator.convertDwgPolyline3D(LINES, layerName, polyline3d, cat);
                 if (feature != null)
                     multiLineFeatures.add(feature);
-                // contourFeatures.add(f);
             } else if (entity instanceof DwgText) {
-                DwgText text = ((DwgText) entity);
+                DwgText text = (DwgText) entity;
                 SimpleFeature feature = gTranslator.convertDwgText("text", layerName, text, cat);
                 textFeatures.add(feature);
             } else if (entity instanceof DwgAttrib) {
-                DwgAttrib attribute = ((DwgAttrib) entity);
+                DwgAttrib attribute = (DwgAttrib) entity;
                 SimpleFeature feature = gTranslator.convertDwgAttribute("text", layerName, attribute, cat);
                 attributesFeatures.add(feature);
             } else if (entity instanceof DwgMText) {
-                DwgMText text = ((DwgMText) entity);
+                DwgMText text = (DwgMText) entity;
                 SimpleFeature feature = gTranslator.convertDwgMText("text", layerName, text, cat);
                 textFeatures.add(feature);
             } else if (entity instanceof DwgSolid) {
@@ -129,7 +131,7 @@ public class DwgReader {
                 multiPolygonFeatures.add(feature);
             } else if (entity instanceof DwgLwPolyline) {
                 DwgLwPolyline lwPolyline = (DwgLwPolyline) entity;
-                SimpleFeature feature = gTranslator.convertDwgLwPolyline("lines", layerName, lwPolyline, cat);
+                SimpleFeature feature = gTranslator.convertDwgLwPolyline(LINES, layerName, lwPolyline, cat);
                 multiLineFeatures.add(feature);
             }
             cat++;
@@ -137,24 +139,24 @@ public class DwgReader {
         }
     }
 
-    public HashMap<String, SimpleFeatureCollection> getFeatureCollectionsMap() throws IOException {
-        HashMap<String, SimpleFeatureCollection> map = new HashMap<String, SimpleFeatureCollection>();
-        if (textFeatures.size() > 0) {
+    public Map<String, SimpleFeatureCollection> getFeatureCollectionsMap() throws IOException {
+        Map<String, SimpleFeatureCollection> map = new HashMap<>();
+        if (!textFeatures.isEmpty()) {
             map.put("text", textFeatures);
         }
-        if (attributesFeatures.size() > 0) {
+        if (!attributesFeatures.isEmpty()) {
             map.put("text", attributesFeatures);
         }
-        if (multiLineFeatures.size() > 0) {
-            map.put("lines", multiLineFeatures);
+        if (!multiLineFeatures.isEmpty()) {
+            map.put(LINES, multiLineFeatures);
         }
-        if (contourFeatures.size() > 0) {
-            map.put("lines", contourFeatures);
+        if (!contourFeatures.isEmpty()) {
+            map.put(LINES, contourFeatures);
         }
-        if (multiPointFeatures.size() > 0) {
+        if (!multiPointFeatures.isEmpty()) {
             map.put("points", multiPointFeatures);
         }
-        if (multiPolygonFeatures.size() > 0) {
+        if (!multiPolygonFeatures.isEmpty()) {
             map.put("polygons", multiPolygonFeatures);
         }
         return map;
@@ -185,7 +187,6 @@ public class DwgReader {
 
     public synchronized void close() throws IOException {
         if (file != null) {
-            // file.close();
             file = null;
         }
         enumeration = null;

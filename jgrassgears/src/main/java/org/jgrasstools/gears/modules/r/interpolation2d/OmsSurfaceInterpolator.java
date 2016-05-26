@@ -26,14 +26,14 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_LA
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_fCat_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_inGrid_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_inMask_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_pBuffer_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_pMaxThreads_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_pMode_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_F_CAT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_IN_GRID_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_IN_MASK_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_P_BUFFER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_P_MAX_THREADS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_P_MODE_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.Variables.IDW;
 import static org.jgrasstools.gears.libs.modules.Variables.TPS;
@@ -97,37 +97,37 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 @License(OMSSURFACEINTERPOLATOR_LICENSE)
 public class OmsSurfaceInterpolator extends JGTModel {
 
-    @Description(OMSSURFACEINTERPOLATOR_inVector_DESCRIPTION)
+    @Description(OMSSURFACEINTERPOLATOR_IN_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description(OMSSURFACEINTERPOLATOR_inGrid_DESCRIPTION)
+    @Description(OMSSURFACEINTERPOLATOR_IN_GRID_DESCRIPTION)
     @In
     public GridCoverage2D inGrid = null;
 
-    @Description(OMSSURFACEINTERPOLATOR_inMask_DESCRIPTION)
+    @Description(OMSSURFACEINTERPOLATOR_IN_MASK_DESCRIPTION)
     @In
     public GridCoverage2D inMask = null;
 
-    @Description(OMSSURFACEINTERPOLATOR_fCat_DESCRIPTION)
+    @Description(OMSSURFACEINTERPOLATOR_F_CAT_DESCRIPTION)
     @In
     public String fCat;
 
-    @Description(OMSSURFACEINTERPOLATOR_pMode_DESCRIPTION)
+    @Description(OMSSURFACEINTERPOLATOR_P_MODE_DESCRIPTION)
     @UI("combo:" + TPS + "," + IDW)
     @In
     public String pMode = TPS;
 
-    @Description(OMSSURFACEINTERPOLATOR_pBuffer_DESCRIPTION)
+    @Description(OMSSURFACEINTERPOLATOR_P_BUFFER_DESCRIPTION)
     @Unit("m")
     @In
     public double pBuffer = 4.0;
 
-    @Description(OMSSURFACEINTERPOLATOR_pMaxThreads_DESCRIPTION)
+    @Description(OMSSURFACEINTERPOLATOR_P_MAX_THREADS_DESCRIPTION)
     @In
     public int pMaxThreads = 1;
 
-    @Description(OMSSURFACEINTERPOLATOR_outRaster_DESCRIPTION)
+    @Description(OMSSURFACEINTERPOLATOR_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

@@ -25,18 +25,18 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREAD
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_fileNovalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_idfield_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_novalue_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_outData_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_pAggregation_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_pNum_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_tCurrent_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_tEnd_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_tPrevious_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_tStart_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_tTimestep_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_FILE_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_ID_FIELD_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_OUT_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_P_AGGREGATION_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_P_NUM_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_T_CURRENT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_T_END_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_T_PREVIOUS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_T_START_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_T_TIMESTEP_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
 import java.io.File;
@@ -77,55 +77,55 @@ import org.joda.time.format.DateTimeFormatter;
 @License(OMSTIMESERIESITERATORREADER_LICENSE)
 public class OmsTimeSeriesIteratorReader extends JGTModel {
 
-    @Description(OMSTIMESERIESITERATORREADER_file_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORREADER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSTIMESERIESITERATORREADER_idfield_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORREADER_ID_FIELD_DESCRIPTION)
     @In
     public String idfield = "ID";
 
-    @Description(OMSTIMESERIESITERATORREADER_fileNovalue_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORREADER_FILE_NOVALUE_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description(OMSTIMESERIESITERATORREADER_novalue_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORREADER_NOVALUE_DESCRIPTION)
     @In
     public double novalue = JGTConstants.doubleNovalue;
 
-    @Description(OMSTIMESERIESITERATORREADER_pNum_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORREADER_P_NUM_DESCRIPTION)
     @In
     public int pNum = 1;
 
-    @Description(OMSTIMESERIESITERATORREADER_pAggregation_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORREADER_P_AGGREGATION_DESCRIPTION)
     @In
     public int pAggregation = 0;
 
-    @Description(OMSTIMESERIESITERATORREADER_tStart_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORREADER_T_START_DESCRIPTION)
     @In
     @Out
     public String tStart;
 
-    @Description(OMSTIMESERIESITERATORREADER_tEnd_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORREADER_T_END_DESCRIPTION)
     @In
     @Out
     public String tEnd;
 
-    @Description(OMSTIMESERIESITERATORREADER_tTimestep_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORREADER_T_TIMESTEP_DESCRIPTION)
     @In
     @Out
     public int tTimestep;
 
-    @Description(OMSTIMESERIESITERATORREADER_tCurrent_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORREADER_T_CURRENT_DESCRIPTION)
     @Out
     public String tCurrent;
 
-    @Description(OMSTIMESERIESITERATORREADER_tPrevious_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORREADER_T_PREVIOUS_DESCRIPTION)
     @Out
     public String tPrevious;
 
-    @Description(OMSTIMESERIESITERATORREADER_outData_DESCRIPTION)
+    @Description(OMSTIMESERIESITERATORREADER_OUT_DATA_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> outData;
 

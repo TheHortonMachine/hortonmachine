@@ -26,9 +26,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_file_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_inAreas_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_pSeparator_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_IN_AREAS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_P_SEPARATOR_DESCRIPTION;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -59,16 +59,16 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSEIAREASWRITER_LICENSE)
 public class OmsEIAreasWriter extends JGTModel {
 
-    @Description(OMSEIAREASWRITER_inAreas_DESCRIPTION)
+    @Description(OMSEIAREASWRITER_IN_AREAS_DESCRIPTION)
     @In
     public List<EIAreas> inAreas;
 
-    @Description(OMSEIAREASWRITER_file_DESCRIPTION)
+    @Description(OMSEIAREASWRITER_FILE_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Description(OMSEIAREASWRITER_pSeparator_DESCRIPTION)
+    @Description(OMSEIAREASWRITER_P_SEPARATOR_DESCRIPTION)
     @In
     public String pSeparator = ",";
 

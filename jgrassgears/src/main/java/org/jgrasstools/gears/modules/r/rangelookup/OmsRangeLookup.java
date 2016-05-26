@@ -26,10 +26,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_inRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_pClasses_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_pRanges_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_P_CLASSES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_P_RANGES_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.util.HashMap;
@@ -67,19 +67,19 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @License(OMSRANGELOOKUP_LICENSE)
 public class OmsRangeLookup extends JGTModel {
 
-    @Description(OMSRANGELOOKUP_inRaster_DESCRIPTION)
+    @Description(OMSRANGELOOKUP_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSRANGELOOKUP_pRanges_DESCRIPTION)
+    @Description(OMSRANGELOOKUP_P_RANGES_DESCRIPTION)
     @In
     public String pRanges;
 
-    @Description(OMSRANGELOOKUP_pClasses_DESCRIPTION)
+    @Description(OMSRANGELOOKUP_P_CLASSES_DESCRIPTION)
     @In
     public String pClasses;
 
-    @Description(OMSRANGELOOKUP_outRaster_DESCRIPTION)
+    @Description(OMSRANGELOOKUP_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

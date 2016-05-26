@@ -25,10 +25,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_pCql_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_pRemove_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_P_CQL_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_P_REMOVE_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -53,21 +53,21 @@ import org.jgrasstools.gears.modules.v.vectorreshaper.OmsVectorReshaper;
 @License(OMSVECTORRESHAPER_LICENSE)
 public class VectorReshaper extends JGTModel {
 
-    @Description(OMSVECTORRESHAPER_inVector_DESCRIPTION)
+    @Description(OMSVECTORRESHAPER_IN_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inVector;
 
-    @Description(OMSVECTORRESHAPER_pCql_DESCRIPTION)
+    @Description(OMSVECTORRESHAPER_P_CQL_DESCRIPTION)
     @UI(JGTConstants.MULTILINE_UI_HINT + "5")
     @In
     public String pCql = null;
 
-    @Description(OMSVECTORRESHAPER_pRemove_DESCRIPTION)
+    @Description(OMSVECTORRESHAPER_P_REMOVE_DESCRIPTION)
     @In
     public String pRemove = null;
 
-    @Description(OMSVECTORRESHAPER_outVector_DESCRIPTION)
+    @Description(OMSVECTORRESHAPER_OUT_VECTOR_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outVector;

@@ -21,6 +21,7 @@ package org.jgrasstools.hortonmachine.utils;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jgrasstools.gears.JGrassGears;
@@ -40,10 +41,10 @@ public class WikiPageModulesOverviewCreator {
      */
     public static void createModulesOverview() {
 
-        LinkedHashMap<String, List<ClassField>> hmModules = HortonMachine.getInstance().moduleName2Fields;
-        LinkedHashMap<String, List<ClassField>> jggModules = JGrassGears.getInstance().moduleName2Fields;
-        LinkedHashMap<String, Class< ? >> hmModulesClasses = HortonMachine.getInstance().moduleName2Class;
-        LinkedHashMap<String, Class< ? >> jggModulesClasses = JGrassGears.getInstance().moduleName2Class;
+        Map<String, List<ClassField>> hmModules = HortonMachine.getInstance().moduleName2Fields;
+        Map<String, List<ClassField>> jggModules = JGrassGears.getInstance().moduleName2Fields;
+        Map<String, Class< ? >> hmModulesClasses = HortonMachine.getInstance().moduleName2Class;
+        Map<String, Class< ? >> jggModulesClasses = JGrassGears.getInstance().moduleName2Class;
 
         Set<String> hmNames = hmModules.keySet();
         String[] hmNamesArray = (String[]) hmNames.toArray(new String[hmNames.size()]);
@@ -86,8 +87,8 @@ public class WikiPageModulesOverviewCreator {
         System.out.println(sb.toString());
     }
 
-    private static void dumpModules( LinkedHashMap<String, List<ClassField>> modulesMap,
-            LinkedHashMap<String, Class< ? >> modulesClasses, String[] modulesNamesArray, StringBuilder sb, String status ) {
+    private static void dumpModules( Map<String, List<ClassField>> modulesMap,
+            Map<String, Class< ? >> modulesClasses, String[] modulesNamesArray, StringBuilder sb, String status ) {
         for( String moduleName : modulesNamesArray ) {
             List<ClassField> fieldsList = modulesMap.get(moduleName);
             if (fieldsList == null) {

@@ -26,10 +26,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_LAB
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_fRound_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_inVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_pPattern_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_F_ROUND_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_OUT_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_P_PATTERN_DESCRIPTION;
 
 import java.text.DecimalFormat;
 
@@ -61,19 +61,19 @@ import org.opengis.feature.simple.SimpleFeature;
 @License(OMSVECTORFIELDROUNDER_LICENSE)
 public class OmsVectorFieldRounder extends JGTModel {
 
-    @Description(OMSVECTORFIELDROUNDER_inVector_DESCRIPTION)
+    @Description(OMSVECTORFIELDROUNDER_IN_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description(OMSVECTORFIELDROUNDER_fRound_DESCRIPTION)
+    @Description(OMSVECTORFIELDROUNDER_F_ROUND_DESCRIPTION)
     @In
     public String fRound = null;
 
-    @Description(OMSVECTORFIELDROUNDER_pPattern_DESCRIPTION)
+    @Description(OMSVECTORFIELDROUNDER_P_PATTERN_DESCRIPTION)
     @In
     public String pPattern = null;
 
-    @Description(OMSVECTORFIELDROUNDER_outVector_DESCRIPTION)
+    @Description(OMSVECTORFIELDROUNDER_OUT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 
