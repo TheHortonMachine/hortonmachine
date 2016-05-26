@@ -61,7 +61,7 @@ public class DiskTreeReader implements IDiskTree {
         File file = new File(path);
         raf = new RandomAccessFile(file, "r");
 
-        raf.seek(6l);
+        raf.seek(6L);
         checkVersions();
 
         long position = INDEX_ADDRESS_POSITION;
@@ -110,8 +110,7 @@ public class DiskTreeReader implements IDiskTree {
         raf.read(geomBytes);
 
         ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(geomBytes));
-        Geometry geometry = (Geometry) in.readObject();
-        return geometry;
+        return (Geometry) in.readObject();
     }
 
     /**
@@ -122,22 +121,4 @@ public class DiskTreeReader implements IDiskTree {
     public void close() throws IOException {
         raf.close();
     }
-
-    // public static void main( String[] args ) throws Exception {
-    //
-    //
-    // DiskTreeReader writer = new DiskTreeReader("/home/moovida/TMP/index.bin");
-    // Quadtree indexObj = writer.readIndex();
-    //
-    // List queryAll = indexObj.queryAll();
-    //
-    // for( Object object : queryAll ) {
-    // if (object instanceof long[]) {
-    // long[] posSize = (long[]) object;
-    // Geometry geom = writer.pickGeometry(posSize[0], posSize[1]);
-    // System.out.println(geom.toText());
-    // }
-    // }
-    //
-    // }
 }

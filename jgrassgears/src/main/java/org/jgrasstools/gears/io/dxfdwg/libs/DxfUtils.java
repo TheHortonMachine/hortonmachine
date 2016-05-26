@@ -57,7 +57,9 @@ public class DxfUtils {
     public static final String TEXT_HEIGHT = "TEXT_HEIGHT";
     public static final String TEXT = "TEXT";
 
-    public static int precision = 3;
+    public static final int precision = 3;
+
+    private DxfUtils() {}
 
     /**
      * Write a {@link SimpleFeature} to dxf string.
@@ -82,7 +84,7 @@ public class DxfUtils {
         } else if (geometryType == GeometryType.POLYGON || geometryType == GeometryType.MULTIPOLYGON) {
             return polygon2Dxf(featureMate, layerName, elevationAttrName, suffix);
         } else if (g instanceof GeometryCollection) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for( int i = 0; i < g.getNumGeometries(); i++ ) {
                 SimpleFeature ff = SimpleFeatureBuilder.copy(featureMate.getFeature());
                 ff.setDefaultGeometry(g.getGeometryN(i));
@@ -97,16 +99,16 @@ public class DxfUtils {
 
     private static String point2Dxf( FeatureMate featureMate, String layerName, String elevationAttrName ) {
 
-        StringBuffer sb = null;
+        StringBuilder sb;
 
         // TEXT
         SimpleFeature feature = featureMate.getFeature();
         Object attribute = FeatureUtilities.getAttributeCaseChecked(feature, TEXT);
-        boolean hasText = (attribute != null && !attribute.equals(""));
+        boolean hasText = attribute != null && !attribute.equals("");
         if (hasText) {
-            sb = new StringBuffer(DxfGroup.toString(0, TEXT));
+            sb = new StringBuilder(DxfGroup.toString(0, TEXT));
         } else {
-            sb = new StringBuffer(DxfGroup.toString(0, POINT));
+            sb = new StringBuilder(DxfGroup.toString(0, POINT));
         }
 
         // LAYER
@@ -148,13 +150,13 @@ public class DxfUtils {
         // Correction added by L. Becker and R Littlefield on 2006-11-08
         // It writes 2 points-only polylines in a line instead of a polyline
         // to make it possible to incorporate big dataset in View32
-        boolean is2CoordsLine = (coords.length == 2);
+        boolean is2CoordsLine = coords.length == 2;
         boolean doLine = is2CoordsLine && force2CoordsToLine;
-        StringBuffer sb;
+        StringBuilder sb;
         if (doLine) {
-            sb = new StringBuffer(DxfGroup.toString(0, LINE));
+            sb = new StringBuilder(DxfGroup.toString(0, LINE));
         } else {
-            sb = new StringBuffer(DxfGroup.toString(0, POLYLINE));
+            sb = new StringBuilder(DxfGroup.toString(0, POLYLINE));
         }
 
         double elev = Double.NaN;
@@ -211,7 +213,7 @@ public class DxfUtils {
     private static String polygon2Dxf( FeatureMate featureMate, String layerName, String elevationAttrName, boolean suffix ) {
         Geometry geometry = featureMate.getGeometry();
         int numGeometries = geometry.getNumGeometries();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for( int g = 0; g < numGeometries; g++ ) {
             Polygon geom = (Polygon) geometry.getGeometryN(g);
 
@@ -252,7 +254,6 @@ public class DxfUtils {
             }
             sb.append(DxfGroup.toString(0, SEQEND));
             for( int h = 0; h < geom.getNumInteriorRing(); h++ ) {
-                // System.out.println("polygon2Dxf (hole)" + suffix);
                 sb.append(DxfGroup.toString(0, POLYLINE));
                 if (suffix)
                     sb.append(DxfGroup.toString(8, layerName + SUFFIX));
@@ -290,7 +291,7 @@ public class DxfUtils {
         return sb.toString();
     }
 
-    private static void handleLAYER( SimpleFeature feature, String layerName, StringBuffer sb ) {
+    private static void handleLAYER( SimpleFeature feature, String layerName, StringBuilder sb ) {
         Object attribute;
         attribute = FeatureUtilities.getAttributeCaseChecked(feature, LAYER);
         if (attribute != null && !attribute.equals("")) {
@@ -300,7 +301,7 @@ public class DxfUtils {
         }
     }
 
-    private static void handleTEXTHEIGHT( SimpleFeature feature, StringBuffer sb, boolean hasText ) {
+    private static void handleTEXTHEIGHT( SimpleFeature feature, StringBuilder sb, boolean hasText ) {
         Object attribute;
         attribute = FeatureUtilities.getAttributeCaseChecked(feature, TEXT_HEIGHT);
         boolean hasTextHeight = attribute != null && !attribute.equals(new Float(0f));
@@ -313,14 +314,14 @@ public class DxfUtils {
         }
     }
 
-    private static void handleColor( SimpleFeature feature, StringBuffer sb ) {
+    private static void handleColor( SimpleFeature feature, StringBuilder sb ) {
         Object attribute = FeatureUtilities.getAttributeCaseChecked(feature, COLOR);
         if (attribute != null && ((Integer) attribute).intValue() != 256) {
             sb.append(DxfGroup.toString(62, feature.getAttribute(COLOR).toString()));
         }
     }
 
-    private static void handleTHICKNESS( SimpleFeature feature, StringBuffer sb ) {
+    private static void handleTHICKNESS( SimpleFeature feature, StringBuilder sb ) {
         Object attribute = FeatureUtilities.getAttributeCaseChecked(feature, THICKNESS);
         if (attribute != null && !attribute.equals(new Float(0f))) {
             sb.append(DxfGroup.toString(39, feature.getAttribute(THICKNESS)));
@@ -329,14 +330,14 @@ public class DxfUtils {
         }
     }
 
-    private static void handleELEVATION( SimpleFeature feature, StringBuffer sb ) {
+    private static void handleELEVATION( SimpleFeature feature, StringBuilder sb ) {
         Object attribute = FeatureUtilities.getAttributeCaseChecked(feature, ELEVATION);
         if (attribute != null && !attribute.equals(new Float(0f))) {
             sb.append(DxfGroup.toString(38, feature.getAttribute(ELEVATION)));
         }
     }
 
-    private static void handleLTYPE( SimpleFeature feature, StringBuffer sb ) {
+    private static void handleLTYPE( SimpleFeature feature, StringBuilder sb ) {
         Object attribute = FeatureUtilities.getAttributeCaseChecked(feature, LTYPE);
         if (attribute != null && !attribute.equals(BYLAYER)) {
             sb.append(DxfGroup.toString(6, feature.getAttribute(LTYPE)));
