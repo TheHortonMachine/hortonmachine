@@ -58,9 +58,10 @@ public class SpatialiteImportUtils {
      * 
      * @param db the database to use.
      * @param shapeFile the shapefile to use.
+     * @return the name of the created table.
      * @throws Exception
      */
-    public static void createTableFromShp( SpatialiteDb db, File shapeFile ) throws Exception {
+    public static String createTableFromShp(SpatialiteDb db, File shapeFile) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
@@ -70,12 +71,12 @@ public class SpatialiteImportUtils {
 
         List<String> attrSql = new ArrayList<String>();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
-        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+        for (AttributeDescriptor attributeDescriptor : attributeDescriptors) {
             if (attributeDescriptor instanceof GeometryDescriptor) {
                 continue;
             }
             String attrName = attributeDescriptor.getLocalName();
-            Class< ? > binding = attributeDescriptor.getType().getBinding();
+            Class<?> binding = attributeDescriptor.getType().getBinding();
             if (binding.isAssignableFrom(Double.class) || binding.isAssignableFrom(Float.class)) {
                 attrSql.add(attrName + " REAL");
             } else if (binding.isAssignableFrom(Long.class) || binding.isAssignableFrom(Integer.class)) {
@@ -91,7 +92,7 @@ public class SpatialiteImportUtils {
 
         String typeString = null;
         org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
-        Class< ? > binding = type.getBinding();
+        Class<?> binding = type.getBinding();
         if (binding.isAssignableFrom(MultiPolygon.class)) {
             typeString = "MULTIPOLYGON";
         } else if (binding.isAssignableFrom(Polygon.class)) {
@@ -113,6 +114,8 @@ public class SpatialiteImportUtils {
             codeFromCrs = codeFromCrs.replaceFirst("EPSG:", "");
             db.addGeometryXYColumnAndIndex(shpName, null, typeString, codeFromCrs);
         }
+
+        return shpName;
     }
 
     /**
@@ -121,10 +124,10 @@ public class SpatialiteImportUtils {
      * @param db the database to use.
      * @param shapeFile the shapefile to import.
      * @param tableName the name of the table to import to.
-     * @param limit if > 0, a limit to teh imported features is applied.
+     * @param limit if > 0, a limit to the imported features is applied.
      * @throws Exception
      */
-    public static void importShapefile( SpatialiteDb db, File shapeFile, String tableName, int limit ) throws Exception {
+    public static void importShapefile(SpatialiteDb db, File shapeFile, String tableName, int limit) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
@@ -134,7 +137,7 @@ public class SpatialiteImportUtils {
 
         List<String[]> tableInfo = db.getTableColumns(tableName);
         List<String> tableColumns = new ArrayList<>();
-        for( String[] item : tableInfo ) {
+        for (String[] item : tableInfo) {
             tableColumns.add(item[0]);
         }
         SpatialiteGeometryColumns geometryColumns = db.getGeometryColumnsForTable(tableName);
@@ -147,7 +150,7 @@ public class SpatialiteImportUtils {
 
         String valueNames = "";
         String qMarks = "";
-        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+        for (AttributeDescriptor attributeDescriptor : attributeDescriptors) {
             String attrName = attributeDescriptor.getLocalName();
             if (attrName.equals(SpatialiteDb.PK_UID)) {
                 continue;
@@ -157,7 +160,8 @@ public class SpatialiteImportUtils {
                 qMarks += ",GeomFromText(?, " + epsg + ")";
             } else {
                 if (!tableColumns.contains(attrName)) {
-                    throw new IllegalArgumentException("The imported shapefile doesn't seem to match the table's schema.");
+                    throw new IllegalArgumentException(
+                        "The imported shapefile doesn't seem to match the table's schema.");
                 }
                 valueNames += "," + attrName;
                 qMarks += ",?";
@@ -170,10 +174,10 @@ public class SpatialiteImportUtils {
         Connection conn = db.getConnection();
         try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
             int count = 0;
-            while( featureIterator.hasNext() ) {
+            while (featureIterator.hasNext()) {
                 SimpleFeature f = (SimpleFeature) featureIterator.next();
                 List<Object> attributes = f.getAttributes();
-                for( int i = 0; i < attributes.size(); i++ ) {
+                for (int i = 0; i < attributes.size(); i++) {
                     Object object = attributes.get(i);
                     if (object == null) {
                         continue;
@@ -196,7 +200,7 @@ public class SpatialiteImportUtils {
                 pStmt.executeUpdate();
 
                 count++;
-                if (limit > 0 && count > limit) {
+                if (limit > 0 && count >= limit) {
                     break;
                 }
             }

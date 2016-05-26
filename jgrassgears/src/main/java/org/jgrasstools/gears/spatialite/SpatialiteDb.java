@@ -78,27 +78,32 @@ public class SpatialiteDb implements AutoCloseable {
 
     public static final String defaultGeomFieldName = "the_geom";
 
-    protected Connection conn = null;
+    protected Connection mConn = null;
 
-    private String dbPath;
+    private String mDbPath;
 
-    public boolean printInfos = true;
+    public boolean mPrintInfos = true;
 
     /**
      * Open the connection to a database.
      * 
-     * @param dbPath the database path.
+     * @param dbPath the database path. If <code>null</code>, an in-memory db is created.
      * @return <code>true</code> if the database did already exist.
      * @throws SQLException
      */
-    public boolean open( String dbPath ) throws Exception {
-        this.dbPath = dbPath;
+    public boolean open(String dbPath) throws Exception {
+        this.mDbPath = dbPath;
 
         boolean dbExists = false;
-        File dbFile = new File(dbPath);
-        if (dbFile.exists()) {
-            if (printInfos)
-                System.out.println("Database exists");
+        if (dbPath != null) {
+            File dbFile = new File(dbPath);
+            if (dbFile.exists()) {
+                if (mPrintInfos)
+                    System.out.println("Database exists");
+                dbExists = true;
+            }
+        } else {
+            dbPath = "file:inmemory?mode=memory";
             dbExists = true;
         }
         // enabling dynamic extension loading
@@ -106,36 +111,36 @@ public class SpatialiteDb implements AutoCloseable {
         SQLiteConfig config = new SQLiteConfig();
         config.enableLoadExtension(true);
         // create a database connection
-        conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath, config.toProperties());
-        if (printInfos)
-            try (Statement stmt = conn.createStatement()) {
+        mConn = DriverManager.getConnection("jdbc:sqlite:" + dbPath, config.toProperties());
+        if (mPrintInfos)
+            try (Statement stmt = mConn.createStatement()) {
                 stmt.execute("SELECT sqlite_version()");
                 ResultSet rs = stmt.executeQuery("SELECT sqlite_version() AS 'SQLite Version';");
-                while( rs.next() ) {
+                while (rs.next()) {
                     String sqliteVersion = rs.getString(1);
                     System.out.println("SQLite Version: " + sqliteVersion);
                 }
             }
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             // set timeout to 30 sec.
             stmt.setQueryTimeout(30);
             // load SpatiaLite
             try {
                 OSType operatingSystemType = OsCheck.getOperatingSystemType();
-                switch( operatingSystemType ) {
+                switch (operatingSystemType) {
                 case Linux:
                 case MacOS:
                     try {
                         stmt.execute("SELECT load_extension('mod_rasterlite2.so', 'sqlite3_modrasterlite_init')");
                     } catch (Exception e) {
-                        if (printInfos) {
+                        if (mPrintInfos) {
                             System.out.println("Unable to load mod_rasterlite2.so: " + e.getMessage());
                         }
                     }
                     try {
                         stmt.execute("SELECT load_extension('mod_spatialite.so', 'sqlite3_modspatialite_init')");
                     } catch (Exception e) {
-                        if (printInfos) {
+                        if (mPrintInfos) {
                             System.out.println("Unable to load mod_spatialite.so: " + e.getMessage());
                         }
                         throw e;
@@ -145,14 +150,14 @@ public class SpatialiteDb implements AutoCloseable {
                     try {
                         stmt.execute("SELECT load_extension('mod_rasterlite2', 'sqlite3_modrasterlite_init')");
                     } catch (Exception e) {
-                        if (printInfos) {
+                        if (mPrintInfos) {
                             System.out.println("Unable to load mod_rasterlite2: " + e.getMessage());
                         }
                     }
                     try {
                         stmt.execute("SELECT load_extension('mod_spatialite', 'sqlite3_modspatialite_init')");
                     } catch (Exception e) {
-                        if (printInfos) {
+                        if (mPrintInfos) {
                             System.out.println("Unable to load mod_spatialite: " + e.getMessage());
                         }
                         throw e;
@@ -174,7 +179,7 @@ public class SpatialiteDb implements AutoCloseable {
      * @return the path to the database. 
      */
     public String getDatabasePath() {
-        return dbPath;
+        return mDbPath;
     }
 
     /**
@@ -183,13 +188,13 @@ public class SpatialiteDb implements AutoCloseable {
      * @param options optional tweaks.
      * @throws SQLException
      */
-    public void initSpatialMetadata( String options ) throws SQLException {
+    public void initSpatialMetadata(String options) throws SQLException {
         if (options == null) {
             options = "";
         }
         enableAutocommit(false);
         String sql = "SELECT InitSpatialMetadata(" + options + ")";
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             stmt.execute(sql);
         }
         enableAutocommit(true);
@@ -202,14 +207,14 @@ public class SpatialiteDb implements AutoCloseable {
      *          Vice versa if <code>false</code>.
      * @throws SQLException
      */
-    public void enableAutocommit( boolean enable ) throws SQLException {
-        boolean autoCommitEnabled = conn.getAutoCommit();
+    public void enableAutocommit(boolean enable) throws SQLException {
+        boolean autoCommitEnabled = mConn.getAutoCommit();
         if (enable && !autoCommitEnabled) {
             // do enable if not already enabled
-            conn.setAutoCommit(true);
+            mConn.setAutoCommit(true);
         } else if (!enable && autoCommitEnabled) {
             // disable if not already disabled
-            conn.setAutoCommit(false);
+            mConn.setAutoCommit(false);
         }
     }
 
@@ -222,10 +227,10 @@ public class SpatialiteDb implements AutoCloseable {
     public String[] getDbInfo() throws SQLException {
         // checking SQLite and SpatiaLite version + target CPU
         String sql = "SELECT sqlite_version(), spatialite_version(), spatialite_target_cpu()";
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
             String[] info = new String[3];
-            while( rs.next() ) {
+            while (rs.next()) {
                 // read the result set
                 info[0] = rs.getString(1);
                 info[1] = rs.getString(2);
@@ -242,11 +247,11 @@ public class SpatialiteDb implements AutoCloseable {
      * @param fieldData the data for each the field (ex. id INTEGER NOT NULL PRIMARY KEY).
      * @throws SQLException
      */
-    public void createTable( String tableName, String... fieldData ) throws SQLException {
+    public void createTable(String tableName, String... fieldData) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TABLE ");
         sb.append(tableName).append("(");
-        for( int i = 0; i < fieldData.length; i++ ) {
+        for (int i = 0; i < fieldData.length; i++) {
             if (i != 0) {
                 sb.append(",");
             }
@@ -254,7 +259,7 @@ public class SpatialiteDb implements AutoCloseable {
         }
         sb.append(")");
 
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             stmt.execute(sb.toString());
         }
     }
@@ -265,10 +270,10 @@ public class SpatialiteDb implements AutoCloseable {
      * @param tableName
      * @throws SQLException
      */
-    public void deleteGeoTable( String tableName ) throws SQLException {
+    public void deleteGeoTable(String tableName) throws SQLException {
         String sql = "SELECT DropGeoTable('" + tableName + "');";
 
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             stmt.execute(sql);
         }
     }
@@ -281,9 +286,9 @@ public class SpatialiteDb implements AutoCloseable {
      * @param isUnique if <code>true</code>, a unique index will be created.
      * @throws SQLException
      */
-    public void createIndex( String tableName, String column, boolean isUnique ) throws SQLException {
+    public void createIndex(String tableName, String column, boolean isUnique) throws SQLException {
         String sql = getIndexSql(tableName, column, isUnique);
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             stmt.executeUpdate(sql);
         }
     }
@@ -296,7 +301,7 @@ public class SpatialiteDb implements AutoCloseable {
      * @param isUnique if <code>true</code>, a unique index will be created.
      * @return the index sql.
      */
-    public String getIndexSql( String tableName, String column, boolean isUnique ) {
+    public String getIndexSql(String tableName, String column, boolean isUnique) {
         String unique = "UNIQUE ";
         if (!isUnique) {
             unique = "";
@@ -315,8 +320,8 @@ public class SpatialiteDb implements AutoCloseable {
      * @param epsg the optional epsg code (default is 4326);
      * @throws SQLException
      */
-    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg )
-            throws SQLException {
+    public void addGeometryXYColumnAndIndex(String tableName, String geomColName, String geomType, String epsg)
+        throws SQLException {
         String epsgStr = "4326";
         if (epsg != null) {
             epsgStr = epsg;
@@ -330,9 +335,9 @@ public class SpatialiteDb implements AutoCloseable {
             geomColName = defaultGeomFieldName;
         }
 
-        try (Statement stmt = conn.createStatement()) {
-            String sql = "SELECT AddGeometryColumn('" + tableName + "','" + geomColName + "', " + epsgStr + ", '" + geomTypeStr
-                    + "', 'XY')";
+        try (Statement stmt = mConn.createStatement()) {
+            String sql = "SELECT AddGeometryColumn('" + tableName + "','" + geomColName + "', " + epsgStr + ", '"
+                + geomTypeStr + "', 'XY')";
             stmt.execute(sql);
 
             sql = "SELECT CreateSpatialIndex('" + tableName + "', '" + geomColName + "');";
@@ -348,15 +353,16 @@ public class SpatialiteDb implements AutoCloseable {
      * @param epsg the optional epsg.
      * @throws SQLException
      */
-    public void insertGeometry( String tableName, Geometry geometry, String epsg ) throws SQLException {
+    public void insertGeometry(String tableName, Geometry geometry, String epsg) throws SQLException {
         String epsgStr = "4326";
         if (epsg == null) {
             epsgStr = epsg;
         }
 
         SpatialiteGeometryColumns gc = getGeometryColumnsForTable(tableName);
-        String sql = "INSERT INTO " + tableName + " (" + gc.f_geometry_column + ") VALUES (GeomFromText(?, " + epsgStr + "))";
-        try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
+        String sql =
+            "INSERT INTO " + tableName + " (" + gc.f_geometry_column + ") VALUES (GeomFromText(?, " + epsgStr + "))";
+        try (PreparedStatement pStmt = mConn.prepareStatement(sql)) {
             pStmt.setString(1, geometry.toText());
             pStmt.executeUpdate();
         }
@@ -369,16 +375,16 @@ public class SpatialiteDb implements AutoCloseable {
      * @return the list of names.
      * @throws SQLException
      */
-    public List<String> getTables( boolean doOrder ) throws SQLException {
+    public List<String> getTables(boolean doOrder) throws SQLException {
         List<String> tableNames = new ArrayList<String>();
         String orderBy = " ORDER BY name";
         if (!doOrder) {
             orderBy = "";
         }
         String sql = "SELECT name FROM sqlite_master WHERE type='table' or type='view'" + orderBy;
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
-            while( rs.next() ) {
+            while (rs.next()) {
                 String tabelName = rs.getString(1);
                 tableNames.add(tabelName);
             }
@@ -406,7 +412,7 @@ public class SpatialiteDb implements AutoCloseable {
      * @return the map of tables sorted by aggregated type:
      * @throws SQLException
      */
-    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws SQLException {
+    public HashMap<String, List<String>> getTablesMap(boolean doOrder) throws SQLException {
         List<String> tableNames = getTables(doOrder);
         HashMap<String, List<String>> tablesMap = SpatialiteTableNames.getTablesSorted(tableNames, doOrder);
         return tablesMap;
@@ -419,11 +425,11 @@ public class SpatialiteDb implements AutoCloseable {
      * @return <code>true</code> if the table exists.
      * @throws SQLException
      */
-    public boolean hasTable( String tableName ) throws SQLException {
+    public boolean hasTable(String tableName) throws SQLException {
         String sql = "SELECT name FROM sqlite_master WHERE type='table'";
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
-            while( rs.next() ) {
+            while (rs.next()) {
                 String name = rs.getString(1);
                 if (name.equals(tableName)) {
                     return true;
@@ -440,17 +446,17 @@ public class SpatialiteDb implements AutoCloseable {
      * @return the list of column [name, type, pk].
      * @throws SQLException
      */
-    public List<String[]> getTableColumns( String tableName ) throws SQLException {
+    public List<String[]> getTableColumns(String tableName) throws SQLException {
         List<String[]> columnNames = new ArrayList<String[]>();
         String sql = "PRAGMA table_info(" + tableName + ")";
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
             ResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
             int nameIndex = -1;
             int typeIndex = -1;
             int pkIndex = -1;
-            for( int i = 1; i <= columnCount; i++ ) {
+            for (int i = 1; i <= columnCount; i++) {
                 String columnName = rsmd.getColumnName(i);
                 if (columnName.equals("name")) {
                     nameIndex = i;
@@ -461,13 +467,13 @@ public class SpatialiteDb implements AutoCloseable {
                 }
             }
 
-            while( rs.next() ) {
+            while (rs.next()) {
                 String name = rs.getString(nameIndex);
                 String type = rs.getString(typeIndex);
                 String pk = "0";
                 if (pkIndex > 0)
                     pk = rs.getString(pkIndex);
-                columnNames.add(new String[]{name, type, pk});
+                columnNames.add(new String[] { name, type, pk });
             }
             return columnNames;
         }
@@ -480,16 +486,16 @@ public class SpatialiteDb implements AutoCloseable {
      * @return the {@link SpatialiteGeometryColumns column info}.
      * @throws Exception
      */
-    public SpatialiteGeometryColumns getGeometryColumnsForTable( String tableName ) throws SQLException {
+    public SpatialiteGeometryColumns getGeometryColumnsForTable(String tableName) throws SQLException {
         String sql = "select " + SpatialiteGeometryColumns.F_TABLE_NAME + ", " //
-                + SpatialiteGeometryColumns.F_GEOMETRY_COLUMN + ", " //
-                + SpatialiteGeometryColumns.GEOMETRY_TYPE + "," //
-                + SpatialiteGeometryColumns.COORD_DIMENSION + ", " //
-                + SpatialiteGeometryColumns.SRID + ", " //
-                + SpatialiteGeometryColumns.SPATIAL_INDEX_ENABLED + " from " //
-                + SpatialiteGeometryColumns.TABLENAME + " where " + SpatialiteGeometryColumns.F_TABLE_NAME + "='" + tableName
-                + "'";
-        try (Statement stmt = conn.createStatement()) {
+            + SpatialiteGeometryColumns.F_GEOMETRY_COLUMN + ", " //
+            + SpatialiteGeometryColumns.GEOMETRY_TYPE + "," //
+            + SpatialiteGeometryColumns.COORD_DIMENSION + ", " //
+            + SpatialiteGeometryColumns.SRID + ", " //
+            + SpatialiteGeometryColumns.SPATIAL_INDEX_ENABLED + " from " //
+            + SpatialiteGeometryColumns.TABLENAME + " where " + SpatialiteGeometryColumns.F_TABLE_NAME + "='"
+            + tableName + "'";
+        try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
             if (rs.next()) {
                 SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();
@@ -512,7 +518,7 @@ public class SpatialiteDb implements AutoCloseable {
      * @return <code>true</code> if a geometry column is present.
      * @throws SQLException
      */
-    public boolean isTableSpatial( String tableName ) throws SQLException {
+    public boolean isTableSpatial(String tableName) throws SQLException {
         SpatialiteGeometryColumns geometryColumns = getGeometryColumnsForTable(tableName);
         return geometryColumns != null;
     }
@@ -524,17 +530,17 @@ public class SpatialiteDb implements AutoCloseable {
      * @return the list of keys.
      * @throws SQLException
      */
-    public List<ForeignKey> getForeignKeys( String tableName ) throws SQLException {
+    public List<ForeignKey> getForeignKeys(String tableName) throws SQLException {
         List<ForeignKey> fKeys = new ArrayList<ForeignKey>();
         String sql = "PRAGMA foreign_key_list(" + tableName + ")";
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
             ResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
             int fromIndex = -1;
             int toIndex = -1;
             int toTableIndex = -1;
-            for( int i = 1; i <= columnCount; i++ ) {
+            for (int i = 1; i <= columnCount; i++) {
                 String columnName = rsmd.getColumnName(i);
                 if (columnName.equals("from")) {
                     fromIndex = i;
@@ -544,7 +550,7 @@ public class SpatialiteDb implements AutoCloseable {
                     toTableIndex = i;
                 }
             }
-            while( rs.next() ) {
+            while (rs.next()) {
                 ForeignKey fKey = new ForeignKey();
                 Object fromObj = rs.getObject(fromIndex);
                 Object toObj = rs.getObject(toIndex);
@@ -569,11 +575,11 @@ public class SpatialiteDb implements AutoCloseable {
      * @return the record count or -1.
      * @throws SQLException
      */
-    public long getCount( String tableName ) throws SQLException {
+    public long getCount(String tableName) throws SQLException {
         String sql = "select count(*) from " + tableName;
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
-            while( rs.next() ) {
+            while (rs.next()) {
                 long count = rs.getLong(1);
                 return count;
             }
@@ -594,8 +600,8 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws SQLException
      * @throws ParseException
      */
-    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit )
-            throws SQLException, ParseException {
+    public QueryResult getTableRecordsMapIn(String tableName, Envelope envelope, boolean alsoPK_UID, int limit)
+        throws SQLException, ParseException {
         QueryResult queryResult = new QueryResult();
 
         SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
@@ -603,7 +609,7 @@ public class SpatialiteDb implements AutoCloseable {
 
         List<String[]> tableColumnsInfo = getTableColumns(tableName);
         List<String> tableColumns = new ArrayList<>();
-        for( String[] info : tableColumnsInfo ) {
+        for (String[] info : tableColumnsInfo) {
             tableColumns.add(info[0]);
         }
         if (hasGeom) {
@@ -616,7 +622,7 @@ public class SpatialiteDb implements AutoCloseable {
         if (hasGeom) {
             sql += "ST_AsBinary(" + gCol.f_geometry_column + ") AS " + gCol.f_geometry_column;
         }
-        for( int i = 0; i < tableColumns.size(); i++ ) {
+        for (int i = 0; i < tableColumns.size(); i++) {
             if (hasGeom || i != 0)
                 sql += ",";
             sql += tableColumns.get(i);
@@ -634,12 +640,12 @@ public class SpatialiteDb implements AutoCloseable {
             sql += " LIMIT " + limit;
         }
         WKBReader wkbReader = new WKBReader();
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
             ResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
 
-            for( int i = 1; i <= columnCount; i++ ) {
+            for (int i = 1; i <= columnCount; i++) {
                 String columnName = rsmd.getColumnName(i);
                 queryResult.names.add(columnName);
                 String columnTypeName = rsmd.getColumnTypeName(i);
@@ -649,7 +655,7 @@ public class SpatialiteDb implements AutoCloseable {
                 }
             }
 
-            while( rs.next() ) {
+            while (rs.next()) {
                 int i = 1;
                 Object[] rec = new Object[columnCount];
                 if (hasGeom) {
@@ -658,7 +664,7 @@ public class SpatialiteDb implements AutoCloseable {
                     rec[i - 1] = geometry;
                     i++;
                 }
-                for( int j = i; j <= columnCount; j++ ) {
+                for (int j = i; j <= columnCount; j++) {
                     Object object = rs.getObject(j);
                     rec[j - 1] = object;
                 }
@@ -677,15 +683,15 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws SQLException
      * @throws ParseException
      */
-    public QueryResult getTableRecordsMapFromRawSql( String sql, int limit ) throws SQLException, ParseException {
+    public QueryResult getTableRecordsMapFromRawSql(String sql, int limit) throws SQLException, ParseException {
         QueryResult queryResult = new QueryResult();
         WKBReader wkbReader = new WKBReader();
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
             ResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
             int geometryIndex = -1;
-            for( int i = 1; i <= columnCount; i++ ) {
+            for (int i = 1; i <= columnCount; i++) {
                 int columnType = rsmd.getColumnType(i);
                 String columnName = rsmd.getColumnName(i);
                 queryResult.names.add(columnName);
@@ -697,9 +703,9 @@ public class SpatialiteDb implements AutoCloseable {
                 }
             }
             int count = 0;
-            while( rs.next() ) {
+            while (rs.next()) {
                 Object[] rec = new Object[columnCount];
-                for( int j = 1; j <= columnCount; j++ ) {
+                for (int j = 1; j <= columnCount; j++) {
                     if (j == geometryIndex) {
                         byte[] geomBytes = rs.getBytes(j);
                         try {
@@ -733,16 +739,16 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws ParseException
      * @throws IOException 
      */
-    public void runRawSqlToCsv( String sql, File csvFile, boolean doHeader, String separator )
-            throws SQLException, ParseException, IOException {
+    public void runRawSqlToCsv(String sql, File csvFile, boolean doHeader, String separator)
+        throws SQLException, ParseException, IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {
             WKBReader wkbReader = new WKBReader();
-            try (Statement stmt = conn.createStatement()) {
+            try (Statement stmt = mConn.createStatement()) {
                 ResultSet rs = stmt.executeQuery(sql);
                 ResultSetMetaData rsmd = rs.getMetaData();
                 int columnCount = rsmd.getColumnCount();
                 int geometryIndex = -1;
-                for( int i = 1; i <= columnCount; i++ ) {
+                for (int i = 1; i <= columnCount; i++) {
                     if (i > 1) {
                         bw.write(separator);
                     }
@@ -755,8 +761,8 @@ public class SpatialiteDb implements AutoCloseable {
                     }
                 }
                 bw.write("\n");
-                while( rs.next() ) {
-                    for( int j = 1; j <= columnCount; j++ ) {
+                while (rs.next()) {
+                    for (int j = 1; j <= columnCount; j++) {
                         if (j > 1) {
                             bw.write(separator);
                         }
@@ -802,10 +808,10 @@ public class SpatialiteDb implements AutoCloseable {
      * @return the features.
      * @throws Exception
      */
-    public DefaultFeatureCollection runRawSqlToFeatureCollection( String simpleSql ) throws Exception {
+    public DefaultFeatureCollection runRawSqlToFeatureCollection(String simpleSql) throws Exception {
         String[] split = simpleSql.split("\\s+");
         String tableName = null;
-        for( int i = 0; i < split.length; i++ ) {
+        for (int i = 0; i < split.length; i++) {
             if (split[i].toLowerCase().equals("from")) {
                 tableName = split[i + 1];
             }
@@ -822,7 +828,7 @@ public class SpatialiteDb implements AutoCloseable {
 
         DefaultFeatureCollection fc = new DefaultFeatureCollection();
         WKBReader wkbReader = new WKBReader();
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(simpleSql);
             ResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
@@ -835,7 +841,7 @@ public class SpatialiteDb implements AutoCloseable {
             b.setName("sql");
             b.setCRS(crs);
 
-            for( int i = 1; i <= columnCount; i++ ) {
+            for (int i = 1; i <= columnCount; i++) {
                 int columnType = rsmd.getColumnType(i);
                 String columnTypeName = rsmd.getColumnTypeName(i);
                 String columnName = rsmd.getColumnName(i);
@@ -845,7 +851,7 @@ public class SpatialiteDb implements AutoCloseable {
                     b.add("the_geom", geomType.getGeometryClass());
                 } else {
                     // Class< ? > forName = Class.forName(columnClassName);
-                    switch( columnTypeName ) {
+                    switch (columnTypeName) {
                     case "INTEGER":
                         b.add(columnName, Integer.class);
                         break;
@@ -867,9 +873,9 @@ public class SpatialiteDb implements AutoCloseable {
 
             SimpleFeatureType type = b.buildFeatureType();
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-            while( rs.next() ) {
+            while (rs.next()) {
                 Object[] values = new Object[columnCount];
-                for( int j = 1; j <= columnCount; j++ ) {
+                for (int j = 1; j <= columnCount; j++) {
                     if (j == geometryIndex) {
                         byte[] geomBytes = rs.getBytes(j);
                         Geometry geometry = wkbReader.read(geomBytes);
@@ -896,25 +902,25 @@ public class SpatialiteDb implements AutoCloseable {
      * @param chunks commit interval.
      * @throws Exception 
      */
-    public void executeSqlFile( File file, int chunks, boolean eachLineAnSql ) throws Exception {
-        boolean autoCommit = conn.getAutoCommit();
-        conn.setAutoCommit(false);
+    public void executeSqlFile(File file, int chunks, boolean eachLineAnSql) throws Exception {
+        boolean autoCommit = mConn.getAutoCommit();
+        mConn.setAutoCommit(false);
 
         Predicate<String> validSqlLine = s -> s.length() != 0 //
-                && !s.startsWith("BEGIN") //
-                && !s.startsWith("COMMIT") //
-                ;
+            && !s.startsWith("BEGIN") //
+            && !s.startsWith("COMMIT") //
+        ;
         Predicate<String> commentPredicate = s -> !s.startsWith("--");
 
-        try (Statement pStmt = conn.createStatement()) {
-            final int[] counter = {1};
+        try (Statement pStmt = mConn.createStatement()) {
+            final int[] counter = { 1 };
             Stream<String> linesStream = null;
             if (eachLineAnSql) {
                 linesStream = Files.lines(Paths.get(file.getAbsolutePath())).map(s -> s.trim()).filter(commentPredicate)
-                        .filter(validSqlLine);
+                    .filter(validSqlLine);
             } else {
                 linesStream = Arrays.stream(Files.lines(Paths.get(file.getAbsolutePath())).filter(commentPredicate)
-                        .collect(Collectors.joining()).split(";")).filter(validSqlLine);
+                    .collect(Collectors.joining()).split(";")).filter(validSqlLine);
             }
 
             Consumer<String> executeAction = s -> {
@@ -922,16 +928,16 @@ public class SpatialiteDb implements AutoCloseable {
                     pStmt.executeUpdate(s);
                     counter[0]++;
                     if (counter[0] % chunks == 0) {
-                        conn.commit();
+                        mConn.commit();
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             };
             linesStream.forEach(executeAction);
-            conn.commit();
+            mConn.commit();
         }
-        conn.setAutoCommit(autoCommit);
+        mConn.setAutoCommit(autoCommit);
     }
 
     /**
@@ -941,8 +947,8 @@ public class SpatialiteDb implements AutoCloseable {
      * @return the result code of the update.
      * @throws SQLException
      */
-    public int executeInsertUpdateDeleteSql( String sql ) throws SQLException {
-        try (Statement stmt = conn.createStatement()) {
+    public int executeInsertUpdateDeleteSql(String sql) throws SQLException {
+        try (Statement stmt = mConn.createStatement()) {
             int executeUpdate = stmt.executeUpdate(sql);
             return executeUpdate;
         }
@@ -957,7 +963,7 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws SQLException
      * @throws ParseException
      */
-    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws SQLException, ParseException {
+    public List<Geometry> getGeometriesIn(String tableName, Envelope envelope) throws SQLException, ParseException {
         List<Geometry> geoms = new ArrayList<Geometry>();
 
         SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
@@ -971,9 +977,9 @@ public class SpatialiteDb implements AutoCloseable {
             sql += " WHERE " + getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
         }
         WKBReader wkbReader = new WKBReader();
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
-            while( rs.next() ) {
+            while (rs.next()) {
                 byte[] geomBytes = rs.getBytes(1);
                 Geometry geometry = wkbReader.read(geomBytes);
                 geoms.add(geometry);
@@ -993,8 +999,8 @@ public class SpatialiteDb implements AutoCloseable {
      * @return the sql piece.
      * @throws SQLException 
      */
-    public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 )
-            throws SQLException {
+    public String getSpatialindexBBoxWherePiece(String tableName, String alias, double x1, double y1, double x2,
+        double y2) throws SQLException {
         String rowid = "";
         if (alias == null) {
             alias = "";
@@ -1004,10 +1010,10 @@ public class SpatialiteDb implements AutoCloseable {
             alias = alias + ".";
         }
         SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
-        String sql = "ST_Intersects(" + alias + gCol.f_geometry_column + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2
-                + ")) = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
-                + "f_table_name = '" + tableName + "' AND " //
-                + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
+        String sql = "ST_Intersects(" + alias + gCol.f_geometry_column + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2
+            + ", " + y2 + ")) = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
+            + "f_table_name = '" + tableName + "' AND " //
+            + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
     }
 
@@ -1020,7 +1026,8 @@ public class SpatialiteDb implements AutoCloseable {
      * @return the query piece.
      * @throws SQLException
      */
-    public String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry ) throws SQLException {
+    public String getSpatialindexGeometryWherePiece(String tableName, String alias, Geometry geometry)
+        throws SQLException {
         String rowid = "";
         if (alias == null) {
             alias = "";
@@ -1037,10 +1044,10 @@ public class SpatialiteDb implements AutoCloseable {
         double y2 = envelope.getMaxY();
 
         SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
-        String sql = "ST_Intersects(" + alias + gCol.f_geometry_column + ", " + "GeomFromText('" + geometry.toText() + "')"
-                + ") = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
-                + "f_table_name = '" + tableName + "' AND " //
-                + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
+        String sql = "ST_Intersects(" + alias + gCol.f_geometry_column + ", " + "GeomFromText('" + geometry.toText()
+            + "')" + ") = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
+            + "f_table_name = '" + tableName + "' AND " //
+            + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
     }
 
@@ -1051,13 +1058,14 @@ public class SpatialiteDb implements AutoCloseable {
      * @return the {@link Envelope} of the table.
      * @throws SQLException
      */
-    public Envelope getTableBounds( String tableName ) throws SQLException {
+    public Envelope getTableBounds(String tableName) throws SQLException {
         SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
         String geomFieldName = gCol.f_geometry_column;
 
-        String trySql = "SELECT extent_min_x, extent_min_y, extent_max_x, extent_max_y FROM vector_layers_statistics WHERE table_name='"
+        String trySql =
+            "SELECT extent_min_x, extent_min_y, extent_max_x, extent_max_y FROM vector_layers_statistics WHERE table_name='"
                 + tableName + "' AND geometry_column='" + geomFieldName + "'";
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(trySql);
             if (rs.next()) {
                 double minX = rs.getDouble(1);
@@ -1074,13 +1082,13 @@ public class SpatialiteDb implements AutoCloseable {
 
         // OR DO FULL GEOMETRIES SCAN
 
-        String sql = "SELECT Min(MbrMinX(" + geomFieldName + ")) AS min_x, Min(MbrMinY(" + geomFieldName + ")) AS min_y,"
-                + "Max(MbrMaxX(" + geomFieldName + ")) AS max_x, Max(MbrMaxY(" + geomFieldName + ")) AS max_y " + "FROM "
-                + tableName;
+        String sql = "SELECT Min(MbrMinX(" + geomFieldName + ")) AS min_x, Min(MbrMinY(" + geomFieldName
+            + ")) AS min_y," + "Max(MbrMaxX(" + geomFieldName + ")) AS max_x, Max(MbrMaxY(" + geomFieldName
+            + ")) AS max_y " + "FROM " + tableName;
 
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
-            while( rs.next() ) {
+            while (rs.next()) {
                 double minX = rs.getDouble(1);
                 double minY = rs.getDouble(2);
                 double maxX = rs.getDouble(3);
@@ -1097,13 +1105,13 @@ public class SpatialiteDb implements AutoCloseable {
      * @return the connection to the database.
      */
     public Connection getConnection() {
-        return conn;
+        return mConn;
     }
 
     @Override
     public void close() throws Exception {
-        if (conn != null) {
-            conn.close();
+        if (mConn != null) {
+            mConn.close();
         }
     }
 
@@ -1113,7 +1121,7 @@ public class SpatialiteDb implements AutoCloseable {
      * @param sql the sql code to escape. 
      * @return the escaped sql.
      */
-    public static String escapeSql( String sql ) {
+    public static String escapeSql(String sql) {
         // ' --> ''
         sql = sql.replaceAll("'", "''");
         // " --> ""
@@ -1133,7 +1141,7 @@ public class SpatialiteDb implements AutoCloseable {
      * @param datePattern the datepattern.
      * @return the query piece.
      */
-    public static String getTimestampQuery( String columnName, String datePattern ) {
+    public static String getTimestampQuery(String columnName, String datePattern) {
         if (datePattern == null)
             datePattern = "%Y-%m-%d %H:%M:%S";
         String sql = "strftime('" + datePattern + "', " + columnName + " / 1000, 'unixepoch')";
