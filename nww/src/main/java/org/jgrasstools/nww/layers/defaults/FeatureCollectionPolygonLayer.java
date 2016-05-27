@@ -27,6 +27,7 @@ import com.vividsolutions.jts.geom.LineString;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -43,7 +44,7 @@ import gov.nasa.worldwind.render.Polygon;
  * 
  * @author Andrea Antonello andrea.antonello@gmail.com
  */
-public class FeatureCollectionPolygonLayer extends RenderableLayer {
+public class FeatureCollectionPolygonLayer extends RenderableLayer implements NwwLayer {
 
     private String mHeightFieldName;
     private double mVerticalExageration = 1.0;
@@ -59,14 +60,14 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer {
     private Material mStrokeMaterial = Material.RED;
     private double mFillOpacity = 0.8;
     private double mStrokeWidth = 2;
-    private SimpleFeatureCollection featureCollection;
+    private SimpleFeatureCollection featureCollectionLL;
 
     private int mElevationMode = WorldWind.CLAMP_TO_GROUND;
     private String title;
 
-    public FeatureCollectionPolygonLayer(String title, SimpleFeatureCollection featureCollection) {
+    public FeatureCollectionPolygonLayer(String title, SimpleFeatureCollection featureCollectionLL) {
         this.title = title;
-        this.featureCollection = featureCollection;
+        this.featureCollectionLL = featureCollectionLL;
 
         setProperties(null, null, null, null);
         loadData();
@@ -126,7 +127,7 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer {
     public class WorkerThread extends Thread {
 
         public void run() {
-            SimpleFeatureIterator featureIterator = featureCollection.features();
+            SimpleFeatureIterator featureIterator = featureCollectionLL.features();
             while (featureIterator.hasNext()) {
                 SimpleFeature polygonAreaFeature = featureIterator.next();
                 if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {
@@ -295,6 +296,12 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer {
                 }
             }
         }
+    }
+
+    @Override
+    public Coordinate getCenter() {
+        ReferencedEnvelope bounds = featureCollectionLL.getBounds();
+        return bounds.centre();
     }
 
     @Override

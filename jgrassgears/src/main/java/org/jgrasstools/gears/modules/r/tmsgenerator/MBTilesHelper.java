@@ -22,6 +22,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.utils.images.ImageUtilities;
 
 public class MBTilesHelper implements AutoCloseable {
+
     static {
         try {
             // make sure sqlite drivers are there
@@ -44,10 +45,10 @@ public class MBTilesHelper implements AutoCloseable {
     public final static String COL_TILES_TILE_DATA = "tile_data";
 
     public final static String SELECTQUERY = "SELECT " + COL_TILES_TILE_DATA + " from " + TABLE_TILES + " where "
-            + COL_TILES_ZOOM_LEVEL + "=? AND " + COL_TILES_TILE_COLUMN + "=? AND " + COL_TILES_TILE_ROW + "=?";
+        + COL_TILES_ZOOM_LEVEL + "=? AND " + COL_TILES_TILE_COLUMN + "=? AND " + COL_TILES_TILE_ROW + "=?";
 
     private final static String CREATE_TILES = //
-    "CREATE TABLE " + TABLE_TILES + "( " + //
+        "CREATE TABLE " + TABLE_TILES + "( " + //
             COL_TILES_ZOOM_LEVEL + " INTEGER, " + //
             COL_TILES_TILE_COLUMN + " INTEGER, " + //
             COL_TILES_TILE_ROW + " INTEGER, " + //
@@ -60,21 +61,28 @@ public class MBTilesHelper implements AutoCloseable {
     public final static String COL_METADATA_VALUE = "value";
 
     private final static String CREATE_METADATA = //
-    "CREATE TABLE " + TABLE_METADATA + "( " + //
+        "CREATE TABLE " + TABLE_METADATA + "( " + //
             COL_METADATA_NAME + " TEXT, " + //
             COL_METADATA_VALUE + " TEXT " + //
             ")";
 
+    private final static String SELECT_BOUNDS = //
+        "select " + COL_METADATA_VALUE + " from " + TABLE_METADATA + " where " + COL_METADATA_NAME + "='bounds'";
+
+    private final static String SELECT_IMAGEFORMAT = //
+        "select " + COL_METADATA_VALUE + " from " + TABLE_METADATA + " where " + COL_METADATA_NAME + "='format'";
+
     // INDEXES on Metadata and Tiles tables
-    private final static String INDEX_TILES = "CREATE UNIQUE INDEX tile_index ON " + TABLE_TILES + " (" + COL_TILES_ZOOM_LEVEL
-            + ", " + COL_TILES_TILE_COLUMN + ", " + COL_TILES_TILE_ROW + ")";
-    private final static String INDEX_METADATA = "CREATE UNIQUE INDEX name ON " + TABLE_METADATA + "( " + COL_METADATA_NAME + ")";
+    private final static String INDEX_TILES = "CREATE UNIQUE INDEX tile_index ON " + TABLE_TILES + " ("
+        + COL_TILES_ZOOM_LEVEL + ", " + COL_TILES_TILE_COLUMN + ", " + COL_TILES_TILE_ROW + ")";
+    private final static String INDEX_METADATA =
+        "CREATE UNIQUE INDEX name ON " + TABLE_METADATA + "( " + COL_METADATA_NAME + ")";
 
     private Connection connection;
 
     private volatile int addedTiles = 0;
 
-    public void open( File dbFile ) throws SQLException {
+    public void open(File dbFile) throws SQLException {
         // create a database connection
         connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
     }
@@ -89,7 +97,7 @@ public class MBTilesHelper implements AutoCloseable {
         }
     }
 
-    public void createTables( boolean makeIndexes ) throws SQLException {
+    public void createTables(boolean makeIndexes) throws SQLException {
         try (Statement statement = connection.createStatement()) {
             statement.addBatch("DROP TABLE IF EXISTS " + TABLE_TILES);
             statement.addBatch("DROP TABLE IF EXISTS " + TABLE_METADATA);
@@ -113,8 +121,8 @@ public class MBTilesHelper implements AutoCloseable {
         connection.commit();
     }
 
-    public void fillMetadata( float n, float s, float w, float e, String name, String format, int minZoom, int maxZoom )
-            throws SQLException {
+    public void fillMetadata(float n, float s, float w, float e, String name, String format, int minZoom, int maxZoom)
+        throws SQLException {
         // type = baselayer
         // version = 1.1
         // descritpion = name
@@ -144,7 +152,7 @@ public class MBTilesHelper implements AutoCloseable {
 
     }
 
-    private String toMetadataQuery( String key, String value ) {
+    private String toMetadataQuery(String key, String value) {
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO " + TABLE_METADATA + " ");
         sb.append("(");
@@ -160,7 +168,7 @@ public class MBTilesHelper implements AutoCloseable {
         return query;
     }
 
-    public void addTile( int x, int y, int z, BufferedImage image, String format ) throws Exception {
+    public void addTile(int x, int y, int z, BufferedImage image, String format) throws Exception {
         addedTiles++;
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -207,7 +215,7 @@ public class MBTilesHelper implements AutoCloseable {
      * @return
      * @throws Exception
      */
-    public BufferedImage getTile( int x, int y, int z ) throws Exception {
+    public BufferedImage getTile(int x, int y, int z) throws Exception {
         try (PreparedStatement statement = connection.prepareStatement(SELECTQUERY)) {
             statement.setInt(1, z);
             statement.setInt(2, x);
@@ -215,9 +223,48 @@ public class MBTilesHelper implements AutoCloseable {
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 byte[] imageBytes = resultSet.getBytes(1);
+                boolean orig = ImageIO.getUseCache();
+                ImageIO.setUseCache(false);
                 InputStream in = new ByteArrayInputStream(imageBytes);
                 BufferedImage bufferedImage = ImageIO.read(in);
+                ImageIO.setUseCache(orig);
                 return bufferedImage;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the bounds as [w,s,e,n]
+     * 
+     * @return
+     * @throws Exception
+     */
+    public double[] getBounds() throws Exception {
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(SELECT_BOUNDS);
+            if (resultSet.next()) {
+                String boundsWSEN = resultSet.getString(1);
+                String[] split = boundsWSEN.split(",");
+                double[] bounds = { Double.parseDouble(split[0]), Double.parseDouble(split[1]),
+                    Double.parseDouble(split[2]), Double.parseDouble(split[3]) };
+
+                return bounds;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return the image format (jpg, png).
+     * @throws Exception
+     */
+    public String getImageFormat() throws Exception {
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(SELECT_IMAGEFORMAT);
+            if (resultSet.next()) {
+                String imageFormat = resultSet.getString(1);
+                return imageFormat;
             }
         }
         return null;
@@ -233,26 +280,27 @@ public class MBTilesHelper implements AutoCloseable {
      * @return the image.
      * @throws IOException 
      */
-    public static BufferedImage readGridcoverageImageForTile( AbstractGridCoverage2DReader readerEPSG3857, int x, int y,
-            int zoom ) throws IOException {
+    public static BufferedImage readGridcoverageImageForTile(AbstractGridCoverage2DReader readerEPSG3857, int x, int y,
+        int zoom) throws IOException {
         double north = tile2lat(y, zoom);
         double south = tile2lat(y + 1, zoom);
         double west = tile2lon(x, zoom);
         double east = tile2lon(x + 1, zoom);
-        BufferedImage image = ImageUtilities.imageFromReader(readerEPSG3857, TILESIZE, TILESIZE, west, east, south, north);
+        BufferedImage image =
+            ImageUtilities.imageFromReader(readerEPSG3857, TILESIZE, TILESIZE, west, east, south, north);
         return image;
     }
 
-    private static double tile2lon( int x, int z ) {
+    private static double tile2lon(int x, int z) {
         return x / Math.pow(2.0, z) * 360.0 - 180.0;
     }
 
-    private static double tile2lat( int y, int z ) {
+    private static double tile2lat(int y, int z) {
         double n = Math.PI - (2.0 * Math.PI * y) / Math.pow(2.0, z);
         return Math.toDegrees(Math.atan(Math.sinh(n)));
     }
 
-    public static void main( String[] args ) throws IOException {
+    public static void main(String[] args) throws IOException {
         String ctp = "/home/hydrologis/data/CTP/trentino_ctp/ctp.shp";
         File file = new File(ctp);
         AbstractGridFormat format = GridFormatFinder.findFormat(file);

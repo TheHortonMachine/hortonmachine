@@ -21,11 +21,13 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.nww.layers.BasicMarkerWithInfo;
 import org.jgrasstools.nww.layers.MarkerLayer;
 import org.opengis.feature.simple.SimpleFeature;
@@ -42,7 +44,7 @@ import gov.nasa.worldwind.render.markers.Marker;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class FeatureCollectionPointsLayer extends MarkerLayer {
+public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwLayer {
 
     private BasicMarkerAttributes basicMarkerAttributes;
 
@@ -53,8 +55,11 @@ public class FeatureCollectionPointsLayer extends MarkerLayer {
 
     private String title;
 
-    public FeatureCollectionPointsLayer(String title, SimpleFeatureCollection featureCollection, String infoField) {
+    private SimpleFeatureCollection featureCollectionLL;
+
+    public FeatureCollectionPointsLayer(String title, SimpleFeatureCollection featureCollectionLL, String infoField) {
         this.title = title;
+        this.featureCollectionLL = featureCollectionLL;
         basicMarkerAttributes = new BasicMarkerAttributes(mFillMaterial, mShapeType, mFillOpacity);
         basicMarkerAttributes.setMarkerPixels(mMarkerSize);
         basicMarkerAttributes.setMinMarkerSize(0.1);
@@ -64,7 +69,7 @@ public class FeatureCollectionPointsLayer extends MarkerLayer {
 
         setMarkers(new ArrayList<Marker>());
 
-        SimpleFeatureIterator featureIterator = featureCollection.features();
+        SimpleFeatureIterator featureIterator = featureCollectionLL.features();
         try {
             while (featureIterator.hasNext()) {
                 SimpleFeature pointFeature = featureIterator.next();
@@ -130,4 +135,9 @@ public class FeatureCollectionPointsLayer extends MarkerLayer {
         return title != null ? title : "Points";
     }
 
+    @Override
+    public Coordinate getCenter() {
+        ReferencedEnvelope bounds = featureCollectionLL.getBounds();
+        return bounds.centre();
+    }
 }

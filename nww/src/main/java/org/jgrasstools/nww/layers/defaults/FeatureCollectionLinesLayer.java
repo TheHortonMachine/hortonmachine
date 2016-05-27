@@ -27,6 +27,7 @@ import com.vividsolutions.jts.geom.LineString;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.feature.simple.SimpleFeature;
 
 import gov.nasa.worldwind.WorldWind;
@@ -41,7 +42,7 @@ import gov.nasa.worldwind.render.Path;
  * 
  * @author Andrea Antonello andrea.antonello@gmail.com
  */
-public class FeatureCollectionLinesLayer extends RenderableLayer {
+public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwLayer {
 
     private String mHeightFieldName;
     private double mVerticalExageration = 1.0;
@@ -53,14 +54,14 @@ public class FeatureCollectionLinesLayer extends RenderableLayer {
 
     private Material mStrokeMaterial = Material.BLACK;
     private double mStrokeWidth = 2;
-    private SimpleFeatureCollection featureCollection;
+    private SimpleFeatureCollection featureCollectionLL;
 
     private int mElevationMode = WorldWind.CLAMP_TO_GROUND;
     private String title;
 
-    public FeatureCollectionLinesLayer(String title, SimpleFeatureCollection featureCollection) {
+    public FeatureCollectionLinesLayer(String title, SimpleFeatureCollection featureCollectionLL) {
         this.title = title;
-        this.featureCollection = featureCollection;
+        this.featureCollectionLL = featureCollectionLL;
 
         setProperties(null, null);
         loadData();
@@ -106,7 +107,7 @@ public class FeatureCollectionLinesLayer extends RenderableLayer {
     public class WorkerThread extends Thread {
 
         public void run() {
-            SimpleFeatureIterator featureIterator = featureCollection.features();
+            SimpleFeatureIterator featureIterator = featureCollectionLL.features();
             while (featureIterator.hasNext()) {
                 SimpleFeature lineFeature = featureIterator.next();
                 boolean doExtrude = false;
@@ -176,5 +177,11 @@ public class FeatureCollectionLinesLayer extends RenderableLayer {
     @Override
     public String toString() {
         return title != null ? title : "Lines";
+    }
+
+    @Override
+    public Coordinate getCenter() {
+        ReferencedEnvelope bounds = featureCollectionLL.getBounds();
+        return bounds.centre();
     }
 }

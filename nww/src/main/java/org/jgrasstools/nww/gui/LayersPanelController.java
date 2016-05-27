@@ -11,15 +11,15 @@ import gov.nasa.worldwind.layers.LayerList;
 
 public class LayersPanelController extends LayersPanelView implements LayerEventsListener {
 
-    private WorldWindow wwd;
+    private NwwPanel wwdPanel;
 
     /**
     * Default constructor
-     * @param wwd 
+     * @param wwdPanel 
      * @param impiantiList 
     */
-    public LayersPanelController(WorldWindow wwd) {
-        this.wwd = wwd;
+    public LayersPanelController(NwwPanel wwdPanel) {
+        this.wwdPanel = wwdPanel;
 
         refreshLayersList();
     }
@@ -27,7 +27,7 @@ public class LayersPanelController extends LayersPanelView implements LayerEvent
     public void refreshLayersList() {
         _layersGridView.removeAll();
 
-        LayerList layerList = wwd.getModel().getLayers();
+        LayerList layerList = wwdPanel.getWwd().getModel().getLayers();
         List<Layer> layersReverse = new ArrayList<>();
         for (int i = 0; i < layerList.size(); i++) {
             Layer layer = layerList.get(i);
@@ -38,7 +38,7 @@ public class LayersPanelController extends LayersPanelView implements LayerEvent
         CellConstraints cc = new CellConstraints();
         for (int i = 0; i < layersReverse.size(); i++) {
             Layer layer = layersReverse.get(i);
-            LayerListRowPanel row = new LayerListRowPanel(this, wwd, layer);
+            LayerListRowPanel row = new LayerListRowPanel(this, wwdPanel, layer);
             _layersGridView.add(row, cc.xy(1, index));
             index = index + 2;
         }

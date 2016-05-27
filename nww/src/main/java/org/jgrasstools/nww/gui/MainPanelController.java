@@ -11,8 +11,7 @@ public class MainPanelController extends MainPanelView {
     public MainPanelController() {
 
         NwwPanel wwjPanel = new NwwPanel();
-        WorldWindow wwd = wwjPanel.getWwd();
-        LayersPanelController layerManagerPanel = new LayersPanelController(wwd);
+        LayersPanelController layerManagerPanel = new LayersPanelController(wwjPanel);
         ToolsPanelController toolsPanel = new ToolsPanelController(wwjPanel, layerManagerPanel);
 
         _layersPanel.add(layerManagerPanel,
