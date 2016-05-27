@@ -12,6 +12,7 @@ import org.jgrasstools.nww.gui.actions.DeleteLayerAction;
 import org.jgrasstools.nww.gui.actions.SelectLayerAction;
 import org.jgrasstools.nww.gui.actions.StyleVectorLayerAction;
 import org.jgrasstools.nww.gui.actions.ZoomToLayerAction;
+import org.jgrasstools.nww.layers.defaults.NwwLayer;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
 
 import gov.nasa.worldwind.layers.Layer;
@@ -36,13 +37,14 @@ public class LayerListRowPanel extends JPanel {
         deleteButton.setContentAreaFilled(false);
         buttonsPanel.add(deleteButton);
 
-        ZoomToLayerAction zoomToLayerAction = new ZoomToLayerAction(wwdPanel, layer);
-        JButton zoomToButton = new JButton(zoomToLayerAction);
-        zoomToButton.setBorderPainted(false);
-        zoomToButton.setFocusPainted(false);
-        zoomToButton.setContentAreaFilled(false);
-        buttonsPanel.add(zoomToButton);
-
+        if (layer instanceof NwwVectorLayer) {
+            ZoomToLayerAction zoomToLayerAction = new ZoomToLayerAction(wwdPanel, (NwwLayer) layer);
+            JButton zoomToButton = new JButton(zoomToLayerAction);
+            zoomToButton.setBorderPainted(false);
+            zoomToButton.setFocusPainted(false);
+            zoomToButton.setContentAreaFilled(false);
+            buttonsPanel.add(zoomToButton);
+        }
         if (layer instanceof NwwVectorLayer) {
             StyleVectorLayerAction styleVectorLayerAction = new StyleVectorLayerAction(wwdPanel,
                     (NwwVectorLayer) layer);

@@ -12,6 +12,8 @@ import gov.nasa.worldwind.util.*;
 
 import java.net.*;
 
+import org.jgrasstools.nww.layers.defaults.BasicMercatorTiledImageLayer;
+
 /**
  * @version $Id: OSMMapnikLayer.java 1171 2013-02-11 21:45:02Z dcollins $
  */

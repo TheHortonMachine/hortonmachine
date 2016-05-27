@@ -15,6 +15,10 @@
 	<packaging>jar</packaging>
 	<name>JGrasstools Nasa World Wind Components</name>
 
+	<properties>
+		<mapsforge.version>0.4.3</mapsforge.version>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.jgrasstools</groupId>
@@ -30,6 +34,27 @@
 			<groupId>org.jogamp.gluegen</groupId>
 			<artifactId>gluegen-rt</artifactId>
 			<version>2.2.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mapsforge</groupId>
+			<artifactId>mapsforge-core</artifactId>
+			<version>${mapsforge.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mapsforge</groupId>
+			<artifactId>mapsforge-map</artifactId>
+			<version>${mapsforge.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mapsforge</groupId>
+			<artifactId>mapsforge-map-awt</artifactId>
+			<version>${mapsforge.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mapsforge</groupId>
+			<artifactId>mapsforge-map-reader</artifactId>
+			<version>${mapsforge.version}</version>
 		</dependency>
 	</dependencies>
 </project>

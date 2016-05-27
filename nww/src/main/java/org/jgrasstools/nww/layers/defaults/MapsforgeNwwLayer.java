@@ -1,0 +1,175 @@
+/*
+Copyright (C) 2001, 2006 United States Government
+as represented by the Administrator of the
+National Aeronautics and Space Administration.
+All Rights Reserved.
+*/
+package org.jgrasstools.nww.layers.defaults;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.imageio.ImageIO;
+
+import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.mapsforge.core.graphics.GraphicFactory;
+import org.mapsforge.map.awt.AwtGraphicFactory;
+import org.mapsforge.map.layer.renderer.DatabaseRenderer;
+import org.mapsforge.map.model.DisplayModel;
+import org.mapsforge.map.reader.MapDatabase;
+import org.mapsforge.map.rendertheme.ExternalRenderTheme;
+import org.mapsforge.map.rendertheme.InternalRenderTheme;
+import org.mapsforge.map.rendertheme.XmlRenderTheme;
+
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.avlist.AVListImpl;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.layers.mercator.MercatorSector;
+import gov.nasa.worldwind.util.LevelSet;
+import gov.nasa.worldwind.util.Tile;
+import gov.nasa.worldwind.util.TileUrlBuilder;
+
+/**
+ * Procedural layer for mapsforge files
+ * 
+ * @author Patrick Murris
+ * @author Andrea Antonello (www.hydrologis.com)
+ */
+public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
+    private String layerName = "unknown layer";
+
+    private static final int TILESIZE = 512;
+
+    public MapsforgeNwwLayer(File mapsforgeFile) throws Exception {
+        super(makeLevels(mapsforgeFile, getTilegenerator(mapsforgeFile)));
+        this.layerName = FileUtilities.getNameWithoutExtention(mapsforgeFile);
+        this.setUseTransparentTextures(true);
+
+    }
+
+    private static OsmTilegenerator getTilegenerator(File mapsforgeFile) {
+        // tileCacheFolderFile = new File(tileCacheFolder);
+        GraphicFactory graphicFactory = AwtGraphicFactory.INSTANCE;
+        MapDatabase mapDatabase = new MapDatabase();
+        DatabaseRenderer dbRenderer = null;
+        XmlRenderTheme xmlRenderTheme = null;
+        DisplayModel displayModel = null;
+        if (mapsforgeFile.exists()) {
+            mapDatabase.openFile(mapsforgeFile);
+            dbRenderer = new DatabaseRenderer(mapDatabase, graphicFactory);
+
+            String mapName = FileUtilities.getNameWithoutExtention(mapsforgeFile);
+            File xmlStyleFile = new File(mapsforgeFile.getParentFile(), mapName + ".xml");
+            if (xmlStyleFile.exists()) {
+                try {
+                    xmlRenderTheme = new ExternalRenderTheme(xmlStyleFile);
+                } catch (Exception e) {
+                    xmlRenderTheme = InternalRenderTheme.OSMARENDER;
+                }
+            } else {
+                xmlRenderTheme = InternalRenderTheme.OSMARENDER;
+            }
+            displayModel = new DisplayModel();
+            displayModel.setUserScaleFactor(TILESIZE / 256f);
+        }
+
+        return new OsmTilegenerator(mapsforgeFile, dbRenderer, xmlRenderTheme, displayModel);
+    }
+
+    private static LevelSet makeLevels(File mapsforgeFile, OsmTilegenerator osmTilegenerator)
+            throws MalformedURLException {
+        AVList params = new AVListImpl();
+
+        String urlString = mapsforgeFile.toURI().toURL().toExternalForm();
+        params.setValue(AVKey.URL, urlString);
+        params.setValue(AVKey.TILE_WIDTH, TILESIZE);
+        params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
+        params.setValue(AVKey.DATA_CACHE_NAME, "huberg/" + mapsforgeFile.getName() + "-tiles");
+        params.setValue(AVKey.SERVICE, "*");
+        params.setValue(AVKey.DATASET_NAME, "*");
+        params.setValue(AVKey.FORMAT_SUFFIX, ".png");
+        params.setValue(AVKey.NUM_LEVELS, 22);
+        params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
+        params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new LatLon(Angle.fromDegrees(22.5d), Angle.fromDegrees(45d)));
+        // params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new
+        // LatLon(Angle.fromDegrees(36d),
+        // Angle.fromDegrees(36d)));
+        params.setValue(AVKey.SECTOR, new MercatorSector(-1.0, 1.0, Angle.NEG180, Angle.POS180));
+        // dataSector = Sector.fromDegrees(llEnvelope.getMinY(),
+        // llEnvelope.getMaxY(),
+        // llEnvelope.getMinX(), llEnvelope.getMaxX());
+        // params.setValue(AVKey.SECTOR, dataSector);
+        final File cacheFolder = new File(mapsforgeFile.getAbsolutePath() + "-tiles");
+        if (!cacheFolder.exists()) {
+            cacheFolder.mkdirs();
+        }
+        // params.setValue(AVKey.TILE_URL_BUILDER, new URLBuilder());
+        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder() {
+            public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {
+
+                // get tile sector in degrees
+                int zoom = tile.getLevelNumber() + 3;
+                Sector sector = tile.getSector();
+                double north = sector.getMaxLatitude().degrees;
+                double south = sector.getMinLatitude().degrees;
+                double east = sector.getMaxLongitude().degrees;
+                double west = sector.getMinLongitude().degrees;
+                double centerX = west + (east - west) / 2.0;
+                double centerY = south + (north - south) / 2.0;
+
+                int[] tileNumber = getTileNumber(centerY, centerX, zoom);
+                int x = tileNumber[0];
+                int y = tileNumber[1];
+
+                // int num = 3;
+                // int zoom = tile.getLevelNumber() + num;
+                // int x = tile.getColumn();
+                // int y = (1 << (tile.getLevelNumber()) + num) - 1 -
+                // tile.getRow();
+
+                BufferedImage bImg = osmTilegenerator.getImage(zoom, x, y);
+                File tileImageFolderFile = new File(cacheFolder, zoom + File.separator + x);
+                if (!tileImageFolderFile.exists()) {
+                    tileImageFolderFile.mkdirs();
+                }
+                File imgFile = new File(tileImageFolderFile, y + ".png");
+                try {
+                    ImageIO.write(bImg, "png", imgFile);
+                    return imgFile.toURI().toURL();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+        });
+
+        return new LevelSet(params);
+    }
+
+    public static int[] getTileNumber(final double lat, final double lon, final int zoom) {
+        int xtile = (int) Math.floor((lon + 180) / 360 * (1 << zoom));
+        int ytile = (int) Math
+                .floor((1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2
+                        * (1 << zoom));
+        if (xtile < 0)
+            xtile = 0;
+        if (xtile >= (1 << zoom))
+            xtile = ((1 << zoom) - 1);
+        if (ytile < 0)
+            ytile = 0;
+        if (ytile >= (1 << zoom))
+            ytile = ((1 << zoom) - 1);
+        return new int[] { xtile, ytile };
+    }
+
+    public String toString() {
+        return layerName;
+    }
+
+}

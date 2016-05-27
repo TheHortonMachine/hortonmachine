@@ -30,6 +30,7 @@ import org.jgrasstools.nww.layers.defaults.FeatureCollectionLinesLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPointsLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPolygonLayer;
 import org.jgrasstools.nww.layers.defaults.MBTileLayer;
+import org.jgrasstools.nww.layers.defaults.MapsforgeNwwLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.opengis.feature.type.GeometryDescriptor;
 
@@ -51,7 +52,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 @Override
                 public String getDescription() {
-                    return "*.shp, *.mbtiles";
+                    return "*.shp, *.mbtiles, *.map";
                 }
 
                 @Override
@@ -60,7 +61,7 @@ public class ToolsPanelController extends ToolsPanelView {
                         return true;
                     }
                     String name = f.getName();
-                    return name.endsWith(".shp") || name.endsWith(".mbtiles");
+                    return name.endsWith(".shp") || name.endsWith(".mbtiles") || name.endsWith(".map");
                 }
             });
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
@@ -73,8 +74,8 @@ public class ToolsPanelController extends ToolsPanelView {
                         SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(selectedFile.getAbsolutePath());
                         GeometryDescriptor geometryDescriptor = readFC.getSchema().getGeometryDescriptor();
                         if (GeometryUtilities.isPolygon(geometryDescriptor)) {
-                            FeatureCollectionPolygonLayer featureCollectionPolygonLayer =
-                                new FeatureCollectionPolygonLayer(name, readFC);
+                            FeatureCollectionPolygonLayer featureCollectionPolygonLayer = new FeatureCollectionPolygonLayer(
+                                    name, readFC);
 
                             featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                             featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
@@ -82,15 +83,15 @@ public class ToolsPanelController extends ToolsPanelView {
                             wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPolygonLayer);
                             layerEventsListener.onLayerAdded(featureCollectionPolygonLayer);
                         } else if (GeometryUtilities.isLine(geometryDescriptor)) {
-                            FeatureCollectionLinesLayer featureCollectionLinesLayer =
-                                new FeatureCollectionLinesLayer(name, readFC);
+                            FeatureCollectionLinesLayer featureCollectionLinesLayer = new FeatureCollectionLinesLayer(
+                                    name, readFC);
                             featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                             featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
                             wwjPanel.getWwd().getModel().getLayers().add(featureCollectionLinesLayer);
                             layerEventsListener.onLayerAdded(featureCollectionLinesLayer);
                         } else if (GeometryUtilities.isPoint(geometryDescriptor)) {
-                            FeatureCollectionPointsLayer featureCollectionPointsLayer =
-                                new FeatureCollectionPointsLayer(name, readFC, null);
+                            FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(
+                                    name, readFC, null);
                             wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPointsLayer);
                             layerEventsListener.onLayerAdded(featureCollectionPointsLayer);
 
@@ -99,6 +100,10 @@ public class ToolsPanelController extends ToolsPanelView {
                         }
                     } else if (selectedFile.getName().endsWith(".mbtiles")) {
                         MBTileLayer mbTileLayer = new MBTileLayer(selectedFile, name, wwjPanel.getWwd());
+                        wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
+                        layerEventsListener.onLayerAdded(mbTileLayer);
+                    } else if (selectedFile.getName().endsWith(".map")) {
+                        MapsforgeNwwLayer mbTileLayer = new MapsforgeNwwLayer(selectedFile);
                         wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
                         layerEventsListener.onLayerAdded(mbTileLayer);
                     }
