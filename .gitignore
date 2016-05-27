@@ -11,3 +11,4 @@ target
 .directory
 .idea
 *.iml
+*.dll

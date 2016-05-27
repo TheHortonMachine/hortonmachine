@@ -21,15 +21,16 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.opengis.feature.simple.SimpleFeature;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Position;
@@ -44,7 +45,7 @@ import gov.nasa.worldwind.render.Polygon;
  * 
  * @author Andrea Antonello andrea.antonello@gmail.com
  */
-public class FeatureCollectionPolygonLayer extends RenderableLayer implements NwwLayer {
+public class FeatureCollectionPolygonLayer extends RenderableLayer implements NwwVectorLayer {
 
     private String mHeightFieldName;
     private double mVerticalExageration = 1.0;
@@ -69,23 +70,17 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
         this.title = title;
         this.featureCollectionLL = featureCollectionLL;
 
-        setProperties(null, null, null, null);
+        setStyle(null);
         loadData();
     }
 
-    public void setProperties(Color fillColor, Double fillOpacity, Color strokeColor, Double strokeWidth) {
-        if (fillColor != null) {
-            mFillMaterial = new Material(fillColor);
-            mSideFillMaterial = new Material(NwwUtilities.darkenColor(fillColor));
-        }
-        if (fillOpacity != null) {
-            mFillOpacity = fillOpacity;
-        }
-        if (strokeColor != null) {
-            mStrokeMaterial = new Material(strokeColor);
-        }
-        if (strokeWidth != null) {
-            mStrokeWidth = strokeWidth;
+    public void setStyle(SimpleStyle style) {
+        if (style != null) {
+            mFillMaterial = new Material(style.fillColor);
+            mSideFillMaterial = new Material(NwwUtilities.darkenColor(style.fillColor));
+            mFillOpacity = style.fillOpacity;
+            mStrokeMaterial = new Material(style.strokeColor);
+            mStrokeWidth = style.strokeWidth;
         }
 
         if (mNormalShapeAttributes == null)
@@ -101,8 +96,18 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
         mSideShapeAttributes.setInteriorOpacity(mFillOpacity);
     }
 
+    @Override
+    public SimpleStyle getStyle() {
+        SimpleStyle simpleStyle = new SimpleStyle();
+        simpleStyle.fillColor = mNormalShapeAttributes.getInteriorMaterial().getDiffuse();
+        simpleStyle.fillOpacity = mNormalShapeAttributes.getInteriorOpacity();
+        simpleStyle.strokeColor = mNormalShapeAttributes.getOutlineMaterial().getDiffuse();
+        simpleStyle.strokeWidth = mNormalShapeAttributes.getOutlineWidth();
+        return simpleStyle;
+    }
+
     public void setExtrusionProperties(Double constantExtrusionHeight, String heightFieldName,
-        Double verticalExageration, boolean withoutExtrusion) {
+            Double verticalExageration, boolean withoutExtrusion) {
         if (constantExtrusionHeight != null) {
             mHasConstantHeight = true;
             mConstantHeight = constantExtrusionHeight;
@@ -307,5 +312,10 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
     @Override
     public String toString() {
         return title != null ? title : "Polygons";
+    }
+
+    @Override
+    public GEOMTYPE getType() {
+        return GEOMTYPE.POLYGON;
     }
 }

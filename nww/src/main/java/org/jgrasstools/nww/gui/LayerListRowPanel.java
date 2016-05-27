@@ -10,7 +10,9 @@ import javax.swing.JPanel;
 
 import org.jgrasstools.nww.gui.actions.DeleteLayerAction;
 import org.jgrasstools.nww.gui.actions.SelectLayerAction;
+import org.jgrasstools.nww.gui.actions.StyleVectorLayerAction;
 import org.jgrasstools.nww.gui.actions.ZoomToLayerAction;
+import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
 
 import gov.nasa.worldwind.layers.Layer;
 
@@ -40,6 +42,16 @@ public class LayerListRowPanel extends JPanel {
         zoomToButton.setFocusPainted(false);
         zoomToButton.setContentAreaFilled(false);
         buttonsPanel.add(zoomToButton);
+
+        if (layer instanceof NwwVectorLayer) {
+            StyleVectorLayerAction styleVectorLayerAction = new StyleVectorLayerAction(wwdPanel,
+                    (NwwVectorLayer) layer);
+            JButton styleButton = new JButton(styleVectorLayerAction);
+            styleButton.setBorderPainted(false);
+            styleButton.setFocusPainted(false);
+            styleButton.setContentAreaFilled(false);
+            buttonsPanel.add(styleButton);
+        }
     }
 
 }

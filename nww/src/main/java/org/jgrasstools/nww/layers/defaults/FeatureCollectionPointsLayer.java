@@ -19,18 +19,19 @@ package org.jgrasstools.nww.layers.defaults;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.NoSuchElementException;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.BasicMarkerWithInfo;
 import org.jgrasstools.nww.layers.MarkerLayer;
+import org.jgrasstools.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
 import org.opengis.feature.simple.SimpleFeature;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.Material;
@@ -40,11 +41,11 @@ import gov.nasa.worldwind.render.markers.BasicMarkerShape;
 import gov.nasa.worldwind.render.markers.Marker;
 
 /**
- * A layer of  points.
+ * A layer of points.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwLayer {
+public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwVectorLayer {
 
     private BasicMarkerAttributes basicMarkerAttributes;
 
@@ -95,24 +96,28 @@ public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwLaye
 
     }
 
-    public void setProperties(Color fillColor, Double fillOpacity, Double markerSize, String shapeType) {
-        if (fillColor != null) {
-            mFillMaterial = new Material(fillColor);
-        }
-        if (fillOpacity != null) {
-            mFillOpacity = fillOpacity;
-        }
-        if (markerSize != null) {
-            mMarkerSize = markerSize;
-        }
-        if (shapeType != null) {
-            mShapeType = shapeType;
+    public void setStyle(SimpleStyle style) {
+        if (style != null) {
+            mFillMaterial = new Material(style.fillColor);
+            mFillOpacity = style.fillOpacity;
+            mMarkerSize = style.shapeSize;
+            mShapeType = style.shapeType;
         }
 
         basicMarkerAttributes.setMaterial(mFillMaterial);
         basicMarkerAttributes.setOpacity(mFillOpacity);
         basicMarkerAttributes.setMarkerPixels(mMarkerSize);
         basicMarkerAttributes.setShapeType(mShapeType);
+    }
+
+    @Override
+    public SimpleStyle getStyle() {
+        SimpleStyle simpleStyle = new SimpleStyle();
+        simpleStyle.fillColor = basicMarkerAttributes.getMaterial().getDiffuse();
+        simpleStyle.fillOpacity = basicMarkerAttributes.getOpacity();
+        simpleStyle.shapeSize = basicMarkerAttributes.getMarkerPixels();
+        simpleStyle.shapeType = basicMarkerAttributes.getShapeType();
+        return simpleStyle;
     }
 
     public void addNewPoint(double lat, double lon) {
@@ -125,8 +130,8 @@ public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwLaye
             addNewPoint(lat, lon);
             return;
         }
-        BasicMarkerWithInfo marker =
-            new BasicMarkerWithInfo(Position.fromDegrees(lat, lon, 0), basicMarkerAttributes, info);
+        BasicMarkerWithInfo marker = new BasicMarkerWithInfo(Position.fromDegrees(lat, lon, 0), basicMarkerAttributes,
+                info);
         addMarker(marker);
     }
 
@@ -139,5 +144,10 @@ public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwLaye
     public Coordinate getCenter() {
         ReferencedEnvelope bounds = featureCollectionLL.getBounds();
         return bounds.centre();
+    }
+
+    @Override
+    public GEOMTYPE getType() {
+        return GEOMTYPE.POINT;
     }
 }

@@ -7,18 +7,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.imageio.ImageIO;
 
+import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
+
 import com.jogamp.opengl.util.texture.TextureData;
 import com.vividsolutions.jts.geom.Coordinate;
-
-import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
 
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.WorldWindow;

@@ -28,6 +28,7 @@ import com.vividsolutions.jts.geom.LineString;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.opengis.feature.simple.SimpleFeature;
 
 import gov.nasa.worldwind.WorldWind;
@@ -42,7 +43,7 @@ import gov.nasa.worldwind.render.Path;
  * 
  * @author Andrea Antonello andrea.antonello@gmail.com
  */
-public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwLayer {
+public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwVectorLayer {
 
     private String mHeightFieldName;
     private double mVerticalExageration = 1.0;
@@ -63,26 +64,32 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwL
         this.title = title;
         this.featureCollectionLL = featureCollectionLL;
 
-        setProperties(null, null);
+        setStyle(null);
         loadData();
     }
 
-    public void setProperties(Color strokeColor, Double strokeWidth) {
-        if (strokeColor != null) {
-            mStrokeMaterial = new Material(strokeColor);
+    @Override
+    public void setStyle(SimpleStyle style) {
+        if (style != null) {
+            mStrokeMaterial = new Material(style.strokeColor);
+            mStrokeWidth = style.strokeWidth;
         }
-        if (strokeWidth != null) {
-            mStrokeWidth = strokeWidth;
-        }
-
         if (mNormalShapeAttributes == null)
             mNormalShapeAttributes = new BasicShapeAttributes();
         mNormalShapeAttributes.setOutlineMaterial(mStrokeMaterial);
         mNormalShapeAttributes.setOutlineWidth(mStrokeWidth);
     }
 
+    @Override
+    public SimpleStyle getStyle() {
+        SimpleStyle simpleStyle = new SimpleStyle();
+        simpleStyle.strokeColor = mNormalShapeAttributes.getOutlineMaterial().getDiffuse();
+        simpleStyle.strokeWidth = mNormalShapeAttributes.getOutlineWidth();
+        return simpleStyle;
+    }
+
     public void setExtrusionProperties(Double constantExtrusionHeight, String heightFieldName,
-        Double verticalExageration, boolean withoutExtrusion) {
+            Double verticalExageration, boolean withoutExtrusion) {
         if (constantExtrusionHeight != null) {
             mHasConstantHeight = true;
             mConstantHeight = constantExtrusionHeight;
@@ -184,4 +191,10 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwL
         ReferencedEnvelope bounds = featureCollectionLL.getBounds();
         return bounds.centre();
     }
+
+    @Override
+    public GEOMTYPE getType() {
+        return GEOMTYPE.LINE;
+    }
+
 }

@@ -17,7 +17,7 @@
  */
 package org.jgrasstools.nww.layers.defaults;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.jgrasstools.nww.gui.style.SimpleStyle;
 
 /**
  * Common interface for layers.
@@ -25,13 +25,15 @@ import com.vividsolutions.jts.geom.Coordinate;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public interface NwwLayer {
+public interface NwwVectorLayer extends NwwLayer {
+    public enum GEOMTYPE {
+        POINT, LINE, POLYGON
+    };
 
-    /**
-     * Get the center of the layer in lat/long.
-     * 
-     * @return the center coordinate.
-     */
-    public Coordinate getCenter();
+    public GEOMTYPE getType();
+
+    public void setStyle(SimpleStyle style);
+    
+    public SimpleStyle getStyle();
 
 }
