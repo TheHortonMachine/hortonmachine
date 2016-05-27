@@ -29,6 +29,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
+import org.jgrasstools.nww.shapes.FeatureLine;
 import org.opengis.feature.simple.SimpleFeature;
 
 import gov.nasa.worldwind.WorldWind;
@@ -37,6 +38,8 @@ import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.BasicShapeAttributes;
 import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.Path;
+import gov.nasa.worldwind.render.airspaces.AirspaceAttributes;
+import gov.nasa.worldwind.render.airspaces.BasicAirspaceAttributes;
 
 /**
  * A simple lines layer.
@@ -59,10 +62,22 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
 
     private int mElevationMode = WorldWind.CLAMP_TO_GROUND;
     private String title;
+    private AirspaceAttributes highlightAttrs;
 
     public FeatureCollectionLinesLayer(String title, SimpleFeatureCollection featureCollectionLL) {
         this.title = title;
         this.featureCollectionLL = featureCollectionLL;
+        
+        AirspaceAttributes attrs = new BasicAirspaceAttributes();
+        attrs.setDrawInterior(true);
+        attrs.setDrawOutline(true);
+        attrs.setInteriorMaterial(new Material(Color.WHITE));
+        attrs.setOutlineMaterial(new Material(Color.BLACK));
+        attrs.setOutlineWidth(2);
+        attrs.setEnableAntialiasing(true);
+        highlightAttrs = new BasicAirspaceAttributes(attrs);
+        highlightAttrs.setOutlineMaterial(new Material(Color.RED));
+
 
         setStyle(null);
         loadData();
@@ -170,9 +185,11 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
                             verticesList.add(Position.fromDegrees(c.y, c.x, h));
                         }
                     }
-                    Path path = new Path(verticesList);
+                    FeatureLine path = new FeatureLine(verticesList);
+                    path.setFeature(lineFeature);
                     path.setAltitudeMode(mElevationMode);
                     path.setAttributes(mNormalShapeAttributes);
+                    path.setHighlightAttributes(highlightAttrs);
                     path.setExtrude(doExtrude);
 
                     addRenderable(path);

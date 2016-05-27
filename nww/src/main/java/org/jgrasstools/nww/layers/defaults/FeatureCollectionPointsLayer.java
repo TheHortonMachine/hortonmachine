@@ -27,6 +27,7 @@ import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.BasicMarkerWithInfo;
 import org.jgrasstools.nww.layers.MarkerLayer;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
+import org.jgrasstools.nww.shapes.FeaturePoint;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -58,7 +59,7 @@ public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwVect
 
     private SimpleFeatureCollection featureCollectionLL;
 
-    public FeatureCollectionPointsLayer(String title, SimpleFeatureCollection featureCollectionLL, String infoField) {
+    public FeatureCollectionPointsLayer(String title, SimpleFeatureCollection featureCollectionLL) {
         this.title = title;
         this.featureCollectionLL = featureCollectionLL;
         basicMarkerAttributes = new BasicMarkerAttributes(mFillMaterial, mShapeType, mFillOpacity);
@@ -75,18 +76,15 @@ public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwVect
             while (featureIterator.hasNext()) {
                 SimpleFeature pointFeature = featureIterator.next();
                 Geometry geometry = (Geometry) pointFeature.getDefaultGeometry();
-                String info = null;
-                if (infoField != null) {
-                    Object attribute = pointFeature.getAttribute(infoField);
-                    if (attribute != null)
-                        info = attribute.toString();
-                }
                 int numGeometries = geometry.getNumGeometries();
                 for (int i = 0; i < numGeometries; i++) {
                     Geometry geometryN = geometry.getGeometryN(i);
                     if (geometryN instanceof Point) {
                         Point point = (Point) geometryN;
-                        addNewPoint(point.getY(), point.getX(), info);
+                        FeaturePoint marker = new FeaturePoint(Position.fromDegrees(point.getY(), point.getX(), 0),
+                                basicMarkerAttributes);
+                        marker.setFeature(pointFeature);
+                        addMarker(marker);
                     }
                 }
             }
@@ -120,20 +118,23 @@ public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwVect
         return simpleStyle;
     }
 
-    public void addNewPoint(double lat, double lon) {
-        BasicMarker marker = new BasicMarker(Position.fromDegrees(lat, lon, 0), basicMarkerAttributes);
-        addMarker(marker);
-    }
-
-    public void addNewPoint(double lat, double lon, String info) {
-        if (info == null) {
-            addNewPoint(lat, lon);
-            return;
-        }
-        BasicMarkerWithInfo marker = new BasicMarkerWithInfo(Position.fromDegrees(lat, lon, 0), basicMarkerAttributes,
-                info);
-        addMarker(marker);
-    }
+    // public void addNewPoint(double lat, double lon) {
+    // BasicMarker marker = new BasicMarker(Position.fromDegrees(lat, lon, 0),
+    // basicMarkerAttributes);
+    // addMarker(marker);
+    // }
+    //
+    // public void addNewPoint(double lat, double lon, String info) {
+    // if (info == null) {
+    // addNewPoint(lat, lon);
+    // return;
+    // }
+    // BasicMarkerWithInfo marker = new
+    // BasicMarkerWithInfo(Position.fromDegrees(lat, lon, 0),
+    // basicMarkerAttributes,
+    // info);
+    // addMarker(marker);
+    // }
 
     @Override
     public String toString() {

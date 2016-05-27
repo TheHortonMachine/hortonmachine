@@ -25,6 +25,8 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
+import org.jgrasstools.nww.shapes.FeatureExtrudedPolygon;
+import org.jgrasstools.nww.shapes.FeaturePolygon;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -177,8 +179,9 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
                     if (geometryN instanceof com.vividsolutions.jts.geom.Polygon) {
                         com.vividsolutions.jts.geom.Polygon poly = (com.vividsolutions.jts.geom.Polygon) geometryN;
 
-                        ExtrudedPolygon extrudedPolygon = new ExtrudedPolygon();
-
+                        FeatureExtrudedPolygon extrudedPolygon = new FeatureExtrudedPolygon();
+                        extrudedPolygon.setFeature(polygonAreaFeature);
+                        
                         Coordinate[] extCoords = poly.getExteriorRing().getCoordinates();
                         int extSize = extCoords.length;
                         List<Position> verticesList = new ArrayList<>(extSize);
@@ -259,8 +262,9 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
                 if (geometryN instanceof com.vividsolutions.jts.geom.Polygon) {
                     com.vividsolutions.jts.geom.Polygon poly = (com.vividsolutions.jts.geom.Polygon) geometryN;
 
-                    Polygon polygon = new Polygon();
-
+                    FeaturePolygon polygon = new FeaturePolygon();
+                    polygon.setFeature(polygonAreaFeature);
+                    
                     Coordinate[] extCoords = poly.getExteriorRing().getCoordinates();
                     int extSize = extCoords.length;
                     List<Position> verticesList = new ArrayList<>(extSize);
