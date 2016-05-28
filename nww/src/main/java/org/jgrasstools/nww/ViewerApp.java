@@ -10,8 +10,14 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
+import com.jgoodies.forms.layout.CellConstraints;
+
+import org.jgrasstools.nww.gui.LayersPanelController;
 import org.jgrasstools.nww.gui.MainPanelController;
+import org.jgrasstools.nww.gui.NwwPanel;
+import org.jgrasstools.nww.gui.ToolsPanelController;
 
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -39,30 +45,57 @@ public class ViewerApp {
         }
 
         try {
-            final JFrame frame = new JFrame();
-            frame.setTitle(appName);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+            NwwPanel wwjPanel = new NwwPanel();
+            LayersPanelController layerPanel = new LayersPanelController(wwjPanel);
+            ToolsPanelController toolsPanel = new ToolsPanelController(wwjPanel, layerPanel);
+
+            final JFrame nwwFrame = new JFrame();
+            nwwFrame.setTitle(appName + ": map view");
+            nwwFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             java.awt.EventQueue.invokeLater(new Runnable() {
 
                 public void run() {
-                    frame.setVisible(true);
+                    nwwFrame.setVisible(true);
                 }
             });
+            JPanel mapPanel = new JPanel(new BorderLayout());
+            mapPanel.add(wwjPanel, BorderLayout.CENTER);
+            nwwFrame.getContentPane().add(mapPanel, BorderLayout.CENTER);
+            nwwFrame.setResizable(true);
+            nwwFrame.setPreferredSize(new Dimension(800, 800));
+            nwwFrame.pack();
+            WWUtil.alignComponent(null, nwwFrame, AVKey.CENTER);
 
-            MainPanelController mainPanel = new MainPanelController();
-            frame.getContentPane().add(mainPanel, BorderLayout.CENTER);
-            frame.setResizable(true);
+            final JFrame layersFrame = new JFrame();
+            layersFrame.setTitle(appName + ": layers view");
+            layersFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            java.awt.EventQueue.invokeLater(new Runnable() {
 
-            //            int frameWidth = 200;
-            //            int frameHeight = 100;
-            //            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            //            frame.setBounds((int) screenSize.getWidth() - frameWidth, 0, frameWidth,
-            //                frameHeight);
-            //            frame.setVisible(true);
+                public void run() {
+                    layersFrame.setVisible(true);
+                }
+            });
+            layersFrame.getContentPane().add(layerPanel, BorderLayout.CENTER);
+            layersFrame.setResizable(true);
+            layersFrame.setPreferredSize(new Dimension(400, 500));
+            layersFrame.setLocation(0, 0);
+            layersFrame.pack();
 
-            frame.setPreferredSize(new Dimension(1000, 600));
-            frame.pack();
-            WWUtil.alignComponent(null, frame, AVKey.CENTER);
+            final JFrame toolsFrame = new JFrame();
+            toolsFrame.setTitle(appName + ": tools view");
+            toolsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                public void run() {
+                    toolsFrame.setVisible(true);
+                }
+            });
+            toolsFrame.getContentPane().add(toolsPanel, BorderLayout.CENTER);
+            toolsFrame.setResizable(true);
+            toolsFrame.setPreferredSize(new Dimension(400, 400));
+            toolsFrame.setLocation(0, 510);
+            toolsFrame.pack();
 
         } catch (Exception e) {
             Logging.logger().log(java.util.logging.Level.SEVERE, "Exception at application start", e);

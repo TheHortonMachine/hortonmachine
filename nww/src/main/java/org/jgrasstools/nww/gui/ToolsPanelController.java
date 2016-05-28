@@ -18,6 +18,7 @@
 package org.jgrasstools.nww.gui;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.io.File;
 import java.io.FilenameFilter;
 
@@ -35,6 +36,7 @@ import org.jgrasstools.nww.layers.defaults.FeatureCollectionPointsLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPolygonLayer;
 import org.jgrasstools.nww.layers.defaults.MBTilesNwwLayer;
 import org.jgrasstools.nww.layers.defaults.MapsforgeNwwLayer;
+import org.jgrasstools.nww.utils.CursorUtils;
 import org.jgrasstools.nww.utils.EGlobeModes;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.opengis.feature.type.GeometryDescriptor;
@@ -64,6 +66,7 @@ public class ToolsPanelController extends ToolsPanelView {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             FileFilter fileFilter = new FileFilter() {
+
                 @Override
                 public String getDescription() {
                     return desc;
@@ -90,6 +93,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 File selectedFile = fileChooser.getSelectedFile();
                 if (selectedFile.isDirectory()) {
                     File[] listFiles = selectedFile.listFiles(new FilenameFilter() {
+
                         @Override
                         public boolean accept(File dir, String name) {
                             for (String ext : supportedExtensions) {
@@ -137,11 +141,13 @@ public class ToolsPanelController extends ToolsPanelView {
             if (_selectByBoxButton.isSelected()) {
                 genericSelectListener = new GenericSelectListener(wwjPanel);
                 wwjPanel.getWwd().addSelectListener(genericSelectListener);
+                CursorUtils.makeCrossHair(wwjPanel.getWwd());
             } else {
                 if (genericSelectListener != null) {
                     wwjPanel.getWwd().removeSelectListener(genericSelectListener);
                 }
                 genericSelectListener = null;
+                CursorUtils.makeDefault(wwjPanel.getWwd());
             }
         });
 
@@ -151,11 +157,14 @@ public class ToolsPanelController extends ToolsPanelView {
             if (_infoButton.isSelected()) {
                 genericSelectListener = new GenericSelectListener(wwjPanel);
                 wwjPanel.getWwd().addSelectListener(genericSelectListener);
+
+                CursorUtils.makeHand(wwjPanel.getWwd());
             } else {
                 if (genericSelectListener != null) {
                     wwjPanel.getWwd().removeSelectListener(genericSelectListener);
                 }
                 genericSelectListener = null;
+                CursorUtils.makeDefault(wwjPanel.getWwd());
             }
         });
 
@@ -169,8 +178,8 @@ public class ToolsPanelController extends ToolsPanelView {
                 SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(selectedFile.getAbsolutePath());
                 GeometryDescriptor geometryDescriptor = readFC.getSchema().getGeometryDescriptor();
                 if (GeometryUtilities.isPolygon(geometryDescriptor)) {
-                    FeatureCollectionPolygonLayer featureCollectionPolygonLayer = new FeatureCollectionPolygonLayer(
-                            name, readFC);
+                    FeatureCollectionPolygonLayer featureCollectionPolygonLayer =
+                        new FeatureCollectionPolygonLayer(name, readFC);
 
                     featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                     featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
@@ -178,15 +187,15 @@ public class ToolsPanelController extends ToolsPanelView {
                     wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPolygonLayer);
                     layerEventsListener.onLayerAdded(featureCollectionPolygonLayer);
                 } else if (GeometryUtilities.isLine(geometryDescriptor)) {
-                    FeatureCollectionLinesLayer featureCollectionLinesLayer = new FeatureCollectionLinesLayer(name,
-                            readFC);
+                    FeatureCollectionLinesLayer featureCollectionLinesLayer =
+                        new FeatureCollectionLinesLayer(name, readFC);
                     featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                     featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
                     wwjPanel.getWwd().getModel().getLayers().add(featureCollectionLinesLayer);
                     layerEventsListener.onLayerAdded(featureCollectionLinesLayer);
                 } else if (GeometryUtilities.isPoint(geometryDescriptor)) {
-                    FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name,
-                            readFC);
+                    FeatureCollectionPointsLayer featureCollectionPointsLayer =
+                        new FeatureCollectionPointsLayer(name, readFC);
                     wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPointsLayer);
                     layerEventsListener.onLayerAdded(featureCollectionPointsLayer);
 

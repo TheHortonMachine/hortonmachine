@@ -1,5 +1,6 @@
 package org.jgrasstools.nww.gui;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,9 @@ public class LayersPanelController extends LayersPanelView implements LayerEvent
     */
     public LayersPanelController(NwwPanel wwdPanel) {
         this.wwdPanel = wwdPanel;
+
+//        setMinimumSize(new Dimension(450, 300));
+        setMaximumSize(new Dimension(400, 2300));
 
         refreshLayersList();
     }
