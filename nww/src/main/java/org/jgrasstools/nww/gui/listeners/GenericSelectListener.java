@@ -40,7 +40,12 @@ public class GenericSelectListener implements SelectListener {
                 for (Entry<String, String> entry : feature2AlphanumericToHashmap.entrySet()) {
                     sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
                 }
-                JOptionPane.showMessageDialog(parent, sb.toString());
+                String msg = sb.toString();
+                
+                if (msg.trim().length()==0) {
+                    msg = "No additional info available";
+                }
+                JOptionPane.showMessageDialog(parent, msg);
 
                 event.consume();
             }

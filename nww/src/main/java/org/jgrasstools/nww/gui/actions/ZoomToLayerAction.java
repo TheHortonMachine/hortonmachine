@@ -10,8 +10,6 @@ import com.vividsolutions.jts.geom.Coordinate;
 import org.jgrasstools.nww.gui.NwwPanel;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
 
-import gov.nasa.worldwind.layers.Layer;
-
 public class ZoomToLayerAction extends AbstractAction {
 
     protected NwwPanel wwdPanel;

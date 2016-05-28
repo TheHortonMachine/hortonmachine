@@ -82,6 +82,8 @@ public class MBTilesHelper implements AutoCloseable {
 
     private volatile int addedTiles = 0;
 
+    private String imageFormat;
+
     public void open(File dbFile) throws SQLException {
         // create a database connection
         connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
@@ -260,14 +262,15 @@ public class MBTilesHelper implements AutoCloseable {
      * @throws Exception
      */
     public String getImageFormat() throws Exception {
-        try (Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery(SELECT_IMAGEFORMAT);
-            if (resultSet.next()) {
-                String imageFormat = resultSet.getString(1);
-                return imageFormat;
+        if (imageFormat == null) {
+            try (Statement statement = connection.createStatement()) {
+                ResultSet resultSet = statement.executeQuery(SELECT_IMAGEFORMAT);
+                if (resultSet.next()) {
+                    imageFormat = resultSet.getString(1);
+                }
             }
         }
-        return null;
+        return imageFormat;
     }
 
     /**

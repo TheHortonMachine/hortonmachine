@@ -1,9 +1,20 @@
 /*
-Copyright (C) 2001, 2006 United States Government
-as represented by the Administrator of the
-National Aeronautics and Space Administration.
-All Rights Reserved.
-*/
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.nww.layers.defaults;
 
 import java.awt.image.BufferedImage;
@@ -38,10 +49,10 @@ import gov.nasa.worldwind.util.TileUrlBuilder;
 /**
  * Procedural layer for mapsforge files
  * 
- * @author Patrick Murris
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
+
     private String layerName = "unknown layer";
 
     private static final int TILESIZE = 512;
@@ -54,7 +65,6 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
     }
 
     private static OsmTilegenerator getTilegenerator(File mapsforgeFile) {
-        // tileCacheFolderFile = new File(tileCacheFolder);
         GraphicFactory graphicFactory = AwtGraphicFactory.INSTANCE;
         MapDatabase mapDatabase = new MapDatabase();
         DatabaseRenderer dbRenderer = null;
@@ -83,7 +93,7 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
     }
 
     private static LevelSet makeLevels(File mapsforgeFile, OsmTilegenerator osmTilegenerator)
-            throws MalformedURLException {
+        throws MalformedURLException {
         AVList params = new AVListImpl();
 
         String urlString = mapsforgeFile.toURI().toURL().toExternalForm();
@@ -97,23 +107,14 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
         params.setValue(AVKey.NUM_LEVELS, 22);
         params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
         params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new LatLon(Angle.fromDegrees(22.5d), Angle.fromDegrees(45d)));
-        // params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new
-        // LatLon(Angle.fromDegrees(36d),
-        // Angle.fromDegrees(36d)));
         params.setValue(AVKey.SECTOR, new MercatorSector(-1.0, 1.0, Angle.NEG180, Angle.POS180));
-        // dataSector = Sector.fromDegrees(llEnvelope.getMinY(),
-        // llEnvelope.getMaxY(),
-        // llEnvelope.getMinX(), llEnvelope.getMaxX());
-        // params.setValue(AVKey.SECTOR, dataSector);
         final File cacheFolder = new File(mapsforgeFile.getAbsolutePath() + "-tiles");
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
-        // params.setValue(AVKey.TILE_URL_BUILDER, new URLBuilder());
         params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder() {
-            public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {
 
-                // get tile sector in degrees
+            public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {
                 int zoom = tile.getLevelNumber() + 3;
                 Sector sector = tile.getSector();
                 double north = sector.getMaxLatitude().degrees;
@@ -127,12 +128,6 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
                 int x = tileNumber[0];
                 int y = tileNumber[1];
 
-                // int num = 3;
-                // int zoom = tile.getLevelNumber() + num;
-                // int x = tile.getColumn();
-                // int y = (1 << (tile.getLevelNumber()) + num) - 1 -
-                // tile.getRow();
-
                 BufferedImage bImg = osmTilegenerator.getImage(zoom, x, y);
                 File tileImageFolderFile = new File(cacheFolder, zoom + File.separator + x);
                 if (!tileImageFolderFile.exists()) {
@@ -140,7 +135,9 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
                 }
                 File imgFile = new File(tileImageFolderFile, y + ".png");
                 try {
-                    ImageIO.write(bImg, "png", imgFile);
+                    if (!imgFile.exists()) {
+                        ImageIO.write(bImg, "png", imgFile);
+                    }
                     return imgFile.toURI().toURL();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -154,9 +151,9 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
 
     public static int[] getTileNumber(final double lat, final double lon, final int zoom) {
         int xtile = (int) Math.floor((lon + 180) / 360 * (1 << zoom));
-        int ytile = (int) Math
-                .floor((1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2
-                        * (1 << zoom));
+        int ytile =
+            (int) Math.floor((1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI)
+                / 2 * (1 << zoom));
         if (xtile < 0)
             xtile = 0;
         if (xtile >= (1 << zoom))

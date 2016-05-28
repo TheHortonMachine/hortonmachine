@@ -30,21 +30,6 @@ public class LayerListRowPanel extends JPanel {
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         add(buttonsPanel, BorderLayout.EAST);
 
-        DeleteLayerAction deleteAction = new DeleteLayerAction(layerListener, wwdPanel.getWwd(), layer);
-        JButton deleteButton = new JButton(deleteAction);
-        deleteButton.setBorderPainted(false);
-        deleteButton.setFocusPainted(false);
-        deleteButton.setContentAreaFilled(false);
-        buttonsPanel.add(deleteButton);
-
-        if (layer instanceof NwwVectorLayer) {
-            ZoomToLayerAction zoomToLayerAction = new ZoomToLayerAction(wwdPanel, (NwwLayer) layer);
-            JButton zoomToButton = new JButton(zoomToLayerAction);
-            zoomToButton.setBorderPainted(false);
-            zoomToButton.setFocusPainted(false);
-            zoomToButton.setContentAreaFilled(false);
-            buttonsPanel.add(zoomToButton);
-        }
         if (layer instanceof NwwVectorLayer) {
             StyleVectorLayerAction styleVectorLayerAction = new StyleVectorLayerAction(wwdPanel,
                     (NwwVectorLayer) layer);
@@ -54,6 +39,22 @@ public class LayerListRowPanel extends JPanel {
             styleButton.setContentAreaFilled(false);
             buttonsPanel.add(styleButton);
         }
+
+        if (layer instanceof NwwLayer) {
+            ZoomToLayerAction zoomToLayerAction = new ZoomToLayerAction(wwdPanel, (NwwLayer) layer);
+            JButton zoomToButton = new JButton(zoomToLayerAction);
+            zoomToButton.setBorderPainted(false);
+            zoomToButton.setFocusPainted(false);
+            zoomToButton.setContentAreaFilled(false);
+            buttonsPanel.add(zoomToButton);
+        }
+        
+        DeleteLayerAction deleteAction = new DeleteLayerAction(layerListener, wwdPanel.getWwd(), layer);
+        JButton deleteButton = new JButton(deleteAction);
+        deleteButton.setBorderPainted(false);
+        deleteButton.setFocusPainted(false);
+        deleteButton.setContentAreaFilled(false);
+        buttonsPanel.add(deleteButton);
     }
 
 }

@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
@@ -30,12 +29,11 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities;
-import org.jgrasstools.nww.gui.actions.DeleteLayerAction;
 import org.jgrasstools.nww.gui.listeners.GenericSelectListener;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionLinesLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPointsLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPolygonLayer;
-import org.jgrasstools.nww.layers.defaults.MBTileLayer;
+import org.jgrasstools.nww.layers.defaults.MBTilesNwwLayer;
 import org.jgrasstools.nww.layers.defaults.MapsforgeNwwLayer;
 import org.jgrasstools.nww.utils.EGlobeModes;
 import org.jgrasstools.nww.utils.NwwUtilities;
@@ -196,7 +194,7 @@ public class ToolsPanelController extends ToolsPanelView {
                     System.err.println("?????");
                 }
             } else if (selectedFile.getName().endsWith(".mbtiles")) {
-                MBTileLayer mbTileLayer = new MBTileLayer(selectedFile, name, wwjPanel.getWwd());
+                MBTilesNwwLayer mbTileLayer = new MBTilesNwwLayer(selectedFile);
                 wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
                 layerEventsListener.onLayerAdded(mbTileLayer);
             } else if (selectedFile.getName().endsWith(".map")) {
