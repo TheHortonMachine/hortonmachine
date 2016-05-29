@@ -237,7 +237,7 @@ public class OmsTmsGenerator extends JGTModel {
                 mbtilesHelper.fillMetadata(n, s, w, e, pName, format, pMinzoom, pMaxzoom);
             }
 
-            int threads = getDefaultThreadsNum() * 5;
+            int threads = getDefaultThreadsNum();
 
             String ext = "png";
             if (pImagetype == 1) {

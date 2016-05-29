@@ -23,8 +23,18 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.modules.r.tmsgenerator.OmsTmsGenerator;
+import org.jgrasstools.gears.utils.files.FileUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -36,14 +46,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.modules.r.tmsgenerator.OmsTmsGenerator;
-import org.jgrasstools.gears.utils.files.FileUtilities;
 
 @Description("A map creator for geopaparazzi.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
@@ -185,20 +187,31 @@ public class GeopaparazziMapsCreator extends JGTModel {
     }
     
     public static void main( String[] args ) throws Exception {
+        
+//        OmsImageMosaicCreator imagemosaiccreator = new OmsImageMosaicCreator();
+//        imagemosaiccreator.inFolder = "/media/hydrologis/SPEEDBALL/DATI/CTP/trentino_ctp/";
+//        imagemosaiccreator.process();
+        
+//        System.setErr(new PrintStream(new OutputStream() {
+//            public void write(int b) {
+//                //DO NOTHING
+//            }
+//        }));
+        
         GeopaparazziMapsCreator c = new GeopaparazziMapsCreator();
-        c.inROI = "/yourpath/roi.shp";
-        c.inZoomLimitROI = "/yourpath/roi_zoom.shp";
-        c.inRaster1 = "/yourpath/DTM/dtm.asc";
-        c.inRaster2 = "/yourpath/DTM/aspect.asc";
-        c.inVector1 = "/yourpath/contours.shp";
-        c.inVector2 = "/yourpath/lines.shp";
-        c.inVector3 = "/yourpath/point.shp";
+        c.inROI = "/media/hydrologis/SPEEDBALL/DATI/CTP/trentino_ctp/trentino_ctp.shp";
+//        c.inZoomLimitROI = "/yourpath/roi_zoom.shp";
+        c.inRaster1 = "/media/hydrologis/SPEEDBALL/DATI/CTP/trentino_ctp/trentino_ctp.shp";
+//        c.inRaster2 = "/yourpath/DTM/aspect.asc";
+//        c.inVector1 = "/yourpath/contours.shp";
+//        c.inVector2 = "/yourpath/lines.shp";
+//        c.inVector3 = "/yourpath/point.shp";
         c.pMinZoom = 13;
-        c.pMaxZoom = 17;
-        c.pZoomLimit = 21;
-        c.pImageType = "jpg";
-        c.pName = "misonet";
-        c.outFolder = "/yourpath/";
+        c.pMaxZoom = 21;
+//        c.pZoomLimit = 21;
+        c.pImageType = "png";
+        c.pName = "ctp_trento";
+        c.outFolder = "/media/hydrologis/SPEEDBALL/DATI/CTP/";
         c.process();
     }
 }

@@ -551,7 +551,6 @@ public class ImageGenerator {
 
         renderer.paint(g2d, imageBounds, ref);
 
-        // content.dispose();
         return dumpImage;
     }
 

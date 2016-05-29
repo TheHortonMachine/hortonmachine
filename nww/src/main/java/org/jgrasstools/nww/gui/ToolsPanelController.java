@@ -21,12 +21,16 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
+import org.jgrasstools.gears.spatialite.RasterCoverage;
+import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities;
@@ -36,6 +40,7 @@ import org.jgrasstools.nww.layers.defaults.FeatureCollectionPointsLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPolygonLayer;
 import org.jgrasstools.nww.layers.defaults.MBTilesNwwLayer;
 import org.jgrasstools.nww.layers.defaults.MapsforgeNwwLayer;
+import org.jgrasstools.nww.layers.defaults.RL2NwwLayer;
 import org.jgrasstools.nww.utils.CursorUtils;
 import org.jgrasstools.nww.utils.EGlobeModes;
 import org.jgrasstools.nww.utils.NwwUtilities;
@@ -210,6 +215,17 @@ public class ToolsPanelController extends ToolsPanelView {
                 MapsforgeNwwLayer mbTileLayer = new MapsforgeNwwLayer(selectedFile);
                 wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
                 layerEventsListener.onLayerAdded(mbTileLayer);
+            } else if (selectedFile.getName().endsWith(".rl2")) {
+                SpatialiteDb db = new SpatialiteDb();
+                db.open(selectedFile.getAbsolutePath());
+                List<RasterCoverage> rasterCoverages = db.getRasterCoverages(false);
+                if (rasterCoverages.size() > 0) {
+                    RL2CoverageHandler handler = new RL2CoverageHandler(db, rasterCoverages.get(0));
+                    RL2NwwLayer rl2Layer = new RL2NwwLayer(handler);
+
+                    wwjPanel.getWwd().getModel().getLayers().add(rl2Layer);
+                    layerEventsListener.onLayerAdded(rl2Layer);
+                }
             }
         } catch (Exception e1) {
             e1.printStackTrace();

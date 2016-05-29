@@ -26,6 +26,7 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.nww.utils.NwwUtilities;
 import org.mapsforge.core.graphics.GraphicFactory;
 import org.mapsforge.map.awt.AwtGraphicFactory;
 import org.mapsforge.map.layer.renderer.DatabaseRenderer;
@@ -124,7 +125,7 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
                 double centerX = west + (east - west) / 2.0;
                 double centerY = south + (north - south) / 2.0;
 
-                int[] tileNumber = getTileNumber(centerY, centerX, zoom);
+                int[] tileNumber = NwwUtilities.getTileNumber(centerY, centerX, zoom);
                 int x = tileNumber[0];
                 int y = tileNumber[1];
 
@@ -147,22 +148,6 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
         });
 
         return new LevelSet(params);
-    }
-
-    public static int[] getTileNumber(final double lat, final double lon, final int zoom) {
-        int xtile = (int) Math.floor((lon + 180) / 360 * (1 << zoom));
-        int ytile =
-            (int) Math.floor((1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI)
-                / 2 * (1 << zoom));
-        if (xtile < 0)
-            xtile = 0;
-        if (xtile >= (1 << zoom))
-            xtile = ((1 << zoom) - 1);
-        if (ytile < 0)
-            ytile = 0;
-        if (ytile >= (1 << zoom))
-            ytile = ((1 << zoom) - 1);
-        return new int[] { xtile, ytile };
     }
 
     public String toString() {

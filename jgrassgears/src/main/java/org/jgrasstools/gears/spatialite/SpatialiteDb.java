@@ -35,12 +35,15 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKBReader;
 
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -52,11 +55,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.sqlite.SQLiteConfig;
-
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKBReader;
 
 /**
  * A spatialite database.
@@ -389,6 +387,43 @@ public class SpatialiteDb implements AutoCloseable {
                 tableNames.add(tabelName);
             }
             return tableNames;
+        }
+    }
+
+    /**
+     * Get the list of available raster coverages.
+     * 
+     * @param doOrder if <code>true</code>, the names are ordered.
+     * @return the list of raster coverages.
+     * @throws SQLException
+     */
+    public List<RasterCoverage> getRasterCoverages(boolean doOrder) throws SQLException {
+        List<RasterCoverage> rasterCoverages = new ArrayList<RasterCoverage>();
+        String orderBy = " ORDER BY name";
+        if (!doOrder) {
+            orderBy = "";
+        }
+
+        String sql = "SELECT " + RasterCoverage.COVERAGE_NAME + ", " + RasterCoverage.TITLE + ", " + RasterCoverage.SRID
+            + ", " + RasterCoverage.COMPRESSION + ", " + RasterCoverage.EXTENT_MINX + ", " + RasterCoverage.EXTENT_MINY
+            + ", " + RasterCoverage.EXTENT_MAXX + ", " + RasterCoverage.EXTENT_MAXY + " FROM "
+            + RasterCoverage.TABLENAME + orderBy;
+        try (Statement stmt = mConn.createStatement()) {
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                RasterCoverage rc = new RasterCoverage();
+                int i = 1;
+                rc.coverage_name = rs.getString(i++);
+                rc.title = rs.getString(i++);
+                rc.srid = rs.getInt(i++);
+                rc.compression = rs.getString(i++);
+                rc.extent_minx = rs.getDouble(i++);
+                rc.extent_miny = rs.getDouble(i++);
+                rc.extent_maxx = rs.getDouble(i++);
+                rc.extent_maxy = rs.getDouble(i++);
+                rasterCoverages.add(rc);
+            }
+            return rasterCoverages;
         }
     }
 

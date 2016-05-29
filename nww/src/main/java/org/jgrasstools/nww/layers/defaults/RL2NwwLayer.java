@@ -21,14 +21,19 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.SQLException;
 
 import javax.imageio.ImageIO;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
-import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
-import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
+import org.jgrasstools.gears.spatialite.RasterCoverage;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
@@ -41,53 +46,63 @@ import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileUrlBuilder;
 
 /**
- * Procedural layer for mbtiles databases
+ * Procedural layer for rasterlite2 files
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
+public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
 
     private String layerName = "unknown layer";
 
     private static final int TILESIZE = 512;
 
-    private File mbtilesFile;
+    private Coordinate centerCoordinateLL;
 
-    private Coordinate centerCoordinate;
+    public RL2NwwLayer(RL2CoverageHandler rl2Handler) throws Exception {
+        super(makeLevels(rl2Handler));
+        RasterCoverage rasterCoverage = rl2Handler.getRasterCoverage();
+        this.layerName = rasterCoverage.coverage_name;
 
-    public MBTilesNwwLayer(File mbtilesFile) throws Exception {
-        super(makeLevels(mbtilesFile, getTilegenerator(mbtilesFile)));
-        this.mbtilesFile = mbtilesFile;
-        this.layerName = FileUtilities.getNameWithoutExtention(mbtilesFile);
+        double w = rasterCoverage.extent_minx;
+        double s = rasterCoverage.extent_miny;
+        double e = rasterCoverage.extent_maxx;
+        double n = rasterCoverage.extent_maxy;
+
+        double centerX = w + (e - w) / 2.0;
+        double centerY = s + (n - s) / 2.0;
+        Coordinate centerCoordinate = new Coordinate(centerX, centerY);
+
+        CoordinateReferenceSystem targetCRS = DefaultGeographicCRS.WGS84;
+        CoordinateReferenceSystem sourceCRS = CRS.decode("EPSG:" + rasterCoverage.srid);
+
+        MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);
+        centerCoordinateLL = JTS.transform(centerCoordinate, null, transform);
+
         this.setUseTransparentTextures(true);
 
     }
 
-    private static MBTilesHelper getTilegenerator(File mbtilesFile) {
-        MBTilesHelper mbTilesHelper = new MBTilesHelper();
-        try {
-            mbTilesHelper.open(mbtilesFile);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return mbTilesHelper;
-    }
-
-    private static LevelSet makeLevels(File mbtilesFile, MBTilesHelper mbtilesHelper) throws MalformedURLException {
+    private static LevelSet makeLevels(RL2CoverageHandler rl2Handler) throws MalformedURLException {
         AVList params = new AVListImpl();
 
-        String urlString = mbtilesFile.toURI().toURL().toExternalForm();
+        String databasePath = rl2Handler.getDatabasePath();
+        File databaseFile = new File(databasePath);
+        String tilesPart = "-tiles" + File.separator + rl2Handler.getRasterCoverage().coverage_name;
+
+        String urlString = databaseFile.toURI().toURL().toExternalForm();
         params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, TILESIZE);
         params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
-        params.setValue(AVKey.DATA_CACHE_NAME, "huberg/" + mbtilesFile.getName() + "-tiles");
+        params.setValue(AVKey.DATA_CACHE_NAME, "rl2/" + databaseFile.getName() + tilesPart);
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
 
         String imageFormat = null;
         try {
-            imageFormat = mbtilesHelper.getImageFormat();
+            String compression = rl2Handler.getRasterCoverage().compression;
+            if (compression.equals("JPEG")) {
+                imageFormat = "jpg";
+            }
         } catch (Exception e1) {
             e1.printStackTrace();
         }
@@ -100,16 +115,20 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
         params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
         params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new LatLon(Angle.fromDegrees(22.5d), Angle.fromDegrees(45d)));
         params.setValue(AVKey.SECTOR, new MercatorSector(-1.0, 1.0, Angle.NEG180, Angle.POS180));
-        final File cacheFolder = new File(mbtilesFile.getAbsolutePath() + "-tiles");
+        final File cacheFolder = new File(databasePath + tilesPart);
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
         params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder() {
 
             public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {
+//                int zoom = tile.getLevelNumber() + 3;
+//                int x = tile.getColumn();
+//                int y = tile.getRow();
+                
                 int zoom = tile.getLevelNumber() + 3;
                 int x = tile.getColumn();
-                int y = tile.getRow();
+                int y = (1 << (tile.getLevelNumber()) + 3) - 1 - tile.getRow();
 
                 try {
                     StringBuilder sb = new StringBuilder();
@@ -127,7 +146,7 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
                     sb.append(_imageFormat);
                     File imgFile = new File(tileImageFolderFile, sb.toString());
                     if (!imgFile.exists()) {
-                        BufferedImage bImg = mbtilesHelper.getTile(x, y, zoom);
+                        BufferedImage bImg = rl2Handler.getRL2ImageForTile(x, y, zoom, TILESIZE);
 
                         if (bImg != null) {
                             ImageIO.write(bImg, _imageFormat, imgFile);
@@ -153,19 +172,7 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
 
     @Override
     public Coordinate getCenter() {
-        if (centerCoordinate == null) {
-            try (MBTilesHelper mbTilesHelper = new MBTilesHelper()) {
-                mbTilesHelper.open(mbtilesFile);
-                double[] wsen = mbTilesHelper.getBounds();
-
-                double centerX = wsen[0] + (wsen[2] - wsen[0]) / 2.0;
-                double centerY = wsen[1] + (wsen[3] - wsen[1]) / 2.0;
-                centerCoordinate = new Coordinate(centerX, centerY);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return centerCoordinate;
+        return centerCoordinateLL;
     }
 
 }

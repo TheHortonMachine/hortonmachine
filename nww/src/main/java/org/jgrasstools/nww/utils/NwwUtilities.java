@@ -29,7 +29,7 @@ import gov.nasa.worldwindx.examples.util.ToolTipController;
 
 public class NwwUtilities {
 
-    public static final String[] SUPPORTED_EXTENSIONS = { "shp", "mbtiles", "map" };
+    public static final String[] SUPPORTED_EXTENSIONS = { "shp", "mbtiles", "map", "rl2" };
 
     private static final CoordinateReferenceSystem GPS_CRS = DefaultGeographicCRS.WGS84;
 
@@ -116,8 +116,24 @@ public class NwwUtilities {
         int b = color.getBlue();
 
         Color darkerColor = new Color(//
-                Math.max((int) (r * factor), 0), Math.max((int) (g * factor), 0), Math.max((int) (b * factor), 0));
+            Math.max((int) (r * factor), 0), Math.max((int) (g * factor), 0), Math.max((int) (b * factor), 0));
         return darkerColor;
+    }
+
+    public static int[] getTileNumber(final double lat, final double lon, final int zoom) {
+        int xtile = (int) Math.floor((lon + 180) / 360 * (1 << zoom));
+        int ytile =
+            (int) Math.floor((1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI)
+                / 2 * (1 << zoom));
+        if (xtile < 0)
+            xtile = 0;
+        if (xtile >= (1 << zoom))
+            xtile = ((1 << zoom) - 1);
+        if (ytile < 0)
+            ytile = 0;
+        if (ytile >= (1 << zoom))
+            ytile = ((1 << zoom) - 1);
+        return new int[] { xtile, ytile };
     }
 
 }
