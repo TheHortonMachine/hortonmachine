@@ -38,6 +38,7 @@ import org.jgrasstools.nww.gui.listeners.GenericSelectListener;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionLinesLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPointsLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPolygonLayer;
+import org.jgrasstools.nww.layers.defaults.ImageMosaicNwwLayer;
 import org.jgrasstools.nww.layers.defaults.MBTilesNwwLayer;
 import org.jgrasstools.nww.layers.defaults.MapsforgeNwwLayer;
 import org.jgrasstools.nww.layers.defaults.RL2NwwLayer;
@@ -180,6 +181,22 @@ public class ToolsPanelController extends ToolsPanelView {
         String name = FileUtilities.getNameWithoutExtention(selectedFile);
         try {
             if (selectedFile.getName().endsWith(".shp")) {
+                // shp or image mosaic?
+
+                String parentFolderName = selectedFile.getParentFile().getName();
+                String fileName = FileUtilities.getNameWithoutExtention(selectedFile);
+                try {
+                    if (parentFolderName.equals(fileName)) {
+                        ImageMosaicNwwLayer imageMosaicNwwLayer = new ImageMosaicNwwLayer(selectedFile);
+                        wwjPanel.getWwd().getModel().getLayers().add(imageMosaicNwwLayer);
+                        layerEventsListener.onLayerAdded(imageMosaicNwwLayer);
+                        return;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // ignore and handle as shapefile
+                }
+
                 SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(selectedFile.getAbsolutePath());
                 GeometryDescriptor geometryDescriptor = readFC.getSchema().getGeometryDescriptor();
                 if (GeometryUtilities.isPolygon(geometryDescriptor)) {

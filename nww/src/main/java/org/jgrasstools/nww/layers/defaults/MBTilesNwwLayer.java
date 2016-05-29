@@ -49,7 +49,7 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
 
     private String layerName = "unknown layer";
 
-    private static final int TILESIZE = 512;
+    private static final int TILESIZE = 256;
 
     private File mbtilesFile;
 

@@ -25,15 +25,18 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Polygon;
 
+import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
-import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
-import org.jgrasstools.gears.spatialite.RasterCoverage;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.images.ImageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
@@ -48,76 +51,65 @@ import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileUrlBuilder;
 
 /**
- * Procedural layer for rasterlite2 files
+ * Procedural layer for geotools imagemosaic files
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
+public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
 
     private String layerName = "unknown layer";
 
     private static final int TILESIZE = 512;
 
-    private Coordinate centerCoordinateLL;
+    private Coordinate centerCoordinate;
 
-    public RL2NwwLayer(RL2CoverageHandler rl2Handler) throws Exception {
-        super(makeLevels(rl2Handler));
-        RasterCoverage rasterCoverage = rl2Handler.getRasterCoverage();
-        this.layerName = rasterCoverage.coverage_name;
+    private static CoordinateReferenceSystem osmCrs;
 
-        double w = rasterCoverage.extent_minx;
-        double s = rasterCoverage.extent_miny;
-        double e = rasterCoverage.extent_maxx;
-        double n = rasterCoverage.extent_maxy;
+    public ImageMosaicNwwLayer(File imageMosaicShpFile) throws Exception {
+        super(makeLevels(imageMosaicShpFile));
+        this.layerName = FileUtilities.getNameWithoutExtention(imageMosaicShpFile);
+
+        ReferencedEnvelope envelope = OmsVectorReader.readEnvelope(imageMosaicShpFile.getAbsolutePath());
+        ReferencedEnvelope envelopeLL = envelope.transform(DefaultGeographicCRS.WGS84, true);
+
+        osmCrs = CRS.decode("EPSG:3857");
+
+        double w = envelopeLL.getMinX();
+        double s = envelopeLL.getMinY();
+        double e = envelopeLL.getMaxX();
+        double n = envelopeLL.getMaxY();
 
         double centerX = w + (e - w) / 2.0;
         double centerY = s + (n - s) / 2.0;
-        Coordinate centerCoordinate = new Coordinate(centerX, centerY);
 
-        CoordinateReferenceSystem targetCRS = DefaultGeographicCRS.WGS84;
-        CoordinateReferenceSystem sourceCRS = CRS.decode("EPSG:" + rasterCoverage.srid);
-
-        MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);
-        centerCoordinateLL = JTS.transform(centerCoordinate, null, transform);
+        centerCoordinate = new Coordinate(centerX, centerY);
 
         this.setUseTransparentTextures(true);
 
     }
 
-    private static LevelSet makeLevels(RL2CoverageHandler rl2Handler) throws MalformedURLException {
+    private static LevelSet makeLevels(File imsf) throws MalformedURLException {
         AVList params = new AVListImpl();
+        AbstractGridFormat format = GridFormatFinder.findFormat(imsf);
+        AbstractGridCoverage2DReader coverageTilesReader = format.getReader(imsf);
 
-        String databasePath = rl2Handler.getDatabasePath();
-        File databaseFile = new File(databasePath);
-        String tilesPart = "-tiles" + File.separator + rl2Handler.getRasterCoverage().coverage_name;
+        String tilesPart = "-tiles";
 
-        String urlString = databaseFile.toURI().toURL().toExternalForm();
+        String urlString = imsf.toURI().toURL().toExternalForm();
         params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, TILESIZE);
         params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
-        params.setValue(AVKey.DATA_CACHE_NAME, "rl2/" + databaseFile.getName() + tilesPart);
+        params.setValue(AVKey.DATA_CACHE_NAME, "imagemosaics/" + imsf.getName() + tilesPart);
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
 
-        String imageFormat = null;
-        try {
-            String compression = rl2Handler.getRasterCoverage().compression;
-            if (compression.equals("JPEG")) {
-                imageFormat = "jpg";
-            }
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
-        if (imageFormat == null) {
-            imageFormat = "png";
-        }
-        final String _imageFormat = imageFormat;
+        final String imageFormat = "png";
         params.setValue(AVKey.FORMAT_SUFFIX, "." + imageFormat);
         params.setValue(AVKey.NUM_LEVELS, 22);
         params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
         params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new LatLon(Angle.fromDegrees(22.5d), Angle.fromDegrees(45d)));
         params.setValue(AVKey.SECTOR, new MercatorSector(-1.0, 1.0, Angle.NEG180, Angle.POS180));
-        final File cacheFolder = new File(databasePath + tilesPart);
+        final File cacheFolder = new File(imsf.getAbsolutePath() + tilesPart);
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
@@ -135,9 +127,14 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
 
                 Coordinate ll = new Coordinate(w, s);
                 Coordinate ur = new Coordinate(e, n);
-
-                Polygon polygon =
-                    GeometryUtilities.createPolygonFromEnvelope(new com.vividsolutions.jts.geom.Envelope(ll, ur));
+                try {
+                    CoordinateReferenceSystem sourceCRS = DefaultGeographicCRS.WGS84;
+                    MathTransform transform = CRS.findMathTransform(sourceCRS, osmCrs);
+                    ll = JTS.transform(ll, null, transform);
+                    ur = JTS.transform(ur, null, transform);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
 
                 try {
                     StringBuilder sb = new StringBuilder();
@@ -152,21 +149,21 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
                     sb = new StringBuilder();
                     sb.append(y);
                     sb.append(".");
-                    sb.append(_imageFormat);
+                    sb.append(imageFormat);
                     File imgFile = new File(tileImageFolderFile, sb.toString());
                     if (!imgFile.exists()) {
-
-                        BufferedImage bImg = rl2Handler.getRL2Image(polygon, "4326", TILESIZE, TILESIZE);
+                        BufferedImage bImg = ImageUtilities.imageFromReader(coverageTilesReader, TILESIZE, TILESIZE,
+                            ll.x, ur.x, ll.y, ur.y, osmCrs);
                         if (bImg != null) {
-                            ImageIO.write(bImg, _imageFormat, imgFile);
+                            ImageIO.write(bImg, imageFormat, imgFile);
                         } else {
                             return null;
                         }
 
                     }
                     return imgFile.toURI().toURL();
-                } catch (Exception ez) {
-                    ez.printStackTrace();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                     return null;
                 }
             }
@@ -181,7 +178,7 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
 
     @Override
     public Coordinate getCenter() {
-        return centerCoordinateLL;
+        return centerCoordinate;
     }
 
 }

@@ -15,11 +15,21 @@ import java.sql.Statement;
 
 import javax.imageio.ImageIO;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.utils.images.ImageUtilities;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 
 public class MBTilesHelper implements AutoCloseable {
 
@@ -276,21 +286,35 @@ public class MBTilesHelper implements AutoCloseable {
     /**
      * Read the image of a tile from a generic geotools coverage reader.
      * 
-     * @param readerEPSG3857 the reader, expected to be in CRS 3857.
+     * @param reader the reader, expected to be in CRS 3857.
      * @param x the tile x.
      * @param y the tile y.
      * @param zoom the zoomlevel.
      * @return the image.
      * @throws IOException 
      */
-    public static BufferedImage readGridcoverageImageForTile(AbstractGridCoverage2DReader readerEPSG3857, int x, int y,
-        int zoom) throws IOException {
+    public static BufferedImage readGridcoverageImageForTile(AbstractGridCoverage2DReader reader, int x, int y,
+        int zoom, CoordinateReferenceSystem resampleCrs) throws IOException {
         double north = tile2lat(y, zoom);
         double south = tile2lat(y + 1, zoom);
         double west = tile2lon(x, zoom);
         double east = tile2lon(x + 1, zoom);
+
+        Coordinate ll = new Coordinate(west, south);
+        Coordinate ur = new Coordinate(east, north);
+
+        try {
+            CoordinateReferenceSystem sourceCRS = DefaultGeographicCRS.WGS84;
+
+            MathTransform transform = CRS.findMathTransform(sourceCRS, resampleCrs);
+            ll = JTS.transform(ll, null, transform);
+            ur = JTS.transform(ur, null, transform);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         BufferedImage image =
-            ImageUtilities.imageFromReader(readerEPSG3857, TILESIZE, TILESIZE, west, east, south, north);
+            ImageUtilities.imageFromReader(reader, TILESIZE, TILESIZE, ll.x, ur.x, ll.y, ur.y, resampleCrs);
         return image;
     }
 
@@ -308,7 +332,7 @@ public class MBTilesHelper implements AutoCloseable {
         File file = new File(ctp);
         AbstractGridFormat format = GridFormatFinder.findFormat(file);
         AbstractGridCoverage2DReader reader = format.getReader(file);
-        BufferedImage image = MBTilesHelper.readGridcoverageImageForTile(reader, 1, 1, 19);
+        BufferedImage image = MBTilesHelper.readGridcoverageImageForTile(reader, 1, 1, 19, null);
 
     }
 
