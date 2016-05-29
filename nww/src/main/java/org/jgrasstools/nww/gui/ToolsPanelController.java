@@ -17,8 +17,10 @@
  */
 package org.jgrasstools.nww.gui;
 
+import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.List;
@@ -45,9 +47,14 @@ import org.jgrasstools.nww.layers.defaults.RL2NwwLayer;
 import org.jgrasstools.nww.utils.CursorUtils;
 import org.jgrasstools.nww.utils.EGlobeModes;
 import org.jgrasstools.nww.utils.NwwUtilities;
+import org.jgrasstools.nww.utils.selection.ByBoxSelector;
 import org.opengis.feature.type.GeometryDescriptor;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwindx.examples.util.SectorSelector;
 
 /**
  * The tools panel.
@@ -141,24 +148,8 @@ public class ToolsPanelController extends ToolsPanelView {
             }
         });
 
-        _selectByBoxButton.addActionListener(e -> {
-            _infoButton.setSelected(false);
-
-            if (_selectByBoxButton.isSelected()) {
-                genericSelectListener = new GenericSelectListener(wwjPanel);
-                wwjPanel.getWwd().addSelectListener(genericSelectListener);
-                CursorUtils.makeCrossHair(wwjPanel.getWwd());
-            } else {
-                if (genericSelectListener != null) {
-                    wwjPanel.getWwd().removeSelectListener(genericSelectListener);
-                }
-                genericSelectListener = null;
-                CursorUtils.makeDefault(wwjPanel.getWwd());
-            }
-        });
-
         _infoButton.addActionListener(e -> {
-            _selectByBoxButton.setSelected(false);
+            //            _selectByBoxButton.setSelected(false);
 
             if (_infoButton.isSelected()) {
                 genericSelectListener = new GenericSelectListener(wwjPanel);
@@ -170,6 +161,49 @@ public class ToolsPanelController extends ToolsPanelView {
                     wwjPanel.getWwd().removeSelectListener(genericSelectListener);
                 }
                 genericSelectListener = null;
+                CursorUtils.makeDefault(wwjPanel.getWwd());
+            }
+        });
+
+        final ByBoxSelector byBoxSelector = new ByBoxSelector(wwjPanel.getWwd());
+        byBoxSelector.addListener(new ByBoxSelector.IBoxSelectionListener() {
+
+            @Override
+            public void onSelectionFinished(Sector selectedSector) {
+                System.out.println(selectedSector);
+            }
+        });
+        _selectByBoxButton.addActionListener(e -> {
+            //            _infoButton.setSelected(false);
+
+            if (_selectByBoxButton.isSelected()) {
+                byBoxSelector.enable();
+                CursorUtils.makeCrossHair(wwjPanel.getWwd());
+            } else {
+                byBoxSelector.disable();
+                CursorUtils.makeDefault(wwjPanel.getWwd());
+            }
+        });
+        final ByBoxSelector zoomBoxSelector = new ByBoxSelector(wwjPanel.getWwd());
+        zoomBoxSelector.addListener(new ByBoxSelector.IBoxSelectionListener() {
+
+            @Override
+            public void onSelectionFinished(Sector selectedSector) {
+                System.out.println(selectedSector);
+
+                LatLon centroid = selectedSector.getCentroid();
+                wwjPanel.getWwd().getView().goTo(new Position(centroid, 0), 10000);
+                zoomBoxSelector.disable();
+            }
+        });
+        _zoomByBoxButton.addActionListener(e -> {
+            //            _infoButton.setSelected(false);
+
+            if (_zoomByBoxButton.isSelected()) {
+                zoomBoxSelector.enable();
+                CursorUtils.makeCrossHair(wwjPanel.getWwd());
+            } else {
+                zoomBoxSelector.disable();
                 CursorUtils.makeDefault(wwjPanel.getWwd());
             }
         });
