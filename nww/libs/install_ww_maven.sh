@@ -1,0 +1,1 @@
+mvn install:install-file -Dfile=./worldwind.jar -DgroupId=gov.nasa -DartifactId=worldwind -Dversion=2.0.X -Dpackaging=jar
