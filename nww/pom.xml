@@ -59,9 +59,7 @@
 		<dependency>
 		    <groupId>gov.nasa</groupId>
 		    <artifactId>worldwind</artifactId>
-		    <version>1.0</version>
-		    <scope>system</scope>
-		    <systemPath>${project.basedir}/libs/worldwind.jar</systemPath>
+		    <version>2.0.X</version>
 		</dependency>
 	</dependencies>
 	

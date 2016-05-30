@@ -288,6 +288,13 @@ public class SpatialiteDb implements AutoCloseable {
         String sql = getIndexSql(tableName, column, isUnique);
         try (Statement stmt = mConn.createStatement()) {
             stmt.executeUpdate(sql);
+        } catch (SQLException e) {
+            String message = e.getMessage();
+            if (message.contains("index") && message.contains("already exists")) {
+                System.out.println(message);
+            } else {
+                e.printStackTrace();
+            }
         }
     }
 

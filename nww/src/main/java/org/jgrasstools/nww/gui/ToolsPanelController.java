@@ -51,10 +51,7 @@ import org.jgrasstools.nww.utils.selection.ObjectsOnScreenByBoxSelector;
 import org.jgrasstools.nww.utils.selection.SectorByBoxSelector;
 import org.opengis.feature.type.GeometryDescriptor;
 
-import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Sector;
 
 /**
@@ -238,20 +235,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
             @Override
             public void onSelectionFinished(Sector selectedSector) {
-                System.out.println(selectedSector);
-
-                double sectorWidth = selectedSector.getDeltaLonDegrees();
-
-                LatLon centroid = selectedSector.getCentroid();
-                WorldWindow wwd = wwjPanel.getWwd();
-                View view = wwd.getView();
-                // ((OrbitView)
-                // view).getOrbitViewLimits().setCenterLocationLimits(selectedSector);
-                // view.getOrbitViewLimits().setZoomLimits(0, 20e6);
-
-                double altitude = view.getCurrentEyePosition().getAltitude();
-                double newaltitude = altitude / 6;
-                wwjPanel.goTo(centroid.longitude.degrees, centroid.latitude.degrees, newaltitude, false);
+                wwjPanel.zoomTo(selectedSector, false);
                 zoomBoxSelector.disable();
                 zoomBoxSelector.enable();
             }
