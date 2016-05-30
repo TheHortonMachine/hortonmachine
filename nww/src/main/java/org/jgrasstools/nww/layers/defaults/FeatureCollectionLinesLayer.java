@@ -30,6 +30,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.shapes.FeatureLine;
+import org.jgrasstools.nww.shapes.FeatureLineMultires;
 import org.opengis.feature.simple.SimpleFeature;
 
 import gov.nasa.worldwind.WorldWind;

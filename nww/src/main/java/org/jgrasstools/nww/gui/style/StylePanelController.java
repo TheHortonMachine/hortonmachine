@@ -5,6 +5,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JColorChooser;
@@ -17,30 +18,60 @@ import gov.nasa.worldwind.render.markers.BasicMarkerShape;
 
 public class StylePanelController extends StylePanelView {
 
-    private static final String[] TYPES = new String[] { BasicMarkerShape.SPHERE, BasicMarkerShape.CUBE,
-            BasicMarkerShape.CONE };
+    private static final String[] TYPES = new String[] { "SPHERE", "CUBE", "CONE" };
+
+    private static String[] opacities =
+        new String[] { "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0", };
+
     private NwwVectorLayer layer;
 
     private DecimalFormat oneFormat = new DecimalFormat("0.0");
     private SimpleStyle style;
 
+    private HashMap<String, String> shapeMap;
+
     public StylePanelController(NwwVectorLayer layer) {
         this.layer = layer;
+
         init();
     }
 
     private void init() {
+        shapeMap = new HashMap<>();
+        shapeMap.put(TYPES[0], BasicMarkerShape.SPHERE);
+        shapeMap.put(TYPES[1], BasicMarkerShape.CUBE);
+        shapeMap.put(TYPES[2], BasicMarkerShape.CONE);
+        HashMap<String, String> inverseShapeMap = new HashMap<>();
+        inverseShapeMap.put(BasicMarkerShape.SPHERE, TYPES[0]);
+        inverseShapeMap.put(BasicMarkerShape.CUBE, TYPES[1]);
+        inverseShapeMap.put(BasicMarkerShape.CONE, TYPES[2]);
+
         style = layer.getStyle();
         GEOMTYPE geomType = layer.getType();
         switch (geomType) {
         case POINT:
-            _fillPanel.setVisible(false);
+            //            _fillPanel.setVisible(false);
             _strokelPanel.setVisible(false);
 
             _markerSizeText.setText(style.shapeSize + "");
 
             _markerTypeCombo.setModel(new DefaultComboBoxModel<String>(TYPES));
-            _markerTypeCombo.setSelectedItem(style.shapeType);
+            _markerTypeCombo.setSelectedItem(inverseShapeMap.get(style.shapeType));
+
+            _fillColorButton.setBackground(style.fillColor);
+            _fillColorButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Color newColor = JColorChooser.showDialog(null, "Choose a color", style.fillColor);
+                    if (newColor != null) {
+                        style.fillColor = newColor;
+                        _fillColorButton.setBackground(style.fillColor);
+                    }
+                }
+            });
+            _fillOpacityCombo.setModel(new DefaultComboBoxModel<String>(opacities));
+            _fillOpacityCombo.setSelectedItem(oneFormat.format(style.fillOpacity));
 
             break;
         case LINE:
@@ -49,6 +80,7 @@ public class StylePanelController extends StylePanelView {
 
             _strokeColorButton.setBackground(style.strokeColor);
             _strokeColorButton.addActionListener(new ActionListener() {
+
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     Color newColor = JColorChooser.showDialog(null, "Choose a color", style.strokeColor);
@@ -67,6 +99,7 @@ public class StylePanelController extends StylePanelView {
 
             _strokeColorButton.setBackground(style.strokeColor);
             _strokeColorButton.addActionListener(new ActionListener() {
+
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     Color newColor = JColorChooser.showDialog(null, "Choose a color", style.strokeColor);
@@ -80,6 +113,7 @@ public class StylePanelController extends StylePanelView {
 
             _fillColorButton.setBackground(style.fillColor);
             _fillColorButton.addActionListener(new ActionListener() {
+
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     Color newColor = JColorChooser.showDialog(null, "Choose a color", style.fillColor);
@@ -89,7 +123,6 @@ public class StylePanelController extends StylePanelView {
                     }
                 }
             });
-            String[] opacities = new String[] { "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0", };
             _fillOpacityCombo.setModel(new DefaultComboBoxModel<String>(opacities));
             _fillOpacityCombo.setSelectedItem(oneFormat.format(style.fillOpacity));
 
@@ -128,7 +161,13 @@ public class StylePanelController extends StylePanelView {
             } catch (NumberFormatException e1) {
                 e1.printStackTrace();
             }
-            style.shapeType = _markerTypeCombo.getSelectedItem().toString();
+            style.shapeType = shapeMap.get(_markerTypeCombo.getSelectedItem().toString());
+            try {
+                String opacString = _fillOpacityCombo.getSelectedItem().toString();
+                style.fillOpacity = Double.parseDouble(opacString);
+            } catch (NumberFormatException e1) {
+                e1.printStackTrace();
+            }
             break;
         case LINE:
             String widthText = _strokeWidthText.getText();

@@ -24,7 +24,7 @@ import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.util.WWUtil;
 
-public class ViewerApp {
+public class SimpleNwwViewer {
 
     static {
         System.setProperty("java.net.useSystemProxies", "true");

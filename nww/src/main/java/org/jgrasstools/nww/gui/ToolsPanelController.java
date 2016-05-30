@@ -27,6 +27,7 @@ import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -47,13 +48,20 @@ import org.jgrasstools.nww.layers.defaults.RL2NwwLayer;
 import org.jgrasstools.nww.utils.CursorUtils;
 import org.jgrasstools.nww.utils.EGlobeModes;
 import org.jgrasstools.nww.utils.NwwUtilities;
-import org.jgrasstools.nww.utils.selection.ByBoxSelector;
+import org.jgrasstools.nww.utils.selection.ObjectsOnScreenByBoxSelector;
+import org.jgrasstools.nww.utils.selection.SectorByBoxSelector;
 import org.opengis.feature.type.GeometryDescriptor;
 
+import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.geom.Frustum;
+import gov.nasa.worldwind.geom.Frustum.Corners;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.view.orbit.OrbitView;
 import gov.nasa.worldwindx.examples.util.SectorSelector;
 
 /**
@@ -165,12 +173,13 @@ public class ToolsPanelController extends ToolsPanelView {
             }
         });
 
-        final ByBoxSelector byBoxSelector = new ByBoxSelector(wwjPanel.getWwd());
-        byBoxSelector.addListener(new ByBoxSelector.IBoxSelectionListener() {
+        final ObjectsOnScreenByBoxSelector byBoxSelector = new ObjectsOnScreenByBoxSelector(wwjPanel.getWwd());
+        byBoxSelector.addListener(new ObjectsOnScreenByBoxSelector.IBoxScreenSelectionListener() {
 
             @Override
-            public void onSelectionFinished(Sector selectedSector) {
-                System.out.println(selectedSector);
+            public void onSelectionFinished(List<?> selectedObjs) {
+                int size = selectedObjs.size();
+                JOptionPane.showMessageDialog(wwjPanel, "Selected objects: " + size);
             }
         });
         _selectByBoxButton.addActionListener(e -> {
@@ -184,16 +193,26 @@ public class ToolsPanelController extends ToolsPanelView {
                 CursorUtils.makeDefault(wwjPanel.getWwd());
             }
         });
-        final ByBoxSelector zoomBoxSelector = new ByBoxSelector(wwjPanel.getWwd());
-        zoomBoxSelector.addListener(new ByBoxSelector.IBoxSelectionListener() {
+        final SectorByBoxSelector zoomBoxSelector = new SectorByBoxSelector(wwjPanel.getWwd());
+        zoomBoxSelector.addListener(new SectorByBoxSelector.IBoxSelectionListener() {
 
             @Override
             public void onSelectionFinished(Sector selectedSector) {
                 System.out.println(selectedSector);
 
+                double sectorWidth = selectedSector.getDeltaLonDegrees();
+
                 LatLon centroid = selectedSector.getCentroid();
-                wwjPanel.getWwd().getView().goTo(new Position(centroid, 0), 10000);
+                WorldWindow wwd = wwjPanel.getWwd();
+                View view = wwd.getView();
+                //                ((OrbitView) view).getOrbitViewLimits().setCenterLocationLimits(selectedSector);
+                //                view.getOrbitViewLimits().setZoomLimits(0, 20e6);
+
+                double altitude = view.getCurrentEyePosition().getAltitude();
+                double newaltitude = altitude / 6;
+                wwjPanel.goTo(centroid.longitude.degrees, centroid.latitude.degrees, newaltitude, false);
                 zoomBoxSelector.disable();
+                zoomBoxSelector.enable();
             }
         });
         _zoomByBoxButton.addActionListener(e -> {

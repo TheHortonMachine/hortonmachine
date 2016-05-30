@@ -31,7 +31,7 @@ import gov.nasa.worldwind.geom.Sector;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class ByBoxSelector extends SectorSelector {
+public class SectorByBoxSelector extends SectorSelector {
 
     public static interface IBoxSelectionListener {
 
@@ -42,7 +42,7 @@ public class ByBoxSelector extends SectorSelector {
 
     private boolean wasDragged = false;
 
-    public ByBoxSelector(WorldWindow worldWindow) {
+    public SectorByBoxSelector(WorldWindow worldWindow) {
         super(worldWindow);
 
         setInteriorColor(Color.BLUE);
