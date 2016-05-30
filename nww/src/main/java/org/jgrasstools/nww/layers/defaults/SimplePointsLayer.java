@@ -39,12 +39,15 @@ public class SimplePointsLayer extends MarkerLayer {
 
     private BasicMarkerAttributes basicMarkerAttributes;
 
-    private Material mFillMaterial = Material.RED;
+    private Material mFillMaterial = Material.BLACK;
     private double mFillOpacity = 1d;
     private double mMarkerSize = 5d;
     private String mShapeType = BasicMarkerShape.SPHERE;
 
-    public SimplePointsLayer() {
+    private String title;
+
+    public SimplePointsLayer(String title) {
+        this.title = title;
         basicMarkerAttributes = new BasicMarkerAttributes(mFillMaterial, mShapeType, mFillOpacity);
         basicMarkerAttributes.setMarkerPixels(mMarkerSize);
         basicMarkerAttributes.setMinMarkerSize(0.1);
@@ -81,14 +84,17 @@ public class SimplePointsLayer extends MarkerLayer {
     }
 
     public void addNewPoint(double lat, double lon, String info) {
-        BasicMarkerWithInfo marker =
-            new BasicMarkerWithInfo(Position.fromDegrees(lat, lon, 0), basicMarkerAttributes, info);
+        BasicMarkerWithInfo marker = new BasicMarkerWithInfo(Position.fromDegrees(lat, lon, 0), basicMarkerAttributes,
+                info);
         addMarker(marker);
     }
 
     @Override
     public String toString() {
-        return "GPS Points";
+        if (title != null) {
+            return title;
+        }
+        return "Simple Points";
     }
 
 }
