@@ -54,8 +54,9 @@ public class LiblasReader extends ALasReader {
             try {
                 this.crs = CrsUtilities.readProjectionFile(lasFile.getAbsolutePath(), "las");
             } catch (Exception e) {
-                // ignore
-                this.crs = CrsUtilities.readProjectionFile(lasFile.getAbsolutePath(), "laz");
+            	try {
+            		this.crs = CrsUtilities.readProjectionFile(lasFile.getAbsolutePath(), "laz");
+            	} catch (Exception e1) {} // ignore crs errors
             }
         }
         WRAPPER = LiblasWrapper.getWrapper();
