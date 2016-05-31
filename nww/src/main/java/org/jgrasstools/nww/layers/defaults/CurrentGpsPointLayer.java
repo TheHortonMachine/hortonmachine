@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.nww.layers.defaults;
 
+import java.awt.Color;
 import java.util.ArrayList;
 
 import org.jgrasstools.nww.layers.MarkerLayer;
@@ -37,17 +38,32 @@ public class CurrentGpsPointLayer extends MarkerLayer {
 
     private BasicMarkerAttributes basicMarkerAttributes;
     private BasicMarker gpsMarker;
+    private String title;
 
-    public CurrentGpsPointLayer() {
+    public CurrentGpsPointLayer(String title, Color color, String shape, Double _fillOpacity, Double _markerSize) {
+        this.title = title;
         Material fillMaterial = Material.BLUE;
+        if (color != null) {
+            fillMaterial = new Material(color);
+        }
+        String shapeType = BasicMarkerShape.SPHERE;
+        if (shape != null) {
+            shapeType = shape;
+        }
         double fillOpacity = 1d;
+        if (_fillOpacity != null) {
+            fillOpacity = _fillOpacity;
+        }
         double markerSize = 10d;
-        basicMarkerAttributes = new BasicMarkerAttributes(fillMaterial, BasicMarkerShape.SPHERE, fillOpacity);
+        if (_markerSize != null) {
+            markerSize = _markerSize;
+        }
+        basicMarkerAttributes = new BasicMarkerAttributes(fillMaterial, shapeType, fillOpacity);
         basicMarkerAttributes.setMarkerPixels(markerSize);
         basicMarkerAttributes.setMinMarkerSize(0.1);
 
         setOverrideMarkerElevation(true);
-        setElevation(0);
+        setElevation(1);
 
         setMarkers(new ArrayList<Marker>());
     }
@@ -63,7 +79,10 @@ public class CurrentGpsPointLayer extends MarkerLayer {
 
     @Override
     public String toString() {
-        return "GPS Position";
+        if (title != null) {
+            return title;
+        }
+        return "Current GPS Position";
     }
 
 }

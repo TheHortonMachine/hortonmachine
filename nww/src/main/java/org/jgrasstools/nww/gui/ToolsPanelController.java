@@ -17,10 +17,7 @@
  */
 package org.jgrasstools.nww.gui;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.List;
@@ -40,6 +37,7 @@ import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.nww.gui.listeners.GenericSelectListener;
+import org.jgrasstools.nww.layers.defaults.CurrentGpsPointLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionLinesLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPointsLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPolygonLayer;
@@ -47,6 +45,7 @@ import org.jgrasstools.nww.layers.defaults.ImageMosaicNwwLayer;
 import org.jgrasstools.nww.layers.defaults.MBTilesNwwLayer;
 import org.jgrasstools.nww.layers.defaults.MapsforgeNwwLayer;
 import org.jgrasstools.nww.layers.defaults.RL2NwwLayer;
+import org.jgrasstools.nww.layers.defaults.SimplePointsLayer;
 import org.jgrasstools.nww.utils.CursorUtils;
 import org.jgrasstools.nww.utils.EGlobeModes;
 import org.jgrasstools.nww.utils.NwwUtilities;
@@ -54,17 +53,8 @@ import org.jgrasstools.nww.utils.selection.ObjectsOnScreenByBoxSelector;
 import org.jgrasstools.nww.utils.selection.SectorByBoxSelector;
 import org.opengis.feature.type.GeometryDescriptor;
 
-import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.geom.Frustum;
-import gov.nasa.worldwind.geom.Frustum.Corners;
-import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.geom.Vec4;
-import gov.nasa.worldwind.view.orbit.OrbitView;
-import gov.nasa.worldwindx.examples.util.SectorSelector;
 
 /**
  * The tools panel.
@@ -84,6 +74,53 @@ public class ToolsPanelController extends ToolsPanelView {
             sb.append(",*.").append(ext);
         }
         final String desc = sb.substring(1);
+
+        _loadGpsButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            FileFilter fileFilter = new FileFilter() {
+
+                @Override
+                public String getDescription() {
+                    return "*.shp";
+                }
+
+                @Override
+                public boolean accept(File f) {
+                    if (f.isDirectory()) {
+                        return true;
+                    }
+                    String name = f.getName();
+                    if (name.endsWith("shp")) {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+            fileChooser.setFileFilter(fileFilter);
+            fileChooser.setCurrentDirectory(GuiUtilities.getLastFile());
+            int result = fileChooser.showOpenDialog((Component) wwjPanel);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                GuiUtilities.setLastPath(selectedFile.getAbsolutePath());
+
+                CurrentGpsPointLayer currentGpsPointLayer = new CurrentGpsPointLayer(null, null, null, null, null);
+                SimplePointsLayer simplePointsLayer = new SimplePointsLayer("GPS Points");
+                simplePointsLayer.setMaxMarkers(10);
+
+                wwjPanel.getWwd().getModel().getLayers().add(currentGpsPointLayer);
+                layerEventsListener.onLayerAdded(currentGpsPointLayer);
+                wwjPanel.getWwd().getModel().getLayers().add(simplePointsLayer);
+                layerEventsListener.onLayerAdded(simplePointsLayer);
+
+                try {
+                    new org.jgrasstools.nww.utils.FakeGps(selectedFile, wwjPanel, currentGpsPointLayer,
+                            simplePointsLayer);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
 
         _loadFileButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
@@ -159,7 +196,7 @@ public class ToolsPanelController extends ToolsPanelView {
         });
 
         _infoButton.addActionListener(e -> {
-            //            _selectByBoxButton.setSelected(false);
+            // _selectByBoxButton.setSelected(false);
 
             if (_infoButton.isSelected()) {
                 genericSelectListener = new GenericSelectListener(wwjPanel);
@@ -185,7 +222,7 @@ public class ToolsPanelController extends ToolsPanelView {
             }
         });
         _selectByBoxButton.addActionListener(e -> {
-            //            _infoButton.setSelected(false);
+            // _infoButton.setSelected(false);
 
             if (_selectByBoxButton.isSelected()) {
                 byBoxSelector.enable();
@@ -200,25 +237,13 @@ public class ToolsPanelController extends ToolsPanelView {
 
             @Override
             public void onSelectionFinished(Sector selectedSector) {
-                System.out.println(selectedSector);
-
-                double sectorWidth = selectedSector.getDeltaLonDegrees();
-
-                LatLon centroid = selectedSector.getCentroid();
-                WorldWindow wwd = wwjPanel.getWwd();
-                View view = wwd.getView();
-                //                ((OrbitView) view).getOrbitViewLimits().setCenterLocationLimits(selectedSector);
-                //                view.getOrbitViewLimits().setZoomLimits(0, 20e6);
-
-                double altitude = view.getCurrentEyePosition().getAltitude();
-                double newaltitude = altitude / 6;
-                wwjPanel.goTo(centroid.longitude.degrees, centroid.latitude.degrees, newaltitude, false);
+                wwjPanel.zoomTo(selectedSector, false);
                 zoomBoxSelector.disable();
                 zoomBoxSelector.enable();
             }
         });
         _zoomByBoxButton.addActionListener(e -> {
-            //            _infoButton.setSelected(false);
+            // _infoButton.setSelected(false);
 
             if (_zoomByBoxButton.isSelected()) {
                 zoomBoxSelector.enable();
@@ -262,8 +287,8 @@ public class ToolsPanelController extends ToolsPanelView {
                 SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(selectedFile.getAbsolutePath());
                 GeometryDescriptor geometryDescriptor = readFC.getSchema().getGeometryDescriptor();
                 if (GeometryUtilities.isPolygon(geometryDescriptor)) {
-                    FeatureCollectionPolygonLayer featureCollectionPolygonLayer =
-                        new FeatureCollectionPolygonLayer(name, readFC);
+                    FeatureCollectionPolygonLayer featureCollectionPolygonLayer = new FeatureCollectionPolygonLayer(
+                            name, readFC);
 
                     featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                     featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
@@ -274,15 +299,15 @@ public class ToolsPanelController extends ToolsPanelView {
                     wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPolygonLayer);
                     layerEventsListener.onLayerAdded(featureCollectionPolygonLayer);
                 } else if (GeometryUtilities.isLine(geometryDescriptor)) {
-                    FeatureCollectionLinesLayer featureCollectionLinesLayer =
-                        new FeatureCollectionLinesLayer(name, readFC);
+                    FeatureCollectionLinesLayer featureCollectionLinesLayer = new FeatureCollectionLinesLayer(name,
+                            readFC);
                     featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                     featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
                     wwjPanel.getWwd().getModel().getLayers().add(featureCollectionLinesLayer);
                     layerEventsListener.onLayerAdded(featureCollectionLinesLayer);
                 } else if (GeometryUtilities.isPoint(geometryDescriptor)) {
-                    FeatureCollectionPointsLayer featureCollectionPointsLayer =
-                        new FeatureCollectionPointsLayer(name, readFC);
+                    FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name,
+                            readFC);
                     wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPointsLayer);
                     layerEventsListener.onLayerAdded(featureCollectionPointsLayer);
 

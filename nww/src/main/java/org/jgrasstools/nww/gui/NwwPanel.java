@@ -26,8 +26,12 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.nww.layers.OSMMapnikLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 import gov.nasa.worldwind.Model;
 import gov.nasa.worldwind.View;
@@ -35,7 +39,9 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
+import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Earth;
 import gov.nasa.worldwind.globes.EarthFlat;
 import gov.nasa.worldwind.globes.GeographicProjection;
@@ -61,10 +67,10 @@ public class NwwPanel extends JPanel {
     public NwwPanel() {
         super(new BorderLayout());
 
-        //            Configuration.setValue(AVKey.INITIAL_LATITUDE, gpsLogShps[0].y);
-        //            Configuration.setValue(AVKey.INITIAL_LONGITUDE, gpsLogShps[0].x);
-        //            Configuration.setValue(AVKey.INITIAL_ALTITUDE, 1000);
-        //            Configuration.setValue(AVKey.INITIAL_PITCH, 45);
+        // Configuration.setValue(AVKey.INITIAL_LATITUDE, gpsLogShps[0].y);
+        // Configuration.setValue(AVKey.INITIAL_LONGITUDE, gpsLogShps[0].x);
+        // Configuration.setValue(AVKey.INITIAL_ALTITUDE, 1000);
+        // Configuration.setValue(AVKey.INITIAL_PITCH, 45);
 
         wwd = new WorldWindowGLCanvas();
         ((Component) wwd).setPreferredSize(new Dimension(500, 500));
@@ -84,7 +90,8 @@ public class NwwPanel extends JPanel {
         }
         layers.clear();
 
-        // Create and install the view controls layer and register a controller for it with the
+        // Create and install the view controls layer and register a controller
+        // for it with the
         // World Window.
         ViewControlsLayer viewControlsLayer = new ViewControlsLayer();
         layers.add(viewControlsLayer);
@@ -103,10 +110,14 @@ public class NwwPanel extends JPanel {
     /**
      * Move to a given location.
      * 
-     * @param lon the longitude.
-     * @param lat the latitude.
-     * @param elev the eye elevation.
-     * @param animate if <code>true</code>, it animates to the position.
+     * @param lon
+     *            the longitude.
+     * @param lat
+     *            the latitude.
+     * @param elev
+     *            the eye elevation.
+     * @param animate
+     *            if <code>true</code>, it animates to the position.
      */
     public void goTo(double lon, double lat, Double elev, boolean animate) {
         Position eyePosition;
@@ -129,7 +140,8 @@ public class NwwPanel extends JPanel {
     /**
      * Set the globe as flat.
      * 
-     * @param doMercator if <code>true</code>, mercator is used as opposed to lat/long.
+     * @param doMercator
+     *            if <code>true</code>, mercator is used as opposed to lat/long.
      */
     public void setFlatGlobe(boolean doMercator) {
         EarthFlat globe = new EarthFlat();
@@ -156,8 +168,67 @@ public class NwwPanel extends JPanel {
         wwd.redraw();
     }
 
+    public ReferencedEnvelope getViewportBounds() {
+        View view = wwd.getView();
+        Position posUL = view.computePositionFromScreenPoint(0, 0);
+        Position posLR = view.computePositionFromScreenPoint(getWidth(), getHeight());
+
+        if (posLR != null && posUL != null) {
+            double west = posUL.longitude.degrees;
+            double north = posUL.latitude.degrees;
+            double east = posLR.longitude.degrees;
+            double south = posLR.latitude.degrees;
+
+            ReferencedEnvelope env = new ReferencedEnvelope(west, east, south, north, DefaultGeographicCRS.WGS84);
+            return env;
+        } else {
+            return null;// new ReferencedEnvelope(-180, 180, -90, 90,
+                        // DefaultGeographicCRS.WGS84);
+        }
+    }
+
+    public void zoomTo(Sector sector, boolean animate) {
+        if (sector != null) {
+            double sectorWidth = sector.getDeltaLonDegrees();
+            LatLon centroid = sector.getCentroid();
+
+            zoomTo(sectorWidth, centroid, animate);
+        }
+    }
+
+    public void zoomTo(ReferencedEnvelope env, boolean animate) {
+        double sectorWidth = env.getWidth();
+        Coordinate centre = env.centre();
+        LatLon centroid = NwwUtilities.toLatLon(centre.y, centre.x);
+
+        zoomTo(sectorWidth, centroid, animate);
+    }
+
+    private void zoomTo(double width, LatLon centroid, boolean animate) {
+        View view = getWwd().getView();
+        double altitude = view.getCurrentEyePosition().getAltitude();
+        ReferencedEnvelope viewportBounds = getViewportBounds();
+        double newAltitude;
+        if (viewportBounds != null) {
+            double viewWidth = viewportBounds.getWidth();
+            newAltitude = width * altitude / viewWidth;
+        } else {
+            newAltitude = altitude / 3;
+        }
+        goTo(centroid.longitude.degrees, centroid.latitude.degrees, newAltitude, animate);
+    }
+
     public WorldWindow getWwd() {
         return wwd;
+    }
+
+    public void addLayer(Layer layer) {
+        getWwd().getModel().getLayers().add(layer);
+    }
+
+    public void removeLayer(Layer layer) {
+        LayerList layers = getWwd().getModel().getLayers();
+        layers.remove(layer);
     }
 
 }

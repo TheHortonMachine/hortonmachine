@@ -56,5 +56,11 @@
 			<artifactId>mapsforge-map-reader</artifactId>
 			<version>${mapsforge.version}</version>
 		</dependency>
+		<dependency>
+		    <groupId>gov.nasa</groupId>
+		    <artifactId>worldwind</artifactId>
+		    <version>2.0.X</version>
+		</dependency>
 	</dependencies>
+	
 </project>
