@@ -19,6 +19,7 @@ package org.jgrasstools.gears.utils;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -35,6 +36,7 @@ import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.styling.UserLayer;
+import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.filter.FilterFactory;
 
 /**
@@ -44,6 +46,7 @@ import org.opengis.filter.FilterFactory;
  * @since 0.7.0
  */
 public class SldUtilities {
+
     /**
      * The default {@link StyleFactory} to use.
      */
@@ -71,10 +74,27 @@ public class SldUtilities {
      * @return the {@link Style} object.
      * @throws IOException
      */
-    public static Style getStyleFromFile( File file ) throws IOException {
-        SLDParser stylereader = new SLDParser(sf, file);
-        StyledLayerDescriptor sld = stylereader.parseSLD();
-        Style style = getDefaultStyle(sld);
+    public static Style getStyleFromFile(File file) {
+        Style style = null;
+        try {
+            String name = file.getName();
+            if (!name.endsWith("sld")) {
+                String nameWithoutExtention = FileUtilities.getNameWithoutExtention(file);
+                File sldFile = new File(file.getParentFile(), nameWithoutExtention + ".sld");
+                if (sldFile.exists()) {
+                    file = sldFile;
+                } else {
+                    // no style file here
+                    return null;
+                }
+            }
+
+            SLDParser stylereader = new SLDParser(sf, file);
+            StyledLayerDescriptor sld = stylereader.parseSLD();
+            style = getDefaultStyle(sld);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return style;
     }
 
@@ -85,10 +105,10 @@ public class SldUtilities {
      * @return the style string.
      * @throws Exception
      */
-    public static String styleToString( Style style ) throws Exception {
+    public static String styleToString(Style style) throws Exception {
         StyledLayerDescriptor sld = sf.createStyledLayerDescriptor();
         UserLayer layer = sf.createUserLayer();
-        layer.setLayerFeatureConstraints(new FeatureTypeConstraint[]{null});
+        layer.setLayerFeatureConstraints(new FeatureTypeConstraint[] { null });
         sld.addStyledLayer(layer);
         layer.addUserStyle(style);
 
@@ -98,9 +118,9 @@ public class SldUtilities {
         return xml;
     }
 
-    public static Style getDefaultStyle( StyledLayerDescriptor sld ) {
+    public static Style getDefaultStyle(StyledLayerDescriptor sld) {
         Style[] styles = SLD.styles(sld);
-        for( int i = 0; i < styles.length; i++ ) {
+        for (int i = 0; i < styles.length; i++) {
             Style style = styles[i];
             List<FeatureTypeStyle> ftStyles = style.featureTypeStyles();
             genericizeftStyles(ftStyles);
@@ -118,8 +138,8 @@ public class SldUtilities {
      *
      * @param ftStyles
      */
-    private static void genericizeftStyles( List<FeatureTypeStyle> ftStyles ) {
-        for( FeatureTypeStyle featureTypeStyle : ftStyles ) {
+    private static void genericizeftStyles(List<FeatureTypeStyle> ftStyles) {
+        for (FeatureTypeStyle featureTypeStyle : ftStyles) {
             featureTypeStyle.featureTypeNames().clear();
             featureTypeStyle.featureTypeNames().add(new NameImpl(GENERIC_FEATURE_TYPENAME));
         }
@@ -131,7 +151,7 @@ public class SldUtilities {
      * @param color the color.
      * @return the color without alpha.
      */
-    public static Color colorWithoutAlpha( Color color ) {
+    public static Color colorWithoutAlpha(Color color) {
         return new Color(color.getRed(), color.getGreen(), color.getBlue());
     }
 
@@ -142,7 +162,7 @@ public class SldUtilities {
      * @param alpha an alpha value between 0 and 255.
      * @return the color with alpha.
      */
-    public static Color colorWithAlpha( Color color, int alpha ) {
+    public static Color colorWithAlpha(Color color, int alpha) {
         return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
     }
 }

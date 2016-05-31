@@ -34,9 +34,11 @@ import org.jgrasstools.gears.spatialite.RasterCoverage;
 import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.nww.gui.listeners.GenericSelectListener;
+import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.CurrentGpsPointLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionLinesLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPointsLayer;
@@ -115,7 +117,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 try {
                     new org.jgrasstools.nww.utils.FakeGps(selectedFile, wwjPanel, currentGpsPointLayer,
-                            simplePointsLayer);
+                        simplePointsLayer);
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -277,37 +279,42 @@ public class ToolsPanelController extends ToolsPanelView {
                     // ignore and handle as shapefile
                 }
 
-                // has style?
-                File styleFile = new File(parentFolderName + File.separator + fileName + ".sld");
-                Style style = null;
-                if (styleFile.exists()) {
-                    style = SldUtilities.getStyleFromFile(styleFile);
-                }
-
                 SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(selectedFile.getAbsolutePath());
+
                 GeometryDescriptor geometryDescriptor = readFC.getSchema().getGeometryDescriptor();
                 if (GeometryUtilities.isPolygon(geometryDescriptor)) {
-                    FeatureCollectionPolygonLayer featureCollectionPolygonLayer = new FeatureCollectionPolygonLayer(
-                            name, readFC);
+                    FeatureCollectionPolygonLayer featureCollectionPolygonLayer =
+                        new FeatureCollectionPolygonLayer(name, readFC);
 
                     featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                     featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
+                    SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.POLYGON);
                     if (style != null) {
-                        // TODO
+                        featureCollectionPolygonLayer.setStyle(style);
                     }
 
                     wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPolygonLayer);
                     layerEventsListener.onLayerAdded(featureCollectionPolygonLayer);
                 } else if (GeometryUtilities.isLine(geometryDescriptor)) {
-                    FeatureCollectionLinesLayer featureCollectionLinesLayer = new FeatureCollectionLinesLayer(name,
-                            readFC);
+                    FeatureCollectionLinesLayer featureCollectionLinesLayer =
+                        new FeatureCollectionLinesLayer(name, readFC);
                     featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                     featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
+                    SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.LINE);
+                    if (style != null) {
+                        featureCollectionLinesLayer.setStyle(style);
+                    }
+
                     wwjPanel.getWwd().getModel().getLayers().add(featureCollectionLinesLayer);
                     layerEventsListener.onLayerAdded(featureCollectionLinesLayer);
                 } else if (GeometryUtilities.isPoint(geometryDescriptor)) {
-                    FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name,
-                            readFC);
+                    FeatureCollectionPointsLayer featureCollectionPointsLayer =
+                        new FeatureCollectionPointsLayer(name, readFC);
+                    SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.POINT);
+                    if (style != null) {
+                        featureCollectionPointsLayer.setStyle(style);
+                    }
+
                     wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPointsLayer);
                     layerEventsListener.onLayerAdded(featureCollectionPointsLayer);
 
