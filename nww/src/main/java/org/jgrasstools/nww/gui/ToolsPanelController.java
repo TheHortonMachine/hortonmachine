@@ -31,9 +31,11 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.styling.Style;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
 import org.jgrasstools.gears.spatialite.RasterCoverage;
 import org.jgrasstools.gears.spatialite.SpatialiteDb;
+import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities;
@@ -250,6 +252,13 @@ public class ToolsPanelController extends ToolsPanelView {
                     // ignore and handle as shapefile
                 }
 
+                // has style?
+                File styleFile = new File(parentFolderName + File.separator + fileName + ".sld");
+                Style style = null;
+                if (styleFile.exists()) {
+                    style = SldUtilities.getStyleFromFile(styleFile);
+                }
+
                 SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(selectedFile.getAbsolutePath());
                 GeometryDescriptor geometryDescriptor = readFC.getSchema().getGeometryDescriptor();
                 if (GeometryUtilities.isPolygon(geometryDescriptor)) {
@@ -258,6 +267,9 @@ public class ToolsPanelController extends ToolsPanelView {
 
                     featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                     featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
+                    if (style != null) {
+                        // TODO
+                    }
 
                     wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPolygonLayer);
                     layerEventsListener.onLayerAdded(featureCollectionPolygonLayer);
