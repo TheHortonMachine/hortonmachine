@@ -10,6 +10,7 @@ import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -31,6 +32,7 @@ public class ToolsPanelView extends JPanel
    JButton _loadGpsButton = new JButton();
    JLabel _openCacheLabel = new JLabel();
    JButton _openCacheButton = new JButton();
+   JCheckBox _whiteBackgroundCheckbox = new JCheckBox();
 
    /**
     * Default constructor
@@ -124,7 +126,7 @@ public class ToolsPanelView extends JPanel
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Tools",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -137,7 +139,7 @@ public class ToolsPanelView extends JPanel
       _loadFileButton.setText("...");
       jpanel1.add(_loadFileButton,cc.xy(17,2));
 
-      jpanel1.add(createPanel1(),cc.xywh(2,7,16,1));
+      jpanel1.add(createPanel1(),cc.xywh(2,8,16,1));
       _globeModeLabel.setName("globeModeLabel");
       _globeModeLabel.setText("Globe Mode");
       jpanel1.add(_globeModeLabel,cc.xywh(2,4,13,1));
@@ -147,23 +149,28 @@ public class ToolsPanelView extends JPanel
 
       _loadGpsLabel.setName("loadGpsLabel");
       _loadGpsLabel.setText("Load shapefile to fly");
-      jpanel1.add(_loadGpsLabel,cc.xywh(2,9,13,1));
+      jpanel1.add(_loadGpsLabel,cc.xywh(2,10,13,1));
 
       _loadGpsButton.setActionCommand("...");
       _loadGpsButton.setName("loadGpsButton");
       _loadGpsButton.setText("...");
-      jpanel1.add(_loadGpsButton,cc.xy(17,9));
+      jpanel1.add(_loadGpsButton,cc.xy(17,10));
 
       _openCacheLabel.setName("openCacheLabel");
       _openCacheLabel.setText("Open Cache Manager");
-      jpanel1.add(_openCacheLabel,cc.xywh(2,11,13,1));
+      jpanel1.add(_openCacheLabel,cc.xywh(2,12,13,1));
 
       _openCacheButton.setActionCommand("...");
       _openCacheButton.setName("openCacheButton");
       _openCacheButton.setText("...");
-      jpanel1.add(_openCacheButton,cc.xy(17,11));
+      jpanel1.add(_openCacheButton,cc.xy(17,12));
 
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12 });
+      _whiteBackgroundCheckbox.setActionCommand("White Background");
+      _whiteBackgroundCheckbox.setName("whiteBackgroundCheckbox");
+      _whiteBackgroundCheckbox.setText("White Background");
+      jpanel1.add(_whiteBackgroundCheckbox,cc.xywh(2,6,15,1));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13 });
       return jpanel1;
    }
 
