@@ -17,7 +17,9 @@
  */
 package org.jgrasstools.gui.utils;
 
+import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -34,6 +36,20 @@ public class GuiUtilities {
 
     public static final String LAST_PATH = "KEY_LAST_PATH";
 
+    /**
+     * Set the location of a component to center it on the screen.
+     * 
+     * @param component the component to center.
+     */
+    public static void centerOnScreen( Component component ) {
+        Dimension prefSize = component.getPreferredSize();
+        Dimension parentSize;
+        java.awt.Point parentLocation = new java.awt.Point(0, 0);
+        parentSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = parentLocation.x + (parentSize.width - prefSize.width) / 2;
+        int y = parentLocation.y + (parentSize.height - prefSize.height) / 2;
+        component.setLocation(x, y);
+    }
 
     /**
      * Handle the last set path preference.

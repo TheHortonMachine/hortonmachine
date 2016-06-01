@@ -51,6 +51,7 @@ import org.jgrasstools.nww.layers.defaults.SimplePointsLayer;
 import org.jgrasstools.nww.utils.CursorUtils;
 import org.jgrasstools.nww.utils.EGlobeModes;
 import org.jgrasstools.nww.utils.NwwUtilities;
+import org.jgrasstools.nww.utils.cache.CacheUtils;
 import org.jgrasstools.nww.utils.selection.ObjectsOnScreenByBoxSelector;
 import org.jgrasstools.nww.utils.selection.SectorByBoxSelector;
 import org.opengis.feature.type.GeometryDescriptor;
@@ -254,6 +255,10 @@ public class ToolsPanelController extends ToolsPanelView {
                 zoomBoxSelector.disable();
                 CursorUtils.makeDefault(wwjPanel.getWwd());
             }
+        });
+        
+        _openCacheButton.addActionListener(e->{
+            CacheUtils.openCacheManager();
         });
 
     }

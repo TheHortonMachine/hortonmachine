@@ -39,6 +39,7 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
+import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
@@ -72,7 +73,7 @@ public class NwwPanel extends JPanel {
         // Configuration.setValue(AVKey.INITIAL_ALTITUDE, 1000);
         // Configuration.setValue(AVKey.INITIAL_PITCH, 45);
 
-        wwd = new WorldWindowGLCanvas();
+        wwd = new WorldWindowGLJPanel();
         ((Component) wwd).setPreferredSize(new Dimension(500, 500));
 
         Model model = (Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME);
