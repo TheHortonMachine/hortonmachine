@@ -6,8 +6,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import com.vividsolutions.jts.geom.Envelope;
-
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -30,6 +28,8 @@ import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.vividsolutions.jts.geom.Envelope;
+
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.SelectEvent;
@@ -41,9 +41,10 @@ import gov.nasa.worldwindx.examples.util.ToolTipController;
 
 public class NwwUtilities {
 
-    public static final String[] SUPPORTED_EXTENSIONS = { "shp", "mbtiles", "map", "rl2" };
+    public static final String[] SUPPORTED_EXTENSIONS = { "shp", "mbtiles", "map", "rl2", "sqlite" };
 
-    private static final CoordinateReferenceSystem GPS_CRS = DefaultGeographicCRS.WGS84;
+    public static final CoordinateReferenceSystem GPS_CRS = DefaultGeographicCRS.WGS84;
+    public static final int GPS_CRS_SRID = 4326;
 
     public static double DEFAULT_ELEV = 10000.0;
 

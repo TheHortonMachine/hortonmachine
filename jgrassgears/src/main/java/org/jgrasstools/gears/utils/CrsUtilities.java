@@ -23,7 +23,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -39,6 +41,9 @@ import com.vividsolutions.jts.geom.Geometry;
  * @since 0.7.0
  */
 public class CrsUtilities {
+
+    public static ReferencedEnvelope WORLD = new ReferencedEnvelope(-180, 180, -90, 90, DefaultGeographicCRS.WGS84);
+    
     /**
      * Fill the prj file with the actual map projection.
      *
@@ -49,7 +54,8 @@ public class CrsUtilities {
      * @throws IOException
      */
     @SuppressWarnings("nls")
-    public static void writeProjectionFile(String filePath, String extention, CoordinateReferenceSystem crs) throws IOException {
+    public static void writeProjectionFile( String filePath, String extention, CoordinateReferenceSystem crs )
+            throws IOException {
         /*
          * fill a prj file
          */
@@ -82,7 +88,7 @@ public class CrsUtilities {
      * @throws Exception
      */
     @SuppressWarnings("nls")
-    public static CoordinateReferenceSystem readProjectionFile(String filePath, String extension) throws Exception {
+    public static CoordinateReferenceSystem readProjectionFile( String filePath, String extension ) throws Exception {
         CoordinateReferenceSystem crs = null;
         String prjPath = null;
         String filePathLower = filePath.trim().toLowerCase();
@@ -116,11 +122,11 @@ public class CrsUtilities {
      *
      * @throws Exception
      */
-    public static void reproject(CoordinateReferenceSystem from, CoordinateReferenceSystem to, Object[] geometries)
+    public static void reproject( CoordinateReferenceSystem from, CoordinateReferenceSystem to, Object[] geometries )
             throws Exception {
         MathTransform mathTransform = CRS.findMathTransform(from, to);
 
-        for (int i = 0; i < geometries.length; i++) {
+        for( int i = 0; i < geometries.length; i++ ) {
             geometries[i] = JTS.transform((Geometry) geometries[i], mathTransform);
         }
     }
@@ -134,11 +140,11 @@ public class CrsUtilities {
      *
      * @throws Exception
      */
-    public static void reproject(CoordinateReferenceSystem from, CoordinateReferenceSystem to, Coordinate[] coordinates)
+    public static void reproject( CoordinateReferenceSystem from, CoordinateReferenceSystem to, Coordinate[] coordinates )
             throws Exception {
         MathTransform mathTransform = CRS.findMathTransform(from, to);
 
-        for (int i = 0; i < coordinates.length; i++) {
+        for( int i = 0; i < coordinates.length; i++ ) {
             coordinates[i] = JTS.transform(coordinates[i], coordinates[i], mathTransform);
         }
     }
@@ -152,7 +158,7 @@ public class CrsUtilities {
      *
      * @throws Exception
      */
-    public static String getCodeFromCrs(CoordinateReferenceSystem crs) throws Exception {
+    public static String getCodeFromCrs( CoordinateReferenceSystem crs ) throws Exception {
         String code = null;
         try {
             Integer epsg = CRS.lookupEpsgCode(crs, true);
@@ -162,6 +168,24 @@ public class CrsUtilities {
             code = CRS.lookupIdentifier(crs, true);
         }
         return code;
+    }
+
+    /**
+     * Get the {@link CoordinateReferenceSystem} from a epsg srid number. 
+     * 
+     * @param srid the srid number.
+     * @return the crs or null.
+     */
+    public static CoordinateReferenceSystem getCrsFromSrid( int srid ) {
+        if (srid == 4326) {
+            return DefaultGeographicCRS.WGS84;
+        }
+        try {
+            return CRS.decode("EPSG:" + srid);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

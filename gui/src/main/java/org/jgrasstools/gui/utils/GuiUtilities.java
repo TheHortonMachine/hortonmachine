@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gui.utils;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -26,6 +27,9 @@ import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
 import java.util.prefs.Preferences;
+
+import javax.swing.JDialog;
+import javax.swing.JPanel;
 
 /**
  * Utilities class.
@@ -93,6 +97,19 @@ public class GuiUtilities {
             Desktop desktop = Desktop.getDesktop();
             desktop.open(file);
         }
+    }
+
+    public static JDialog openDialogWithPanel( JPanel panel, String title, Dimension dimension ) {
+        JDialog f = new JDialog();
+        f.add(panel, BorderLayout.CENTER);
+        f.setTitle(title);
+        f.pack();
+        if (dimension != null)
+            f.setSize(dimension);
+        f.setLocationRelativeTo(null); // Center on screen
+        f.setVisible(true);
+        f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        return f;
     }
 
 }

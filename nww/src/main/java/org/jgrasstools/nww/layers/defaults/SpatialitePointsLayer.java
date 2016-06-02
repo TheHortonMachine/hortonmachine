@@ -17,15 +17,18 @@
  */
 package org.jgrasstools.nww.layers.defaults;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.jgrasstools.gears.spatialite.QueryResult;
+import org.jgrasstools.gears.spatialite.SpatialiteDb;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.MarkerLayer;
-import org.jgrasstools.nww.shapes.FeaturePoint;
-import org.opengis.feature.simple.SimpleFeature;
+import org.jgrasstools.nww.shapes.InfoPoint;
+import org.jgrasstools.nww.utils.NwwUtilities;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -42,7 +45,7 @@ import gov.nasa.worldwind.render.markers.Marker;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwVectorLayer {
+public class SpatialitePointsLayer extends MarkerLayer implements NwwVectorLayer {
 
     private BasicMarkerAttributes basicMarkerAttributes;
 
@@ -51,13 +54,19 @@ public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwVect
     private double mMarkerSize = 5d;
     private String mShapeType = BasicMarkerShape.SPHERE;
 
-    private String title;
+    private String tableName;
+    private ReferencedEnvelope tableBounds;
 
-    private SimpleFeatureCollection featureCollectionLL;
+    public SpatialitePointsLayer( SpatialiteDb db, String tableName, int featureLimit ) {
+        this.tableName = tableName;
 
-    public FeatureCollectionPointsLayer(String title, SimpleFeatureCollection featureCollectionLL) {
-        this.title = title;
-        this.featureCollectionLL = featureCollectionLL;
+        try {
+            tableBounds = db.getTableBounds(tableName);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            tableBounds = CrsUtilities.WORLD;
+        }
+
         basicMarkerAttributes = new BasicMarkerAttributes(mFillMaterial, mShapeType, mFillOpacity);
         basicMarkerAttributes.setMarkerPixels(mMarkerSize);
         basicMarkerAttributes.setMinMarkerSize(0.1);
@@ -67,33 +76,42 @@ public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwVect
 
         setMarkers(new ArrayList<Marker>());
 
-        SimpleFeatureIterator featureIterator = featureCollectionLL.features();
         try {
-            while (featureIterator.hasNext()) {
-                SimpleFeature pointFeature = featureIterator.next();
-                Geometry geometry = (Geometry) pointFeature.getDefaultGeometry();
+            QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit, NwwUtilities.GPS_CRS_SRID);
+            int count = tableRecords.data.size();
+            List<String> names = tableRecords.names;
+            for( int i = 0; i < count; i++ ) {
+                Object[] objects = tableRecords.data.get(i);
+                StringBuilder sb = new StringBuilder();
+                for( int j = 1; j < objects.length; j++ ) {
+                    String varName = names.get(j);
+                    sb.append(varName).append(": ").append(objects[j]).append("\n");
+
+                }
+                String info = sb.toString();
+                Geometry geometry = (Geometry) objects[0];
                 if (geometry == null) {
                     continue;
                 }
                 int numGeometries = geometry.getNumGeometries();
-                for (int i = 0; i < numGeometries; i++) {
-                    Geometry geometryN = geometry.getGeometryN(i);
+                for( int j = 0; j < numGeometries; j++ ) {
+                    Geometry geometryN = geometry.getGeometryN(j);
                     if (geometryN instanceof Point) {
                         Point point = (Point) geometryN;
-                        FeaturePoint marker = new FeaturePoint(Position.fromDegrees(point.getY(), point.getX(), 0),
+                        InfoPoint marker = new InfoPoint(Position.fromDegrees(point.getY(), point.getX(), 0),
                                 basicMarkerAttributes);
-                        marker.setFeature(pointFeature);
+                        marker.setInfo(info);
                         addMarker(marker);
                     }
                 }
             }
-        } finally {
-            featureIterator.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }
 
-    public void setStyle(SimpleStyle style) {
+    public void setStyle( SimpleStyle style ) {
         if (style != null) {
             mFillMaterial = new Material(style.fillColor);
             mFillOpacity = style.fillOpacity;
@@ -137,13 +155,12 @@ public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwVect
 
     @Override
     public String toString() {
-        return title != null ? title : "Points";
+        return tableName != null ? tableName : "Points";
     }
 
     @Override
     public Coordinate getCenter() {
-        ReferencedEnvelope bounds = featureCollectionLL.getBounds();
-        return bounds.centre();
+        return tableBounds.centre();
     }
 
     @Override

@@ -74,6 +74,7 @@ public class NwwPanel extends JPanel {
         // Configuration.setValue(AVKey.INITIAL_PITCH, 45);
 
         wwd = new WorldWindowGLJPanel();
+        ((WorldWindowGLJPanel) wwd).setOpaque(false);
         ((Component) wwd).setPreferredSize(new Dimension(500, 500));
 
         Model model = (Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME);

@@ -28,11 +28,11 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.styling.Style;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
 import org.jgrasstools.gears.spatialite.RasterCoverage;
 import org.jgrasstools.gears.spatialite.SpatialiteDb;
-import org.jgrasstools.gears.utils.SldUtilities;
+import org.jgrasstools.gears.spatialite.SpatialiteGeometryColumns;
+import org.jgrasstools.gears.spatialite.SpatialiteGeometryType;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -48,6 +48,9 @@ import org.jgrasstools.nww.layers.defaults.MBTilesNwwLayer;
 import org.jgrasstools.nww.layers.defaults.MapsforgeNwwLayer;
 import org.jgrasstools.nww.layers.defaults.RL2NwwLayer;
 import org.jgrasstools.nww.layers.defaults.SimplePointsLayer;
+import org.jgrasstools.nww.layers.defaults.SpatialiteLinesLayer;
+import org.jgrasstools.nww.layers.defaults.SpatialitePointsLayer;
+import org.jgrasstools.nww.layers.defaults.SpatialitePolygonLayer;
 import org.jgrasstools.nww.layers.defaults.WhiteNwwLayer;
 import org.jgrasstools.nww.utils.CursorUtils;
 import org.jgrasstools.nww.utils.EGlobeModes;
@@ -59,6 +62,7 @@ import org.opengis.feature.type.GeometryDescriptor;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.layers.LayerList;
 
 /**
  * The tools panel.
@@ -264,11 +268,12 @@ public class ToolsPanelController extends ToolsPanelView {
         });
 
         _whiteBackgroundCheckbox.addActionListener(e -> {
+            LayerList layers = wwjPanel.getWwd().getModel().getLayers();
             if (_whiteBackgroundCheckbox.isSelected()) {
-                wwjPanel.getWwd().getModel().getLayers().add(whiteLayer);
+                layers.add(0, whiteLayer);
                 layerEventsListener.onLayerAdded(whiteLayer);
             } else {
-                wwjPanel.getWwd().getModel().getLayers().remove(whiteLayer);
+                layers.remove(whiteLayer);
                 layerEventsListener.onLayerRemoved(whiteLayer);
             }
         });
@@ -353,6 +358,30 @@ public class ToolsPanelController extends ToolsPanelView {
 
                     wwjPanel.getWwd().getModel().getLayers().add(rl2Layer);
                     layerEventsListener.onLayerAdded(rl2Layer);
+                }
+            } else if (selectedFile.getName().endsWith(".sqlite")) {
+                SpatialiteDb db = new SpatialiteDb();
+                db.open(selectedFile.getAbsolutePath());
+                List<String> tableMaps = db.getTables(false);
+                for( String tableName : tableMaps ) {
+                    SpatialiteGeometryColumns geometryColumn = db.getGeometryColumnsForTable(tableName);
+                    if (geometryColumn != null) {
+                        SpatialiteGeometryType geomType = SpatialiteGeometryType.forValue(geometryColumn.geometry_type);
+                        if (geomType.isPolygon()) {
+                            SpatialitePolygonLayer layer = new SpatialitePolygonLayer(db, tableName, 10000);
+                            wwjPanel.getWwd().getModel().getLayers().add(layer);
+                            layerEventsListener.onLayerAdded(layer);
+                        } else if (geomType.isLine()) {
+                            SpatialiteLinesLayer layer = new SpatialiteLinesLayer(db, tableName, 10000);
+                            wwjPanel.getWwd().getModel().getLayers().add(layer);
+                            layerEventsListener.onLayerAdded(layer);
+                        } else if (geomType.isPoint()) {
+                            SpatialitePointsLayer layer = new SpatialitePointsLayer(db, tableName, 10000);
+                            wwjPanel.getWwd().getModel().getLayers().add(layer);
+                            layerEventsListener.onLayerAdded(layer);
+                        }
+
+                    }
                 }
             }
         } catch (Exception e1) {

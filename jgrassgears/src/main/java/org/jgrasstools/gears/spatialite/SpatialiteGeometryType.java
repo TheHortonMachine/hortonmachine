@@ -303,6 +303,62 @@ public enum SpatialiteGeometryType {
     }
 
     /**
+     * @return <code>true</code>, if it is of the line type (also multi)
+     */
+    public boolean isLine() {
+        switch( this ) {
+        case LINESTRING_XY:
+        case LINESTRING_XYM:
+        case LINESTRING_XYZ:
+        case LINESTRING_XYZM:
+        case MULTILINESTRING_XY:
+        case MULTILINESTRING_XYM:
+        case MULTILINESTRING_XYZ:
+        case MULTILINESTRING_XYZM:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * @return <code>true</code>, if it is of the polygon type (also multi)
+     */
+    public boolean isPolygon() {
+        switch( this ) {
+        case POLYGON_XY:
+        case POLYGON_XYM:
+        case POLYGON_XYZ:
+        case POLYGON_XYZM:
+        case MULTIPOLYGON_XY:
+        case MULTIPOLYGON_XYM:
+        case MULTIPOLYGON_XYZ:
+        case MULTIPOLYGON_XYZM:
+            return true;
+        default:
+            return false;
+        }
+    }
+    /**
+     * @return <code>true</code>, if it is of the point type (also multi)
+     */
+    public boolean isPoint() {
+        switch( this ) {
+        case POINT_XY:
+        case POINT_XYM:
+        case POINT_XYZ:
+        case POINT_XYZM:
+        case MULTIPOINT_XY:
+        case MULTIPOINT_XYM:
+        case MULTIPOINT_XYZ:
+        case MULTIPOINT_XYZM:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
      * Get the {@link SpatialiteGeometryType} int value from the geometry type name as of spatialite 3.
      * <p/>
      * @param name the geometry type name.
