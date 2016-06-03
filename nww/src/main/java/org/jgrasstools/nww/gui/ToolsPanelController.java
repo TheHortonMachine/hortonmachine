@@ -249,7 +249,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
             @Override
             public void onSelectionFinished(Sector selectedSector) {
-                wwjPanel.zoomTo(selectedSector, false);
+                wwjPanel.goTo(selectedSector, false);
                 zoomBoxSelector.disable();
                 zoomBoxSelector.enable();
             }
