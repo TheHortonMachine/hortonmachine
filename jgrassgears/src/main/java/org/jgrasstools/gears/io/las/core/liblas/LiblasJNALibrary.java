@@ -144,6 +144,7 @@ public interface LiblasJNALibrary extends com.sun.jna.Library {
      * HEADER WRITING
      */
     abstract long LASHeader_Create();
+    abstract long LASHeader_SetReserved( long headerHandle, short reserved );
     abstract void LASHeader_SetSystemId( long headerHandle, String system_identifier );
     abstract void LASHeader_SetSoftwareId( long headerHandle, String generating_software );
     abstract void LASHeader_SetCreationDOY( long headerHandle, short file_creation_day );

@@ -83,6 +83,7 @@ public class LasWriter extends ALasWriter {
     private long offsetToData = 227;
     private int recordLengthPosition;
     private boolean pointFormatHasBeenSet = false;
+    private int gpsTimeType = 0;
 
     /**
      * A las file writer.
@@ -195,13 +196,19 @@ public class LasWriter extends ALasWriter {
         // Number of point records: 20308602
         int hLength = 0;
 
-        // TODO handle global enchoding and proper gps time
-
-        byte[] signature = "LASF".getBytes();
+        byte[] signature = "LASF".getBytes("ISO-8859-1");// ensure a sensible encoding is using
         fos.write(signature);
         hLength = hLength + 4;
-        byte[] reserved = new byte[4];
-        fos.write(reserved);
+        byte[] fileSourceId = new byte[2];
+        fos.write(fileSourceId);
+        short globalEncoding;
+        if (gpsTimeType==1) {
+        	globalEncoding = 1;
+        }
+        else {
+        	globalEncoding = 0;
+        }
+        fos.write(getShort(globalEncoding));
         hLength = hLength + 4;
         byte[] guid1 = new byte[4];
         fos.write(guid1);
@@ -218,7 +225,7 @@ public class LasWriter extends ALasWriter {
         // major
         fos.write(1);
         // minor
-        fos.write(0);
+        fos.write(2);
         hLength = hLength + 2;
 
         byte[] systemIdentifier = new byte[32];
@@ -261,7 +268,7 @@ public class LasWriter extends ALasWriter {
 
         // point data format
         pointFormatPosition = hLength;
-        fos.write(1);
+        fos.write(pointFormat);
         hLength = hLength + 1;
 
         recordLengthPosition = hLength;
@@ -355,27 +362,49 @@ public class LasWriter extends ALasWriter {
         // scan angle rank
         fos.write(1);
         length = length + 1;
+        // user data
         fos.write(0);
         length = length + 1;
+        // point source id
         fos.write(new byte[2]);
         length = length + 2;
 
-        if (record.gpsTime > 0) {
-            fos.write(getDouble(record.gpsTime));
-            length = length + 8;
-            if (!pointFormatHasBeenSet)
-                pointFormat = 1;
+        if (pointFormatHasBeenSet) {
+        	switch (pointFormat) {
+        	case 1:
+        		length = length + writeGpstime(record);
+        		break;
+        	case 2:
+        		length = length + writeRGB(record);
+        		break;
+        	case 3:
+        		length = length + writeGpstime(record);
+        		length = length + writeRGB(record);
+        		break;
+        	}
         }
-        if (pointFormat == 3 || pointFormat == 2) {
-            fos.write(getShort(record.color[0]));
-            fos.write(getShort(record.color[1]));
-            fos.write(getShort(record.color[2]));
-            length = length + 6;
+        else {
+        	if (record.gpsTime!=-1) {
+        		pointFormat = 1;
+        		length = length + writeGpstime(record);
+        	}
         }
 
         recordLength = (short) length;
 
         recordsNum++;
+    }
+    
+    private int writeGpstime(LasRecord record) throws IOException {
+    	fos.write(getDouble(record.gpsTime));
+    	return 8;
+    }
+    
+    private int writeRGB(LasRecord record) throws IOException {
+		fos.write(getShort(record.color[0]));
+		fos.write(getShort(record.color[1]));
+		fos.write(getShort(record.color[2]));
+		return 6;
     }
 
     @Override
@@ -440,5 +469,10 @@ public class LasWriter extends ALasWriter {
     public void setWriteGroundElevation( boolean doWriteGroundElevation ) {
         this.doWriteGroundElevation = doWriteGroundElevation;
     }
+
+	@Override
+	public void setGpsTimeType(int timeType) {
+		gpsTimeType = timeType;
+	}
 
 }

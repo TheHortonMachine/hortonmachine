@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
+import org.geotools.process.gs.GSProcess;
 import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
@@ -68,6 +69,7 @@ public class LiblasWriter extends ALasWriter {
 
     private long fileHandle;
     private boolean pointFormatHasBeenSet = false;
+    private int gpsTimeType = 0;
 
     /**
      * A las file writer.
@@ -190,6 +192,10 @@ public class LiblasWriter extends ALasWriter {
 
         // WRAPPER.LASHeader_SetSystemId(headerHandle, systemIdentifier);
 
+        if (gpsTimeType==1) {
+        	 WRAPPER.LASHeader_SetReserved(headerHandle, (short) 1);
+        }
+
         String jgtVersion = "jgrasstools_" + JGTVersion.CURRENT_VERSION.toString();
         if (jgtVersion.length() > 32) {
             jgtVersion = jgtVersion.substring(0, 31);
@@ -201,6 +207,7 @@ public class LiblasWriter extends ALasWriter {
             }
             jgtVersion = sb.toString();
         }
+
         WRAPPER.LASHeader_SetSoftwareId(headerHandle, jgtVersion);
 
         // fos.write(flightDateJulian);
@@ -275,5 +282,10 @@ public class LiblasWriter extends ALasWriter {
     public void setWriteGroundElevation( boolean doWriteGroundElevation ) {
         this.doWriteGroundElevation = doWriteGroundElevation;
     }
+
+	@Override
+	public void setGpsTimeType(int timeType) {
+		gpsTimeType = timeType;
+	}
 
 }
