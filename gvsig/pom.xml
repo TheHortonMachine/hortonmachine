@@ -1,0 +1,226 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.jgrasstools</groupId>
+		<artifactId>jgrasstools</artifactId>
+		<version>0.8.0-SNAPSHOT</version>
+	</parent>
+
+	<groupId>org.jgrasstools</groupId>
+	<artifactId>jgt-gvsig</artifactId>
+	<version>0.8.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<name>JGrasstools gvSIG Components</name>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.gvsig</groupId>
+				<artifactId>org.gvsig.gdal</artifactId>
+				<version>1.0.22</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.gvsig</groupId>
+				<artifactId>org.gvsig.proj</artifactId>
+				<version>1.0.3</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.gvsig</groupId>
+				<artifactId>org.gvsig.raster</artifactId>
+				<version>2.2.42</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.gvsig</groupId>
+				<artifactId>org.gvsig.desktop</artifactId>
+				<version>2.0.132</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.gvsig</groupId>
+				<artifactId>org.gvsig.raster.cache</artifactId>
+				<version>2.2.8</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.tools.lib</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.tools.swing.impl</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.raster.cache.lib.impl</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.fmap.mapcontext.api</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.fmap.geometry.api</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.fmap.geometry.jts</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.fmap.dal.api</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.metadata.lib.basic.api</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.metadata.lib.basic.impl</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.timesupport.lib.impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.projection.api</artifactId>
+			<version>2.0.21</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.proj.lib.api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.proj.lib.proj4j</artifactId>
+		</dependency>
+
+		<!-- TO BE REMOVED FROM 2.3 VERSION ON (used for Crs reference) -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.gvsig</groupId> -->
+		<!-- <artifactId>org.gvsig.projection.jcrs.lib</artifactId> -->
+		<!-- <version>2.1.46</version> -->
+		<!-- <scope>compile</scope> -->
+		<!-- <exclusions> -->
+		<!-- <exclusion> -->
+		<!-- <groupId>org.geotools</groupId> -->
+		<!-- <artifactId>gt2-main</artifactId> -->
+		<!-- </exclusion> -->
+		<!-- <exclusion> -->
+		<!-- <groupId>org.geotools</groupId> -->
+		<!-- <artifactId>gt2-render</artifactId> -->
+		<!-- </exclusion> -->
+		<!-- <exclusion> -->
+		<!-- <groupId>org.geotools</groupId> -->
+		<!-- <artifactId>gt2-referencing</artifactId> -->
+		<!-- </exclusion> -->
+		<!-- <exclusion> -->
+		<!-- <groupId>org.geotools</groupId> -->
+		<!-- <artifactId>gt2-legacy</artifactId> -->
+		<!-- </exclusion> -->
+		<!-- <exclusion> -->
+		<!-- <groupId>org.geotools</groupId> -->
+		<!-- <artifactId>gt2-coverage</artifactId> -->
+		<!-- </exclusion> -->
+		<!-- </exclusions> -->
+		<!-- </dependency> -->
+
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.raster.lib.api</artifactId>
+			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt2-main</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt2-render</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt2-referencing</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt2-legacy</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt2-coverage</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.raster.lib.impl</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.raster.gdal.io</artifactId>
+			<version>2.2.38</version>
+		</dependency>
+		<dependency>
+			<groupId>org.gdal</groupId>
+			<artifactId>gdal</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.gvsig</groupId>
+			<artifactId>org.gvsig.fmap.dal.file.shp</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>gvsig-public-http-repository</id>
+			<name>gvSIG maven public HTTP repository</name>
+			<url>http://devel.gvsig.org/m2repo/j2se</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>daily</updatePolicy>
+				<checksumPolicy>warn</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>daily</updatePolicy>
+				<checksumPolicy>warn</checksumPolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+</project>
