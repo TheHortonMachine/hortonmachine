@@ -40,6 +40,7 @@ import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.nww.gui.listeners.GenericSelectListener;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.CurrentGpsPointLayer;
+import org.jgrasstools.nww.layers.defaults.FeatureCollectionDynamicLinesLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionLinesLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPointsLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPolygonLayer;
