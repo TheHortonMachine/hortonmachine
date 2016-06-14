@@ -138,8 +138,9 @@ public class NwwPanel extends JPanel {
             if (currentEyePosition != null) {
                 lat = currentEyePosition.latitude.degrees;
                 lon = currentEyePosition.longitude.degrees;
+            } else {
+                return null;
             }
-            return null;
         }
 
         if (elev == null) {
