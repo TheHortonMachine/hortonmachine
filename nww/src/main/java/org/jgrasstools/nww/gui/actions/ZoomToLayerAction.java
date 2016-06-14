@@ -24,6 +24,6 @@ public class ZoomToLayerAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent actionEvent) {
         Coordinate center = layer.getCenter();
-        wwdPanel.goTo(center.x, center.y, null, true);
+        wwdPanel.goTo(center.x, center.y, null, null, true);
     }
 }

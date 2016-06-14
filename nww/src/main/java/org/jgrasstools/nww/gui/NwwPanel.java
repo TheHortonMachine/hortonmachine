@@ -39,6 +39,7 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
+import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
@@ -63,6 +64,8 @@ public class NwwPanel extends JPanel {
 
     private WorldWindow wwd;
     protected StatusBar statusBar;
+
+    private double lastElevation = Double.NaN;
 
     public NwwPanel() {
         super(new BorderLayout());
@@ -116,25 +119,47 @@ public class NwwPanel extends JPanel {
      *            the latitude.
      * @param elev
      *            the eye elevation.
+     * @param azimuth
+     *            if supplied, the map is rotated to follow that angle.
      * @param animate
      *            if <code>true</code>, it animates to the position.
      */
-    public void goTo(double lon, double lat, Double elev, boolean animate) {
+    public synchronized Position goTo(Double lon, Double lat, Double elev, Double azimuth, boolean animate) {
         Position eyePosition;
-        if (elev == null) {
-            eyePosition = NwwUtilities.toPosition(lat, lon);
-        } else {
-            eyePosition = NwwUtilities.toPosition(lat, lon, elev);
+        if (lon == null || lat == null) {
+            Position currentEyePosition = wwd.getView().getCurrentEyePosition();
+            if (currentEyePosition != null) {
+                lat = currentEyePosition.latitude.degrees;
+                lon = currentEyePosition.longitude.degrees;
+            }
+            return null;
         }
-        View view = getWwd().getView();
-        if (animate) {
-            if (elev == null) {
+
+        if (elev == null) {
+            // use the current
+            elev = wwd.getView().getCurrentEyePosition().getAltitude();
+        }
+        if (Double.isNaN(elev)) {
+            if (!Double.isNaN(lastElevation)) {
+                elev = lastElevation;
+            } else {
                 elev = NwwUtilities.DEFAULT_ELEV;
             }
+        }
+        eyePosition = NwwUtilities.toPosition(lat, lon, elev);
+        System.out.println("CURRENT EYE: " + eyePosition);
+        View view = getWwd().getView();
+        if (animate) {
             view.goTo(eyePosition, elev);
         } else {
             view.setEyePosition(eyePosition);
         }
+        if (azimuth != null) {
+            Angle heading = Angle.fromDegrees(azimuth);
+            view.setHeading(heading);
+        }
+        lastElevation = elev;
+        return eyePosition;
     }
 
     /**
@@ -215,7 +240,7 @@ public class NwwPanel extends JPanel {
         } else {
             newAltitude = altitude / 3;
         }
-        goTo(centroid.longitude.degrees, centroid.latitude.degrees, newAltitude, animate);
+        goTo(centroid.longitude.degrees, centroid.latitude.degrees, newAltitude, null, animate);
     }
 
     public WorldWindow getWwd() {
