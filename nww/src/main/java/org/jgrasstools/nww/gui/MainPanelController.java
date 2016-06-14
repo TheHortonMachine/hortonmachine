@@ -10,7 +10,7 @@ public class MainPanelController extends MainPanelView {
 
     public MainPanelController() {
 
-        NwwPanel wwjPanel = new NwwPanel();
+        NwwPanel wwjPanel = new NwwPanel(false);
         LayersPanelController layerManagerPanel = new LayersPanelController(wwjPanel);
         ToolsPanelController toolsPanel = new ToolsPanelController(wwjPanel, layerManagerPanel);
 

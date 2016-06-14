@@ -43,7 +43,7 @@ public class SimpleNwwViewer {
 
         try {
 
-            NwwPanel wwjPanel = new NwwPanel();
+            NwwPanel wwjPanel = new NwwPanel(false);
             LayersPanelController layerPanel = new LayersPanelController(wwjPanel);
             ToolsPanelController toolsPanel = new ToolsPanelController(wwjPanel, layerPanel);
 

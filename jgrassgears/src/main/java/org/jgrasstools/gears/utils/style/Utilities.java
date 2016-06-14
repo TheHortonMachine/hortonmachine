@@ -2,10 +2,7 @@ package org.jgrasstools.gears.utils.style;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -16,11 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import com.sun.prism.Image;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
-
 import org.apache.commons.io.FilenameUtils;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
@@ -29,9 +21,7 @@ import org.geotools.styling.ExternalGraphic;
 import org.geotools.styling.FeatureTypeConstraint;
 import org.geotools.styling.FeatureTypeStyle;
 import org.geotools.styling.Fill;
-import org.geotools.styling.Font;
 import org.geotools.styling.Graphic;
-import org.geotools.styling.LabelPlacement;
 import org.geotools.styling.LineSymbolizer;
 import org.geotools.styling.Mark;
 import org.geotools.styling.PointSymbolizer;
@@ -46,16 +36,12 @@ import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.styling.Symbolizer;
-import org.geotools.styling.TextSymbolizer;
 import org.geotools.styling.UserLayer;
-import org.geotools.styling.visitor.DuplicatingStyleVisitor;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.Function;
 import org.opengis.style.GraphicalSymbol;
-
-import javafx.scene.control.Spinner;
 
 /**
  * Style related utilities.
