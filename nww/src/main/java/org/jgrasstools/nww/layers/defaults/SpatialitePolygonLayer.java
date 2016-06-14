@@ -18,17 +18,18 @@
 package org.jgrasstools.nww.layers.defaults;
 
 import java.awt.Color;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.jgrasstools.gears.spatialite.QueryResult;
+import org.jgrasstools.gears.spatialite.SpatialiteDb;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
-import org.jgrasstools.nww.shapes.FeatureExtrudedPolygon;
-import org.jgrasstools.nww.shapes.FeaturePolygon;
+import org.jgrasstools.nww.shapes.InfoExtrudedPolygon;
+import org.jgrasstools.nww.shapes.InfoPolygon;
 import org.jgrasstools.nww.utils.NwwUtilities;
-import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -45,7 +46,7 @@ import gov.nasa.worldwind.render.Material;
  * 
  * @author Andrea Antonello andrea.antonello@gmail.com
  */
-public class FeatureCollectionPolygonLayer extends RenderableLayer implements NwwVectorLayer {
+public class SpatialitePolygonLayer extends RenderableLayer implements NwwVectorLayer {
 
     private String mHeightFieldName;
     private double mVerticalExageration = 1.0;
@@ -61,20 +62,30 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
     private Material mStrokeMaterial = Material.RED;
     private double mFillOpacity = 0.8;
     private double mStrokeWidth = 2;
-    private SimpleFeatureCollection featureCollectionLL;
 
     private int mElevationMode = WorldWind.CLAMP_TO_GROUND;
-    private String title;
+    private String tableName;
+    private SpatialiteDb db;
+    private ReferencedEnvelope tableBounds;
+    private int featureLimit;
 
-    public FeatureCollectionPolygonLayer(String title, SimpleFeatureCollection featureCollectionLL) {
-        this.title = title;
-        this.featureCollectionLL = featureCollectionLL;
+    public SpatialitePolygonLayer( SpatialiteDb db, String tableName, int featureLimit ) {
+        this.db = db;
+        this.tableName = tableName;
+        this.featureLimit = featureLimit;
+
+        try {
+            tableBounds = db.getTableBounds(tableName);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            tableBounds = CrsUtilities.WORLD;
+        }
 
         setStyle(null);
         loadData();
     }
 
-    public void setStyle(SimpleStyle style) {
+    public void setStyle( SimpleStyle style ) {
         if (style != null) {
             mFillMaterial = new Material(style.fillColor);
             mSideFillMaterial = new Material(NwwUtilities.darkenColor(style.fillColor));
@@ -106,8 +117,8 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
         return simpleStyle;
     }
 
-    public void setExtrusionProperties(Double constantExtrusionHeight, String heightFieldName,
-            Double verticalExageration, boolean withoutExtrusion) {
+    public void setExtrusionProperties( Double constantExtrusionHeight, String heightFieldName, Double verticalExageration,
+            boolean withoutExtrusion ) {
         if (constantExtrusionHeight != null) {
             mHasConstantHeight = true;
             mConstantHeight = constantExtrusionHeight;
@@ -120,7 +131,7 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
         }
     }
 
-    public void setElevationMode(int elevationMode) {
+    public void setElevationMode( int elevationMode ) {
         mElevationMode = elevationMode;
     }
 
@@ -132,33 +143,52 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
     public class WorkerThread extends Thread {
 
         public void run() {
-            SimpleFeatureIterator featureIterator = featureCollectionLL.features();
-            while (featureIterator.hasNext()) {
-                SimpleFeature polygonAreaFeature = featureIterator.next();
-                if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {
-                    addExtrudedPolygon(polygonAreaFeature);
-                } else {
-                    addPolygon(polygonAreaFeature);
+
+            try {
+                QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit,
+                        NwwUtilities.GPS_CRS_SRID);
+                int count = tableRecords.data.size();
+                List<String> names = tableRecords.names;
+                for( int i = 0; i < count; i++ ) {
+                    Object[] objects = tableRecords.data.get(i);
+                    StringBuilder sb = new StringBuilder();
+                    double height = -1;
+                    for( int j = 1; j < objects.length; j++ ) {
+                        String varName = names.get(j);
+                        sb.append(varName).append(": ").append(objects[j]).append("\n");
+
+                        if (mHeightFieldName != null && varName == mHeightFieldName && objects[j] instanceof Number) {
+                            height = ((Number) objects[j]).doubleValue();
+                        }
+                    }
+                    String info = sb.toString();
+                    Geometry geometry = (Geometry) objects[0];
+                    if (geometry == null) {
+                        continue;
+                    }
+                    if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {
+                        addExtrudedPolygon(geometry, info, height);
+                    } else {
+                        addPolygon(geometry, info, height);
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            featureIterator.close();
+
         }
 
-        private void addExtrudedPolygon(SimpleFeature polygonAreaFeature) {
+        private void addExtrudedPolygon( Geometry geometry, String info, double height ) {
             try {
-                Geometry geometry = (Geometry) polygonAreaFeature.getDefaultGeometry();
-                if (geometry == null) {
-                    return;
-                }
                 Coordinate[] coordinates = geometry.getCoordinates();
                 int numVertices = coordinates.length;
                 if (numVertices < 4)
                     return;
 
-                boolean hasZ = !Double.isNaN(geometry.getCoordinate().z);
+                boolean hasZ = false;
 
                 double h = 0.0;
-                switch (mElevationMode) {
+                switch( mElevationMode ) {
                 case WorldWind.RELATIVE_TO_GROUND:
                     hasZ = false;
                 case WorldWind.ABSOLUTE:
@@ -167,7 +197,7 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
                         h = mConstantHeight;
                     }
                     if (mHeightFieldName != null) {
-                        double tmpH = ((Number) polygonAreaFeature.getAttribute(mHeightFieldName)).doubleValue();
+                        double tmpH = height;
                         tmpH = tmpH * mVerticalExageration;
                         h += tmpH;
                     }
@@ -175,18 +205,18 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
                 }
 
                 int numGeometries = geometry.getNumGeometries();
-                for (int i = 0; i < numGeometries; i++) {
+                for( int i = 0; i < numGeometries; i++ ) {
                     Geometry geometryN = geometry.getGeometryN(i);
                     if (geometryN instanceof com.vividsolutions.jts.geom.Polygon) {
                         com.vividsolutions.jts.geom.Polygon poly = (com.vividsolutions.jts.geom.Polygon) geometryN;
 
-                        FeatureExtrudedPolygon extrudedPolygon = new FeatureExtrudedPolygon();
-                        extrudedPolygon.setFeature(polygonAreaFeature);
-                        
+                        InfoExtrudedPolygon extrudedPolygon = new InfoExtrudedPolygon();
+                        extrudedPolygon.setInfo(info);
+
                         Coordinate[] extCoords = poly.getExteriorRing().getCoordinates();
                         int extSize = extCoords.length;
                         List<Position> verticesList = new ArrayList<>(extSize);
-                        for (int n = 0; n < extSize; n++) {
+                        for( int n = 0; n < extSize; n++ ) {
                             Coordinate c = extCoords[n];
                             if (hasZ) {
                                 double z = c.z;
@@ -199,12 +229,12 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
                         extrudedPolygon.setOuterBoundary(verticesList);
 
                         int numInteriorRings = poly.getNumInteriorRing();
-                        for (int k = 0; k < numInteriorRings; k++) {
+                        for( int k = 0; k < numInteriorRings; k++ ) {
                             LineString interiorRing = poly.getInteriorRingN(k);
                             Coordinate[] intCoords = interiorRing.getCoordinates();
                             int internalNumVertices = intCoords.length;
                             List<Position> internalVerticesList = new ArrayList<>(internalNumVertices);
-                            for (int j = 0; j < internalNumVertices; j++) {
+                            for( int j = 0; j < internalNumVertices; j++ ) {
                                 Coordinate c = intCoords[j];
                                 if (hasZ) {
                                     double z = c.z;
@@ -229,11 +259,7 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
             }
         }
 
-        private void addPolygon(SimpleFeature polygonAreaFeature) {
-            Geometry geometry = (Geometry) polygonAreaFeature.getDefaultGeometry();
-            if (geometry == null) {
-                return;
-            }
+        private void addPolygon( Geometry geometry, String info, double height ) {
             Coordinate[] coordinates = geometry.getCoordinates();
             int numVertices = coordinates.length;
             if (numVertices < 4)
@@ -242,7 +268,7 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
             boolean hasZ = !Double.isNaN(geometry.getCoordinate().z);
 
             double h = 0.0;
-            switch (mElevationMode) {
+            switch( mElevationMode ) {
             case WorldWind.CLAMP_TO_GROUND:
                 hasZ = false;
                 break;
@@ -254,25 +280,25 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
                     h = mConstantHeight;
                 }
                 if (mHeightFieldName != null) {
-                    double tmpH = ((Number) polygonAreaFeature.getAttribute(mHeightFieldName)).doubleValue();
+                    double tmpH = height;
                     tmpH = tmpH * mVerticalExageration;
                     h += tmpH;
                 }
                 break;
             }
             int numGeometries = geometry.getNumGeometries();
-            for (int i = 0; i < numGeometries; i++) {
+            for( int i = 0; i < numGeometries; i++ ) {
                 Geometry geometryN = geometry.getGeometryN(i);
                 if (geometryN instanceof com.vividsolutions.jts.geom.Polygon) {
                     com.vividsolutions.jts.geom.Polygon poly = (com.vividsolutions.jts.geom.Polygon) geometryN;
 
-                    FeaturePolygon polygon = new FeaturePolygon();
-                    polygon.setFeature(polygonAreaFeature);
-                    
+                    InfoPolygon polygon = new InfoPolygon();
+                    polygon.setInfo(info);
+
                     Coordinate[] extCoords = poly.getExteriorRing().getCoordinates();
                     int extSize = extCoords.length;
                     List<Position> verticesList = new ArrayList<>(extSize);
-                    for (int n = 0; n < extSize; n++) {
+                    for( int n = 0; n < extSize; n++ ) {
                         Coordinate c = extCoords[n];
                         if (hasZ) {
                             double z = c.z;
@@ -285,12 +311,12 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
                     polygon.setOuterBoundary(verticesList);
 
                     int numInteriorRings = poly.getNumInteriorRing();
-                    for (int k = 0; k < numInteriorRings; k++) {
+                    for( int k = 0; k < numInteriorRings; k++ ) {
                         LineString interiorRing = poly.getInteriorRingN(k);
                         Coordinate[] intCoords = interiorRing.getCoordinates();
                         int internalNumVertices = intCoords.length;
                         List<Position> internalVerticesList = new ArrayList<>(internalNumVertices);
-                        for (int j = 0; j < internalNumVertices; j++) {
+                        for( int j = 0; j < internalNumVertices; j++ ) {
                             Coordinate c = intCoords[j];
                             if (hasZ) {
                                 double z = c.z;
@@ -313,13 +339,12 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
 
     @Override
     public Coordinate getCenter() {
-        ReferencedEnvelope bounds = featureCollectionLL.getBounds();
-        return bounds.centre();
+        return tableBounds.centre();
     }
 
     @Override
     public String toString() {
-        return title != null ? title : "Polygons";
+        return tableName != null ? tableName : "Polygons";
     }
 
     @Override

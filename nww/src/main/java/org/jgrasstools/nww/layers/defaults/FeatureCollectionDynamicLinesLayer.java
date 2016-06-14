@@ -24,28 +24,37 @@ import java.util.List;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.jgrasstools.nww.gui.NwwPanel;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.shapes.FeatureLine;
+import org.jgrasstools.nww.utils.NwwUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.BasicShapeAttributes;
+import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Material;
+import gov.nasa.worldwind.render.Path;
+import gov.nasa.worldwind.render.PreRenderable;
+import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.render.airspaces.AirspaceAttributes;
 import gov.nasa.worldwind.render.airspaces.BasicAirspaceAttributes;
+import gov.nasa.worldwind.util.Logging;
 
 /**
- * A simple lines layer.
+ * A simple lines layer. THIS IS EXPERIMENTAL FOR TESTING ONLY
  * 
  * @author Andrea Antonello andrea.antonello@gmail.com
  */
-public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwVectorLayer {
+public class FeatureCollectionDynamicLinesLayer extends RenderableLayer implements NwwVectorLayer {
 
     private String mHeightFieldName;
     private double mVerticalExageration = 1.0;
@@ -62,8 +71,12 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
     private int mElevationMode = WorldWind.CLAMP_TO_GROUND;
     private String title;
     private AirspaceAttributes highlightAttrs;
+    private Path renderPath;
+    private NwwPanel wwdPanel;
 
-    public FeatureCollectionLinesLayer( String title, SimpleFeatureCollection featureCollectionLL ) {
+    public FeatureCollectionDynamicLinesLayer(NwwPanel panel, String title,
+        SimpleFeatureCollection featureCollectionLL) {
+        this.wwdPanel = panel;
         this.title = title;
         this.featureCollectionLL = featureCollectionLL;
 
@@ -78,11 +91,11 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
         highlightAttrs.setOutlineMaterial(new Material(Color.RED));
 
         setStyle(null);
-        loadData();
+        //        loadData();
     }
 
     @Override
-    public void setStyle( SimpleStyle style ) {
+    public void setStyle(SimpleStyle style) {
         if (style != null) {
             mStrokeMaterial = new Material(style.strokeColor);
             mStrokeWidth = style.strokeWidth;
@@ -101,8 +114,8 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
         return simpleStyle;
     }
 
-    public void setExtrusionProperties( Double constantExtrusionHeight, String heightFieldName, Double verticalExageration,
-            boolean withoutExtrusion ) {
+    public void setExtrusionProperties(Double constantExtrusionHeight, String heightFieldName,
+        Double verticalExageration, boolean withoutExtrusion) {
         if (constantExtrusionHeight != null) {
             mHasConstantHeight = true;
             mConstantHeight = constantExtrusionHeight;
@@ -115,88 +128,58 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
         }
     }
 
-    public void setElevationMode( int elevationMode ) {
+    public void setElevationMode(int elevationMode) {
         mElevationMode = elevationMode;
     }
 
-    public void loadData() {
-        Thread t = new WorkerThread();
-        t.start();
-    }
+    @Override
+    protected void doRender(DrawContext dc) {
 
-    public class WorkerThread extends Thread {
-
-        public void run() {
-            SimpleFeatureIterator featureIterator = featureCollectionLL.features();
-            while( featureIterator.hasNext() ) {
-                SimpleFeature lineFeature = featureIterator.next();
-                boolean doExtrude = false;
-                if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {
-                    doExtrude = true;
-                }
-                addLine(lineFeature, doExtrude);
-            }
-            featureIterator.close();
+        ReferencedEnvelope viewportBounds = wwdPanel.getViewportBounds();
+        if (viewportBounds == null) {
+            return;
+        }
+        ReferencedEnvelope bounds = featureCollectionLL.getBounds();
+        if (!bounds.intersects((Envelope) viewportBounds)) {
+            return;
         }
 
-        private void addLine( SimpleFeature lineFeature, boolean doExtrude ) {
-            Geometry geometry = (Geometry) lineFeature.getDefaultGeometry();
-            if (geometry == null) {
-                return;
+        System.out.println("Render called");
+        SimpleFeatureIterator featureIterator = featureCollectionLL.features();
+        while (featureIterator.hasNext()) {
+            SimpleFeature lineFeature = featureIterator.next();
+            boolean doExtrude = false;
+            if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {
+                doExtrude = true;
             }
-            Coordinate[] coordinates = geometry.getCoordinates();
-            if (coordinates.length < 2)
-                return;
-
-            boolean hasZ = !Double.isNaN(geometry.getCoordinate().z);
-
-            double h = 0.0;
-            switch( mElevationMode ) {
-            case WorldWind.CLAMP_TO_GROUND:
-                hasZ = false;
-                break;
-            case WorldWind.RELATIVE_TO_GROUND:
-                hasZ = false;
-            case WorldWind.ABSOLUTE:
-            default:
-                if (mHasConstantHeight) {
-                    h = mConstantHeight;
-                }
-                if (mHeightFieldName != null) {
-                    double tmpH = ((Number) lineFeature.getAttribute(mHeightFieldName)).doubleValue();
-                    tmpH = tmpH * mVerticalExageration;
-                    h += tmpH;
-                }
-                break;
+            Geometry geometry = (Geometry) lineFeature.getDefaultGeometry();
+            if (!viewportBounds.intersects(geometry.getEnvelopeInternal())) {
+                continue;
             }
             int numGeometries = geometry.getNumGeometries();
-            for( int i = 0; i < numGeometries; i++ ) {
+            for (int i = 0; i < numGeometries; i++) {
                 Geometry geometryN = geometry.getGeometryN(i);
                 if (geometryN instanceof LineString) {
                     LineString line = (LineString) geometryN;
                     Coordinate[] lineCoords = line.getCoordinates();
                     int numVertices = lineCoords.length;
                     List<Position> verticesList = new ArrayList<>(numVertices);
-                    for( int j = 0; j < numVertices; j++ ) {
+                    for (int j = 0; j < numVertices; j++) {
                         Coordinate c = lineCoords[j];
-                        if (hasZ) {
-                            double z = c.z;
-                            verticesList.add(Position.fromDegrees(c.y, c.x, z + h));
-                        } else {
-                            verticesList.add(Position.fromDegrees(c.y, c.x, h));
-                        }
+                        verticesList.add(Position.fromDegrees(c.y, c.x));
                     }
-                    FeatureLine path = new FeatureLine(verticesList);
-                    path.setFeature(lineFeature);
-                    path.setAltitudeMode(mElevationMode);
-                    path.setAttributes(mNormalShapeAttributes);
-                    path.setHighlightAttributes(highlightAttrs);
-                    path.setExtrude(doExtrude);
-
-                    addRenderable(path);
+                    Path renderPath = new Path();
+                    renderPath.setAltitudeMode(mElevationMode);
+                    renderPath.setAttributes(mNormalShapeAttributes);
+                    renderPath.setHighlightAttributes(highlightAttrs);
+                    renderPath.setExtrude(doExtrude);
+                    renderPath.setPositions(verticesList);
+                    renderPath.render(dc);
                 }
             }
+
         }
+        featureIterator.close();
     }
 
     @Override

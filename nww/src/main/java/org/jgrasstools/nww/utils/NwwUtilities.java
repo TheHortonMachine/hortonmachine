@@ -1,6 +1,7 @@
 package org.jgrasstools.nww.utils;
 
 import java.awt.Color;
+import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,7 +13,17 @@ import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.styling.Style;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.utils.SldUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.style.FeatureTypeStyleWrapper;
+import org.jgrasstools.gears.utils.style.LineSymbolizerWrapper;
+import org.jgrasstools.gears.utils.style.PointSymbolizerWrapper;
+import org.jgrasstools.gears.utils.style.PolygonSymbolizerWrapper;
+import org.jgrasstools.gears.utils.style.RuleWrapper;
+import org.jgrasstools.gears.utils.style.StyleWrapper;
+import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.BasicMarkerWithInfo;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -25,13 +36,16 @@ import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.render.markers.BasicMarkerShape;
 import gov.nasa.worldwindx.examples.util.ToolTipController;
 
 public class NwwUtilities {
 
-    public static final String[] SUPPORTED_EXTENSIONS = { "shp", "mbtiles", "map", "rl2" };
+    public static final String[] SUPPORTED_EXTENSIONS = { "shp", "mbtiles", "map", "rl2", "sqlite" };
 
-    private static final CoordinateReferenceSystem GPS_CRS = DefaultGeographicCRS.WGS84;
+    public static final CoordinateReferenceSystem GPS_CRS = DefaultGeographicCRS.WGS84;
+    public static final int GPS_CRS_SRID = 4326;
 
     public static double DEFAULT_ELEV = 10000.0;
 
@@ -57,6 +71,78 @@ public class NwwUtilities {
             }
         }
         return fc;
+    }
+
+    public static SimpleStyle getStyle(String path, GeometryType geomType) throws Exception {
+        Style style = SldUtilities.getStyleFromFile(new File(path));
+        if (style == null)
+            return null;
+
+        SimpleStyle simpleStyle = new SimpleStyle();
+
+        StyleWrapper styleWrapper = new StyleWrapper(style);
+        List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = styleWrapper.getFeatureTypeStylesWrapperList();
+        for (FeatureTypeStyleWrapper featureTypeStyleWrapper : featureTypeStylesWrapperList) {
+            List<RuleWrapper> rulesWrapperList = featureTypeStyleWrapper.getRulesWrapperList();
+            for (RuleWrapper ruleWrapper : rulesWrapperList) {
+
+                switch (geomType) {
+                case POLYGON:
+                case MULTIPOLYGON:
+                    PolygonSymbolizerWrapper polygonSymbolizerWrapper =
+                        ruleWrapper.getGeometrySymbolizersWrapper().adapt(PolygonSymbolizerWrapper.class);
+
+                    simpleStyle.fillColor = Color.decode(polygonSymbolizerWrapper.getFillColor());
+                    simpleStyle.fillOpacity = Double.parseDouble(polygonSymbolizerWrapper.getFillOpacity());
+                    simpleStyle.strokeColor = Color.decode(polygonSymbolizerWrapper.getStrokeColor());
+                    simpleStyle.strokeWidth = Double.parseDouble(polygonSymbolizerWrapper.getStrokeWidth());
+                    break;
+                case LINE:
+                case MULTILINE:
+                    LineSymbolizerWrapper lineSymbolizerWrapper =
+                        ruleWrapper.getGeometrySymbolizersWrapper().adapt(LineSymbolizerWrapper.class);
+
+                    simpleStyle.strokeColor = Color.decode(lineSymbolizerWrapper.getStrokeColor());
+                    simpleStyle.strokeWidth = Double.parseDouble(lineSymbolizerWrapper.getStrokeWidth());
+
+                    break;
+                case POINT:
+                case MULTIPOINT:
+                    PointSymbolizerWrapper pointSymbolizerWrapper =
+                        ruleWrapper.getGeometrySymbolizersWrapper().adapt(PointSymbolizerWrapper.class);
+
+                    simpleStyle.fillColor = Color.decode(pointSymbolizerWrapper.getFillColor());
+                    simpleStyle.fillOpacity = Double.parseDouble(pointSymbolizerWrapper.getFillOpacity());
+                    simpleStyle.strokeColor = Color.decode(pointSymbolizerWrapper.getStrokeColor());
+                    simpleStyle.strokeWidth = Double.parseDouble(pointSymbolizerWrapper.getStrokeWidth());
+                    simpleStyle.shapeSize = Double.parseDouble(pointSymbolizerWrapper.getSize());
+                    String markName = pointSymbolizerWrapper.getMarkName();
+                    if (markName != null && markName.trim().length() != 0) {
+                        switch (markName) {
+                        case "square":
+                            simpleStyle.shapeType = BasicMarkerShape.CUBE;
+                            break;
+                        case "triangle":
+                            simpleStyle.shapeType = BasicMarkerShape.CONE;
+                            break;
+                        case "circle":
+                        default:
+                            simpleStyle.shapeType = BasicMarkerShape.SPHERE;
+                            break;
+                        }
+                    }
+                    break;
+
+                default:
+                    break;
+                }
+
+                // only one rule supported for now 
+                return simpleStyle;
+            }
+        }
+
+        return null;
     }
 
     public static LinkedHashMap<String, String> feature2AlphanumericToHashmap(SimpleFeature feature) {
@@ -107,6 +193,19 @@ public class NwwUtilities {
 
     public static Position toPosition(double lat, double lon) {
         return toPosition(lat, lon, DEFAULT_ELEV);
+    }
+
+    public static Sector envelope2Sector(ReferencedEnvelope env) throws Exception {
+        ReferencedEnvelope llEnv = env.transform(GPS_CRS, true);
+        Sector sector = Sector.fromDegrees(llEnv.getMinY(), llEnv.getMaxY(), llEnv.getMinX(), llEnv.getMaxX());
+        return sector;
+    }
+
+    public static ReferencedEnvelope sector2Envelope(Sector sector) throws Exception {
+        ReferencedEnvelope env =
+            new ReferencedEnvelope(sector.getMinLongitude().degrees, sector.getMaxLongitude().degrees,
+                sector.getMinLatitude().degrees, sector.getMaxLatitude().degrees, GPS_CRS);
+        return env;
     }
 
     public static Color darkenColor(Color color) {

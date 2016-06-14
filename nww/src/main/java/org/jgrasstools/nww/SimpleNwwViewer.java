@@ -12,10 +12,7 @@ import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import com.jgoodies.forms.layout.CellConstraints;
-
 import org.jgrasstools.nww.gui.LayersPanelController;
-import org.jgrasstools.nww.gui.MainPanelController;
 import org.jgrasstools.nww.gui.NwwPanel;
 import org.jgrasstools.nww.gui.ToolsPanelController;
 

@@ -31,11 +31,16 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
 import org.jgrasstools.gears.spatialite.RasterCoverage;
 import org.jgrasstools.gears.spatialite.SpatialiteDb;
+import org.jgrasstools.gears.spatialite.SpatialiteGeometryColumns;
+import org.jgrasstools.gears.spatialite.SpatialiteGeometryType;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.nww.gui.listeners.GenericSelectListener;
+import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.CurrentGpsPointLayer;
+import org.jgrasstools.nww.layers.defaults.FeatureCollectionDynamicLinesLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionLinesLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPointsLayer;
 import org.jgrasstools.nww.layers.defaults.FeatureCollectionPolygonLayer;
@@ -44,15 +49,23 @@ import org.jgrasstools.nww.layers.defaults.MBTilesNwwLayer;
 import org.jgrasstools.nww.layers.defaults.MapsforgeNwwLayer;
 import org.jgrasstools.nww.layers.defaults.RL2NwwLayer;
 import org.jgrasstools.nww.layers.defaults.SimplePointsLayer;
+import org.jgrasstools.nww.layers.defaults.SpatialiteLinesLayer;
+import org.jgrasstools.nww.layers.defaults.SpatialitePointsLayer;
+import org.jgrasstools.nww.layers.defaults.SpatialitePolygonLayer;
+import org.jgrasstools.nww.layers.defaults.WhiteNwwLayer;
 import org.jgrasstools.nww.utils.CursorUtils;
 import org.jgrasstools.nww.utils.EGlobeModes;
 import org.jgrasstools.nww.utils.NwwUtilities;
+import org.jgrasstools.nww.utils.cache.CacheUtils;
 import org.jgrasstools.nww.utils.selection.ObjectsOnScreenByBoxSelector;
 import org.jgrasstools.nww.utils.selection.SectorByBoxSelector;
 import org.opengis.feature.type.GeometryDescriptor;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.layers.LayerList;
 
 /**
  * The tools panel.
@@ -63,6 +76,8 @@ import gov.nasa.worldwind.geom.Sector;
 public class ToolsPanelController extends ToolsPanelView {
 
     private GenericSelectListener genericSelectListener;
+
+    private WhiteNwwLayer whiteLayer = new WhiteNwwLayer();
 
     public ToolsPanelController(final NwwPanel wwjPanel, LayerEventsListener layerEventsListener) {
 
@@ -113,7 +128,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 try {
                     new org.jgrasstools.nww.utils.FakeGps(selectedFile, wwjPanel, currentGpsPointLayer,
-                            simplePointsLayer);
+                        simplePointsLayer);
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -235,7 +250,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
             @Override
             public void onSelectionFinished(Sector selectedSector) {
-                wwjPanel.zoomTo(selectedSector, false);
+                wwjPanel.goTo(selectedSector, false);
                 zoomBoxSelector.disable();
                 zoomBoxSelector.enable();
             }
@@ -250,6 +265,27 @@ public class ToolsPanelController extends ToolsPanelView {
                 zoomBoxSelector.disable();
                 CursorUtils.makeDefault(wwjPanel.getWwd());
             }
+        });
+
+        _openCacheButton.addActionListener(e -> {
+            CacheUtils.openCacheManager();
+        });
+
+        _whiteBackgroundCheckbox.addActionListener(e -> {
+            LayerList layers = wwjPanel.getWwd().getModel().getLayers();
+            if (_whiteBackgroundCheckbox.isSelected()) {
+                layers.add(0, whiteLayer);
+                layerEventsListener.onLayerAdded(whiteLayer);
+            } else {
+                layers.remove(whiteLayer);
+                layerEventsListener.onLayerRemoved(whiteLayer);
+            }
+        });
+
+        _opaqueBackgroundCheckbox.setSelected(true);
+        _opaqueBackgroundCheckbox.addActionListener(e -> {
+            WorldWindow wwd = wwjPanel.getWwd();
+            ((WorldWindowGLJPanel) wwd).setOpaque(_opaqueBackgroundCheckbox.isSelected());
         });
 
     }
@@ -276,26 +312,41 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
 
                 SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(selectedFile.getAbsolutePath());
+
                 GeometryDescriptor geometryDescriptor = readFC.getSchema().getGeometryDescriptor();
                 if (GeometryUtilities.isPolygon(geometryDescriptor)) {
-                    FeatureCollectionPolygonLayer featureCollectionPolygonLayer = new FeatureCollectionPolygonLayer(
-                            name, readFC);
+                    FeatureCollectionPolygonLayer featureCollectionPolygonLayer =
+                        new FeatureCollectionPolygonLayer(name, readFC);
 
                     featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                     featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
+                    SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.POLYGON);
+                    if (style != null) {
+                        featureCollectionPolygonLayer.setStyle(style);
+                    }
 
                     wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPolygonLayer);
                     layerEventsListener.onLayerAdded(featureCollectionPolygonLayer);
                 } else if (GeometryUtilities.isLine(geometryDescriptor)) {
-                    FeatureCollectionLinesLayer featureCollectionLinesLayer = new FeatureCollectionLinesLayer(name,
-                            readFC);
+                    FeatureCollectionLinesLayer featureCollectionLinesLayer =
+                        new FeatureCollectionLinesLayer(name, readFC);
                     featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                     featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
+                    SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.LINE);
+                    if (style != null) {
+                        featureCollectionLinesLayer.setStyle(style);
+                    }
+
                     wwjPanel.getWwd().getModel().getLayers().add(featureCollectionLinesLayer);
                     layerEventsListener.onLayerAdded(featureCollectionLinesLayer);
                 } else if (GeometryUtilities.isPoint(geometryDescriptor)) {
-                    FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name,
-                            readFC);
+                    FeatureCollectionPointsLayer featureCollectionPointsLayer =
+                        new FeatureCollectionPointsLayer(name, readFC);
+                    SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.POINT);
+                    if (style != null) {
+                        featureCollectionPointsLayer.setStyle(style);
+                    }
+
                     wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPointsLayer);
                     layerEventsListener.onLayerAdded(featureCollectionPointsLayer);
 
@@ -320,6 +371,30 @@ public class ToolsPanelController extends ToolsPanelView {
 
                     wwjPanel.getWwd().getModel().getLayers().add(rl2Layer);
                     layerEventsListener.onLayerAdded(rl2Layer);
+                }
+            } else if (selectedFile.getName().endsWith(".sqlite")) {
+                SpatialiteDb db = new SpatialiteDb();
+                db.open(selectedFile.getAbsolutePath());
+                List<String> tableMaps = db.getTables(false);
+                for (String tableName : tableMaps) {
+                    SpatialiteGeometryColumns geometryColumn = db.getGeometryColumnsForTable(tableName);
+                    if (geometryColumn != null) {
+                        SpatialiteGeometryType geomType = SpatialiteGeometryType.forValue(geometryColumn.geometry_type);
+                        if (geomType.isPolygon()) {
+                            SpatialitePolygonLayer layer = new SpatialitePolygonLayer(db, tableName, 10000);
+                            wwjPanel.getWwd().getModel().getLayers().add(layer);
+                            layerEventsListener.onLayerAdded(layer);
+                        } else if (geomType.isLine()) {
+                            SpatialiteLinesLayer layer = new SpatialiteLinesLayer(db, tableName, 10000);
+                            wwjPanel.getWwd().getModel().getLayers().add(layer);
+                            layerEventsListener.onLayerAdded(layer);
+                        } else if (geomType.isPoint()) {
+                            SpatialitePointsLayer layer = new SpatialitePointsLayer(db, tableName, 10000);
+                            wwjPanel.getWwd().getModel().getLayers().add(layer);
+                            layerEventsListener.onLayerAdded(layer);
+                        }
+
+                    }
                 }
             }
         } catch (Exception e1) {

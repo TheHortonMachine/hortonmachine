@@ -35,6 +35,9 @@ public class LayersPanelController extends LayersPanelView implements LayerEvent
         List<Layer> layersReverse = new ArrayList<>();
         for (int i = 0; i < layerList.size(); i++) {
             Layer layer = layerList.get(i);
+            if (layer.getName().startsWith("hide")) {
+                continue;
+            }
             layersReverse.add(0, layer);
         }
 

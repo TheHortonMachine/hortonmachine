@@ -17,13 +17,19 @@
  */
 package org.jgrasstools.gui.utils;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
 import java.util.prefs.Preferences;
+
+import javax.swing.JDialog;
+import javax.swing.JPanel;
 
 /**
  * Utilities class.
@@ -34,6 +40,20 @@ public class GuiUtilities {
 
     public static final String LAST_PATH = "KEY_LAST_PATH";
 
+    /**
+     * Set the location of a component to center it on the screen.
+     * 
+     * @param component the component to center.
+     */
+    public static void centerOnScreen( Component component ) {
+        Dimension prefSize = component.getPreferredSize();
+        Dimension parentSize;
+        java.awt.Point parentLocation = new java.awt.Point(0, 0);
+        parentSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = parentLocation.x + (parentSize.width - prefSize.width) / 2;
+        int y = parentLocation.y + (parentSize.height - prefSize.height) / 2;
+        component.setLocation(x, y);
+    }
 
     /**
      * Handle the last set path preference.
@@ -77,6 +97,19 @@ public class GuiUtilities {
             Desktop desktop = Desktop.getDesktop();
             desktop.open(file);
         }
+    }
+
+    public static JDialog openDialogWithPanel( JPanel panel, String title, Dimension dimension ) {
+        JDialog f = new JDialog();
+        f.add(panel, BorderLayout.CENTER);
+        f.setTitle(title);
+        f.pack();
+        if (dimension != null)
+            f.setSize(dimension);
+        f.setLocationRelativeTo(null); // Center on screen
+        f.setVisible(true);
+        f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        return f;
     }
 
 }
