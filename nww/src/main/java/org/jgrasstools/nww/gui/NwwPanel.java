@@ -31,8 +31,6 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.nww.layers.OSMMapnikLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
 
-import com.vividsolutions.jts.geom.Coordinate;
-
 import gov.nasa.worldwind.Model;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.WorldWind;
@@ -42,7 +40,6 @@ import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Box;
-import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Earth;
@@ -100,21 +97,22 @@ public class NwwPanel extends JPanel {
         }
         layers.clear();
 
-        // Create and install the view controls layer and register a controller
-        // for it with the
-        // World Window.
-        ViewControlsLayer viewControlsLayer = new ViewControlsLayer();
-        layers.add(viewControlsLayer);
-        getWwd().addSelectListener(new ViewControlsSelectListener(getWwd(), viewControlsLayer));
-
         layers.addAll(addBack);
-
-        layers.add(new OSMMapnikLayer());
 
         this.add((Component) this.getWwd(), BorderLayout.CENTER);
         this.statusBar = new StatusBar();
         this.add(statusBar, BorderLayout.PAGE_END);
         this.statusBar.setEventSource(getWwd());
+    }
+
+    public void addViewControls() {
+        ViewControlsLayer viewControlsLayer = new ViewControlsLayer();
+        addLayer(viewControlsLayer);
+        getWwd().addSelectListener(new ViewControlsSelectListener(getWwd(), viewControlsLayer));
+    }
+
+    public void addOsmLayer() {
+        addLayer(new OSMMapnikLayer());
     }
 
     /**
@@ -132,6 +130,10 @@ public class NwwPanel extends JPanel {
      *            if <code>true</code>, it animates to the position.
      */
     public synchronized Position goTo(Double lon, Double lat, Double elev, Double azimuth, boolean animate) {
+        View view = getWwd().getView();
+        view.stopAnimations();
+        view.stopMovement();
+
         Position eyePosition;
         if (lon == null || lat == null) {
             Position currentEyePosition = wwd.getView().getCurrentEyePosition();
@@ -156,7 +158,6 @@ public class NwwPanel extends JPanel {
         }
         eyePosition = NwwUtilities.toPosition(lat, lon, elev);
         System.out.println("CURRENT EYE: " + eyePosition);
-        View view = getWwd().getView();
         if (animate) {
             view.goTo(eyePosition, elev);
         } else {
@@ -179,20 +180,23 @@ public class NwwPanel extends JPanel {
      *            if <code>true</code>, it animates to the position.
      */
     public void goTo(Sector sector, boolean animate) {
+        View view = getWwd().getView();
+        view.stopAnimations();
+        view.stopMovement();
         if (sector == null) {
             return;
         }
         // Create a bounding box for the specified sector in order to estimate
         // its size in model coordinates.
-        Box extent = Sector.computeBoundingBox(wwd.getModel().getGlobe(),
-                wwd.getSceneController().getVerticalExaggeration(), sector);
+        Box extent = Sector.computeBoundingBox(getWwd().getModel().getGlobe(),
+                getWwd().getSceneController().getVerticalExaggeration(), sector);
 
         // Estimate the distance between the center position and the eye
         // position that is necessary to cause the sector to
         // fill a viewport with the specified field of view. Note that we change
         // the distance between the center and eye
         // position here, and leave the field of view constant.
-        Angle fov = wwd.getView().getFieldOfView();
+        Angle fov = view.getFieldOfView();
         double zoom = extent.getRadius() / fov.cosHalfAngle() / fov.tanHalfAngle();
 
         // Configure OrbitView to look at the center of the sector from our
@@ -201,7 +205,7 @@ public class NwwPanel extends JPanel {
         // this change immediately use the following:
 
         if (animate) {
-            wwd.getView().goTo(new Position(sector.getCentroid(), 0d), zoom);
+            view.goTo(new Position(sector.getCentroid(), 0d), zoom);
         } else {
             ((OrbitView) wwd.getView()).setCenterPosition(new Position(sector.getCentroid(), 0d));
             ((OrbitView) wwd.getView()).setZoom(zoom);
