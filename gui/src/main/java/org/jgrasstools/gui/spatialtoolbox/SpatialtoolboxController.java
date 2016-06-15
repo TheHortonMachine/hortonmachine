@@ -796,9 +796,23 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
     }
 
     public static void main( String[] args ) throws Exception {
+        File libsFile = null;
+        try {
+            String libsPath = args[0];
+            libsFile = new File(libsPath);
+        } catch (Exception e1) {
+            // IGNORE
+        }
+        if (libsFile == null || !libsFile.exists() || !libsFile.isDirectory()) {
+            System.err.println("The libraries folder is missing or not properly set.");
+            System.exit(1);
+        }
+        
+        System.out.println("Libraries folder used: " + libsFile.getAbsolutePath());
+
         JGrasstoolsModulesManager.getInstance().init();
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
-        gBridge.setLibsFolder(new File("/home/hydrologis/development/jgrasstools-git/libs-exported/"));
+        gBridge.setLibsFolder(libsFile);
         final SpatialtoolboxController controller = new SpatialtoolboxController(gBridge);
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "JGrasstools' Spatial Toolbox");
 

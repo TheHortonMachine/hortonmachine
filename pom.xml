@@ -26,7 +26,7 @@
         <module>grass</module>
         <module>modules</module>
         <module>gui</module>
-<!--        <module>nww</module> -->
+        <module>nww</module>
   </modules>
 
 	<issueManagement>
@@ -187,7 +187,7 @@
 						<goal>copy-dependencies</goal>
 					</goals>
 					<configuration>
-						<outputDirectory>${session.executionRootDirectory}/libs-exported</outputDirectory>
+						<outputDirectory>${session.executionRootDirectory}/extras/export/libs</outputDirectory>
 					</configuration>
 				</execution>
 			</executions>

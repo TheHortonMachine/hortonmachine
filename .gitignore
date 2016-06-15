@@ -12,3 +12,4 @@ target
 .idea
 *.iml
 *.dll
+extras/export/libs

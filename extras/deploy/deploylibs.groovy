@@ -63,9 +63,9 @@ JGTMODULESCOPY: {
             return filename.startsWith("jgt-jgrassgears-") && filename.endsWith(".jar")  
         }  
     });
-	Arrays.sort(jarFiles, Collections.reverseOrder());
-	def jgtJar = jarFiles[0];
-	def jgtCopyToFile = new File(modulesFolderFile.absolutePath, jgtJar.name).absolutePath;
+    Arrays.sort(jarFiles, Collections.reverseOrder());
+    def jgtJar = jarFiles[0];
+    def jgtCopyToFile = new File(modulesFolderFile.absolutePath, jgtJar.name).absolutePath;
     (new AntBuilder()).copy( file : jgtJar , tofile : jgtCopyToFile )
 
     // take latest hortonmachine jar
@@ -74,8 +74,8 @@ JGTMODULESCOPY: {
             return filename.startsWith("jgt-hortonmachine-") && filename.endsWith(".jar")  
         }  
     });
-	Arrays.sort(jarFiles, Collections.reverseOrder());
-	def hmJar = jarFiles[0];
+    Arrays.sort(jarFiles, Collections.reverseOrder());
+    def hmJar = jarFiles[0];
     def hmCopyToFile = new File(modulesFolderFile.absolutePath, hmJar.name).absolutePath;
     (new AntBuilder()).copy( file : hmJar , tofile : hmCopyToFile )
 
@@ -85,21 +85,43 @@ JGTMODULESCOPY: {
             return filename.startsWith("jgt-modules-") && filename.endsWith(".jar")  
         }  
     });
-	Arrays.sort(jarFiles, Collections.reverseOrder());
-	def modJar = jarFiles[0];
+    Arrays.sort(jarFiles, Collections.reverseOrder());
+    def modJar = jarFiles[0];
     def modCopyToFile = new File(modulesFolderFile.absolutePath, modJar.name).absolutePath;
     (new AntBuilder()).copy( file : modJar , tofile : modCopyToFile )
 
-    // take latest lest jar
+    // take latest lesto jar
     jarFiles = new File("./lesto/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
             return filename.startsWith("jgt-lesto-") && filename.endsWith(".jar")  
         }  
     });
-	Arrays.sort(jarFiles, Collections.reverseOrder());
-	def lestoJar = jarFiles[0];
+    Arrays.sort(jarFiles, Collections.reverseOrder());
+    def lestoJar = jarFiles[0];
     def lestoCopyToFile = new File(modulesFolderFile.absolutePath, lestoJar.name).absolutePath;
     (new AntBuilder()).copy( file : lestoJar , tofile : lestoCopyToFile )
+
+    // take latest gui jar
+    jarFiles = new File("./gui/target").listFiles(new FilenameFilter() {  
+        public boolean accept(File f, String filename) {  
+            return filename.startsWith("jgt-gui-") && filename.endsWith(".jar")  
+        }  
+    });
+    Arrays.sort(jarFiles, Collections.reverseOrder());
+    def guiJar = jarFiles[0];
+    def guiCopyToFile = new File(modulesFolderFile.absolutePath, guiJar.name).absolutePath;
+    (new AntBuilder()).copy( file : guiJar , tofile : guiCopyToFile )
+
+    // take latest nww jar
+    jarFiles = new File("./nww/target").listFiles(new FilenameFilter() {  
+        public boolean accept(File f, String filename) {  
+            return filename.startsWith("jgt-nww-") && filename.endsWith(".jar")  
+        }  
+    });
+    Arrays.sort(jarFiles, Collections.reverseOrder());
+    def nwwJar = jarFiles[0];
+    def nwwCopyToFile = new File(modulesFolderFile.absolutePath, nwwJar.name).absolutePath;
+    (new AntBuilder()).copy( file : nwwJar , tofile : nwwCopyToFile )
 
     // tools.jar
     def newToolsJar = new File(copyPathFile, "tools.jar");
@@ -133,8 +155,8 @@ def lines = output.split("\n");
 def depsList = [];
 def startIndex = -1;
 def endIndex = -1;
-/*
 
+/*
 // uncomment the following for maven 2
 for (int i = 0; i < lines.size(); i++){
     def line = lines[i];
