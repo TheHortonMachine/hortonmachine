@@ -223,6 +223,9 @@ public class JGrasstoolsModulesManager {
         descriptionStr = sb.toString();
 
         String fieldName = field.getName();
+        if (doIgnore(fieldName)) {
+            return;
+        }
         Class< ? > fieldClass = field.getType();
         Object fieldValue = access.getFieldValue();
 
@@ -238,6 +241,10 @@ public class JGrasstoolsModulesManager {
         }
 
         module.addInput(fieldName, fieldClass.getCanonicalName(), descriptionStr, defaultValue, uiHint);
+    }
+
+    private boolean doIgnore( String fieldName ) {
+        return fieldName.equals("doProcess");
     }
 
     private void addOutput( Access access, ModuleDescription module ) throws Exception {
@@ -267,6 +274,9 @@ public class JGrasstoolsModulesManager {
         descriptionStr = sb.toString();
 
         String fieldName = field.getName();
+        if (doIgnore(fieldName)) {
+            return;
+        }
         Class< ? > fieldClass = field.getType();
         Object fieldValue = access.getFieldValue();
 
