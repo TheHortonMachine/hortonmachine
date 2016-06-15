@@ -44,6 +44,8 @@ public class SimpleNwwViewer {
         try {
 
             NwwPanel wwjPanel = new NwwPanel(false);
+            wwjPanel.addOsmLayer();
+            wwjPanel.addViewControls();
             LayersPanelController layerPanel = new LayersPanelController(wwjPanel);
             ToolsPanelController toolsPanel = new ToolsPanelController(wwjPanel, layerPanel);
 
