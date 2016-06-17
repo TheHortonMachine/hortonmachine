@@ -144,6 +144,10 @@ public class OmsSaintGeo extends JGTModel {
     private final double G = 9.806;
     private final double Cq = 0.41;
 
+    private HashMap<Integer, Double> linkId2LevelMap = new HashMap<>();
+    private HashMap<Integer, Double> linkId2DischargeMap = new HashMap<>();
+    private HashMap<Integer, Double> linkId2VelocityMap = new HashMap<>();
+
     @Execute
     public void process() throws Exception {
         checkNull(inDischarge, inRiverPoints, inSectionPoints, inSections);
@@ -173,12 +177,17 @@ public class OmsSaintGeo extends JGTModel {
             double[] ql = null;
             double[] DELXM = null;
             pm.beginTask("Calculating SaintGeo...", inDischarge.length);
+
             /*
              * The length of the simulation is taken from the input head discharge
              * this is also the reference for all the other input data that have to
              * cover the same interval with the same timesteps. 
              */
             for( int timeIndex = 0; timeIndex < inDischarge.length; timeIndex++ ) {
+                linkId2LevelMap.clear();
+                linkId2DischargeMap.clear();
+                linkId2VelocityMap.clear();
+
                 double qHead = inDischarge[timeIndex];
                 double qHeadPrevious = qHead;
                 if (timeIndex > 0) {
@@ -306,11 +315,12 @@ public class OmsSaintGeo extends JGTModel {
 
                 /* write the output file with levels */
                 StringBuilder sbLevel = new StringBuilder();
-                sbLevel.append("\n#timestep: " + timeIndex+ "\n");
+                sbLevel.append("\n#timestep: " + timeIndex + "\n");
                 for( int i = 0; i < sectionsCount - 1; i++ ) {
                     RiverPoint section = riverPoints.get(i);
                     Coordinate[] sectionCoordinates = section.getSectionCoordinates();
-                    sbLevel.append(section.getSectionId()).append(";");
+                    int sectionId = section.getSectionId();
+                    sbLevel.append(sectionId).append(";");
                     sbLevel.append(section.getProgressiveDistance()).append(";");
                     sbLevel.append(waterLevel[i]).append(";");
                     double minsez = section.getMinElevation();
@@ -319,12 +329,15 @@ public class OmsSaintGeo extends JGTModel {
                     sbLevel.append(sectionCoordinates[dx].z).append(";");
                     int sx = section.getEndNodeIndex();
                     sbLevel.append(sectionCoordinates[sx].z).append("\n");
+                    linkId2LevelMap.put(sectionId, waterLevel[i]);
                 }
                 RiverPoint section = riverPoints.get(sectionsCount - 1);
                 Coordinate[] sectionCoordinates = section.getSectionCoordinates();
-                sbLevel.append(section.getSectionId()).append(";");
+                int sectionId = section.getSectionId();
+                sbLevel.append(sectionId).append(";");
                 sbLevel.append(section.getProgressiveDistance()).append(";");
                 sbLevel.append(waterLevel[sectionsCount - 1]).append(";");
+                linkId2LevelMap.put(sectionId, waterLevel[sectionsCount - 1]);
                 double minsez = section.getMinElevation();
                 sbLevel.append(minsez).append(";");
                 int dx = section.getStartNodeIndex();
@@ -334,40 +347,60 @@ public class OmsSaintGeo extends JGTModel {
 
                 outputLevelWriter.write(sbLevel.toString() + "\n");
                 pm.message(sbLevel.toString());
-                
+
                 /* write the output file with discharge */
                 StringBuilder sbDischarge = new StringBuilder();
-                sbDischarge.append("\n#timestep: " + timeIndex+ "\n");
+                sbDischarge.append("\n#timestep: " + timeIndex + "\n");
                 for( int i = 0; i < sectionsCount - 1; i++ ) {
                     RiverPoint sectionDischarge = riverPoints.get(i);
-                    sbDischarge.append(sectionDischarge.getSectionId()).append(";");
+                    sectionId = sectionDischarge.getSectionId();
+                    sbDischarge.append(sectionId).append(";");
                     sbDischarge.append(sectionDischarge.getProgressiveDistance()).append(";");
                     double froudeNumber = (Math.abs(celerity[i]) / Math.sqrt(G * (idrgeo[i][0] / idrgeo[i][3])));
                     sbDischarge.append(froudeNumber).append(";");
                     sbDischarge.append(discharge[i] < 0.0 ? 0.0 : discharge[i]).append(";");
                     sbDischarge.append(celerity[i] < 0.0 ? 0.0 : celerity[i]).append(";");
                     sbDischarge.append(idrgeo[i][0]).append("\n");
+                    linkId2DischargeMap.put(sectionId, discharge[i]);
+                    linkId2VelocityMap.put(sectionId, celerity[i]);
                 }
                 RiverPoint sectionDischarge = riverPoints.get(sectionsCount - 1);
-                double froudeNumber = (Math.abs(discharge[sectionsCount - 2] / idrgeo[sectionsCount - 1][0]) / Math.sqrt(G
-                        * (idrgeo[sectionsCount - 1][0] / idrgeo[sectionsCount - 1][3])));
-                sbDischarge.append(sectionDischarge.getSectionId()).append(";");
+                double froudeNumber = (Math.abs(discharge[sectionsCount - 2] / idrgeo[sectionsCount - 1][0])
+                        / Math.sqrt(G * (idrgeo[sectionsCount - 1][0] / idrgeo[sectionsCount - 1][3])));
+                sectionId = sectionDischarge.getSectionId();
+                sbDischarge.append(sectionId).append(";");
                 sbDischarge.append(sectionDischarge.getProgressiveDistance()).append(";");
                 sbDischarge.append(froudeNumber).append(";");
-                sbDischarge.append(discharge[sectionsCount - 2] < 0.0 ? 0.0 : discharge[sectionsCount -
-                 2]).append(";");
+                double lastDischarge = discharge[sectionsCount - 2] < 0.0 ? 0.0 : discharge[sectionsCount - 2];
+                sbDischarge.append(lastDischarge).append(";");
                 double celDischarge = discharge[sectionsCount - 2] / idrgeo[sectionsCount - 1][0];
-                sbDischarge.append(celDischarge < 0.0 ? 0.0 : celDischarge).append(";");
+                double lastCelerity = celDischarge < 0.0 ? 0.0 : celDischarge;
+                sbDischarge.append(lastCelerity).append(";");
                 sbDischarge.append(idrgeo[sectionsCount - 1][0]).append(";");
-                
+                linkId2DischargeMap.put(sectionId, lastDischarge);
+                linkId2VelocityMap.put(sectionId, lastCelerity);
+
                 outputDischargeWriter.write(sbDischarge.toString() + "\n");
                 pm.message(sbDischarge.toString());
-                
+
                 pm.worked(1);
             }
             pm.done();
         }
     }
+    
+    public HashMap<Integer, Double> getLastLinkId2DischargeMap() {
+        return linkId2DischargeMap;
+    }
+    
+    public HashMap<Integer, Double> getLastLinkId2LevelMap() {
+        return linkId2LevelMap;
+    }
+    
+    public HashMap<Integer, Double> getLastLinkId2VelocityMap() {
+        return linkId2VelocityMap;
+    }
+    
     /**
      * Use Gaukler-Strickler formula for the evaluation of the initial condition
      * (hypotesis of steady flow).
@@ -589,8 +622,8 @@ public class OmsSaintGeo extends JGTModel {
                     peri_loc = Math.sqrt((base_dx - base_sx) * (base_dx - base_sx) + altezza * altezza);
                     if (area_loc != 0) {
                         // use the method of Einstein-Horton?
-                        alfa_num = alfa_num + (gau_loc * gau_loc) * Math.pow(area_loc, (7.0 / 3.0))
-                                / Math.pow(peri_loc, (4.0 / 3.0));
+                        alfa_num = alfa_num
+                                + (gau_loc * gau_loc) * Math.pow(area_loc, (7.0 / 3.0)) / Math.pow(peri_loc, (4.0 / 3.0));
                     }
                     alfa_den = alfa_den + gau_loc * area_loc * Math.pow(peri_loc, (2.0 / 3.0));
 
@@ -621,8 +654,8 @@ public class OmsSaintGeo extends JGTModel {
                     area_loc = (base_dx + base_sx) * altezza / 2.0;
                     peri_loc = Math.sqrt((base_dx - base_sx) * (base_dx - base_sx) + altezza * altezza);
                     if (area_loc != 0) {
-                        alfa_num = alfa_num + (gau_loc * gau_loc) * Math.pow(area_loc, (7.0 / 3.0))
-                                / Math.pow(peri_loc, (4.0 / 3.0));
+                        alfa_num = alfa_num
+                                + (gau_loc * gau_loc) * Math.pow(area_loc, (7.0 / 3.0)) / Math.pow(peri_loc, (4.0 / 3.0));
                     }
                     alfa_den = alfa_den + gau_loc * area_loc * Math.pow(peri_loc, (2.0 / 3.0));
 
@@ -649,8 +682,8 @@ public class OmsSaintGeo extends JGTModel {
                     area_loc = (base_dx + base_sx) * altezza / 2;
                     peri_loc = Math.sqrt((base_dx - base_sx) * (base_dx - base_sx) + altezza * altezza);
                     if (area_loc != 0) {
-                        alfa_num = alfa_num + (gau_loc * gau_loc) * Math.pow(area_loc, (7.0 / 3.0))
-                                / Math.pow(peri_loc, (4.0 / 3.0));
+                        alfa_num = alfa_num
+                                + (gau_loc * gau_loc) * Math.pow(area_loc, (7.0 / 3.0)) / Math.pow(peri_loc, (4.0 / 3.0));
                     } else {
                         alfa_num = alfa_num + 0;
                     }
@@ -857,8 +890,8 @@ public class OmsSaintGeo extends JGTModel {
                 D[i] = Ci / dx + C_old / dx + (base / DELT);
                 DI[i - 1] = -C_old / dx;
                 DS[i] = -Ci / dx;
-                B[i] = (base / DELT) * tirante[i] - F_Q[i] / (dx * (1.0 + DELT * GAM[i])) + F_Q[i - 1]
-                        / (dx * (1.0 + DELT * GAM[i - 1])) + ql[i] - qs[i];
+                B[i] = (base / DELT) * tirante[i] - F_Q[i] / (dx * (1.0 + DELT * GAM[i]))
+                        + F_Q[i - 1] / (dx * (1.0 + DELT * GAM[i - 1])) + ql[i] - qs[i];
             }
             /* the coefficients of the last line */
             dx = (DELXM[imax - 3] + DELXM[imax - 2]) / 2.0;
@@ -868,9 +901,9 @@ public class OmsSaintGeo extends JGTModel {
             DI[imax - 3] = -C_old / dx;
             DS[imax - 2] = 0;
             D[imax - 2] = C_old / dx + Ci / dx + base / DELT;
-            B[imax - 2] = base / DELT * tirante[imax - 2] + Ci / dx * tiranteout - F_Q[imax - 2]
-                    / (dx * (1.0 + DELT * GAM[imax - 2])) + F_Q[imax - 3] / (dx * (1.0 + DELT * GAM[imax - 3])) + ql[imax - 2]
-                    - qs[imax - 2];
+            B[imax - 2] = base / DELT * tirante[imax - 2] + Ci / dx * tiranteout
+                    - F_Q[imax - 2] / (dx * (1.0 + DELT * GAM[imax - 2])) + F_Q[imax - 3] / (dx * (1.0 + DELT * GAM[imax - 3]))
+                    + ql[imax - 2] - qs[imax - 2];
             /* Move the values of the water height at time n in the vector tirante_old[] */
             for( int i = 0; i < imax; i++ )
                 tirante_old[i] = tirante[i];
@@ -892,8 +925,8 @@ public class OmsSaintGeo extends JGTModel {
             tirante[imax - 1] = tiranteout;
             /* Calculate the discharge and the velocities at time n+1. */
             for( int i = 0; i < imax - 1; i++ ) {
-                Q[i] = F_Q[i] / (1.0 + (DELT * GAM[i])) - (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i]))
-                        * (tirante[i + 1] - tirante[i]);
+                Q[i] = F_Q[i] / (1.0 + (DELT * GAM[i]))
+                        - (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i])) * (tirante[i + 1] - tirante[i]);
             }
             dx = (DELXM[imax - 2] + DELXM[imax - 3]) / 2.0;
             base = (geomid[imax - 3][3] + geomid[imax - 2][3]) / 2.0;
@@ -922,8 +955,8 @@ public class OmsSaintGeo extends JGTModel {
                 D[i] = Ci / dx + C_old / dx + (base / DELT);
                 DI[i - 1] = -C_old / dx;
                 DS[i] = -Ci / dx;
-                B[i] = (base / DELT) * tirante[i] - F_Q[i] / (dx * (1.0 + DELT * GAM[i])) + F_Q[i - 1]
-                        / (dx * (1.0 + DELT * GAM[i - 1])) + ql[i] - qs[i];
+                B[i] = (base / DELT) * tirante[i] - F_Q[i] / (dx * (1.0 + DELT * GAM[i]))
+                        + F_Q[i - 1] / (dx * (1.0 + DELT * GAM[i - 1])) + ql[i] - qs[i];
             }
             /* the coefficients of the last line */
             dx = DELXM[imax - 2];
@@ -934,8 +967,8 @@ public class OmsSaintGeo extends JGTModel {
             C_old = (G * DELT * geomid[imax - 2][0]) / (DELXM[imax - 2] * (1.0 + DELT * GAM[imax - 2]));
             DI[imax - 2] = -C_old / dx;
             D[imax - 1] = base / DELT + C_old / dx + omegam / dx;
-            B[imax - 1] = base / DELT * tirante[imax - 1] + F_Q[imax - 2] / (dx * (1.0 + DELT * GAM[imax - 2])) + omegam * zetam
-                    / dx + ql[imax - 2] - qs[imax - 2];
+            B[imax - 1] = base / DELT * tirante[imax - 1] + F_Q[imax - 2] / (dx * (1.0 + DELT * GAM[imax - 2]))
+                    + omegam * zetam / dx + ql[imax - 2] - qs[imax - 2];
 
             /* Move the values of the water height at time n in the vector tirante_old[] */
             for( int i = 0; i < imax; i++ )
@@ -947,8 +980,8 @@ public class OmsSaintGeo extends JGTModel {
             linearAlgebra.ris_sistema(D, DS, DI, B, tirante, imax);
             /* Calculate the discharge and the velocities at time n+1. */
             for( int i = 0; i < imax - 1; i++ ) {
-                Q[i] = F_Q[i] / (1.0 + (DELT * GAM[i])) - (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i]))
-                        * (tirante[i + 1] - tirante[i]);
+                Q[i] = F_Q[i] / (1.0 + (DELT * GAM[i]))
+                        - (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i])) * (tirante[i + 1] - tirante[i]);
             }
             /*
              * Check on the water depth: if during the elaborations the height of the water depth
@@ -983,8 +1016,8 @@ public class OmsSaintGeo extends JGTModel {
                 D[i] = Ci / dx + C_old / dx + (base / DELT);
                 DI[i - 1] = -C_old / dx;
                 DS[i] = -Ci / dx;
-                B[i] = (base / DELT) * tirante[i] - F_Q[i] / (dx * (1.0 + DELT * GAM[i])) + F_Q[i - 1]
-                        / (dx * (1 + DELT * GAM[i - 1])) + ql[i] - qs[i];
+                B[i] = (base / DELT) * tirante[i] - F_Q[i] / (dx * (1.0 + DELT * GAM[i]))
+                        + F_Q[i - 1] / (dx * (1 + DELT * GAM[i - 1])) + ql[i] - qs[i];
             }
             /* the coefficients of the last line */
             dx = DELXM[imax - 2];
@@ -992,8 +1025,8 @@ public class OmsSaintGeo extends JGTModel {
             C_old = (G * DELT * geomid[imax - 2][0]) / (DELXM[imax - 2] * (1.0 + DELT * GAM[imax - 2]));
             DI[imax - 2] = -C_old / dx;
             D[imax - 1] = base / DELT + C_old / dx;
-            B[imax - 1] = base / DELT * tirante[imax - 1] - Q[imax - 2] / DELXM[imax - 2] + F_Q[imax - 2]
-                    / (dx * (1.0 + DELT * GAM[imax - 2])) + ql[imax - 2] - qs[imax - 2];
+            B[imax - 1] = base / DELT * tirante[imax - 1] - Q[imax - 2] / DELXM[imax - 2]
+                    + F_Q[imax - 2] / (dx * (1.0 + DELT * GAM[imax - 2])) + ql[imax - 2] - qs[imax - 2];
             /* Move the values of the water height at time n in the vector tirante_old[] */
             for( int i = 0; i < imax; i++ )
                 tirante_old[i] = tirante[i];
@@ -1005,8 +1038,8 @@ public class OmsSaintGeo extends JGTModel {
             /* Calculate the discharge and the velocities at time n+1. */
             Q[0] = qin;
             for( int i = 1; i < imax - 2; i++ ) {
-                Q[i] = F_Q[i] / (1.0 + (DELT * GAM[i])) - (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i]))
-                        * (tirante[i + 1] - tirante[i]);
+                Q[i] = F_Q[i] / (1.0 + (DELT * GAM[i]))
+                        - (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i])) * (tirante[i + 1] - tirante[i]);
             }
             Q[imax - 2] = Q[imax - 3];
 
@@ -1036,8 +1069,8 @@ public class OmsSaintGeo extends JGTModel {
             C1 = (G * DELT * geomid[0][0]) / (2.0 * DELXM[0] * DELXM[0] * (1.0 + DELT * GAM[0]));
             DS[0] = -C1;
             D[0] = 0;
-            B[0] = -(idrgeo[0][3] / DELT + C1) * tirantein + (idrgeo[0][3] / DELT - C1) * tirante[0] + C1 * tirante[1] - F_Q[0]
-                    / (DELXM[0] * (1.0 + DELT * GAM[0])) + (qin - Q[0] + qin_old) / DELXM[0];
+            B[0] = -(idrgeo[0][3] / DELT + C1) * tirantein + (idrgeo[0][3] / DELT - C1) * tirante[0] + C1 * tirante[1]
+                    - F_Q[0] / (DELXM[0] * (1.0 + DELT * GAM[0])) + (qin - Q[0] + qin_old) / DELXM[0];
 
             /* the coefficients of the second line */
             dx = (DELXM[0] + DELXM[1]) / 2.0;
@@ -1046,9 +1079,9 @@ public class OmsSaintGeo extends JGTModel {
             D[1] = (idrgeo[1][3] / DELT + C1 + C2);
             DS[1] = -C2;
             DI[0] = 0;
-            B[1] = (idrgeo[1][3] / DELT - C1 - C2) * tirante[1] + C2 * tirante[2] + C1 * (tirantein + tirante[0]) - F_Q[1]
-                    / (2.0 * dx * (1.0 + DELT * GAM[1])) + F_Q[0] / (2.0 * dx * (1.0 + DELT * GAM[0])) - (Q[1] - Q[0])
-                    / (2.0 * dx);
+            B[1] = (idrgeo[1][3] / DELT - C1 - C2) * tirante[1] + C2 * tirante[2] + C1 * (tirantein + tirante[0])
+                    - F_Q[1] / (2.0 * dx * (1.0 + DELT * GAM[1])) + F_Q[0] / (2.0 * dx * (1.0 + DELT * GAM[0]))
+                    - (Q[1] - Q[0]) / (2.0 * dx);
 
             /* the coefficients of the third last line */
             dx = (DELXM[1] + DELXM[0]) / 2.0;
@@ -1060,8 +1093,8 @@ public class OmsSaintGeo extends JGTModel {
                 D[i] = Ci + C_old + (idrgeo[i][3] / DELT);
                 DI[i - 1] = -C_old;
                 DS[i] = -Ci;
-                B[i] = (idrgeo[i][3] / DELT - Ci - C_old) * tirante[i] + Ci * tirante[i + 1] + C_old * tirante[i - 1] - F_Q[i]
-                        / (2.0 * dx * (1.0 + DELT * GAM[i])) + F_Q[i - 1] / (2.0 * dx * (1.0 + DELT * GAM[i - 1]))
+                B[i] = (idrgeo[i][3] / DELT - Ci - C_old) * tirante[i] + Ci * tirante[i + 1] + C_old * tirante[i - 1]
+                        - F_Q[i] / (2.0 * dx * (1.0 + DELT * GAM[i])) + F_Q[i - 1] / (2.0 * dx * (1.0 + DELT * GAM[i - 1]))
                         - (Q[i] - Q[i - 1]) / (2.0 * dx);
             }
 
@@ -1072,19 +1105,18 @@ public class OmsSaintGeo extends JGTModel {
             DI[imax - 3] = -C_old;
             DS[imax - 2] = 0;
             D[imax - 2] = C_old + Ci + (idrgeo[imax - 2][3]) / DELT;
-            B[imax - 2] = (-C_old - Ci + (idrgeo[imax - 2][3]) / DELT) * tirante[imax - 2] + Ci
-                    * (tiranteout + tirante[imax - 1]) + C_old * tirante[imax - 3] - F_Q[imax - 2]
-                    / (2.0 * dx * (1.0 + DELT * GAM[imax - 2])) + F_Q[imax - 3] / (2.0 * dx * (1.0 + DELT * GAM[imax - 3]))
-                    - (Q[imax - 2] - Q[imax - 3]) / (2.0 * dx);
+            B[imax - 2] = (-C_old - Ci + (idrgeo[imax - 2][3]) / DELT) * tirante[imax - 2] + Ci * (tiranteout + tirante[imax - 1])
+                    + C_old * tirante[imax - 3] - F_Q[imax - 2] / (2.0 * dx * (1.0 + DELT * GAM[imax - 2]))
+                    + F_Q[imax - 3] / (2.0 * dx * (1.0 + DELT * GAM[imax - 3])) - (Q[imax - 2] - Q[imax - 3]) / (2.0 * dx);
 
             /* the coefficients of the last line */
             dx = DELXM[imax - 2];
             C_old = (G * DELT * geomid[imax - 2][0]) / (2.0 * dx * dx * (1.0 + DELT * GAM[imax - 2]));
             DI[imax - 2] = -C_old;
             D[imax - 1] = 1.0 / dx;
-            B[imax - 1] = -C_old * (tiranteout + tirante[imax - 1] - tirante[imax - 2]) - (idrgeo[imax - 1][3] / DELT)
-                    * (tiranteout - tirante[imax - 1]) + F_Q[imax - 2] / (dx * (1.0 + DELT * GAM[imax - 2]))
-                    - (qout - Q[imax - 2]) / dx;
+            B[imax - 1] = -C_old * (tiranteout + tirante[imax - 1] - tirante[imax - 2])
+                    - (idrgeo[imax - 1][3] / DELT) * (tiranteout - tirante[imax - 1])
+                    + F_Q[imax - 2] / (dx * (1.0 + DELT * GAM[imax - 2])) - (qout - Q[imax - 2]) / dx;
         }
 
         /*******************************************************************************************
@@ -1095,8 +1127,8 @@ public class OmsSaintGeo extends JGTModel {
             C1 = (G * DELT * geomid[0][0]) / (2.0 * DELXM[0] * DELXM[0] * (1.0 + DELT * GAM[0]));
             DS[0] = -C1;
             D[0] = 0;
-            B[0] = -(idrgeo[0][3] / DELT + C1) * tirantein + (idrgeo[0][3] / DELT - C1) * tirante[0] + C1 * tirante[1] - F_Q[0]
-                    / (DELXM[0] * (1.0 + DELT * GAM[0])) + (qin - Q[0] + qin_old) / DELXM[0];
+            B[0] = -(idrgeo[0][3] / DELT + C1) * tirantein + (idrgeo[0][3] / DELT - C1) * tirante[0] + C1 * tirante[1]
+                    - F_Q[0] / (DELXM[0] * (1.0 + DELT * GAM[0])) + (qin - Q[0] + qin_old) / DELXM[0];
 
             /* the coefficients of the second line */
             dx = (DELXM[0] + DELXM[1]) / 2.0;
@@ -1105,9 +1137,9 @@ public class OmsSaintGeo extends JGTModel {
             D[1] = (idrgeo[1][3] / DELT + C1 + C2);
             DS[1] = -C2;
             DI[0] = 0;
-            B[1] = (idrgeo[1][3] / DELT - C1 - C2) * tirante[1] + C2 * tirante[2] + C1 * (tirantein + tirante[0]) - F_Q[1]
-                    / (2.0 * dx * (1.0 + DELT * GAM[1])) + F_Q[0] / (2.0 * dx * (1.0 + DELT * GAM[0])) - (Q[1] - Q[0])
-                    / (2.0 * dx);
+            B[1] = (idrgeo[1][3] / DELT - C1 - C2) * tirante[1] + C2 * tirante[2] + C1 * (tirantein + tirante[0])
+                    - F_Q[1] / (2.0 * dx * (1.0 + DELT * GAM[1])) + F_Q[0] / (2.0 * dx * (1.0 + DELT * GAM[0]))
+                    - (Q[1] - Q[0]) / (2.0 * dx);
             /* the coefficients from the third to the penultimate line */
             dx = (DELXM[1] + DELXM[0]) / 2.0;
             Ci = (G * DELT * geomid[0][0]) / (4.0 * dx * DELXM[0] * (1.0 + DELT * GAM[0]));
@@ -1118,8 +1150,8 @@ public class OmsSaintGeo extends JGTModel {
                 D[i] = Ci + C_old + (idrgeo[i][3] / DELT);
                 DI[i - 1] = -C_old;
                 DS[i] = -Ci;
-                B[i] = (idrgeo[i][3] / DELT - Ci - C_old) * tirante[i] + Ci * tirante[i + 1] + C_old * tirante[i - 1] - F_Q[i]
-                        / (2.0 * dx * (1 + DELT * GAM[i])) + F_Q[i - 1] / (2.0 * dx * (1.0 + DELT * GAM[i - 1]))
+                B[i] = (idrgeo[i][3] / DELT - Ci - C_old) * tirante[i] + Ci * tirante[i + 1] + C_old * tirante[i - 1]
+                        - F_Q[i] / (2.0 * dx * (1 + DELT * GAM[i])) + F_Q[i - 1] / (2.0 * dx * (1.0 + DELT * GAM[i - 1]))
                         - (Q[i] - Q[i - 1]) / (2.0 * dx);
             }
             /* the coefficients of the last line */
@@ -1129,8 +1161,8 @@ public class OmsSaintGeo extends JGTModel {
             C_old = (G * DELT * geomid[imax - 2][0]) / (2.0 * dx * dx * (1.0 + DELT * GAM[imax - 2]));
             DI[imax - 2] = -C_old;
             D[imax - 1] = idrgeo[imax - 1][3] / DELT + C_old + omegam;
-            B[imax - 1] = (idrgeo[imax - 1][3] / DELT - C_old) * tirante[imax - 1] + C_old * tirante[imax - 2] + F_Q[imax - 2]
-                    / (dx * (1.0 + DELT * GAM[imax - 2])) + (-qout + Q[imax - 2] + omegam * zetam) / dx;
+            B[imax - 1] = (idrgeo[imax - 1][3] / DELT - C_old) * tirante[imax - 1] + C_old * tirante[imax - 2]
+                    + F_Q[imax - 2] / (dx * (1.0 + DELT * GAM[imax - 2])) + (-qout + Q[imax - 2] + omegam * zetam) / dx;
         }
 
         /*******************************************************************************************
@@ -1141,8 +1173,8 @@ public class OmsSaintGeo extends JGTModel {
             C1 = (G * DELT * geomid[0][0]) / (2.0 * DELXM[0] * DELXM[0] * (1.0 + DELT * GAM[0]));
             DS[0] = -C1;
             D[0] = 0;
-            B[0] = -(idrgeo[0][3] / DELT + C1) * tirantein + (idrgeo[0][3] / DELT - C1) * tirante[0] + C1 * tirante[1] - F_Q[0]
-                    / (DELXM[0] * (1.0 + DELT * GAM[0])) + (qin - Q[0] + qin_old) / DELXM[0];
+            B[0] = -(idrgeo[0][3] / DELT + C1) * tirantein + (idrgeo[0][3] / DELT - C1) * tirante[0] + C1 * tirante[1]
+                    - F_Q[0] / (DELXM[0] * (1.0 + DELT * GAM[0])) + (qin - Q[0] + qin_old) / DELXM[0];
             /* the coefficients of the second line */
             dx = (DELXM[0] + DELXM[1]) / 2.0;
             C1 = (G * DELT * geomid[0][0]) / (4.0 * dx * DELXM[0] * (1.0 + DELT * GAM[0]));
@@ -1150,9 +1182,9 @@ public class OmsSaintGeo extends JGTModel {
             D[1] = (idrgeo[1][3] / DELT + C1 + C2);
             DS[1] = -C2;
             DI[0] = 0;
-            B[1] = (idrgeo[1][3] / DELT - C1 - C2) * tirante[1] + C2 * tirante[2] + C1 * (tirantein + tirante[0]) - F_Q[1]
-                    / (2.0 * dx * (1.0 + DELT * GAM[1])) + F_Q[0] / (2.0 * dx * (1.0 + DELT * GAM[0])) - (Q[1] - Q[0])
-                    / (2.0 * dx);
+            B[1] = (idrgeo[1][3] / DELT - C1 - C2) * tirante[1] + C2 * tirante[2] + C1 * (tirantein + tirante[0])
+                    - F_Q[1] / (2.0 * dx * (1.0 + DELT * GAM[1])) + F_Q[0] / (2.0 * dx * (1.0 + DELT * GAM[0]))
+                    - (Q[1] - Q[0]) / (2.0 * dx);
             /* the coefficients from the third to the penultimate line */
             dx = (DELXM[1] + DELXM[0]) / 2.0;
             Ci = (G * DELT * geomid[0][0]) / (4.0 * dx * DELXM[0] * (1.0 + DELT * GAM[0]));
@@ -1163,8 +1195,8 @@ public class OmsSaintGeo extends JGTModel {
                 D[i] = Ci + C_old + (idrgeo[i][3] / DELT);
                 DI[i - 1] = -C_old;
                 DS[i] = -Ci;
-                B[i] = (idrgeo[i][3] / DELT - Ci - C_old) * tirante[i] + Ci * tirante[i + 1] + C_old * tirante[i - 1] - F_Q[i]
-                        / (2.0 * dx * (1.0 + DELT * GAM[i])) + F_Q[i - 1] / (2.0 * dx * (1.0 + DELT * GAM[i - 1]))
+                B[i] = (idrgeo[i][3] / DELT - Ci - C_old) * tirante[i] + Ci * tirante[i + 1] + C_old * tirante[i - 1]
+                        - F_Q[i] / (2.0 * dx * (1.0 + DELT * GAM[i])) + F_Q[i - 1] / (2.0 * dx * (1.0 + DELT * GAM[i - 1]))
                         - (Q[i] - Q[i - 1]) / (2.0 * dx);
             }
             /* the coefficients of the last line */
@@ -1173,8 +1205,8 @@ public class OmsSaintGeo extends JGTModel {
             C_old = (G * DELT * geomid[imax - 2][0]) / (DELXM[imax - 2] * (1.0 + DELT * GAM[imax - 2]));
             DI[imax - 2] = -C_old / dx;
             D[imax - 1] = base / DELT + C_old / dx;
-            B[imax - 1] = base / DELT * tirante[imax - 1] + F_Q[imax - 2] / (dx * (1.0 + DELT * GAM[imax - 2])) - Q[imax - 2]
-                    / DELXM[imax - 2] + ql[imax - 2] - qs[imax - 2];
+            B[imax - 1] = base / DELT * tirante[imax - 1] + F_Q[imax - 2] / (dx * (1.0 + DELT * GAM[imax - 2]))
+                    - Q[imax - 2] / DELXM[imax - 2] + ql[imax - 2] - qs[imax - 2];
             /* Move the values of the water height at time n in the vector tirante_old[] */
             for( int i = 0; i < imax; i++ )
                 tirante_old[i] = tirante[i];
@@ -1187,8 +1219,8 @@ public class OmsSaintGeo extends JGTModel {
             /* Calculate the discharge and the velocities at time n+1. */
             /* Q[1]=qin; */
             for( int i = 0; i < imax - 1; i++ ) {
-                Q[i] = F_Q[i] / (1.0 + (DELT * GAM[i])) - (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i]))
-                        * (tirante[i + 1] - tirante[i]);
+                Q[i] = F_Q[i] / (1.0 + (DELT * GAM[i]))
+                        - (G * DELT * geomid[i][0]) / (DELXM[i] * (1.0 + DELT * GAM[i])) * (tirante[i + 1] - tirante[i]);
             }
             /*
              * Check on the water depth: if during the elaborations the height of the water depth

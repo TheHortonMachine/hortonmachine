@@ -52,4 +52,11 @@ public interface LWFields {
     static final String FIELD_ISCRITIC_LOCAL = "iscriticl";
     static final String FIELD_ISCRITIC_GLOBAL = "iscriticg";
     static final String FIELD_CRITIC_SOURCE = "critsource";
+
+    static final String FIELD_WATER_LEVEL = "b_wlevel";
+    static final String FIELD_DISCHARGE = "b_disch";
+    static final String FIELD_WATER_VELOCITY = "b_wvel";
+    
+    
+    
 }
