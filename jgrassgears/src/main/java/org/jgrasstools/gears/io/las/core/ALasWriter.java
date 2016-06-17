@@ -89,5 +89,14 @@ public abstract class ALasWriter extends Las implements AutoCloseable {
     public abstract void setWriteGroundElevation( boolean doWriteGroundElevation );
 
     public abstract void setPointFormat( int pointFormat );
+    
+    /**
+     * Defines whether GPS Week Time (0) or Adjusted Standard GPS
+     * time (1) is used on the GPSTime field of LAS records.
+     *  
+     * @param timeType 0 to set GPS Week Time or 1 to set Adjusted Standard
+     * GPS time.
+     */
+    public abstract void setGpsTimeType(int timeType);
 
 }
