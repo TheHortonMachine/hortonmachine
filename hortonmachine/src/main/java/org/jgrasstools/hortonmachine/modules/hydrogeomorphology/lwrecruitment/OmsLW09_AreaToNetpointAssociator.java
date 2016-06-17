@@ -161,7 +161,7 @@ public class OmsLW09_AreaToNetpointAssociator extends JGTModel {
         /*
          * extract the inundated area from the polygon
          */
-        PreparedGeometry preparedFooldingArea = getFloofindArea(inInundationArea);
+        PreparedGeometry preparedFloodingArea = getFloodingArea(inInundationArea);
 
         /*
          * extract the Canopy Height Model from DTM and DSM
@@ -205,7 +205,7 @@ public class OmsLW09_AreaToNetpointAssociator extends JGTModel {
                      * - point is inside the inundated area
                      * and fill the hashmaps with the correspondent positions.
                      */
-                    if (connectivityDouble < pConnectivityThreshold || preparedFooldingArea.intersects(point)) {
+                    if (connectivityDouble < pConnectivityThreshold || preparedFloodingArea.intersects(point)) {
                         double chmDouble = chmIter.getSampleDouble(c, r, 0);
                         double standDouble = standIter.getSampleDouble(c, r, 0);
                         DescriptiveStatistics summaryHeightStatistics = heightBasin2ValueMap.get(netNum);
@@ -262,7 +262,7 @@ public class OmsLW09_AreaToNetpointAssociator extends JGTModel {
     /*
     * extract the inundated area from the polygon
     */
-    private PreparedGeometry getFloofindArea( SimpleFeatureCollection inFloodingAreas ) throws Exception {
+    private PreparedGeometry getFloodingArea( SimpleFeatureCollection inFloodingAreas ) throws Exception {
         List<Geometry> geometriesList = FeatureUtilities.featureCollectionToGeometriesList(inFloodingAreas, true, null);
         Geometry polygonUnion = CascadedPolygonUnion.union(geometriesList);
         PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(polygonUnion);
