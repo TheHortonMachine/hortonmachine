@@ -60,14 +60,14 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.operation.distance.DistanceOp;
 import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
-@Description(OmsLW07_NetworkBufferWidthCalculator.DESCRIPTION)
-@Author(name = OmsLW07_NetworkBufferWidthCalculator.AUTHORS, contact = OmsLW07_NetworkBufferWidthCalculator.CONTACTS)
-@Keywords(OmsLW07_NetworkBufferWidthCalculator.KEYWORDS)
-@Label(OmsLW07_NetworkBufferWidthCalculator.LABEL)
-@Name("_" + OmsLW07_NetworkBufferWidthCalculator.NAME)
-@Status(OmsLW07_NetworkBufferWidthCalculator.STATUS)
-@License(OmsLW07_NetworkBufferWidthCalculator.LICENSE)
-public class OmsLW07_NetworkBufferWidthCalculator extends JGTModel implements LWFields {
+@Description(OmsLW08_NetworkBufferWidthCalculator.DESCRIPTION)
+@Author(name = OmsLW08_NetworkBufferWidthCalculator.AUTHORS, contact = OmsLW08_NetworkBufferWidthCalculator.CONTACTS)
+@Keywords(OmsLW08_NetworkBufferWidthCalculator.KEYWORDS)
+@Label(OmsLW08_NetworkBufferWidthCalculator.LABEL)
+@Name("_" + OmsLW08_NetworkBufferWidthCalculator.NAME)
+@Status(OmsLW08_NetworkBufferWidthCalculator.STATUS)
+@License(OmsLW08_NetworkBufferWidthCalculator.LICENSE)
+public class OmsLW08_NetworkBufferWidthCalculator extends JGTModel implements LWFields {
     @Description(inNetPoints_DESCR)
     @In
     public SimpleFeatureCollection inNetPoints = null;
@@ -76,9 +76,9 @@ public class OmsLW07_NetworkBufferWidthCalculator extends JGTModel implements LW
     @In
     public SimpleFeatureCollection inGeo = null;
 
-    @Description(inSectWidth_DESCR)
+    @Description(inTransSect_DESCR)
     @In
-    public SimpleFeatureCollection inSectWidth = null;
+    public SimpleFeatureCollection inTransSect = null;
 
     @Description(pPrePostCount4Slope_DESCR)
     @In
@@ -121,7 +121,7 @@ public class OmsLW07_NetworkBufferWidthCalculator extends JGTModel implements LW
     public static final String pN_DESCR = "Formula exponent of the power law for the evaluation of the new width: newWidth = width + k * slope^n";
     public static final String pK_DESCR = "Formula constant of the power law for the evaluation of the new width: newWidth = width + k * slope^n";
     public static final String pPrePostCount4Slope_DESCR = "The number of cells upstream and downstream to consider to evaluate the average slope in each section.";
-    public static final String inSectWidth_DESCR = "The input line shapefile with the extracted transversal sections.";
+    public static final String inTransSect_DESCR = "The input line shapefile with the extracted transversal sections.";
     public static final String inGeo_DESCR = "The input polygon layer with the geological superficial geological formations.";
     public static final String inNetPoints_DESCR = "The input hierarchy point network layer with the information of local slope.";
     public static final int STATUS = Status.EXPERIMENTAL;
@@ -149,7 +149,7 @@ public class OmsLW07_NetworkBufferWidthCalculator extends JGTModel implements LW
         /*
          * read the width lines and index them by id
          */
-        List<SimpleFeature> widthLinesList = FeatureUtilities.featureCollectionToList(inSectWidth);
+        List<SimpleFeature> widthLinesList = FeatureUtilities.featureCollectionToList(inTransSect);
         pfafId2WidthLine = new HashMap<String, Geometry>();
         for( SimpleFeature widthLineFeature : widthLinesList ) {
             String pfaf = widthLineFeature.getAttribute(PFAF).toString();
@@ -210,7 +210,7 @@ public class OmsLW07_NetworkBufferWidthCalculator extends JGTModel implements LW
 
                 int from = ((Double) netPointFeature.getAttribute(WIDTH_FROM)).intValue();
                 double newWidth = 0;
-                if (doKeepBridgeDamWidth && from != 0) {
+                if (doKeepBridgeDamWidth && from != LWFields.WIDTH_FROM_CHANNELEDIT) {
                     // in this case the new lines are the same as the old
                     /*
                      * the width is taken from the attributes table, since it

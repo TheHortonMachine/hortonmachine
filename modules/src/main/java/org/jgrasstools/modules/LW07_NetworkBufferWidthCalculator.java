@@ -17,25 +17,25 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.AUTHORS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.CONTACTS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.KEYWORDS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.LABEL;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.LICENSE;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.NAME;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.STATUS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.doKeepBridgeDamWidth_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.inGeo_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.inNetPoints_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.inSectWidth_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.outInundationArea_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.outInundationSections_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.outNetPoints_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.pK_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.pMinSlope_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.pN_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator.pPrePostCount4Slope_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.AUTHORS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.CONTACTS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.LABEL;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.LICENSE;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.NAME;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.STATUS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.doKeepBridgeDamWidth_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.inGeo_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.inNetPoints_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.inTransSect_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.outInundationArea_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.outInundationSections_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.outNetPoints_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.pK_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.pMinSlope_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.pN_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator.pPrePostCount4Slope_DESCR;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -49,7 +49,7 @@ import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW07_NetworkBufferWidthCalculator;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworkBufferWidthCalculator;
 
 @Description(DESCRIPTION)
 @Author(name = AUTHORS, contact = CONTACTS)
@@ -69,7 +69,7 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel {
     @In
     public String inGeo = null;
 
-    @Description(inSectWidth_DESCR)
+    @Description(inTransSect_DESCR)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inSectWidth = null;
@@ -111,7 +111,7 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        OmsLW07_NetworkBufferWidthCalculator m = new OmsLW07_NetworkBufferWidthCalculator();
+        OmsLW08_NetworkBufferWidthCalculator m = new OmsLW08_NetworkBufferWidthCalculator();
         m.inNetPoints = getVector(inNetPoints);
         m.inGeo = getVector(inNetPoints);
         m.inSectWidth = getVector(inSectWidth);

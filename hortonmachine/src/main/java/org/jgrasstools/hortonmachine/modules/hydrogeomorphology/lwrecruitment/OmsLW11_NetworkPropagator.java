@@ -44,14 +44,14 @@ import org.jgrasstools.hortonmachine.modules.network.PfafstetterNumber;
 import org.jgrasstools.hortonmachine.modules.network.networkattributes.NetworkChannel;
 import org.opengis.feature.simple.SimpleFeature;
 
-@Description(OmsLW10_NetworkPropagator.DESCRIPTION)
-@Author(name = OmsLW10_NetworkPropagator.AUTHORS, contact = OmsLW10_NetworkPropagator.CONTACTS)
-@Label(OmsLW10_NetworkPropagator.LABEL)
-@Keywords(OmsLW10_NetworkPropagator.KEYWORDS)
-@Name("_" + OmsLW10_NetworkPropagator.NAME)
-@Status(OmsLW10_NetworkPropagator.STATUS)
-@License(OmsLW10_NetworkPropagator.LICENSE)
-public class OmsLW10_NetworkPropagator extends JGTModel implements LWFields {
+@Description(OmsLW11_NetworkPropagator.DESCRIPTION)
+@Author(name = OmsLW11_NetworkPropagator.AUTHORS, contact = OmsLW11_NetworkPropagator.CONTACTS)
+@Label(OmsLW11_NetworkPropagator.LABEL)
+@Keywords(OmsLW11_NetworkPropagator.KEYWORDS)
+@Name("_" + OmsLW11_NetworkPropagator.NAME)
+@Status(OmsLW11_NetworkPropagator.STATUS)
+@License(OmsLW11_NetworkPropagator.LICENSE)
+public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
 
     @Description(inNetPoints_DESCR)
     @In

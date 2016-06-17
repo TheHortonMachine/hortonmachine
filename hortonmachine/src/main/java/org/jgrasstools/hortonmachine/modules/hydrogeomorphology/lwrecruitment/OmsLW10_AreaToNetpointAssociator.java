@@ -59,14 +59,14 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
-@Description(OmsLW09_AreaToNetpointAssociator.DESCRIPTION)
-@Author(name = OmsLW09_AreaToNetpointAssociator.AUTHORS, contact = OmsLW09_AreaToNetpointAssociator.CONTACTS)
-@Keywords(OmsLW09_AreaToNetpointAssociator.KEYWORDS)
-@Label(OmsLW09_AreaToNetpointAssociator.LABEL)
-@Name("_" + OmsLW09_AreaToNetpointAssociator.NAME)
-@Status(OmsLW09_AreaToNetpointAssociator.STATUS)
-@License(OmsLW09_AreaToNetpointAssociator.LICENSE)
-public class OmsLW09_AreaToNetpointAssociator extends JGTModel {
+@Description(OmsLW10_AreaToNetpointAssociator.DESCRIPTION)
+@Author(name = OmsLW10_AreaToNetpointAssociator.AUTHORS, contact = OmsLW10_AreaToNetpointAssociator.CONTACTS)
+@Keywords(OmsLW10_AreaToNetpointAssociator.KEYWORDS)
+@Label(OmsLW10_AreaToNetpointAssociator.LABEL)
+@Name("_" + OmsLW10_AreaToNetpointAssociator.NAME)
+@Status(OmsLW10_AreaToNetpointAssociator.STATUS)
+@License(OmsLW10_AreaToNetpointAssociator.LICENSE)
+public class OmsLW10_AreaToNetpointAssociator extends JGTModel {
 
     @Description(inNetPoints_DESCR)
     @In

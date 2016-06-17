@@ -44,14 +44,14 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
-@Description(OmsLW08_NetworBufferMergerHolesRemover.DESCRIPTION)
-@Author(name = OmsLW08_NetworBufferMergerHolesRemover.AUTHORS, contact = OmsLW08_NetworBufferMergerHolesRemover.CONTACTS)
-@Keywords(OmsLW08_NetworBufferMergerHolesRemover.KEYWORDS)
-@Label(OmsLW08_NetworBufferMergerHolesRemover.LABEL)
-@Name("_" + OmsLW08_NetworBufferMergerHolesRemover.NAME)
-@Status(OmsLW08_NetworBufferMergerHolesRemover.STATUS)
-@License(OmsLW08_NetworBufferMergerHolesRemover.LICENSE)
-public class OmsLW08_NetworBufferMergerHolesRemover extends JGTModel {
+@Description(OmsLW09_NetworBufferMergerHolesRemover.DESCRIPTION)
+@Author(name = OmsLW09_NetworBufferMergerHolesRemover.AUTHORS, contact = OmsLW09_NetworBufferMergerHolesRemover.CONTACTS)
+@Keywords(OmsLW09_NetworBufferMergerHolesRemover.KEYWORDS)
+@Label(OmsLW09_NetworBufferMergerHolesRemover.LABEL)
+@Name("_" + OmsLW09_NetworBufferMergerHolesRemover.NAME)
+@Status(OmsLW09_NetworBufferMergerHolesRemover.STATUS)
+@License(OmsLW09_NetworBufferMergerHolesRemover.LICENSE)
+public class OmsLW09_NetworBufferMergerHolesRemover extends JGTModel {
 
     @Description(inInundationArea_DESCR)
     @In
