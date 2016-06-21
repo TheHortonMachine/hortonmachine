@@ -38,8 +38,8 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -152,16 +152,15 @@ public class ParametersPanel extends JPanel implements MouseListener {
         String rowsEnc = "";
         for( int i = 0; i < allRows; i++ ) {
             if (i == 0) {
-                rowsEnc = "pref ";
+                rowsEnc = "pref";
             } else
-                rowsEnc = rowsEnc + ", 3dlu, pref";
+                rowsEnc = rowsEnc + ", 3dlu, max(50dlu;pref)";
         }
+        // max(75dlu;pref)
+        this.setLayout(new FormLayout("fill:250px:grow(.35), fill:5px, fill:250px:grow(.55)", rowsEnc));
+        // this.setLayout(new FormLayout("left:pref, 2dlu, pref:grow", rowsEnc));
 
-        this.setLayout(new FormLayout("left:pref, 2dlu, pref:grow", rowsEnc));
-
-        int labelTrim = 40;
-
-        addInputs(inputsList, labelTrim);
+        addInputs(inputsList);
 
         // NO OUTPUTS AVAILABLE
         // for( FieldData outputField : outputsList ) {
@@ -201,7 +200,7 @@ public class ParametersPanel extends JPanel implements MouseListener {
         return parentOmsClass;
     }
 
-    private void addInputs( final List<FieldData> inputsList, int labelTrim ) {
+    private void addInputs( final List<FieldData> inputsList ) {
         rasterComboList = new ArrayList<>();
         vectorComboList = new ArrayList<>();
         CellConstraints cc = new CellConstraints();
@@ -210,17 +209,17 @@ public class ParametersPanel extends JPanel implements MouseListener {
             if (inputField.fieldName.equals(PM_VAR_NAME)) {
                 continue;
             }
-            String fieldLabel = null;
             String fieldDescription = inputField.fieldDescription;
-            if (fieldDescription.length() > labelTrim) {
-                fieldLabel = fieldDescription.substring(0, labelTrim) + "...";
-            } else {
-                fieldLabel = fieldDescription;
-            }
+            String fieldLabel = fieldDescription;
             String fieldTooltip = fieldDescription;
-            // the label
-            JLabel nameLabel = new JLabel(fieldLabel);
+
+            JTextArea nameLabel = new JTextArea();
+            nameLabel.setOpaque(false);
+            nameLabel.setLineWrap(true);
+            nameLabel.setWrapStyleWord(true);
+            nameLabel.setText(fieldLabel);
             nameLabel.setToolTipText(fieldTooltip);
+            nameLabel.setEditable(false);
 
             TypeCheck fileCheck = getFileCheck(inputField);
             if (fileCheck.isOutput) {
@@ -268,7 +267,13 @@ public class ParametersPanel extends JPanel implements MouseListener {
                 // handleListInputField(inputField, row, col, cc);
             }
 
-            row = row + 2;
+            row++;
+            this.add(new JSeparator(JSeparator.HORIZONTAL), cc.xy(1, row));
+            this.add(new JSeparator(JSeparator.HORIZONTAL), cc.xy(2, row));
+            this.add(new JSeparator(JSeparator.HORIZONTAL), cc.xy(3, row));
+            row++;
+
+            // row = row + 3;
         }
     }
 

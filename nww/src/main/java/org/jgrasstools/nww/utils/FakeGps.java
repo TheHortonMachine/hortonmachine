@@ -96,7 +96,7 @@ public class FakeGps {
 
                         view.setEyePosition(new Position(latLon, altitude));
                         view.setHeading(heading);
-
+                        nwwPanel.getWwd().redraw();
                         if (i == 0) {
                             Thread.sleep(2000);
                         } else {

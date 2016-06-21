@@ -31,8 +31,6 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.nww.layers.OSMMapnikLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
 
-import com.vividsolutions.jts.geom.Coordinate;
-
 import gov.nasa.worldwind.Model;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.WorldWind;
@@ -40,7 +38,8 @@ import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
-import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Earth;
@@ -54,6 +53,7 @@ import gov.nasa.worldwind.layers.ViewControlsLayer;
 import gov.nasa.worldwind.layers.ViewControlsSelectListener;
 import gov.nasa.worldwind.terrain.ZeroElevationModel;
 import gov.nasa.worldwind.util.StatusBar;
+import gov.nasa.worldwind.view.orbit.OrbitView;
 
 /**
  * The main NWW panel.
@@ -65,7 +65,9 @@ public class NwwPanel extends JPanel {
     private WorldWindow wwd;
     protected StatusBar statusBar;
 
-    public NwwPanel() {
+    private double lastElevation = Double.NaN;
+
+    public NwwPanel(boolean useWwGlCanvas) {
         super(new BorderLayout());
 
         // Configuration.setValue(AVKey.INITIAL_LATITUDE, gpsLogShps[0].y);
@@ -73,8 +75,11 @@ public class NwwPanel extends JPanel {
         // Configuration.setValue(AVKey.INITIAL_ALTITUDE, 1000);
         // Configuration.setValue(AVKey.INITIAL_PITCH, 45);
 
-        wwd = new WorldWindowGLJPanel();
-        ((WorldWindowGLJPanel) wwd).setOpaque(false);
+        if (useWwGlCanvas) {
+            wwd = new WorldWindowGLCanvas();
+        } else {
+            wwd = new WorldWindowGLJPanel();
+        }
         ((Component) wwd).setPreferredSize(new Dimension(500, 500));
 
         Model model = (Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME);
@@ -92,21 +97,22 @@ public class NwwPanel extends JPanel {
         }
         layers.clear();
 
-        // Create and install the view controls layer and register a controller
-        // for it with the
-        // World Window.
-        ViewControlsLayer viewControlsLayer = new ViewControlsLayer();
-        layers.add(viewControlsLayer);
-        getWwd().addSelectListener(new ViewControlsSelectListener(getWwd(), viewControlsLayer));
-
         layers.addAll(addBack);
-
-        layers.add(new OSMMapnikLayer());
 
         this.add((Component) this.getWwd(), BorderLayout.CENTER);
         this.statusBar = new StatusBar();
         this.add(statusBar, BorderLayout.PAGE_END);
         this.statusBar.setEventSource(getWwd());
+    }
+
+    public void addViewControls() {
+        ViewControlsLayer viewControlsLayer = new ViewControlsLayer();
+        addLayer(viewControlsLayer);
+        getWwd().addSelectListener(new ViewControlsSelectListener(getWwd(), viewControlsLayer));
+    }
+
+    public void addOsmLayer() {
+        addLayer(new OSMMapnikLayer());
     }
 
     /**
@@ -118,24 +124,91 @@ public class NwwPanel extends JPanel {
      *            the latitude.
      * @param elev
      *            the eye elevation.
+     * @param azimuth
+     *            if supplied, the map is rotated to follow that angle.
      * @param animate
      *            if <code>true</code>, it animates to the position.
      */
-    public void goTo(double lon, double lat, Double elev, boolean animate) {
-        Position eyePosition;
-        if (elev == null) {
-            eyePosition = NwwUtilities.toPosition(lat, lon);
-        } else {
-            eyePosition = NwwUtilities.toPosition(lat, lon, elev);
-        }
+    public synchronized Position goTo(Double lon, Double lat, Double elev, Double azimuth, boolean animate) {
         View view = getWwd().getView();
-        if (animate) {
-            if (elev == null) {
+        view.stopAnimations();
+        view.stopMovement();
+
+        Position eyePosition;
+        if (lon == null || lat == null) {
+            Position currentEyePosition = wwd.getView().getCurrentEyePosition();
+            if (currentEyePosition != null) {
+                lat = currentEyePosition.latitude.degrees;
+                lon = currentEyePosition.longitude.degrees;
+            } else {
+                return null;
+            }
+        }
+
+        if (elev == null) {
+            // use the current
+            elev = wwd.getView().getCurrentEyePosition().getAltitude();
+        }
+        if (Double.isNaN(elev)) {
+            if (!Double.isNaN(lastElevation)) {
+                elev = lastElevation;
+            } else {
                 elev = NwwUtilities.DEFAULT_ELEV;
             }
+        }
+        eyePosition = NwwUtilities.toPosition(lat, lon, elev);
+        System.out.println("CURRENT EYE: " + eyePosition);
+        if (animate) {
             view.goTo(eyePosition, elev);
         } else {
             view.setEyePosition(eyePosition);
+        }
+        if (azimuth != null) {
+            Angle heading = Angle.fromDegrees(azimuth);
+            view.setHeading(heading);
+        }
+        lastElevation = elev;
+        return eyePosition;
+    }
+
+    /**
+     * Move to see a given sector.
+     * 
+     * @param sector
+     *            the sector to go to.
+     * @param animate
+     *            if <code>true</code>, it animates to the position.
+     */
+    public void goTo(Sector sector, boolean animate) {
+        View view = getWwd().getView();
+        view.stopAnimations();
+        view.stopMovement();
+        if (sector == null) {
+            return;
+        }
+        // Create a bounding box for the specified sector in order to estimate
+        // its size in model coordinates.
+        Box extent = Sector.computeBoundingBox(getWwd().getModel().getGlobe(),
+                getWwd().getSceneController().getVerticalExaggeration(), sector);
+
+        // Estimate the distance between the center position and the eye
+        // position that is necessary to cause the sector to
+        // fill a viewport with the specified field of view. Note that we change
+        // the distance between the center and eye
+        // position here, and leave the field of view constant.
+        Angle fov = view.getFieldOfView();
+        double zoom = extent.getRadius() / fov.cosHalfAngle() / fov.tanHalfAngle();
+
+        // Configure OrbitView to look at the center of the sector from our
+        // estimated distance. This causes OrbitView to
+        // animate to the specified position over several seconds. To affect
+        // this change immediately use the following:
+
+        if (animate) {
+            view.goTo(new Position(sector.getCentroid(), 0d), zoom);
+        } else {
+            ((OrbitView) wwd.getView()).setCenterPosition(new Position(sector.getCentroid(), 0d));
+            ((OrbitView) wwd.getView()).setZoom(zoom);
         }
     }
 
@@ -189,37 +262,6 @@ public class NwwPanel extends JPanel {
         }
     }
 
-    public void zoomTo(Sector sector, boolean animate) {
-        if (sector != null) {
-            double sectorWidth = sector.getDeltaLonDegrees();
-            LatLon centroid = sector.getCentroid();
-
-            zoomTo(sectorWidth, centroid, animate);
-        }
-    }
-
-    public void zoomTo(ReferencedEnvelope env, boolean animate) {
-        double sectorWidth = env.getWidth();
-        Coordinate centre = env.centre();
-        LatLon centroid = NwwUtilities.toLatLon(centre.y, centre.x);
-
-        zoomTo(sectorWidth, centroid, animate);
-    }
-
-    private void zoomTo(double width, LatLon centroid, boolean animate) {
-        View view = getWwd().getView();
-        double altitude = view.getCurrentEyePosition().getAltitude();
-        ReferencedEnvelope viewportBounds = getViewportBounds();
-        double newAltitude;
-        if (viewportBounds != null) {
-            double viewWidth = viewportBounds.getWidth();
-            newAltitude = width * altitude / viewWidth;
-        } else {
-            newAltitude = altitude / 3;
-        }
-        goTo(centroid.longitude.degrees, centroid.latitude.degrees, newAltitude, animate);
-    }
-
     public WorldWindow getWwd() {
         return wwd;
     }
@@ -232,5 +274,38 @@ public class NwwPanel extends JPanel {
         LayerList layers = getWwd().getModel().getLayers();
         layers.remove(layer);
     }
+
+    // TODO check these old zoom tos
+    // public void zoomTo(Sector sector, boolean animate) {
+    // if (sector != null) {
+    // double sectorWidth = sector.getDeltaLonDegrees();
+    // LatLon centroid = sector.getCentroid();
+    //
+    // zoomTo(sectorWidth, centroid, animate);
+    // }
+    // }
+    //
+    // public void zoomTo(ReferencedEnvelope env, boolean animate) {
+    // double sectorWidth = env.getWidth();
+    // Coordinate centre = env.centre();
+    // LatLon centroid = NwwUtilities.toLatLon(centre.y, centre.x);
+    //
+    // zoomTo(sectorWidth, centroid, animate);
+    // }
+    //
+    // private void zoomTo(double width, LatLon centroid, boolean animate) {
+    // View view = getWwd().getView();
+    // double altitude = view.getCurrentEyePosition().getAltitude();
+    // ReferencedEnvelope viewportBounds = getViewportBounds();
+    // double newAltitude;
+    // if (viewportBounds != null) {
+    // double viewWidth = viewportBounds.getWidth();
+    // newAltitude = width * altitude / viewWidth;
+    // } else {
+    // newAltitude = altitude / 3;
+    // }
+    // goTo(centroid.longitude.degrees, centroid.latitude.degrees, newAltitude,
+    // null, animate);
+    // }
 
 }

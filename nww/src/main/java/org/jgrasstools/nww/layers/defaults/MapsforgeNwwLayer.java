@@ -56,7 +56,7 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
 
     private String layerName = "unknown layer";
 
-    private static final int TILESIZE = 512;
+    private static final int TILESIZE = 1024;
 
     public MapsforgeNwwLayer(File mapsforgeFile) throws Exception {
         super(makeLevels(mapsforgeFile, getTilegenerator(mapsforgeFile)));

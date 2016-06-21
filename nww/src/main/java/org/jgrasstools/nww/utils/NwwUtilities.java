@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import com.vividsolutions.jts.geom.Envelope;
+
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -28,14 +30,13 @@ import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Envelope;
-
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.markers.BasicMarkerShape;
 import gov.nasa.worldwindx.examples.util.ToolTipController;
 
@@ -192,6 +193,19 @@ public class NwwUtilities {
 
     public static Position toPosition(double lat, double lon) {
         return toPosition(lat, lon, DEFAULT_ELEV);
+    }
+
+    public static Sector envelope2Sector(ReferencedEnvelope env) throws Exception {
+        ReferencedEnvelope llEnv = env.transform(GPS_CRS, true);
+        Sector sector = Sector.fromDegrees(llEnv.getMinY(), llEnv.getMaxY(), llEnv.getMinX(), llEnv.getMaxX());
+        return sector;
+    }
+
+    public static ReferencedEnvelope sector2Envelope(Sector sector) throws Exception {
+        ReferencedEnvelope env =
+            new ReferencedEnvelope(sector.getMinLongitude().degrees, sector.getMaxLongitude().degrees,
+                sector.getMinLatitude().degrees, sector.getMaxLatitude().degrees, GPS_CRS);
+        return env;
     }
 
     public static Color darkenColor(Color color) {

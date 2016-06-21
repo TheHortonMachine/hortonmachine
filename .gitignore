@@ -12,3 +12,5 @@ target
 .idea
 *.iml
 *.dll
+*.so
+extras/export/libs
