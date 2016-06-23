@@ -39,6 +39,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -46,6 +47,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.ARiverSectionsExtractor;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.OmsRiverSectionsExtractor;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -431,5 +433,27 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
         }
 
         return newCollection;
+    }
+    
+    public static void main( String[] args ) throws Exception {
+
+        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/single_reach/";
+
+        OmsLW04_BankfullWidthAnalyzer ex = new OmsLW04_BankfullWidthAnalyzer();
+        ex.inBankfull = OmsVectorReader.readVector(base + "channelpolygon_merged.shp");
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_points.shp");
+        //ex.inSections = OmsVectorReader.readVector(base + "shape/sections_adige_75.shp");
+//        ex.pMaxDistanceFromNetpoint = 20;
+//        ex.pMaxNetworkWidth = 75;
+//        ex.pMinNetworkWidth = 
+        ex.process();
+        SimpleFeatureCollection outNetPoints = ex.outNetPoints;
+        SimpleFeatureCollection outBankfullSections = ex.outBankfullSections;
+        SimpleFeatureCollection outProblemPoints = ex.outProblemPoints;
+
+        OmsVectorWriter.writeVector(base + "net_point_width.shp", outNetPoints);
+        OmsVectorWriter.writeVector(base + "bankfullsections.shp", outBankfullSections);
+        OmsVectorWriter.writeVector(base + "problempoints.shp", outProblemPoints);
+
     }
 }
