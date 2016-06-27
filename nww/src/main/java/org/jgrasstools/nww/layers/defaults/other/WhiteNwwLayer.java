@@ -15,20 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.nww.layers.defaults;
+package org.jgrasstools.nww.layers.defaults.other;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.SQLException;
 
 import javax.imageio.ImageIO;
 
-import com.vividsolutions.jts.geom.Coordinate;
-
-import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
-import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.nww.layers.defaults.raster.BasicMercatorTiledImageLayer;
+import org.jgrasstools.nww.utils.cache.CacheUtils;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
@@ -45,68 +44,40 @@ import gov.nasa.worldwind.util.TileUrlBuilder;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
+public class WhiteNwwLayer extends BasicMercatorTiledImageLayer {
+
+    private static final String WHITE_BACKGROUND = "white_background";
 
     private String layerName = "unknown layer";
 
-    private static final int TILESIZE = 256;
+    private static final int TILESIZE = 512;
+    private static BufferedImage img = null;
 
-    private File mbtilesFile;
-
-    private Coordinate centerCoordinate;
-
-    public MBTilesNwwLayer(File mbtilesFile) throws Exception {
-        super(makeLevels(mbtilesFile, getTilegenerator(mbtilesFile)));
-        this.mbtilesFile = mbtilesFile;
-        this.layerName = FileUtilities.getNameWithoutExtention(mbtilesFile);
-        this.setUseTransparentTextures(true);
-
+    public WhiteNwwLayer() {
+        super(makeLevels());
+        this.layerName = "hide_white_backgroundlayer";
     }
 
-    private static MBTilesHelper getTilegenerator(File mbtilesFile) {
-        MBTilesHelper mbTilesHelper = new MBTilesHelper();
-        try {
-            mbTilesHelper.open(mbtilesFile);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return mbTilesHelper;
-    }
-
-    private static LevelSet makeLevels(File mbtilesFile, MBTilesHelper mbtilesHelper) throws MalformedURLException {
+    private static LevelSet makeLevels() {
         AVList params = new AVListImpl();
 
-        String urlString = mbtilesFile.toURI().toURL().toExternalForm();
-        params.setValue(AVKey.URL, urlString);
+        // String urlString = "";
+        // params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, TILESIZE);
         params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
-        params.setValue(AVKey.DATA_CACHE_NAME, "huberg/" + mbtilesFile.getName() + "-tiles");
+        params.setValue(AVKey.DATA_CACHE_NAME, WHITE_BACKGROUND);
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
 
-        String imageFormat = null;
-        try {
-            imageFormat = mbtilesHelper.getImageFormat();
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
-        if (imageFormat == null) {
-            imageFormat = "png";
-        }
-        final String _imageFormat = imageFormat;
+        final String imageFormat = "png";
         params.setValue(AVKey.FORMAT_SUFFIX, "." + imageFormat);
         params.setValue(AVKey.NUM_LEVELS, 22);
         params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
         params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new LatLon(Angle.fromDegrees(22.5d), Angle.fromDegrees(45d)));
         params.setValue(AVKey.SECTOR, new MercatorSector(-1.0, 1.0, Angle.NEG180, Angle.POS180));
-        final File cacheFolder = new File(mbtilesFile.getAbsolutePath() + "-tiles");
-        if (!cacheFolder.exists()) {
-            cacheFolder.mkdirs();
-        }
-        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder() {
+        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder(){
 
-            public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {
+            public URL getURL( Tile tile, String altImageFormat ) throws MalformedURLException {
                 int zoom = tile.getLevelNumber() + 3;
                 int x = tile.getColumn();
                 int y = tile.getRow();
@@ -116,7 +87,9 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
                     sb.append(zoom);
                     sb.append(File.separator);
                     sb.append(x);
-                    File tileImageFolderFile = new File(cacheFolder, sb.toString());
+                    File cacheRoot = CacheUtils.getCacheRoot();
+                    File cacheFolderFile = new File(cacheRoot, WHITE_BACKGROUND);
+                    File tileImageFolderFile = new File(cacheFolderFile, sb.toString());
                     if (!tileImageFolderFile.exists()) {
                         tileImageFolderFile.mkdirs();
                     }
@@ -124,17 +97,17 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
                     sb = new StringBuilder();
                     sb.append(y);
                     sb.append(".");
-                    sb.append(_imageFormat);
+                    sb.append(imageFormat);
                     File imgFile = new File(tileImageFolderFile, sb.toString());
                     if (!imgFile.exists()) {
-                        BufferedImage bImg = mbtilesHelper.getTile(x, y, zoom);
-
-                        if (bImg != null) {
-                            ImageIO.write(bImg, _imageFormat, imgFile);
-                        } else {
-                            return null;
+                        if (img == null) {
+                            img = new BufferedImage(TILESIZE, TILESIZE, BufferedImage.TYPE_INT_RGB);
+                            Graphics2D g2d = img.createGraphics();
+                            g2d.setColor(Color.WHITE);
+                            g2d.fillRect(0, 0, TILESIZE, TILESIZE);
+                            g2d.dispose();
                         }
-
+                        ImageIO.write(img, imageFormat, imgFile);
                     }
                     return imgFile.toURI().toURL();
                 } catch (Exception e) {
@@ -149,23 +122,6 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
 
     public String toString() {
         return layerName;
-    }
-
-    @Override
-    public Coordinate getCenter() {
-        if (centerCoordinate == null) {
-            try (MBTilesHelper mbTilesHelper = new MBTilesHelper()) {
-                mbTilesHelper.open(mbtilesFile);
-                double[] wsen = mbTilesHelper.getBounds();
-
-                double centerX = wsen[0] + (wsen[2] - wsen[0]) / 2.0;
-                double centerY = wsen[1] + (wsen[3] - wsen[1]) / 2.0;
-                centerCoordinate = new Coordinate(centerX, centerY);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return centerCoordinate;
     }
 
 }

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.nww.layers.defaults;
+package org.jgrasstools.nww.layers.defaults.raster;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -34,6 +34,7 @@ import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
 import org.jgrasstools.gears.spatialite.RasterCoverage;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.nww.layers.defaults.NwwLayer;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 

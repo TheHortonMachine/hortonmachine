@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration.
  * All Rights Reserved.
  */
-package org.jgrasstools.nww.layers;
+package org.jgrasstools.nww.layers.defaults.raster;
 
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
@@ -11,8 +11,6 @@ import gov.nasa.worldwind.layers.mercator.*;
 import gov.nasa.worldwind.util.*;
 
 import java.net.*;
-
-import org.jgrasstools.nww.layers.defaults.BasicMercatorTiledImageLayer;
 
 /**
  * @version $Id: OSMMapnikLayer.java 1171 2013-02-11 21:45:02Z dcollins $

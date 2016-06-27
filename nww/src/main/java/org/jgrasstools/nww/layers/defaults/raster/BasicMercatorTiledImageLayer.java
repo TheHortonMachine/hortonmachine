@@ -4,7 +4,7 @@
  * All Rights Reserved.
  */
 
-package org.jgrasstools.nww.layers.defaults;
+package org.jgrasstools.nww.layers.defaults.raster;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;

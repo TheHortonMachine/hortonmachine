@@ -15,18 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.nww.layers.defaults;
+package org.jgrasstools.nww.layers.defaults.spatialite;
 
-import java.awt.Color;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.jgrasstools.gears.spatialite.QueryResult;
+import org.jgrasstools.gears.spatialite.SpatialiteDb;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
-import org.jgrasstools.nww.shapes.FeatureLine;
-import org.opengis.feature.simple.SimpleFeature;
+import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
+import org.jgrasstools.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
+import org.jgrasstools.nww.shapes.InfoLine;
+import org.jgrasstools.nww.utils.NwwUtilities;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -37,15 +40,13 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.BasicShapeAttributes;
 import gov.nasa.worldwind.render.Material;
-import gov.nasa.worldwind.render.airspaces.AirspaceAttributes;
-import gov.nasa.worldwind.render.airspaces.BasicAirspaceAttributes;
 
 /**
  * A simple lines layer.
  * 
  * @author Andrea Antonello andrea.antonello@gmail.com
  */
-public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwVectorLayer {
+public class SpatialiteLinesLayer extends RenderableLayer implements NwwVectorLayer {
 
     private String mHeightFieldName;
     private double mVerticalExageration = 1.0;
@@ -57,25 +58,26 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
 
     private Material mStrokeMaterial = Material.BLACK;
     private double mStrokeWidth = 2;
-    private SimpleFeatureCollection featureCollectionLL;
 
     private int mElevationMode = WorldWind.CLAMP_TO_GROUND;
     private String title;
-    private AirspaceAttributes highlightAttrs;
 
-    public FeatureCollectionLinesLayer( String title, SimpleFeatureCollection featureCollectionLL ) {
-        this.title = title;
-        this.featureCollectionLL = featureCollectionLL;
+    private String tableName;
+    private SpatialiteDb db;
+    private ReferencedEnvelope tableBounds;
+    private int featureLimit;
 
-        AirspaceAttributes attrs = new BasicAirspaceAttributes();
-        attrs.setDrawInterior(true);
-        attrs.setDrawOutline(true);
-        attrs.setInteriorMaterial(new Material(Color.WHITE));
-        attrs.setOutlineMaterial(new Material(Color.BLACK));
-        attrs.setOutlineWidth(2);
-        attrs.setEnableAntialiasing(true);
-        highlightAttrs = new BasicAirspaceAttributes(attrs);
-        highlightAttrs.setOutlineMaterial(new Material(Color.RED));
+    public SpatialiteLinesLayer( SpatialiteDb db, String tableName, int featureLimit ) {
+        this.db = db;
+        this.tableName = tableName;
+        this.featureLimit = featureLimit;
+
+        try {
+            tableBounds = db.getTableBounds(tableName);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            tableBounds = CrsUtilities.WORLD;
+        }
 
         setStyle(null);
         loadData();
@@ -127,23 +129,42 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
     public class WorkerThread extends Thread {
 
         public void run() {
-            SimpleFeatureIterator featureIterator = featureCollectionLL.features();
-            while( featureIterator.hasNext() ) {
-                SimpleFeature lineFeature = featureIterator.next();
-                boolean doExtrude = false;
-                if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {
-                    doExtrude = true;
+
+            try {
+                QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit,
+                        NwwUtilities.GPS_CRS_SRID);
+                int count = tableRecords.data.size();
+                List<String> names = tableRecords.names;
+                for( int i = 0; i < count; i++ ) {
+                    Object[] objects = tableRecords.data.get(i);
+                    StringBuilder sb = new StringBuilder();
+                    double height = -1;
+                    for( int j = 1; j < objects.length; j++ ) {
+                        String varName = names.get(j);
+                        sb.append(varName).append(": ").append(objects[j]).append("\n");
+
+                        if (mHeightFieldName != null && varName == mHeightFieldName && objects[j] instanceof Number) {
+                            height = ((Number) objects[j]).doubleValue();
+                        }
+                    }
+                    String info = sb.toString();
+                    Geometry geometry = (Geometry) objects[0];
+                    if (geometry == null) {
+                        continue;
+                    }
+                    boolean doExtrude = false;
+                    if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {
+                        doExtrude = true;
+                    }
+                    addLine(geometry, info, height, doExtrude);
                 }
-                addLine(lineFeature, doExtrude);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            featureIterator.close();
+
         }
 
-        private void addLine( SimpleFeature lineFeature, boolean doExtrude ) {
-            Geometry geometry = (Geometry) lineFeature.getDefaultGeometry();
-            if (geometry == null) {
-                return;
-            }
+        private void addLine( Geometry geometry, String info, double height, boolean doExtrude ) {
             Coordinate[] coordinates = geometry.getCoordinates();
             if (coordinates.length < 2)
                 return;
@@ -163,7 +184,7 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
                     h = mConstantHeight;
                 }
                 if (mHeightFieldName != null) {
-                    double tmpH = ((Number) lineFeature.getAttribute(mHeightFieldName)).doubleValue();
+                    double tmpH = height;
                     tmpH = tmpH * mVerticalExageration;
                     h += tmpH;
                 }
@@ -186,11 +207,10 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
                             verticesList.add(Position.fromDegrees(c.y, c.x, h));
                         }
                     }
-                    FeatureLine path = new FeatureLine(verticesList);
-                    path.setFeature(lineFeature);
+                    InfoLine path = new InfoLine(verticesList);
+                    path.setInfo(info);
                     path.setAltitudeMode(mElevationMode);
                     path.setAttributes(mNormalShapeAttributes);
-                    path.setHighlightAttributes(highlightAttrs);
                     path.setExtrude(doExtrude);
 
                     addRenderable(path);
@@ -206,8 +226,7 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
 
     @Override
     public Coordinate getCenter() {
-        ReferencedEnvelope bounds = featureCollectionLL.getBounds();
-        return bounds.centre();
+        return tableBounds.centre();
     }
 
     @Override

@@ -15,20 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.nww.layers.defaults;
+package org.jgrasstools.nww.layers.defaults.vector;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.jgrasstools.gears.spatialite.QueryResult;
-import org.jgrasstools.gears.spatialite.SpatialiteDb;
-import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
-import org.jgrasstools.nww.layers.MarkerLayer;
-import org.jgrasstools.nww.shapes.InfoPoint;
-import org.jgrasstools.nww.utils.NwwUtilities;
+import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
+import org.jgrasstools.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
+import org.jgrasstools.nww.layers.defaults.other.MarkerLayer;
+import org.jgrasstools.nww.shapes.FeaturePoint;
+import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -45,7 +44,7 @@ import gov.nasa.worldwind.render.markers.Marker;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class SpatialitePointsLayer extends MarkerLayer implements NwwVectorLayer {
+public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwVectorLayer {
 
     private BasicMarkerAttributes basicMarkerAttributes;
 
@@ -54,19 +53,13 @@ public class SpatialitePointsLayer extends MarkerLayer implements NwwVectorLayer
     private double mMarkerSize = 5d;
     private String mShapeType = BasicMarkerShape.SPHERE;
 
-    private String tableName;
-    private ReferencedEnvelope tableBounds;
+    private String title;
 
-    public SpatialitePointsLayer( SpatialiteDb db, String tableName, int featureLimit ) {
-        this.tableName = tableName;
+    private SimpleFeatureCollection featureCollectionLL;
 
-        try {
-            tableBounds = db.getTableBounds(tableName);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            tableBounds = CrsUtilities.WORLD;
-        }
-
+    public FeatureCollectionPointsLayer(String title, SimpleFeatureCollection featureCollectionLL) {
+        this.title = title;
+        this.featureCollectionLL = featureCollectionLL;
         basicMarkerAttributes = new BasicMarkerAttributes(mFillMaterial, mShapeType, mFillOpacity);
         basicMarkerAttributes.setMarkerPixels(mMarkerSize);
         basicMarkerAttributes.setMinMarkerSize(0.1);
@@ -76,42 +69,33 @@ public class SpatialitePointsLayer extends MarkerLayer implements NwwVectorLayer
 
         setMarkers(new ArrayList<Marker>());
 
+        SimpleFeatureIterator featureIterator = featureCollectionLL.features();
         try {
-            QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit, NwwUtilities.GPS_CRS_SRID);
-            int count = tableRecords.data.size();
-            List<String> names = tableRecords.names;
-            for( int i = 0; i < count; i++ ) {
-                Object[] objects = tableRecords.data.get(i);
-                StringBuilder sb = new StringBuilder();
-                for( int j = 1; j < objects.length; j++ ) {
-                    String varName = names.get(j);
-                    sb.append(varName).append(": ").append(objects[j]).append("\n");
-
-                }
-                String info = sb.toString();
-                Geometry geometry = (Geometry) objects[0];
+            while (featureIterator.hasNext()) {
+                SimpleFeature pointFeature = featureIterator.next();
+                Geometry geometry = (Geometry) pointFeature.getDefaultGeometry();
                 if (geometry == null) {
                     continue;
                 }
                 int numGeometries = geometry.getNumGeometries();
-                for( int j = 0; j < numGeometries; j++ ) {
-                    Geometry geometryN = geometry.getGeometryN(j);
+                for (int i = 0; i < numGeometries; i++) {
+                    Geometry geometryN = geometry.getGeometryN(i);
                     if (geometryN instanceof Point) {
                         Point point = (Point) geometryN;
-                        InfoPoint marker = new InfoPoint(Position.fromDegrees(point.getY(), point.getX(), 0),
+                        FeaturePoint marker = new FeaturePoint(Position.fromDegrees(point.getY(), point.getX(), 0),
                                 basicMarkerAttributes);
-                        marker.setInfo(info);
+                        marker.setFeature(pointFeature);
                         addMarker(marker);
                     }
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } finally {
+            featureIterator.close();
         }
 
     }
 
-    public void setStyle( SimpleStyle style ) {
+    public void setStyle(SimpleStyle style) {
         if (style != null) {
             mFillMaterial = new Material(style.fillColor);
             mFillOpacity = style.fillOpacity;
@@ -155,12 +139,13 @@ public class SpatialitePointsLayer extends MarkerLayer implements NwwVectorLayer
 
     @Override
     public String toString() {
-        return tableName != null ? tableName : "Points";
+        return title != null ? title : "Points";
     }
 
     @Override
     public Coordinate getCenter() {
-        return tableBounds.centre();
+        ReferencedEnvelope bounds = featureCollectionLL.getBounds();
+        return bounds.centre();
     }
 
     @Override

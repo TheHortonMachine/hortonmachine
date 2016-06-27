@@ -28,8 +28,8 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.nww.gui.NwwPanel;
-import org.jgrasstools.nww.layers.defaults.CurrentGpsPointLayer;
-import org.jgrasstools.nww.layers.defaults.SimplePointsLayer;
+import org.jgrasstools.nww.layers.defaults.other.CurrentGpsPointLayer;
+import org.jgrasstools.nww.layers.defaults.other.SimplePointsLayer;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;

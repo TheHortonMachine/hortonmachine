@@ -28,7 +28,7 @@ import javax.swing.JPanel;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.nww.layers.OSMMapnikLayer;
+import org.jgrasstools.nww.layers.defaults.raster.OSMMapnikLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
 
 import gov.nasa.worldwind.Model;

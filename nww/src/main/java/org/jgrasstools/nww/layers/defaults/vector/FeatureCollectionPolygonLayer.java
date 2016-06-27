@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.nww.layers.defaults;
+package org.jgrasstools.nww.layers.defaults.vector;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -25,6 +25,8 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
+import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
+import org.jgrasstools.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
 import org.jgrasstools.nww.shapes.FeatureExtrudedPolygon;
 import org.jgrasstools.nww.shapes.FeaturePolygon;
 import org.jgrasstools.nww.utils.NwwUtilities;

@@ -4,7 +4,7 @@
  * All Rights Reserved.
  */
 
-package org.jgrasstools.nww.layers;
+package org.jgrasstools.nww.layers.defaults.other;
 
 import java.util.Iterator;
 import java.util.List;

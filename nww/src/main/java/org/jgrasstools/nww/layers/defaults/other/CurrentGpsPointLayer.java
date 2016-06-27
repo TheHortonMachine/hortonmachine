@@ -15,12 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.nww.layers.defaults;
+package org.jgrasstools.nww.layers.defaults.other;
 
 import java.awt.Color;
 import java.util.ArrayList;
-
-import org.jgrasstools.nww.layers.MarkerLayer;
 
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.Material;

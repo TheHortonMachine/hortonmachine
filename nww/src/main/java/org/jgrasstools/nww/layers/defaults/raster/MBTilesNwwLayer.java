@@ -15,30 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.nww.layers.defaults;
+package org.jgrasstools.nww.layers.defaults.raster;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.SQLException;
 
 import javax.imageio.ImageIO;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
-import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
-import org.geotools.coverage.grid.io.AbstractGridFormat;
-import org.geotools.coverage.grid.io.GridFormatFinder;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
 import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.jgrasstools.gears.utils.images.ImageUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
+import org.jgrasstools.nww.layers.defaults.NwwLayer;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
@@ -51,65 +42,66 @@ import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileUrlBuilder;
 
 /**
- * Procedural layer for geotools imagemosaic files
+ * Procedural layer for mbtiles databases
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
+public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
 
     private String layerName = "unknown layer";
 
-    private static final int TILESIZE = 512;
+    private static final int TILESIZE = 256;
+
+    private File mbtilesFile;
 
     private Coordinate centerCoordinate;
 
-    private static CoordinateReferenceSystem osmCrs;
-
-    public ImageMosaicNwwLayer(File imageMosaicShpFile) throws Exception {
-        super(makeLevels(imageMosaicShpFile));
-        this.layerName = FileUtilities.getNameWithoutExtention(imageMosaicShpFile);
-
-        ReferencedEnvelope envelope = OmsVectorReader.readEnvelope(imageMosaicShpFile.getAbsolutePath());
-        ReferencedEnvelope envelopeLL = envelope.transform(DefaultGeographicCRS.WGS84, true);
-
-        osmCrs = CRS.decode("EPSG:3857");
-
-        double w = envelopeLL.getMinX();
-        double s = envelopeLL.getMinY();
-        double e = envelopeLL.getMaxX();
-        double n = envelopeLL.getMaxY();
-
-        double centerX = w + (e - w) / 2.0;
-        double centerY = s + (n - s) / 2.0;
-
-        centerCoordinate = new Coordinate(centerX, centerY);
-
+    public MBTilesNwwLayer(File mbtilesFile) throws Exception {
+        super(makeLevels(mbtilesFile, getTilegenerator(mbtilesFile)));
+        this.mbtilesFile = mbtilesFile;
+        this.layerName = FileUtilities.getNameWithoutExtention(mbtilesFile);
         this.setUseTransparentTextures(true);
 
     }
 
-    private static LevelSet makeLevels(File imsf) throws MalformedURLException {
+    private static MBTilesHelper getTilegenerator(File mbtilesFile) {
+        MBTilesHelper mbTilesHelper = new MBTilesHelper();
+        try {
+            mbTilesHelper.open(mbtilesFile);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return mbTilesHelper;
+    }
+
+    private static LevelSet makeLevels(File mbtilesFile, MBTilesHelper mbtilesHelper) throws MalformedURLException {
         AVList params = new AVListImpl();
-        AbstractGridFormat format = GridFormatFinder.findFormat(imsf);
-        AbstractGridCoverage2DReader coverageTilesReader = format.getReader(imsf);
 
-        String tilesPart = "-tiles";
-
-        String urlString = imsf.toURI().toURL().toExternalForm();
+        String urlString = mbtilesFile.toURI().toURL().toExternalForm();
         params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, TILESIZE);
         params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
-        params.setValue(AVKey.DATA_CACHE_NAME, "imagemosaics/" + imsf.getName() + tilesPart);
+        params.setValue(AVKey.DATA_CACHE_NAME, "huberg/" + mbtilesFile.getName() + "-tiles");
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
 
-        final String imageFormat = "png";
+        String imageFormat = null;
+        try {
+            imageFormat = mbtilesHelper.getImageFormat();
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+        if (imageFormat == null) {
+            imageFormat = "png";
+        }
+        final String _imageFormat = imageFormat;
         params.setValue(AVKey.FORMAT_SUFFIX, "." + imageFormat);
         params.setValue(AVKey.NUM_LEVELS, 22);
         params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
         params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new LatLon(Angle.fromDegrees(22.5d), Angle.fromDegrees(45d)));
         params.setValue(AVKey.SECTOR, new MercatorSector(-1.0, 1.0, Angle.NEG180, Angle.POS180));
-        final File cacheFolder = new File(imsf.getAbsolutePath() + tilesPart);
+        final File cacheFolder = new File(mbtilesFile.getAbsolutePath() + "-tiles");
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
@@ -118,23 +110,7 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
             public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {
                 int zoom = tile.getLevelNumber() + 3;
                 int x = tile.getColumn();
-                int y = (1 << (tile.getLevelNumber()) + 3) - 1 - tile.getRow();
-
-                double n = MBTilesHelper.tile2lat(y, zoom);
-                double s = MBTilesHelper.tile2lat(y + 1, zoom);
-                double w = MBTilesHelper.tile2lon(x, zoom);
-                double e = MBTilesHelper.tile2lon(x + 1, zoom);
-
-                Coordinate ll = new Coordinate(w, s);
-                Coordinate ur = new Coordinate(e, n);
-                try {
-                    CoordinateReferenceSystem sourceCRS = DefaultGeographicCRS.WGS84;
-                    MathTransform transform = CRS.findMathTransform(sourceCRS, osmCrs);
-                    ll = JTS.transform(ll, null, transform);
-                    ur = JTS.transform(ur, null, transform);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                int y = tile.getRow();
 
                 try {
                     StringBuilder sb = new StringBuilder();
@@ -149,21 +125,21 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
                     sb = new StringBuilder();
                     sb.append(y);
                     sb.append(".");
-                    sb.append(imageFormat);
+                    sb.append(_imageFormat);
                     File imgFile = new File(tileImageFolderFile, sb.toString());
                     if (!imgFile.exists()) {
-                        BufferedImage bImg = ImageUtilities.imageFromReader(coverageTilesReader, TILESIZE, TILESIZE,
-                            ll.x, ur.x, ll.y, ur.y, osmCrs);
+                        BufferedImage bImg = mbtilesHelper.getTile(x, y, zoom);
+
                         if (bImg != null) {
-                            ImageIO.write(bImg, imageFormat, imgFile);
+                            ImageIO.write(bImg, _imageFormat, imgFile);
                         } else {
                             return null;
                         }
 
                     }
                     return imgFile.toURI().toURL();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                     return null;
                 }
             }
@@ -178,6 +154,18 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
 
     @Override
     public Coordinate getCenter() {
+        if (centerCoordinate == null) {
+            try (MBTilesHelper mbTilesHelper = new MBTilesHelper()) {
+                mbTilesHelper.open(mbtilesFile);
+                double[] wsen = mbTilesHelper.getBounds();
+
+                double centerX = wsen[0] + (wsen[2] - wsen[0]) / 2.0;
+                double centerY = wsen[1] + (wsen[3] - wsen[1]) / 2.0;
+                centerCoordinate = new Coordinate(centerX, centerY);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         return centerCoordinate;
     }
 
