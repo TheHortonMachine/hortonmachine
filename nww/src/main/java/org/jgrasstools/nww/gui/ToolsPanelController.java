@@ -46,6 +46,7 @@ import org.jgrasstools.nww.layers.defaults.raster.ImageMosaicNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.MBTilesNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.MapsforgeNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.RL2NwwLayer;
+import org.jgrasstools.nww.layers.defaults.raster.RasterizedShapefilesFolderNwwLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.SpatialiteLinesLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.SpatialitePointsLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.SpatialitePolygonLayer;
@@ -165,7 +166,9 @@ public class ToolsPanelController extends ToolsPanelView {
                 File selectedFile = fileChooser.getSelectedFile();
                 if (selectedFile.isDirectory()) {
                     try {
-                        ShapefilesFolderLayer shpFolderLayer = new ShapefilesFolderLayer(selectedFile.getAbsolutePath());
+                        // ShapefilesFolderLayer shpFolderLayer = new
+                        // ShapefilesFolderLayer(selectedFile.getAbsolutePath());
+                        RasterizedShapefilesFolderNwwLayer shpFolderLayer = new RasterizedShapefilesFolderNwwLayer(selectedFile);
                         wwjPanel.getWwd().getModel().getLayers().add(shpFolderLayer);
                         layerEventsListener.onLayerAdded(shpFolderLayer);
                     } catch (Exception e1) {

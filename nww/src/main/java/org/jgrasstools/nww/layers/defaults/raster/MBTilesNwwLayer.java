@@ -82,7 +82,7 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
         params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, TILESIZE);
         params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
-        params.setValue(AVKey.DATA_CACHE_NAME, "huberg/" + mbtilesFile.getName() + "-tiles");
+        params.setValue(AVKey.DATA_CACHE_NAME, "mbtiles/" + mbtilesFile.getName() + "-tiles");
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
 

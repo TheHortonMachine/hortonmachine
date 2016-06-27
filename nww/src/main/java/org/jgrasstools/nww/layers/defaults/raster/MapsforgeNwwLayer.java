@@ -101,7 +101,7 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
         params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, TILESIZE);
         params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
-        params.setValue(AVKey.DATA_CACHE_NAME, "huberg/" + mapsforgeFile.getName() + "-tiles");
+        params.setValue(AVKey.DATA_CACHE_NAME, "mapsforge/" + mapsforgeFile.getName() + "-tiles");
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
         params.setValue(AVKey.FORMAT_SUFFIX, ".png");
