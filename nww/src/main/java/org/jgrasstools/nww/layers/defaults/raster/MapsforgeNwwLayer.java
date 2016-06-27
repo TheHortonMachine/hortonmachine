@@ -27,6 +27,7 @@ import javax.imageio.ImageIO;
 
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.nww.utils.NwwUtilities;
+import org.jgrasstools.nww.utils.cache.CacheUtils;
 import org.mapsforge.core.graphics.GraphicFactory;
 import org.mapsforge.map.awt.AwtGraphicFactory;
 import org.mapsforge.map.layer.renderer.DatabaseRenderer;
@@ -96,12 +97,13 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
     private static LevelSet makeLevels(File mapsforgeFile, OsmTilegenerator osmTilegenerator)
         throws MalformedURLException {
         AVList params = new AVListImpl();
+        String cacheRelativePath = "mapsforge/" + mapsforgeFile.getName() + "-tiles";
 
         String urlString = mapsforgeFile.toURI().toURL().toExternalForm();
         params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, TILESIZE);
         params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
-        params.setValue(AVKey.DATA_CACHE_NAME, "mapsforge/" + mapsforgeFile.getName() + "-tiles");
+        params.setValue(AVKey.DATA_CACHE_NAME, cacheRelativePath);
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
         params.setValue(AVKey.FORMAT_SUFFIX, ".png");
@@ -109,10 +111,12 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
         params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
         params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new LatLon(Angle.fromDegrees(22.5d), Angle.fromDegrees(45d)));
         params.setValue(AVKey.SECTOR, new MercatorSector(-1.0, 1.0, Angle.NEG180, Angle.POS180));
-        final File cacheFolder = new File(mapsforgeFile.getAbsolutePath() + "-tiles");
+        File cacheRoot = CacheUtils.getCacheRoot();
+        final File cacheFolder = new File(cacheRoot, cacheRelativePath);
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
+        
         params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder() {
 
             public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {

@@ -30,6 +30,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
+import org.jgrasstools.nww.utils.cache.CacheUtils;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
@@ -77,12 +78,13 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
 
     private static LevelSet makeLevels(File mbtilesFile, MBTilesHelper mbtilesHelper) throws MalformedURLException {
         AVList params = new AVListImpl();
+        String cacheRelativePath = "mbtiles/" + mbtilesFile.getName() + "-tiles";
 
         String urlString = mbtilesFile.toURI().toURL().toExternalForm();
         params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, TILESIZE);
         params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
-        params.setValue(AVKey.DATA_CACHE_NAME, "mbtiles/" + mbtilesFile.getName() + "-tiles");
+        params.setValue(AVKey.DATA_CACHE_NAME, cacheRelativePath);
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
 
@@ -101,7 +103,8 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
         params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
         params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new LatLon(Angle.fromDegrees(22.5d), Angle.fromDegrees(45d)));
         params.setValue(AVKey.SECTOR, new MercatorSector(-1.0, 1.0, Angle.NEG180, Angle.POS180));
-        final File cacheFolder = new File(mbtilesFile.getAbsolutePath() + "-tiles");
+        File cacheRoot = CacheUtils.getCacheRoot();
+        final File cacheFolder = new File(cacheRoot, cacheRelativePath);
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }

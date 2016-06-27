@@ -35,6 +35,7 @@ import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
 import org.jgrasstools.gears.spatialite.RasterCoverage;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
+import org.jgrasstools.nww.utils.cache.CacheUtils;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
@@ -91,12 +92,13 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
         String databasePath = rl2Handler.getDatabasePath();
         File databaseFile = new File(databasePath);
         String tilesPart = "-tiles" + File.separator + rl2Handler.getRasterCoverage().coverage_name;
+        String cacheRelativePath = "rl2/" + databaseFile.getName() + tilesPart;
 
         String urlString = databaseFile.toURI().toURL().toExternalForm();
         params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, TILESIZE);
         params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
-        params.setValue(AVKey.DATA_CACHE_NAME, "rl2/" + databaseFile.getName() + tilesPart);
+        params.setValue(AVKey.DATA_CACHE_NAME, cacheRelativePath);
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
 
@@ -118,10 +120,12 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
         params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
         params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new LatLon(Angle.fromDegrees(22.5d), Angle.fromDegrees(45d)));
         params.setValue(AVKey.SECTOR, new MercatorSector(-1.0, 1.0, Angle.NEG180, Angle.POS180));
-        final File cacheFolder = new File(databasePath + tilesPart);
+        File cacheRoot = CacheUtils.getCacheRoot();
+        final File cacheFolder = new File(cacheRoot, cacheRelativePath);
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
+        
         params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder() {
 
             public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {

@@ -38,6 +38,7 @@ import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.images.ImageUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
+import org.jgrasstools.nww.utils.cache.CacheUtils;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
@@ -95,12 +96,13 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
         AbstractGridCoverage2DReader coverageTilesReader = format.getReader(imsf);
 
         String tilesPart = "-tiles";
+        String cacheRelativePath = "imagemosaics/" + imsf.getName() + tilesPart;
 
         String urlString = imsf.toURI().toURL().toExternalForm();
         params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, TILESIZE);
         params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
-        params.setValue(AVKey.DATA_CACHE_NAME, "imagemosaics/" + imsf.getName() + tilesPart);
+        params.setValue(AVKey.DATA_CACHE_NAME, cacheRelativePath);
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
 
@@ -110,7 +112,8 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
         params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
         params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new LatLon(Angle.fromDegrees(22.5d), Angle.fromDegrees(45d)));
         params.setValue(AVKey.SECTOR, new MercatorSector(-1.0, 1.0, Angle.NEG180, Angle.POS180));
-        final File cacheFolder = new File(imsf.getAbsolutePath() + tilesPart);
+        File cacheRoot = CacheUtils.getCacheRoot();
+        final File cacheFolder = new File(cacheRoot, cacheRelativePath);
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }

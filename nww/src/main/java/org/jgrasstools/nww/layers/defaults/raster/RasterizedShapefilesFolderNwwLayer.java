@@ -41,6 +41,7 @@ import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.nww.utils.NwwUtilities;
+import org.jgrasstools.nww.utils.cache.CacheUtils;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
@@ -111,11 +112,12 @@ public class RasterizedShapefilesFolderNwwLayer extends BasicMercatorTiledImageL
     private static LevelSet makeLevels( File folderFile, GTRenderer renderer ) throws MalformedURLException {
         AVList params = new AVListImpl();
 
+        String cacheRelativePath = "shapefilefolders/" + folderFile.getName() + "-tiles";
         String urlString = folderFile.toURI().toURL().toExternalForm();
         params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, TILESIZE);
         params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
-        params.setValue(AVKey.DATA_CACHE_NAME, "shapefilefolders/" + folderFile.getName() + "-tiles");
+        params.setValue(AVKey.DATA_CACHE_NAME, cacheRelativePath);
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
         params.setValue(AVKey.FORMAT_SUFFIX, ".png");
@@ -123,7 +125,9 @@ public class RasterizedShapefilesFolderNwwLayer extends BasicMercatorTiledImageL
         params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
         params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new LatLon(Angle.fromDegrees(22.5d), Angle.fromDegrees(45d)));
         params.setValue(AVKey.SECTOR, new MercatorSector(-1.0, 1.0, Angle.NEG180, Angle.POS180));
-        final File cacheFolder = new File(folderFile.getAbsolutePath() + "-tiles");
+
+        File cacheRoot = CacheUtils.getCacheRoot();
+        final File cacheFolder = new File(cacheRoot, cacheRelativePath);
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
