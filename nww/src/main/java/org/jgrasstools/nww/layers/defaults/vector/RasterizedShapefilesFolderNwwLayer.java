@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.nww.layers.defaults.raster;
+package org.jgrasstools.nww.layers.defaults.vector;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -40,6 +40,7 @@ import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.jgrasstools.gears.utils.SldUtilities;
+import org.jgrasstools.nww.layers.defaults.raster.BasicMercatorTiledImageLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.nww.utils.cache.CacheUtils;
 

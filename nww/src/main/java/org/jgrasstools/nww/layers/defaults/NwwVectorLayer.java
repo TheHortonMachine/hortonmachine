@@ -27,7 +27,7 @@ import org.jgrasstools.nww.gui.style.SimpleStyle;
  */
 public interface NwwVectorLayer extends NwwLayer {
     public enum GEOMTYPE {
-        POINT, LINE, POLYGON
+        POINT, LINE, POLYGON, UNKNOWN
     };
 
     public GEOMTYPE getType();

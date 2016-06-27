@@ -28,11 +28,14 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.styling.SLD;
+import org.geotools.styling.Style;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
 import org.jgrasstools.gears.spatialite.RasterCoverage;
 import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.gears.spatialite.SpatialiteGeometryType;
+import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -46,13 +49,14 @@ import org.jgrasstools.nww.layers.defaults.raster.ImageMosaicNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.MBTilesNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.MapsforgeNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.RL2NwwLayer;
-import org.jgrasstools.nww.layers.defaults.raster.RasterizedShapefilesFolderNwwLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.SpatialiteLinesLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.SpatialitePointsLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.SpatialitePolygonLayer;
 import org.jgrasstools.nww.layers.defaults.vector.FeatureCollectionLinesLayer;
 import org.jgrasstools.nww.layers.defaults.vector.FeatureCollectionPointsLayer;
 import org.jgrasstools.nww.layers.defaults.vector.FeatureCollectionPolygonLayer;
+import org.jgrasstools.nww.layers.defaults.vector.RasterizedShapefilesFolderNwwLayer;
+import org.jgrasstools.nww.layers.defaults.vector.RasterizedFeatureCollectionLayer;
 import org.jgrasstools.nww.layers.defaults.vector.ShapefilesFolderLayer;
 import org.jgrasstools.nww.utils.CursorUtils;
 import org.jgrasstools.nww.utils.EGlobeModes;
@@ -66,6 +70,7 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
 
 /**
@@ -166,11 +171,14 @@ public class ToolsPanelController extends ToolsPanelView {
                 File selectedFile = fileChooser.getSelectedFile();
                 if (selectedFile.isDirectory()) {
                     try {
-                        // ShapefilesFolderLayer shpFolderLayer = new
-                        // ShapefilesFolderLayer(selectedFile.getAbsolutePath());
-                        RasterizedShapefilesFolderNwwLayer shpFolderLayer = new RasterizedShapefilesFolderNwwLayer(selectedFile);
-                        wwjPanel.getWwd().getModel().getLayers().add(shpFolderLayer);
-                        layerEventsListener.onLayerAdded(shpFolderLayer);
+                        Layer layer;
+                        if (_useRasterizedCheckbox.isSelected()) {
+                            layer = new RasterizedShapefilesFolderNwwLayer(selectedFile);
+                        } else {
+                            layer = new ShapefilesFolderLayer(selectedFile.getAbsolutePath());
+                        }
+                        wwjPanel.getWwd().getModel().getLayers().add(layer);
+                        layerEventsListener.onLayerAdded(layer);
                     } catch (Exception e1) {
                         e1.printStackTrace();
                         // try to load it as single files
@@ -296,7 +304,9 @@ public class ToolsPanelController extends ToolsPanelView {
         _opaqueBackgroundCheckbox.setSelected(true);
         _opaqueBackgroundCheckbox.addActionListener(e -> {
             WorldWindow wwd = wwjPanel.getWwd();
-            ((WorldWindowGLJPanel) wwd).setOpaque(_opaqueBackgroundCheckbox.isSelected());
+            if (wwd instanceof WorldWindowGLJPanel) {
+                ((WorldWindowGLJPanel) wwd).setOpaque(_opaqueBackgroundCheckbox.isSelected());
+            }
         });
 
     }
@@ -322,44 +332,57 @@ public class ToolsPanelController extends ToolsPanelView {
                     // ignore and handle as shapefile
                 }
 
-                SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(selectedFile.getAbsolutePath());
+                if (_useRasterizedCheckbox.isSelected()) {
+                    SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(selectedFile.getAbsolutePath());
+                    Style style = SldUtilities.getStyleFromFile(selectedFile);
+                    if (style == null)
+                        style = SLD.createSimpleStyle(readFC.getSchema());
+                    RasterizedFeatureCollectionLayer collectionLayer = new RasterizedFeatureCollectionLayer(name, readFC, style);
 
-                GeometryDescriptor geometryDescriptor = readFC.getSchema().getGeometryDescriptor();
-                if (GeometryUtilities.isPolygon(geometryDescriptor)) {
-                    FeatureCollectionPolygonLayer featureCollectionPolygonLayer = new FeatureCollectionPolygonLayer(name, readFC);
-
-                    featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
-                    featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
-                    SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.POLYGON);
-                    if (style != null) {
-                        featureCollectionPolygonLayer.setStyle(style);
-                    }
-
-                    wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPolygonLayer);
-                    layerEventsListener.onLayerAdded(featureCollectionPolygonLayer);
-                } else if (GeometryUtilities.isLine(geometryDescriptor)) {
-                    FeatureCollectionLinesLayer featureCollectionLinesLayer = new FeatureCollectionLinesLayer(name, readFC);
-                    featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
-                    featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
-                    SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.LINE);
-                    if (style != null) {
-                        featureCollectionLinesLayer.setStyle(style);
-                    }
-
-                    wwjPanel.getWwd().getModel().getLayers().add(featureCollectionLinesLayer);
-                    layerEventsListener.onLayerAdded(featureCollectionLinesLayer);
-                } else if (GeometryUtilities.isPoint(geometryDescriptor)) {
-                    FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name, readFC);
-                    SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.POINT);
-                    if (style != null) {
-                        featureCollectionPointsLayer.setStyle(style);
-                    }
-
-                    wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPointsLayer);
-                    layerEventsListener.onLayerAdded(featureCollectionPointsLayer);
-
+                    wwjPanel.getWwd().getModel().getLayers().add(collectionLayer);
+                    layerEventsListener.onLayerAdded(collectionLayer);
                 } else {
-                    System.err.println("?????");
+                    SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(selectedFile.getAbsolutePath());
+
+                    GeometryDescriptor geometryDescriptor = readFC.getSchema().getGeometryDescriptor();
+                    if (GeometryUtilities.isPolygon(geometryDescriptor)) {
+                        FeatureCollectionPolygonLayer featureCollectionPolygonLayer = new FeatureCollectionPolygonLayer(name,
+                                readFC);
+
+                        featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
+                        featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
+                        SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.POLYGON);
+                        if (style != null) {
+                            featureCollectionPolygonLayer.setStyle(style);
+                        }
+
+                        wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPolygonLayer);
+                        layerEventsListener.onLayerAdded(featureCollectionPolygonLayer);
+                    } else if (GeometryUtilities.isLine(geometryDescriptor)) {
+                        FeatureCollectionLinesLayer featureCollectionLinesLayer = new FeatureCollectionLinesLayer(name, readFC);
+                        featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
+                        featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
+                        SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.LINE);
+                        if (style != null) {
+                            featureCollectionLinesLayer.setStyle(style);
+                        }
+
+                        wwjPanel.getWwd().getModel().getLayers().add(featureCollectionLinesLayer);
+                        layerEventsListener.onLayerAdded(featureCollectionLinesLayer);
+                    } else if (GeometryUtilities.isPoint(geometryDescriptor)) {
+                        FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name,
+                                readFC);
+                        SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.POINT);
+                        if (style != null) {
+                            featureCollectionPointsLayer.setStyle(style);
+                        }
+
+                        wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPointsLayer);
+                        layerEventsListener.onLayerAdded(featureCollectionPointsLayer);
+
+                    } else {
+                        System.err.println("?????");
+                    }
                 }
             } else if (selectedFile.getName().endsWith(".mbtiles")) {
                 MBTilesNwwLayer mbTileLayer = new MBTilesNwwLayer(selectedFile);
