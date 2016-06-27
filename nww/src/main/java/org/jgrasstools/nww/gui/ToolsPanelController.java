@@ -49,14 +49,15 @@ import org.jgrasstools.nww.layers.defaults.raster.ImageMosaicNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.MBTilesNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.MapsforgeNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.RL2NwwLayer;
+import org.jgrasstools.nww.layers.defaults.spatialite.RasterizedSpatialiteLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.SpatialiteLinesLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.SpatialitePointsLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.SpatialitePolygonLayer;
 import org.jgrasstools.nww.layers.defaults.vector.FeatureCollectionLinesLayer;
 import org.jgrasstools.nww.layers.defaults.vector.FeatureCollectionPointsLayer;
 import org.jgrasstools.nww.layers.defaults.vector.FeatureCollectionPolygonLayer;
-import org.jgrasstools.nww.layers.defaults.vector.RasterizedShapefilesFolderNwwLayer;
 import org.jgrasstools.nww.layers.defaults.vector.RasterizedFeatureCollectionLayer;
+import org.jgrasstools.nww.layers.defaults.vector.RasterizedShapefilesFolderNwwLayer;
 import org.jgrasstools.nww.layers.defaults.vector.ShapefilesFolderLayer;
 import org.jgrasstools.nww.utils.CursorUtils;
 import org.jgrasstools.nww.utils.EGlobeModes;
@@ -407,7 +408,16 @@ public class ToolsPanelController extends ToolsPanelView {
                 SpatialiteDb db = new SpatialiteDb();
                 db.open(selectedFile.getAbsolutePath());
                 List<String> tableMaps = db.getTables(false);
-                for( String tableName : tableMaps ) {
+                String[] tables = tableMaps.toArray(new String[0]);
+                String tableName = (String) JOptionPane.showInputDialog(this, "Select the table to load", "Table selection",
+                        JOptionPane.QUESTION_MESSAGE, null, tables, tables[0]);
+
+                if (_useRasterizedCheckbox.isSelected()) {
+                    RasterizedSpatialiteLayer rasterizedSpatialiteLayer = new RasterizedSpatialiteLayer(name, db, tableName, -1,
+                            null);
+                    wwjPanel.getWwd().getModel().getLayers().add(rasterizedSpatialiteLayer);
+                    layerEventsListener.onLayerAdded(rasterizedSpatialiteLayer);
+                } else {
                     SpatialiteGeometryColumns geometryColumn = db.getGeometryColumnsForTable(tableName);
                     if (geometryColumn != null) {
                         SpatialiteGeometryType geomType = SpatialiteGeometryType.forValue(geometryColumn.geometry_type);
@@ -424,7 +434,6 @@ public class ToolsPanelController extends ToolsPanelView {
                             wwjPanel.getWwd().getModel().getLayers().add(layer);
                             layerEventsListener.onLayerAdded(layer);
                         }
-
                     }
                 }
             }

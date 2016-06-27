@@ -20,6 +20,7 @@ package org.jgrasstools.gears.spatialite;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,11 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.store.ReprojectingFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -61,7 +66,7 @@ public class SpatialiteImportUtils {
      * @return the name of the created table.
      * @throws Exception
      */
-    public static String createTableFromShp(SpatialiteDb db, File shapeFile) throws Exception {
+    public static String createTableFromShp( SpatialiteDb db, File shapeFile ) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
@@ -71,12 +76,12 @@ public class SpatialiteImportUtils {
 
         List<String> attrSql = new ArrayList<String>();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
-        for (AttributeDescriptor attributeDescriptor : attributeDescriptors) {
+        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
             if (attributeDescriptor instanceof GeometryDescriptor) {
                 continue;
             }
             String attrName = attributeDescriptor.getLocalName();
-            Class<?> binding = attributeDescriptor.getType().getBinding();
+            Class< ? > binding = attributeDescriptor.getType().getBinding();
             if (binding.isAssignableFrom(Double.class) || binding.isAssignableFrom(Float.class)) {
                 attrSql.add(attrName + " REAL");
             } else if (binding.isAssignableFrom(Long.class) || binding.isAssignableFrom(Integer.class)) {
@@ -92,7 +97,7 @@ public class SpatialiteImportUtils {
 
         String typeString = null;
         org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
-        Class<?> binding = type.getBinding();
+        Class< ? > binding = type.getBinding();
         if (binding.isAssignableFrom(MultiPolygon.class)) {
             typeString = "MULTIPOLYGON";
         } else if (binding.isAssignableFrom(Polygon.class)) {
@@ -127,7 +132,7 @@ public class SpatialiteImportUtils {
      * @param limit if > 0, a limit to the imported features is applied.
      * @throws Exception
      */
-    public static void importShapefile(SpatialiteDb db, File shapeFile, String tableName, int limit) throws Exception {
+    public static void importShapefile( SpatialiteDb db, File shapeFile, String tableName, int limit ) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
@@ -137,7 +142,7 @@ public class SpatialiteImportUtils {
 
         List<String[]> tableInfo = db.getTableColumns(tableName);
         List<String> tableColumns = new ArrayList<>();
-        for (String[] item : tableInfo) {
+        for( String[] item : tableInfo ) {
             tableColumns.add(item[0]);
         }
         SpatialiteGeometryColumns geometryColumns = db.getGeometryColumnsForTable(tableName);
@@ -150,7 +155,7 @@ public class SpatialiteImportUtils {
 
         String valueNames = "";
         String qMarks = "";
-        for (AttributeDescriptor attributeDescriptor : attributeDescriptors) {
+        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
             String attrName = attributeDescriptor.getLocalName();
             if (attrName.equals(SpatialiteDb.PK_UID)) {
                 continue;
@@ -160,8 +165,7 @@ public class SpatialiteImportUtils {
                 qMarks += ",GeomFromText(?, " + epsg + ")";
             } else {
                 if (!tableColumns.contains(attrName)) {
-                    throw new IllegalArgumentException(
-                        "The imported shapefile doesn't seem to match the table's schema.");
+                    throw new IllegalArgumentException("The imported shapefile doesn't seem to match the table's schema.");
                 }
                 valueNames += "," + attrName;
                 qMarks += ",?";
@@ -174,10 +178,10 @@ public class SpatialiteImportUtils {
         Connection conn = db.getConnection();
         try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
             int count = 0;
-            while (featureIterator.hasNext()) {
+            while( featureIterator.hasNext() ) {
                 SimpleFeature f = (SimpleFeature) featureIterator.next();
                 List<Object> attributes = f.getAttributes();
-                for (int i = 0; i < attributes.size(); i++) {
+                for( int i = 0; i < attributes.size(); i++ ) {
                     Object object = attributes.get(i);
                     if (object == null) {
                         continue;
@@ -206,5 +210,86 @@ public class SpatialiteImportUtils {
             }
             featureIterator.close();
         }
+    }
+
+    /**
+     * get a table as featurecollection.
+     * 
+     * @param db the database.
+     * @param tableName the table to use.
+     * @param featureLimit limit in feature or -1.
+     * @param forceSrid a srid to force to or -1.
+     * @return the extracted featurecollection.
+     * @throws SQLException
+     * @throws Exception
+     */
+    public static DefaultFeatureCollection tableToFeatureFCollection( SpatialiteDb db, String tableName, int featureLimit,
+            int forceSrid ) throws SQLException, Exception {
+        DefaultFeatureCollection fc = new DefaultFeatureCollection();
+
+        SpatialiteGeometryColumns geometryColumn = db.getGeometryColumnsForTable(tableName);
+        CoordinateReferenceSystem crs;
+        if (forceSrid == -1) {
+            forceSrid = geometryColumn.srid;
+        }
+        if (forceSrid == 4326) {
+            crs = DefaultGeographicCRS.WGS84;
+        } else {
+            crs = CRS.decode("EPSG:" + geometryColumn.srid);
+        }
+        QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit, forceSrid);
+        int geometryIndex = tableRecords.geometryIndex;
+        if (geometryIndex == -1) {
+            throw new IllegalArgumentException("Not a geometric layer.");
+        }
+        List<String> names = tableRecords.names;
+        List<String> types = tableRecords.types;
+
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName(tableName);
+        b.setCRS(crs);
+
+        for( int i = 0; i < names.size(); i++ ) {
+            if (i == geometryIndex) {
+                SpatialiteGeometryType geomType = SpatialiteGeometryType.forValue(geometryColumn.geometry_type);
+                Class< ? > geometryClass = geomType.getGeometryClass();
+                b.add(geometryColumn.f_geometry_column, geometryClass);
+                continue;
+            }
+            Class< ? > fieldClass = null;
+            String typeStr = types.get(i);
+            switch( typeStr ) {
+            case "DOUBLE":
+            case "REAL":
+                fieldClass = Double.class;
+                break;
+            case "FLOAT":
+                fieldClass = Float.class;
+                break;
+            case "INTEGER":
+                fieldClass = Integer.class;
+                break;
+            case "TEXT":
+                fieldClass = String.class;
+                break;
+            default:
+                fieldClass = String.class;
+                break;
+            }
+            b.add(names.get(i), fieldClass);
+        }
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+
+        int count = tableRecords.data.size();
+        for( int i = 0; i < count; i++ ) {
+            Object[] objects = tableRecords.data.get(i);
+
+            builder.addAll(objects);
+            SimpleFeature feature = builder.buildFeature(null);
+
+            fc.add(feature);
+        }
+        return fc;
     }
 }

@@ -27,7 +27,6 @@ import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
-import org.jgrasstools.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
 import org.jgrasstools.nww.shapes.InfoLine;
 import org.jgrasstools.nww.utils.NwwUtilities;
 
