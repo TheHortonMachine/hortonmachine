@@ -26,6 +26,7 @@ public class ToolsPanelView extends JPanel
    JToggleButton _infoButton = new JToggleButton();
    JToggleButton _selectByBoxButton = new JToggleButton();
    JToggleButton _zoomByBoxButton = new JToggleButton();
+   JButton _addAnnotationButton = new JButton();
    JLabel _globeModeLabel = new JLabel();
    JComboBox _globeModeCombo = new JComboBox();
    JLabel _loadGpsLabel = new JLabel();
@@ -207,6 +208,11 @@ public class ToolsPanelView extends JPanel
       _zoomByBoxButton.setName("zoomByBoxButton");
       _zoomByBoxButton.setText("Zoom By Box");
       jpanel1.add(_zoomByBoxButton,cc.xy(1,3));
+
+      _addAnnotationButton.setActionCommand("Add Annotation");
+      _addAnnotationButton.setName("addAnnotationButton");
+      _addAnnotationButton.setText("Add Annotation");
+      jpanel1.add(_addAnnotationButton,cc.xy(3,3));
 
       addFillComponents(jpanel1,new int[]{ 2,4,5,6,7,8,9,10 },new int[]{ 2 });
       return jpanel1;

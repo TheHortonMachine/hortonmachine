@@ -50,7 +50,6 @@ import gov.nasa.worldwind.globes.projections.ProjectionMercator;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
 import gov.nasa.worldwind.terrain.ZeroElevationModel;
-import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwind.view.orbit.OrbitView;
 
 /**

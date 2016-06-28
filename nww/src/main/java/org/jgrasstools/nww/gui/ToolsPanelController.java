@@ -18,8 +18,11 @@
 package org.jgrasstools.nww.gui;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Point;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
@@ -42,6 +45,8 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.nww.gui.listeners.GenericSelectListener;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
+import org.jgrasstools.nww.layers.defaults.annotations.HtmlScreenAnnotation;
+import org.jgrasstools.nww.layers.defaults.annotations.HtmlScreenAnnotation.Builder;
 import org.jgrasstools.nww.layers.defaults.other.CurrentGpsPointLayer;
 import org.jgrasstools.nww.layers.defaults.other.SimplePointsLayer;
 import org.jgrasstools.nww.layers.defaults.other.WhiteNwwLayer;
@@ -71,8 +76,10 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.layers.AnnotationLayer;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
+import gov.nasa.worldwind.util.Logging;
 
 /**
  * The tools panel.
@@ -308,6 +315,53 @@ public class ToolsPanelController extends ToolsPanelView {
             if (wwd instanceof WorldWindowGLJPanel) {
                 ((WorldWindowGLJPanel) wwd).setOpaque(_opaqueBackgroundCheckbox.isSelected());
             }
+        });
+
+        _addAnnotationButton.addActionListener(e -> {
+
+            String layerName = "Annotation (" + new Date().toString() + ")";
+            int width = 300;
+            int yPos = wwjPanel.getHeight() / 2;
+
+            String htmldefaultText = width + "," + yPos + "," + //
+            "<p>\n<b><font color=\"#664400\">LA CLAPI\u00c8RE</font></b><br />\n<i>Alt: "
+                    + "1100-1700m</i>\n</p>\n<p>\n<b>Glissement de terrain majeur</b> dans la haute Tin\u00e9e, sur "
+                    + "un flanc du <a href=\"http://www.mercantour.eu\">Parc du Mercantour</a>, Alpes Maritimes.\n</p>\n"
+                    + "<p>\nRisque aggrav\u00e9 d'<b>inondation</b> du village de <i>Saint \u00c9tienne de Tin\u00e9e</i> "
+                    + "juste en amont.\n</p>";
+
+            String text = JOptionPane.showInputDialog("Enter the annotation's position and html text as: width,y position,text",
+                    htmldefaultText);
+            if (text == null) {
+                return;
+            }
+
+            int firstComma = text.indexOf(',');
+            String widthStr = text.substring(0, firstComma);
+            int secondComma = text.indexOf(',', firstComma + 1);
+            String yStr = text.substring(firstComma + 1, secondComma);
+
+            String htmltext = text.substring(secondComma + 1);
+
+            width = Integer.parseInt(widthStr);
+            int xPos = width / 2 + 10;
+
+            Builder builder = new HtmlScreenAnnotation.Builder();
+
+            HtmlScreenAnnotation htmlScreenAnnotation = builder.size(new Dimension(width, 0)).htmlText(htmltext)
+                    .position(new Point(xPos, Integer.parseInt(yStr))).build();
+
+            AnnotationLayer layer = new AnnotationLayer(){
+                @Override
+                public String toString() {
+                    return layerName;
+                }
+            };
+            layer.addAnnotation(htmlScreenAnnotation);
+
+            wwjPanel.getWwd().getModel().getLayers().add(layer);
+            layerEventsListener.onLayerAdded(layer);
+
         });
 
     }
