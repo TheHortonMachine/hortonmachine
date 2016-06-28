@@ -328,7 +328,7 @@ public class ToolsPanelController extends ToolsPanelView {
                     + "1100-1700m</i>\n</p>\n<p>\n<b>Glissement de terrain majeur</b> dans la haute Tin\u00e9e, sur "
                     + "un flanc du <a href=\"http://www.mercantour.eu\">Parc du Mercantour</a>, Alpes Maritimes.\n</p>\n"
                     + "<p>\nRisque aggrav\u00e9 d'<b>inondation</b> du village de <i>Saint \u00c9tienne de Tin\u00e9e</i> "
-                    + "juste en amont.\n</p>";
+                    + "juste en amont.\n</p><p>Last update:DATE</p>";
 
             String text = JOptionPane.showInputDialog("Enter the annotation's position and html text as: width,y position,text",
                     htmldefaultText);
@@ -358,6 +358,22 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
             };
             layer.addAnnotation(htmlScreenAnnotation);
+
+            new Thread(new Runnable(){
+                public void run() {
+                    while( wwjPanel.getWwd().getModel().getLayers().contains(layer) ) {
+                        // htmlScreenAnnotation
+                        String newText = htmltext.replaceFirst("DATE", new Date().toString());
+                        htmlScreenAnnotation.setText(newText);
+                        wwjPanel.getWwd().redraw();
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }).start();
 
             wwjPanel.getWwd().getModel().getLayers().add(layer);
             layerEventsListener.onLayerAdded(layer);
