@@ -21,6 +21,7 @@ package org.jgrasstools.hortonmachine.utils;
 import static java.lang.Double.NaN;
 
 import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
@@ -71,8 +72,8 @@ public class HMTestMaps {
         envelopeParams.put(CoverageUtilities.COLS, 10.0);
 
         try {
-            crs = CRS.decode("EPSG:32632");
-            crs3004 = CRS.decode("EPSG:3004");
+            crs = CrsUtilities.getCrsFromEpsg("EPSG:32632", null);
+            crs3004 = CrsUtilities.getCrsFromEpsg("EPSG:3004", null);
         } catch (Exception e) {
             e.printStackTrace();
         }

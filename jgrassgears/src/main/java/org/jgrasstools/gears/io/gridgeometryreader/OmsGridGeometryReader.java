@@ -50,6 +50,7 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.JGTProcessingRegion;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -106,7 +107,7 @@ public class OmsGridGeometryReader extends JGTModel {
         checkNull(pNorth, pSouth, pWest, pEast, pXres, pYres, pCode);
 
         JGTProcessingRegion region = new JGTProcessingRegion(pWest, pEast, pSouth, pNorth, pXres, pYres);
-        CoordinateReferenceSystem crs = CRS.decode(pCode);
+        CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg(pCode, null);
         outGridgeom = CoverageUtilities.gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, region.getCols(),
                 region.getRows(), crs);
     }

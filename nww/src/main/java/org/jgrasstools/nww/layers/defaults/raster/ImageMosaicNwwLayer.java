@@ -35,6 +35,7 @@ import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.images.ImageUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
@@ -67,14 +68,14 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
 
     private static CoordinateReferenceSystem osmCrs;
 
-    public ImageMosaicNwwLayer(File imageMosaicShpFile) throws Exception {
+    public ImageMosaicNwwLayer( File imageMosaicShpFile ) throws Exception {
         super(makeLevels(imageMosaicShpFile));
         this.layerName = FileUtilities.getNameWithoutExtention(imageMosaicShpFile);
 
         ReferencedEnvelope envelope = OmsVectorReader.readEnvelope(imageMosaicShpFile.getAbsolutePath());
         ReferencedEnvelope envelopeLL = envelope.transform(DefaultGeographicCRS.WGS84, true);
 
-        osmCrs = CRS.decode("EPSG:3857");
+        osmCrs = CrsUtilities.getCrsFromSrid(3857);
 
         double w = envelopeLL.getMinX();
         double s = envelopeLL.getMinY();
@@ -90,7 +91,7 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
 
     }
 
-    private static LevelSet makeLevels(File imsf) throws MalformedURLException {
+    private static LevelSet makeLevels( File imsf ) throws MalformedURLException {
         AVList params = new AVListImpl();
         AbstractGridFormat format = GridFormatFinder.findFormat(imsf);
         AbstractGridCoverage2DReader coverageTilesReader = format.getReader(imsf);
@@ -117,9 +118,9 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
-        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder() {
+        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder(){
 
-            public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {
+            public URL getURL( Tile tile, String altImageFormat ) throws MalformedURLException {
                 int zoom = tile.getLevelNumber() + 3;
                 int x = tile.getColumn();
                 int y = (1 << (tile.getLevelNumber()) + 3) - 1 - tile.getRow();
@@ -156,8 +157,8 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
                     sb.append(imageFormat);
                     File imgFile = new File(tileImageFolderFile, sb.toString());
                     if (!imgFile.exists()) {
-                        BufferedImage bImg = ImageUtilities.imageFromReader(coverageTilesReader, TILESIZE, TILESIZE,
-                            ll.x, ur.x, ll.y, ur.y, osmCrs);
+                        BufferedImage bImg = ImageUtilities.imageFromReader(coverageTilesReader, TILESIZE, TILESIZE, ll.x, ur.x,
+                                ll.y, ur.y, osmCrs);
                         if (bImg != null) {
                             ImageIO.write(bImg, imageFormat, imgFile);
                         } else {

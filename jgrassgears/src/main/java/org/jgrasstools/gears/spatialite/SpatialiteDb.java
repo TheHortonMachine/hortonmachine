@@ -881,7 +881,7 @@ public class SpatialiteDb implements AutoCloseable {
             int columnCount = rsmd.getColumnCount();
             int geometryIndex = -1;
 
-            CoordinateReferenceSystem crs = CRS.decode("EPSG:" + geometryColumns.srid);
+            CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumns.srid);
             SpatialiteGeometryType geomType = SpatialiteGeometryType.forValue(geometryColumns.geometry_type);
 
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();

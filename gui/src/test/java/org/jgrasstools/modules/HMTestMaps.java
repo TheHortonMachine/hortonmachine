@@ -26,6 +26,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -71,7 +72,7 @@ public class HMTestMaps {
         envelopeParams.put(CoverageUtilities.COLS, 10.0);
 
         try {
-            crs = CRS.decode("EPSG:32632");
+            crs = CrsUtilities.getCrsFromEpsg("EPSG:32632");
         } catch (Exception ex) {
             ex.printStackTrace();
         }

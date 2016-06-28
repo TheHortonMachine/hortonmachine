@@ -33,6 +33,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
 import org.jgrasstools.gears.spatialite.RasterCoverage;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
 import org.jgrasstools.nww.utils.cache.CacheUtils;
@@ -62,7 +63,7 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
 
     private Coordinate centerCoordinateLL;
 
-    public RL2NwwLayer(RL2CoverageHandler rl2Handler) throws Exception {
+    public RL2NwwLayer( RL2CoverageHandler rl2Handler ) throws Exception {
         super(makeLevels(rl2Handler));
         RasterCoverage rasterCoverage = rl2Handler.getRasterCoverage();
         this.layerName = rasterCoverage.coverage_name;
@@ -77,7 +78,7 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
         Coordinate centerCoordinate = new Coordinate(centerX, centerY);
 
         CoordinateReferenceSystem targetCRS = DefaultGeographicCRS.WGS84;
-        CoordinateReferenceSystem sourceCRS = CRS.decode("EPSG:" + rasterCoverage.srid);
+        CoordinateReferenceSystem sourceCRS = CrsUtilities.getCrsFromSrid(rasterCoverage.srid);
 
         MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);
         centerCoordinateLL = JTS.transform(centerCoordinate, null, transform);
@@ -86,7 +87,7 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
 
     }
 
-    private static LevelSet makeLevels(RL2CoverageHandler rl2Handler) throws MalformedURLException {
+    private static LevelSet makeLevels( RL2CoverageHandler rl2Handler ) throws MalformedURLException {
         AVList params = new AVListImpl();
 
         String databasePath = rl2Handler.getDatabasePath();
@@ -125,10 +126,10 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
-        
-        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder() {
 
-            public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {
+        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder(){
+
+            public URL getURL( Tile tile, String altImageFormat ) throws MalformedURLException {
                 int zoom = tile.getLevelNumber() + 3;
                 int x = tile.getColumn();
                 int y = (1 << (tile.getLevelNumber()) + 3) - 1 - tile.getRow();
@@ -141,8 +142,7 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
                 Coordinate ll = new Coordinate(w, s);
                 Coordinate ur = new Coordinate(e, n);
 
-                Polygon polygon =
-                    GeometryUtilities.createPolygonFromEnvelope(new com.vividsolutions.jts.geom.Envelope(ll, ur));
+                Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(new com.vividsolutions.jts.geom.Envelope(ll, ur));
 
                 try {
                     StringBuilder sb = new StringBuilder();

@@ -31,6 +31,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -65,7 +66,7 @@ public class OpenstreetmapImageCreator {
 
     public void generate() throws Exception {
 
-        CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
+        CoordinateReferenceSystem mercatorCrs = CrsUtilities.getCrsFromEpsg(EPSG_MERCATOR, null);
         CoordinateReferenceSystem latLongCrs = DefaultGeographicCRS.WGS84;
 
         ReferencedEnvelope llBounds = mercatorBounds.transform(latLongCrs, true);

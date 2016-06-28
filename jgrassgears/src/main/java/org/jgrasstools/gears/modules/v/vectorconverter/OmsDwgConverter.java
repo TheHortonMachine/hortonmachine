@@ -60,6 +60,7 @@ import org.jgrasstools.gears.io.dxfdwg.libs.DwgReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -127,7 +128,7 @@ public class OmsDwgConverter extends JGTModel {
         }
         if (crs == null) {
             if (pCode != null) {
-                crs = CRS.decode(pCode);
+                crs = CrsUtilities.getCrsFromEpsg(pCode, null);
             } else {
                 throw new ModelsIllegalargumentException("Please specify the CRS for the imported DWG file.", this, pm);
             }

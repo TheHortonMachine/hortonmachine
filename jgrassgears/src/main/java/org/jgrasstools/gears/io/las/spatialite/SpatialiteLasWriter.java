@@ -169,7 +169,7 @@ public class SpatialiteLasWriter extends JGTModel {
 
             try {
                 if (pCode != null) {
-                    crs = CRS.decode(pCode);
+                    crs = CrsUtilities.getCrsFromEpsg(pCode, null);
                 } else {
                     File folderFile = new File(inFolder);
                     File[] prjFiles = folderFile.listFiles(new FilenameFilter(){

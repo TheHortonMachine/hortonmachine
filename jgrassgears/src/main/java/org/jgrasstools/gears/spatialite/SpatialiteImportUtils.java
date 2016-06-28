@@ -149,7 +149,7 @@ public class SpatialiteImportUtils {
         String gCol = geometryColumns.f_geometry_column;
 
         int epsg = geometryColumns.srid;
-        CoordinateReferenceSystem crs = CRS.decode("EPSG:" + epsg);
+        CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg("EPSG:" + epsg);
         ReprojectingFeatureCollection repFeatures = new ReprojectingFeatureCollection(features, crs);
         SimpleFeatureIterator featureIterator = repFeatures.features();
 
@@ -232,11 +232,7 @@ public class SpatialiteImportUtils {
         if (forceSrid == -1) {
             forceSrid = geometryColumn.srid;
         }
-        if (forceSrid == 4326) {
-            crs = DefaultGeographicCRS.WGS84;
-        } else {
-            crs = CRS.decode("EPSG:" + geometryColumn.srid);
-        }
+        crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumn.srid);
         QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit, forceSrid);
         int geometryIndex = tableRecords.geometryIndex;
         if (geometryIndex == -1) {

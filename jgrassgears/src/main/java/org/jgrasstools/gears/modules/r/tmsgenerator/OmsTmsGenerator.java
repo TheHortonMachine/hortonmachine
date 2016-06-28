@@ -75,6 +75,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsUserCancelException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -210,7 +211,7 @@ public class OmsTmsGenerator extends JGTModel {
 
             if (dataCrs == null) {
                 if (pEpsg != null) {
-                    dataCrs = CRS.decode(pEpsg);
+                    dataCrs = CrsUtilities.getCrsFromEpsg(pEpsg, null);
                 } else {
                     String wkt = FileUtilities.readFile(inPrj);
                     dataCrs = CRS.parseWKT(wkt);
@@ -263,7 +264,7 @@ public class OmsTmsGenerator extends JGTModel {
                 throw new ModelsIllegalargumentException("No projection info available. check your inputs.", this, pm);
             }
 
-            final CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
+            final CoordinateReferenceSystem mercatorCrs = CrsUtilities.getCrsFromEpsg(EPSG_MERCATOR, null);
 
             ReferencedEnvelope dataBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, dataCrs);
             MathTransform data2MercatorTransform = CRS.findMathTransform(dataCrs, mercatorCrs);
@@ -454,7 +455,7 @@ public class OmsTmsGenerator extends JGTModel {
                 mbtilesHelper.createIndexes();
                 mbtilesHelper.close();
             } else {
-                CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
+                CoordinateReferenceSystem latLongCrs = CrsUtilities.getCrsFromEpsg(EPSG_LATLONG, null);
                 MathTransform transform = CRS.findMathTransform(mercatorCrs, latLongCrs);
                 Envelope latLongBounds = JTS.transform(mercatorBounds, transform);
                 Coordinate latLongCentre = latLongBounds.centre();

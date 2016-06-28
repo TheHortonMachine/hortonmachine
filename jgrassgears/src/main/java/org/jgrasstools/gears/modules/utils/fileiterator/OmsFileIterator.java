@@ -56,6 +56,7 @@ import oms3.annotations.UI;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileTraversal;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -112,7 +113,7 @@ public class OmsFileIterator extends JGTModel {
     @Execute
     public void process() throws Exception {
         if (pCode != null) {
-            CoordinateReferenceSystem crs = CRS.decode(pCode);
+            CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg(pCode, null);
             prjWkt = crs.toWKT();
         }
 

@@ -57,6 +57,7 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Pipes;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Pumps;
@@ -92,7 +93,7 @@ public class OmsEpanetProjectFilesGenerator extends JGTModel {
     public void process() throws Exception {
         checkNull(inFolder, pCode);
 
-        CoordinateReferenceSystem crs = CRS.decode(pCode);
+        CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg(pCode, null);
 
         File baseFolder = new File(inFolder);
 

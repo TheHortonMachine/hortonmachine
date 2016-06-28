@@ -46,6 +46,7 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -145,7 +146,7 @@ public class OmsRasterGenerator extends JGTModel {
 
         CoordinateReferenceSystem crs = inCrs;
         if (crs == null)
-            crs = CRS.decode(pCode);
+            crs = CrsUtilities.getCrsFromEpsg(pCode, null);
 
         int rows = (int) round((pNorth - pSouth) / pYres);
         int cols = (int) round((pEast - pWest) / pXres);
