@@ -36,6 +36,7 @@ import org.jgrasstools.gears.spatialite.RasterCoverage;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
+import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.nww.utils.cache.CacheUtils;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -45,6 +46,7 @@ import gov.nasa.worldwind.avlist.AVList;
 import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layers.mercator.MercatorSector;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.Tile;
@@ -130,14 +132,28 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
         params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder(){
 
             public URL getURL( Tile tile, String altImageFormat ) throws MalformedURLException {
-                int zoom = tile.getLevelNumber() + 3;
-                int x = tile.getColumn();
-                int y = (1 << (tile.getLevelNumber()) + 3) - 1 - tile.getRow();
 
-                double n = MBTilesHelper.tile2lat(y, zoom);
-                double s = MBTilesHelper.tile2lat(y + 1, zoom);
-                double w = MBTilesHelper.tile2lon(x, zoom);
-                double e = MBTilesHelper.tile2lon(x + 1, zoom);
+                int zoom = tile.getLevelNumber() + 3;
+                Sector sector = tile.getSector();
+                double n = sector.getMaxLatitude().degrees;
+                double s = sector.getMinLatitude().degrees;
+                double e = sector.getMaxLongitude().degrees;
+                double w = sector.getMinLongitude().degrees;
+                double centerX = w + (e - w) / 2.0;
+                double centerY = s + (n - s) / 2.0;
+
+                int[] tileNumber = NwwUtilities.getTileNumber(centerY, centerX, zoom);
+                int x = tileNumber[0];
+                int y = tileNumber[1];
+
+                // int zoom = tile.getLevelNumber() + 3;
+                // int x = tile.getColumn();
+                // int y = (1 << (tile.getLevelNumber()) + 3) - 1 - tile.getRow();
+                //
+                // double n = MBTilesHelper.tile2lat(y, zoom);
+                // double s = MBTilesHelper.tile2lat(y + 1, zoom);
+                // double w = MBTilesHelper.tile2lon(x, zoom);
+                // double e = MBTilesHelper.tile2lon(x + 1, zoom);
 
                 Coordinate ll = new Coordinate(w, s);
                 Coordinate ur = new Coordinate(e, n);
@@ -145,29 +161,32 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
                 Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(new com.vividsolutions.jts.geom.Envelope(ll, ur));
 
                 try {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(zoom);
-                    sb.append(File.separator);
-                    sb.append(x);
-                    File tileImageFolderFile = new File(cacheFolder, sb.toString());
-                    if (!tileImageFolderFile.exists()) {
-                        tileImageFolderFile.mkdirs();
-                    }
-
-                    sb = new StringBuilder();
-                    sb.append(y);
-                    sb.append(".");
-                    sb.append(_imageFormat);
-                    File imgFile = new File(tileImageFolderFile, sb.toString());
-                    if (!imgFile.exists()) {
-
-                        BufferedImage bImg = rl2Handler.getRL2Image(polygon, "4326", TILESIZE, TILESIZE);
-                        if (bImg != null) {
-                            ImageIO.write(bImg, _imageFormat, imgFile);
-                        } else {
-                            return null;
+                    File imgFile;
+                    synchronized (rl2Handler) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(zoom);
+                        sb.append(File.separator);
+                        sb.append(x);
+                        File tileImageFolderFile = new File(cacheFolder, sb.toString());
+                        if (!tileImageFolderFile.exists()) {
+                            tileImageFolderFile.mkdirs();
                         }
+                        sb = new StringBuilder();
+                        sb.append(y);
+                        sb.append(".");
+                        sb.append(_imageFormat);
+                        imgFile = new File(tileImageFolderFile, sb.toString());
+                        if (!imgFile.exists()) {
 
+                            BufferedImage bImg = rl2Handler.getRL2Image(polygon, "" + CrsUtilities.WGS84_SRID, TILESIZE,
+                                    TILESIZE);
+                            if (bImg != null) {
+                                ImageIO.write(bImg, _imageFormat, imgFile);
+                            } else {
+                                return null;
+                            }
+
+                        }
                     }
                     return imgFile.toURI().toURL();
                 } catch (Exception ez) {

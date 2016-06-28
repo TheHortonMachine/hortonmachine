@@ -17,37 +17,46 @@
  */
 package org.jgrasstools.nww.layers.defaults.raster;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
 
-import com.vividsolutions.jts.geom.Coordinate;
-
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
-import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
+import org.geotools.map.GridReaderLayer;
+import org.geotools.map.MapContent;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.renderer.GTRenderer;
+import org.geotools.renderer.lite.StreamingRenderer;
+import org.geotools.styling.RasterSymbolizer;
+import org.geotools.styling.SLD;
+import org.geotools.styling.Style;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
 import org.jgrasstools.gears.utils.CrsUtilities;
+import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.jgrasstools.gears.utils.images.ImageUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
+import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.nww.utils.cache.CacheUtils;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
 import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layers.mercator.MercatorSector;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.Tile;
@@ -62,20 +71,16 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
 
     private String layerName = "unknown layer";
 
-    private static final int TILESIZE = 512;
+    private static final int TILESIZE = 256;
 
     private Coordinate centerCoordinate;
 
-    private static CoordinateReferenceSystem osmCrs;
-
     public ImageMosaicNwwLayer( File imageMosaicShpFile ) throws Exception {
-        super(makeLevels(imageMosaicShpFile));
+        super(makeLevels(imageMosaicShpFile, getRenderer(imageMosaicShpFile)));
         this.layerName = FileUtilities.getNameWithoutExtention(imageMosaicShpFile);
 
         ReferencedEnvelope envelope = OmsVectorReader.readEnvelope(imageMosaicShpFile.getAbsolutePath());
         ReferencedEnvelope envelopeLL = envelope.transform(DefaultGeographicCRS.WGS84, true);
-
-        osmCrs = CrsUtilities.getCrsFromSrid(3857);
 
         double w = envelopeLL.getMinX();
         double s = envelopeLL.getMinY();
@@ -91,10 +96,28 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
 
     }
 
-    private static LevelSet makeLevels( File imsf ) throws MalformedURLException {
-        AVList params = new AVListImpl();
+    private static GTRenderer getRenderer( File imsf ) {
+
         AbstractGridFormat format = GridFormatFinder.findFormat(imsf);
         AbstractGridCoverage2DReader coverageTilesReader = format.getReader(imsf);
+
+        MapContent mapContent = new MapContent();
+        try {
+            RasterSymbolizer sym = SldUtilities.sf.getDefaultRasterSymbolizer();
+            Style style = SLD.wrapSymbolizers(sym);
+            GridReaderLayer layer = new GridReaderLayer(coverageTilesReader, style);
+            mapContent.addLayer(layer);
+            mapContent.getViewport().setCoordinateReferenceSystem(CrsUtilities.WGS84);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        GTRenderer renderer = new StreamingRenderer();
+        renderer.setMapContent(mapContent);
+        return renderer;
+    }
+
+    private static LevelSet makeLevels( File imsf, GTRenderer renderer ) throws MalformedURLException {
+        AVList params = new AVListImpl();
 
         String tilesPart = "-tiles";
         String cacheRelativePath = "imagemosaics/" + imsf.getName() + tilesPart;
@@ -118,57 +141,45 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
+
         params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder(){
 
             public URL getURL( Tile tile, String altImageFormat ) throws MalformedURLException {
                 int zoom = tile.getLevelNumber() + 3;
-                int x = tile.getColumn();
-                int y = (1 << (tile.getLevelNumber()) + 3) - 1 - tile.getRow();
+                Sector sector = tile.getSector();
+                double north = sector.getMaxLatitude().degrees;
+                double south = sector.getMinLatitude().degrees;
+                double east = sector.getMaxLongitude().degrees;
+                double west = sector.getMinLongitude().degrees;
+                double centerX = west + (east - west) / 2.0;
+                double centerY = south + (north - south) / 2.0;
+                int[] tileNumber = NwwUtilities.getTileNumber(centerY, centerX, zoom);
+                int x = tileNumber[0];
+                int y = tileNumber[1];
 
-                double n = MBTilesHelper.tile2lat(y, zoom);
-                double s = MBTilesHelper.tile2lat(y + 1, zoom);
-                double w = MBTilesHelper.tile2lon(x, zoom);
-                double e = MBTilesHelper.tile2lon(x + 1, zoom);
+                Rectangle imageBounds = new Rectangle(0, 0, TILESIZE, TILESIZE);
+                BufferedImage image = new BufferedImage(imageBounds.width, imageBounds.height, BufferedImage.TYPE_INT_RGB);
+                Graphics2D gr = image.createGraphics();
+                gr.setPaint(Color.WHITE);
+                gr.fill(imageBounds);
+                gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                Coordinate ll = new Coordinate(w, s);
-                Coordinate ur = new Coordinate(e, n);
                 try {
-                    CoordinateReferenceSystem sourceCRS = DefaultGeographicCRS.WGS84;
-                    MathTransform transform = CRS.findMathTransform(sourceCRS, osmCrs);
-                    ll = JTS.transform(ll, null, transform);
-                    ur = JTS.transform(ur, null, transform);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-
-                try {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(zoom);
-                    sb.append(File.separator);
-                    sb.append(x);
-                    File tileImageFolderFile = new File(cacheFolder, sb.toString());
-                    if (!tileImageFolderFile.exists()) {
-                        tileImageFolderFile.mkdirs();
-                    }
-
-                    sb = new StringBuilder();
-                    sb.append(y);
-                    sb.append(".");
-                    sb.append(imageFormat);
-                    File imgFile = new File(tileImageFolderFile, sb.toString());
-                    if (!imgFile.exists()) {
-                        BufferedImage bImg = ImageUtilities.imageFromReader(coverageTilesReader, TILESIZE, TILESIZE, ll.x, ur.x,
-                                ll.y, ur.y, osmCrs);
-                        if (bImg != null) {
-                            ImageIO.write(bImg, imageFormat, imgFile);
-                        } else {
-                            return null;
+                    synchronized (renderer) {
+                        renderer.paint(gr, imageBounds,
+                                new ReferencedEnvelope(west, east, south, north, DefaultGeographicCRS.WGS84));
+                        File tileImageFolderFile = new File(cacheFolder, zoom + File.separator + x);
+                        if (!tileImageFolderFile.exists()) {
+                            tileImageFolderFile.mkdirs();
                         }
-
+                        File imgFile = new File(tileImageFolderFile, y + ".png");
+                        if (!imgFile.exists()) {
+                            ImageIO.write(image, "png", imgFile);
+                        }
+                        return imgFile.toURI().toURL();
                     }
-                    return imgFile.toURI().toURL();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                     return null;
                 }
             }

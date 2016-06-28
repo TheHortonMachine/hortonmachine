@@ -55,7 +55,7 @@ public class ImageUtilities {
      * @return the scaled image.
      * @throws Exception
      */
-    public static BufferedImage scaleImage(BufferedImage image, int newSize) throws Exception {
+    public static BufferedImage scaleImage( BufferedImage image, int newSize ) throws Exception {
 
         int imageWidth = image.getWidth();
         int imageHeight = image.getHeight();
@@ -90,25 +90,17 @@ public class ImageUtilities {
      * @return the image or <code>null</code> if unable to read it.
      * @throws IOException
      */
-    public static BufferedImage imageFromReader(AbstractGridCoverage2DReader reader, int cols, int rows, double w,
-        double e, double s, double n, CoordinateReferenceSystem resampleCrs) throws IOException {
+    public static BufferedImage imageFromReader( AbstractGridCoverage2DReader reader, int cols, int rows, double w, double e,
+            double s, double n, CoordinateReferenceSystem resampleCrs ) throws IOException {
+        CoordinateReferenceSystem sourceCrs = reader.getCoordinateReferenceSystem();
         GeneralParameterValue[] readParams = new GeneralParameterValue[1];
         Parameter<GridGeometry2D> readGG = new Parameter<GridGeometry2D>(AbstractGridFormat.READ_GRIDGEOMETRY2D);
         GridEnvelope2D gridEnvelope = new GridEnvelope2D(0, 0, cols, rows);
-        DirectPosition2D minDp;
-        DirectPosition2D maxDp;
-        if (resampleCrs == null) {
-            minDp = new DirectPosition2D(w, s);
-            maxDp = new DirectPosition2D(e, n);
-        } else {
-            minDp = new DirectPosition2D(resampleCrs, w, s);
-            maxDp = new DirectPosition2D(resampleCrs, e, n);
-        }
+        DirectPosition2D minDp = new DirectPosition2D(sourceCrs, w, s);
+        DirectPosition2D maxDp = new DirectPosition2D(sourceCrs, e, n);
         Envelope env = new Envelope2D(minDp, maxDp);
         readGG.setValue(new GridGeometry2D(gridEnvelope, env));
         readParams[0] = readGG;
-
-        CoordinateReferenceSystem coordinateReferenceSystem = reader.getCoordinateReferenceSystem();
 
         GridCoverage2D gridCoverage2D = reader.read(readParams);
         if (gridCoverage2D == null) {
@@ -130,7 +122,7 @@ public class ImageUtilities {
             Hashtable properties = new Hashtable();
             String[] keys = image.getPropertyNames();
             if (keys != null) {
-                for (int i = 0; i < keys.length; i++) {
+                for( int i = 0; i < keys.length; i++ ) {
                     properties.put(keys[i], image.getProperty(keys[i]));
                 }
             }

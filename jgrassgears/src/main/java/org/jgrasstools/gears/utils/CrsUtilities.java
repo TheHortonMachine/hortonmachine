@@ -42,7 +42,10 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class CrsUtilities {
 
-    public static ReferencedEnvelope WORLD = new ReferencedEnvelope(-180, 180, -90, 90, DefaultGeographicCRS.WGS84);
+    public static final CoordinateReferenceSystem WGS84 = DefaultGeographicCRS.WGS84;
+    public static final int WGS84_SRID = 4326;
+
+    public static final ReferencedEnvelope WORLD = new ReferencedEnvelope(-180, 180, -90, 90, WGS84);
 
     /**
      * Fill the prj file with the actual map projection.
@@ -177,11 +180,19 @@ public class CrsUtilities {
      * @return the crs or null.
      */
     public static CoordinateReferenceSystem getCrsFromSrid( int srid ) {
-        if (srid == 4326) {
-            return DefaultGeographicCRS.WGS84;
+        return getCrsFromSrid(srid, null);
+    }
+
+    public static CoordinateReferenceSystem getCrsFromSrid( int srid, Boolean doLatitudeFirst ) {
+        if (srid == 4326 && doLatitudeFirst == null) {
+            return WGS84;
         }
         try {
-            return CRS.decode("EPSG:" + srid);
+            if (doLatitudeFirst == null) {
+                return CRS.decode("EPSG:" + srid);
+            } else {
+                return CRS.decode("EPSG:" + srid, doLatitudeFirst);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -198,19 +209,7 @@ public class CrsUtilities {
     public static CoordinateReferenceSystem getCrsFromEpsg( String epsgPlusCode, Boolean doLatitudeFirst ) {
         String sridString = epsgPlusCode.replaceFirst("EPSG:", "").replaceFirst("epsg:", "");
         int srid = Integer.parseInt(sridString);
-        if (srid == 4326 && doLatitudeFirst == null) {
-            return DefaultGeographicCRS.WGS84;
-        }
-        try {
-            if (doLatitudeFirst == null) {
-                return CRS.decode("EPSG:" + srid);
-            } else {
-                return CRS.decode("EPSG:" + srid, doLatitudeFirst);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        return getCrsFromSrid(srid, doLatitudeFirst);
     }
 
     public static CoordinateReferenceSystem getCrsFromEpsg( String epsgPlusCode ) {
