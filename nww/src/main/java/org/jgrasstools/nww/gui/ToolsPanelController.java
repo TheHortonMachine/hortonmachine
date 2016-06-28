@@ -446,8 +446,14 @@ public class ToolsPanelController extends ToolsPanelView {
                         wwjPanel.getWwd().getModel().getLayers().add(featureCollectionLinesLayer);
                         layerEventsListener.onLayerAdded(featureCollectionLinesLayer);
                     } else if (GeometryUtilities.isPoint(geometryDescriptor)) {
+                        // check if there is an image
+                        File imageFile = new File(selectedFile.getParentFile(), name + ".png");
+                        String imagePath = null;
+                        if (imageFile.exists()) {
+                            imagePath = imageFile.getAbsolutePath();
+                        }
                         FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name, readFC,
-                                featureStore);
+                                featureStore, imagePath);
                         SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.POINT);
                         if (style != null) {
                             featureCollectionPointsLayer.setStyle(style);

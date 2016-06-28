@@ -18,6 +18,7 @@
 package org.jgrasstools.nww.layers.defaults.vector;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -62,20 +63,25 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
 
     private SimpleFeatureCollection featureCollectionLL;
 
-    private SimpleFeatureStore featureStore;
-
     public FeatureCollectionPointsLayer( String title, SimpleFeatureCollection featureCollectionLL,
-            SimpleFeatureStore featureStore ) {
+            SimpleFeatureStore featureStore, Object imageObject ) {
         this.title = title;
         this.featureCollectionLL = featureCollectionLL;
-        this.featureStore = featureStore;
 
         basicMarkerAttributes = new PointPlacemarkAttributes();
         basicMarkerAttributes.setLabelMaterial(mFillMaterial);
         basicMarkerAttributes.setLineMaterial(mFillMaterial);
         basicMarkerAttributes.setUsePointAsDefaultImage(true);
-        basicMarkerAttributes.setScale(mMarkerSize);
-
+        if (imageObject != null) {
+            if (imageObject instanceof BufferedImage) {
+                BufferedImage image = (BufferedImage) imageObject;
+                basicMarkerAttributes.setImage(image);
+            } else if (imageObject instanceof String) {
+                basicMarkerAttributes.setImageAddress((String) imageObject);
+            }
+        } else {
+            basicMarkerAttributes.setScale(mMarkerSize);
+        }
         SimpleFeatureIterator featureIterator = featureCollectionLL.features();
         try {
             while( featureIterator.hasNext() ) {
