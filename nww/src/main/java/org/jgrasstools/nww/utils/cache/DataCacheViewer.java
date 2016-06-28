@@ -51,7 +51,7 @@ public class DataCacheViewer {
 
         JPanel pa = new JPanel(new BorderLayout(10, 10));
         pa.add(new JLabel("Delete selected data older than"), BorderLayout.WEST);
-        this.ageSpinner = new JSpinner(new SpinnerNumberModel(6, 0, 10000, 1));
+        this.ageSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 10000, 1));
         this.ageSpinner.setToolTipText("0 selects the entire dataset regardless of age");
         JPanel pas = new JPanel();
         pas.add(this.ageSpinner);

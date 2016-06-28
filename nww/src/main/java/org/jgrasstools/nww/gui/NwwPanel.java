@@ -49,8 +49,6 @@ import gov.nasa.worldwind.globes.projections.ProjectionEquirectangular;
 import gov.nasa.worldwind.globes.projections.ProjectionMercator;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
-import gov.nasa.worldwind.layers.ViewControlsLayer;
-import gov.nasa.worldwind.layers.ViewControlsSelectListener;
 import gov.nasa.worldwind.terrain.ZeroElevationModel;
 import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwind.view.orbit.OrbitView;
@@ -67,7 +65,7 @@ public class NwwPanel extends JPanel {
 
     private double lastElevation = Double.NaN;
 
-    public NwwPanel(boolean useWwGlCanvas) {
+    public NwwPanel( boolean useWwGlCanvas ) {
         super(new BorderLayout());
 
         // Configuration.setValue(AVKey.INITIAL_LATITUDE, gpsLogShps[0].y);
@@ -89,7 +87,7 @@ public class NwwPanel extends JPanel {
         List<Layer> addBack = new ArrayList<>();
         Iterator<Layer> layerIterator = layers.iterator();
         List<String> namesToKeep = NwwUtilities.LAYERS_TO_KEEP_FROM_ORIGNALNWW;
-        while (layerIterator.hasNext()) {
+        while( layerIterator.hasNext() ) {
             Layer layer = layerIterator.next();
             if (namesToKeep.contains(layer.getName())) {
                 addBack.add(layer);
@@ -105,10 +103,24 @@ public class NwwPanel extends JPanel {
         this.statusBar.setEventSource(getWwd());
     }
 
-    public void addViewControls() {
+    public ViewControlsLayer addViewControls( double scale, boolean showZoomControls, boolean showPanControls,
+            boolean showheadingControls, boolean showPitchControls, boolean showVerticalExaggerationControls ) {
         ViewControlsLayer viewControlsLayer = new ViewControlsLayer();
+
+        viewControlsLayer.setScale(scale);
+        viewControlsLayer.setShowZoomControls(showZoomControls);
+        viewControlsLayer.setShowPanControls(showPanControls);
+        viewControlsLayer.setShowHeadingControls(showheadingControls);
+        viewControlsLayer.setShowPitchControls(showPitchControls);
+        viewControlsLayer.setShowVeControls(showVerticalExaggerationControls);
+
         addLayer(viewControlsLayer);
         getWwd().addSelectListener(new ViewControlsSelectListener(getWwd(), viewControlsLayer));
+        return viewControlsLayer;
+    }
+
+    public ViewControlsLayer addViewControls() {
+        return addViewControls(2, true, false, true, false, false);
     }
 
     public void addOsmLayer() {
@@ -129,7 +141,7 @@ public class NwwPanel extends JPanel {
      * @param animate
      *            if <code>true</code>, it animates to the position.
      */
-    public synchronized Position goTo(Double lon, Double lat, Double elev, Double azimuth, boolean animate) {
+    public synchronized Position goTo( Double lon, Double lat, Double elev, Double azimuth, boolean animate ) {
         View view = getWwd().getView();
         view.stopAnimations();
         view.stopMovement();
@@ -179,7 +191,7 @@ public class NwwPanel extends JPanel {
      * @param animate
      *            if <code>true</code>, it animates to the position.
      */
-    public void goTo(Sector sector, boolean animate) {
+    public void goTo( Sector sector, boolean animate ) {
         View view = getWwd().getView();
         view.stopAnimations();
         view.stopMovement();
@@ -218,7 +230,7 @@ public class NwwPanel extends JPanel {
      * @param doMercator
      *            if <code>true</code>, mercator is used as opposed to lat/long.
      */
-    public void setFlatGlobe(boolean doMercator) {
+    public void setFlatGlobe( boolean doMercator ) {
         EarthFlat globe = new EarthFlat();
         globe.setElevationModel(new ZeroElevationModel());
         wwd.getModel().setGlobe(globe);
@@ -266,11 +278,11 @@ public class NwwPanel extends JPanel {
         return wwd;
     }
 
-    public void addLayer(Layer layer) {
+    public void addLayer( Layer layer ) {
         getWwd().getModel().getLayers().add(layer);
     }
 
-    public void removeLayer(Layer layer) {
+    public void removeLayer( Layer layer ) {
         LayerList layers = getWwd().getModel().getLayers();
         layers.remove(layer);
     }

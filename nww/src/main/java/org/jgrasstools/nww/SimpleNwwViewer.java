@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import org.jgrasstools.nww.gui.LayersPanelController;
 import org.jgrasstools.nww.gui.NwwPanel;
 import org.jgrasstools.nww.gui.ToolsPanelController;
+import org.jgrasstools.nww.gui.ViewControlsLayer;
 
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -34,7 +35,7 @@ public class SimpleNwwViewer {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main( String[] args ) {
 
         String appName = "SIMPLE NWW VIEWER";
         if (Configuration.isMacOS() && appName != null) {
@@ -45,14 +46,16 @@ public class SimpleNwwViewer {
 
             NwwPanel wwjPanel = new NwwPanel(false);
             wwjPanel.addOsmLayer();
-            wwjPanel.addViewControls();
+            ViewControlsLayer viewControls = wwjPanel.addViewControls();
+            viewControls.setScale(1.5);
+
             LayersPanelController layerPanel = new LayersPanelController(wwjPanel);
             ToolsPanelController toolsPanel = new ToolsPanelController(wwjPanel, layerPanel);
 
             final JFrame nwwFrame = new JFrame();
             nwwFrame.setTitle(appName + ": map view");
             nwwFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            java.awt.EventQueue.invokeLater(new Runnable() {
+            java.awt.EventQueue.invokeLater(new Runnable(){
 
                 public void run() {
                     nwwFrame.setVisible(true);
@@ -69,7 +72,7 @@ public class SimpleNwwViewer {
             final JFrame layersFrame = new JFrame();
             layersFrame.setTitle(appName + ": layers view");
             layersFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            java.awt.EventQueue.invokeLater(new Runnable() {
+            java.awt.EventQueue.invokeLater(new Runnable(){
 
                 public void run() {
                     layersFrame.setVisible(true);
@@ -84,7 +87,7 @@ public class SimpleNwwViewer {
             final JFrame toolsFrame = new JFrame();
             toolsFrame.setTitle(appName + ": tools view");
             toolsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            java.awt.EventQueue.invokeLater(new Runnable() {
+            java.awt.EventQueue.invokeLater(new Runnable(){
 
                 public void run() {
                     toolsFrame.setVisible(true);
