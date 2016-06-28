@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.jgrasstools.nww.layers.LayerInfo;
+import org.jgrasstools.nww.layers.objects.LayerInfo;
 
 import gov.nasa.worldwind.Factory;
 import gov.nasa.worldwind.WorldWind;

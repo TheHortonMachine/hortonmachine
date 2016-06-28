@@ -31,6 +31,8 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
@@ -403,8 +405,13 @@ public class ToolsPanelController extends ToolsPanelView {
                     // ignore and handle as shapefile
                 }
 
+                SimpleFeatureSource featureSource = NwwUtilities.readFeatureSource(selectedFile.getAbsolutePath());
+                SimpleFeatureStore featureStore = null;
+                if (featureSource instanceof SimpleFeatureStore) {
+                    featureStore = (SimpleFeatureStore) featureSource;
+                }
+                SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(featureSource);
                 if (_useRasterizedCheckbox.isSelected()) {
-                    SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(selectedFile.getAbsolutePath());
                     Style style = SldUtilities.getStyleFromFile(selectedFile);
                     if (style == null)
                         style = SLD.createSimpleStyle(readFC.getSchema());
@@ -413,12 +420,11 @@ public class ToolsPanelController extends ToolsPanelView {
                     wwjPanel.getWwd().getModel().getLayers().add(collectionLayer);
                     layerEventsListener.onLayerAdded(collectionLayer);
                 } else {
-                    SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(selectedFile.getAbsolutePath());
 
                     GeometryDescriptor geometryDescriptor = readFC.getSchema().getGeometryDescriptor();
                     if (GeometryUtilities.isPolygon(geometryDescriptor)) {
                         FeatureCollectionPolygonLayer featureCollectionPolygonLayer = new FeatureCollectionPolygonLayer(name,
-                                readFC);
+                                readFC, featureStore);
 
                         featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                         featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
@@ -430,7 +436,8 @@ public class ToolsPanelController extends ToolsPanelView {
                         wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPolygonLayer);
                         layerEventsListener.onLayerAdded(featureCollectionPolygonLayer);
                     } else if (GeometryUtilities.isLine(geometryDescriptor)) {
-                        FeatureCollectionLinesLayer featureCollectionLinesLayer = new FeatureCollectionLinesLayer(name, readFC);
+                        FeatureCollectionLinesLayer featureCollectionLinesLayer = new FeatureCollectionLinesLayer(name, readFC,
+                                featureStore);
                         featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                         featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
                         SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.LINE);
@@ -441,8 +448,8 @@ public class ToolsPanelController extends ToolsPanelView {
                         wwjPanel.getWwd().getModel().getLayers().add(featureCollectionLinesLayer);
                         layerEventsListener.onLayerAdded(featureCollectionLinesLayer);
                     } else if (GeometryUtilities.isPoint(geometryDescriptor)) {
-                        FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name,
-                                readFC);
+                        FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name, readFC,
+                                featureStore);
                         SimpleStyle style = NwwUtilities.getStyle(selectedFile.getAbsolutePath(), GeometryType.POINT);
                         if (style != null) {
                             featureCollectionPointsLayer.setStyle(style);

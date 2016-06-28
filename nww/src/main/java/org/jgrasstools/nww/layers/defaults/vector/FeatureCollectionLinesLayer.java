@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
@@ -64,10 +65,20 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
     private int mElevationMode = WorldWind.CLAMP_TO_GROUND;
     private String title;
     private AirspaceAttributes highlightAttrs;
+    private SimpleFeatureStore featureStore;
 
-    public FeatureCollectionLinesLayer( String title, SimpleFeatureCollection featureCollectionLL ) {
+    /**
+     * Build the layer.
+     * 
+     * @param title layer name.
+     * @param featureCollectionLL the featurecollection in latlong.
+     * @param featureStore the feature store. If not null, then the feature attributes will be editable.
+     */
+    public FeatureCollectionLinesLayer( String title, SimpleFeatureCollection featureCollectionLL,
+            SimpleFeatureStore featureStore ) {
         this.title = title;
         this.featureCollectionLL = featureCollectionLL;
+        this.featureStore = featureStore;
 
         AirspaceAttributes attrs = new BasicAirspaceAttributes();
         attrs.setDrawInterior(true);
@@ -188,7 +199,7 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
                             verticesList.add(Position.fromDegrees(c.y, c.x, h));
                         }
                     }
-                    FeatureLine path = new FeatureLine(verticesList);
+                    FeatureLine path = new FeatureLine(verticesList, featureStore);
                     path.setFeature(lineFeature);
                     path.setAltitudeMode(mElevationMode);
                     path.setAttributes(mNormalShapeAttributes);

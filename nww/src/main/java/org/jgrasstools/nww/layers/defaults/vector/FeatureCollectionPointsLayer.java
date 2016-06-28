@@ -17,10 +17,12 @@
  */
 package org.jgrasstools.nww.layers.defaults.vector;
 
+import java.awt.Color;
 import java.util.ArrayList;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
@@ -33,8 +35,11 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.Material;
+import gov.nasa.worldwind.render.PointPlacemarkAttributes;
 import gov.nasa.worldwind.render.markers.BasicMarkerAttributes;
 import gov.nasa.worldwind.render.markers.BasicMarkerShape;
 import gov.nasa.worldwind.render.markers.Marker;
@@ -44,48 +49,51 @@ import gov.nasa.worldwind.render.markers.Marker;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwVectorLayer {
+public class FeatureCollectionPointsLayer extends RenderableLayer implements NwwVectorLayer {
 
-    private BasicMarkerAttributes basicMarkerAttributes;
+    private PointPlacemarkAttributes basicMarkerAttributes;
 
     private Material mFillMaterial = Material.GREEN;
     private double mFillOpacity = 1d;
-    private double mMarkerSize = 5d;
+    private double mMarkerSize = 15d;
     private String mShapeType = BasicMarkerShape.SPHERE;
 
     private String title;
 
     private SimpleFeatureCollection featureCollectionLL;
 
-    public FeatureCollectionPointsLayer(String title, SimpleFeatureCollection featureCollectionLL) {
+    private SimpleFeatureStore featureStore;
+
+    public FeatureCollectionPointsLayer( String title, SimpleFeatureCollection featureCollectionLL,
+            SimpleFeatureStore featureStore ) {
         this.title = title;
         this.featureCollectionLL = featureCollectionLL;
-        basicMarkerAttributes = new BasicMarkerAttributes(mFillMaterial, mShapeType, mFillOpacity);
-        basicMarkerAttributes.setMarkerPixels(mMarkerSize);
-        basicMarkerAttributes.setMinMarkerSize(0.1);
+        this.featureStore = featureStore;
 
-        setOverrideMarkerElevation(true);
-        setElevation(0);
-
-        setMarkers(new ArrayList<Marker>());
+        basicMarkerAttributes = new PointPlacemarkAttributes();
+        basicMarkerAttributes.setLabelMaterial(mFillMaterial);
+        basicMarkerAttributes.setLineMaterial(mFillMaterial);
+        basicMarkerAttributes.setUsePointAsDefaultImage(true);
+        basicMarkerAttributes.setScale(mMarkerSize);
 
         SimpleFeatureIterator featureIterator = featureCollectionLL.features();
         try {
-            while (featureIterator.hasNext()) {
+            while( featureIterator.hasNext() ) {
                 SimpleFeature pointFeature = featureIterator.next();
                 Geometry geometry = (Geometry) pointFeature.getDefaultGeometry();
                 if (geometry == null) {
                     continue;
                 }
                 int numGeometries = geometry.getNumGeometries();
-                for (int i = 0; i < numGeometries; i++) {
+                for( int i = 0; i < numGeometries; i++ ) {
                     Geometry geometryN = geometry.getGeometryN(i);
                     if (geometryN instanceof Point) {
                         Point point = (Point) geometryN;
-                        FeaturePoint marker = new FeaturePoint(Position.fromDegrees(point.getY(), point.getX(), 0),
-                                basicMarkerAttributes);
+                        FeaturePoint marker = new FeaturePoint(Position.fromDegrees(point.getY(), point.getX(), 0), featureStore);
                         marker.setFeature(pointFeature);
-                        addMarker(marker);
+                        marker.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+                        marker.setAttributes(basicMarkerAttributes);
+                        addRenderable(marker);
                     }
                 }
             }
@@ -95,7 +103,7 @@ public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwVect
 
     }
 
-    public void setStyle(SimpleStyle style) {
+    public void setStyle( SimpleStyle style ) {
         if (style != null) {
             mFillMaterial = new Material(style.fillColor);
             mFillOpacity = style.fillOpacity;
@@ -103,19 +111,17 @@ public class FeatureCollectionPointsLayer extends MarkerLayer implements NwwVect
             mShapeType = style.shapeType;
         }
 
-        basicMarkerAttributes.setMaterial(mFillMaterial);
-        basicMarkerAttributes.setOpacity(mFillOpacity);
-        basicMarkerAttributes.setMarkerPixels(mMarkerSize);
-        basicMarkerAttributes.setShapeType(mShapeType);
+        basicMarkerAttributes.setLabelMaterial(mFillMaterial);
+        basicMarkerAttributes.setLineMaterial(mFillMaterial);
+        basicMarkerAttributes.setUsePointAsDefaultImage(true);
+        basicMarkerAttributes.setScale(mMarkerSize);
     }
 
     @Override
     public SimpleStyle getStyle() {
         SimpleStyle simpleStyle = new SimpleStyle();
-        simpleStyle.fillColor = basicMarkerAttributes.getMaterial().getDiffuse();
-        simpleStyle.fillOpacity = basicMarkerAttributes.getOpacity();
-        simpleStyle.shapeSize = basicMarkerAttributes.getMarkerPixels();
-        simpleStyle.shapeType = basicMarkerAttributes.getShapeType();
+        simpleStyle.fillColor = basicMarkerAttributes.getLabelMaterial().getDiffuse();
+        simpleStyle.shapeSize = basicMarkerAttributes.getScale();
         return simpleStyle;
     }
 

@@ -20,7 +20,7 @@ package org.jgrasstools.nww.layers.defaults.other;
 import java.awt.Color;
 import java.util.ArrayList;
 
-import org.jgrasstools.nww.layers.BasicMarkerWithInfo;
+import org.jgrasstools.nww.layers.objects.BasicMarkerWithInfo;
 
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.Material;

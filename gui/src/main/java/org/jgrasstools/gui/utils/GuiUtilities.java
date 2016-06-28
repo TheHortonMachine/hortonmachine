@@ -21,6 +21,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -28,8 +29,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.prefs.Preferences;
 
+import javax.swing.BorderFactory;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 
 /**
  * Utilities class.
@@ -110,6 +116,42 @@ public class GuiUtilities {
         f.setVisible(true);
         f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         return f;
+    }
+
+    /**
+     * Create a simple multi input pane, that returns what the use inserts.
+     * 
+     * @param parentComponent
+     * @param title the dialog title.
+     * @param labels the labels to set.
+     * @param defaultValues a set of default values.
+     * @return the result inserted by the user.
+     */
+    public static String[] showMultiInputDialog( Component parentComponent, String title, String[] labels,
+            String[] defaultValues ) {
+        JTextField textFields[] = new JTextField[labels.length];
+        JPanel panel = new JPanel();
+//        panel.setPreferredSize(new Dimension(400, 300));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        String input[] = new String[labels.length];
+        panel.setLayout(new GridLayout(labels.length, 2, 5, 5));
+        for( int i = 0; i < labels.length; i++ ) {
+            panel.add(new JLabel(labels[i]));
+            textFields[i] = new JTextField();
+            panel.add(textFields[i]);
+            if (defaultValues != null) {
+                textFields[i].setText(defaultValues[i]);
+            }
+        }
+        JScrollPane scrollPane = new JScrollPane(panel);
+        scrollPane.setPreferredSize(new Dimension(550, 300));
+        int result = JOptionPane.showConfirmDialog(parentComponent, scrollPane, title, JOptionPane.OK_CANCEL_OPTION);
+        if (result != JOptionPane.OK_OPTION) {
+            return null;
+        }
+        for( int i = 0; i < labels.length; i++ )
+            input[i] = textFields[i].getText();
+        return input;
     }
 
 }

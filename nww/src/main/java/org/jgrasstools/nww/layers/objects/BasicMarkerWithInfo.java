@@ -4,7 +4,7 @@
  * All Rights Reserved.
  */
 
-package org.jgrasstools.nww.layers;
+package org.jgrasstools.nww.layers.objects;
 
 import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.geom.Angle;

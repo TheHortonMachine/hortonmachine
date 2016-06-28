@@ -1,4 +1,4 @@
-package org.jgrasstools.nww.layers;
+package org.jgrasstools.nww.layers.objects;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVListImpl;

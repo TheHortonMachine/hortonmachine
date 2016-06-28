@@ -2,11 +2,16 @@ package org.jgrasstools.nww.utils;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.geotools.data.FileDataStore;
+import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
@@ -23,8 +28,8 @@ import org.jgrasstools.gears.utils.style.PolygonSymbolizerWrapper;
 import org.jgrasstools.gears.utils.style.RuleWrapper;
 import org.jgrasstools.gears.utils.style.StyleWrapper;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
-import org.jgrasstools.nww.layers.BasicMarkerWithInfo;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
+import org.jgrasstools.nww.layers.objects.BasicMarkerWithInfo;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
@@ -62,6 +67,10 @@ public class NwwUtilities {
 
     public static SimpleFeatureCollection readAndReproject( String path ) throws Exception {
         SimpleFeatureCollection fc = OmsVectorReader.readVector(path);
+        return reprojectToWGS84(fc);
+    }
+
+    private static SimpleFeatureCollection reprojectToWGS84( SimpleFeatureCollection fc ) {
         // BOUNDS
         ReferencedEnvelope bounds = fc.getBounds();
         CoordinateReferenceSystem crs = bounds.getCoordinateReferenceSystem();
@@ -69,10 +78,29 @@ public class NwwUtilities {
             try {
                 fc = new ReprojectingFeatureCollection(fc, GPS_CRS);
             } catch (Exception e) {
-                throw new IllegalArgumentException("The pipes data need to be of WGS84 lat/lon projection.", e);
+                throw new IllegalArgumentException("The data need to be of WGS84 lat/lon projection.", e);
             }
         }
         return fc;
+    }
+
+    public static SimpleFeatureCollection readAndReproject( SimpleFeatureSource featureSource ) throws Exception {
+        SimpleFeatureCollection fc = featureSource.getFeatures();
+        return reprojectToWGS84(fc);
+    }
+
+    /**
+     * Get the feature source from a file.
+     * 
+     * @param path the path to the shapefile.
+     * @return the feature source.
+     * @throws Exception
+     */
+    public static SimpleFeatureSource readFeatureSource( String path ) throws Exception {
+        File shapeFile = new File(path);
+        FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
+        SimpleFeatureSource featureSource = store.getFeatureSource();
+        return featureSource;
     }
 
     public static SimpleStyle getStyle( String path, GeometryType geomType ) throws Exception {

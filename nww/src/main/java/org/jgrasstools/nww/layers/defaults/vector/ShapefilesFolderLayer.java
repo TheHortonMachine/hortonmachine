@@ -225,7 +225,7 @@ public class ShapefilesFolderLayer extends RenderableLayer implements NwwLayer {
                     Coordinate c = lineCoords[j];
                     verticesList.add(Position.fromDegrees(c.y, c.x));
                 }
-                FeatureLine path = new FeatureLine(verticesList);
+                FeatureLine path = new FeatureLine(verticesList, null);
                 path.setFeature(lineFeature);
                 path.setAltitudeMode(mElevationMode);
                 path.setAttributes(shapeAttributes);
@@ -252,7 +252,7 @@ public class ShapefilesFolderLayer extends RenderableLayer implements NwwLayer {
             if (geometryN instanceof com.vividsolutions.jts.geom.Polygon) {
                 com.vividsolutions.jts.geom.Polygon poly = (com.vividsolutions.jts.geom.Polygon) geometryN;
 
-                FeaturePolygon polygon = new FeaturePolygon();
+                FeaturePolygon polygon = new FeaturePolygon(null);
                 polygon.setFeature(polygonAreaFeature);
 
                 Coordinate[] extCoords = poly.getExteriorRing().getCoordinates();

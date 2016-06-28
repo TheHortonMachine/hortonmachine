@@ -3,9 +3,12 @@ package org.jgrasstools.nww.gui.listeners;
 import java.awt.Component;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 
+import org.geotools.data.simple.SimpleFeatureStore;
+import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.nww.shapes.IFeatureShape;
 import org.jgrasstools.nww.shapes.IInfoShape;
 import org.jgrasstools.nww.utils.NwwUtilities;
@@ -35,13 +38,39 @@ public class GenericSelectListener implements SelectListener {
             if (object instanceof IFeatureShape) {
                 IFeatureShape featureShape = (IFeatureShape) object;
                 SimpleFeature feature = featureShape.getFeature();
+                SimpleFeatureStore featureStore = featureShape.getFeatureStore();
 
                 LinkedHashMap<String, String> feature2AlphanumericToHashmap = NwwUtilities.feature2AlphanumericToHashmap(feature);
-                StringBuilder sb = new StringBuilder();
-                for( Entry<String, String> entry : feature2AlphanumericToHashmap.entrySet() ) {
-                    sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+                if (featureStore == null) {
+                    StringBuilder sb = new StringBuilder();
+                    for( Entry<String, String> entry : feature2AlphanumericToHashmap.entrySet() ) {
+                        sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+                    }
+                    msg = sb.toString();
+                } else {
+                    int size = feature2AlphanumericToHashmap.size();
+                    String[] fieldNames = new String[size];
+                    String[] values = new String[size];
+                    Set<Entry<String, String>> entrySet = feature2AlphanumericToHashmap.entrySet();
+                    int count = 0;
+                    for( Entry<String, String> entry : entrySet ) {
+                        fieldNames[count] = entry.getKey();
+                        String value = entry.getValue();
+                        if (value == null) {
+                            value = "";
+                        }
+                        values[count] = value;
+                        count++;
+                    }
+
+                    String[] editedValues = GuiUtilities.showMultiInputDialog(parent, "Edit feature", fieldNames, values);
+                    if (editedValues != null) {
+                        SimpleFeature modifiedFeature = featureShape.modifyFeatureAttribute(fieldNames, editedValues);
+                        if (modifiedFeature != null) {
+                            featureShape.setFeature(modifiedFeature);
+                        }
+                    }
                 }
-                msg = sb.toString();
             }
             if (object instanceof IInfoShape) {
                 IInfoShape infoShape = (IInfoShape) object;
