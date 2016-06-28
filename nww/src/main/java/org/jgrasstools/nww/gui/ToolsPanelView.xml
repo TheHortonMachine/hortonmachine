@@ -212,9 +212,9 @@
                   </object>
                  </at>
                  <at name="actionCommand">Info Tool</at>
-                 <at name="name">infoButton</at>
-                 <at name="width">109</at>
-                 <at name="text">Info Tool</at>
+                 <at name="name">infoEditingButton</at>
+                 <at name="width">123</at>
+                 <at name="text">Info/Editing Tool</at>
                  <at name="height">22</at>
                 </object>
                </at>
@@ -325,7 +325,7 @@
                  </at>
                  <at name="actionCommand">Zoom By Box</at>
                  <at name="name">zoomByBoxButton</at>
-                 <at name="width">109</at>
+                 <at name="width">123</at>
                  <at name="text">Zoom By Box</at>
                  <at name="height">22</at>
                 </object>

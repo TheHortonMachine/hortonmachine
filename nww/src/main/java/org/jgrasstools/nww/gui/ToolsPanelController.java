@@ -237,10 +237,8 @@ public class ToolsPanelController extends ToolsPanelView {
             }
         });
 
-        _infoButton.addActionListener(e -> {
-            // _selectByBoxButton.setSelected(false);
-
-            if (_infoButton.isSelected()) {
+        _infoEditingButton.addActionListener(e -> {
+            if (_infoEditingButton.isSelected()) {
                 genericSelectListener = new GenericSelectListener(wwjPanel);
                 wwjPanel.getWwd().addSelectListener(genericSelectListener);
 

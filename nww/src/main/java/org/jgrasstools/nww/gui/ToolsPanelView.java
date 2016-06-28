@@ -23,7 +23,7 @@ public class ToolsPanelView extends JPanel
 {
    JLabel _loadFileLabel = new JLabel();
    JButton _loadFileButton = new JButton();
-   JToggleButton _infoButton = new JToggleButton();
+   JToggleButton _infoEditingButton = new JToggleButton();
    JToggleButton _selectByBoxButton = new JToggleButton();
    JToggleButton _zoomByBoxButton = new JToggleButton();
    JButton _addAnnotationButton = new JButton();
@@ -194,10 +194,10 @@ public class ToolsPanelView extends JPanel
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      _infoButton.setActionCommand("Info Tool");
-      _infoButton.setName("infoButton");
-      _infoButton.setText("Info Tool");
-      jpanel1.add(_infoButton,cc.xy(1,1));
+      _infoEditingButton.setActionCommand("Info Tool");
+      _infoEditingButton.setName("infoEditingButton");
+      _infoEditingButton.setText("Info/Editing Tool");
+      jpanel1.add(_infoEditingButton,cc.xy(1,1));
 
       _selectByBoxButton.setActionCommand("Select by box");
       _selectByBoxButton.setName("selectByBoxButton");
