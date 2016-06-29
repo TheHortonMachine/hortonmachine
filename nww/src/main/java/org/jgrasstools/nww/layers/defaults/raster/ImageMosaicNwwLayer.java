@@ -75,8 +75,8 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
 
     private Coordinate centerCoordinate;
 
-    public ImageMosaicNwwLayer( File imageMosaicShpFile ) throws Exception {
-        super(makeLevels(imageMosaicShpFile, getRenderer(imageMosaicShpFile)));
+    public ImageMosaicNwwLayer( File imageMosaicShpFile, Integer tileSize ) throws Exception {
+        super(makeLevels(imageMosaicShpFile, getRenderer(imageMosaicShpFile), tileSize));
         this.layerName = FileUtilities.getNameWithoutExtention(imageMosaicShpFile);
 
         ReferencedEnvelope envelope = OmsVectorReader.readEnvelope(imageMosaicShpFile.getAbsolutePath());
@@ -116,16 +116,21 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
         return renderer;
     }
 
-    private static LevelSet makeLevels( File imsf, GTRenderer renderer ) throws MalformedURLException {
+    private static LevelSet makeLevels( File imsf, GTRenderer renderer, Integer tileSize ) throws MalformedURLException {
         AVList params = new AVListImpl();
+        if (tileSize == null || tileSize < 256) {
+            tileSize = TILESIZE;
+        }
+
+        int finalTileSize = tileSize;
 
         String tilesPart = "-tiles";
         String cacheRelativePath = "imagemosaics/" + imsf.getName() + tilesPart;
 
         String urlString = imsf.toURI().toURL().toExternalForm();
         params.setValue(AVKey.URL, urlString);
-        params.setValue(AVKey.TILE_WIDTH, TILESIZE);
-        params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
+        params.setValue(AVKey.TILE_WIDTH, finalTileSize);
+        params.setValue(AVKey.TILE_HEIGHT, finalTileSize);
         params.setValue(AVKey.DATA_CACHE_NAME, cacheRelativePath);
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
@@ -157,7 +162,7 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
                 int x = tileNumber[0];
                 int y = tileNumber[1];
 
-                Rectangle imageBounds = new Rectangle(0, 0, TILESIZE, TILESIZE);
+                Rectangle imageBounds = new Rectangle(0, 0, finalTileSize, finalTileSize);
                 BufferedImage image = new BufferedImage(imageBounds.width, imageBounds.height, BufferedImage.TYPE_INT_RGB);
                 Graphics2D gr = image.createGraphics();
                 gr.setPaint(Color.WHITE);

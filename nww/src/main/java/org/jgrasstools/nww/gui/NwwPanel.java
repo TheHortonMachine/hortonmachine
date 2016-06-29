@@ -168,7 +168,6 @@ public class NwwPanel extends JPanel {
             }
         }
         eyePosition = NwwUtilities.toPosition(lat, lon, elev);
-        System.out.println("CURRENT EYE: " + eyePosition);
         if (animate) {
             view.goTo(eyePosition, elev);
         } else {

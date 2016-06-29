@@ -183,7 +183,7 @@ public class ToolsPanelController extends ToolsPanelView {
                     try {
                         Layer layer;
                         if (_useRasterizedCheckbox.isSelected()) {
-                            layer = new RasterizedShapefilesFolderNwwLayer(selectedFile);
+                            layer = new RasterizedShapefilesFolderNwwLayer(selectedFile, null, true);
                         } else {
                             layer = new ShapefilesFolderLayer(selectedFile.getAbsolutePath());
                         }
@@ -393,7 +393,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 String fileName = FileUtilities.getNameWithoutExtention(selectedFile);
                 try {
                     if (parentFolderName.equals(fileName)) {
-                        ImageMosaicNwwLayer imageMosaicNwwLayer = new ImageMosaicNwwLayer(selectedFile);
+                        ImageMosaicNwwLayer imageMosaicNwwLayer = new ImageMosaicNwwLayer(selectedFile, null);
                         wwjPanel.getWwd().getModel().getLayers().add(imageMosaicNwwLayer);
                         layerEventsListener.onLayerAdded(imageMosaicNwwLayer);
                         return;
@@ -413,7 +413,7 @@ public class ToolsPanelController extends ToolsPanelView {
                     Style style = SldUtilities.getStyleFromFile(selectedFile);
                     if (style == null)
                         style = SLD.createSimpleStyle(readFC.getSchema());
-                    RasterizedFeatureCollectionLayer collectionLayer = new RasterizedFeatureCollectionLayer(name, readFC, style);
+                    RasterizedFeatureCollectionLayer collectionLayer = new RasterizedFeatureCollectionLayer(name, readFC, style, null, true);
 
                     wwjPanel.getWwd().getModel().getLayers().add(collectionLayer);
                     layerEventsListener.onLayerAdded(collectionLayer);
@@ -471,7 +471,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
                 layerEventsListener.onLayerAdded(mbTileLayer);
             } else if (selectedFile.getName().endsWith(".map")) {
-                MapsforgeNwwLayer mbTileLayer = new MapsforgeNwwLayer(selectedFile);
+                MapsforgeNwwLayer mbTileLayer = new MapsforgeNwwLayer(selectedFile, null);
                 wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
                 layerEventsListener.onLayerAdded(mbTileLayer);
             } else if (selectedFile.getName().endsWith(".rl2")) {
@@ -480,7 +480,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 List<RasterCoverage> rasterCoverages = db.getRasterCoverages(false);
                 if (rasterCoverages.size() > 0) {
                     RL2CoverageHandler handler = new RL2CoverageHandler(db, rasterCoverages.get(0));
-                    RL2NwwLayer rl2Layer = new RL2NwwLayer(handler);
+                    RL2NwwLayer rl2Layer = new RL2NwwLayer(handler, null);
 
                     wwjPanel.getWwd().getModel().getLayers().add(rl2Layer);
                     layerEventsListener.onLayerAdded(rl2Layer);
@@ -495,7 +495,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 if (_useRasterizedCheckbox.isSelected()) {
                     RasterizedSpatialiteLayer rasterizedSpatialiteLayer = new RasterizedSpatialiteLayer(name, db, tableName, -1,
-                            null);
+                            null, null, true);
                     wwjPanel.getWwd().getModel().getLayers().add(rasterizedSpatialiteLayer);
                     layerEventsListener.onLayerAdded(rasterizedSpatialiteLayer);
                 } else {

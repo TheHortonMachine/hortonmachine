@@ -59,14 +59,17 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
 
     private static final int TILESIZE = 1024;
 
-    public MapsforgeNwwLayer(File mapsforgeFile) throws Exception {
-        super(makeLevels(mapsforgeFile, getTilegenerator(mapsforgeFile)));
+    public MapsforgeNwwLayer( File mapsforgeFile, Integer tileSize ) throws Exception {
+        super(makeLevels(mapsforgeFile, getTilegenerator(mapsforgeFile, tileSize), tileSize));
         this.layerName = FileUtilities.getNameWithoutExtention(mapsforgeFile);
         this.setUseTransparentTextures(true);
 
     }
 
-    private static OsmTilegenerator getTilegenerator(File mapsforgeFile) {
+    private static OsmTilegenerator getTilegenerator( File mapsforgeFile, Integer tileSize ) {
+        if (tileSize == null || tileSize < 256) {
+            tileSize = TILESIZE;
+        }
         GraphicFactory graphicFactory = AwtGraphicFactory.INSTANCE;
         MapDatabase mapDatabase = new MapDatabase();
         DatabaseRenderer dbRenderer = null;
@@ -88,21 +91,27 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
                 xmlRenderTheme = InternalRenderTheme.OSMARENDER;
             }
             displayModel = new DisplayModel();
-            displayModel.setUserScaleFactor(TILESIZE / 256f);
+            displayModel.setUserScaleFactor(tileSize / 256f);
         }
 
         return new OsmTilegenerator(mapsforgeFile, dbRenderer, xmlRenderTheme, displayModel);
     }
 
-    private static LevelSet makeLevels(File mapsforgeFile, OsmTilegenerator osmTilegenerator)
-        throws MalformedURLException {
+    private static LevelSet makeLevels( File mapsforgeFile, OsmTilegenerator osmTilegenerator, Integer tileSize )
+            throws MalformedURLException {
         AVList params = new AVListImpl();
         String cacheRelativePath = "mapsforge/" + mapsforgeFile.getName() + "-tiles";
 
+        if (tileSize == null || tileSize < 256) {
+            tileSize = TILESIZE;
+        }
+
+        int finalTileSize = tileSize;
+
         String urlString = mapsforgeFile.toURI().toURL().toExternalForm();
         params.setValue(AVKey.URL, urlString);
-        params.setValue(AVKey.TILE_WIDTH, TILESIZE);
-        params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
+        params.setValue(AVKey.TILE_WIDTH, finalTileSize);
+        params.setValue(AVKey.TILE_HEIGHT, finalTileSize);
         params.setValue(AVKey.DATA_CACHE_NAME, cacheRelativePath);
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
@@ -116,10 +125,10 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
-        
-        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder() {
 
-            public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {
+        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder(){
+
+            public URL getURL( Tile tile, String altImageFormat ) throws MalformedURLException {
                 int zoom = tile.getLevelNumber() + 3;
                 Sector sector = tile.getSector();
                 double north = sector.getMaxLatitude().degrees;

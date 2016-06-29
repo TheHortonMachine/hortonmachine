@@ -65,8 +65,8 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
 
     private Coordinate centerCoordinateLL;
 
-    public RL2NwwLayer( RL2CoverageHandler rl2Handler ) throws Exception {
-        super(makeLevels(rl2Handler));
+    public RL2NwwLayer( RL2CoverageHandler rl2Handler, Integer tileSize ) throws Exception {
+        super(makeLevels(rl2Handler, tileSize));
         RasterCoverage rasterCoverage = rl2Handler.getRasterCoverage();
         this.layerName = rasterCoverage.coverage_name;
 
@@ -89,8 +89,13 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
 
     }
 
-    private static LevelSet makeLevels( RL2CoverageHandler rl2Handler ) throws MalformedURLException {
+    private static LevelSet makeLevels( RL2CoverageHandler rl2Handler, Integer tileSize ) throws MalformedURLException {
         AVList params = new AVListImpl();
+        if (tileSize == null || tileSize < 256) {
+            tileSize = TILESIZE;
+        }
+
+        int finalTileSize = tileSize;
 
         String databasePath = rl2Handler.getDatabasePath();
         File databaseFile = new File(databasePath);
@@ -99,8 +104,8 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
 
         String urlString = databaseFile.toURI().toURL().toExternalForm();
         params.setValue(AVKey.URL, urlString);
-        params.setValue(AVKey.TILE_WIDTH, TILESIZE);
-        params.setValue(AVKey.TILE_HEIGHT, TILESIZE);
+        params.setValue(AVKey.TILE_WIDTH, finalTileSize);
+        params.setValue(AVKey.TILE_HEIGHT, finalTileSize);
         params.setValue(AVKey.DATA_CACHE_NAME, cacheRelativePath);
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
@@ -178,8 +183,8 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
                         imgFile = new File(tileImageFolderFile, sb.toString());
                         if (!imgFile.exists()) {
 
-                            BufferedImage bImg = rl2Handler.getRL2Image(polygon, "" + CrsUtilities.WGS84_SRID, TILESIZE,
-                                    TILESIZE);
+                            BufferedImage bImg = rl2Handler.getRL2Image(polygon, "" + CrsUtilities.WGS84_SRID, finalTileSize,
+                                    finalTileSize);
                             if (bImg != null) {
                                 ImageIO.write(bImg, _imageFormat, imgFile);
                             } else {
