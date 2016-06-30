@@ -33,5 +33,9 @@ public interface NwwLayer {
      * @return the center coordinate.
      */
     public Coordinate getCenter();
+    
+    public default void freeResources(){
+        
+    }
 
 }

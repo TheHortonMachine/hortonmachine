@@ -36,6 +36,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
+
+import org.jgrasstools.gears.utils.OsCheck;
+import org.jgrasstools.gears.utils.OsCheck.OSType;
+
+import com.sun.java.swing.plaf.gtk.GTKLookAndFeel;
+import com.sun.java.swing.plaf.windows.WindowsLookAndFeel;
 
 /**
  * Utilities class.
@@ -131,7 +138,7 @@ public class GuiUtilities {
             String[] defaultValues ) {
         JTextField textFields[] = new JTextField[labels.length];
         JPanel panel = new JPanel();
-//        panel.setPreferredSize(new Dimension(400, 300));
+        // panel.setPreferredSize(new Dimension(400, 300));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         String input[] = new String[labels.length];
         panel.setLayout(new GridLayout(labels.length, 2, 5, 5));
@@ -152,6 +159,31 @@ public class GuiUtilities {
         for( int i = 0; i < labels.length; i++ )
             input[i] = textFields[i].getText();
         return input;
+    }
+
+    public static void setDefaultLookAndFeel() {
+        try {
+            OSType osType = OsCheck.getOperatingSystemType();
+            switch( osType ) {
+            case Windows:
+                javax.swing.UIManager.setLookAndFeel(new WindowsLookAndFeel());
+                break;
+            case Linux:
+                javax.swing.UIManager.setLookAndFeel(new GTKLookAndFeel());
+                break;
+            default:
+                for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
+                    String name = info.getName();
+                    if ("Nimbus".equalsIgnoreCase(name)) {
+                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
+                }
+                break;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
 }

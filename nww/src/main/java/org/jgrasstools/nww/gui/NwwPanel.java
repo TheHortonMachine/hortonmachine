@@ -253,6 +253,17 @@ public class NwwPanel extends JPanel {
         wwd.redraw();
     }
 
+    /**
+     * Set the globe as flat sphere.
+     */
+    public void setFlatSphereGlobe() {
+        Earth globe = new Earth();
+        globe.setElevationModel(new ZeroElevationModel());
+        wwd.getModel().setGlobe(globe);
+        wwd.getView().stopMovement();
+        wwd.redraw();
+    }
+
     public ReferencedEnvelope getViewportBounds() {
         View view = wwd.getView();
         Position posUL = view.computePositionFromScreenPoint(0, 0);

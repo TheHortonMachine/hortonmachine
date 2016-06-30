@@ -11,11 +11,16 @@ import java.awt.Dimension;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
+import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.nww.gui.LayersPanelController;
 import org.jgrasstools.nww.gui.NwwPanel;
 import org.jgrasstools.nww.gui.ToolsPanelController;
 import org.jgrasstools.nww.gui.ViewControlsLayer;
+
+import com.sun.java.swing.plaf.gtk.GTKLookAndFeel;
+import com.sun.java.swing.plaf.windows.WindowsLookAndFeel;
 
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -41,10 +46,12 @@ public class SimpleNwwViewer {
         if (Configuration.isMacOS() && appName != null) {
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", appName);
         }
+        
+        GuiUtilities.setDefaultLookAndFeel();
 
         try {
 
-            NwwPanel wwjPanel = new NwwPanel(false);
+            NwwPanel wwjPanel = new NwwPanel(true);
             wwjPanel.addOsmLayer();
             ViewControlsLayer viewControls = wwjPanel.addViewControls();
             viewControls.setScale(1.5);
