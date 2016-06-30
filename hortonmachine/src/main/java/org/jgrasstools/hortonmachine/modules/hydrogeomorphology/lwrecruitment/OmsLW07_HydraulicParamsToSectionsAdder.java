@@ -23,6 +23,9 @@ import java.util.List;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
@@ -64,10 +67,6 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
     @In
     public SimpleFeatureCollection inNetPoints = null;
 
-    @Description(inTransSect_DESCR)
-    @In
-    public SimpleFeatureCollection inTransSect = null;
-
     @Description(inDischarge_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @Unit("m3/s")
@@ -92,17 +91,21 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
     @Description(outNetPoints_DESCR)
     @Out
     public SimpleFeatureCollection outNetPoints = null;
+    
+    @Description(outTransSect_DESCR)
+    @In
+    public SimpleFeatureCollection outTransSect = null;
 
     // VARS DOC START
     public static final String inNetPoints_DESCR = "The input hierarchy point network layer.";
-    public static final String inTransSect_DESCR = "The input line shapefile with the extracted transversal sections.";
     public static final String inDtm_DESCR = "The input terrain elevation raster map.";
     public static final String inNet_DESCR = "The input hierarchy network layer";
     public static final String inDischarge_DESCRIPTION = "The input discharge value";
     public static final String pDeltaTMillis_UNIT = "millisec";
+    public static final String pDeltaTMillis_DESCRIPTION = "Time interval.";
     public static final String outputLevelFile_DESCRIPTION = "Output file with levels.";
     public static final String outputDischargeFile_DESCRIPTION = "Output file with the quantities related to discharge.";
-    public static final String pDeltaTMillis_DESCRIPTION = "Time interval.";
+    public static final String outTransSect_DESCR = "The output line shapefile with the extracted transversal sections.";
 
     public static final String outNetPoints_DESCR = "Adds to the layer of section points the hydraulic parameters of the trasversal section.";
 
@@ -122,23 +125,23 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         OmsRiverSectionsExtractor ex = new OmsRiverSectionsExtractor();
         ex.inElev = inDtm;
         ex.inRiver = inNet;
-        ex.inSections = inTransSect;
+        ex.inRiverPoints = inNetPoints;
         ex.process();
-        SimpleFeatureCollection outSections = ex.outSections;
+        outTransSect = ex.outSections;
         SimpleFeatureCollection outSectionsPoints = ex.outSectionPoints;
         SimpleFeatureCollection outRiverPoints = ex.outRiverPoints;
 
         OmsSaintGeo saintGeo = new OmsSaintGeo();
         saintGeo.inRiverPoints = outRiverPoints;
         saintGeo.inSectionPoints = outSectionsPoints;
-        saintGeo.inSections = outSections;
+        saintGeo.inSections = outTransSect;
         saintGeo.inDischarge = new double[]{inDischarge};
         saintGeo.pDeltaTMillis = pDeltaTMillis;
         saintGeo.outputLevelFile = outputLevelFile;
         saintGeo.outputDischargeFile = outputDischargeFile;
         saintGeo.process();
 
-        HashMap<Integer, Double> lastLinkId2LevelMap = saintGeo.getLastLinkId2LevelMap();
+        HashMap<Integer, Double> lastLinkId2RelativeLevelMap = saintGeo.getLastLinkId2RelativeLevelMap();
         HashMap<Integer, Double> lastLinkId2DischargeMap = saintGeo.getLastLinkId2DischargeMap();
         HashMap<Integer, Double> lastLinkId2VelocityMap = saintGeo.getLastLinkId2VelocityMap();
 
@@ -150,13 +153,33 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         outNetPoints = new DefaultFeatureCollection();
         for( SimpleFeature netPointFeature : netPointsFC ) {
             Integer id = (Integer) netPointFeature.getAttribute(LWFields.LINKID);
-            Double level = lastLinkId2LevelMap.get(id);
+            Double level = lastLinkId2RelativeLevelMap.get(id);
             Double discharge = lastLinkId2DischargeMap.get(id);
             Double velocity = lastLinkId2VelocityMap.get(id);
 
             SimpleFeature newFeature = ext.extendFeature(netPointFeature, new Object[]{level, discharge, velocity});
             ((DefaultFeatureCollection) outNetPoints).add(newFeature);
         }
+    }
+    
+    public static void main( String[] args ) throws Exception {
+
+        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/single_reach/";
+
+        OmsLW07_HydraulicParamsToSectionsAdder ex = new OmsLW07_HydraulicParamsToSectionsAdder();
+        ex.inDtm = OmsRasterReader.readRaster(base + "raster/dtmfel.asc");
+        ex.inNet = OmsVectorReader.readVector(base + "extracted_net.shp");
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_slope.shp");
+        ex.inDischarge = 10.0;
+        ex.outputLevelFile=base + "levels.csv";
+        ex.outputDischargeFile=base + "discharge.csv";
+
+        ex.process();
+        SimpleFeatureCollection outNetPoints = ex.outNetPoints;
+        
+        OmsVectorWriter.writeVector(base + "extracted_bankfullsections.shp", ex.outTransSect);
+        OmsVectorWriter.writeVector(base + "net_point_hydraulic.shp", outNetPoints);
+
     }
 
 }

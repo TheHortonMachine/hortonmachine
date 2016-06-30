@@ -145,6 +145,7 @@ public class OmsSaintGeo extends JGTModel {
     private final double Cq = 0.41;
 
     private HashMap<Integer, Double> linkId2LevelMap = new HashMap<>();
+    private HashMap<Integer, Double> linkId2RelativeLevelMap = new HashMap<>();
     private HashMap<Integer, Double> linkId2DischargeMap = new HashMap<>();
     private HashMap<Integer, Double> linkId2VelocityMap = new HashMap<>();
 
@@ -185,6 +186,7 @@ public class OmsSaintGeo extends JGTModel {
              */
             for( int timeIndex = 0; timeIndex < inDischarge.length; timeIndex++ ) {
                 linkId2LevelMap.clear();
+                linkId2RelativeLevelMap.clear();
                 linkId2DischargeMap.clear();
                 linkId2VelocityMap.clear();
 
@@ -330,6 +332,7 @@ public class OmsSaintGeo extends JGTModel {
                     int sx = section.getEndNodeIndex();
                     sbLevel.append(sectionCoordinates[sx].z).append("\n");
                     linkId2LevelMap.put(sectionId, waterLevel[i]);
+                    linkId2RelativeLevelMap.put(sectionId, (waterLevel[i] - minsez));
                 }
                 RiverPoint section = riverPoints.get(sectionsCount - 1);
                 Coordinate[] sectionCoordinates = section.getSectionCoordinates();
@@ -340,6 +343,7 @@ public class OmsSaintGeo extends JGTModel {
                 linkId2LevelMap.put(sectionId, waterLevel[sectionsCount - 1]);
                 double minsez = section.getMinElevation();
                 sbLevel.append(minsez).append(";");
+                linkId2RelativeLevelMap.put(sectionId, (waterLevel[sectionsCount - 1] - minsez));
                 int dx = section.getStartNodeIndex();
                 sbLevel.append(sectionCoordinates[dx].z).append(";");
                 int sx = section.getEndNodeIndex();
@@ -388,19 +392,23 @@ public class OmsSaintGeo extends JGTModel {
             pm.done();
         }
     }
-    
+
     public HashMap<Integer, Double> getLastLinkId2DischargeMap() {
         return linkId2DischargeMap;
     }
-    
+
     public HashMap<Integer, Double> getLastLinkId2LevelMap() {
         return linkId2LevelMap;
     }
-    
+
+    public HashMap<Integer, Double> getLastLinkId2RelativeLevelMap() {
+        return linkId2RelativeLevelMap;
+    }
+
     public HashMap<Integer, Double> getLastLinkId2VelocityMap() {
         return linkId2VelocityMap;
     }
-    
+
     /**
      * Use Gaukler-Strickler formula for the evaluation of the initial condition
      * (hypotesis of steady flow).

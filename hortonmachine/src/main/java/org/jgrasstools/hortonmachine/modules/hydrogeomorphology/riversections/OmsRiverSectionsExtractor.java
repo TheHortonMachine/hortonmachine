@@ -44,6 +44,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.LWFields;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -67,6 +68,10 @@ public class OmsRiverSectionsExtractor extends JGTModel {
     @Description(inRiver_DESCRIPTION)
     @In
     public SimpleFeatureCollection inRiver = null;
+
+    @Description(inRiverPoints_DESCRIPTION)
+    @In
+    public SimpleFeatureCollection inRiverPoints = null;
 
     @Description(inBridges_DESCRIPTION)
     @In
@@ -116,6 +121,7 @@ public class OmsRiverSectionsExtractor extends JGTModel {
 
     public static final String inElev_DESCRIPTION = "The map of elevation.";
     public static final String inRiver_DESCRIPTION = "The map of the river.";
+    public static final String inRiverPoints_DESCRIPTION = "The optional map of the river points to extract.";
     public static final String inBridges_DESCRIPTION = "The map of bridges points to consider.";
     public static final String inSections_DESCRIPTION = "The map of sections to consider. If supplied, they are used instead of extracting at a given interval. The sections need to be created with this same module.";
     public static final String pSectionsIntervalDistance_DESCRIPTION = "The sections interval distance.";
@@ -165,7 +171,26 @@ public class OmsRiverSectionsExtractor extends JGTModel {
             if (inBridges != null) {
                 bridgePoints = FeatureUtilities.featureCollectionToMatesList(inBridges);
             }
-            sectionsExtractor = new RiverSectionsFromDtmExtractor(riverGeometry3d, inElev, pSectionsIntervalDistance,
+
+            Coordinate[] riverPointCoordinates=null;
+            int[] riverPointIds = null;
+            if (inRiverPoints != null) {
+                List<SimpleFeature> riverPointsList = FeatureUtilities.featureCollectionToList(inRiverPoints);
+                riverPointCoordinates = new Coordinate[riverPointsList.size()];
+                riverPointIds = new int[riverPointsList.size()];
+                
+                for( int i = 0; i < riverPointIds.length; i++ ) {
+                    SimpleFeature riverPointFeature = riverPointsList.get(i);
+                    Coordinate riverPointCoordinate = ((Geometry) riverPointFeature.getDefaultGeometry()).getCoordinate();
+                    int id = ((Number)riverPointFeature.getAttribute(LWFields.LINKID)).intValue();
+                    riverPointCoordinates[i] = riverPointCoordinate;
+                    riverPointIds[i] = id;
+                }
+            }
+
+            sectionsExtractor = new RiverSectionsFromDtmExtractor(riverGeometry3d,// 
+                    riverPointCoordinates, riverPointIds, //
+                    inElev, pSectionsIntervalDistance,
                     pSectionsWidth, bridgePoints, fBridgeWidth, pBridgeBuffer, pm);
         } else {
             List<FeatureMate> sectionsList = FeatureUtilities.featureCollectionToMatesList(inSections);
@@ -183,8 +208,9 @@ public class OmsRiverSectionsExtractor extends JGTModel {
 
         OmsRiverSectionsExtractor ex = new OmsRiverSectionsExtractor();
         ex.inElev = OmsRasterReader.readRaster(base + "DTM/dtm_adige.asc");
-        ex.inRiver = OmsVectorReader.readVector("D:/Dropbox/hydrologis/lavori/2015_phd_bz/gSoC2015/data/data_saintgeo_newage/fiume_adige.shp");
-        //ex.inSections = OmsVectorReader.readVector(base + "shape/sections_adige_75.shp");
+        ex.inRiver = OmsVectorReader
+                .readVector("D:/Dropbox/hydrologis/lavori/2015_phd_bz/gSoC2015/data/data_saintgeo_newage/fiume_adige.shp");
+        // ex.inSections = OmsVectorReader.readVector(base + "shape/sections_adige_75.shp");
         ex.pSectionsIntervalDistance = 20;
         ex.pSectionsWidth = 75;
         ex.process();

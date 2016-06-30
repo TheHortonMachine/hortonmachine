@@ -85,14 +85,20 @@ public class RiverSectionsFromFeaturesExtractor extends ARiverSectionsExtractor 
             Geometry crossPoint = line3d.intersection(riverLine);
             Coordinate crossPointCoordinate = crossPoint.getCoordinate();
 
-            double crossPointIndex = indexedLine.indexOf(crossPointCoordinate);
+            try {
+                double crossPointIndex = indexedLine.indexOf(crossPointCoordinate);
 
-            int[] colRow = CoverageUtilities.colRowFromCoordinate(crossPointCoordinate, gridGeometry, null);
-            double elev = elevIter.getSampleDouble(colRow[0], colRow[1], 0);
-            crossPointCoordinate.z = elev;
-            RiverPoint netPoint = new RiverPoint(crossPointCoordinate, crossPointIndex, line3d, null);
-            if (netPoint != null)
-                riverPointsList.add(netPoint);
+                int[] colRow = CoverageUtilities.colRowFromCoordinate(crossPointCoordinate, gridGeometry, null);
+                double elev = elevIter.getSampleDouble(colRow[0], colRow[1], 0);
+                crossPointCoordinate.z = elev;
+                RiverPoint netPoint = new RiverPoint(crossPointCoordinate, crossPointIndex, line3d, null);
+                if (netPoint != null)
+                    riverPointsList.add(netPoint);
+            } catch (Exception e) {
+                System.out.println(crossPoint);
+                System.out.println(riverLine);
+                throw e;
+            }
             monitor.worked(1);
         }
         monitor.done();
