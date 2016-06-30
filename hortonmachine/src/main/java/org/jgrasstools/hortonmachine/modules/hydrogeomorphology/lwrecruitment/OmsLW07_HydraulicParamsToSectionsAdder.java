@@ -30,6 +30,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.ARiverSectionsExtractor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.OmsRiverSectionsExtractor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo;
 import org.opengis.feature.simple.SimpleFeature;
@@ -91,7 +92,7 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
     @Description(outNetPoints_DESCR)
     @Out
     public SimpleFeatureCollection outNetPoints = null;
-    
+
     @Description(outTransSect_DESCR)
     @In
     public SimpleFeatureCollection outTransSect = null;
@@ -127,10 +128,31 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         ex.inRiver = inNet;
         ex.inRiverPoints = inNetPoints;
         ex.process();
-        outTransSect = ex.outSections;
+        SimpleFeatureCollection outSections = ex.outSections;
         SimpleFeatureCollection outSectionsPoints = ex.outSectionPoints;
         SimpleFeatureCollection outRiverPoints = ex.outRiverPoints;
 
+        // add pfafstetter to the sections
+        List<SimpleFeature> netPointsFC = FeatureUtilities.featureCollectionToList(inNetPoints);
+        HashMap<Integer, String> id2PfafMap = new HashMap<>();
+        for( SimpleFeature netPointFeature : netPointsFC ) {
+            Integer id = (Integer) netPointFeature.getAttribute(LWFields.LINKID);
+            String pfaff = (String) netPointFeature.getAttribute(LWFields.PFAF);
+            id2PfafMap.put(id, pfaff);
+        }
+        outTransSect = new DefaultFeatureCollection();
+        FeatureExtender sectionsExtender = new FeatureExtender(outSections.getSchema(),
+                new String[]{LWFields.LINKID, LWFields.PFAF}, new Class[]{Integer.class, String.class});
+        List<SimpleFeature> sectionsList = FeatureUtilities.featureCollectionToList(outSections);
+        for( SimpleFeature sectionFeature : sectionsList ) {
+            Integer id = (Integer) sectionFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTION_ID);
+            String pfaf = id2PfafMap.get(id);
+            SimpleFeature newFeature = sectionsExtender.extendFeature(sectionFeature, new Object[]{id, pfaf});
+            ((DefaultFeatureCollection) outTransSect).add(newFeature);
+        }
+        // outTransSect
+
+        // run hydraulic model
         OmsSaintGeo saintGeo = new OmsSaintGeo();
         saintGeo.inRiverPoints = outRiverPoints;
         saintGeo.inSectionPoints = outSectionsPoints;
@@ -149,7 +171,6 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
                 new String[]{LWFields.FIELD_WATER_LEVEL, LWFields.FIELD_DISCHARGE, LWFields.FIELD_WATER_VELOCITY},
                 new Class[]{Double.class, Double.class, Double.class});
 
-        List<SimpleFeature> netPointsFC = FeatureUtilities.featureCollectionToList(inNetPoints);
         outNetPoints = new DefaultFeatureCollection();
         for( SimpleFeature netPointFeature : netPointsFC ) {
             Integer id = (Integer) netPointFeature.getAttribute(LWFields.LINKID);
@@ -161,7 +182,7 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
             ((DefaultFeatureCollection) outNetPoints).add(newFeature);
         }
     }
-    
+
     public static void main( String[] args ) throws Exception {
 
         String base = "D:/lavori_tmp/unibz/2016_06_gsoc/single_reach/";
@@ -171,12 +192,12 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         ex.inNet = OmsVectorReader.readVector(base + "extracted_net.shp");
         ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_slope.shp");
         ex.inDischarge = 10.0;
-        ex.outputLevelFile=base + "levels.csv";
-        ex.outputDischargeFile=base + "discharge.csv";
+        ex.outputLevelFile = base + "levels.csv";
+        ex.outputDischargeFile = base + "discharge.csv";
 
         ex.process();
         SimpleFeatureCollection outNetPoints = ex.outNetPoints;
-        
+
         OmsVectorWriter.writeVector(base + "extracted_bankfullsections.shp", ex.outTransSect);
         OmsVectorWriter.writeVector(base + "net_point_hydraulic.shp", outNetPoints);
 
