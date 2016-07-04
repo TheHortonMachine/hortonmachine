@@ -20,6 +20,11 @@ package org.jgrasstools.nww.layers.defaults.other;
 import java.awt.Color;
 import java.util.ArrayList;
 
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+
+import com.vividsolutions.jts.geom.Coordinate;
+
+import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.markers.BasicMarker;
@@ -37,8 +42,11 @@ public class CurrentGpsPointLayer extends MarkerLayer {
     private BasicMarkerAttributes basicMarkerAttributes;
     private BasicMarker gpsMarker;
     private String title;
+    private boolean doHeading;
+    private double previousLat;
+    private double previousLon;
 
-    public CurrentGpsPointLayer(String title, Color color, String shape, Double _fillOpacity, Double _markerSize) {
+    public CurrentGpsPointLayer( String title, Color color, String shape, Double _fillOpacity, Double _markerSize ) {
         this.title = title;
         Material fillMaterial = Material.BLUE;
         if (color != null) {
@@ -48,6 +56,10 @@ public class CurrentGpsPointLayer extends MarkerLayer {
         if (shape != null) {
             shapeType = shape;
         }
+        if (shape.equals(BasicMarkerShape.HEADING_ARROW)) {
+            doHeading = true;
+        }
+
         double fillOpacity = 1d;
         if (_fillOpacity != null) {
             fillOpacity = _fillOpacity;
@@ -66,13 +78,20 @@ public class CurrentGpsPointLayer extends MarkerLayer {
         setMarkers(new ArrayList<Marker>());
     }
 
-    public void updatePosition(double lat, double lon) {
+    public void updatePosition( double lat, double lon ) {
         if (gpsMarker == null) {
             gpsMarker = new BasicMarker(Position.fromDegrees(lat, lon, 0), basicMarkerAttributes);
             addMarker(gpsMarker);
         } else {
-            gpsMarker.setPosition(Position.fromDegrees(lat, lon, 0));
+            if (doHeading) {
+                double azimuth = GeometryUtilities.azimuth(new Coordinate(previousLon, previousLat), new Coordinate(lon, lat));
+                Angle heading = Angle.fromDegrees(azimuth);
+                gpsMarker.setHeading(heading);
+            }
+            gpsMarker.setPosition(Position.fromDegrees(lat, lon, 1));
         }
+        previousLat = lat;
+        previousLon = lon;
     }
 
     @Override
