@@ -38,6 +38,8 @@ import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
+import gov.nasa.worldwind.event.RenderingEvent;
+import gov.nasa.worldwind.event.RenderingListener;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.geom.Position;
@@ -57,7 +59,7 @@ import gov.nasa.worldwind.view.orbit.OrbitView;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class NwwPanel extends JPanel {
+public class NwwPanel extends JPanel implements RenderingListener {
 
     private WorldWindow wwd;
     protected StatusBar statusBar;
@@ -124,6 +126,14 @@ public class NwwPanel extends JPanel {
 
     public void addOsmLayer() {
         addLayer(new OSMMapnikLayer());
+    }
+
+    public void blockPitch( boolean doBlock ) {
+        if (doBlock) {
+            getWwd().addRenderingListener(this);
+        } else {
+            getWwd().removeRenderingListener(this);
+        }
     }
 
     /**
@@ -294,6 +304,20 @@ public class NwwPanel extends JPanel {
     public void removeLayer( Layer layer ) {
         LayerList layers = getWwd().getModel().getLayers();
         layers.remove(layer);
+    }
+
+    @Override
+    public void stageChanged( RenderingEvent event ) {
+        if (event.getStage().equals(RenderingEvent.BEFORE_RENDERING)) {
+            View view = getWwd().getView();
+            if (view.getGlobe() == null)
+                return;
+
+            Angle pitch = view.getPitch();
+            if (pitch.degrees != 0.0) {
+                view.setPitch(Angle.ZERO);
+            }
+        }
     }
 
     // TODO check these old zoom tos
