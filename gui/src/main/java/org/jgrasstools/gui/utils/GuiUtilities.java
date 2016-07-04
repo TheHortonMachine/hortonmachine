@@ -41,9 +41,6 @@ import javax.swing.UIManager;
 import org.jgrasstools.gears.utils.OsCheck;
 import org.jgrasstools.gears.utils.OsCheck.OSType;
 
-import com.sun.java.swing.plaf.gtk.GTKLookAndFeel;
-import com.sun.java.swing.plaf.windows.WindowsLookAndFeel;
-
 /**
  * Utilities class.
  * 
@@ -166,11 +163,21 @@ public class GuiUtilities {
             OSType osType = OsCheck.getOperatingSystemType();
             switch( osType ) {
             case Windows:
-                javax.swing.UIManager.setLookAndFeel(new WindowsLookAndFeel());
-                break;
+                for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
+                    String name = info.getName();
+                    if ("Windows".equalsIgnoreCase(name)) {
+                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                        return;
+                    }
+                }
             case Linux:
-                javax.swing.UIManager.setLookAndFeel(new GTKLookAndFeel());
-                break;
+                for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
+                    String name = info.getName();
+                    if ("GTK".equalsIgnoreCase(name)) {
+                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                        return;
+                    }
+                }
             default:
                 for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
                     String name = info.getName();

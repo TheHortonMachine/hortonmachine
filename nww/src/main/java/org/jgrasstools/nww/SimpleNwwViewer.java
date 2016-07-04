@@ -19,9 +19,6 @@ import org.jgrasstools.nww.gui.NwwPanel;
 import org.jgrasstools.nww.gui.ToolsPanelController;
 import org.jgrasstools.nww.gui.ViewControlsLayer;
 
-import com.sun.java.swing.plaf.gtk.GTKLookAndFeel;
-import com.sun.java.swing.plaf.windows.WindowsLookAndFeel;
-
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.util.Logging;

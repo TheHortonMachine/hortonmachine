@@ -17,13 +17,15 @@
  */
 package org.jgrasstools.nww.utils.selection;
 
-import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jgrasstools.nww.utils.NwwUtilities;
+
+import com.vividsolutions.jts.geom.Geometry;
+
 import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.geom.Sector;
 
 /**
  * Box selector with listeners.
@@ -35,21 +37,25 @@ public class ObjectsOnScreenByBoxSelector extends ScreenSelector {
 
     public static interface IBoxScreenSelectionListener {
 
-        void onSelectionFinished(List<?> selectedObjs);
+        void onSelectionFinished(Geometry selectedLatLongPolygon, List<?> selectedObjs);
     }
 
     private List<IBoxScreenSelectionListener> listeners = new ArrayList<>();
 
     private boolean wasDragged = false;
 
+    private int startX;
+
+    private int startY;
+
     public ObjectsOnScreenByBoxSelector(WorldWindow worldWindow) {
         super(worldWindow);
 
-        //        setInteriorColor(Color.BLUE);
-        //        setInteriorOpacity(0.3f);
-        //        setBorderColor(Color.BLUE);
-        //        setBorderOpacity(1.0);
-        //        setBorderWidth(1.0);
+        // setInteriorColor(Color.BLUE);
+        // setInteriorOpacity(0.3f);
+        // setBorderColor(Color.BLUE);
+        // setBorderOpacity(1.0);
+        // setBorderWidth(1.0);
     }
 
     public void addListener(IBoxScreenSelectionListener listener) {
@@ -67,6 +73,8 @@ public class ObjectsOnScreenByBoxSelector extends ScreenSelector {
     public void mousePressed(MouseEvent mouseEvent) {
         super.mousePressed(mouseEvent);
         wasDragged = false;
+        startX = mouseEvent.getX();
+        startY = mouseEvent.getY();
     }
 
     public void mouseDragged(MouseEvent mouseEvent) {
@@ -76,11 +84,14 @@ public class ObjectsOnScreenByBoxSelector extends ScreenSelector {
 
     public void mouseReleased(MouseEvent mouseEvent) {
         super.mouseReleased(mouseEvent);
+        int endX = mouseEvent.getX();
+        int endY = mouseEvent.getY();
 
         if (wasDragged) {
             List<?> selectedObjs = getSelectedObjects();
+            Geometry screenPointsPolygon = NwwUtilities.getScreenPointsPolygon(wwd, startX, startY, endX, endY);
             for (IBoxScreenSelectionListener iBoxSelectionListener : listeners) {
-                iBoxSelectionListener.onSelectionFinished(selectedObjs);
+                iBoxSelectionListener.onSelectionFinished(screenPointsPolygon, selectedObjs);
             }
         }
     }
