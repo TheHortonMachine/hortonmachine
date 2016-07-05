@@ -121,9 +121,8 @@ public class OmsLW08_NetworkBufferWidthCalculator extends JGTModel implements LW
     public static final String outNetPoints_DESCR = "The output points network layer with the additional attribute of inundated width and average slope.";
     public static final String pMinSlope_DESCR = "The value to use for the places where the slope is zero in the input raster map.";
     public static final String doKeepBridgeDamWidth_DESCR = "The boolean to select if considering the width of dams and bridges or not.";
-    // TODO review description to describe different power laws
-    public static final String pN_DESCR = "Formula exponent of the power law for the evaluation of the new width: newWidth = width + k * slope^n";
-    public static final String pK_DESCR = "Formula constant of the power law for the evaluation of the new width: newWidth = width + k * slope^n";
+    public static final String pN_DESCR = "Formula exponent of the power law for the evaluation of the new width: newWidth = width + k * slope^n or Wr = k * omega^n";
+    public static final String pK_DESCR = "Formula constant of the power law for the evaluation of the new width: newWidth = width + k * slope^n or Wr = k * omega^n";
     public static final String pPrePostCount4Slope_DESCR = "The number of cells upstream and downstream to consider to evaluate the average slope in each section.";
     public static final String inTransSect_DESCR = "The input line shapefile with the extracted transversal sections.";
     public static final String inGeo_DESCR = "The input polygon layer with the geological superficial geological formations.";
@@ -139,7 +138,7 @@ public class OmsLW08_NetworkBufferWidthCalculator extends JGTModel implements LW
 
     // VARS DOC END
 
-    private static final double WATER_SPECIFIC_WEIGHT = 1; // TODO
+    private static final double WATER_SPECIFIC_WEIGHT = 9810.0; // TODO check the units!!
     private HashMap<String, Geometry> pfafId2WidthLine;
     private SimpleFeatureBuilder newLinesBuilder;
     private PreparedGeometry preparedSupFormGeom;
@@ -470,7 +469,7 @@ public class OmsLW08_NetworkBufferWidthCalculator extends JGTModel implements LW
         ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_hydraulic.shp");
         ex.inTransSect = OmsVectorReader.readVector(base + "extracted_bankfullsections.shp");
         ex.inGeo = OmsVectorReader.readVector(base + "geology.shp");
-        ex.pK = 0.007;
+        ex.pK = 0.07;
         ex.pN = 0.44;
 
         ex.process();

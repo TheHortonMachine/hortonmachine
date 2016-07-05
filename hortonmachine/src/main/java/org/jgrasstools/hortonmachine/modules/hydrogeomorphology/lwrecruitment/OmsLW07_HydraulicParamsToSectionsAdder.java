@@ -30,10 +30,16 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.ARiverSectionsExtractor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.OmsRiverSectionsExtractor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo;
 import org.opengis.feature.simple.SimpleFeature;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineSegment;
+import com.vividsolutions.jts.geom.LineString;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -135,10 +141,13 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         // add pfafstetter to the sections
         List<SimpleFeature> netPointsFC = FeatureUtilities.featureCollectionToList(inNetPoints);
         HashMap<Integer, String> id2PfafMap = new HashMap<>();
+        HashMap<Integer, Double> id2WidthMap = new HashMap<>();
         for( SimpleFeature netPointFeature : netPointsFC ) {
             Integer id = (Integer) netPointFeature.getAttribute(LWFields.LINKID);
             String pfaff = (String) netPointFeature.getAttribute(LWFields.PFAF);
+            Double width = (Double) netPointFeature.getAttribute(LWFields.WIDTH);
             id2PfafMap.put(id, pfaff);
+            id2WidthMap.put(id, width);
         }
         outTransSect = new DefaultFeatureCollection();
         FeatureExtender sectionsExtender = new FeatureExtender(outSections.getSchema(),
@@ -148,6 +157,22 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
             Integer id = (Integer) sectionFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTION_ID);
             String pfaf = id2PfafMap.get(id);
             SimpleFeature newFeature = sectionsExtender.extendFeature(sectionFeature, new Object[]{id, pfaf});
+
+            Geometry origGeom = (Geometry) newFeature.getDefaultGeometry();
+
+            double l = origGeom.getLength();
+            double w = id2WidthMap.get(id);
+
+            double x = (l - w) / 2.0;
+            double factor = x / l;
+
+            Coordinate[] coordinates = origGeom.getCoordinates();
+            LineSegment ls = new LineSegment(coordinates[0], coordinates[coordinates.length - 1]);
+            Coordinate c1 = ls.pointAlong(factor);
+            Coordinate c2 = ls.pointAlong(1 - factor);
+
+            LineString newLine = GeometryUtilities.gf().createLineString(new Coordinate[]{c1, c2});
+            newFeature.setDefaultGeometry(newLine);
             ((DefaultFeatureCollection) outTransSect).add(newFeature);
         }
         // outTransSect
@@ -191,14 +216,15 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         ex.inDtm = OmsRasterReader.readRaster(base + "raster/dtmfel.asc");
         ex.inNet = OmsVectorReader.readVector(base + "extracted_net.shp");
         ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_slope.shp");
-        ex.inDischarge = 10.0;
+        ex.inDischarge = 3.0;
         ex.outputLevelFile = base + "levels.csv";
         ex.outputDischargeFile = base + "discharge.csv";
 
         ex.process();
         SimpleFeatureCollection outNetPoints = ex.outNetPoints;
+        SimpleFeatureCollection outTransSect = ex.outTransSect;
 
-        OmsVectorWriter.writeVector(base + "extracted_bankfullsections.shp", ex.outTransSect);
+        OmsVectorWriter.writeVector(base + "extracted_bankfullsections2.shp", outTransSect);
         OmsVectorWriter.writeVector(base + "net_point_hydraulic.shp", outNetPoints);
 
     }
