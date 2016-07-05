@@ -30,6 +30,10 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -281,4 +285,30 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
         return preparedGeometry;
     }
 
+    public static void main( String[] args ) throws Exception {
+
+        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/single_reach/";
+
+        OmsLW10_SingleTree_AreaToNetpointAssociator ex = new OmsLW10_SingleTree_AreaToNetpointAssociator();
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_hydraulic.shp");
+        ex.inTreePoints = OmsVectorReader.readVector(base + "T1_ps_plot.shp");
+        ex.inInundationArea = OmsVectorReader.readVector(base + "inund_area.shp");
+        ex.inFlow = OmsRasterReader.readRaster(base + "raster/basin_drain.asc");
+        ex.inNet = OmsRasterReader.readRaster(base + "raster/net_7000.asc");
+        ex.inConnectivity = OmsRasterReader.readRaster(base + "raster/connectivity.asc");
+        ex.pConnectivityThreshold = 45.0;
+
+        ex.process();
+        SimpleFeatureCollection outNetPoints = ex.outNetPoints;
+        SimpleFeatureCollection outTreePoints = ex.outTreePoints;
+        GridCoverage2D outNetNum = ex.outNetnum;
+        GridCoverage2D outBasins = ex.outBasins;
+        
+        OmsVectorWriter.writeVector(base + "net_point_hydraulic_inund_veg.shp", outNetPoints);
+        OmsVectorWriter.writeVector(base + "tree_points.shp", outTreePoints);
+        OmsRasterWriter.writeRaster(base + "netnum.asc", outNetNum);
+        OmsRasterWriter.writeRaster(base + "basins.asc", outBasins);
+
+    }
+    
 }
