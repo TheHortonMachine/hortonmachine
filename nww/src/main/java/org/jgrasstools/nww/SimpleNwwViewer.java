@@ -9,10 +9,12 @@ package org.jgrasstools.nww;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
+import org.jgrasstools.gui.spatialtoolbox.SpatialtoolboxController;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.nww.gui.LayersPanelController;
 import org.jgrasstools.nww.gui.NwwPanel;
@@ -47,6 +49,9 @@ public class SimpleNwwViewer {
         GuiUtilities.setDefaultLookAndFeel();
 
         try {
+            
+            Class<SimpleNwwViewer> class1 = SimpleNwwViewer.class;
+            ImageIcon icon = new ImageIcon(class1.getResource("/org/jgrasstools/images/hm150.png"));
 
             NwwPanel wwjPanel = new NwwPanel(true);
             wwjPanel.addOsmLayer();
@@ -58,6 +63,7 @@ public class SimpleNwwViewer {
 
             final JFrame nwwFrame = new JFrame();
             nwwFrame.setTitle(appName + ": map view");
+            nwwFrame.setIconImage(icon.getImage());
             nwwFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             java.awt.EventQueue.invokeLater(new Runnable(){
 
@@ -75,6 +81,7 @@ public class SimpleNwwViewer {
 
             final JFrame layersFrame = new JFrame();
             layersFrame.setTitle(appName + ": layers view");
+            layersFrame.setIconImage(icon.getImage());
             layersFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             java.awt.EventQueue.invokeLater(new Runnable(){
 
@@ -90,6 +97,7 @@ public class SimpleNwwViewer {
 
             final JFrame toolsFrame = new JFrame();
             toolsFrame.setTitle(appName + ": tools view");
+            toolsFrame.setIconImage(icon.getImage());
             toolsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             java.awt.EventQueue.invokeLater(new Runnable(){
 
