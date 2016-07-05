@@ -57,6 +57,5 @@ public interface LWFields {
     static final String FIELD_DISCHARGE = "b_disch";
     static final String FIELD_WATER_VELOCITY = "b_wvel";
     
-    
-    
+    static final String FIELD_ELEV = "elev";
 }

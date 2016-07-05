@@ -17,28 +17,28 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.AUTHORS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.CONTACTS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.KEYWORDS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.LABEL;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.LICENSE;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.NAME;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.STATUS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.inConnectivity_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.inDsm_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.inDtm_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.inFlow_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.inInundationArea_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.inNetPoints_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.inNet_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.inSlope_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.inStand_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.inTca_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.outBasins_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.outNetPoints_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.outNetnum_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator.pConnectivityThreshold_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.AUTHORS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.CONTACTS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.LABEL;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.LICENSE;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.NAME;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.STATUS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.inConnectivity_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.inDsm_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.inDtm_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.inFlow_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.inInundationArea_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.inNetPoints_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.inNet_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.inSlope_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.inStand_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.inTca_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.outBasins_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.outNetPoints_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.outNetnum_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator.pConnectivityThreshold_DESCR;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -53,7 +53,7 @@ import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_AreaToNetpointAssociator;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_CHM_AreaToNetpointAssociator;
 
 @Description(DESCRIPTION)
 @Author(name = AUTHORS, contact = CONTACTS)
@@ -134,7 +134,7 @@ public class LW09_AreaToNetpointAssociator extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        OmsLW10_AreaToNetpointAssociator m = new OmsLW10_AreaToNetpointAssociator();
+        OmsLW10_CHM_AreaToNetpointAssociator m = new OmsLW10_CHM_AreaToNetpointAssociator();
         m.inNetPoints = getVector(inNetPoints);
         m.inInundationArea = getVector(inInundationArea);
         m.inFlow = getRaster(inFlow);

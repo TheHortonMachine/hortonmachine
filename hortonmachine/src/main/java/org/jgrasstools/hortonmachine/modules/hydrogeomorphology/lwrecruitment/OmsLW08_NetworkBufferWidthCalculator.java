@@ -467,7 +467,7 @@ public class OmsLW08_NetworkBufferWidthCalculator extends JGTModel implements LW
 
         OmsLW08_NetworkBufferWidthCalculator ex = new OmsLW08_NetworkBufferWidthCalculator();
         ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_hydraulic.shp");
-        ex.inTransSect = OmsVectorReader.readVector(base + "extracted_bankfullsections.shp");
+        ex.inTransSect = OmsVectorReader.readVector(base + "extracted_bankfullsections2.shp");
         ex.inGeo = OmsVectorReader.readVector(base + "geology.shp");
         ex.pK = 0.07;
         ex.pN = 0.44;

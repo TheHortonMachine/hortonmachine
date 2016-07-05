@@ -19,21 +19,11 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -42,10 +32,9 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.modules.r.rasterdiff.OmsRasterDiff;
-import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
+import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.hortonmachine.modules.network.netnumbering.OmsNetNumbering;
@@ -59,18 +48,33 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
-@Description(OmsLW10_AreaToNetpointAssociator.DESCRIPTION)
-@Author(name = OmsLW10_AreaToNetpointAssociator.AUTHORS, contact = OmsLW10_AreaToNetpointAssociator.CONTACTS)
-@Keywords(OmsLW10_AreaToNetpointAssociator.KEYWORDS)
-@Label(OmsLW10_AreaToNetpointAssociator.LABEL)
-@Name("_" + OmsLW10_AreaToNetpointAssociator.NAME)
-@Status(OmsLW10_AreaToNetpointAssociator.STATUS)
-@License(OmsLW10_AreaToNetpointAssociator.LICENSE)
-public class OmsLW10_AreaToNetpointAssociator extends JGTModel {
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+
+@Description(OmsLW10_SingleTree_AreaToNetpointAssociator.DESCRIPTION)
+@Author(name = OmsLW10_SingleTree_AreaToNetpointAssociator.AUTHORS, contact = OmsLW10_SingleTree_AreaToNetpointAssociator.CONTACTS)
+@Keywords(OmsLW10_SingleTree_AreaToNetpointAssociator.KEYWORDS)
+@Label(OmsLW10_SingleTree_AreaToNetpointAssociator.LABEL)
+@Name("_" + OmsLW10_SingleTree_AreaToNetpointAssociator.NAME)
+@Status(OmsLW10_SingleTree_AreaToNetpointAssociator.STATUS)
+@License(OmsLW10_SingleTree_AreaToNetpointAssociator.LICENSE)
+public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
 
     @Description(inNetPoints_DESCR)
     @In
     public SimpleFeatureCollection inNetPoints = null;
+
+    @Description(inTreePoints_DESCR)
+    @In
+    public SimpleFeatureCollection inTreePoints = null;
 
     @Description(inInundationArea_DESCR)
     @In
@@ -88,22 +92,6 @@ public class OmsLW10_AreaToNetpointAssociator extends JGTModel {
     @In
     public GridCoverage2D inNet = null;
 
-    @Description(inDtm_DESCR)
-    @In
-    public GridCoverage2D inDtm = null;
-
-    @Description(inDsm_DESCR)
-    @In
-    public GridCoverage2D inDsm = null;
-
-    @Description(inStand_DESCR)
-    @In
-    public GridCoverage2D inStand = null;
-
-    @Description(inSlope_DESCR)
-    @In
-    public GridCoverage2D inSlope = null;
-
     @Description(inConnectivity_DESCR)
     @In
     public GridCoverage2D inConnectivity = null;
@@ -120,6 +108,10 @@ public class OmsLW10_AreaToNetpointAssociator extends JGTModel {
     @Out
     public GridCoverage2D outNetnum = null;
 
+    @Description("TODO treepoints")
+    @Out
+    public SimpleFeatureCollection outTreePoints = null;
+
     @Description(outBasins_DESCR)
     @Out
     public GridCoverage2D outBasins = null;
@@ -130,15 +122,12 @@ public class OmsLW10_AreaToNetpointAssociator extends JGTModel {
     public static final String outNetPoints_DESCR = "The output points network layer with the additional attributes vegetation height and timber volume .";
     public static final String pConnectivityThreshold_DESCR = "Threshold on connectivity map for extracting unstable connected pixels of the basins.";
     public static final String inConnectivity_DESCR = "The input downslope connectivity index raster map.";
-    public static final String inSlope_DESCR = "The input slope raster map.";
-    public static final String inStand_DESCR = "The input total stand volume raster map.";
-    public static final String inDsm_DESCR = "The input superficial elevation raster map.";
-    public static final String inDtm_DESCR = "The input terrain elevation raster map.";
     public static final String inNet_DESCR = "The input network raster map.";
     public static final String inTca_DESCR = "The input total contributing areas raster map.";
     public static final String inFlow_DESCR = "The input flow directions raster map.";
     public static final String inInundationArea_DESCR = "The input polygon layer with the inundation areas.";
     public static final String inNetPoints_DESCR = "The input hierarchy point network layer.";
+    public static final String inTreePoints_DESCR = "TODO";
     public static final int STATUS = Status.EXPERIMENTAL;
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String NAME = "lw09_areatonetpointassociator";
@@ -152,9 +141,6 @@ public class OmsLW10_AreaToNetpointAssociator extends JGTModel {
     @Execute
     public void process() throws Exception {
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        int cols = regionMap.getCols();
-        int rows = regionMap.getRows();
         GridGeometry2D gridGeometry = inFlow.getGridGeometry();
         GeometryFactory gf = GeometryUtilities.gf();
 
@@ -163,10 +149,7 @@ public class OmsLW10_AreaToNetpointAssociator extends JGTModel {
          */
         PreparedGeometry preparedFloodingArea = getFloodingArea(inInundationArea);
 
-        /*
-         * extract the Canopy Height Model from DTM and DSM
-         */
-        GridCoverage2D chmGC = getChm(inDsm, inDtm);
+        List<FeatureMate> treesList = FeatureUtilities.featureCollectionToMatesList(inTreePoints);
 
         /*
          * extract basins calling netnumbering with in input all the network points
@@ -184,43 +167,53 @@ public class OmsLW10_AreaToNetpointAssociator extends JGTModel {
 
         RandomIter netnumBasinsIter = CoverageUtilities.getRandomIterator(outBasins);
         RandomIter connectivityIter = CoverageUtilities.getRandomIterator(inConnectivity);
-        RandomIter chmIter = CoverageUtilities.getRandomIterator(chmGC);
-        RandomIter standIter = CoverageUtilities.getRandomIterator(inStand);
 
         HashMap<Integer, DescriptiveStatistics> heightBasin2ValueMap = new HashMap<Integer, DescriptiveStatistics>();
         HashMap<Integer, DescriptiveStatistics> standBasin2ValueMap = new HashMap<Integer, DescriptiveStatistics>();
 
-        pm.beginTask("Calculating vegetation stats.", cols);
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
-                double netnumDouble = netnumBasinsIter.getSampleDouble(c, r, 0);
-                if (!isNovalue(netnumDouble)) {
-                    Integer netNum = (int) netnumDouble;
-                    Coordinate coordinate = CoverageUtilities.coordinateFromColRow(c, r, gridGeometry);
-                    Point point = gf.createPoint(coordinate);
-                    double connectivityDouble = connectivityIter.getSampleDouble(c, r, 0);
-                    /*
-                     * check if the point is connected to the network:
-                     * - connectivity index less than the threshold
-                     * - point is inside the inundated area
-                     * and fill the hashmaps with the correspondent positions.
-                     */
-                    if (connectivityDouble < pConnectivityThreshold || preparedFloodingArea.intersects(point)) {
-                        double chmDouble = chmIter.getSampleDouble(c, r, 0);
-                        double standDouble = standIter.getSampleDouble(c, r, 0);
-                        DescriptiveStatistics summaryHeightStatistics = heightBasin2ValueMap.get(netNum);
-                        DescriptiveStatistics summaryStandStatistics = standBasin2ValueMap.get(netNum);
-                        if (summaryHeightStatistics == null) {
-                            summaryHeightStatistics = new DescriptiveStatistics();
-                            summaryStandStatistics = new DescriptiveStatistics();
-                            heightBasin2ValueMap.put(netNum, summaryHeightStatistics);
-                            standBasin2ValueMap.put(netNum, summaryStandStatistics);
-                        }
-                        summaryHeightStatistics.addValue(chmDouble);
-                        summaryStandStatistics.addValue(standDouble);
-                    }
-                }
+        FeatureExtender treesExtender = new FeatureExtender(inTreePoints.getSchema(), new String[]{LWFields.LINKID},
+                new Class[]{Integer.class});
 
+        List<SimpleFeature> treePointsList = new ArrayList<>();
+
+        pm.beginTask("Calculating vegetation stats.", treesList.size());
+        for( FeatureMate treeFeature : treesList ) {
+            Coordinate treeCoordinate = treeFeature.getGeometry().getCoordinate();
+            Point treePoint = gf.createPoint(treeCoordinate);
+            double treeHeight = treeFeature.getAttribute(LWFields.FIELD_ELEV, Double.class);
+
+            int[] colRow = CoverageUtilities.colRowFromCoordinate(treeCoordinate, gridGeometry, null);
+            int c = colRow[0];
+            int r = colRow[1];
+
+            double netnumDouble = netnumBasinsIter.getSampleDouble(c, r, 0);
+            if (!isNovalue(netnumDouble)) {
+                Integer netNum = (int) netnumDouble;
+                double connectivityDouble = connectivityIter.getSampleDouble(c, r, 0);
+                /*
+                 * check if the point is connected to the network:
+                 * - connectivity index less than the threshold
+                 * - point is inside the inundated area
+                 * and fill the hashmaps with the correspondent positions.
+                 */
+                if (connectivityDouble < pConnectivityThreshold || preparedFloodingArea.intersects(treePoint)) {
+                    double standDouble = calculateVolume(treeHeight);
+                    DescriptiveStatistics summaryHeightStatistics = heightBasin2ValueMap.get(netNum);
+                    DescriptiveStatistics summaryStandStatistics = standBasin2ValueMap.get(netNum);
+                    if (summaryHeightStatistics == null) {
+                        summaryHeightStatistics = new DescriptiveStatistics();
+                        summaryStandStatistics = new DescriptiveStatistics();
+                        heightBasin2ValueMap.put(netNum, summaryHeightStatistics);
+                        standBasin2ValueMap.put(netNum, summaryStandStatistics);
+                    }
+                    summaryHeightStatistics.addValue(treeHeight);
+                    summaryStandStatistics.addValue(standDouble);
+
+                    // for now we put the basin netnum as id, later we substitute it with the linkid
+                    // (here it is not known yet)
+                    SimpleFeature newTreeFeature = treesExtender.extendFeature(treeFeature.getFeature(), new Object[]{netNum});
+                    treePointsList.add(newTreeFeature);
+                }
             }
             pm.worked(1);
         }
@@ -230,16 +223,21 @@ public class OmsLW10_AreaToNetpointAssociator extends JGTModel {
          * create the structure for the output attributes and insert the summary statistics
          * as attributes
          */
-        FeatureExtender ext = new FeatureExtender(inNetPoints.getSchema(), new String[]{LWFields.VOLUME, LWFields.MEDIAN},
-                new Class[]{Double.class, Double.class});
+        FeatureExtender netPointsExtender = new FeatureExtender(inNetPoints.getSchema(),
+                new String[]{LWFields.VOLUME, LWFields.MEDIAN}, new Class[]{Double.class, Double.class});
         List<SimpleFeature> inNetworkPointsList = FeatureUtilities.featureCollectionToList(inNetPoints);
         DefaultFeatureCollection finalNetworkPointsFC = new DefaultFeatureCollection();
         final java.awt.Point point = new java.awt.Point();
+        HashMap<Integer, Integer> netnum2LinkidMap = new HashMap<>();
         for( SimpleFeature inPointFeature : inNetworkPointsList ) {
+            Integer id = (Integer) inPointFeature.getAttribute(LWFields.LINKID);
+
             Geometry geometry = (Geometry) inPointFeature.getDefaultGeometry();
             Coordinate coordinate = geometry.getCoordinate();
             CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, point);
             int netnum = netnumBasinsIter.getSample(point.x, point.y, 0);
+
+            netnum2LinkidMap.put(netnum, id);
 
             DescriptiveStatistics summaryHeightStatistics = heightBasin2ValueMap.get(netnum);
             double medianHeight = 0.0;
@@ -253,10 +251,24 @@ public class OmsLW10_AreaToNetpointAssociator extends JGTModel {
                 sumStand = summaryStandStatistics.getSum();
             }
 
-            SimpleFeature newPointFeature = ext.extendFeature(inPointFeature, new Object[]{sumStand, medianHeight});
+            SimpleFeature newPointFeature = netPointsExtender.extendFeature(inPointFeature, new Object[]{sumStand, medianHeight});
             finalNetworkPointsFC.add(newPointFeature);
         }
         outNetPoints = finalNetworkPointsFC;
+
+        outTreePoints = new DefaultFeatureCollection();
+        for( SimpleFeature treePointFeature : treePointsList ) {
+            Integer netnum = (Integer) treePointFeature.getAttribute(LWFields.LINKID);
+            Integer linkid = netnum2LinkidMap.get(netnum);
+            treePointFeature.setAttribute(LWFields.LINKID, linkid);
+            ((DefaultFeatureCollection) outTreePoints).add(treePointFeature);
+        }
+
+    }
+
+    private double calculateVolume( double treeHeight ) {
+        // TODO calculate volume
+        return treeHeight * 2.;
     }
 
     /*
@@ -267,21 +279,6 @@ public class OmsLW10_AreaToNetpointAssociator extends JGTModel {
         Geometry polygonUnion = CascadedPolygonUnion.union(geometriesList);
         PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(polygonUnion);
         return preparedGeometry;
-    }
-
-    /*
-    * extract the Canopy Height Model from DTM and DSM
-    */
-    private GridCoverage2D getChm( GridCoverage2D inDsm, GridCoverage2D inDtm ) throws Exception {
-        OmsRasterDiff rasterDiff = new OmsRasterDiff();
-        rasterDiff.pm = pm;
-        rasterDiff.inRaster1 = inDsm;
-        rasterDiff.inRaster2 = inDtm;
-        rasterDiff.pThreshold = 0.0;
-        rasterDiff.doNegatives = false;
-        rasterDiff.process();
-        GridCoverage2D out = rasterDiff.outRaster;
-        return out;
     }
 
 }
