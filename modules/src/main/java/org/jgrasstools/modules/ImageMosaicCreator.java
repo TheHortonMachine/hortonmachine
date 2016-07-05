@@ -65,5 +65,10 @@ public class ImageMosaicCreator extends JGTModel {
         imagemosaiccreator.process();
     }
     
+    public static void main( String[] args ) throws Exception {
+        ImageMosaicCreator c = new ImageMosaicCreator();
+        c.inFolder="/media/hydrologis/SPEEDBALL/DATI/CTP/trentino_ctp_gt15/";
+        c.process();
+    }
 
 }
