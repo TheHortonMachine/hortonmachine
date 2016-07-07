@@ -71,6 +71,11 @@ public class NwwUtilities {
         return reprojectToWGS84(fc);
     }
 
+    public static ReferencedEnvelope readAndReprojectBounds(String path) throws Exception {
+        ReferencedEnvelope env = OmsVectorReader.readEnvelope(path);
+        return env.transform(GPS_CRS, true);
+    }
+
     private static SimpleFeatureCollection reprojectToWGS84(SimpleFeatureCollection fc) {
         // BOUNDS
         ReferencedEnvelope bounds = fc.getBounds();

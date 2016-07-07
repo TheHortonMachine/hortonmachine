@@ -40,9 +40,12 @@ import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.jgrasstools.gears.utils.SldUtilities;
+import org.jgrasstools.nww.layers.defaults.NwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.BasicMercatorTiledImageLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.nww.utils.cache.CacheUtils;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
@@ -60,30 +63,62 @@ import gov.nasa.worldwind.util.TileUrlBuilder;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class RasterizedShapefilesFolderNwwLayer extends BasicMercatorTiledImageLayer {
+public class RasterizedShapefilesFolderNwwLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
 
     private String layerName = "unknown layer";
 
     private static final int TILESIZE = 512;
 
-    public RasterizedShapefilesFolderNwwLayer( File shapeFilesfolder, Integer tileSize, boolean transparentBackground )
-            throws Exception {
-        super(makeLevels(shapeFilesfolder, getRenderer(shapeFilesfolder), tileSize, transparentBackground));
-        this.layerName = shapeFilesfolder.getName();
+    private Coordinate centre;
+
+    public RasterizedShapefilesFolderNwwLayer(String title, File shapeFilesfolder, Integer tileSize,
+            boolean transparentBackground) throws Exception {
+        super(makeLevels(title, shapeFilesfolder, getRenderer(shapeFilesfolder), tileSize, transparentBackground));
+        this.layerName = title != null ? title : shapeFilesfolder.getName();
         this.setUseTransparentTextures(true);
 
+        // get bounds
+        File[] shpFiles = shapeFilesfolder.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.toLowerCase().endsWith(".shp");
+            }
+        });
+
+        ReferencedEnvelope allBounds = null;
+        for (File shpFile : shpFiles) {
+            try {
+                ReferencedEnvelope bounds = NwwUtilities.readAndReprojectBounds(shpFile.getAbsolutePath());
+                if (bounds.getWidth() == 0 || bounds.getHeight() == 0) {
+                    System.err.println("Ignoring: " + shpFile);
+                    continue;
+                }
+                if (allBounds == null) {
+                    allBounds = new ReferencedEnvelope(bounds);
+                } else {
+                    allBounds.expandToInclude(bounds);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (allBounds != null) {
+            centre = allBounds.centre();
+        } else {
+            centre = new Coordinate(0, 0);
+        }
     }
 
-    private static GTRenderer getRenderer( File shapeFilesFolder ) {
-        File[] shpFiles = shapeFilesFolder.listFiles(new FilenameFilter(){
+    private static GTRenderer getRenderer(File shapeFilesFolder) {
+        File[] shpFiles = shapeFilesFolder.listFiles(new FilenameFilter() {
             @Override
-            public boolean accept( File dir, String name ) {
+            public boolean accept(File dir, String name) {
                 return name.toLowerCase().endsWith(".shp");
             }
         });
 
         MapContent mapContent = new MapContent();
-        for( File shpFile : shpFiles ) {
+        for (File shpFile : shpFiles) {
             try {
                 SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(shpFile.getAbsolutePath());
                 ReferencedEnvelope tmpBounds = readFC.getBounds();
@@ -111,8 +146,8 @@ public class RasterizedShapefilesFolderNwwLayer extends BasicMercatorTiledImageL
         return renderer;
     }
 
-    private static LevelSet makeLevels( File folderFile, GTRenderer renderer, Integer tileSize, boolean transparentBackground )
-            throws MalformedURLException {
+    private static LevelSet makeLevels(String title, File folderFile, GTRenderer renderer, Integer tileSize,
+            boolean transparentBackground) throws MalformedURLException {
         AVList params = new AVListImpl();
 
         if (tileSize == null || tileSize < 256) {
@@ -121,9 +156,11 @@ public class RasterizedShapefilesFolderNwwLayer extends BasicMercatorTiledImageL
 
         int finalTileSize = tileSize;
 
-        String cacheRelativePath = "shapefilefolders/" + folderFile.getName() + "-tiles";
-        String urlString = folderFile.toURI().toURL().toExternalForm();
-        params.setValue(AVKey.URL, urlString);
+        String tileFolderName = title == null ? folderFile.getName() : title;
+
+        String cacheRelativePath = "shapefilefolders/" + tileFolderName + "-tiles";
+        // String urlString = folderFile.toURI().toURL().toExternalForm();
+        // params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, finalTileSize);
         params.setValue(AVKey.TILE_HEIGHT, finalTileSize);
         params.setValue(AVKey.DATA_CACHE_NAME, cacheRelativePath);
@@ -140,9 +177,9 @@ public class RasterizedShapefilesFolderNwwLayer extends BasicMercatorTiledImageL
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
-        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder(){
+        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder() {
 
-            public URL getURL( Tile tile, String altImageFormat ) throws MalformedURLException {
+            public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {
                 int zoom = tile.getLevelNumber() + 3;
                 Sector sector = tile.getSector();
                 double north = sector.getMaxLatitude().degrees;
@@ -198,6 +235,11 @@ public class RasterizedShapefilesFolderNwwLayer extends BasicMercatorTiledImageL
 
     public String toString() {
         return layerName;
+    }
+
+    @Override
+    public Coordinate getCenter() {
+        return centre;
     }
 
 }

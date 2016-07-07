@@ -185,7 +185,7 @@ public class ToolsPanelController extends ToolsPanelView {
                     try {
                         Layer layer;
                         if (_useRasterizedCheckbox.isSelected()) {
-                            layer = new RasterizedShapefilesFolderNwwLayer(selectedFile, null, true);
+                            layer = new RasterizedShapefilesFolderNwwLayer(null, selectedFile, null, true);
                         } else {
                             layer = new ShapefilesFolderLayer(selectedFile.getAbsolutePath());
                         }

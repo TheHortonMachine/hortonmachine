@@ -88,7 +88,7 @@ public class CurrentGpsPointLayer extends MarkerLayer {
                 Angle heading = Angle.fromDegrees(azimuth);
                 gpsMarker.setHeading(heading);
             }
-            gpsMarker.setPosition(Position.fromDegrees(lat, lon, 1));
+            gpsMarker.setPosition(Position.fromDegrees(lat, lon, 10));
         }
         previousLat = lat;
         previousLon = lon;
