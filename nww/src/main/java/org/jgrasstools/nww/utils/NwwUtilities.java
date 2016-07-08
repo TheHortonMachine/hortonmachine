@@ -36,6 +36,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.WorldWindow;
@@ -293,13 +294,18 @@ public class NwwUtilities {
     }
 
     /**
-     * Get the lat/long world geometry from  two screen corner coordinates.
+     * Get the lat/long world geometry from two screen corner coordinates.
      * 
-     * @param wwd the {@link WorldWindow} instance.
-     * @param x1 the first point screen x.
-     * @param y1 the first point screen y.
-     * @param x2 the second point screen x.
-     * @param y2 the second point screen y.
+     * @param wwd
+     *            the {@link WorldWindow} instance.
+     * @param x1
+     *            the first point screen x.
+     * @param y1
+     *            the first point screen y.
+     * @param x2
+     *            the second point screen x.
+     * @param y2
+     *            the second point screen y.
      * @return the world geomnetry.
      */
     public static Geometry getScreenPointsPolygon(WorldWindow wwd, int x1, int y1, int x2, int y2) {
@@ -317,6 +323,13 @@ public class NwwUtilities {
         };
         Geometry convexHull = GeometryUtilities.gf().createMultiPoint(coords).convexHull();
         return convexHull;
+    }
+
+    public static Point getScreenPoint(WorldWindow wwd, int x1, int y1) {
+        View view = wwd.getView();
+        Position p = view.computePositionFromScreenPoint(x1, y1);
+        Coordinate c = new Coordinate(p.longitude.degrees, p.latitude.degrees);
+        return GeometryUtilities.gf().createPoint(c);
     }
 
 }
