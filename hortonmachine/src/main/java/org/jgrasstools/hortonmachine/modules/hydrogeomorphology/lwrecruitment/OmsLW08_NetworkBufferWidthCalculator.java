@@ -138,7 +138,7 @@ public class OmsLW08_NetworkBufferWidthCalculator extends JGTModel implements LW
 
     // VARS DOC END
 
-    private static final double WATER_SPECIFIC_WEIGHT = 9810.0; // TODO check the units!!
+    private static final double WATER_SPECIFIC_WEIGHT = 9810.0; // N/m3
     private HashMap<String, Geometry> pfafId2WidthLine;
     private SimpleFeatureBuilder newLinesBuilder;
     private PreparedGeometry preparedSupFormGeom;

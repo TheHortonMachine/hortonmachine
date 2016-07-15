@@ -225,7 +225,7 @@ public class OmsLW10_CHM_AreaToNetpointAssociator extends JGTModel {
          * create the structure for the output attributes and insert the summary statistics
          * as attributes
          */
-        FeatureExtender ext = new FeatureExtender(inNetPoints.getSchema(), new String[]{LWFields.VOLUME, LWFields.MEDIAN},
+        FeatureExtender ext = new FeatureExtender(inNetPoints.getSchema(), new String[]{LWFields.VEG_VOL, LWFields.VEG_H},
                 new Class[]{Double.class, Double.class});
         List<SimpleFeature> inNetworkPointsList = FeatureUtilities.featureCollectionToList(inNetPoints);
         DefaultFeatureCollection finalNetworkPointsFC = new DefaultFeatureCollection();

@@ -44,8 +44,9 @@ public interface LWFields {
     static final String SLOPE = "slope";
     static final String AVGSLOPE = "slopeavg";
 
-    static final String VOLUME = "volume";
-    static final String MEDIAN = "median";
+    static final String VEG_VOL = "volume";
+    static final String VEG_H = "height";
+    static final String VEG_DBH = "dbh";
 
     static final String FIELD_WIDTH = "w2"; // TODO add logical check on width to use
     static final String FIELD_MEDIAN = "median";

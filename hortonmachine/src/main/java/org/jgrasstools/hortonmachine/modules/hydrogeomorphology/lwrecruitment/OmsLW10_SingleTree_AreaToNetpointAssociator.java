@@ -103,7 +103,23 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
     @Description(pConnectivityThreshold_DESCR)
     @In
     public double pConnectivityThreshold = 4.0;
+    
+    @Description(pAllometricCoeff2ndOrder_DESCR)
+    @In
+    public double pAllometricCoeff2ndOrder = 0.0096;
+    
+    @Description(pAllometricCoeff1stOrder_DESCR)
+    @In
+    public double pAllometricCoeff1stOrder = 1.298;
+    
+    @Description(pAllometricCoeffVolume_DESCR)
+    @In
+    public double pAllometricCoeffVolume = 0.0000368048;
 
+    @Description(pRepresentingHeightDbhPercentile_DESCR)
+    @In
+    public int pRepresentingHeightDbhPercentile = 50;
+    
     @Description(outNetPoints_DESCR)
     @Out
     public SimpleFeatureCollection outNetPoints = null;
@@ -125,6 +141,10 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
     public static final String outNetnum_DESCR = "The output netnumbering raster map.";
     public static final String outNetPoints_DESCR = "The output points network layer with the additional attributes vegetation height and timber volume .";
     public static final String pConnectivityThreshold_DESCR = "Threshold on connectivity map for extracting unstable connected pixels of the basins.";
+    public static final String pAllometricCoeff2ndOrder_DESCR = "Coefficient of the second order term of tree height of the allometric function relating DBH to H of the trees.";
+    public static final String pAllometricCoeff1stOrder_DESCR = "Coefficient of the first order term of tree height of the allometric function relating DBH to H of the trees.";
+    public static final String pAllometricCoeffVolume_DESCR = "Coefficient of the first order term of tree height of the allometric function relating tree volume to DBH and H.";
+    public static final String pRepresentingHeightDbhPercentile_DESCR = "Percentile of the distribution of tree heights and DBH to be used for the evaluation of the representative height and DBH contributing in each section from the hillslopes.";
     public static final String inConnectivity_DESCR = "The input downslope connectivity index raster map.";
     public static final String inNet_DESCR = "The input network raster map.";
     public static final String inTca_DESCR = "The input total contributing areas raster map.";
@@ -173,6 +193,7 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
         RandomIter connectivityIter = CoverageUtilities.getRandomIterator(inConnectivity);
 
         HashMap<Integer, DescriptiveStatistics> heightBasin2ValueMap = new HashMap<Integer, DescriptiveStatistics>();
+        HashMap<Integer, DescriptiveStatistics> dbhBasin2ValueMap = new HashMap<Integer, DescriptiveStatistics>();
         HashMap<Integer, DescriptiveStatistics> standBasin2ValueMap = new HashMap<Integer, DescriptiveStatistics>();
 
         FeatureExtender treesExtender = new FeatureExtender(inTreePoints.getSchema(), new String[]{LWFields.LINKID},
@@ -201,16 +222,21 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
                  * and fill the hashmaps with the correspondent positions.
                  */
                 if (connectivityDouble < pConnectivityThreshold || preparedFloodingArea.intersects(treePoint)) {
-                    double standDouble = calculateVolume(treeHeight);
+                    double dbhDouble = calculateVolume(treeHeight)[0];
+                    double standDouble = calculateVolume(treeHeight)[1];
                     DescriptiveStatistics summaryHeightStatistics = heightBasin2ValueMap.get(netNum);
+                    DescriptiveStatistics summaryDbhStatistics = dbhBasin2ValueMap.get(netNum);
                     DescriptiveStatistics summaryStandStatistics = standBasin2ValueMap.get(netNum);
                     if (summaryHeightStatistics == null) {
                         summaryHeightStatistics = new DescriptiveStatistics();
+                        summaryDbhStatistics = new DescriptiveStatistics();
                         summaryStandStatistics = new DescriptiveStatistics();
                         heightBasin2ValueMap.put(netNum, summaryHeightStatistics);
+                        dbhBasin2ValueMap.put(netNum, summaryDbhStatistics);
                         standBasin2ValueMap.put(netNum, summaryStandStatistics);
                     }
                     summaryHeightStatistics.addValue(treeHeight);
+                    summaryDbhStatistics.addValue(dbhDouble);
                     summaryStandStatistics.addValue(standDouble);
 
                     // for now we put the basin netnum as id, later we substitute it with the linkid
@@ -228,7 +254,7 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
          * as attributes
          */
         FeatureExtender netPointsExtender = new FeatureExtender(inNetPoints.getSchema(),
-                new String[]{LWFields.VOLUME, LWFields.MEDIAN}, new Class[]{Double.class, Double.class});
+                new String[]{LWFields.VEG_VOL, LWFields.VEG_H, LWFields.VEG_DBH}, new Class[]{Double.class, Double.class, Double.class});
         List<SimpleFeature> inNetworkPointsList = FeatureUtilities.featureCollectionToList(inNetPoints);
         DefaultFeatureCollection finalNetworkPointsFC = new DefaultFeatureCollection();
         final java.awt.Point point = new java.awt.Point();
@@ -245,8 +271,16 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
 
             DescriptiveStatistics summaryHeightStatistics = heightBasin2ValueMap.get(netnum);
             double medianHeight = 0.0;
+            // TODO check if it works also with other percentiles 84?
             if (summaryHeightStatistics != null) {
-                medianHeight = summaryHeightStatistics.getPercentile(50);
+                medianHeight = summaryHeightStatistics.getPercentile(pRepresentingHeightDbhPercentile);
+            }
+            
+            DescriptiveStatistics summaryDbhStatistics = dbhBasin2ValueMap.get(netnum);
+            double medianDbh = 0.0;
+            // TODO check if it works also with other percentiles 84?
+            if (summaryDbhStatistics != null) {
+                medianDbh = summaryDbhStatistics.getPercentile(pRepresentingHeightDbhPercentile);
             }
 
             DescriptiveStatistics summaryStandStatistics = standBasin2ValueMap.get(netnum);
@@ -255,7 +289,7 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
                 sumStand = summaryStandStatistics.getSum();
             }
 
-            SimpleFeature newPointFeature = netPointsExtender.extendFeature(inPointFeature, new Object[]{sumStand, medianHeight});
+            SimpleFeature newPointFeature = netPointsExtender.extendFeature(inPointFeature, new Object[]{sumStand, medianHeight, medianDbh});
             finalNetworkPointsFC.add(newPointFeature);
         }
         outNetPoints = finalNetworkPointsFC;
@@ -270,9 +304,16 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
 
     }
 
-    private double calculateVolume( double treeHeight ) {
-        // TODO calculate volume
-        return treeHeight * 2.;
+    private double [] calculateVolume( double treeHeight ) {
+        /*
+        The volume of the trees is calculated considering two allometric functions:
+        1. the relation between the height of the trees and the diameter
+        2. the relation between the height and diameter and the volume of the trees
+        */
+        double treeDbh = pAllometricCoeff2ndOrder * Math.pow(treeHeight, 2) + pAllometricCoeff1stOrder * treeHeight;
+        double treeVolume = Math.PI * Math.pow(treeDbh, 2) / 4 * treeHeight * pAllometricCoeffVolume;
+        double [] treeParams = new double[] {treeDbh, treeVolume};
+        return treeParams;
     }
 
     /*
