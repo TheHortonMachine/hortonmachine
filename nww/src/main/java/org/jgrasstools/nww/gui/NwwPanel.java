@@ -132,7 +132,6 @@ public class NwwPanel extends JPanel {
         if (view != null && view instanceof OrbitView) {
             OrbitView oView = (OrbitView) view;
             OrbitViewLimits orbitViewLimits = oView.getOrbitViewLimits();
-            orbitViewLimits.setPitchLimits(Angle.ZERO, Angle.ZERO);
             orbitViewLimits.setZoomLimits(minZoom, maxZoom);
         }
     }
