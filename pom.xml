@@ -116,8 +116,6 @@
       <url>http://oss.sonatype.org/content/repositories/snapshots</url>
     </repository>
   </repositories>
-
-    
 	<!-- Build configuration -->
     <build>
         <extensions>
