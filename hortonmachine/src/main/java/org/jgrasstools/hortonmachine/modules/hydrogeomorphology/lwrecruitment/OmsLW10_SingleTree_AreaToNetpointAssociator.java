@@ -271,14 +271,12 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
 
             DescriptiveStatistics summaryHeightStatistics = heightBasin2ValueMap.get(netnum);
             double medianHeight = 0.0;
-            // TODO check if it works also with other percentiles 84?
             if (summaryHeightStatistics != null) {
                 medianHeight = summaryHeightStatistics.getPercentile(pRepresentingHeightDbhPercentile);
             }
             
             DescriptiveStatistics summaryDbhStatistics = dbhBasin2ValueMap.get(netnum);
             double medianDbh = 0.0;
-            // TODO check if it works also with other percentiles 84?
             if (summaryDbhStatistics != null) {
                 medianDbh = summaryDbhStatistics.getPercentile(pRepresentingHeightDbhPercentile);
             }
