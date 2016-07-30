@@ -57,6 +57,18 @@ public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
     @In
     public SimpleFeatureCollection inNetPoints = null;
 
+    @Description("ratioLogsLengthChannelWidthHillslope")
+    @In
+    public double ratioLogsLengthChannelWidthHillslope = 0.8;
+
+    @Description("ratioLogsLengthChannelWidthChannel")
+    @In
+    public double ratioLogsLengthChannelWidthChannel = 1.0;
+
+    @Description("ratioLogsDiameterWaterDepth")
+    @In
+    public double ratioLogsDiameterWaterDepth = 0.8;
+
     @Description(outNetPoints_DESCR)
     @Out
     public SimpleFeatureCollection outNetPoints = null;
@@ -118,8 +130,9 @@ public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
          * prepare the output feature collection as an extention of the input with 3 
          * additional attributes for critical sections
          */
-        FeatureExtender ext = new FeatureExtender(inNetPoints.getSchema(), new String[]{FIELD_ISCRITIC_LOCAL,
-                FIELD_ISCRITIC_GLOBAL, FIELD_CRITIC_SOURCE}, new Class[]{Integer.class, Integer.class, String.class});
+        FeatureExtender ext = new FeatureExtender(inNetPoints.getSchema(),
+                new String[]{FIELD_ISCRITIC_LOCAL, FIELD_ISCRITIC_GLOBAL, FIELD_CRITIC_SOURCE},
+                new Class[]{Integer.class, Integer.class, String.class});
         DefaultFeatureCollection outputFC = new DefaultFeatureCollection();
         /*
          * consider each link and navigate downstream each
@@ -155,27 +168,31 @@ public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
 
             for( SimpleFeature feature : featuresMap.values() ) {
                 String linkid = feature.getAttribute(FIELD_LINKID).toString();
-                double width = (Double) feature.getAttribute(FIELD_WIDTH);
-                double height = (Double) feature.getAttribute(FIELD_MEDIAN);
+                double width = (Double) feature.getAttribute(WIDTH2);
+                double height = (Double) feature.getAttribute(VEG_H);
+                double diameter = (Double) feature.getAttribute(VEG_DBH);
+                double waterDepth = (Double) feature.getAttribute(FIELD_WATER_LEVEL2);
+
                 if (height > maxUpstreamHeight) {
                     maxUpstreamHeight = height;
                     criticSource = pfafstetterNumber + "-" + linkid;
                 }
 
                 /*
-                 * label the ctitical sections
+                 * label the critical sections
                  */
                 // critical from local parameters veg_h > width
                 int isCriticLocal = 0;
                 int isCriticGlobal = 0;
-                if (height > width) {
+                if (height / width > ratioLogsLengthChannelWidthHillslope) {
                     isCriticLocal = 1;
                 }
                 // critical on vegetation coming from upstream
-                if (maxUpstreamHeight > width) {
+                if (maxUpstreamHeight / width > ratioLogsLengthChannelWidthChannel) {
                     isCriticGlobal = 1;
                     maxUpstreamHeight = -1;
                 }
+                
 
                 // update the field with the origin of critical sections
                 if (criticSource == null)

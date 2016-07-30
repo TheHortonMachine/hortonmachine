@@ -142,12 +142,10 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
     @Execute
     public void process() throws Exception {
 
-        CoordinateReferenceSystem crs;
-
         // Creates the output points hashmap
         LinkedHashMap<SimpleFeature, double[]> allNetPointsMap = new LinkedHashMap<SimpleFeature, double[]>();
 
-        crs = inNetPoints.getBounds().getCoordinateReferenceSystem();
+        CoordinateReferenceSystem crs = inNetPoints.getBounds().getCoordinateReferenceSystem();
 
         // Insert the points in the final hashmap
         List<SimpleFeature> netFeatures = FeatureUtilities.featureCollectionToList(inNetPoints);
@@ -451,11 +449,11 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
 
     public static void main( String[] args ) throws Exception {
 
-        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/single_reach/";
+        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/data01/";
 
         OmsLW04_BankfullWidthAnalyzer ex = new OmsLW04_BankfullWidthAnalyzer();
         ex.inBankfull = OmsVectorReader.readVector(base + "channelpolygon_merged.shp");
-        ex.inNetPoints = OmsVectorReader.readVector(base + "net_points.shp");
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point.shp");
         // ex.inSections = OmsVectorReader.readVector(base + "shape/sections_adige_75.shp");
         // ex.pMaxDistanceFromNetpoint = 20;
         // ex.pMaxNetworkWidth = 75;

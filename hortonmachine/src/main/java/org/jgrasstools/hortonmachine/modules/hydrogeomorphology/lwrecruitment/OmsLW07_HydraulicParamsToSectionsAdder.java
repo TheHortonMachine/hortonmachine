@@ -84,6 +84,11 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
     @Unit(pDeltaTMillis_UNIT)
     @In
     public long pDeltaTMillis = 5000;
+    
+    // TODO
+    @Description("Document me")
+    @In
+    public boolean doMaxWidening = false;
 
     @Description(outputLevelFile_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
@@ -138,6 +143,19 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         SimpleFeatureCollection outSectionsPoints = ex.outSectionPoints;
         SimpleFeatureCollection outRiverPoints = ex.outRiverPoints;
 
+        
+        String widthField = LWFields.WIDTH;
+        String ksField = LWFields.GAUKLER;
+        String fieldWaterLevel = LWFields.FIELD_WATER_LEVEL;
+        String fieldDischarge = LWFields.FIELD_DISCHARGE;
+        String fieldWaterVelocity = LWFields.FIELD_WATER_VELOCITY;
+        if (doMaxWidening) {
+            widthField = LWFields.WIDTH2;
+            fieldWaterLevel = LWFields.FIELD_WATER_LEVEL2;
+            fieldDischarge = LWFields.FIELD_DISCHARGE2;
+            fieldWaterVelocity = LWFields.FIELD_WATER_VELOCITY2;
+        }
+
         // add pfafstetter to the sections
         List<SimpleFeature> netPointsFC = FeatureUtilities.featureCollectionToList(inNetPoints);
         HashMap<Integer, String> id2PfafMap = new HashMap<>();
@@ -145,7 +163,7 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         for( SimpleFeature netPointFeature : netPointsFC ) {
             Integer id = (Integer) netPointFeature.getAttribute(LWFields.LINKID);
             String pfaff = (String) netPointFeature.getAttribute(LWFields.PFAF);
-            Double width = (Double) netPointFeature.getAttribute(LWFields.WIDTH);
+            Double width = (Double) netPointFeature.getAttribute(widthField);
             id2PfafMap.put(id, pfaff);
             id2WidthMap.put(id, width);
         }
@@ -193,7 +211,7 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         HashMap<Integer, Double> lastLinkId2VelocityMap = saintGeo.getLastLinkId2VelocityMap();
 
         FeatureExtender ext = new FeatureExtender(inNetPoints.getSchema(),
-                new String[]{LWFields.FIELD_WATER_LEVEL, LWFields.FIELD_DISCHARGE, LWFields.FIELD_WATER_VELOCITY},
+                new String[]{fieldWaterLevel, fieldDischarge, fieldWaterVelocity},
                 new Class[]{Double.class, Double.class, Double.class});
 
         outNetPoints = new DefaultFeatureCollection();
@@ -210,10 +228,11 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
 
     public static void main( String[] args ) throws Exception {
 
-        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/single_reach/";
+        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/data01/";
+        String baseRaster = "D:/lavori_tmp/unibz/2016_06_gsoc/raster/";
 
         OmsLW07_HydraulicParamsToSectionsAdder ex = new OmsLW07_HydraulicParamsToSectionsAdder();
-        ex.inDtm = OmsRasterReader.readRaster(base + "raster/dtmfel.asc");
+        ex.inDtm = OmsRasterReader.readRaster(baseRaster + "dtmfel.asc");
         ex.inNet = OmsVectorReader.readVector(base + "extracted_net.shp");
         ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_slope.shp");
         ex.inDischarge = 3.0;
@@ -224,7 +243,7 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         SimpleFeatureCollection outNetPoints = ex.outNetPoints;
         SimpleFeatureCollection outTransSect = ex.outTransSect;
 
-        OmsVectorWriter.writeVector(base + "extracted_bankfullsections2.shp", outTransSect);
+        OmsVectorWriter.writeVector(base + "extracted_bankfullsections.shp", outTransSect);
         OmsVectorWriter.writeVector(base + "net_point_hydraulic.shp", outNetPoints);
 
     }

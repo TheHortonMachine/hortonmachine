@@ -20,6 +20,7 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment;
 public interface LWFields {
     static final String LINKID = "linkid";
     static final String PFAF = "pfaf";
+    static final String GAUKLER = "ks";
 
     static final String WIDTH = "w";
     static final String WIDTH2 = "w2";
@@ -48,8 +49,6 @@ public interface LWFields {
     static final String VEG_H = "height";
     static final String VEG_DBH = "dbh";
 
-    static final String FIELD_WIDTH = "w2"; // TODO add logical check on width to use
-    static final String FIELD_MEDIAN = "median";
     static final String FIELD_ISCRITIC_LOCAL = "iscriticl";
     static final String FIELD_ISCRITIC_GLOBAL = "iscriticg";
     static final String FIELD_CRITIC_SOURCE = "critsource";
@@ -57,6 +56,9 @@ public interface LWFields {
     static final String FIELD_WATER_LEVEL = "b_wlevel";
     static final String FIELD_DISCHARGE = "b_disch";
     static final String FIELD_WATER_VELOCITY = "b_wvel";
+    static final String FIELD_WATER_LEVEL2 = "b2_wlevel";
+    static final String FIELD_DISCHARGE2 = "b2_disch";
+    static final String FIELD_WATER_VELOCITY2 = "b2_wvel";
     
     static final String FIELD_ELEV = "elev";
 }

@@ -30,6 +30,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.LWFields;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -105,6 +106,7 @@ public abstract class ARiverSectionsExtractor {
         riverPointsTypeBuilder.add(FIELD_SECTION_ID, Integer.class);
         riverPointsTypeBuilder.add(FIELD_PROGRESSIVE, Double.class);
         riverPointsTypeBuilder.add(FIELD_ELEVATION, Double.class);
+        riverPointsTypeBuilder.add(LWFields.GAUKLER, Double.class);
         SimpleFeatureType riverType = riverPointsTypeBuilder.buildFeatureType();
         SimpleFeatureBuilder riverBuilder = new SimpleFeatureBuilder(riverType);
 
@@ -133,8 +135,8 @@ public abstract class ARiverSectionsExtractor {
                 LineString sectionGeometry = netPoint.sectionGeometry;
 
                 Coordinate[] sectionCoordinates = sectionGeometry.getCoordinates();
-                LineString simpleSectionGeometry = gf.createLineString(new Coordinate[]{sectionCoordinates[0],
-                        sectionCoordinates[sectionCoordinates.length - 1]});
+                LineString simpleSectionGeometry = gf.createLineString(
+                        new Coordinate[]{sectionCoordinates[0], sectionCoordinates[sectionCoordinates.length - 1]});
 
                 Object[] sectionValues = new Object[]{simpleSectionGeometry, sectionId, netPoint.progressiveDistance};
                 sectionBuilder.addAll(sectionValues);
@@ -179,9 +181,18 @@ public abstract class ARiverSectionsExtractor {
             List<SimpleFeature> sectionPointsFeatures ) {
         RiverInfo riverInfo = new RiverInfo();
 
+        HashMap<Integer, Double> sectionId2KsMap = null;
         for( SimpleFeature riverPointFeature : riverPointsFeatures ) {
             int sectionId = ((Number) riverPointFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTION_ID)).intValue();
             riverInfo.orderedRiverPoints.put(sectionId, riverPointFeature);
+
+            Object attribute = riverPointFeature.getAttribute(LWFields.GAUKLER);
+            if (attribute != null) {
+                if (sectionId2KsMap == null)
+                    sectionId2KsMap = new HashMap<>();
+                double ks = ((Number) attribute).doubleValue();
+                sectionId2KsMap.put(sectionId, ks);
+            }
         }
         int count = 0;
         riverInfo.riverCoords = new Coordinate[riverInfo.orderedRiverPoints.size()];
@@ -213,6 +224,8 @@ public abstract class ARiverSectionsExtractor {
 
         for( Entry<Integer, SimpleFeature> sectionEntry : riverInfo.orderedSections.entrySet() ) {
             Integer sectionId = sectionEntry.getKey();
+            Double ks = sectionId2KsMap.get(sectionId);
+            
             SimpleFeature sectionFeature = sectionEntry.getValue();
             double progressive = ((Number) sectionFeature.getAttribute(ARiverSectionsExtractor.FIELD_PROGRESSIVE)).doubleValue();
             Geometry sectionLine = (Geometry) sectionFeature.getDefaultGeometry();
@@ -231,17 +244,20 @@ public abstract class ARiverSectionsExtractor {
                 sectionCoords[count++] = ((Geometry) sectionPoint.getDefaultGeometry()).getCoordinate();
             }
             LineString sectionLineWithPoints = gf.createLineString(sectionCoords);
-            RiverPoint rp = new RiverPoint(intersectionPoint.getCoordinate(), progressive, sectionLineWithPoints, null);
+            RiverPoint rp = new RiverPoint(intersectionPoint.getCoordinate(), progressive, sectionLineWithPoints, ks);
             rp.setSectionId(sectionId);
             riverInfo.orderedNetworkPoints.add(rp);
         }
         riverInfo.extractedSectionsCount = riverInfo.orderedNetworkPoints.size();
 
         for( Entry<Integer, SimpleFeature> riverEntry : riverInfo.orderedRiverPoints.entrySet() ) {
+            Integer sectionId = riverEntry.getKey();
+            Double ks = sectionId2KsMap.get(sectionId);
+            
             SimpleFeature riverPoint = riverEntry.getValue();
             Coordinate coordinate = ((Geometry) riverPoint.getDefaultGeometry()).getCoordinate();
             double progressive = ((Number) riverPoint.getAttribute(ARiverSectionsExtractor.FIELD_PROGRESSIVE)).doubleValue();
-            RiverPoint rp = new RiverPoint(coordinate, progressive, null, null);
+            RiverPoint rp = new RiverPoint(coordinate, progressive, null, ks);
             rp.setSectionId(riverEntry.getKey());
             riverInfo.orderedNetworkPoints.add(rp);
         }

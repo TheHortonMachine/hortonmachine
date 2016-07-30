@@ -30,6 +30,8 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.coverage.ProfilePoint;
 import org.jgrasstools.gears.utils.features.FeatureMate;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.LWFields;
+import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -57,7 +59,7 @@ public class RiverSectionsFromFeaturesExtractor extends ARiverSectionsExtractor 
     public RiverSectionsFromFeaturesExtractor( //
             LineString riverLine, //
             GridCoverage2D elevation, //
-            List<FeatureMate> sectionsList, //
+            List<SimpleFeature> sectionsList, //
             IJGTProgressMonitor monitor //
     ) throws Exception {
         crs = elevation.getCoordinateReferenceSystem();
@@ -70,9 +72,14 @@ public class RiverSectionsFromFeaturesExtractor extends ARiverSectionsExtractor 
 
         riverPointsList = new ArrayList<RiverPoint>();
         LengthIndexedLine indexedLine = new LengthIndexedLine(riverLine);
-        for( FeatureMate sectionMate : sectionsList ) {
-            Coordinate[] coordinates = sectionMate.getGeometry().getCoordinates();
+        for( SimpleFeature sectionFeature : sectionsList ) {
+            Coordinate[] coordinates = ((Geometry) sectionFeature.getDefaultGeometry()).getCoordinates();
 
+            Object attribute = sectionFeature.getAttribute(LWFields.GAUKLER);
+            Double ks=null;
+            if (attribute != null) {
+                ks = ((Number) attribute).doubleValue();
+            }
             List<ProfilePoint> profilePoints = CoverageUtilities.doProfile(elevIter, gridGeometry,
                     coordinates[coordinates.length - 1], coordinates[0]);
             List<Coordinate> coordinate3dList = new ArrayList<Coordinate>();
@@ -91,7 +98,7 @@ public class RiverSectionsFromFeaturesExtractor extends ARiverSectionsExtractor 
                 int[] colRow = CoverageUtilities.colRowFromCoordinate(crossPointCoordinate, gridGeometry, null);
                 double elev = elevIter.getSampleDouble(colRow[0], colRow[1], 0);
                 crossPointCoordinate.z = elev;
-                RiverPoint netPoint = new RiverPoint(crossPointCoordinate, crossPointIndex, line3d, null);
+                RiverPoint netPoint = new RiverPoint(crossPointCoordinate, crossPointIndex, line3d, ks);
                 if (netPoint != null)
                     riverPointsList.add(netPoint);
             } catch (Exception e) {
@@ -104,8 +111,8 @@ public class RiverSectionsFromFeaturesExtractor extends ARiverSectionsExtractor 
         monitor.done();
 
         // add also the river coordinates that do not have sections
-        Coordinate[] coordinates = riverLine.getCoordinates();
-        List<ProfilePoint> riverProfile = CoverageUtilities.doProfile(elevIter, gridGeometry, coordinates);
+        Coordinate[] riverCoordinates = riverLine.getCoordinates();
+        List<ProfilePoint> riverProfile = CoverageUtilities.doProfile(elevIter, gridGeometry, riverCoordinates);
         for( ProfilePoint profilePoint : riverProfile ) {
             Coordinate position = profilePoint.getPosition();
             if (envelope.intersects(position)) {

@@ -594,7 +594,7 @@ public class OmsSaintGeo extends JGTModel {
 
             Coordinate[] sectionCoordinates = section.getSectionCoordinates();
             List<Double> sectionProgressives = section.getSectionProgressive();
-            List<Double> sectionGauklerStrickler = section.getSectionGauklerStrickler();
+            double sectionGauklerStrickler = section.getSectionGauklerStrickler();
 
             for( int j = (int) dx - 1; j < sx - 1; j++ ) {
                 /* Check the segments between the stations j and j+1 of the current section
@@ -623,8 +623,8 @@ public class OmsSaintGeo extends JGTModel {
                     /* the width of the water surface */
                     larghe_b = larghe_b + altezza;
                     /* the roughness coefficient */
-                    gau_b = gau_b + (sectionGauklerStrickler.get(j) * Math.pow((base_dx + base_sx) / 2.0, (5.0 / 3.0)) * altezza);
-                    gau_loc = sectionGauklerStrickler.get(j);
+                    gau_b = gau_b + (sectionGauklerStrickler * Math.pow((base_dx + base_sx) / 2.0, (5.0 / 3.0)) * altezza);
+                    gau_loc = sectionGauklerStrickler;
                     /* the alpha coefficient of Coriolis */
                     area_loc = (base_dx + base_sx) * altezza / 2.0;
                     peri_loc = Math.sqrt((base_dx - base_sx) * (base_dx - base_sx) + altezza * altezza);
@@ -655,8 +655,8 @@ public class OmsSaintGeo extends JGTModel {
                     /* the width of the water surface */
                     larghe_b = larghe_b + altezza;
                     /* the roughness coefficient */
-                    gau_b = gau_b + (sectionGauklerStrickler.get(j) * Math.pow((base_dx + base_sx) / 2.0, (5.0 / 3.0)) * altezza);
-                    gau_loc = sectionGauklerStrickler.get(j);
+                    gau_b = gau_b + (sectionGauklerStrickler * Math.pow((base_dx + base_sx) / 2.0, (5.0 / 3.0)) * altezza);
+                    gau_loc = sectionGauklerStrickler;
 
                     /* the alpha coefficient of Coriolis */
                     area_loc = (base_dx + base_sx) * altezza / 2.0;
@@ -684,8 +684,8 @@ public class OmsSaintGeo extends JGTModel {
 
                     peri_b = peri_b + Math.sqrt(Math.abs(base_dx - base_sx) * Math.abs(base_dx - base_sx) + altezza * altezza);
                     larghe_b = larghe_b + altezza;
-                    gau_b = gau_b + (sectionGauklerStrickler.get(j) * Math.pow((base_dx + base_sx) / 2, (5.0 / 3.0)) * altezza);
-                    gau_loc = sectionGauklerStrickler.get(j);
+                    gau_b = gau_b + (sectionGauklerStrickler * Math.pow((base_dx + base_sx) / 2, (5.0 / 3.0)) * altezza);
+                    gau_loc = sectionGauklerStrickler;
 
                     area_loc = (base_dx + base_sx) * altezza / 2;
                     peri_loc = Math.sqrt((base_dx - base_sx) * (base_dx - base_sx) + altezza * altezza);
