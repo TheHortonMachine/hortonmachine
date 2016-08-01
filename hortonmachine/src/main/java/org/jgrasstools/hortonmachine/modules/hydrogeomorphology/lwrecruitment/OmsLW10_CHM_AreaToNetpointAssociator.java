@@ -136,7 +136,7 @@ public class OmsLW10_CHM_AreaToNetpointAssociator extends JGTModel {
     public static final String inNetPoints_DESCR = "The input hierarchy point network layer.";
     public static final int STATUS = Status.EXPERIMENTAL;
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String NAME = "lw09_areatonetpointassociator";
+    public static final String NAME = "lw10_areatonetpointassociator";
     public static final String LABEL = JGTConstants.HYDROGEOMORPHOLOGY + "/LWRecruitment";
     public static final String KEYWORDS = "network, vector, bankflull, width, inundation, vegetation";
     public static final String CONTACTS = "http://www.hydrologis.com";

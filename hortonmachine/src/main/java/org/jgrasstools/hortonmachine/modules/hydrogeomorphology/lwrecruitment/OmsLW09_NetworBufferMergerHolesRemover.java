@@ -66,7 +66,7 @@ public class OmsLW09_NetworBufferMergerHolesRemover extends JGTModel {
     public static final String inInundationArea_DESCR = "The input polygon layer with the inundation polygons.";
     public static final int STATUS = Status.EXPERIMENTAL;
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String NAME = "lw08_networbuffermergerholesremover";
+    public static final String NAME = "lw09_networbuffermergerholesremover";
     public static final String LABEL = JGTConstants.HYDROGEOMORPHOLOGY + "/LWRecruitment";
     public static final String KEYWORDS = "network, vector, bankflull, inundation";
     public static final String CONTACTS = "http://www.hydrologis.com";

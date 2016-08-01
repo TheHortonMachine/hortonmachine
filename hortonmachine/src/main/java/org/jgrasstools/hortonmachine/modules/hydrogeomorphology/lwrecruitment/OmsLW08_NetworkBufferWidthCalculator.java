@@ -129,7 +129,7 @@ public class OmsLW08_NetworkBufferWidthCalculator extends JGTModel implements LW
     public static final String inNetPoints_DESCR = "The input hierarchy point network layer with the information of local slope.";
     public static final int STATUS = Status.EXPERIMENTAL;
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String NAME = "lw07_networkbufferwidthcalculator";
+    public static final String NAME = "lw08_networkbufferwidthcalculator";
     public static final String LABEL = JGTConstants.HYDROGEOMORPHOLOGY + "/LWRecruitment";
     public static final String KEYWORDS = "network, vector, bankflull, width, inundation, power law";
     public static final String CONTACTS = "http://www.hydrologis.com";
