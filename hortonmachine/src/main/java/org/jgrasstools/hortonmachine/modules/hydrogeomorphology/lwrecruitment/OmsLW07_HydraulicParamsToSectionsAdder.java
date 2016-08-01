@@ -234,17 +234,18 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         OmsLW07_HydraulicParamsToSectionsAdder ex = new OmsLW07_HydraulicParamsToSectionsAdder();
         ex.inDtm = OmsRasterReader.readRaster(baseRaster + "dtmfel.asc");
         ex.inNet = OmsVectorReader.readVector(base + "extracted_net.shp");
-        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_slope.shp");
-        ex.inDischarge = 3.0;
-        ex.outputLevelFile = base + "levels.csv";
-        ex.outputDischargeFile = base + "discharge.csv";
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_hydraulic_inund.shp");
+        ex.inDischarge = 15.0;
+        ex.outputLevelFile = base + "levels_wide.csv";
+        ex.outputDischargeFile = base + "discharge_wide.csv";
+        ex.doMaxWidening = true;
 
         ex.process();
         SimpleFeatureCollection outNetPoints = ex.outNetPoints;
         SimpleFeatureCollection outTransSect = ex.outTransSect;
 
-        OmsVectorWriter.writeVector(base + "extracted_bankfullsections.shp", outTransSect);
-        OmsVectorWriter.writeVector(base + "net_point_hydraulic.shp", outNetPoints);
+        OmsVectorWriter.writeVector(base + "extracted_bankfullsections_wide.shp", outTransSect);
+        OmsVectorWriter.writeVector(base + "net_point_hydraulic_inund_wide.shp", outNetPoints);
 
     }
 

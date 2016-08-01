@@ -463,11 +463,11 @@ public class OmsLW08_NetworkBufferWidthCalculator extends JGTModel implements LW
     
     public static void main( String[] args ) throws Exception {
 
-        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/single_reach/";
+        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/data01/";
 
         OmsLW08_NetworkBufferWidthCalculator ex = new OmsLW08_NetworkBufferWidthCalculator();
         ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_hydraulic.shp");
-        ex.inTransSect = OmsVectorReader.readVector(base + "extracted_bankfullsections2.shp");
+        ex.inTransSect = OmsVectorReader.readVector(base + "extracted_bankfullsections.shp");
         ex.inGeo = OmsVectorReader.readVector(base + "geology.shp");
         ex.pK = 0.07;
         ex.pN = 0.44;

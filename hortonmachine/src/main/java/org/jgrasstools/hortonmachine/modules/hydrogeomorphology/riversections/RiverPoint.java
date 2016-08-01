@@ -60,7 +60,7 @@ public class RiverPoint implements Comparable<RiverPoint> {
 
     private List<Double> sectionProgressive = null;
 
-    private double sectionGauklerStrickler = 30.0;
+    private Double sectionGauklerStrickler;
 
     private Coordinate[] sectionCoordinates = null;
 
@@ -138,6 +138,10 @@ public class RiverPoint implements Comparable<RiverPoint> {
         return sectionGauklerStrickler;
     }
 
+    public boolean hasGauklerStrickler() {
+        return sectionGauklerStrickler != null;
+    }
+
     /**
      * @return the xyz coordinate of the talweg.
      */
@@ -178,7 +182,7 @@ public class RiverPoint implements Comparable<RiverPoint> {
     public void setSectionId( int sectionId ) {
         this.sectionId = sectionId;
     }
-    
+
     /**
      * Sets the section ks for the current section.
      * 
