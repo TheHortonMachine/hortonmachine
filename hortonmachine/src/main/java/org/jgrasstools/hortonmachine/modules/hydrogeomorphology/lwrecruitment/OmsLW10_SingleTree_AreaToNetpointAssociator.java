@@ -62,6 +62,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OmsLW10_SingleTree_AreaToNetpointAssociator.DESCRIPTION)
 @Author(name = OmsLW10_SingleTree_AreaToNetpointAssociator.AUTHORS, contact = OmsLW10_SingleTree_AreaToNetpointAssociator.CONTACTS)
@@ -120,6 +121,16 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
     @In
     public int pRepresentingHeightDbhPercentile = 50;
     
+    @Description(pTreeTaper_DESCR)
+    @Unit("cm/m")
+    @In
+    public double pTreeTaper = 3.0;
+    
+    @Description(pFlexibleDiameterLimit_DESCR)
+    @Unit("cm")
+    @In
+    public double pFlexibleDiameterLimit = 5.0;
+    
     @Description(outNetPoints_DESCR)
     @Out
     public SimpleFeatureCollection outNetPoints = null;
@@ -145,6 +156,8 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
     public static final String pAllometricCoeff1stOrder_DESCR = "Coefficient of the first order term of tree height of the allometric function relating DBH to H of the trees.";
     public static final String pAllometricCoeffVolume_DESCR = "Coefficient of the first order term of tree height of the allometric function relating tree volume to DBH and H.";
     public static final String pRepresentingHeightDbhPercentile_DESCR = "Percentile of the distribution of tree heights and DBH to be used for the evaluation of the representative height and DBH contributing in each section from the hillslopes.";
+    public static final String pTreeTaper_DESCR = "The tree taper to use to evaluate the effective length of the trees (rastremation index)";
+    public static final String pFlexibleDiameterLimit_DESCR = "The value of the diameter limit under which the log is flexible used to evaluate the effective length of the trees.";
     public static final String inConnectivity_DESCR = "The input downslope connectivity index raster map.";
     public static final String inNet_DESCR = "The input network raster map.";
     public static final String inTca_DESCR = "The input total contributing areas raster map.";
@@ -162,6 +175,8 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
     public static final String DESCRIPTION = "Calculate median vegetation height and total timber volume of the vegetation on unstable and connected areas of each subbasin.";
     // VARS DOC END
 
+    private static final double HEIGHT_FOR_MEASURING_DBH = 1.3; // m
+    
     @Execute
     public void process() throws Exception {
 
@@ -222,8 +237,16 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
                  * and fill the hashmaps with the correspondent positions.
                  */
                 if (connectivityDouble < pConnectivityThreshold || preparedFloodingArea.intersects(treePoint)) {
-                    double dbhDouble = calculateVolume(treeHeight)[0];
-                    double standDouble = calculateVolume(treeHeight)[1];
+                    double[] volume = calculateVolume(treeHeight);
+                    double dbhDouble = volume[0];
+                    double standDouble = volume[1];
+                    
+                    //TODO: here use the taper to evaluate the effective length
+                    double lengthLimitBeforeFlexibility = (dbhDouble - pFlexibleDiameterLimit) / pTreeTaper;
+                    double usefulHeightForPropagationDownstream = lengthLimitBeforeFlexibility + HEIGHT_FOR_MEASURING_DBH;
+                    if (treeHeight >= usefulHeightForPropagationDownstream) {
+                        treeHeight = usefulHeightForPropagationDownstream;
+                    }    
                     DescriptiveStatistics summaryHeightStatistics = heightBasin2ValueMap.get(netNum);
                     DescriptiveStatistics summaryDbhStatistics = dbhBasin2ValueMap.get(netNum);
                     DescriptiveStatistics summaryStandStatistics = standBasin2ValueMap.get(netNum);
@@ -326,16 +349,18 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
 
-        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/single_reach/";
+        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/data01/";
+        String base2 = "D:/lavori_tmp/unibz/2016_06_gsoc/raster/";
 
         OmsLW10_SingleTree_AreaToNetpointAssociator ex = new OmsLW10_SingleTree_AreaToNetpointAssociator();
-        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_hydraulic.shp");
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_hydraulic_inund_wide.shp");
         ex.inTreePoints = OmsVectorReader.readVector(base + "T1_ps_plot.shp");
         ex.inInundationArea = OmsVectorReader.readVector(base + "inund_area.shp");
-        ex.inFlow = OmsRasterReader.readRaster(base + "raster/basin_drain.asc");
-        ex.inNet = OmsRasterReader.readRaster(base + "raster/net_7000.asc");
-        ex.inConnectivity = OmsRasterReader.readRaster(base + "raster/connectivity.asc");
+        ex.inFlow = OmsRasterReader.readRaster(base2 + "basin_drain.asc");
+        ex.inNet = OmsRasterReader.readRaster(base2 + "net_7000.asc");
+        ex.inConnectivity = OmsRasterReader.readRaster(base2 + "connectivity.asc");
         ex.pConnectivityThreshold = 45.0;
+        ex.pRepresentingHeightDbhPercentile = 83;
 
         ex.process();
         SimpleFeatureCollection outNetPoints = ex.outNetPoints;
@@ -343,8 +368,8 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
         GridCoverage2D outNetNum = ex.outNetnum;
         GridCoverage2D outBasins = ex.outBasins;
         
-        OmsVectorWriter.writeVector(base + "net_point_hydraulic_inund_veg.shp", outNetPoints);
-        OmsVectorWriter.writeVector(base + "tree_points.shp", outTreePoints);
+        OmsVectorWriter.writeVector(base + "net_point_hydraulic_inund_wide_veg_83_rast.shp", outNetPoints);
+        OmsVectorWriter.writeVector(base + "tree_points_83_rast.shp", outTreePoints);
         OmsRasterWriter.writeRaster(base + "netnum.asc", outNetNum);
         OmsRasterWriter.writeRaster(base + "basins.asc", outBasins);
 
