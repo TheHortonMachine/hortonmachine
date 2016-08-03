@@ -646,7 +646,12 @@ public class SpatialiteDb implements AutoCloseable {
             int reprojectSrid ) throws Exception {
         QueryResult queryResult = new QueryResult();
 
-        SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
+        SpatialiteGeometryColumns gCol = null;
+        try {
+            gCol = getGeometryColumnsForTable(tableName);
+        } catch (Exception e) {
+            // ignore 
+        }
         boolean hasGeom = gCol != null;
 
         List<String[]> tableColumnsInfo = getTableColumns(tableName);

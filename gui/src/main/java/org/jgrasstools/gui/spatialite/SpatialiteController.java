@@ -43,6 +43,7 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -261,8 +262,7 @@ public class SpatialiteController extends SpatialiteView {
                             try {
                                 QueryResult queryResult = currentConnectedDatabase
                                         .getTableRecordsMapIn(currentSelectedTable.tableName, null, true, 20, -1);
-                                // createTableViewer(resultsetViewerGroup, queryResult);
-                                // TODO load data in table
+                                loadDataViewer(queryResult);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -277,12 +277,24 @@ public class SpatialiteController extends SpatialiteView {
         } catch (Exception e1) {
             JGTLogger.logError(this, "Error", e1);
         }
-        
+
         layoutTree(null, false);
     }
 
+    private void loadDataViewer( QueryResult queryResult ) {
+        Object[] names = queryResult.names.toArray(new String[0]);
+        List<Object[]> data = queryResult.data;
+        Object[][] values = new Object[queryResult.data.size()][];
+        int index = 0;
+        for( Object[] objects : data ) {
+            values[index++]=objects;
+        }
+
+        _dataViewerTable.setModel(new DefaultTableModel(values, names));
+    }
+
     private void layoutTree( DbLevel dbLevel, boolean expandNodes ) {
-        
+
         String title;
         if (dbLevel != null) {
             _databaseTree.setVisible(true);
@@ -551,7 +563,12 @@ public class SpatialiteController extends SpatialiteView {
                 tableLevel.parent = currentDbLevel;
                 tableLevel.tableName = tableName;
 
-                SpatialiteGeometryColumns geometryColumns = db.getGeometryColumnsForTable(tableName);
+                SpatialiteGeometryColumns geometryColumns = null;
+                try {
+                    geometryColumns = db.getGeometryColumnsForTable(tableName);
+                } catch (Exception e1) {
+                    // ignore
+                }
                 List<ForeignKey> foreignKeys = new ArrayList<>();
                 try {
                     foreignKeys = db.getForeignKeys(tableName);
