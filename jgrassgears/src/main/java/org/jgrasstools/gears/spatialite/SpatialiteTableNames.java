@@ -27,8 +27,10 @@ public class SpatialiteTableNames {
     public static final String USERDATA = "User Data";
 
     public static final String SPATIALINDEX = "Spatial Index";
-    public static final String spatialIndex = "SpatialIndex";
     public static final String startsWithIndexTables = "idx_";
+    public static final List<String> spatialindexTables = Arrays.asList("SpatialIndex", //
+            "KNN" //
+    );
 
     // STYLE
     public static final String STYLE = "Styling (SLD/SE)";
@@ -37,22 +39,22 @@ public class SpatialiteTableNames {
     // METADATA
     public static final String METADATA = "Metadata";
     public static final List<String> metadataTables = Arrays.asList("geom_cols_ref_sys", //
-            "geometry_columns",//
-            "geometry_columns_time",//
-            "raster_coverages",//
-            "raster_coverages_keyword",//
-            "raster_coverages_ref_sys",//
-            "raster_coverages_srid",//
+            "geometry_columns", //
+            "geometry_columns_time", //
+            "raster_coverages", //
+            "raster_coverages_keyword", //
+            "raster_coverages_ref_sys", //
+            "raster_coverages_srid", //
             "spatial_ref_sys", //
             "spatial_ref_sys_all", //
             "spatial_ref_sys_aux", //
             "spatialite_history", //
-            "vector_coverages",//
-            "vector_coverages_keyword",//
-            "vector_coverages_ref_sys",//
-            "vector_coverages_srid",//
-            "vector_layers",//
-            "views_geometry_columns",//
+            "vector_coverages", //
+            "vector_coverages_keyword", //
+            "vector_coverages_ref_sys", //
+            "vector_coverages_srid", //
+            "vector_layers", //
+            "views_geometry_columns", //
             "virts_geometry_columns"//
     );
 
@@ -64,7 +66,7 @@ public class SpatialiteTableNames {
             "geometry_columns_field_infos", //
             "geometry_columns_statistics", //
             "sql_statements_log", //
-            "sqlite_sequence",//
+            "sqlite_sequence", //
             "vector_layers_auth", //
             "vector_layers_field_infos", //
             "vector_layers_statistics", //
@@ -107,7 +109,7 @@ public class SpatialiteTableNames {
         tablesMap.put(SPATIALINDEX, new ArrayList<String>());
 
         for( String tableName : allTableNames ) {
-            if (tableName.equals(spatialIndex) || tableName.startsWith(startsWithIndexTables)) {
+            if (spatialindexTables.contains(tableName) || tableName.startsWith(startsWithIndexTables)) {
                 List<String> list = tablesMap.get(SPATIALINDEX);
                 list.add(tableName);
                 continue;

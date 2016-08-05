@@ -25,18 +25,23 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 
 import org.jgrasstools.gears.utils.OsCheck;
 import org.jgrasstools.gears.utils.OsCheck.OSType;
@@ -49,6 +54,10 @@ import org.jgrasstools.gears.utils.OsCheck.OSType;
 public class GuiUtilities {
 
     public static final String LAST_PATH = "KEY_LAST_PATH";
+
+    public static interface IOnCloseListener {
+        public void onClose();
+    }
 
     /**
      * Set the location of a component to center it on the screen.
@@ -173,7 +182,7 @@ public class GuiUtilities {
             case Linux:
                 for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
                     String name = info.getName();
-                    if ("GTK".equalsIgnoreCase(name)) {
+                    if ("GTK".equalsIgnoreCase(name) || "GTK+".equalsIgnoreCase(name)) {
                         javax.swing.UIManager.setLookAndFeel(info.getClassName());
                         return;
                     }
@@ -191,6 +200,22 @@ public class GuiUtilities {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    public static void addClosingListener( JFrame frame, IOnCloseListener freeResourcesComponent ) {
+        WindowListener exitListener = new WindowAdapter(){
+            @Override
+            public void windowClosing( WindowEvent e ) {
+                int confirm = JOptionPane.showOptionDialog(frame, "Are you sure you want to exit?", "Exit Confirmation",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    freeResourcesComponent.onClose();
+                    System.exit(0);
+                }
+            }
+        };
+        frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        frame.addWindowListener(exitListener);
     }
 
 }

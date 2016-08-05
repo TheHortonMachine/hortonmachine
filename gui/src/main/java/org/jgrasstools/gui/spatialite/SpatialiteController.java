@@ -36,6 +36,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.EventListenerList;
@@ -65,6 +66,7 @@ import org.jgrasstools.gui.spatialite.objects.TypeLevel;
 import org.jgrasstools.gui.utils.DefaultGuiBridgeImpl;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
+import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
 import org.jgrasstools.gui.utils.ImageCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +77,7 @@ import org.slf4j.LoggerFactory;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class SpatialiteController extends SpatialiteView {
+public class SpatialiteController extends SpatialiteView implements IOnCloseListener {
     private static final Logger logger = LoggerFactory.getLogger(SpatialiteView.class);
     private static final long serialVersionUID = 1L;
 
@@ -131,10 +133,12 @@ public class SpatialiteController extends SpatialiteView {
     private void init() {
         preInit();
 
+        Dimension preferredButtonSize = new Dimension(80, 50);
         _newDbButton.setVerticalTextPosition(SwingConstants.BOTTOM);
         _newDbButton.setHorizontalTextPosition(SwingConstants.CENTER);
         _newDbButton.setText(NEW);
         _newDbButton.setToolTipText(NEW_TOOLTIP);
+        _newDbButton.setPreferredSize(preferredButtonSize);
         _newDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.NEW_DATABASE));
         _newDbButton.addActionListener(e -> {
             createNewDatabase();
@@ -144,6 +148,7 @@ public class SpatialiteController extends SpatialiteView {
         _connectDbButton.setHorizontalTextPosition(SwingConstants.CENTER);
         _connectDbButton.setText(CONNECT);
         _connectDbButton.setToolTipText(CONNECT_TOOLTIP);
+        _connectDbButton.setPreferredSize(preferredButtonSize);
         _connectDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.CONNECT));
         _connectDbButton.addActionListener(e -> {
             openDatabase();
@@ -153,6 +158,7 @@ public class SpatialiteController extends SpatialiteView {
         _disconnectDbButton.setHorizontalTextPosition(SwingConstants.CENTER);
         _disconnectDbButton.setText(DISCONNECT);
         _disconnectDbButton.setToolTipText(DISCONNECT_TOOLTIP);
+        _disconnectDbButton.setPreferredSize(preferredButtonSize);
         _disconnectDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.DISCONNECT));
         _disconnectDbButton.addActionListener(e -> {
             try {
@@ -174,7 +180,7 @@ public class SpatialiteController extends SpatialiteView {
             }
 
             public void componentHidden( ComponentEvent e ) {
-                freeResources();
+                onClose();
             }
         });
 
@@ -254,8 +260,8 @@ public class SpatialiteController extends SpatialiteView {
                 public void valueChanged( TreeSelectionEvent evt ) {
                     TreePath[] paths = evt.getPaths();
 
-                    for( int i = 0; i < paths.length; i++ ) {
-                        Object selectedItem = paths[i].getLastPathComponent();
+                    if (paths.length > 0) {
+                        Object selectedItem = paths[0].getLastPathComponent();
                         if (selectedItem instanceof TableLevel) {
                             currentSelectedTable = (TableLevel) selectedItem;
 
@@ -266,7 +272,12 @@ public class SpatialiteController extends SpatialiteView {
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                        } else if (selectedItem instanceof ColumnLevel) {
+                        } else {
+                            currentSelectedTable = null;
+                            _dataViewerTable.setModel(new DefaultTableModel());
+                        }
+
+                        if (selectedItem instanceof ColumnLevel) {
                             currentSelectedColumn = (ColumnLevel) selectedItem;
                         }
                     }
@@ -287,7 +298,7 @@ public class SpatialiteController extends SpatialiteView {
         Object[][] values = new Object[queryResult.data.size()][];
         int index = 0;
         for( Object[] objects : data ) {
-            values[index++]=objects;
+            values[index++] = objects;
         }
 
         _dataViewerTable.setModel(new DefaultTableModel(values, names));
@@ -310,8 +321,11 @@ public class SpatialiteController extends SpatialiteView {
         model.setRoot(dbLevel);
         _databaseTree.setModel(model);
 
-        if (expandNodes)
-            expandAllNodes(_databaseTree, 0, _databaseTree.getRowCount());
+        if (expandNodes) {
+            _databaseTree.expandRow(0);
+            _databaseTree.expandRow(1);
+        }
+        // expandAllNodes(_databaseTree, 0, 2);
     }
 
     private void expandAllNodes( JTree tree, int startingIndex, int rowCount ) {
@@ -424,7 +438,7 @@ public class SpatialiteController extends SpatialiteView {
         return this;
     }
 
-    public void freeResources() {
+    public void onClose() {
         // String ramLevel = _heapCombo.getSelectedItem().toString();
         // prefsMap.put(GuiBridgeHandler.DEBUG_KEY, _debugCheckbox.isSelected() + "");
         // prefsMap.put(GuiBridgeHandler.HEAP_KEY, ramLevel);
@@ -618,6 +632,8 @@ public class SpatialiteController extends SpatialiteView {
     }
 
     public static void main( String[] args ) throws Exception {
+        GuiUtilities.setDefaultLookAndFeel();
+
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
         final SpatialiteController controller = new SpatialiteController(gBridge);
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "JGrasstools' Spatialite Viewer");
@@ -626,18 +642,7 @@ public class SpatialiteController extends SpatialiteView {
         ImageIcon icon = new ImageIcon(class1.getResource("/org/jgrasstools/images/hm150.png"));
         frame.setIconImage(icon.getImage());
 
-        WindowListener exitListener = new WindowAdapter(){
-            @Override
-            public void windowClosing( WindowEvent e ) {
-                int confirm = JOptionPane.showOptionDialog(frame, "Are you sure you want to exit?", "Exit Confirmation",
-                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    controller.freeResources();
-                    System.exit(0);
-                }
-            }
-        };
-        frame.addWindowListener(exitListener);
+        GuiUtilities.addClosingListener(frame, controller);
     }
 
 }

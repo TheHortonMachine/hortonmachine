@@ -66,6 +66,7 @@ import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gui.console.ProcessLogConsoleController;
+import org.jgrasstools.gui.spatialite.SpatialiteView;
 import org.jgrasstools.gui.spatialtoolbox.core.JGrasstoolsModulesManager;
 import org.jgrasstools.gui.spatialtoolbox.core.ModuleDescription;
 import org.jgrasstools.gui.spatialtoolbox.core.ParametersPanel;
@@ -77,6 +78,9 @@ import org.jgrasstools.gui.utils.DataUtilities;
 import org.jgrasstools.gui.utils.DefaultGuiBridgeImpl;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
+import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The spatialtoolbox view controller.
@@ -84,8 +88,10 @@ import org.jgrasstools.gui.utils.GuiUtilities;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class SpatialtoolboxController extends SpatialtoolboxView {
+public class SpatialtoolboxController extends SpatialtoolboxView implements IOnCloseListener {
     private static final long serialVersionUID = 1L;
+    
+    private static final Logger logger = LoggerFactory.getLogger(SpatialtoolboxController.class);
 
     protected ParametersPanel pPanel;
 
@@ -138,7 +144,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
             }
 
             public void componentHidden( ComponentEvent e ) {
-                freeResources();
+                onClose();
             }
         });
 
@@ -478,7 +484,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
         return this;
     }
 
-    public void freeResources() {
+    public void onClose() {
         String ramLevel = _heapCombo.getSelectedItem().toString();
         prefsMap.put(GuiBridgeHandler.DEBUG_KEY, _debugCheckbox.isSelected() + "");
         prefsMap.put(GuiBridgeHandler.HEAP_KEY, ramLevel);
@@ -796,6 +802,8 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
     }
 
     public static void main( String[] args ) throws Exception {
+        GuiUtilities.setDefaultLookAndFeel();
+        
         File libsFile = null;
         try {
             String libsPath = args[0];
@@ -804,12 +812,12 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
             // IGNORE
         }
         if (libsFile == null || !libsFile.exists() || !libsFile.isDirectory()) {
-            System.err.println("The libraries folder is missing or not properly set.");
+            logger.error("The libraries folder is missing or not properly set.");
             libsFile = new File("/home/hydrologis/development/jgrasstools-git/extras/export/libs");
             // System.exit(1);
         }
 
-        System.out.println("Libraries folder used: " + libsFile.getAbsolutePath());
+        logger.info("Libraries folder used: " + libsFile.getAbsolutePath());
 
         JGrasstoolsModulesManager.getInstance().init();
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
@@ -821,18 +829,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
         ImageIcon icon = new ImageIcon(class1.getResource("/org/jgrasstools/images/hm150.png"));
         frame.setIconImage(icon.getImage());
 
-        WindowListener exitListener = new WindowAdapter(){
-            @Override
-            public void windowClosing( WindowEvent e ) {
-                int confirm = JOptionPane.showOptionDialog(frame, "Are you sure you want to exit?", "Exit Confirmation",
-                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    controller.freeResources();
-                    System.exit(0);
-                }
-            }
-        };
-        frame.addWindowListener(exitListener);
+        GuiUtilities.addClosingListener(frame, controller);
     }
 
 }
