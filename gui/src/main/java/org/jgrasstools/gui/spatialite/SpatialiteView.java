@@ -32,6 +32,9 @@ public class SpatialiteView extends JPanel
    JButton _newDbButton = new JButton();
    JButton _connectDbButton = new JButton();
    JButton _disconnectDbButton = new JButton();
+   JButton _historyButton = new JButton();
+   JButton _templatesButton = new JButton();
+   JButton _shpButton = new JButton();
 
    /**
     * Default constructor
@@ -123,7 +126,7 @@ public class SpatialiteView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.3),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(0.1),FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.3),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.7),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(0.1),FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -138,7 +141,7 @@ public class SpatialiteView extends JPanel
    public JPanel createdatabaseTreeView()
    {
       _databaseTreeView.setName("databaseTreeView");
-      TitledBorder titledborder1 = new TitledBorder(null,"Database Connection",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,new Color(90,90,90));
+      TitledBorder titledborder1 = new TitledBorder(null,"Database Connection",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
       _databaseTreeView.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
@@ -158,7 +161,7 @@ public class SpatialiteView extends JPanel
    public JPanel createPanel1()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"SQL Editor",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,new Color(90,90,90));
+      TitledBorder titledborder1 = new TitledBorder(null,"SQL Editor",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
@@ -198,7 +201,7 @@ public class SpatialiteView extends JPanel
    public JPanel createPanel2()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Data Viewer",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(90,90,90));
+      TitledBorder titledborder1 = new TitledBorder(null,"Data Viewer",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
@@ -218,7 +221,7 @@ public class SpatialiteView extends JPanel
    public JPanel createPanel3()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -237,7 +240,22 @@ public class SpatialiteView extends JPanel
       _disconnectDbButton.setText("Disconnect");
       jpanel1.add(_disconnectDbButton,cc.xy(5,1));
 
-      addFillComponents(jpanel1,new int[]{ 2,4,6,7,8,9,10 },new int[0]);
+      _historyButton.setActionCommand("History");
+      _historyButton.setName("historyButton");
+      _historyButton.setText("History");
+      jpanel1.add(_historyButton,cc.xy(7,1));
+
+      _templatesButton.setActionCommand("Templates");
+      _templatesButton.setName("templatesButton");
+      _templatesButton.setText("Templates");
+      jpanel1.add(_templatesButton,cc.xy(9,1));
+
+      _shpButton.setActionCommand("Shapefiles");
+      _shpButton.setName("shpButton");
+      _shpButton.setText("Shapefiles");
+      jpanel1.add(_shpButton,cc.xy(11,1));
+
+      addFillComponents(jpanel1,new int[]{ 2,4,6,8,10 },new int[0]);
       return jpanel1;
    }
 

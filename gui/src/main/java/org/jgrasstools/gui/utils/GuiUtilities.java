@@ -167,6 +167,12 @@ public class GuiUtilities {
         return input;
     }
 
+    public static String showComboDialog( Component parentComponent, String title, String message, String[] values ) {
+        String result = (String) JOptionPane.showInputDialog(parentComponent, message, title, JOptionPane.QUESTION_MESSAGE, null,
+                values, values[0]);
+        return result;
+    }
+
     public static void setDefaultLookAndFeel() {
         try {
             OSType osType = OsCheck.getOperatingSystemType();

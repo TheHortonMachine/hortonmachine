@@ -650,7 +650,7 @@ public class SpatialiteDb implements AutoCloseable {
         try {
             gCol = getGeometryColumnsForTable(tableName);
         } catch (Exception e) {
-            // ignore 
+            // ignore
         }
         boolean hasGeom = gCol != null;
 
@@ -877,6 +877,7 @@ public class SpatialiteDb implements AutoCloseable {
         if (geometryColumns == null) {
             throw new IllegalArgumentException("The supplied table name doesn't seem to be spatial: " + tableName);
         }
+        String geomColumnName = geometryColumns.f_geometry_column;
 
         DefaultFeatureCollection fc = new DefaultFeatureCollection();
         WKBReader wkbReader = new WKBReader();
@@ -898,7 +899,8 @@ public class SpatialiteDb implements AutoCloseable {
                 String columnTypeName = rsmd.getColumnTypeName(i);
                 String columnName = rsmd.getColumnName(i);
 
-                if (geomType != null && columnType > 999 && columnTypeName.toLowerCase().equals("blob")) {
+                if (geomColumnName.contentEquals(columnName)
+                        || (geomType != null && columnType > 999 && columnTypeName.toLowerCase().equals("blob"))) {
                     geometryIndex = i;
                     b.add("the_geom", geomType.getGeometryClass());
                 } else {
@@ -961,7 +963,7 @@ public class SpatialiteDb implements AutoCloseable {
         Predicate<String> validSqlLine = s -> s.length() != 0 //
                 && !s.startsWith("BEGIN") //
                 && !s.startsWith("COMMIT") //
-                ;
+        ;
         Predicate<String> commentPredicate = s -> !s.startsWith("--");
 
         try (Statement pStmt = mConn.createStatement()) {

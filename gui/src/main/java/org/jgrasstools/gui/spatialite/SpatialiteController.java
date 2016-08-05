@@ -20,9 +20,6 @@ package org.jgrasstools.gui.spatialite;
 import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -34,9 +31,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.EventListenerList;
@@ -49,6 +46,8 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import org.geotools.feature.DefaultFeatureCollection;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
@@ -96,6 +95,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
     private static final String RUN_QUERY_TO_FILE_TOOLTIP = "run the query in the SQL Editor and store result in file";
     private static final String RUN_QUERY_TO_SHAPEFILE_TOOLTIP = "run the query in the SQL Editor and store result in a shapefile";
     private static final String SQL_EDITOR = "SQL Editor";
+    private static final String CLEAR_SQL_EDITOR = "clear SQL editor";
     private static final String DATA_VIEWER = "Data viewer";
     private static final String DATABASE_CONNECTIONS = "Database connection";
     private static final String NEW = "new";
@@ -111,6 +111,11 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
     private DbLevel currentDbLevel;
     protected TableLevel currentSelectedTable;
     protected ColumnLevel currentSelectedColumn;
+
+    private Dimension preferredToolbarButtonSize = new Dimension(80, 50);
+    private Dimension preferredSqleditorButtonSize = new Dimension(30, 30);
+
+    private List<String> oldSqlCommands = new ArrayList<String>();
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public SpatialiteController( GuiBridgeHandler guiBridge ) {
@@ -133,12 +138,11 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
     private void init() {
         preInit();
 
-        Dimension preferredButtonSize = new Dimension(80, 50);
         _newDbButton.setVerticalTextPosition(SwingConstants.BOTTOM);
         _newDbButton.setHorizontalTextPosition(SwingConstants.CENTER);
         _newDbButton.setText(NEW);
         _newDbButton.setToolTipText(NEW_TOOLTIP);
-        _newDbButton.setPreferredSize(preferredButtonSize);
+        _newDbButton.setPreferredSize(preferredToolbarButtonSize);
         _newDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.NEW_DATABASE));
         _newDbButton.addActionListener(e -> {
             createNewDatabase();
@@ -148,7 +152,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         _connectDbButton.setHorizontalTextPosition(SwingConstants.CENTER);
         _connectDbButton.setText(CONNECT);
         _connectDbButton.setToolTipText(CONNECT_TOOLTIP);
-        _connectDbButton.setPreferredSize(preferredButtonSize);
+        _connectDbButton.setPreferredSize(preferredToolbarButtonSize);
         _connectDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.CONNECT));
         _connectDbButton.addActionListener(e -> {
             openDatabase();
@@ -158,11 +162,63 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         _disconnectDbButton.setHorizontalTextPosition(SwingConstants.CENTER);
         _disconnectDbButton.setText(DISCONNECT);
         _disconnectDbButton.setToolTipText(DISCONNECT_TOOLTIP);
-        _disconnectDbButton.setPreferredSize(preferredButtonSize);
+        _disconnectDbButton.setPreferredSize(preferredToolbarButtonSize);
         _disconnectDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.DISCONNECT));
         _disconnectDbButton.addActionListener(e -> {
             try {
                 closeCurrentDb();
+            } catch (Exception e1) {
+                logger.error("ERROR", e1);
+            }
+        });
+
+        _historyButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        _historyButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        _historyButton.setText(SQL_HISTORY);
+        _historyButton.setToolTipText(SQL_HISTORY_TOOLTIP);
+        _historyButton.setPreferredSize(preferredToolbarButtonSize);
+        _historyButton.setIcon(ImageCache.getInstance().getImage(ImageCache.HISTORY_DB));
+        _historyButton.addActionListener(e -> {
+            try {
+                if (oldSqlCommands.size()==0) {
+                    JOptionPane.showMessageDialog(this, "No history available.");
+                    return;
+                }
+                
+                String[] sqlHistory = oldSqlCommands.toArray(new String[0]);
+                String selected = GuiUtilities.showComboDialog(this, "HISTORY", "", sqlHistory);
+                if (selected !=null) {
+                    addTextToQueryEditor(selected);
+                }
+
+            } catch (Exception e1) {
+                logger.error("ERROR", e1);
+            }
+        });
+
+        _templatesButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        _templatesButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        _templatesButton.setText(SQL_TEMPLATES);
+        _templatesButton.setToolTipText(SQL_TEMPLATES_TOOLTIP);
+        _templatesButton.setPreferredSize(preferredToolbarButtonSize);
+        _templatesButton.setIcon(ImageCache.getInstance().getImage(ImageCache.TEMPLATE));
+        _templatesButton.addActionListener(e -> {
+            try {
+                // TODO
+            } catch (Exception e1) {
+                logger.error("ERROR", e1);
+            }
+        });
+
+        _shpButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        _shpButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        _shpButton.setText(SHAPEFILE);
+        _shpButton.setToolTipText(SHAPEFILE_TOOLTIP);
+        _shpButton.setPreferredSize(preferredToolbarButtonSize);
+        _shpButton.setIcon(ImageCache.getInstance().getImage(ImageCache.VECTOR));
+        _shpButton.addActionListener(e -> {
+            try {
+                // TODO
             } catch (Exception e1) {
                 logger.error("ERROR", e1);
             }
@@ -185,6 +241,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         });
 
         try {
+            _databaseTreeView.setMinimumSize(new Dimension(300, 200));
             _databaseTree.setCellRenderer(new DefaultTreeCellRenderer(){
                 @Override
                 public java.awt.Component getTreeCellRendererComponent( JTree tree, Object value, boolean selected,
@@ -290,6 +347,155 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         }
 
         layoutTree(null, false);
+
+        _runQueryButton.setIcon(ImageCache.getInstance().getImage(ImageCache.RUN));
+        _runQueryButton.setToolTipText(RUN_QUERY_TOOLTIP);
+        _runQueryButton.setText("");
+        _runQueryButton.setPreferredSize(preferredSqleditorButtonSize);
+        _runQueryButton.addActionListener(e -> {
+
+            String sqlText = _sqlEditorArea.getText().trim();
+            if (sqlText.length() == 0) {
+                return;
+            }
+
+            final LogConsoleController logConsole = new LogConsoleController(pm);
+            JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+
+            new Thread(() -> {
+                boolean hadErrors = false;
+                try {
+                    logConsole.beginProcess("Run query");
+                    hadErrors = runQuery(sqlText, pm);
+                } catch (Exception ex) {
+                    pm.errorMessage(ex.getLocalizedMessage());
+                    hadErrors = true;
+                } finally {
+                    logConsole.finishProcess();
+                    logConsole.stopLogging();
+                    if (!hadErrors) {
+                        logConsole.setVisible(false);
+                        window.dispose();
+                    }
+                }
+            }).start();
+        });
+
+        _runQueryAndStoreButton.setIcon(ImageCache.getInstance().getImage(ImageCache.RUN_TO_FILE));
+        _runQueryAndStoreButton.setToolTipText(RUN_QUERY_TO_FILE_TOOLTIP);
+        _runQueryAndStoreButton.setText("");
+        _runQueryAndStoreButton.setPreferredSize(preferredSqleditorButtonSize);
+        _runQueryAndStoreButton.addActionListener(e -> {
+
+            File selectedFile = null;
+            String sqlText = _sqlEditorArea.getText().trim();
+            if (sqlText.length() > 0) {
+                if (sqlText.toLowerCase().startsWith("select") || sqlText.toLowerCase().startsWith("pragma")) {
+                    File[] saveFiles = guiBridge.showSaveFileDialog("Select file to save to", GuiUtilities.getLastFile());
+                    if (saveFiles != null && saveFiles.length > 0) {
+                        try {
+                            GuiUtilities.setLastPath(saveFiles[0].getAbsolutePath());
+                        } catch (Exception e1) {
+                            logger.error("ERROR", e1);
+                        }
+                    } else {
+                        return;
+                    }
+                    selectedFile = saveFiles[0];
+
+                } else {
+                    JOptionPane.showMessageDialog(this, "Writing to files is allowed only for SELECT statements and PRAGMAs.",
+                            "WARNING", JOptionPane.WARNING_MESSAGE, null);
+                    return;
+                }
+
+            }
+
+            final LogConsoleController logConsole = new LogConsoleController(pm);
+            JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+            final File f_selectedFile = selectedFile;
+            new Thread(() -> {
+                boolean hadErrors = false;
+                try {
+                    if (f_selectedFile != null) {
+                        logConsole.beginProcess("Run query");
+                        hadErrors = runQueryToFile(sqlText, f_selectedFile, pm);
+                    }
+                } catch (Exception ex) {
+                    pm.errorMessage(ex.getLocalizedMessage());
+                    hadErrors = true;
+                } finally {
+                    logConsole.finishProcess();
+                    logConsole.stopLogging();
+                    if (!hadErrors) {
+                        logConsole.setVisible(false);
+                        window.dispose();
+                    }
+                }
+            }).start();
+        });
+
+        _runQueryAndStoreShapefileButton.setIcon(ImageCache.getInstance().getImage(ImageCache.RUN_TO_SHAPEFILE));
+        _runQueryAndStoreShapefileButton.setToolTipText(RUN_QUERY_TO_SHAPEFILE_TOOLTIP);
+        _runQueryAndStoreShapefileButton.setText("");
+        _runQueryAndStoreShapefileButton.setPreferredSize(preferredSqleditorButtonSize);
+        _runQueryAndStoreShapefileButton.addActionListener(e -> {
+
+            File selectedFile = null;
+            String sqlText = _sqlEditorArea.getText().trim();
+            if (sqlText.length() > 0) {
+                if (sqlText.toLowerCase().startsWith("select")) {
+                    File[] saveFiles = guiBridge.showSaveFileDialog("Select shapefile to save to", GuiUtilities.getLastFile());
+                    if (saveFiles != null && saveFiles.length > 0) {
+                        try {
+                            GuiUtilities.setLastPath(saveFiles[0].getAbsolutePath());
+                        } catch (Exception e1) {
+                            logger.error("ERROR", e1);
+                        }
+                    } else {
+                        return;
+                    }
+                    selectedFile = saveFiles[0];
+
+                } else {
+                    JOptionPane.showMessageDialog(this, "Writing to shapefile is allowed only for SELECT statements.", "WARNING",
+                            JOptionPane.WARNING_MESSAGE, null);
+                    return;
+                }
+
+            }
+
+            final LogConsoleController logConsole = new LogConsoleController(pm);
+            JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+            final File f_selectedFile = selectedFile;
+            new Thread(() -> {
+                boolean hadErrors = false;
+                try {
+                    if (f_selectedFile != null) {
+                        logConsole.beginProcess("Run query");
+                        hadErrors = runQueryToShapefile(sqlText, f_selectedFile, pm);
+                    }
+                } catch (Exception ex) {
+                    pm.errorMessage(ex.getLocalizedMessage());
+                    hadErrors = true;
+                } finally {
+                    logConsole.finishProcess();
+                    logConsole.stopLogging();
+                    if (!hadErrors) {
+                        logConsole.setVisible(false);
+                        window.dispose();
+                    }
+                }
+            }).start();
+        });
+
+        _clearSqlEditorbutton.setIcon(ImageCache.getInstance().getImage(ImageCache.TRASH));
+        _clearSqlEditorbutton.setToolTipText(CLEAR_SQL_EDITOR);
+        _clearSqlEditorbutton.setText("");
+        _clearSqlEditorbutton.setPreferredSize(preferredSqleditorButtonSize);
+        _clearSqlEditorbutton.addActionListener(e -> {
+            _sqlEditorArea.setText("");
+        });
     }
 
     private void loadDataViewer( QueryResult queryResult ) {
@@ -473,30 +679,26 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
             final LogConsoleController logConsole = new LogConsoleController(pm);
             JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
 
-            new Thread(new Runnable(){
-                public void run() {
-                    logConsole.beginProcess("Create new database");
+            new Thread(() -> {
+                logConsole.beginProcess("Create new database");
 
-                    try {
-                        currentConnectedDatabase = new SpatialiteDb();
-                        currentConnectedDatabase.open(selectedFile.getAbsolutePath());
-                        currentConnectedDatabase.initSpatialMetadata(null);
+                try {
+                    currentConnectedDatabase = new SpatialiteDb();
+                    currentConnectedDatabase.open(selectedFile.getAbsolutePath());
+                    currentConnectedDatabase.initSpatialMetadata(null);
 
-                        DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
+                    DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
 
-                        layoutTree(dbLevel, false);
-                    } catch (Exception e) {
-                        currentConnectedDatabase = null;
-                        logger.error("Error connecting to the database...", e);
-                    } finally {
-                        logConsole.finishProcess();
-                        logConsole.stopLogging();
-                        logConsole.setVisible(false);
-                        window.dispose();
-                    }
-
+                    layoutTree(dbLevel, false);
+                } catch (Exception e) {
+                    currentConnectedDatabase = null;
+                    logger.error("Error connecting to the database...", e);
+                } finally {
+                    logConsole.finishProcess();
+                    logConsole.stopLogging();
+                    logConsole.setVisible(false);
+                    window.dispose();
                 }
-
             }).start();
 
         }
@@ -533,28 +735,25 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
             final LogConsoleController logConsole = new LogConsoleController(pm);
             JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
 
-            new Thread(new Runnable(){
-                public void run() {
-                    logConsole.beginProcess("Open database");
+            new Thread(() -> {
+                logConsole.beginProcess("Open database");
 
-                    try {
-                        currentConnectedDatabase = new SpatialiteDb();
-                        currentConnectedDatabase.open(selectedFile.getAbsolutePath());
+                try {
+                    currentConnectedDatabase = new SpatialiteDb();
+                    currentConnectedDatabase.open(selectedFile.getAbsolutePath());
 
-                        DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-                        setDbTreeTitle(dbLevel.dbName);
+                    DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
+                    setDbTreeTitle(dbLevel.dbName);
 
-                        layoutTree(dbLevel, true);
-                    } catch (Exception e) {
-                        currentConnectedDatabase = null;
-                        logger.error("Error connecting to the database...", e);
-                    } finally {
-                        logConsole.finishProcess();
-                        logConsole.stopLogging();
-                        logConsole.setVisible(false);
-                        window.dispose();
-                    }
-
+                    layoutTree(dbLevel, true);
+                } catch (Exception e) {
+                    currentConnectedDatabase = null;
+                    logger.error("Error connecting to the database...", e);
+                } finally {
+                    logConsole.finishProcess();
+                    logConsole.stopLogging();
+                    logConsole.setVisible(false);
+                    window.dispose();
                 }
             }).start();
         }
@@ -629,6 +828,100 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         }
 
         layoutTree(null, false);
+    }
+
+    private boolean runQuery( String sqlText, IJGTProgressMonitor pm ) {
+        boolean hasError = false;
+        if (currentConnectedDatabase != null && sqlText.length() > 0) {
+            try {
+                pm.beginTask("Run query: " + sqlText, IJGTProgressMonitor.UNKNOWN);
+                int limit = -1;
+
+                if (sqlText.toLowerCase().startsWith("select") || sqlText.toLowerCase().startsWith("pragma")) {
+                    limit = 5000;
+                    QueryResult queryResult = currentConnectedDatabase.getTableRecordsMapFromRawSql(sqlText, limit);
+                    loadDataViewer(queryResult);
+
+                    int size = queryResult.data.size();
+                    String msg = "Records: " + size;
+                    if (size == limit) {
+                        msg += " (table output limited to " + limit + " records)";
+                    }
+                    pm.message(msg);
+                } else {
+                    int resultCode = currentConnectedDatabase.executeInsertUpdateDeleteSql(sqlText);
+                    QueryResult dummyQueryResult = new QueryResult();
+                    dummyQueryResult.names.add("Result = " + resultCode);
+                    loadDataViewer(dummyQueryResult);
+                }
+
+                addQueryToHistoryCombo(sqlText);
+
+            } catch (Exception e1) {
+                String localizedMessage = e1.getLocalizedMessage();
+                hasError = true;
+                pm.errorMessage("An error occurred: " + localizedMessage);
+            } finally {
+                pm.done();
+            }
+        }
+        return hasError;
+    }
+
+    private boolean runQueryToFile( String sqlText, File selectedFile, IJGTProgressMonitor pm ) {
+        boolean hasError = false;
+        if (currentConnectedDatabase != null && sqlText.length() > 0) {
+            try {
+                pm.beginTask("Run query: " + sqlText + "\ninto file: " + selectedFile, IJGTProgressMonitor.UNKNOWN);
+                currentConnectedDatabase.runRawSqlToCsv(sqlText, selectedFile, true, ";");
+                addQueryToHistoryCombo(sqlText);
+            } catch (Exception e1) {
+                String localizedMessage = e1.getLocalizedMessage();
+                hasError = true;
+                pm.errorMessage("An error occurred: " + localizedMessage);
+            } finally {
+                pm.done();
+            }
+        }
+        return hasError;
+    }
+
+    private boolean runQueryToShapefile( String sqlText, File selectedFile, IJGTProgressMonitor pm ) {
+        boolean hasError = false;
+        if (currentConnectedDatabase != null && sqlText.length() > 0) {
+            try {
+                pm.beginTask("Run query: " + sqlText + "\ninto shapefile: " + selectedFile, IJGTProgressMonitor.UNKNOWN);
+                DefaultFeatureCollection fc = currentConnectedDatabase.runRawSqlToFeatureCollection(sqlText);
+                OmsVectorWriter.writeVector(selectedFile.getAbsolutePath(), fc);
+                addQueryToHistoryCombo(sqlText);
+            } catch (Exception e1) {
+                String localizedMessage = e1.getLocalizedMessage();
+                hasError = true;
+                pm.errorMessage("An error occurred: " + localizedMessage);
+            } finally {
+                pm.done();
+            }
+        }
+        return hasError;
+    }
+    
+    private void addTextToQueryEditor( String newText ) {
+        String text = _sqlEditorArea.getText();
+        if (text.trim().length() != 0) {
+            text += "\n";
+        }
+        text += newText;
+        _sqlEditorArea.setText(text);
+    }
+
+    private void addQueryToHistoryCombo( String sqlText ) {
+        if (oldSqlCommands.contains(sqlText)) {
+            oldSqlCommands.remove(sqlText);
+        }
+        oldSqlCommands.add(0, sqlText);
+        if (oldSqlCommands.size() > 20) {
+            oldSqlCommands.remove(20);
+        }
     }
 
     public static void main( String[] args ) throws Exception {
