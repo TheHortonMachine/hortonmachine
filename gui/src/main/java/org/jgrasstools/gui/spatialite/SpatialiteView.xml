@@ -26,7 +26,7 @@
    </super>
    <at name="id">/home/hydrologis/development/jgrasstools-git/gui/src/main/java/org/jgrasstools/gui/spatialite/SpatialiteView.xml</at>
    <at name="rowspecs">CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(0.1),FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE</at>
-   <at name="colspecs">FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.3),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.7),FILL:DEFAULT:NONE</at>
+   <at name="colspecs">FILL:DEFAULT:NONE,FILL:250PX:GROW(0.3),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.7),FILL:DEFAULT:NONE</at>
    <at name="components">
     <object classname="java.util.LinkedList">
      <item >
@@ -98,7 +98,7 @@
                  <at name="scrollableTracksViewportHeight">true</at>
                  <at name="scrollableTracksViewportWidth">true</at>
                  <at name="name">databaseTree</at>
-                 <at name="width">266</at>
+                 <at name="width">377</at>
                  <at name="scollBars">
                   <object classname="com.jeta.forms.store.properties.ScrollBarsProperty">
                    <at name="name">scollBars</at>
@@ -480,9 +480,9 @@
              <super classname="com.jeta.forms.store.memento.ComponentMemento">
               <at name="cellconstraints">
                <object classname="com.jeta.forms.store.memento.CellConstraintsMemento">
-                <at name="column">3</at>
+                <at name="column">2</at>
                 <at name="row">1</at>
-                <at name="colspan">1</at>
+                <at name="colspan">2</at>
                 <at name="rowspan">9</at>
                 <at name="halign">default</at>
                 <at name="valign">default</at>
@@ -492,10 +492,10 @@
               <at name="componentclass">com.jeta.forms.gui.form.StandardComponent</at>
              </super>
              <at name="jetabeanclass">com.jeta.forms.gui.beans.JETABean</at>
-             <at name="beanclass">javax.swing.JTextArea</at>
+             <at name="beanclass">javax.swing.JEditorPane</at>
              <at name="beanproperties">
               <object classname="com.jeta.forms.store.memento.PropertiesMemento">
-               <at name="classname">javax.swing.JTextArea</at>
+               <at name="classname">javax.swing.JEditorPane</at>
                <at name="properties">
                 <object classname="com.jeta.forms.store.support.PropertyMap">
                  <at name="border">
@@ -519,37 +519,16 @@
                   </object>
                  </at>
                  <at name="scrollableTracksViewportHeight">true</at>
-                 <at name="scrollableTracksViewportWidth">true</at>
                  <at name="name">sqlEditorArea</at>
-                 <at name="width">518</at>
+                 <at name="width">590</at>
                  <at name="scollBars">
                   <object classname="com.jeta.forms.store.properties.ScrollBarsProperty">
                    <at name="name">scollBars</at>
                    <at name="verticalpolicy">20</at>
                    <at name="horizontalpolicy">30</at>
-                   <at name="border">
-                    <object classname="com.jeta.forms.store.properties.CompoundBorderProperty">
-                     <super classname="com.jeta.forms.store.properties.BorderProperty">
-                      <at name="name">border</at>
-                     </super>
-                     <at name="borders">
-                      <object classname="java.util.LinkedList">
-                       <item >
-                        <at name="value">
-                         <object classname="com.jeta.forms.store.properties.DefaultBorderProperty">
-                          <super classname="com.jeta.forms.store.properties.BorderProperty">
-                           <at name="name">border</at>
-                          </super>
-                         </object>
-                        </at>
-                       </item>
-                      </object>
-                     </at>
-                    </object>
-                   </at>
                   </object>
                  </at>
-                 <at name="height">147</at>
+                 <at name="height">132</at>
                 </object>
                </at>
               </object>
@@ -742,7 +721,7 @@
                   </object>
                  </at>
                  <at name="name">dataViewerTable</at>
-                 <at name="width">577</at>
+                 <at name="width">466</at>
                  <at name="scollBars">
                   <object classname="com.jeta.forms.store.properties.ScrollBarsProperty">
                    <at name="name">scollBars</at>

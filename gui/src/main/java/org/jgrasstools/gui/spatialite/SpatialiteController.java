@@ -138,6 +138,8 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
     private void init() {
         preInit();
 
+        _sqlEditorArea.setDocument(new SqlDocument());
+
         _newDbButton.setVerticalTextPosition(SwingConstants.BOTTOM);
         _newDbButton.setHorizontalTextPosition(SwingConstants.CENTER);
         _newDbButton.setText(NEW);
@@ -180,14 +182,14 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         _historyButton.setIcon(ImageCache.getInstance().getImage(ImageCache.HISTORY_DB));
         _historyButton.addActionListener(e -> {
             try {
-                if (oldSqlCommands.size()==0) {
+                if (oldSqlCommands.size() == 0) {
                     JOptionPane.showMessageDialog(this, "No history available.");
                     return;
                 }
-                
+
                 String[] sqlHistory = oldSqlCommands.toArray(new String[0]);
                 String selected = GuiUtilities.showComboDialog(this, "HISTORY", "", sqlHistory);
-                if (selected !=null) {
+                if (selected != null) {
                     addTextToQueryEditor(selected);
                 }
 
@@ -499,6 +501,10 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
     }
 
     private void loadDataViewer( QueryResult queryResult ) {
+        if (queryResult == null) {
+            _dataViewerTable.setModel(new DefaultTableModel());
+            return;
+        }
         Object[] names = queryResult.names.toArray(new String[0]);
         List<Object[]> data = queryResult.data;
         Object[][] values = new Object[queryResult.data.size()][];
@@ -822,12 +828,13 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
     }
 
     private void closeCurrentDb() throws Exception {
+        layoutTree(null, false);
+        loadDataViewer(null);
         if (currentConnectedDatabase != null) {
             currentConnectedDatabase.close();
             currentConnectedDatabase = null;
         }
 
-        layoutTree(null, false);
     }
 
     private boolean runQuery( String sqlText, IJGTProgressMonitor pm ) {
@@ -904,7 +911,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         }
         return hasError;
     }
-    
+
     private void addTextToQueryEditor( String newText ) {
         String text = _sqlEditorArea.getText();
         if (text.trim().length() != 0) {

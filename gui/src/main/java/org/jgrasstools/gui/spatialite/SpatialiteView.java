@@ -10,11 +10,11 @@ import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.border.TitledBorder;
 
@@ -27,7 +27,7 @@ public class SpatialiteView extends JPanel
    JButton _runQueryAndStoreButton = new JButton();
    JButton _runQueryAndStoreShapefileButton = new JButton();
    JButton _clearSqlEditorbutton = new JButton();
-   JTextArea _sqlEditorArea = new JTextArea();
+   JEditorPane _sqlEditorArea = new JEditorPane();
    JTable _dataViewerTable = new JTable();
    JButton _newDbButton = new JButton();
    JButton _connectDbButton = new JButton();
@@ -126,7 +126,7 @@ public class SpatialiteView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.3),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.7),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(0.1),FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:250PX:GROW(0.3),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.7),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(0.1),FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -192,9 +192,9 @@ public class SpatialiteView extends JPanel
       jscrollpane1.setViewportView(_sqlEditorArea);
       jscrollpane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
       jscrollpane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-      jpanel1.add(jscrollpane1,cc.xywh(3,1,1,9));
+      jpanel1.add(jscrollpane1,cc.xywh(2,1,2,9));
 
-      addFillComponents(jpanel1,new int[]{ 2 },new int[]{ 2,4,6,8,9 });
+      addFillComponents(jpanel1,new int[]{ 3 },new int[]{ 2,4,6,8,9 });
       return jpanel1;
    }
 
