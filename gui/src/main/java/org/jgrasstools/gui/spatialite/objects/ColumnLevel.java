@@ -62,7 +62,7 @@ public class ColumnLevel {
         } else {
             String gType = SpatialiteGeometryType.forValue(geomColumn.geometry_type).getDescription();
             boolean indexEnabled = geomColumn.spatial_index_enabled == 1 ? true : false;
-            return columnName + "[" + gType + ",EPSG:" + geomColumn.srid + ",idx:" + indexEnabled + "]";
+            return columnName + " [" + gType + ",EPSG:" + geomColumn.srid + ",idx:" + indexEnabled + "]";
         }
     }
 }

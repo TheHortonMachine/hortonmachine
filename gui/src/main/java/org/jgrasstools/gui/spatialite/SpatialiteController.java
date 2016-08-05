@@ -18,6 +18,8 @@
 package org.jgrasstools.gui.spatialite;
 
 import java.awt.Dimension;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.File;
@@ -31,9 +33,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.TransferHandler;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.EventListenerList;
@@ -206,7 +208,12 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         _templatesButton.setIcon(ImageCache.getInstance().getImage(ImageCache.TEMPLATE));
         _templatesButton.addActionListener(e -> {
             try {
-                // TODO
+                String[] sqlHistory = SqlTemplates.templatesMap.keySet().toArray(new String[0]);
+                String selected = GuiUtilities.showComboDialog(this, "HISTORY", "", sqlHistory);
+                if (selected != null) {
+                    String sql = SqlTemplates.templatesMap.get(selected);
+                    addTextToQueryEditor(sql);
+                }
             } catch (Exception e1) {
                 logger.error("ERROR", e1);
             }
@@ -244,6 +251,24 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
 
         try {
             _databaseTreeView.setMinimumSize(new Dimension(300, 200));
+
+            _databaseTree.setDragEnabled(true);
+            _databaseTree.setTransferHandler(new TransferHandler(null){
+                public int getSourceActions( JComponent c ) {
+                    return COPY;
+                }
+                protected Transferable createTransferable( JComponent c ) {
+                    if (c instanceof JTree) {
+                        if (currentSelectedColumn != null) {
+                            return new StringSelection(currentSelectedColumn.columnName);
+                        } else if (currentSelectedTable != null) {
+                            return new StringSelection(currentSelectedTable.tableName);
+                        }
+                    }
+                    return new StringSelection("");
+                }
+            });
+
             _databaseTree.setCellRenderer(new DefaultTreeCellRenderer(){
                 @Override
                 public java.awt.Component getTreeCellRendererComponent( JTree tree, Object value, boolean selected,
@@ -318,7 +343,8 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
             _databaseTree.addTreeSelectionListener(new TreeSelectionListener(){
                 public void valueChanged( TreeSelectionEvent evt ) {
                     TreePath[] paths = evt.getPaths();
-
+                    currentSelectedTable = null;
+                    currentSelectedColumn = null;
                     if (paths.length > 0) {
                         Object selectedItem = paths[0].getLastPathComponent();
                         if (selectedItem instanceof TableLevel) {
