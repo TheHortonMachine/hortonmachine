@@ -565,6 +565,13 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
                             popupMenu.add(item);
                             item.setHorizontalTextPosition(JMenuItem.RIGHT);
                         }
+                    } else {
+                        Action[] columnActions = makeColumnAction(currentSelectedColumn);
+                        for( Action action : columnActions ) {
+                            JMenuItem item = new JMenuItem(action);
+                            popupMenu.add(item);
+                            item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                        }
                     }
                 }
             }
@@ -643,6 +650,8 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         _historyButton.setEnabled(enable);
         _shpButton.setEnabled(enable);
         _clearSqlEditorbutton.setEnabled(enable);
+        
+        _sqlEditorArea.setEditable(enable);
     }
 
     private void expandAllNodes( JTree tree, int startingIndex, int rowCount ) {
@@ -1064,6 +1073,26 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
+                    }
+                }, //
+        };
+        return actions;
+    }
+
+    @SuppressWarnings("serial")
+    private Action[] makeColumnAction( final ColumnLevel selectedColumn ) {
+        Action[] actions = {//
+                new AbstractAction("Create select statement on column"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        String query;
+                        if (selectedColumn.geomColumn != null) {
+                            query = "SELECT AsBinary(" + selectedColumn.columnName + ") FROM " + selectedColumn.parent.tableName;
+                        } else {
+                            query = "SELECT " + selectedColumn.columnName + " FROM " + selectedColumn.parent.tableName;
+                        }
+                        addTextToQueryEditor(query);
+
                     }
                 }, //
         };
