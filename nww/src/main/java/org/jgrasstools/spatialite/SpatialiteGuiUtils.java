@@ -1,18 +1,12 @@
-package org.jgrasstools.gui.spatialite;
+package org.jgrasstools.spatialite;
 
-import java.awt.event.ActionEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-
-import org.jgrasstools.gears.spatialite.QueryResult;
 import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.spatialite.SpatialiteGeometryColumns;
-import org.jgrasstools.gui.spatialite.objects.ColumnLevel;
-import org.jgrasstools.gui.spatialite.objects.TableLevel;
+import org.jgrasstools.spatialite.objects.TableLevel;
 
 
 public class SpatialiteGuiUtils {

@@ -1,4 +1,4 @@
-package org.jgrasstools.gui.spatialite;
+package org.jgrasstools.spatialite;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;

@@ -26,7 +26,9 @@
         <module>grass</module>
         <module>modules</module>
         <module>gui</module>
-<!--        <module>nww</module> -->
+<module>nww</module>
+<!--        
+ -->
   </modules>
 
 	<issueManagement>

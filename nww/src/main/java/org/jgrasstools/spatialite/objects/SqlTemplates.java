@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gui.spatialite;
+package org.jgrasstools.spatialite.objects;
 
 import java.util.LinkedHashMap;
 

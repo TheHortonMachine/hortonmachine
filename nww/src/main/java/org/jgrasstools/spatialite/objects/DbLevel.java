@@ -15,23 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gui.spatialite.objects;
+package org.jgrasstools.spatialite.objects;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class representing a db type level.
+ * Class representing a db level.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TypeLevel {
-    public String typeName;
+public class DbLevel {
+    public String dbName;
 
-    public List<TableLevel> tablesList = new ArrayList<TableLevel>();
+    public List<TypeLevel> typesList = new ArrayList<TypeLevel>();
+    
     
     @Override
     public String toString() {
-        return typeName;
+        return dbName;
     }
 }

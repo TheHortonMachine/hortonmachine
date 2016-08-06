@@ -1,4 +1,4 @@
-package org.jgrasstools.gui.spatialite;
+package org.jgrasstools.spatialite;
 
 import java.awt.Color;
 import java.io.InputStream;

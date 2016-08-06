@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gui.spatialite;
+package org.jgrasstools.spatialite;
 
 import java.awt.Dimension;
 import java.awt.datatransfer.StringSelection;
@@ -71,15 +71,15 @@ import org.jgrasstools.gears.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.gears.spatialite.SpatialiteGeometryType;
 import org.jgrasstools.gears.spatialite.SpatialiteTableNames;
 import org.jgrasstools.gui.console.LogConsoleController;
-import org.jgrasstools.gui.spatialite.objects.ColumnLevel;
-import org.jgrasstools.gui.spatialite.objects.DbLevel;
-import org.jgrasstools.gui.spatialite.objects.TableLevel;
-import org.jgrasstools.gui.spatialite.objects.TypeLevel;
 import org.jgrasstools.gui.utils.DefaultGuiBridgeImpl;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
 import org.jgrasstools.gui.utils.ImageCache;
+import org.jgrasstools.spatialite.objects.ColumnLevel;
+import org.jgrasstools.spatialite.objects.DbLevel;
+import org.jgrasstools.spatialite.objects.TableLevel;
+import org.jgrasstools.spatialite.objects.TypeLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1015,6 +1015,31 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
                 DefaultFeatureCollection fc = currentConnectedDatabase.runRawSqlToFeatureCollection(sqlText);
                 OmsVectorWriter.writeVector(selectedFile.getAbsolutePath(), fc);
                 addQueryToHistoryCombo(sqlText);
+            } catch (Exception e1) {
+                String localizedMessage = e1.getLocalizedMessage();
+                hasError = true;
+                pm.errorMessage("An error occurred: " + localizedMessage);
+            } finally {
+                pm.done();
+            }
+        }
+        return hasError;
+    }
+    
+    private boolean viewSpatialQueryResult( String sqlText, IJGTProgressMonitor pm ) {
+        boolean hasError = false;
+        if (currentConnectedDatabase != null && sqlText.length() > 0) {
+            try {
+                pm.beginTask("Run query: " + sqlText , IJGTProgressMonitor.UNKNOWN);
+                DefaultFeatureCollection fc = currentConnectedDatabase.runRawSqlToFeatureCollection(sqlText);
+                
+                
+                
+                
+                
+                
+                addQueryToHistoryCombo(sqlText);
+
             } catch (Exception e1) {
                 String localizedMessage = e1.getLocalizedMessage();
                 hasError = true;
