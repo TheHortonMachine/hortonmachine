@@ -26,8 +26,9 @@ public class SpatialiteView extends JPanel
    JButton _runQueryButton = new JButton();
    JButton _runQueryAndStoreButton = new JButton();
    JButton _runQueryAndStoreShapefileButton = new JButton();
-   JButton _clearSqlEditorbutton = new JButton();
    JTextPane _sqlEditorArea = new JTextPane();
+   JButton _clearSqlEditorbutton = new JButton();
+   JButton _viewQueryButton = new JButton();
    JTable _dataViewerTable = new JTable();
    JButton _newDbButton = new JButton();
    JButton _connectDbButton = new JButton();
@@ -163,7 +164,7 @@ public class SpatialiteView extends JPanel
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"SQL Editor",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0)");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -182,13 +183,18 @@ public class SpatialiteView extends JPanel
       _runQueryAndStoreShapefileButton.setText("3");
       jpanel1.add(_runQueryAndStoreShapefileButton,cc.xy(1,5));
 
+      jpanel1.add(createPanel2(),cc.xywh(2,1,2,10));
       _clearSqlEditorbutton.setActionCommand("4");
       _clearSqlEditorbutton.setName("clearSqlEditorbutton");
-      _clearSqlEditorbutton.setText("4");
-      jpanel1.add(_clearSqlEditorbutton,cc.xy(1,7));
+      _clearSqlEditorbutton.setText("5");
+      jpanel1.add(_clearSqlEditorbutton,cc.xy(1,9));
 
-      jpanel1.add(createPanel2(),cc.xywh(2,1,2,9));
-      addFillComponents(jpanel1,new int[]{ 2,3 },new int[]{ 2,4,6,8,9 });
+      _viewQueryButton.setActionCommand("4");
+      _viewQueryButton.setName("viewQueryButton");
+      _viewQueryButton.setText("4");
+      jpanel1.add(_viewQueryButton,cc.xy(1,7));
+
+      addFillComponents(jpanel1,new int[]{ 2,3 },new int[]{ 2,4,6,8,10 });
       return jpanel1;
    }
 

@@ -53,9 +53,12 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.OsCheck;
 import org.jgrasstools.gears.utils.OsCheck.OSType;
+import org.jgrasstools.gears.utils.geometry.GeometryType;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteConfig;
 
 /**
@@ -65,6 +68,7 @@ import org.sqlite.SQLiteConfig;
  *
  */
 public class SpatialiteDb implements AutoCloseable {
+    private static final Logger logger = LoggerFactory.getLogger(SpatialiteDb.class);
 
     static {
         try {
@@ -899,10 +903,16 @@ public class SpatialiteDb implements AutoCloseable {
                 String columnTypeName = rsmd.getColumnTypeName(i);
                 String columnName = rsmd.getColumnName(i);
 
-                if (geomColumnName.contentEquals(columnName)
+                if (geomColumnName.equalsIgnoreCase(columnName)
                         || (geomType != null && columnType > 999 && columnTypeName.toLowerCase().equals("blob"))) {
                     geometryIndex = i;
-                    b.add("the_geom", geomType.getGeometryClass());
+
+                    if (rs.next()) {
+                        byte[] geomBytes = rs.getBytes(geometryIndex);
+                        Geometry geometry = wkbReader.read(geomBytes);
+                        b.add("the_geom", geometry.getClass());
+                    }
+
                 } else {
                     // Class< ? > forName = Class.forName(columnClassName);
                     switch( columnTypeName ) {
@@ -927,24 +937,30 @@ public class SpatialiteDb implements AutoCloseable {
 
             SimpleFeatureType type = b.buildFeatureType();
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-            while( rs.next() ) {
-                Object[] values = new Object[columnCount];
-                for( int j = 1; j <= columnCount; j++ ) {
-                    if (j == geometryIndex) {
-                        byte[] geomBytes = rs.getBytes(j);
-                        Geometry geometry = wkbReader.read(geomBytes);
-                        values[j - 1] = geometry;
-                    } else {
-                        Object object = rs.getObject(j);
-                        if (object != null) {
-                            values[j - 1] = object;
+            do {
+
+                try {
+                    Object[] values = new Object[columnCount];
+                    for( int j = 1; j <= columnCount; j++ ) {
+                        if (j == geometryIndex) {
+                            byte[] geomBytes = rs.getBytes(j);
+                            Geometry geometry = wkbReader.read(geomBytes);
+                            values[j - 1] = geometry;
+                        } else {
+                            Object object = rs.getObject(j);
+                            if (object != null) {
+                                values[j - 1] = object;
+                            }
                         }
                     }
+                    builder.addAll(values);
+                    SimpleFeature feature = builder.buildFeature(null);
+                    fc.add(feature);
+                } catch (Exception e) {
+                    logger.error("ERROR", e);
                 }
-                builder.addAll(values);
-                SimpleFeature feature = builder.buildFeature(null);
-                fc.add(feature);
-            }
+            } while( rs.next() );
+
         }
         return fc;
     }

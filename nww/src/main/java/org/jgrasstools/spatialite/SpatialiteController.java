@@ -59,6 +59,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
@@ -75,6 +76,11 @@ import org.jgrasstools.gui.utils.DefaultGuiBridgeImpl;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
+import org.jgrasstools.nww.SimpleNwwViewer;
+import org.jgrasstools.nww.gui.LayersPanelController;
+import org.jgrasstools.nww.gui.NwwPanel;
+import org.jgrasstools.nww.gui.ToolsPanelController;
+import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.gui.utils.ImageCache;
 import org.jgrasstools.spatialite.objects.ColumnLevel;
 import org.jgrasstools.spatialite.objects.DbLevel;
@@ -107,6 +113,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
     private static final String RUN_QUERY_TOOLTIP = "run the query in the SQL Editor";
     private static final String RUN_QUERY_TO_FILE_TOOLTIP = "run the query in the SQL Editor and store result in file";
     private static final String RUN_QUERY_TO_SHAPEFILE_TOOLTIP = "run the query in the SQL Editor and store result in a shapefile";
+    private static final String VIEW_QUERY_TOOLTIP = "run spatial query and view the result in the 3D viewer";
     private static final String SQL_EDITOR = "SQL Editor";
     private static final String CLEAR_SQL_EDITOR = "clear SQL editor";
     private static final String DATA_VIEWER = "Data viewer";
@@ -129,6 +136,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
     private Dimension preferredSqleditorButtonSize = new Dimension(30, 30);
 
     private List<String> oldSqlCommands = new ArrayList<String>();
+    private ToolsPanelController toolsPanelController;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public SpatialiteController( GuiBridgeHandler guiBridge ) {
@@ -515,6 +523,43 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
             }).start();
         });
 
+        _viewQueryButton.setIcon(ImageCache.getInstance().getImage(ImageCache.GLOBE));
+        _viewQueryButton.setToolTipText(VIEW_QUERY_TOOLTIP);
+        _viewQueryButton.setText("");
+        _viewQueryButton.setPreferredSize(preferredSqleditorButtonSize);
+        _viewQueryButton.addActionListener(e -> {
+
+            File selectedFile = null;
+            String sqlText = _sqlEditorArea.getText().trim();
+            if (sqlText.length() > 0) {
+                if (!sqlText.toLowerCase().startsWith("select")) {
+                    JOptionPane.showMessageDialog(this, "Writing to shapefile is allowed only for SELECT statements.", "WARNING",
+                            JOptionPane.WARNING_MESSAGE, null);
+                    return;
+                }
+            }
+
+            final LogConsoleController logConsole = new LogConsoleController(pm);
+            JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+            new Thread(() -> {
+                boolean hadErrors = false;
+                try {
+                    logConsole.beginProcess("Run query");
+                    hadErrors = viewSpatialQueryResult(sqlText, pm);
+                } catch (Exception ex) {
+                    pm.errorMessage(ex.getLocalizedMessage());
+                    hadErrors = true;
+                } finally {
+                    logConsole.finishProcess();
+                    logConsole.stopLogging();
+                    if (!hadErrors) {
+                        logConsole.setVisible(false);
+                        window.dispose();
+                    }
+                }
+            }).start();
+        });
+
         _clearSqlEditorbutton.setIcon(ImageCache.getInstance().getImage(ImageCache.TRASH));
         _clearSqlEditorbutton.setToolTipText(CLEAR_SQL_EDITOR);
         _clearSqlEditorbutton.setText("");
@@ -650,7 +695,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         _historyButton.setEnabled(enable);
         _shpButton.setEnabled(enable);
         _clearSqlEditorbutton.setEnabled(enable);
-        
+
         _sqlEditorArea.setEditable(enable);
     }
 
@@ -1025,19 +1070,18 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         }
         return hasError;
     }
-    
+
     private boolean viewSpatialQueryResult( String sqlText, IJGTProgressMonitor pm ) {
         boolean hasError = false;
         if (currentConnectedDatabase != null && sqlText.length() > 0) {
             try {
-                pm.beginTask("Run query: " + sqlText , IJGTProgressMonitor.UNKNOWN);
+                pm.beginTask("Run query: " + sqlText, IJGTProgressMonitor.UNKNOWN);
                 DefaultFeatureCollection fc = currentConnectedDatabase.runRawSqlToFeatureCollection(sqlText);
-                
-                
-                
-                
-                
-                
+                ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
+                if (toolsPanelController == null)
+                    toolsPanelController = SimpleNwwViewer.openNww(null, JFrame.DO_NOTHING_ON_CLOSE);
+                toolsPanelController.loadFeatureCollection(null, "QueryLayer", null, rfc);
+
                 addQueryToHistoryCombo(sqlText);
 
             } catch (Exception e1) {

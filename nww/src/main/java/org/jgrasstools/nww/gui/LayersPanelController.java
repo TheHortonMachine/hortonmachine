@@ -27,7 +27,7 @@ public class LayersPanelController extends LayersPanelView implements LayerEvent
 
         refreshLayersList();
     }
-
+    
     public void refreshLayersList() {
         _layersGridView.removeAll();
 

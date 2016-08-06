@@ -12,9 +12,7 @@ import java.awt.Dimension;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 
-import org.jgrasstools.gui.spatialtoolbox.SpatialtoolboxController;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.nww.gui.LayersPanelController;
 import org.jgrasstools.nww.gui.NwwPanel;
@@ -39,17 +37,23 @@ public class SimpleNwwViewer {
         }
     }
 
-    public static void main( String[] args ) {
+    public static String APPNAME = "SIMPLE NWW VIEWER";
 
-        String appName = "SIMPLE NWW VIEWER";
-        if (Configuration.isMacOS() && appName != null) {
-            System.setProperty("com.apple.mrj.application.apple.menu.about.name", appName);
-        }
-        
-        GuiUtilities.setDefaultLookAndFeel();
-
+    /**A way to open the NWW viewer and get the layer panel.
+     * 
+     * 
+     * @param appName
+     * @return
+     */
+    public static ToolsPanelController openNww( String appName, int onCloseAction ) {
         try {
-            
+            if (appName == null) {
+                appName = APPNAME;
+            }
+            if (onCloseAction < 0) {
+                onCloseAction = JFrame.EXIT_ON_CLOSE;
+            }
+
             Class<SimpleNwwViewer> class1 = SimpleNwwViewer.class;
             ImageIcon icon = new ImageIcon(class1.getResource("/org/jgrasstools/images/hm150.png"));
 
@@ -64,7 +68,8 @@ public class SimpleNwwViewer {
             final JFrame nwwFrame = new JFrame();
             nwwFrame.setTitle(appName + ": map view");
             nwwFrame.setIconImage(icon.getImage());
-            nwwFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+            nwwFrame.setDefaultCloseOperation(onCloseAction);
             java.awt.EventQueue.invokeLater(new Runnable(){
 
                 public void run() {
@@ -82,7 +87,7 @@ public class SimpleNwwViewer {
             final JFrame layersFrame = new JFrame();
             layersFrame.setTitle(appName + ": layers view");
             layersFrame.setIconImage(icon.getImage());
-            layersFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            layersFrame.setDefaultCloseOperation(onCloseAction);
             java.awt.EventQueue.invokeLater(new Runnable(){
 
                 public void run() {
@@ -98,7 +103,7 @@ public class SimpleNwwViewer {
             final JFrame toolsFrame = new JFrame();
             toolsFrame.setTitle(appName + ": tools view");
             toolsFrame.setIconImage(icon.getImage());
-            toolsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            toolsFrame.setDefaultCloseOperation(onCloseAction);
             java.awt.EventQueue.invokeLater(new Runnable(){
 
                 public void run() {
@@ -111,9 +116,23 @@ public class SimpleNwwViewer {
             toolsFrame.setLocation(0, 510);
             toolsFrame.pack();
 
+            return toolsPanel;
         } catch (Exception e) {
             Logging.logger().log(java.util.logging.Level.SEVERE, "Exception at application start", e);
         }
+        return null;
+    }
+
+    public static void main( String[] args ) {
+
+        if (Configuration.isMacOS() && APPNAME != null) {
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", APPNAME);
+        }
+
+        GuiUtilities.setDefaultLookAndFeel();
+
+        openNww(APPNAME, -1);
 
     }
+
 }
