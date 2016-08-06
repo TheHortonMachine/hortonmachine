@@ -10,11 +10,11 @@ import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.border.TitledBorder;
 
@@ -27,7 +27,7 @@ public class SpatialiteView extends JPanel
    JButton _runQueryAndStoreButton = new JButton();
    JButton _runQueryAndStoreShapefileButton = new JButton();
    JButton _clearSqlEditorbutton = new JButton();
-   JEditorPane _sqlEditorArea = new JEditorPane();
+   JTextPane _sqlEditorArea = new JTextPane();
    JTable _dataViewerTable = new JTable();
    JButton _newDbButton = new JButton();
    JButton _connectDbButton = new JButton();
@@ -132,8 +132,8 @@ public class SpatialiteView extends JPanel
 
       jpanel1.add(createdatabaseTreeView(),new CellConstraints(2,4,1,2,CellConstraints.FILL,CellConstraints.FILL));
       jpanel1.add(createPanel1(),cc.xy(4,4));
-      jpanel1.add(createPanel2(),cc.xy(4,5));
-      jpanel1.add(createPanel3(),cc.xywh(2,2,3,1));
+      jpanel1.add(createPanel3(),cc.xy(4,5));
+      jpanel1.add(createPanel4(),cc.xywh(2,2,3,1));
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6 });
       return jpanel1;
    }
@@ -187,18 +187,26 @@ public class SpatialiteView extends JPanel
       _clearSqlEditorbutton.setText("4");
       jpanel1.add(_clearSqlEditorbutton,cc.xy(1,7));
 
-      _sqlEditorArea.setName("sqlEditorArea");
-      JScrollPane jscrollpane1 = new JScrollPane();
-      jscrollpane1.setViewportView(_sqlEditorArea);
-      jscrollpane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-      jscrollpane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-      jpanel1.add(jscrollpane1,cc.xywh(2,1,2,9));
-
-      addFillComponents(jpanel1,new int[]{ 3 },new int[]{ 2,4,6,8,9 });
+      jpanel1.add(createPanel2(),cc.xywh(2,1,2,9));
+      addFillComponents(jpanel1,new int[]{ 2,3 },new int[]{ 2,4,6,8,9 });
       return jpanel1;
    }
 
    public JPanel createPanel2()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:GROW(1.0)");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      _sqlEditorArea.setName("sqlEditorArea");
+      jpanel1.add(_sqlEditorArea,new CellConstraints(1,1,1,1,CellConstraints.FILL,CellConstraints.FILL));
+
+      addFillComponents(jpanel1,new int[0],new int[0]);
+      return jpanel1;
+   }
+
+   public JPanel createPanel3()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Data Viewer",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
@@ -218,7 +226,7 @@ public class SpatialiteView extends JPanel
       return jpanel1;
    }
 
-   public JPanel createPanel3()
+   public JPanel createPanel4()
    {
       JPanel jpanel1 = new JPanel();
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");

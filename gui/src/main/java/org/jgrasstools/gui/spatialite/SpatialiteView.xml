@@ -98,7 +98,7 @@
                  <at name="scrollableTracksViewportHeight">true</at>
                  <at name="scrollableTracksViewportWidth">true</at>
                  <at name="name">databaseTree</at>
-                 <at name="width">377</at>
+                 <at name="width">379</at>
                  <at name="scollBars">
                   <object classname="com.jeta.forms.store.properties.ScrollBarsProperty">
                    <at name="name">scollBars</at>
@@ -126,7 +126,7 @@
                    </at>
                   </object>
                  </at>
-                 <at name="height">365</at>
+                 <at name="height">358</at>
                 </object>
                </at>
               </object>
@@ -476,7 +476,7 @@
           </item>
           <item >
            <at name="value">
-            <object classname="com.jeta.forms.store.memento.BeanMemento">
+            <object classname="com.jeta.forms.store.memento.FormMemento">
              <super classname="com.jeta.forms.store.memento.ComponentMemento">
               <at name="cellconstraints">
                <object classname="com.jeta.forms.store.memento.CellConstraintsMemento">
@@ -489,13 +489,52 @@
                 <at name="insets" object="insets">0,0,0,0</at>
                </object>
               </at>
-              <at name="componentclass">com.jeta.forms.gui.form.StandardComponent</at>
+              <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
              </super>
-             <at name="jetabeanclass">com.jeta.forms.gui.beans.JETABean</at>
-             <at name="beanclass">javax.swing.JEditorPane</at>
-             <at name="beanproperties">
+             <at name="id">embedded.K205f23acX15659ea52f9YU7fff</at>
+             <at name="rowspecs">CENTER:DEFAULT:GROW(1.0)</at>
+             <at name="colspecs">FILL:DEFAULT:GROW(1.0)</at>
+             <at name="components">
+              <object classname="java.util.LinkedList">
+               <item >
+                <at name="value">
+                 <object classname="com.jeta.forms.store.memento.BeanMemento">
+                  <super classname="com.jeta.forms.store.memento.ComponentMemento">
+                   <at name="cellconstraints">
+                    <object classname="com.jeta.forms.store.memento.CellConstraintsMemento">
+                     <at name="column">1</at>
+                     <at name="row">1</at>
+                     <at name="colspan">1</at>
+                     <at name="rowspan">1</at>
+                     <at name="halign">fill</at>
+                     <at name="valign">fill</at>
+                     <at name="insets" object="insets">0,0,0,0</at>
+                    </object>
+                   </at>
+                   <at name="componentclass">com.jeta.forms.gui.form.StandardComponent</at>
+                  </super>
+                  <at name="jetabeanclass">com.jeta.forms.gui.beans.JETABean</at>
+                  <at name="beanclass">javax.swing.JTextPane</at>
+                  <at name="beanproperties">
+                   <object classname="com.jeta.forms.store.memento.PropertiesMemento">
+                    <at name="classname">javax.swing.JTextPane</at>
+                    <at name="properties">
+                     <object classname="com.jeta.forms.store.support.PropertyMap">
+                      <at name="name">sqlEditorArea</at>
+                      <at name="width">386</at>
+                      <at name="height">122</at>
+                     </object>
+                    </at>
+                   </object>
+                  </at>
+                 </object>
+                </at>
+               </item>
+              </object>
+             </at>
+             <at name="properties">
               <object classname="com.jeta.forms.store.memento.PropertiesMemento">
-               <at name="classname">javax.swing.JEditorPane</at>
+               <at name="classname">com.jeta.forms.gui.form.GridView</at>
                <at name="properties">
                 <object classname="com.jeta.forms.store.support.PropertyMap">
                  <at name="border">
@@ -518,18 +557,45 @@
                    </at>
                   </object>
                  </at>
-                 <at name="scrollableTracksViewportHeight">true</at>
-                 <at name="name">sqlEditorArea</at>
-                 <at name="width">590</at>
+                 <at name="name"></at>
+                 <at name="fill">
+                  <object classname="com.jeta.forms.store.properties.effects.PaintProperty">
+                   <at name="name">fill</at>
+                  </object>
+                 </at>
                  <at name="scollBars">
                   <object classname="com.jeta.forms.store.properties.ScrollBarsProperty">
                    <at name="name">scollBars</at>
-                   <at name="verticalpolicy">20</at>
-                   <at name="horizontalpolicy">30</at>
+                   <at name="verticalpolicy">21</at>
+                   <at name="horizontalpolicy">31</at>
                   </object>
                  </at>
-                 <at name="height">132</at>
                 </object>
+               </at>
+              </object>
+             </at>
+             <at name="cellpainters">
+              <object classname="com.jeta.forms.store.support.Matrix">
+               <at name="rows">
+                <object classname="[Ljava.lang.Object;" size="1">
+                 <at name="item" index="0">
+                  <object classname="[Ljava.lang.Object;" size="1"/>
+                 </at>
+                </object>
+               </at>
+              </object>
+             </at>
+             <at name="rowgroups">
+              <object classname="com.jeta.forms.store.memento.FormGroupSet">
+               <at name="groups">
+                <object classname="java.util.HashMap"/>
+               </at>
+              </object>
+             </at>
+             <at name="colgroups">
+              <object classname="com.jeta.forms.store.memento.FormGroupSet">
+               <at name="groups">
+                <object classname="java.util.HashMap"/>
                </at>
               </object>
              </at>
@@ -721,7 +787,7 @@
                   </object>
                  </at>
                  <at name="name">dataViewerTable</at>
-                 <at name="width">466</at>
+                 <at name="width">432</at>
                  <at name="scollBars">
                   <object classname="com.jeta.forms.store.properties.ScrollBarsProperty">
                    <at name="name">scollBars</at>

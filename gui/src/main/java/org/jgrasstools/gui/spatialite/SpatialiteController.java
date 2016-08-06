@@ -610,6 +610,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
     }
 
     private void layoutTree( DbLevel dbLevel, boolean expandNodes ) {
+        toggleButtonsEnabling(dbLevel != null);
 
         String title;
         if (dbLevel != null) {
@@ -631,6 +632,17 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
             _databaseTree.expandRow(1);
         }
         // expandAllNodes(_databaseTree, 0, 2);
+
+    }
+
+    private void toggleButtonsEnabling( boolean enable ) {
+        _runQueryButton.setEnabled(enable);
+        _runQueryAndStoreButton.setEnabled(enable);
+        _runQueryAndStoreShapefileButton.setEnabled(enable);
+        _templatesButton.setEnabled(enable);
+        _historyButton.setEnabled(enable);
+        _shpButton.setEnabled(enable);
+        _clearSqlEditorbutton.setEnabled(enable);
     }
 
     private void expandAllNodes( JTree tree, int startingIndex, int rowCount ) {

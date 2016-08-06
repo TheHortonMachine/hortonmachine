@@ -1,8 +1,11 @@
 package org.jgrasstools.gui.spatialite;
 
 import java.awt.Color;
+import java.io.InputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Scanner;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.AttributeSet;
@@ -14,6 +17,9 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import org.jgrasstools.gears.utils.StreamUtils;
+import org.jgrasstools.gears.utils.StringUtilities;
+
 public class SqlDocument extends DefaultStyledDocument {
 
     private DefaultStyledDocument doc;
@@ -23,36 +29,57 @@ public class SqlDocument extends DefaultStyledDocument {
     private MutableAttributeSet keyword;
     private MutableAttributeSet comment;
     private MutableAttributeSet quote;
-    private HashMap<String, Object> keywordsMap;
+    private HashSet<String> keywordsMap;
+    private HashSet<String> splKeywordsMap;
+    private SimpleAttributeSet splKeyword;
 
     public SqlDocument() {
 
         doc = this;
         rootElement = doc.getDefaultRootElement();
         putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
-        normal = new SimpleAttributeSet();
 
+        normal = new SimpleAttributeSet();
         StyleConstants.setForeground(normal, Color.black);
+
         comment = new SimpleAttributeSet();
-        Color green = new Color(0, 120, 0);
+        Color green = new Color(0, 140, 0);
+        StyleConstants.setForeground(comment, green);
+        StyleConstants.setItalic(comment, true);
 
         StyleConstants.setForeground(comment, green);
-        // StyleConstants.setItalic(comment, true);
+        StyleConstants.setItalic(comment, true);
         keyword = new SimpleAttributeSet();
         Color blue = new Color(0, 0, 140);
-
         StyleConstants.setForeground(keyword, blue);
-        // StyleConstants.setBold(keyword, true);
+        StyleConstants.setBold(keyword, true);
+
+        StyleConstants.setForeground(comment, green);
+        StyleConstants.setItalic(comment, true);
+        splKeyword = new SimpleAttributeSet();
+        StyleConstants.setForeground(splKeyword, new Color(0, 128, 0));
+        StyleConstants.setBold(splKeyword, true);
+
         quote = new SimpleAttributeSet();
         Color red = new Color(140, 0, 0);
-
         StyleConstants.setForeground(quote, red);
-        Object dummyObject = new Object();
+        StyleConstants.setBold(quote, true);
 
-        keywordsMap = new HashMap<>();
-        keywordsMap.put("SELECT", dummyObject);
-        keywordsMap.put("INSERT", dummyObject);
-        keywordsMap.put("DROP", dummyObject);
+        InputStream keywordsStream = getClass().getResourceAsStream("/jgt_sql_keywords.txt");
+        Scanner keywordsScanner = StringUtilities.streamToString(keywordsStream, "\n");
+        keywordsMap = new HashSet<>();
+        while( keywordsScanner.hasNext() ) {
+            String keyword = keywordsScanner.next();
+            keywordsMap.add(keyword.toUpperCase().trim());
+        }
+
+        keywordsStream = getClass().getResourceAsStream("/spl_sql_keywords.txt");
+        keywordsScanner = StringUtilities.streamToString(keywordsStream, "\n");
+        splKeywordsMap = new HashSet<>();
+        while( keywordsScanner.hasNext() ) {
+            String keyword = keywordsScanner.next();
+            splKeywordsMap.add(keyword.toUpperCase().trim());
+        }
     }
 
     /*
@@ -277,6 +304,8 @@ public class SqlDocument extends DefaultStyledDocument {
         String token = content.substring(startOffset, endOfToken);
         if (isKeyword(token))
             doc.setCharacterAttributes(startOffset, endOfToken - startOffset, keyword, false);
+        if (isSpatialiteKeyword(token))
+            doc.setCharacterAttributes(startOffset, endOfToken - startOffset, splKeyword, false);
         return endOfToken + 1;
     }
 
@@ -372,8 +401,14 @@ public class SqlDocument extends DefaultStyledDocument {
      * Override for other languages
      */
     protected boolean isKeyword( String token ) {
-        Object o = keywordsMap.get(token.toUpperCase());
-        return o == null ? false : true;
+        return keywordsMap.contains(token.toUpperCase());
+    }
+
+    /*
+     * Override for other languages
+     */
+    protected boolean isSpatialiteKeyword( String token ) {
+        return splKeywordsMap.contains(token.toUpperCase());
     }
 
     /*
