@@ -76,12 +76,10 @@ import org.jgrasstools.gui.utils.DefaultGuiBridgeImpl;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
+import org.jgrasstools.gui.utils.ImageCache;
 import org.jgrasstools.nww.SimpleNwwViewer;
-import org.jgrasstools.nww.gui.LayersPanelController;
-import org.jgrasstools.nww.gui.NwwPanel;
 import org.jgrasstools.nww.gui.ToolsPanelController;
 import org.jgrasstools.nww.utils.NwwUtilities;
-import org.jgrasstools.gui.utils.ImageCache;
 import org.jgrasstools.spatialite.objects.ColumnLevel;
 import org.jgrasstools.spatialite.objects.DbLevel;
 import org.jgrasstools.spatialite.objects.TableLevel;
@@ -1184,9 +1182,9 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         if (selectedTable.isGeo)
             size++;
 
-        Action[] actions = new Action[size];
+        List<Action> actions = new ArrayList<>();
         int index = 0;
-        actions[index++] = new AbstractAction("Create select statement"){
+        AbstractAction action = new AbstractAction("Create select statement"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
@@ -1197,7 +1195,8 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
                 }
             }
         };
-        actions[index++] = new AbstractAction("Count table records"){
+        actions.add(action);
+        action = new AbstractAction("Count table records"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
@@ -1209,6 +1208,21 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
                 }
             }
         };
+        actions.add(action);
+        if (selectedTable.isGeo) {
+            action = new AbstractAction("Quick View Table"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    try {
+                        String query = SpatialiteGuiUtils.getSelectQuery(currentConnectedDatabase, selectedTable, false);
+                        viewSpatialQueryResult(query, pm);
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            };
+            actions.add(action);
+        }
         // if (hasFK) {
         // actions[index++] = new Action("Show Foreign Keys Diagram", null){
         // @Override
@@ -1370,7 +1384,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         // }
         // };
         // }
-        return actions;
+        return actions.toArray(new Action[0]);
     }
 
     public static void main( String[] args ) throws Exception {
