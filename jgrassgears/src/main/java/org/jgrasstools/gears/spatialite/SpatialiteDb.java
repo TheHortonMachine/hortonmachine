@@ -868,6 +868,7 @@ public class SpatialiteDb implements AutoCloseable {
         for( int i = 0; i < split.length; i++ ) {
             if (split[i].toLowerCase().equals("from")) {
                 tableName = split[i + 1];
+                break;
             }
         }
 

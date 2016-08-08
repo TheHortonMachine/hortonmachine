@@ -31,7 +31,18 @@ public class TableLevel {
     public boolean isGeo = false;
 
     public List<ColumnLevel> columnsList = new ArrayList<ColumnLevel>();
-    
+
+    public ColumnLevel getFirstGeometryColumn() {
+        if (isGeo) {
+            for( ColumnLevel columnLevel : columnsList ) {
+                if (columnLevel.geomColumn != null) {
+                    return columnLevel;
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         return tableName;

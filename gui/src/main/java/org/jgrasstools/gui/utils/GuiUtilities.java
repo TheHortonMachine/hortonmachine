@@ -31,6 +31,8 @@ import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
@@ -54,6 +56,7 @@ import org.jgrasstools.gears.utils.OsCheck.OSType;
 public class GuiUtilities {
 
     public static final String LAST_PATH = "KEY_LAST_PATH";
+    public static final String PREF_STRING_SEPARATORS = "@@@@";
 
     public static interface IOnCloseListener {
         public void onClose();
@@ -103,6 +106,43 @@ public class GuiUtilities {
         }
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
         preferences.put(LAST_PATH, lastPath);
+    }
+
+    /**
+     * Get from preference.
+     * 
+     * @param preferenceKey the preference key.
+     * @param defaultValue the default value in case of <code>null</code>.
+     * @return the string preference asked.
+     */
+    public static String getPreference( String preferenceKey, String defaultValue ) {
+        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
+        String preference = preferences.get(preferenceKey, defaultValue);
+        return preference;
+    }
+
+    public static String[] getPreference( String preferenceKey, String[] defaultValue ) {
+        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
+        String preference = preferences.get(preferenceKey, "");
+        String[] split = preference.split(PREF_STRING_SEPARATORS);
+        return split;
+    }
+
+    /**
+     * Set a preference.
+     * 
+     * @param preferenceKey the preference key.
+     * @param value the value to set.
+     */
+    public static void setPreference( String preferenceKey, String value ) {
+        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
+        preferences.put(preferenceKey, value);
+    }
+
+    public static void setPreference( String preferenceKey, String[] valuesArray ) {
+        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
+        String arrayToString = Stream.of(valuesArray).collect(Collectors.joining(PREF_STRING_SEPARATORS));
+        preferences.put(preferenceKey, arrayToString);
     }
 
     public static void copyToClipboard( String text ) {
@@ -222,6 +262,27 @@ public class GuiUtilities {
         };
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(exitListener);
+    }
+
+    public static void showInfoMessage( Component parentComponent, String title, String message ) {
+        if (title == null) {
+            title = "INFO";
+        }
+        JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public static void showWarningMessage( Component parentComponent, String title, String message ) {
+        if (title == null) {
+            title = "WARNING";
+        }
+        JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.WARNING_MESSAGE);
+    }
+
+    public static void showErrorMessage( Component parentComponent, String title, String message ) {
+        if (title == null) {
+            title = "ERROR";
+        }
+        JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.ERROR_MESSAGE);
     }
 
 }

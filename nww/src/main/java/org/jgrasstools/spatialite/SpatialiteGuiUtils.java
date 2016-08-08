@@ -8,11 +8,10 @@ import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.spatialite.objects.TableLevel;
 
-
 public class SpatialiteGuiUtils {
 
-    public static String getSelectQuery( SpatialiteDb db, final TableLevel selectedTable, boolean geomFirst )
-            throws SQLException {
+    public static String getSelectQuery( SpatialiteDb db, final TableLevel selectedTable, boolean geomFirst,
+            boolean binarizeGeoms ) throws SQLException {
         String tableName = selectedTable.tableName;
         String letter = tableName.substring(0, 1);
         List<String[]> tableColumns = db.getTableColumns(tableName);
@@ -24,7 +23,11 @@ public class SpatialiteGuiUtils {
             for( int i = 0; i < tableColumns.size(); i++ ) {
                 String colName = tableColumns.get(i)[0];
                 if (geometryColumns != null && colName.equals(geometryColumns.f_geometry_column)) {
-                    colName = "ST_AsBinary(" + letter + "." + colName + ") as " + colName;
+                    if (binarizeGeoms) {
+                        colName = "ST_AsBinary(" + letter + "." + colName + ") as " + colName;
+                    } else {
+                        colName = letter + "." + colName + " as " + colName;
+                    }
                     query += colName;
                 } else {
                     nonGeomCols.add(colName);
@@ -41,7 +44,11 @@ public class SpatialiteGuiUtils {
                     query += ",";
                 String colName = tableColumns.get(i)[0];
                 if (geometryColumns != null && colName.equals(geometryColumns.f_geometry_column)) {
-                    colName = "ST_AsBinary(" + letter + "." + colName + ") as " + colName;
+                    if (binarizeGeoms) {
+                        colName = "ST_AsBinary(" + letter + "." + colName + ") as " + colName;
+                    } else {
+                        colName = letter + "." + colName + " as " + colName;
+                    }
                     query += colName;
                 } else {
                     query += letter + "." + colName;
