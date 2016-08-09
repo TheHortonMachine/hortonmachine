@@ -101,7 +101,7 @@ public class SpatialiteDb implements AutoCloseable {
             File dbFile = new File(dbPath);
             if (dbFile.exists()) {
                 if (mPrintInfos)
-                    System.out.println("Database exists");
+                    logger.info("Database exists");
                 dbExists = true;
             }
         } else {
@@ -120,7 +120,7 @@ public class SpatialiteDb implements AutoCloseable {
                 ResultSet rs = stmt.executeQuery("SELECT sqlite_version() AS 'SQLite Version';");
                 while( rs.next() ) {
                     String sqliteVersion = rs.getString(1);
-                    System.out.println("SQLite Version: " + sqliteVersion);
+                    logger.info("SQLite Version: " + sqliteVersion);
                 }
             }
         try (Statement stmt = mConn.createStatement()) {
@@ -136,14 +136,24 @@ public class SpatialiteDb implements AutoCloseable {
                         stmt.execute("SELECT load_extension('mod_rasterlite2.so', 'sqlite3_modrasterlite_init')");
                     } catch (Exception e) {
                         if (mPrintInfos) {
-                            System.out.println("Unable to load mod_rasterlite2.so: " + e.getMessage());
+                            logger.info("Unable to load mod_rasterlite2.so: " + e.getMessage());
+                            try {
+                                stmt.execute("SELECT load_extension('mod_rasterlite2', 'sqlite3_modrasterlite_init')");
+                            } catch (Exception e1) {
+                                logger.info("Unable to load mod_rasterlite2: " + e1.getMessage());
+                            }
                         }
                     }
                     try {
                         stmt.execute("SELECT load_extension('mod_spatialite.so', 'sqlite3_modspatialite_init')");
                     } catch (Exception e) {
                         if (mPrintInfos) {
-                            System.out.println("Unable to load mod_spatialite.so: " + e.getMessage());
+                            logger.info("Unable to load mod_spatialite.so: " + e.getMessage());
+                            try {
+                                stmt.execute("SELECT load_extension('mod_spatialite.so', 'sqlite3_modspatialite_init')");
+                            } catch (Exception e1) {
+                                logger.info("Unable to load mod_spatialite: " + e1.getMessage());
+                            }
                         }
                         throw e;
                     }
@@ -153,14 +163,14 @@ public class SpatialiteDb implements AutoCloseable {
                         stmt.execute("SELECT load_extension('mod_rasterlite2', 'sqlite3_modrasterlite_init')");
                     } catch (Exception e) {
                         if (mPrintInfos) {
-                            System.out.println("Unable to load mod_rasterlite2: " + e.getMessage());
+                            logger.info("Unable to load mod_rasterlite2: " + e.getMessage());
                         }
                     }
                     try {
                         stmt.execute("SELECT load_extension('mod_spatialite', 'sqlite3_modspatialite_init')");
                     } catch (Exception e) {
                         if (mPrintInfos) {
-                            System.out.println("Unable to load mod_spatialite: " + e.getMessage());
+                            logger.info("Unable to load mod_spatialite: " + e.getMessage());
                         }
                         throw e;
                     }
@@ -295,7 +305,7 @@ public class SpatialiteDb implements AutoCloseable {
         } catch (SQLException e) {
             String message = e.getMessage();
             if (message.contains("index") && message.contains("already exists")) {
-                System.out.println(message);
+                logger.warn(message);
             } else {
                 e.printStackTrace();
             }
