@@ -61,7 +61,7 @@ public class SqlDocument extends DefaultStyledDocument {
         StyleConstants.setBold(splKeyword, true);
 
         quote = new SimpleAttributeSet();
-        Color red = new Color(140, 0, 0);
+        Color red = new Color(255, 54, 246);
         StyleConstants.setForeground(quote, red);
         StyleConstants.setBold(quote, true);
 

@@ -700,6 +700,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         _shpButton.setEnabled(enable);
         _clearSqlEditorbutton.setEnabled(enable);
 
+        _sqlEditorArea.setText("");
         _sqlEditorArea.setEditable(enable);
     }
 
