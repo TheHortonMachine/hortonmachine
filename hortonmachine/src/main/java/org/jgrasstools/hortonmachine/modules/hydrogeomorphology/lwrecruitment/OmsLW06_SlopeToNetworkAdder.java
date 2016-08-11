@@ -114,14 +114,14 @@ public class OmsLW06_SlopeToNetworkAdder extends JGTModel implements LWFields {
         String base2 = "D:/lavori_tmp/unibz/2016_06_gsoc/raster/";
 
         OmsLW06_SlopeToNetworkAdder ex = new OmsLW06_SlopeToNetworkAdder();
-        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_width.shp");
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_width_damsbridg.shp");
         ex.inSlope = OmsRasterReader.readRaster(base2 + "dtmsd8.asc");
 
         ex.process();
         SimpleFeatureCollection outNetPoints = ex.outNetPoints;
 
-        OmsVectorWriter.writeVector(base + "net_point_slope.shp", outNetPoints);
+        OmsVectorWriter.writeVector(base + "net_point_width_damsbridg_slope.shp", outNetPoints);
 
-    }
+    }   
 
 }

@@ -63,7 +63,7 @@ public class LasHistogram extends JGTModel {
     public boolean doPlot = true;
 
     @Description("The value to analyze.")
-    @UI("combo:" + LasUtils.INTENSITY + "," + LasUtils.ELEVATION)
+    @UI("combo:" + LasUtils.INTENSITY + "," + LasUtils.ELEVATION + "," + LasUtils.CLASSIFICATION)
     @In
     public String pType = LasUtils.INTENSITY;
 
@@ -72,9 +72,14 @@ public class LasHistogram extends JGTModel {
         checkNull(inLas);
 
         boolean doIntensity = false;
+        boolean doClassification = false;
         DecimalFormat formatter = new DecimalFormat("0.0");
         if (pType.equals(LasUtils.INTENSITY)) {
             doIntensity = true;
+            formatter = new DecimalFormat("0");
+        }
+        if (pType.equals(LasUtils.CLASSIFICATION)) {
+            doClassification = true;
             formatter = new DecimalFormat("0");
         }
 
@@ -93,6 +98,9 @@ public class LasHistogram extends JGTModel {
                 double value = readNextLasDot.z;
                 if (doIntensity) {
                     value = readNextLasDot.intensity;
+                }
+                if (doClassification) {
+                    value = readNextLasDot.classification;
                 }
                 min = Math.min(min, value);
                 max = Math.max(max, value);
@@ -126,6 +134,9 @@ public class LasHistogram extends JGTModel {
                 if (doIntensity) {
                     value = readNextLasDot.intensity;
                 }
+                if (doClassification) {
+                    value = readNextLasDot.classification;
+                }
                 for( int j = 0; j < markers.length; j++ ) {
                     if (value <= markers[j]) {
                         count[j] = count[j] + 1;
@@ -152,4 +163,16 @@ public class LasHistogram extends JGTModel {
         }
     }
 
+    public static void main( String[] args ) throws Exception {
+
+        String base = "D:/Dropbox/hydrologis/lavori/OLD/2014_unibz/aurina/elaborazioni/LAS_PLOTS/";
+
+        LasHistogram ex = new LasHistogram();
+        ex.inLas = base + "uni_bz_plot777.las";
+        ex.pType = LasUtils.CLASSIFICATION;
+
+        ex.process();
+        
+    }
+    
 }

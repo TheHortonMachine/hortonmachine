@@ -78,7 +78,7 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
     @UI(JGTConstants.FILEIN_UI_HINT)
     @Unit("m3/s")
     @In
-    public double inDischarge;
+    public double pDischarge;
 
     @Description(pDeltaTMillis_DESCRIPTION)
     @Unit(pDeltaTMillis_UNIT)
@@ -86,7 +86,7 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
     public long pDeltaTMillis = 5000;
     
     // TODO
-    @Description("Document me")
+    @Description("doMaxWidening_DESCRIPTION")
     @In
     public boolean doMaxWidening = false;
 
@@ -115,6 +115,7 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
     public static final String inDischarge_DESCRIPTION = "The input discharge value";
     public static final String pDeltaTMillis_UNIT = "millisec";
     public static final String pDeltaTMillis_DESCRIPTION = "Time interval.";
+    public static final String doMaxWidening_DESCRIPTION = "Boolean factor to define if the 1D model has to run with bankfull width or with maximum widening width.";
     public static final String outputLevelFile_DESCRIPTION = "Output file with levels.";
     public static final String outputDischargeFile_DESCRIPTION = "Output file with the quantities related to discharge.";
     public static final String outTransSect_DESCR = "The output line shapefile with the extracted transversal sections.";
@@ -200,7 +201,7 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         saintGeo.inRiverPoints = outRiverPoints;
         saintGeo.inSectionPoints = outSectionsPoints;
         saintGeo.inSections = outTransSect;
-        saintGeo.inDischarge = new double[]{inDischarge};
+        saintGeo.inDischarge = new double[]{pDischarge};
         saintGeo.pDeltaTMillis = pDeltaTMillis;
         saintGeo.outputLevelFile = outputLevelFile;
         saintGeo.outputDischargeFile = outputDischargeFile;
@@ -234,18 +235,19 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         OmsLW07_HydraulicParamsToSectionsAdder ex = new OmsLW07_HydraulicParamsToSectionsAdder();
         ex.inDtm = OmsRasterReader.readRaster(baseRaster + "dtmfel.asc");
         ex.inNet = OmsVectorReader.readVector(base + "extracted_net.shp");
-        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_hydraulic_inund.shp");
-        ex.inDischarge = 15.0;
-        ex.outputLevelFile = base + "levels_wide.csv";
-        ex.outputDischargeFile = base + "discharge_wide.csv";
-        ex.doMaxWidening = true;
+//        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_hydraulic_inund.shp");
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_width_damsbridg_slope.shp");
+        ex.pDischarge = 3.0;
+        ex.outputLevelFile = base + "levels_lateral2.csv";
+        ex.outputDischargeFile = base + "discharge_lateral2.csv";
+        ex.doMaxWidening = false;
 
         ex.process();
         SimpleFeatureCollection outNetPoints = ex.outNetPoints;
         SimpleFeatureCollection outTransSect = ex.outTransSect;
 
-        OmsVectorWriter.writeVector(base + "extracted_bankfullsections_wide.shp", outTransSect);
-        OmsVectorWriter.writeVector(base + "net_point_hydraulic_inund_wide.shp", outNetPoints);
+        OmsVectorWriter.writeVector(base + "extracted_bankfullsections_lateral2.shp", outTransSect);
+        OmsVectorWriter.writeVector(base + "net_point_width_damsbridg_slope_lateral.shp", outNetPoints);
 
     }
 
