@@ -147,8 +147,8 @@ public class JGTConstants {
             .forPattern(dateTimeFormatterYYYYMMDDHHMM_string);
 
     public static String utcDateFormatterYYYYMMDDHHMMSS_string = "yyyy-MM-dd HH:mm:ss";
-    public static DateTimeFormatter utcDateFormatterYYYYMMDDHHMMSS = DateTimeFormat.forPattern(
-            utcDateFormatterYYYYMMDDHHMMSS_string).withZone(DateTimeZone.UTC);
+    public static DateTimeFormatter utcDateFormatterYYYYMMDDHHMMSS = DateTimeFormat
+            .forPattern(utcDateFormatterYYYYMMDDHHMMSS_string).withZone(DateTimeZone.UTC);
     public static String utcDateFormatterYYYYMMDDHHMM_string = "yyyy-MM-dd HH:mm";
     public static DateTimeFormatter utcDateFormatterYYYYMMDDHHMM = DateTimeFormat.forPattern(utcDateFormatterYYYYMMDDHHMM_string)
             .withZone(DateTimeZone.UTC);
@@ -234,6 +234,12 @@ public class JGTConstants {
     public static final String GEOTIF = "tif";
     public static final String GRASS = "grass";
     public static final String SHP = "shp";
+    public static final String LAS = "las";
+    public static final String LAZ = "laz";
+
+    public static final String[] SUPPORTED_VECTOR_EXTENSIONS = {SHP};
+    public static final String[] SUPPORTED_LIDAR_EXTENSIONS = {LAS};
+    public static final String[] SUPPORTED_RASTER_EXTENSIONS = {GEOTIFF, GEOTIF, ESRIGRID};
 
     /*
      * modules categories
@@ -267,7 +273,7 @@ public class JGTConstants {
     public static final String STATISTICS = "HortonMachine/Statistics";
 
     public static final String GPL3_LICENSE = "General Public License Version 3 (GPLv3)";
-    
+
     /*
      * vars ui hints
      */

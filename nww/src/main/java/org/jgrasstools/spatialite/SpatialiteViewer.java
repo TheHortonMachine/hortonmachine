@@ -18,12 +18,9 @@
 package org.jgrasstools.spatialite;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -34,7 +31,6 @@ import javax.swing.JTextPane;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.spatialite.QueryResult;
 import org.jgrasstools.gui.console.LogConsoleController;
 import org.jgrasstools.gui.utils.DefaultGuiBridgeImpl;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
@@ -167,6 +163,8 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
         actions.add(SqlTemplatesAndActions.getRefreshDatabaseAction(guiBridge, this));
         actions.add(null);
         actions.add(SqlTemplatesAndActions.getCopyDatabasePathAction(this));
+        actions.add(null);
+        actions.add(SqlTemplatesAndActions.getCreateTableFromShapefileSchemaAction(guiBridge, this));
         return actions;
     }
 
@@ -180,6 +178,7 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
         actions.add(SqlTemplatesAndActions.getReprojectTableAction(selectedTable, this));
         actions.add(null);
         if (selectedTable.isGeo) {
+            actions.add(SqlTemplatesAndActions.getImportShapefileDataAction(guiBridge, selectedTable, this));
             actions.add(SqlTemplatesAndActions.getQuickViewTableAction(selectedTable, this));
         }
 

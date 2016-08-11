@@ -33,8 +33,7 @@ import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -42,6 +41,8 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
@@ -57,6 +58,7 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SpatialiteImportUtils {
+    private static final Logger logger = LoggerFactory.getLogger(SpatialiteImportUtils.class);
 
     /**
      * Create a spatial table using a shapefile as schema.
@@ -130,15 +132,20 @@ public class SpatialiteImportUtils {
      * @param shapeFile the shapefile to import.
      * @param tableName the name of the table to import to.
      * @param limit if > 0, a limit to the imported features is applied.
+     * @param pm the progress monitor.
+     * @return <code>false</code>, is an error occurred. 
      * @throws Exception
      */
-    public static void importShapefile( SpatialiteDb db, File shapeFile, String tableName, int limit ) throws Exception {
+    public static boolean importShapefile( SpatialiteDb db, File shapeFile, String tableName, int limit, IJGTProgressMonitor pm )
+            throws Exception {
+        boolean noErrors = true;
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
 
         SimpleFeatureCollection features = featureSource.getFeatures();
+        int featureCount = features.size();
 
         List<String[]> tableInfo = db.getTableColumns(tableName);
         List<String> tableColumns = new ArrayList<>();
@@ -165,7 +172,8 @@ public class SpatialiteImportUtils {
                 qMarks += ",GeomFromText(?, " + epsg + ")";
             } else {
                 if (!tableColumns.contains(attrName)) {
-                    throw new IllegalArgumentException("The imported shapefile doesn't seem to match the table's schema.");
+                    pm.errorMessage("The imported shapefile doesn't seem to match the table's schema.");
+                    return false;
                 }
                 valueNames += "," + attrName;
                 qMarks += ",?";
@@ -178,38 +186,57 @@ public class SpatialiteImportUtils {
         Connection conn = db.getConnection();
         try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
             int count = 0;
-            while( featureIterator.hasNext() ) {
-                SimpleFeature f = (SimpleFeature) featureIterator.next();
-                List<Object> attributes = f.getAttributes();
-                for( int i = 0; i < attributes.size(); i++ ) {
-                    Object object = attributes.get(i);
-                    if (object == null) {
-                        continue;
+            pm.beginTask("Adding data to batch import...", featureCount);
+            try {
+                while( featureIterator.hasNext() ) {
+                    SimpleFeature f = (SimpleFeature) featureIterator.next();
+                    List<Object> attributes = f.getAttributes();
+                    for( int i = 0; i < attributes.size(); i++ ) {
+                        Object object = attributes.get(i);
+                        if (object == null) {
+                            continue;
+                        }
+                        int iPlus = i + 1;
+                        if (object instanceof Double) {
+                            pStmt.setDouble(iPlus, (Double) object);
+                        } else if (object instanceof Float) {
+                            pStmt.setFloat(iPlus, (Float) object);
+                        } else if (object instanceof Integer) {
+                            pStmt.setInt(iPlus, (Integer) object);
+                        } else if (object instanceof String) {
+                            pStmt.setString(iPlus, (String) object);
+                        } else if (object instanceof Geometry) {
+                            pStmt.setString(iPlus, ((Geometry) object).toText());
+                        } else {
+                            pStmt.setString(iPlus, object.toString());
+                        }
                     }
-                    int iPlus = i + 1;
-                    if (object instanceof Double) {
-                        pStmt.setDouble(iPlus, (Double) object);
-                    } else if (object instanceof Float) {
-                        pStmt.setFloat(iPlus, (Float) object);
-                    } else if (object instanceof Integer) {
-                        pStmt.setInt(iPlus, (Integer) object);
-                    } else if (object instanceof String) {
-                        pStmt.setString(iPlus, (String) object);
-                    } else if (object instanceof Geometry) {
-                        pStmt.setString(iPlus, ((Geometry) object).toText());
-                    } else {
-                        pStmt.setString(iPlus, object.toString());
-                    }
-                }
-                pStmt.executeUpdate();
+                    pStmt.addBatch();
 
-                count++;
-                if (limit > 0 && count >= limit) {
-                    break;
+                    count++;
+                    if (limit > 0 && count >= limit) {
+                        break;
+                    }
+                    pm.worked(1);
                 }
+            } catch (Exception e) {
+                logger.error("error", e);
+            } finally {
+                pm.done();
+                featureIterator.close();
             }
-            featureIterator.close();
+
+            try {
+                pm.beginTask("Execute batch import of " + featureCount + " features...", IJGTProgressMonitor.UNKNOWN);
+                pStmt.executeBatch();
+            } catch (Exception e) {
+                logger.error("error", e);
+            } finally {
+                pm.done();
+            }
+
         }
+        return noErrors;
     }
 
     /**

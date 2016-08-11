@@ -66,6 +66,8 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
         // I18nManager i18nManager = ToolsLocator.getI18nManager();
         // return i18nManager.getTranslation(message, args);
     }
+    
+    
 
     public int confirmDialog( final String message, final String title, final int optionType, final int messageType ) {
         RunnableWithParameters runnable = new RunnableWithParameters(){

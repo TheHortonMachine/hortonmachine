@@ -18,6 +18,7 @@
 package org.jgrasstools.spatialite;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.jgrasstools.gears.spatialite.QueryResult;
+import org.jgrasstools.gears.spatialite.SpatialiteImportUtils;
 import org.jgrasstools.gui.console.LogConsoleController;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
@@ -251,6 +253,32 @@ public class SqlTemplatesAndActions {
         };
     }
 
+    public static Action getCreateTableFromShapefileSchemaAction( GuiBridgeHandler guiBridge,
+            SpatialiteViewer spatialiteViewer ) {
+        return new AbstractAction("Create table from shapefile"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile());
+                if (openFiles != null && openFiles.length > 0) {
+                    try {
+                        GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
+                    } catch (Exception e1) {
+                        logger.error("ERROR", e1);
+                    }
+                } else {
+                    return;
+                }
+                try {
+                    SpatialiteImportUtils.createTableFromShp(spatialiteViewer.currentConnectedDatabase, openFiles[0]);
+                    spatialiteViewer.refreshDatabaseTree();
+                } catch (Exception e1) {
+                    logger.error("ERROR", e1);
+                }
+
+            }
+        };
+    }
+
     public static Action getSelectAction( TableLevel table, SpatialiteViewer spatialiteViewer ) {
         return new AbstractAction("Select statement"){
             @Override
@@ -304,6 +332,46 @@ public class SqlTemplatesAndActions {
                 } catch (SQLException ex) {
                     logger.error("Error", ex);
                 }
+            }
+        };
+    }
+
+    public static Action getImportShapefileDataAction( GuiBridgeHandler guiBridge, TableLevel table,
+            SpatialiteViewer spatialiteViewer ) {
+        return new AbstractAction("Import data from shapefile"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile());
+                if (openFiles != null && openFiles.length > 0) {
+                    try {
+                        GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
+                    } catch (Exception e1) {
+                        logger.error("ERROR", e1);
+                    }
+                } else {
+                    return;
+                }
+
+                final LogConsoleController logConsole = new LogConsoleController(spatialiteViewer.pm);
+                JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+
+                new Thread(() -> {
+                    boolean hasErrors = false;
+                    logConsole.beginProcess("Importing data...");
+                    try {
+                        hasErrors = !SpatialiteImportUtils.importShapefile(spatialiteViewer.currentConnectedDatabase,
+                                openFiles[0], spatialiteViewer.currentSelectedTable.tableName, -1, spatialiteViewer.pm);
+                    } catch (Exception ex) {
+                        logger.error("Error importing data from shapefile", ex);
+                    } finally {
+                        logConsole.finishProcess();
+                        logConsole.stopLogging();
+                        if (!hasErrors) {
+                            logConsole.setVisible(false);
+                            window.dispose();
+                        }
+                    }
+                }).start();
             }
         };
     }

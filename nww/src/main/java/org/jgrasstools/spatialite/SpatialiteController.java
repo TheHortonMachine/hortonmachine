@@ -157,6 +157,9 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
             oldSqlCommands.add(oldSql);
         }
 
+        _limitCountTextfield.setText("1000");
+        _limitCountTextfield.setToolTipText("1000 is default and used when no valid number is supplied. -1 means no limit.");
+
         _dataViewerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         _sqlEditorArea.setDocument(new SqlDocument());
@@ -233,20 +236,6 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                     String sql = SqlTemplatesAndActions.templatesMap.get(selected);
                     addTextToQueryEditor(sql);
                 }
-            } catch (Exception e1) {
-                logger.error("ERROR", e1);
-            }
-        });
-
-        _shpButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        _shpButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        _shpButton.setText(SHAPEFILE);
-        _shpButton.setToolTipText(SHAPEFILE_TOOLTIP);
-        _shpButton.setPreferredSize(preferredToolbarButtonSize);
-        _shpButton.setIcon(ImageCache.getInstance().getImage(ImageCache.VECTOR));
-        _shpButton.addActionListener(e -> {
-            try {
-                // TODO
             } catch (Exception e1) {
                 logger.error("ERROR", e1);
             }
@@ -697,7 +686,6 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         _runQueryAndStoreShapefileButton.setEnabled(enable);
         _templatesButton.setEnabled(enable);
         _historyButton.setEnabled(enable);
-        _shpButton.setEnabled(enable);
         _clearSqlEditorbutton.setEnabled(enable);
 
         _sqlEditorArea.setText("");
@@ -821,14 +809,6 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         } catch (Exception e) {
             logger.error("Error", e);
         }
-        // String ramLevel = _heapCombo.getSelectedItem().toString();
-        // prefsMap.put(GuiBridgeHandler.DEBUG_KEY, _debugCheckbox.isSelected() + "");
-        // prefsMap.put(GuiBridgeHandler.HEAP_KEY, ramLevel);
-        // guiBridge.setSpatialToolboxPreferencesMap(prefsMap);
-        //
-        // removeMouseListenerFromContext(pPanel);
-        // if (pPanel != null)
-        // pPanel.freeResources();
     }
 
     protected void createNewDatabase() {
@@ -919,9 +899,9 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                     currentConnectedDatabase.open(selectedFile.getAbsolutePath());
 
                     DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-                    setDbTreeTitle(dbLevel.dbName);
-
+                    
                     layoutTree(dbLevel, true);
+                    setDbTreeTitle(dbLevel.dbName);
                 } catch (Exception e) {
                     currentConnectedDatabase = null;
                     logger.error("Error connecting to the database...", e);
@@ -1011,7 +991,8 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         if (currentConnectedDatabase != null && sqlText.length() > 0) {
             try {
                 pm.beginTask("Run query: " + sqlText, IJGTProgressMonitor.UNKNOWN);
-                int limit = -1;
+
+                int limit = getLimit();
 
                 if (sqlText.contains(";")) {
                     String trim = sqlText.replaceAll("\n", "").trim();
@@ -1030,12 +1011,18 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                             }
                             addQueryToHistoryCombo(sql);
                         }
+                        if (!hasError && _refreshTreeAfterQueryCheckbox.isSelected()) {
+                            try {
+                                refreshDatabaseTree();
+                            } catch (SQLException e) {
+                                logger.error("error", e);
+                            }
+                        }
                         return hasError;
                     }
                 }
 
                 if (isSelectOrPragma(sqlText)) {
-                    limit = 5000;
                     QueryResult queryResult = currentConnectedDatabase.getTableRecordsMapFromRawSql(sqlText, limit);
                     loadDataViewer(queryResult);
 
@@ -1062,7 +1049,28 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                 pm.done();
             }
         }
+
+        if (!hasError && _refreshTreeAfterQueryCheckbox.isSelected()) {
+            try {
+                refreshDatabaseTree();
+            } catch (SQLException e) {
+                logger.error("error", e);
+            }
+        }
         return hasError;
+    }
+
+    protected int getLimit() {
+        int limit;
+        limit = 1000;
+        try {
+            String limitText = _limitCountTextfield.getText();
+            limit = Integer.parseInt(limitText);
+        } catch (Exception e) {
+            // reset
+            _limitCountTextfield.setText("1000");
+        }
+        return limit;
     }
 
     protected boolean isSelectOrPragma( String sqlText ) {
