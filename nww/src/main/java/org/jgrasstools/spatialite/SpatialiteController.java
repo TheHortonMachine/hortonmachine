@@ -21,7 +21,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
@@ -33,9 +32,8 @@ import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -43,6 +41,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -64,7 +63,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
-import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
@@ -77,14 +75,11 @@ import org.jgrasstools.gears.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.gears.spatialite.SpatialiteGeometryType;
 import org.jgrasstools.gears.spatialite.SpatialiteTableNames;
 import org.jgrasstools.gui.console.LogConsoleController;
-import org.jgrasstools.gui.utils.DefaultGuiBridgeImpl;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
 import org.jgrasstools.gui.utils.ImageCache;
-import org.jgrasstools.nww.SimpleNwwViewer;
 import org.jgrasstools.nww.gui.ToolsPanelController;
-import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.spatialite.objects.ColumnLevel;
 import org.jgrasstools.spatialite.objects.DbLevel;
 import org.jgrasstools.spatialite.objects.TableLevel;
@@ -98,7 +93,7 @@ import org.slf4j.LoggerFactory;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class SpatialiteController extends SpatialiteView implements IOnCloseListener {
+public abstract class SpatialiteController extends SpatialiteView implements IOnCloseListener {
     private static final Logger logger = LoggerFactory.getLogger(SpatialiteView.class);
     private static final long serialVersionUID = 1L;
 
@@ -116,7 +111,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
     private static final String RUN_QUERY_TOOLTIP = "run the query in the SQL Editor";
     private static final String RUN_QUERY_TO_FILE_TOOLTIP = "run the query in the SQL Editor and store result in file";
     private static final String RUN_QUERY_TO_SHAPEFILE_TOOLTIP = "run the query in the SQL Editor and store result in a shapefile";
-    private static final String VIEW_QUERY_TOOLTIP = "run spatial query and view the result in the 3D viewer";
+    protected static final String VIEW_QUERY_TOOLTIP = "run spatial query and view the result in the 3D viewer";
     private static final String SQL_EDITOR = "SQL Editor";
     private static final String CLEAR_SQL_EDITOR = "clear SQL editor";
     private static final String DATA_VIEWER = "Data viewer";
@@ -128,8 +123,8 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
 
     protected HashMap<String, String> prefsMap = new HashMap<>();
 
-    private GuiBridgeHandler guiBridge;
-    private IJGTProgressMonitor pm = new LogProgressMonitor();
+    protected GuiBridgeHandler guiBridge;
+    protected IJGTProgressMonitor pm = new LogProgressMonitor();
     protected SpatialiteDb currentConnectedDatabase;
     private DbLevel currentDbLevel;
     protected DbLevel currentSelectedDb;
@@ -140,7 +135,6 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
     private Dimension preferredSqleditorButtonSize = new Dimension(30, 30);
 
     private List<String> oldSqlCommands = new ArrayList<String>();
-    private ToolsPanelController toolsPanelController;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public SpatialiteController( GuiBridgeHandler guiBridge ) {
@@ -155,13 +149,8 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         init();
     }
 
-    protected void preInit() {
-
-    }
-
     @SuppressWarnings({"serial"})
     private void init() {
-        preInit();
 
         String[] oldSqlCommandsArray = GuiUtilities.getPreference("JGT_OLD_SQL_COMMANDS", new String[0]);
         for( String oldSql : oldSqlCommandsArray ) {
@@ -238,10 +227,10 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         _templatesButton.setIcon(ImageCache.getInstance().getImage(ImageCache.TEMPLATE));
         _templatesButton.addActionListener(e -> {
             try {
-                String[] sqlHistory = SqlTemplates.templatesMap.keySet().toArray(new String[0]);
+                String[] sqlHistory = SqlTemplatesAndActions.templatesMap.keySet().toArray(new String[0]);
                 String selected = GuiUtilities.showComboDialog(this, "HISTORY", "", sqlHistory);
                 if (selected != null) {
-                    String sql = SqlTemplates.templatesMap.get(selected);
+                    String sql = SqlTemplatesAndActions.templatesMap.get(selected);
                     addTextToQueryEditor(sql);
                 }
             } catch (Exception e1) {
@@ -538,41 +527,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
             }).start();
         });
 
-        _viewQueryButton.setIcon(ImageCache.getInstance().getImage(ImageCache.GLOBE));
-        _viewQueryButton.setToolTipText(VIEW_QUERY_TOOLTIP);
-        _viewQueryButton.setText("");
-        _viewQueryButton.setPreferredSize(preferredSqleditorButtonSize);
-        _viewQueryButton.addActionListener(e -> {
-
-            String sqlText = _sqlEditorArea.getText().trim();
-            if (sqlText.length() > 0) {
-                if (!sqlText.toLowerCase().startsWith("select")) {
-                    JOptionPane.showMessageDialog(this, "Viewing of data is allowed only for SELECT statements.", "WARNING",
-                            JOptionPane.WARNING_MESSAGE, null);
-                    return;
-                }
-            }
-
-            final LogConsoleController logConsole = new LogConsoleController(pm);
-            JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
-            new Thread(() -> {
-                boolean hadErrors = false;
-                try {
-                    logConsole.beginProcess("Run query");
-                    hadErrors = viewSpatialQueryResult(sqlText, pm);
-                } catch (Exception ex) {
-                    pm.errorMessage(ex.getLocalizedMessage());
-                    hadErrors = true;
-                } finally {
-                    logConsole.finishProcess();
-                    logConsole.stopLogging();
-                    if (!hadErrors) {
-                        logConsole.setVisible(false);
-                        window.dispose();
-                    }
-                }
-            }).start();
-        });
+        setViewQueryButton(_viewQueryButton, preferredSqleditorButtonSize, _sqlEditorArea);
 
         _clearSqlEditorbutton.setIcon(ImageCache.getInstance().getImage(ImageCache.TRASH));
         _clearSqlEditorbutton.setToolTipText(CLEAR_SQL_EDITOR);
@@ -582,6 +537,9 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
             _sqlEditorArea.setText("");
         });
     }
+
+    protected abstract void setViewQueryButton( JButton _viewQueryButton, Dimension preferredButtonSize,
+            JTextPane sqlEditorArea );
 
     private void addJtreeDragNDrop() {
         _databaseTree.setDragEnabled(true);
@@ -612,16 +570,24 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
                 if (currentSelectedTable != null) {
                     List<Action> tableActions = makeTableAction(currentSelectedTable);
                     for( Action action : tableActions ) {
-                        JMenuItem item = new JMenuItem(action);
-                        popupMenu.add(item);
-                        item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                        if (action != null) {
+                            JMenuItem item = new JMenuItem(action);
+                            popupMenu.add(item);
+                            item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                        } else {
+                            popupMenu.add(new JSeparator());
+                        }
                     }
                 } else if (currentSelectedDb != null) {
                     List<Action> tableActions = makeDatabaseAction(currentSelectedDb);
                     for( Action action : tableActions ) {
-                        JMenuItem item = new JMenuItem(action);
-                        popupMenu.add(item);
-                        item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                        if (action != null) {
+                            JMenuItem item = new JMenuItem(action);
+                            popupMenu.add(item);
+                            item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                        } else {
+                            popupMenu.add(new JSeparator());
+                        }
                     }
                 } else if (currentSelectedColumn != null) {
                     List<Action> columnActions = makeColumnActions(currentSelectedColumn);
@@ -661,7 +627,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         });
     }
 
-    private void loadDataViewer( QueryResult queryResult ) {
+    protected void loadDataViewer( QueryResult queryResult ) {
         if (queryResult == null) {
             _dataViewerTable.setModel(new DefaultTableModel());
             return;
@@ -848,6 +814,12 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
     }
 
     public void onClose() {
+
+        try {
+            closeCurrentDb();
+        } catch (Exception e) {
+            logger.error("Error", e);
+        }
         // String ramLevel = _heapCombo.getSelectedItem().toString();
         // prefsMap.put(GuiBridgeHandler.DEBUG_KEY, _debugCheckbox.isSelected() + "");
         // prefsMap.put(GuiBridgeHandler.HEAP_KEY, ramLevel);
@@ -858,7 +830,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         // pPanel.freeResources();
     }
 
-    private void createNewDatabase() {
+    protected void createNewDatabase() {
         try {
             closeCurrentDb();
         } catch (Exception e1) {
@@ -907,7 +879,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         }
     }
 
-    private void setDbTreeTitle( String title ) {
+    protected void setDbTreeTitle( String title ) {
         Border databaseTreeViewBorder = _databaseTreeView.getBorder();
         if (databaseTreeViewBorder instanceof TitledBorder) {
             TitledBorder tBorder = (TitledBorder) databaseTreeViewBorder;
@@ -915,7 +887,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         }
     }
 
-    private void openDatabase() {
+    protected void openDatabase() {
         try {
             closeCurrentDb();
         } catch (Exception e1) {
@@ -963,7 +935,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
 
     }
 
-    private DbLevel gatherDatabaseLevels( SpatialiteDb db ) throws SQLException {
+    protected DbLevel gatherDatabaseLevels( SpatialiteDb db ) throws SQLException {
         currentDbLevel = new DbLevel();
         String databasePath = db.getDatabasePath();
         File dbFile = new File(databasePath);
@@ -1024,17 +996,16 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         return currentDbLevel;
     }
 
-    private void closeCurrentDb() throws Exception {
+    protected void closeCurrentDb() throws Exception {
         layoutTree(null, false);
         loadDataViewer(null);
         if (currentConnectedDatabase != null) {
             currentConnectedDatabase.close();
             currentConnectedDatabase = null;
         }
-
     }
 
-    private boolean runQuery( String sqlText, IJGTProgressMonitor pm ) {
+    protected boolean runQuery( String sqlText, IJGTProgressMonitor pm ) {
         boolean hasError = false;
         if (currentConnectedDatabase != null && sqlText.length() > 0) {
             try {
@@ -1093,12 +1064,12 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         return hasError;
     }
 
-    private boolean isSelectOrPragma( String sqlText ) {
+    protected boolean isSelectOrPragma( String sqlText ) {
         sqlText = sqlText.trim();
         return sqlText.toLowerCase().startsWith("select") || sqlText.toLowerCase().startsWith("pragma");
     }
 
-    private boolean runQueryToFile( String sqlText, File selectedFile, IJGTProgressMonitor pm ) {
+    protected boolean runQueryToFile( String sqlText, File selectedFile, IJGTProgressMonitor pm ) {
         boolean hasError = false;
         if (currentConnectedDatabase != null && sqlText.length() > 0) {
             try {
@@ -1116,7 +1087,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         return hasError;
     }
 
-    private boolean runQueryToShapefile( String sqlText, File selectedFile, IJGTProgressMonitor pm ) {
+    protected boolean runQueryToShapefile( String sqlText, File selectedFile, IJGTProgressMonitor pm ) {
         boolean hasError = false;
         if (currentConnectedDatabase != null && sqlText.length() > 0) {
             try {
@@ -1135,31 +1106,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         return hasError;
     }
 
-    private boolean viewSpatialQueryResult( String sqlText, IJGTProgressMonitor pm ) {
-        boolean hasError = false;
-        if (currentConnectedDatabase != null && sqlText.length() > 0) {
-            try {
-                pm.beginTask("Run query: " + sqlText, IJGTProgressMonitor.UNKNOWN);
-                DefaultFeatureCollection fc = currentConnectedDatabase.runRawSqlToFeatureCollection(sqlText);
-                ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
-                if (toolsPanelController == null)
-                    toolsPanelController = SimpleNwwViewer.openNww(null, JFrame.DO_NOTHING_ON_CLOSE);
-                toolsPanelController.loadFeatureCollection(null, "QueryLayer", null, rfc);
-
-                addQueryToHistoryCombo(sqlText);
-
-            } catch (Exception e1) {
-                String localizedMessage = e1.getLocalizedMessage();
-                hasError = true;
-                pm.errorMessage("An error occurred: " + localizedMessage);
-            } finally {
-                pm.done();
-            }
-        }
-        return hasError;
-    }
-
-    private void addTextToQueryEditor( String newText ) {
+    protected void addTextToQueryEditor( String newText ) {
         String text = _sqlEditorArea.getText();
         if (text.trim().length() != 0) {
             text += "\n";
@@ -1168,7 +1115,7 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         _sqlEditorArea.setText(text);
     }
 
-    private void addQueryToHistoryCombo( String sqlText ) {
+    protected void addQueryToHistoryCombo( String sqlText ) {
         if (oldSqlCommands.contains(sqlText)) {
             oldSqlCommands.remove(sqlText);
         }
@@ -1180,473 +1127,16 @@ public class SpatialiteController extends SpatialiteView implements IOnCloseList
         GuiUtilities.setPreference("JGT_OLD_SQL_COMMANDS", oldSqlCommands.toArray(new String[0]));
     }
 
-    @SuppressWarnings("serial")
-    private List<Action> makeColumnActions( final ColumnLevel selectedColumn ) {
+    protected abstract List<Action> makeColumnActions( final ColumnLevel selectedColumn );
 
-        List<Action> actions = new ArrayList<>();
-        AbstractAction action = null;
+    protected abstract List<Action> makeDatabaseAction( final DbLevel dbLevel );
 
-        action = new AbstractAction("Select on column"){
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                String query;
-                if (selectedColumn.geomColumn != null) {
-                    query = "SELECT AsBinary(" + selectedColumn.columnName + ") FROM " + selectedColumn.parent.tableName;
-                } else {
-                    query = "SELECT " + selectedColumn.columnName + " FROM " + selectedColumn.parent.tableName;
-                }
-                addTextToQueryEditor(query);
+    protected abstract List<Action> makeTableAction( final TableLevel selectedTable );
 
-            }
-        };
-        actions.add(action);
-        actions.add(null);
-
-        action = new AbstractAction("Add geometry column"){
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-
-                String[] labels = {"Table name", "Column name", "SRID", "Geometry type", "Dimension", "Not null"};
-                String[] values = {selectedColumn.parent.tableName, selectedColumn.columnName, "4326", "POINT", "XY", "0"};
-                String[] result = GuiUtilities.showMultiInputDialog(getParent(), "Add Geometry", labels, values);
-
-                String query = "SELECT AddGeometryColumn('" + result[0] + "', '" + result[1] + "',  " + result[2] + ", '"
-                        + result[3] + "', '" + result[4] + "', " + result[5] + ")";
-                addTextToQueryEditor(query);
-
-            }
-        };
-        actions.add(action);
-
-        action = new AbstractAction("Recover geometry column"){
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                String[] labels = {"Table name", "Column name", "SRID", "Geometry type", "Dimension"};
-                String[] values = {selectedColumn.parent.tableName, selectedColumn.columnName, "4326", "POINT", "XY"};
-                String[] result = GuiUtilities.showMultiInputDialog(getParent(), "Add Geometry", labels, values);
-
-                String query = "SELECT RecoverGeometryColumn('" + result[0] + "', '" + result[1] + "',  " + result[2] + ", '"
-                        + result[3] + "', '" + result[4] + "')";
-                addTextToQueryEditor(query);
-
-            }
-        };
-        actions.add(action);
-
-        /*
-         * geometry bound stuff
-         */
-
-        if (selectedColumn.geomColumn != null) {
-            action = new AbstractAction("Discard geometry column"){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-                    String query = "SELECT DiscardGeometryColumn('" + selectedColumn.parent.tableName + "', '"
-                            + selectedColumn.geomColumn.f_geometry_column + "');";
-                    addTextToQueryEditor(query);
-
-                }
-            };
-            actions.add(action);
-
-            actions.add(null);
-            action = new AbstractAction("Create spatial index"){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-
-                    String query = "SELECT CreateSpatialIndex('" + selectedColumn.parent.tableName + "','"
-                            + selectedColumn.columnName + "');";
-                    addTextToQueryEditor(query);
-
-                }
-            };
-            actions.add(action);
-
-            action = new AbstractAction("Check spatial index"){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-
-                    String query = "SELECT CheckSpatialIndex('" + selectedColumn.parent.tableName + "','"
-                            + selectedColumn.columnName + "');";
-                    addTextToQueryEditor(query);
-
-                }
-            };
-            actions.add(action);
-
-            action = new AbstractAction("Recover spatial index"){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-
-                    String query = "SELECT RecoverSpatialIndex('" + selectedColumn.parent.tableName + "','"
-                            + selectedColumn.columnName + "');";
-                    addTextToQueryEditor(query);
-
-                }
-            };
-            actions.add(action);
-
-            actions.add(null);
-            action = new AbstractAction("Show spatial metadata"){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-                    String query = "SELECT * FROM geom_cols_ref_sys WHERE Lower(f_table_name) = Lower('"
-                            + selectedColumn.parent.tableName + "') AND Lower(f_geometry_column) = Lower('"
-                            + selectedColumn.columnName + "')";
-                    addTextToQueryEditor(query);
-                }
-            };
-            actions.add(action);
-        }
-        /*
-         * FK key bound stuff
-         */
-        if (selectedColumn.references != null) {
-            actions.add(null);
-            action = new AbstractAction("Create combined select statement"){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-
-                    String[] tableColsFromFK = selectedColumn.tableColsFromFK();
-                    String refTable = tableColsFromFK[0];
-                    String refColumn = tableColsFromFK[1];
-                    String tableName = selectedColumn.parent.tableName;
-                    String query = "SELECT t1.*, t2.* FROM " + tableName + " t1, " + refTable + " t2" + "\nWHERE t1."
-                            + selectedColumn.columnName + "=t2." + refColumn;
-                    addTextToQueryEditor(query);
-
-                }
-            };
-            actions.add(action);
-            action = new AbstractAction("Quick view other table"){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-                    try {
-                        String[] tableColsFromFK = selectedColumn.tableColsFromFK();
-                        String refTable = tableColsFromFK[0];
-                        QueryResult queryResult = currentConnectedDatabase.getTableRecordsMapIn(refTable, null, true, 20, -1);
-                        loadDataViewer(queryResult);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            };
-            actions.add(action);
-        }
-
-        return actions;
-    }
-
-    @SuppressWarnings("serial")
-    private List<Action> makeDatabaseAction( final DbLevel dbLevel ) {
-        List<Action> actions = new ArrayList<>();
-        AbstractAction action = new AbstractAction("Refresh"){
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                final LogConsoleController logConsole = new LogConsoleController(pm);
-                JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
-
-                new Thread(() -> {
-                    logConsole.beginProcess("Refresh database");
-                    try {
-                        refreshDatabaseTree();
-                    } catch (Exception ex) {
-                        currentConnectedDatabase = null;
-                        logger.error("Error refreshing database...", ex);
-                    } finally {
-                        logConsole.finishProcess();
-                        logConsole.stopLogging();
-                        logConsole.setVisible(false);
-                        window.dispose();
-                    }
-                }).start();
-            }
-
-        };
-        actions.add(action);
-        return actions;
-    }
-
-    private void refreshDatabaseTree() throws SQLException {
+    protected void refreshDatabaseTree() throws SQLException {
         DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
         setDbTreeTitle(dbLevel.dbName);
         layoutTree(dbLevel, true);
-    }
-
-    @SuppressWarnings("serial")
-    private List<Action> makeTableAction( final TableLevel selectedTable ) {
-        List<Action> actions = new ArrayList<>();
-        AbstractAction action = new AbstractAction("Create select statement"){
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                try {
-                    String query = SpatialiteGuiUtils.getSelectQuery(currentConnectedDatabase, selectedTable, false, true);
-                    addTextToQueryEditor(query);
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        };
-        actions.add(action);
-
-        action = new AbstractAction("Count table records"){
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                try {
-                    String tableName = selectedTable.tableName;
-                    long count = currentConnectedDatabase.getCount(tableName);
-                    JOptionPane.showMessageDialog(getParent(), "Count: " + count);
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        };
-        actions.add(action);
-
-        action = new AbstractAction("Reproject table"){
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                try {
-                    ColumnLevel geometryColumn = selectedTable.getFirstGeometryColumn();
-                    if (geometryColumn == null) {
-                        GuiUtilities.showInfoMessage(getParent(), null, "Only spatial tables can be reprojected.");
-                    }
-
-                    String[] labels = {"New table name", "New SRID"};
-                    String[] values = {selectedTable.tableName + "4326", "4326"};
-                    String[] result = GuiUtilities.showMultiInputDialog(getParent(), "Reprojection parameters", labels, values);
-
-                    String query = SpatialiteGuiUtils.getSelectQuery(currentConnectedDatabase, selectedTable, false, false);
-                    String tableName = selectedTable.tableName;
-                    String letter = tableName.substring(0, 1);
-                    String columnName = letter + "." + geometryColumn.columnName;
-
-                    query = query.replaceFirst(columnName, "TRANSFORM(" + columnName + ", " + result[1] + ")");
-                    query = "create table " + result[0] + " as " + query + ";\n";
-                    query += "SELECT RecoverGeometryColumn('" + result[0] + "', '" + geometryColumn.columnName + "'," + result[1]
-                            + ",'" + geometryColumn.columnType + "'," + geometryColumn.geomColumn.coord_dimension + ");";
-
-                    addTextToQueryEditor(query);
-
-                    refreshDatabaseTree();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        };
-        actions.add(action);
-
-        if (selectedTable.isGeo) {
-            action = new AbstractAction("Quick View Table"){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-                    try {
-                        String query = SpatialiteGuiUtils.getSelectQuery(currentConnectedDatabase, selectedTable, false, true);
-                        viewSpatialQueryResult(query, pm);
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            };
-            actions.add(action);
-        }
-        action = new AbstractAction("Drop table"){
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                try {
-                    List<ColumnLevel> columnsList = selectedTable.columnsList;
-                    for( ColumnLevel columnLevel : columnsList ) {
-                        if (columnLevel.geomColumn != null) {
-                            String query = "SELECT DiscardGeometryColumn('" + selectedTable.tableName + "', '"
-                                    + columnLevel.geomColumn.f_geometry_column + "');";
-                            runQuery(query, pm);
-                        }
-                    }
-                    String query = "drop table " + selectedTable.tableName;
-                    runQuery(query, pm);
-                    refreshDatabaseTree();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        };
-        actions.add(action);
-        // if (hasFK) {
-        // actions[index++] = new Action("Show Foreign Keys Diagram", null){
-        // @Override
-        // public void run() {
-        //
-        // try {
-        // HashMap<String, TableLevel> name2LevelMap = new HashMap<>();
-        // List<TypeLevel> typesList = currentDbLevel.typesList;
-        // for( TypeLevel typeLevel : typesList ) {
-        // if (typeLevel.typeName.equals(SpatialiteTableNames.USERDATA)) {
-        // List<TableLevel> tablesList = typeLevel.tablesList;
-        // for( TableLevel tableLevel : tablesList ) {
-        // name2LevelMap.put(tableLevel.tableName, tableLevel);
-        // }
-        // }
-        // }
-        //
-        // List<TableLevel> tablesInvolved = new ArrayList<>();
-        // tablesInvolved.add(selectedTable);
-        // for( ColumnLevel col : selectedTable.columnsList ) {
-        // if (col.references != null) {
-        // String[] tableColsFromFK = col.tableColsFromFK();
-        // TableLevel tableLevel = name2LevelMap.get(tableColsFromFK[0]);
-        // if (tableLevel != null && !tablesInvolved.contains(tableLevel)) {
-        // tablesInvolved.add(tableLevel);
-        // }
-        // }
-        // }
-        //
-        // int tablesNum = tablesInvolved.size();
-        //
-        // int gridCols = 4;
-        // int gridRows = tablesNum / gridCols + 1;
-        //
-        // int indent = 10;
-        // int tableWidth = 350;
-        // int tableHeight = 300;
-        //
-        // JSONArray root = new JSONArray();
-        // int tabesIndex = 0;
-        // int runningX = 0;
-        // int runningY = 10;
-        // for( int gridRow = 0; gridRow < gridRows; gridRow++ ) {
-        // runningX = indent;
-        // for( int gridCol = 0; gridCol < gridCols; gridCol++ ) {
-        // if (tabesIndex == tablesNum) {
-        // break;
-        // }
-        //
-        // JSONObject tableJson = new JSONObject();
-        // root.put(tableJson);
-        // TableLevel curTable = tablesInvolved.get(tabesIndex);
-        // int id = tabesIndex;
-        // tabesIndex++;
-        //
-        // tableJson.put("id", id);
-        // tableJson.put("x", runningX);
-        // tableJson.put("y", runningY);
-        //
-        // String fromTable = curTable.tableName;
-        // tableJson.put("name", fromTable);
-        // JSONArray fieldsArray = new JSONArray();
-        // tableJson.put("fields", fieldsArray);
-        // List<ColumnLevel> cols = curTable.columnsList;
-        //
-        // for( ColumnLevel col : cols ) {
-        // JSONObject colObject = new JSONObject();
-        // fieldsArray.put(colObject);
-        // colObject.put("fname", col.columnName);
-        // if (col.references != null) {
-        // String[] tableColsFromFK = col.tableColsFromFK();
-        // String toTable = tableColsFromFK[0];
-        // String toColumn = tableColsFromFK[1];
-        // colObject.put("fk_name", toTable);
-        // colObject.put("fk_field", toColumn);
-        // }
-        // }
-        //
-        // runningX += indent + tableWidth;
-        // }
-        // runningY += tableHeight + indent;
-        // }
-        // String json = root.toString();
-        // // String string = root.toString(2);
-        // TableGraphDialog d = new TableGraphDialog(parentShell, "Table Graph", json);
-        // d.open();
-        // } catch (Exception e) {
-        // e.printStackTrace();
-        // }
-        //
-        // }
-        // };
-        // }
-        // if (selectedTable.isGeo) {
-        // actions[index++] = new AbstractAction("Quick View Table"){
-        // @Override
-        // public void actionPerformed( ActionEvent e ) {
-        // try {
-        // String selectQuery = SpatialiteGuiUtils.getSelectQuery(currentConnectedDatabase,
-        // selectedTable, true);
-        // QueryResult queryResult =
-        // currentConnectedDatabase.getTableRecordsMapFromRawSql(selectQuery, -1);
-        //
-        // List<ColumnLevel> colsList = selectedTable.columnsList;
-        // int epsg = 4326;
-        // for( ColumnLevel columnLevel : colsList ) {
-        // if (columnLevel.geomColumn != null) {
-        // epsg = columnLevel.geomColumn.srid;
-        // break;
-        // }
-        // }
-        //
-        // CoordinateReferenceSystem sourceCRS = CRS.decode("EPSG:" + epsg);
-        // CoordinateReferenceSystem targetCRS = DefaultGeographicCRS.WGS84;
-        //
-        // SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        // b.setName("geojson");
-        // b.setCRS(sourceCRS);
-        // b.add("geometry", Geometry.class);
-        //
-        // for( int j = 1; j < queryResult.names.size(); j++ ) {
-        // String colName = queryResult.names.get(j);
-        // b.add(colName, String.class);
-        // }
-        //
-        // SimpleFeatureType type = b.buildFeatureType();
-        // SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-        //
-        // DefaultFeatureCollection fc = new DefaultFeatureCollection();
-        // List<Object[]> tableData = queryResult.data;
-        // for( Object[] objects : tableData ) {
-        // // first needs to be the geometry
-        // if (!(objects[0] instanceof Geometry)) {
-        // MessageDialog.openError(parentShell, "ERROR",
-        // "The first column of the result of the query needs to be a geometry.");
-        // return;
-        // }
-        // builder.addAll(objects);
-        // SimpleFeature feature = builder.buildFeature(null);
-        // fc.add(feature);
-        // }
-        //
-        // ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, targetCRS);
-        //
-        // FeatureJSON fjson = new FeatureJSON();
-        // StringWriter writer = new StringWriter();
-        // fjson.writeFeatureCollection(rfc, writer);
-        // String geojson = writer.toString();
-        //
-        // // System.out.println(geojson);
-        //
-        // QuickGeometryViewDialog d = new QuickGeometryViewDialog(parentShell,
-        // "Data Viewer: " + selectedTable.tableName, geojson);
-        // d.open();
-        // } catch (Exception e) {
-        // e.printStackTrace();
-        // }
-        //
-        // }
-        // };
-        // }
-        return actions;
-    }
-
-    public static void main( String[] args ) throws Exception {
-        GuiUtilities.setDefaultLookAndFeel();
-
-        DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
-        final SpatialiteController controller = new SpatialiteController(gBridge);
-        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "JGrasstools' Spatialite Viewer");
-
-        Class<SpatialiteController> class1 = SpatialiteController.class;
-        ImageIcon icon = new ImageIcon(class1.getResource("/org/jgrasstools/images/hm150.png"));
-        frame.setIconImage(icon.getImage());
-
-        GuiUtilities.addClosingListener(frame, controller);
     }
 
 }
