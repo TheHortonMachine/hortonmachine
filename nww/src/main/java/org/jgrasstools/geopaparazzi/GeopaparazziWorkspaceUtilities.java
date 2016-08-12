@@ -18,6 +18,7 @@
 package org.jgrasstools.geopaparazzi;
 
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_METADATA;
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_NOTES;
 
 import java.io.File;
 import java.sql.Connection;
@@ -31,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.MetadataTableFields;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
 
 /**
@@ -110,6 +112,62 @@ public class GeopaparazziWorkspaceUtilities {
 
         }
         return sb.toString();
+    }
+
+    /**
+     * @param connection
+     * @return the list of [lon, lat, altim, dateTimeString, text, descr]
+     * @throws Exception
+     */
+    public static List<String[]> getNotesText( Connection connection ) throws Exception {
+        String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
+        String descFN = NotesTableFields.COLUMN_DESCRIPTION.getFieldName();
+        String tsFN = NotesTableFields.COLUMN_TS.getFieldName();
+        String altimFN = NotesTableFields.COLUMN_ALTIM.getFieldName();
+        String latFN = NotesTableFields.COLUMN_LAT.getFieldName();
+        String lonFN = NotesTableFields.COLUMN_LON.getFieldName();
+
+        String sql = "select " + //
+                latFN + "," + //
+                lonFN + "," + //
+                altimFN + "," + //
+                tsFN + "," + //
+                textFN + "," + //
+                descFN + " from " + //
+                TABLE_NOTES;
+
+        List<String[]> notesDescriptionList = new ArrayList<>();
+        try (Statement statement = connection.createStatement()) {
+            statement.setQueryTimeout(30); // set timeout to 30 sec.
+            ResultSet rs = statement.executeQuery(sql);
+            while( rs.next() ) {
+                double lat = rs.getDouble(latFN);
+                double lon = rs.getDouble(lonFN);
+                double altim = rs.getDouble(altimFN);
+                long ts = rs.getLong(tsFN);
+                String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
+                String text = rs.getString(textFN);
+                String descr = rs.getString(descFN);
+                if (descr == null)
+                    descr = "";
+
+                if (lat == 0 || lon == 0) {
+                    continue;
+                }
+
+                notesDescriptionList.add(new String[]{//
+                        String.valueOf(lon), //
+                        String.valueOf(lat), //
+                        String.valueOf(altim), //
+                        dateTimeString, //
+                        text, //
+                        descr//
+                });
+
+            }
+
+        }
+        return notesDescriptionList;
     }
 
     public static String escapeHTML( String s ) {

@@ -17,6 +17,8 @@
  */
 package org.jgrasstools.gui.utils;
 
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
 import javax.swing.ImageIcon;
@@ -120,6 +122,15 @@ public class ImageCache {
             imageMap.put(key, image);
         }
         return image;
+    }
+
+    public BufferedImage getBufferedImage( String key ) {
+        ImageIcon icon = getImage(key);
+        BufferedImage bi = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics g = bi.createGraphics();
+        icon.paintIcon(null, g, 0, 0);
+        g.dispose();
+        return bi;
     }
 
     private ImageIcon createImage( String key ) {

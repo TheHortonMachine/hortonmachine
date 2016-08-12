@@ -17,7 +17,12 @@
  */
 package org.jgrasstools.geopaparazzi;
 
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOGS;
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOG_DATA;
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOG_PROPERTIES;
+
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
@@ -27,10 +32,14 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,20 +72,43 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsDataTableFields;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsPropertiesTableFields;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Image;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.ColorUtilities;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
+import org.jgrasstools.nww.gui.NwwPanel;
+import org.jgrasstools.nww.shapes.FeatureLine;
+import org.jgrasstools.nww.shapes.FeaturePoint;
+import org.jgrasstools.nww.shapes.InfoPoint;
+import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.gui.utils.ImageCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
+
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.render.BasicShapeAttributes;
+import gov.nasa.worldwind.render.Material;
+import gov.nasa.worldwind.render.Path;
+import gov.nasa.worldwind.render.PointPlacemark;
+import gov.nasa.worldwind.render.PointPlacemarkAttributes;
 
 /**
  * The spatialtoolbox view controller.
@@ -85,6 +117,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public abstract class GeopaparazziController extends GeopaparazziView implements IOnCloseListener {
+    private static final String RED_HEXA = "#FF0000";
     private static final Logger logger = LoggerFactory.getLogger(GeopaparazziView.class);
     private static final long serialVersionUID = 1L;
     private static boolean hasDriver = false;
@@ -110,6 +143,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
     private Dimension preferredButtonSize = new Dimension(30, 30);
     private JTextPane _infoArea;
+    private RenderableLayer geopapDataLayer;
+    private NwwPanel wwjPanel;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public GeopaparazziController( GuiBridgeHandler guiBridge ) {
@@ -132,7 +167,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         _infoArea.setContentType("text/html");
         _infoArea.setEditable(false);
         _infoScroll.setViewportView(_infoArea);
-//        _infoScroll.setMinimumSize(new Dimension(10, 200));
+        // _infoScroll.setMinimumSize(new Dimension(10, 200));
 
         _loadFolderButton.setIcon(ImageCache.getInstance().getImage(ImageCache.REFRESH));
         _loadFolderButton.setText("");
@@ -178,8 +213,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
         String lastSavedPath = prefsMap.get(GuiBridgeHandler.LAST_GP_PROJECTS_PATH);
         _projectsFolderTextfield.setText(lastSavedPath);
-        
-        
+
         _filterTextfield.addKeyListener(new KeyAdapter(){
             @Override
             public void keyReleased( KeyEvent e ) {
@@ -274,6 +308,13 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         }
 
         layoutTree(null, false);
+
+        wwjPanel = new NwwPanel(true);
+        wwjPanel.addOsmLayer();
+        geopapDataLayer = new RenderableLayer();
+        wwjPanel.addLayer(geopapDataLayer);
+        _nwwHolder.setLayout(new BorderLayout());
+        _nwwHolder.add(wwjPanel, BorderLayout.CENTER);
 
     }
 
@@ -549,6 +590,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
             _infoArea.setText(text);
 
+            loadProjectData(currentSelectedProject);
+
             // /*
             // * set the project view
             // */
@@ -633,6 +676,196 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         // noModuleLabel.setText("<span style='font:bold 26px Arial;'>" + NO_MODULE_SELECTED +
         // "</span>");
         // return noModuleLabel;
+    }
+
+    /**
+     * Extract data from the db and add them to the map view.
+     * 
+     * @param projectTemplate
+     * @return
+     * @throws Exception 
+     */
+    private void loadProjectData( ProjectInfo currentSelectedProject ) throws Exception {
+        geopapDataLayer.removeAllRenderables();
+
+        Envelope bounds = new Envelope();
+
+        File dbFile = currentSelectedProject.databaseFile;
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath())) {
+
+            // NOTES
+            List<String[]> noteDataList = GeopaparazziWorkspaceUtilities.getNotesText(connection);
+            StringBuilder sb = new StringBuilder();
+            sb.append("\n\n// GP NOTES\n");
+            int index = 0;
+            PointPlacemarkAttributes notesAttributes = new PointPlacemarkAttributes();
+            // notesAttributes.setLabelMaterial(mFillMaterial);
+            // notesAttributes.setLineMaterial(mFillMaterial);
+            // notesAttributes.setUsePointAsDefaultImage(true);
+            notesAttributes.setImage(ImageCache.getInstance().getBufferedImage(ImageCache.INFO));
+            notesAttributes.setLabelMaterial(new Material(Color.BLACK));
+            // notesAttributes.setScale(mMarkerSize);
+            for( String[] noteData : noteDataList ) {
+                // [lon, lat, altim, dateTimeString, text, descr]
+                double lon = Double.parseDouble(noteData[0]);
+                double lat = Double.parseDouble(noteData[1]);
+                String altim = noteData[2];
+                String date = noteData[3];
+                String text = noteData[4];
+                String descr = noteData[5];
+
+                PointPlacemark marker = new PointPlacemark(Position.fromDegrees(lat, lon, 0));
+                marker.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+                marker.setLabelText(text + " (" + date + ")");
+                marker.setAttributes(notesAttributes);
+
+                geopapDataLayer.addRenderable(marker);
+
+                bounds.expandToInclude(lon, lat);
+            }
+
+            /*
+             * IMAGES
+             */
+            PointPlacemarkAttributes imageAttributes = new PointPlacemarkAttributes();
+            imageAttributes.setImage(ImageCache.getInstance().getBufferedImage(ImageCache.DBIMAGE));
+            imageAttributes.setLabelMaterial(new Material(Color.GRAY));
+            for( org.jgrasstools.gears.io.geopaparazzi.geopap4.Image image : currentSelectedProject.images ) {
+                double lon = image.getLon();
+                double lat = image.getLat();
+
+                PointPlacemark marker = new PointPlacemark(Position.fromDegrees(lat, lon, 0));
+                marker.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+                marker.setLabelText(image.getName());
+                marker.setAttributes(imageAttributes);
+
+                geopapDataLayer.addRenderable(marker);
+                bounds.expandToInclude(lon, lat);
+            }
+
+            try (Statement statement = connection.createStatement()) {
+                statement.setQueryTimeout(30); // set timeout to 30 sec.
+
+                String sql = "select " + //
+                        GpsLogsTableFields.COLUMN_ID.getFieldName() + "," + //
+                        GpsLogsTableFields.COLUMN_LOG_STARTTS.getFieldName() + "," + //
+                        GpsLogsTableFields.COLUMN_LOG_ENDTS.getFieldName() + "," + //
+                        GpsLogsTableFields.COLUMN_LOG_TEXT.getFieldName() + //
+                        " from " + TABLE_GPSLOGS; //
+
+                // first get the logs
+                ResultSet rs = statement.executeQuery(sql);
+                while( rs.next() ) {
+                    long id = rs.getLong(1);
+
+                    long startDateTime = rs.getLong(2);
+                    String startDateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(startDateTime));
+                    long endDateTime = rs.getLong(3);
+                    String endDateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(endDateTime));
+                    String text = rs.getString(4);
+
+                    // points
+                    String query = "select " //
+                            + GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + ","
+                            + GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + ","
+                            + GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName()//
+                            + " from " + TABLE_GPSLOG_DATA + " where " + //
+                            GpsLogsDataTableFields.COLUMN_LOGID.getFieldName() + " = " + id + " order by "
+                            + GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName();
+
+                    List<Position> verticesList = new ArrayList<>();
+                    try (Statement newStatement = connection.createStatement()) {
+                        newStatement.setQueryTimeout(30);
+                        ResultSet result = newStatement.executeQuery(query);
+
+                        while( result.next() ) {
+                            double lat = result.getDouble(1);
+                            double lon = result.getDouble(2);
+                            Position pos = Position.fromDegrees(lat, lon, 0);
+                            verticesList.add(pos);
+                            bounds.expandToInclude(lon, lat);
+                        }
+                    }
+
+                    // color
+                    String colorQuery = "select " //
+                            + GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_COLOR.getFieldName() + ","
+                            + GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_WIDTH.getFieldName() + " from "
+                            + TABLE_GPSLOG_PROPERTIES + " where " + //
+                            GpsLogsPropertiesTableFields.COLUMN_LOGID.getFieldName() + " = " + id;
+
+                    String colorStr = RED_HEXA;
+                    int lineWidth = 3;
+                    try (Statement newStatement = connection.createStatement()) {
+                        newStatement.setQueryTimeout(30);
+                        ResultSet result = newStatement.executeQuery(colorQuery);
+
+                        if (result.next()) {
+                            colorStr = result.getString(1);
+                            lineWidth = result.getInt(2);
+                            if (colorStr.equalsIgnoreCase("red")) {
+                                colorStr = RED_HEXA;
+                            }
+                        }
+                        if (colorStr == null || colorStr.length() == 0) {
+                            colorStr = RED_HEXA;
+                        }
+                    }
+
+                    Color color = Color.RED;
+                    try {
+                        color = Color.decode(colorStr);
+                    } catch (Exception e) {
+                        logger.error("Could not convert color: " + colorStr, e);
+                    }
+
+                    BasicShapeAttributes lineAttributes = new BasicShapeAttributes();
+                    lineAttributes.setOutlineMaterial(new Material(color));
+                    lineAttributes.setOutlineWidth(lineWidth);
+                    Path path = new Path(verticesList);
+                    path.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+                    path.setFollowTerrain(true);
+                    path.setAttributes(lineAttributes);
+
+                    geopapDataLayer.addRenderable(path);
+                }
+
+            }
+
+            // // IMAGETABLE
+            //
+            // List<org.jgrasstools.gears.io.geopaparazzi.geopap4.Image> imagesList =
+            // DaoImages.getImagesList(connection);
+            // for( org.jgrasstools.gears.io.geopaparazzi.geopap4.Image image : imagesList ) {
+            // File newImageFile = new File(mediaFolderFile, image.getName());
+            //
+            // byte[] imageData = DaoImages.getImageData(connection, image.getImageDataId());
+            //
+            // try (OutputStream outStream = new FileOutputStream(newImageFile)) {
+            // outStream.write(imageData);
+            // }
+            //
+            // Point point = gf.createPoint(new Coordinate(image.getLon(), image.getLat()));
+            // long ts = image.getTs();
+            // String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new
+            // Date(ts));
+            //
+            // String imageRelativePath = mediaFolderFile.getName() + "/" + image.getName();
+            // Object[] values = new Object[]{point, image.getAltim(), dateTimeString,
+            // image.getAzim(), imageRelativePath};
+            //
+            // SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+            // builder.addAll(values);
+            // SimpleFeature feature = builder.buildFeature(null);
+            // newCollection.add(feature);
+            // pm.worked(1);
+            // }
+
+        }
+
+        Sector sector = NwwUtilities.envelope2Sector(new ReferencedEnvelope(bounds, NwwUtilities.GPS_CRS));
+
+        wwjPanel.goTo(sector, false);
     }
 
     protected abstract List<Action> makeColumnActions( final GpsLog selectedLog );

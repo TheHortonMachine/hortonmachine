@@ -27,9 +27,11 @@ public class GeopaparazziView extends JPanel
    JTextField _projectsFolderTextfield = new JTextField();
    JButton _projectsFolderBrowseButton = new JButton();
    JButton _loadFolderButton = new JButton();
+   JPanel _nwwHolder = new JPanel();
    JLabel _filterLabel = new JLabel();
    JTextField _filterTextfield = new JTextField();
    JScrollPane _infoScroll = new JScrollPane();
+   JPanel _chartHolder = new JPanel();
 
    /**
     * Default constructor
@@ -143,7 +145,7 @@ public class GeopaparazziView extends JPanel
       _loadFolderButton.setText("Load");
       jpanel1.add(_loadFolderButton,cc.xy(10,2));
 
-      jpanel1.add(createPanel1(),cc.xywh(6,4,5,5));
+      jpanel1.add(createPanel1(),cc.xywh(6,4,5,3));
       _filterLabel.setName("filterLabel");
       _filterLabel.setText("Filter projects");
       jpanel1.add(_filterLabel,cc.xy(2,4));
@@ -152,6 +154,7 @@ public class GeopaparazziView extends JPanel
       jpanel1.add(_filterTextfield,cc.xy(4,4));
 
       jpanel1.add(createPanel2(),cc.xywh(2,8,3,1));
+      jpanel1.add(createPanel3(),cc.xywh(6,8,5,1));
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11 },new int[]{ 1,2,3,4,5,6,7,8,9 });
       return jpanel1;
    }
@@ -179,13 +182,16 @@ public class GeopaparazziView extends JPanel
    public JPanel createPanel1()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Data Info",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
+      TitledBorder titledborder1 = new TitledBorder(null,"Viewer",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      addFillComponents(jpanel1,new int[]{ 1 },new int[]{ 1 });
+      _nwwHolder.setName("nwwHolder");
+      jpanel1.add(_nwwHolder,cc.xy(1,1));
+
+      addFillComponents(jpanel1,new int[0],new int[0]);
       return jpanel1;
    }
 
@@ -200,6 +206,22 @@ public class GeopaparazziView extends JPanel
 
       _infoScroll.setName("infoScroll");
       jpanel1.add(_infoScroll,cc.xy(1,1));
+
+      addFillComponents(jpanel1,new int[0],new int[0]);
+      return jpanel1;
+   }
+
+   public JPanel createPanel3()
+   {
+      JPanel jpanel1 = new JPanel();
+      TitledBorder titledborder1 = new TitledBorder(null,"Charts",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
+      jpanel1.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:GROW(1.0)");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      _chartHolder.setName("chartHolder");
+      jpanel1.add(_chartHolder,cc.xy(1,1));
 
       addFillComponents(jpanel1,new int[0],new int[0]);
       return jpanel1;
