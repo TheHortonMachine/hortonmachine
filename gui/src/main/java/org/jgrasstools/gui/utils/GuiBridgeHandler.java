@@ -35,6 +35,7 @@ import javax.swing.JFrame;
 public interface GuiBridgeHandler {
 
     String SPATIAL_TOOLBOX_PREFERENCES_KEY = "SPATIAL_TOOLBOX_PREFERENCES";
+    String GEOPAPARAZZI_PREFERENCES_KEY = "GEOPAPARAZZI_PREFERENCES_KEY";
     String HEAP_KEY = "jgt_prefs_heap";
     String DEBUG_KEY = "jgt_prefs_debug";
     String LAST_GP_PROJECTS_PATH = "jgt_last_projects_path";

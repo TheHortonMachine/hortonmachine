@@ -20,7 +20,7 @@
 // THIS FILE HAS TO BE RUN FROM THE PROJECT ROOT LIKE:
 // groovy extras/deploy/deploylibs.groovy 
 
-def VERSION = "0.7.9-SNAPSHOT";
+def VERSION = "0.8.0-SNAPSHOT";
 
 def javaHome = System.getProperty("java.home");
 def javaHomeFile = new File(javaHome);
