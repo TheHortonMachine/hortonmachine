@@ -73,8 +73,13 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.GeodeticCalculator;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsPoint;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsDataTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsPropertiesTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsTableFields;
@@ -85,6 +90,7 @@ import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.ColorUtilities;
+import org.jgrasstools.gears.utils.chart.Scatter;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
@@ -168,6 +174,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         _infoArea.setEditable(false);
         _infoScroll.setViewportView(_infoArea);
         // _infoScroll.setMinimumSize(new Dimension(10, 200));
+
+        _chartHolder.setLayout(new BorderLayout());
 
         _loadFolderButton.setIcon(ImageCache.getInstance().getImage(ImageCache.REFRESH));
         _loadFolderButton.setText("");
@@ -284,6 +292,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     currentSelectedProject = null;
                     currentSelectedImage = null;
                     currentSelectedGpsLog = null;
+                    _chartHolder.removeAll();
                     if (paths.length > 0) {
                         Object selectedItem = paths[0].getLastPathComponent();
                         if (selectedItem instanceof ProjectInfo) {
@@ -370,37 +379,40 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
                 if (currentSelectedImage != null) {
                     List<Action> tableActions = makeTableAction(currentSelectedImage);
-                    for( Action action : tableActions ) {
-                        if (action != null) {
-                            JMenuItem item = new JMenuItem(action);
-                            popupMenu.add(item);
-                            item.setHorizontalTextPosition(JMenuItem.RIGHT);
-                        } else {
-                            popupMenu.add(new JSeparator());
+                    if (tableActions != null)
+                        for( Action action : tableActions ) {
+                            if (action != null) {
+                                JMenuItem item = new JMenuItem(action);
+                                popupMenu.add(item);
+                                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                            } else {
+                                popupMenu.add(new JSeparator());
+                            }
                         }
-                    }
                 } else if (currentSelectedProject != null) {
-                    List<Action> tableActions = makeDatabaseAction(currentSelectedProject);
-                    for( Action action : tableActions ) {
-                        if (action != null) {
-                            JMenuItem item = new JMenuItem(action);
-                            popupMenu.add(item);
-                            item.setHorizontalTextPosition(JMenuItem.RIGHT);
-                        } else {
-                            popupMenu.add(new JSeparator());
+                    List<Action> dbActions = makeDatabaseAction(currentSelectedProject);
+                    if (dbActions != null)
+                        for( Action action : dbActions ) {
+                            if (action != null) {
+                                JMenuItem item = new JMenuItem(action);
+                                popupMenu.add(item);
+                                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                            } else {
+                                popupMenu.add(new JSeparator());
+                            }
                         }
-                    }
                 } else if (currentSelectedGpsLog != null) {
                     List<Action> columnActions = makeColumnActions(currentSelectedGpsLog);
-                    for( Action action : columnActions ) {
-                        if (action != null) {
-                            JMenuItem item = new JMenuItem(action);
-                            popupMenu.add(item);
-                            item.setHorizontalTextPosition(JMenuItem.RIGHT);
-                        } else {
-                            popupMenu.add(new JSeparator());
+                    if (columnActions != null)
+                        for( Action action : columnActions ) {
+                            if (action != null) {
+                                JMenuItem item = new JMenuItem(action);
+                                popupMenu.add(item);
+                                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                            } else {
+                                popupMenu.add(new JSeparator());
+                            }
                         }
-                    }
                 }
             }
 
@@ -659,11 +671,17 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     + "<b>End time:</b> " + endDateTimeString + "<br/>";
             _infoArea.setText(picInfo);
 
-            // GeopaparazziUtilities.setLogChartInBrowser(dataBrowser, selectedLog,
-            // currentSelectedProject.databaseFile, IMAGE_KEY,
-            // SERVICE_HANDLER);
+            setLogChartInBrowser(selectedLog, currentSelectedProject.databaseFile);
+            
+            Envelope env = new Envelope();
+            for( GpsPoint gpsPoint: selectedLog.points ) {
+                env.expandToInclude(gpsPoint.lon, gpsPoint.lat);
+            }
+            Sector sector = NwwUtilities.envelope2Sector(new ReferencedEnvelope(env, NwwUtilities.GPS_CRS));
+            wwjPanel.goTo(sector, false);
+            
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error", e);
             setNoProjectLabel();
         }
     }
@@ -676,6 +694,52 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         // noModuleLabel.setText("<span style='font:bold 26px Arial;'>" + NO_MODULE_SELECTED +
         // "</span>");
         // return noModuleLabel;
+    }
+
+    private void setLogChartInBrowser( GpsLog log, File dbFile ) throws Exception {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath())) {
+            log.points.clear();
+            DaoGpsLog.collectDataForLog(connection, log);
+
+            String logName = log.text;
+            GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
+            int size = log.points.size();
+            double[] xProfile = new double[size];
+            double[] yProfile = new double[size];
+            double runningDistance = 0;
+            for( int i = 0; i < size - 1; i++ ) {
+                GpsPoint p1 = log.points.get(i);
+                GpsPoint p2 = log.points.get(i + 1);
+                double lon1 = p1.lon;
+                double lat1 = p1.lat;
+                double altim1 = p1.altim;
+                double lon2 = p2.lon;
+                double lat2 = p2.lat;
+                double altim2 = p2.altim;
+
+                gc.setStartingGeographicPoint(lon1, lat1);
+                gc.setDestinationGeographicPoint(lon2, lat2);
+                double distance = gc.getOrthodromicDistance();
+                runningDistance += distance;
+
+                if (i == 0) {
+                    xProfile[i] = 0.0;
+                    yProfile[i] = altim1;
+                }
+                xProfile[i + 1] = runningDistance;
+                yProfile[i + 1] = altim2;
+            }
+
+            Scatter scatterProfile = new Scatter("Profile " + logName);
+            scatterProfile.addSeries("profile", xProfile, yProfile);
+            scatterProfile.setShowLines(true);
+            scatterProfile.setXLabel("progressive distance [m]");
+            scatterProfile.setYLabel("elevation [m]");
+            JFreeChart chart = scatterProfile.getChart();
+            ChartPanel chartPanel = new ChartPanel(chart, true);
+
+            _chartHolder.add(chartPanel, BorderLayout.CENTER);
+        }
     }
 
     /**
@@ -816,7 +880,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     try {
                         color = Color.decode(colorStr);
                     } catch (Exception e) {
-                        logger.error("Could not convert color: " + colorStr, e);
+                      // ignore  logger.error("Could not convert color: " + colorStr, e);
                     }
 
                     BasicShapeAttributes lineAttributes = new BasicShapeAttributes();
