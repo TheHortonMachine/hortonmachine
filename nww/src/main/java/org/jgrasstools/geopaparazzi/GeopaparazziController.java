@@ -24,6 +24,7 @@ import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TA
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ComponentEvent;
@@ -33,9 +34,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -48,9 +51,13 @@ import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -84,7 +91,9 @@ import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsDa
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsPropertiesTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoNotes;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Image;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.Note;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -124,6 +133,7 @@ import gov.nasa.worldwind.render.PointPlacemarkAttributes;
  */
 public abstract class GeopaparazziController extends GeopaparazziView implements IOnCloseListener {
     private static final String RED_HEXA = "#FF0000";
+
     private static final Logger logger = LoggerFactory.getLogger(GeopaparazziView.class);
     private static final long serialVersionUID = 1L;
     private static boolean hasDriver = false;
@@ -143,14 +153,17 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
     protected IJGTProgressMonitor pm = new LogProgressMonitor();
     private List<ProjectInfo> projectInfos = new ArrayList<>();
 
-    private ProjectInfo currentSelectedProject = null;
-    private Image currentSelectedImage = null;
-    private GpsLog currentSelectedGpsLog = null;
+    protected ProjectInfo currentSelectedProject = null;
+    protected Image currentSelectedImage = null;
+    protected GpsLog currentSelectedGpsLog = null;
+    protected Note currentSelectedNote = null;
 
     private Dimension preferredButtonSize = new Dimension(30, 30);
     private JTextPane _infoArea;
     private RenderableLayer geopapDataLayer;
     private NwwPanel wwjPanel;
+
+    private ProjectInfo currentLoadedProject;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public GeopaparazziController( GuiBridgeHandler guiBridge ) {
@@ -278,7 +291,9 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     } else if (value instanceof Image) {
                         setIcon(ImageCache.getInstance().getImage(ImageCache.DBIMAGE));
                     } else if (value instanceof GpsLog) {
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.LOG));
+                        setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_LINE));
+                    } else if (value instanceof Note) {
+                        setIcon(ImageCache.getInstance().getImage(ImageCache.NOTE));
                     }
 
                     return this;
@@ -287,6 +302,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             });
 
             _databaseTree.addTreeSelectionListener(new TreeSelectionListener(){
+
                 public void valueChanged( TreeSelectionEvent evt ) {
                     TreePath[] paths = evt.getPaths();
                     currentSelectedProject = null;
@@ -301,14 +317,22 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                         }
                         if (selectedItem instanceof Image) {
                             currentSelectedImage = (Image) selectedItem;
+                            currentSelectedProject = getProjectForImage(currentSelectedImage);
                             selectImage(currentSelectedImage);
                         }
                         if (selectedItem instanceof GpsLog) {
                             currentSelectedGpsLog = (GpsLog) selectedItem;
+                            currentSelectedProject = getProjectForGpsLog(currentSelectedGpsLog);
                             selectGpsLog(currentSelectedGpsLog);
+                        }
+                        if (selectedItem instanceof Note) {
+                            currentSelectedNote = (Note) selectedItem;
+                            currentSelectedProject = getProjectForNote(currentSelectedNote);
+                            selectNote(currentSelectedNote);
                         }
                     }
                 }
+
             });
 
             _databaseTree.setVisible(false);
@@ -340,6 +364,9 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 List<org.jgrasstools.gears.io.geopaparazzi.geopap4.Image> imagesList = DaoImages.getImagesList(connection);
                 info.images = imagesList.toArray(new org.jgrasstools.gears.io.geopaparazzi.geopap4.Image[0]);
 
+                List<Note> notesList = DaoNotes.getNotesList(connection, null);
+                info.notes = notesList;
+
                 List<GpsLog> logsList = DaoGpsLog.getLogsList(connection);
                 info.logs = logsList;
                 infoList.add(info);
@@ -348,8 +375,45 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         return infoList;
     }
 
-    protected abstract void setViewQueryButton( JButton _viewQueryButton, Dimension preferredButtonSize,
-            JTextPane sqlEditorArea );
+    private ProjectInfo getProjectForImage( Image currentSelectedImage ) {
+        boolean doBreak = false;
+        ProjectInfo selectedProject = null;
+        for( ProjectInfo projectInfo : projectInfos ) {
+            for( org.jgrasstools.gears.io.geopaparazzi.geopap4.Image tmpImage : projectInfo.images ) {
+                if (tmpImage.equals(currentSelectedImage)) {
+                    selectedProject = projectInfo;
+                    doBreak = true;
+                    break;
+                }
+            }
+            if (doBreak) {
+                break;
+            }
+        }
+        return selectedProject;
+    }
+
+    private ProjectInfo getProjectForGpsLog( GpsLog currentSelectedGpsLog ) {
+        ProjectInfo selectedProject = null;
+        for( ProjectInfo projectInfo : projectInfos ) {
+            if (projectInfo.logs.contains(currentSelectedGpsLog)) {
+                selectedProject = projectInfo;
+                break;
+            }
+        }
+        return selectedProject;
+    }
+
+    private ProjectInfo getProjectForNote( Note currentSelectedNote ) {
+        ProjectInfo selectedProject = null;
+        for( ProjectInfo projectInfo : projectInfos ) {
+            if (projectInfo.notes.contains(currentSelectedNote)) {
+                selectedProject = projectInfo;
+                break;
+            }
+        }
+        return selectedProject;
+    }
 
     private void addJtreeDragNDrop() {
         _databaseTree.setDragEnabled(true);
@@ -378,7 +442,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             @Override
             public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
                 if (currentSelectedImage != null) {
-                    List<Action> tableActions = makeTableAction(currentSelectedImage);
+                    List<Action> tableActions = makeImageAction(currentSelectedImage);
                     if (tableActions != null)
                         for( Action action : tableActions ) {
                             if (action != null) {
@@ -390,7 +454,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                             }
                         }
                 } else if (currentSelectedProject != null) {
-                    List<Action> dbActions = makeDatabaseAction(currentSelectedProject);
+                    List<Action> dbActions = makeProjectAction(currentSelectedProject);
                     if (dbActions != null)
                         for( Action action : dbActions ) {
                             if (action != null) {
@@ -402,9 +466,9 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                             }
                         }
                 } else if (currentSelectedGpsLog != null) {
-                    List<Action> columnActions = makeColumnActions(currentSelectedGpsLog);
-                    if (columnActions != null)
-                        for( Action action : columnActions ) {
+                    List<Action> logActions = makeGpsLogActions(currentSelectedGpsLog);
+                    if (logActions != null)
+                        for( Action action : logActions ) {
                             if (action != null) {
                                 JMenuItem item = new JMenuItem(action);
                                 popupMenu.add(item);
@@ -500,10 +564,12 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         public int getChildCount( Object parent ) {
             if (parent instanceof ProjectInfo) {
                 ProjectInfo projectInfo = (ProjectInfo) parent;
-                return projectInfo.images.length + projectInfo.logs.size();
+                return projectInfo.images.length + projectInfo.logs.size() + projectInfo.notes.size();
             } else if (parent instanceof Image) {
                 return 0;
             } else if (parent instanceof GpsLog) {
+                return 0;
+            } else if (parent instanceof Note) {
                 return 0;
             } else if (parent instanceof List) {
                 List list = (List) parent;
@@ -518,7 +584,11 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 ProjectInfo projectInfo = (ProjectInfo) parent;
 
                 int imagesCount = projectInfo.images.length;
-                if (index > imagesCount - 1) {
+                int logsCount = projectInfo.logs.size();
+
+                if (index > imagesCount + logsCount - 1) {
+                    return projectInfo.notes.get(index - imagesCount - logsCount);
+                } else if (index > imagesCount - 1) {
                     return projectInfo.logs.get(index - imagesCount);
                 } else {
                     return projectInfo.images[index];
@@ -590,53 +660,23 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         }
     }
 
-    private void selectProjectInfo( Object selectedItem ) {
-        currentSelectedProject = (ProjectInfo) selectedItem;
+    private void selectProjectInfo( ProjectInfo selectedProject ) {
         try {
-            /*
-             * set the info view
-             */
-            String titleName = currentSelectedProject.fileName;
+            String titleName = selectedProject.fileName;
             titleName = titleName.replace('_', ' ').replaceFirst("\\.gpap", "");
-            String text = titleName + "<br/><br/>" + currentSelectedProject.metadata;
+            String text = titleName + "<br/><br/>" + selectedProject.metadata;
 
             _infoArea.setText(text);
 
-            loadProjectData(currentSelectedProject);
-
-            // /*
-            // * set the project view
-            // */
-            // String projectTemplate = getProjectTemplate();
-            // // substitute the notes info
-            // String projectHtml = setData(projectTemplate, currentSelectedProject);
-            // if (CACHE_HTML_TO_FILE) {
-            // projectHtml = FileUtilities.readFile(projectHtml);
-            // }
-            // dataBrowser.setText(projectHtml);
-            //
-            // if (projectHtml.contains("openGpImage")) {
-            // new OpenImageFunction(dataBrowser, "openGpImage",
-            // currentSelectedProject.databaseFile);
-            // }
-
+            loadProjectData(selectedProject, true);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void selectImage( Object selectedItem ) {
-        org.jgrasstools.gears.io.geopaparazzi.geopap4.Image selectedImage = (org.jgrasstools.gears.io.geopaparazzi.geopap4.Image) selectedItem;
-        for( ProjectInfo projectInfo : projectInfos ) {
-            for( org.jgrasstools.gears.io.geopaparazzi.geopap4.Image tmpImage : projectInfo.images ) {
-                if (tmpImage.equals(selectedImage)) {
-                    currentSelectedProject = projectInfo;
-                    break;
-                }
-            }
-        }
-
+    private void selectImage( org.jgrasstools.gears.io.geopaparazzi.geopap4.Image selectedImage ) {
         try {
+            checkLoadedProject();
             String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedImage.getTs()));
             String picInfo = "<b>Image:</b> " + GeopaparazziWorkspaceUtilities.escapeHTML(selectedImage.getName()) + "<br/>" //
                     + "<b>Timestamp:</b> " + dateTimeString + "<br/>" //
@@ -644,26 +684,41 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     + "<b>Altim:</b> " + (int) selectedImage.getAltim() + " m<br/>";
             _infoArea.setText(picInfo);
 
-            // GeopaparazziUtilities.setImageInBrowser(dataBrowser, selectedImage.getId(),
-            // selectedImage.getName(),
-            // currentSelectedProject.databaseFile, IMAGE_KEY, SERVICE_HANDLER);
+            wwjPanel.goTo(selectedImage.getLon(), selectedImage.getLat(), 1000.0, null, false);
+
         } catch (Exception e) {
             e.printStackTrace();
             setNoProjectLabel();
         }
     }
 
-    private void selectGpsLog( Object selectedItem ) {
-        GpsLog selectedLog = (GpsLog) selectedItem;
-
-        for( ProjectInfo projectInfo : projectInfos ) {
-            if (projectInfo.logs.contains(selectedLog)) {
-                currentSelectedProject = projectInfo;
-                break;
-            }
+    private void checkLoadedProject() throws Exception {
+        if (currentLoadedProject == null || currentLoadedProject != currentSelectedProject) {
+            loadProjectData(currentSelectedProject, false);
         }
+    }
 
+    private void selectNote( Note selectedNote ) {
         try {
+            checkLoadedProject();
+            String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedNote.timeStamp));
+            String picInfo = "<b>Text:</b> " + GeopaparazziWorkspaceUtilities.escapeHTML(selectedNote.simpleText) + "<br/>" //
+                    + "<b>Description:</b> " + GeopaparazziWorkspaceUtilities.escapeHTML(selectedNote.description) + "<br/>" //
+                    + "<b>Timestamp:</b> " + dateTimeString + "<br/>" //
+                    + "<b>Altim:</b> " + (int) selectedNote.altim + " m<br/>";
+            _infoArea.setText(picInfo);
+
+            wwjPanel.goTo(selectedNote.lon, selectedNote.lat, 1000.0, null, false);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            setNoProjectLabel();
+        }
+    }
+
+    private void selectGpsLog( GpsLog selectedLog ) {
+        try {
+            checkLoadedProject();
             String startDateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedLog.startTime));
             String endDateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedLog.endTime));
             String picInfo = "<b>Gps log:</b> " + GeopaparazziWorkspaceUtilities.escapeHTML(selectedLog.text) + "<br/>" //
@@ -672,14 +727,14 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             _infoArea.setText(picInfo);
 
             setLogChartInBrowser(selectedLog, currentSelectedProject.databaseFile);
-            
+
             Envelope env = new Envelope();
-            for( GpsPoint gpsPoint: selectedLog.points ) {
+            for( GpsPoint gpsPoint : selectedLog.points ) {
                 env.expandToInclude(gpsPoint.lon, gpsPoint.lat);
             }
             Sector sector = NwwUtilities.envelope2Sector(new ReferencedEnvelope(env, NwwUtilities.GPS_CRS));
             wwjPanel.goTo(sector, false);
-            
+
         } catch (Exception e) {
             logger.error("error", e);
             setNoProjectLabel();
@@ -749,7 +804,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
      * @return
      * @throws Exception 
      */
-    private void loadProjectData( ProjectInfo currentSelectedProject ) throws Exception {
+    private void loadProjectData( ProjectInfo currentSelectedProject, boolean zoomTo ) throws Exception {
         geopapDataLayer.removeAllRenderables();
 
         Envelope bounds = new Envelope();
@@ -766,7 +821,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             // notesAttributes.setLabelMaterial(mFillMaterial);
             // notesAttributes.setLineMaterial(mFillMaterial);
             // notesAttributes.setUsePointAsDefaultImage(true);
-            notesAttributes.setImage(ImageCache.getInstance().getBufferedImage(ImageCache.INFO));
+            notesAttributes.setImage(ImageCache.getInstance().getBufferedImage(ImageCache.NOTE));
             notesAttributes.setLabelMaterial(new Material(Color.BLACK));
             // notesAttributes.setScale(mMarkerSize);
             for( String[] noteData : noteDataList ) {
@@ -880,7 +935,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     try {
                         color = Color.decode(colorStr);
                     } catch (Exception e) {
-                      // ignore  logger.error("Could not convert color: " + colorStr, e);
+                        // ignore logger.error("Could not convert color: " + colorStr, e);
                     }
 
                     BasicShapeAttributes lineAttributes = new BasicShapeAttributes();
@@ -896,46 +951,20 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
             }
 
-            // // IMAGETABLE
-            //
-            // List<org.jgrasstools.gears.io.geopaparazzi.geopap4.Image> imagesList =
-            // DaoImages.getImagesList(connection);
-            // for( org.jgrasstools.gears.io.geopaparazzi.geopap4.Image image : imagesList ) {
-            // File newImageFile = new File(mediaFolderFile, image.getName());
-            //
-            // byte[] imageData = DaoImages.getImageData(connection, image.getImageDataId());
-            //
-            // try (OutputStream outStream = new FileOutputStream(newImageFile)) {
-            // outStream.write(imageData);
-            // }
-            //
-            // Point point = gf.createPoint(new Coordinate(image.getLon(), image.getLat()));
-            // long ts = image.getTs();
-            // String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new
-            // Date(ts));
-            //
-            // String imageRelativePath = mediaFolderFile.getName() + "/" + image.getName();
-            // Object[] values = new Object[]{point, image.getAltim(), dateTimeString,
-            // image.getAzim(), imageRelativePath};
-            //
-            // SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-            // builder.addAll(values);
-            // SimpleFeature feature = builder.buildFeature(null);
-            // newCollection.add(feature);
-            // pm.worked(1);
-            // }
-
         }
 
-        Sector sector = NwwUtilities.envelope2Sector(new ReferencedEnvelope(bounds, NwwUtilities.GPS_CRS));
+        if (zoomTo) {
+            Sector sector = NwwUtilities.envelope2Sector(new ReferencedEnvelope(bounds, NwwUtilities.GPS_CRS));
+            wwjPanel.goTo(sector, false);
+        }
 
-        wwjPanel.goTo(sector, false);
+        currentLoadedProject = currentSelectedProject;
     }
 
-    protected abstract List<Action> makeColumnActions( final GpsLog selectedLog );
+    protected abstract List<Action> makeGpsLogActions( final GpsLog selectedLog );
 
-    protected abstract List<Action> makeDatabaseAction( final ProjectInfo project );
+    protected abstract List<Action> makeProjectAction( final ProjectInfo project );
 
-    protected abstract List<Action> makeTableAction( final Image selectedImage );
+    protected abstract List<Action> makeImageAction( final Image selectedImage );
 
 }

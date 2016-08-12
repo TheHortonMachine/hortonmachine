@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Image;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.Note;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 
 /**
@@ -26,12 +27,13 @@ public class ProjectInfo {
     public String fileName;
     public String metadata;
 
+    public List<Note> notes;
     public Image[] images;
     public List<GpsLog> logs;
-    
+
     @Override
     public String toString() {
         return FileUtilities.getNameWithoutExtention(databaseFile);
     }
-    
+
 }

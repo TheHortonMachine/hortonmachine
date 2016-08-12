@@ -171,6 +171,9 @@ public class GeopaparazziWorkspaceUtilities {
     }
 
     public static String escapeHTML( String s ) {
+        if (s == null) {
+            return "";
+        }
         StringBuilder out = new StringBuilder(Math.max(16, s.length()));
         for( int i = 0; i < s.length(); i++ ) {
             char c = s.charAt(i);

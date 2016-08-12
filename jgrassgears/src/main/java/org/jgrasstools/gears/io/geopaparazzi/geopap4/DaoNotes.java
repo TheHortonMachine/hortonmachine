@@ -17,15 +17,18 @@
  */
 package org.jgrasstools.gears.io.geopaparazzi.geopap4;
 
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_NOTES;
 
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-
-import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.*;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)
@@ -38,7 +41,7 @@ public class DaoNotes {
      *
      * @throws IOException if something goes wrong.
      */
-    public static void createTables(Connection connection) throws IOException, SQLException {
+    public static void createTables( Connection connection ) throws IOException, SQLException {
         StringBuilder sB = new StringBuilder();
         sB.append("CREATE TABLE ");
         sB.append(TABLE_NOTES);
@@ -95,7 +98,6 @@ public class DaoNotes {
         }
     }
 
-
     /**
      * Add a new note to the database.
      *
@@ -109,10 +111,9 @@ public class DaoNotes {
      *
      * @throws IOException if something goes wrong.
      */
-    public static void addNote(Connection connection, long id, double lon, double lat, double altim, long timestamp, String text,
-                               String form) throws Exception {
-        String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_NOTES
-                + "(" + //
+    public static void addNote( Connection connection, long id, double lon, double lat, double altim, long timestamp, String text,
+            String form ) throws Exception {
+        String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_NOTES + "(" + //
                 TableDescriptions.NotesTableFields.COLUMN_ID.getFieldName() + ", " + //
                 TableDescriptions.NotesTableFields.COLUMN_LAT.getFieldName() + ", " + //
                 TableDescriptions.NotesTableFields.COLUMN_LON.getFieldName() + ", " + //
@@ -121,8 +122,7 @@ public class DaoNotes {
                 TableDescriptions.NotesTableFields.COLUMN_TEXT.getFieldName() + ", " + //
                 TableDescriptions.NotesTableFields.COLUMN_FORM.getFieldName() + ", " + //
                 TableDescriptions.NotesTableFields.COLUMN_ISDIRTY.getFieldName() + //
-                ") VALUES"
-                + "(?,?,?,?,?,?,?,?)";
+                ") VALUES" + "(?,?,?,?,?,?,?,?)";
         try (PreparedStatement writeStatement = connection.prepareStatement(insertSQL)) {
             writeStatement.setLong(1, id);
             writeStatement.setDouble(2, lat);
@@ -137,5 +137,53 @@ public class DaoNotes {
         }
     }
 
+    /**
+     * Get the collected notes from the database inside a given bound.
+     *
+     * @param connection the db to take from .
+     * @param nswe      optional bounds as [n, s, w, e].
+     * @return the list of notes inside the bounds.
+     * @throws IOException if something goes wrong.
+     * @throws SQLException 
+     */
+    public static List<Note> getNotesList( Connection connection, float[] nswe)
+            throws IOException, SQLException {
+
+        String query = "SELECT " + //
+                NotesTableFields.COLUMN_ID.getFieldName() + ", " + //
+                NotesTableFields.COLUMN_LON.getFieldName() + ", " + //
+                NotesTableFields.COLUMN_LAT.getFieldName() + ", " + //
+                NotesTableFields.COLUMN_ALTIM.getFieldName() + ", " + //
+                NotesTableFields.COLUMN_TEXT.getFieldName() + ", " + //
+                NotesTableFields.COLUMN_TS.getFieldName() + ", " + //
+                NotesTableFields.COLUMN_DESCRIPTION.getFieldName() + //
+                " FROM " + TABLE_NOTES;
+        if (nswe != null) {
+            query = query + " WHERE (lon BETWEEN XXX AND XXX) AND (lat BETWEEN XXX AND XXX)";
+            query = query.replaceFirst("XXX", String.valueOf(nswe[2]));
+            query = query.replaceFirst("XXX", String.valueOf(nswe[3]));
+            query = query.replaceFirst("XXX", String.valueOf(nswe[1]));
+            query = query.replaceFirst("XXX", String.valueOf(nswe[0]));
+        }
+
+        List<Note> notes = new ArrayList<>();
+        try (Statement statement = connection.createStatement()) {
+            statement.setQueryTimeout(30); // set timeout to 30 sec.
+
+            ResultSet rs = statement.executeQuery(query);
+            while( rs.next() ) {
+                Note note = new Note();
+                note.id = rs.getLong(1);
+                note.lon = rs.getDouble(2);
+                note.lat = rs.getDouble(3);
+                note.altim = rs.getDouble(4);
+                note.simpleText = rs.getString(5);
+                note.timeStamp = rs.getLong(6);
+                note.description = rs.getString(7);
+                notes.add(note);
+            }
+        }
+        return notes;
+    }
 
 }

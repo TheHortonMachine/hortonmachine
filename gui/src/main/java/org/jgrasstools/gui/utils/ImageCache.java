@@ -73,6 +73,7 @@ public class ImageCache {
 
     public static final String INFO = "information.png";
     public static final String PHOTO = "photo.png";
+    public static final String NOTE = "note.gif";
 
     public static final String EXPORT = "export_wiz.gif";
 
@@ -126,7 +127,7 @@ public class ImageCache {
 
     public BufferedImage getBufferedImage( String key ) {
         ImageIcon icon = getImage(key);
-        BufferedImage bi = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage bi = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics g = bi.createGraphics();
         icon.paintIcon(null, g, 0, 0);
         g.dispose();
