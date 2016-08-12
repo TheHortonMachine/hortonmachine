@@ -53,6 +53,7 @@ public class ImageCache {
     public static final String FONT = "font.gif";
     public static final String FILE = "file.gif";
     public static final String FOLDER = "folder.gif";
+    public static final String REFRESH = "refresh.gif";
 
     public static final String CONNECT = "connect.gif";
     public static final String DISCONNECT = "disconnect.gif";

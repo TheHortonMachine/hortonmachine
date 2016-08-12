@@ -79,7 +79,6 @@ import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
 import org.jgrasstools.gui.utils.ImageCache;
-import org.jgrasstools.nww.gui.ToolsPanelController;
 import org.jgrasstools.spatialite.objects.ColumnLevel;
 import org.jgrasstools.spatialite.objects.DbLevel;
 import org.jgrasstools.spatialite.objects.TableLevel;
@@ -121,8 +120,6 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
     private static final String CONNECT = "connect";
     private static final String CONNECT_TOOLTIP = "connect to an existing spatialite database";
 
-    protected HashMap<String, String> prefsMap = new HashMap<>();
-
     protected GuiBridgeHandler guiBridge;
     protected IJGTProgressMonitor pm = new LogProgressMonitor();
     protected SpatialiteDb currentConnectedDatabase;
@@ -136,16 +133,9 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
     private List<String> oldSqlCommands = new ArrayList<String>();
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public SpatialiteController( GuiBridgeHandler guiBridge ) {
         this.guiBridge = guiBridge;
         setPreferredSize(new Dimension(900, 600));
-
-        HashMap<String, String> prefsMapTmp = guiBridge.getSpatialToolboxPreferencesMap();
-        if (prefsMapTmp != null) {
-            prefsMap = (HashMap) prefsMapTmp;
-        }
-
         init();
     }
 
@@ -899,7 +889,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                     currentConnectedDatabase.open(selectedFile.getAbsolutePath());
 
                     DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-                    
+
                     layoutTree(dbLevel, true);
                     setDbTreeTitle(dbLevel.dbName);
                 } catch (Exception e) {

@@ -37,6 +37,7 @@ public interface GuiBridgeHandler {
     String SPATIAL_TOOLBOX_PREFERENCES_KEY = "SPATIAL_TOOLBOX_PREFERENCES";
     String HEAP_KEY = "jgt_prefs_heap";
     String DEBUG_KEY = "jgt_prefs_debug";
+    String LAST_GP_PROJECTS_PATH = "jgt_last_projects_path";
     
     String PREFS_NODE_NAME = "/org/jgrasstools/gui";
 
@@ -110,6 +111,20 @@ public interface GuiBridgeHandler {
      * @param prefsMap
      */
     public void setSpatialToolboxPreferencesMap( HashMap<String, String> prefsMap );
+
+    /**
+     * Get the map of user preferences.
+     * 
+     * @return the {@link HashMap} of preferences.
+     */
+    public HashMap<String, String> getGeopaparazziProjectViewerPreferencesMap();
+    
+    /**
+     * Save SpatialToolbox preferences map.
+     * 
+     * @param prefsMap
+     */
+    public void setGeopaparazziProjectViewerPreferencesMap( HashMap<String, String> prefsMap );
 
     /**
      * Get the folder inside which the libraries to browse are contained. 

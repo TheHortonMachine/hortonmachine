@@ -132,5 +132,10 @@ public class Image  {
         return ts;
     }
 
+    
+    @Override
+    public String toString() {
+        return name;
+    }
 
 }

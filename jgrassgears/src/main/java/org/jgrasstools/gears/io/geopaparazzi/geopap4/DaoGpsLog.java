@@ -352,5 +352,10 @@ public class DaoGpsLog {
         public long endTime;
         public String text;
         public List<GpsPoint> points = new ArrayList<>();
+        
+        @Override
+        public String toString() {
+            return text;
+        }
     }
 }

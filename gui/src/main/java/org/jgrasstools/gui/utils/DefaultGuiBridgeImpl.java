@@ -252,6 +252,24 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
         preferences.put(DEBUG_KEY, debug);
         preferences.put(HEAP_KEY, heap);
     }
+    
+    @Override
+    public HashMap<String, String> getGeopaparazziProjectViewerPreferencesMap() {
+        Preferences preferences = Preferences.userRoot().node(PREFS_NODE_NAME);
+        String lastPath = preferences.get(LAST_GP_PROJECTS_PATH, "");
+
+        HashMap<String, String> prefsMap = new HashMap<>();
+        prefsMap.put(LAST_GP_PROJECTS_PATH, lastPath);
+
+        return prefsMap;
+    }
+
+    @Override
+    public void setGeopaparazziProjectViewerPreferencesMap( HashMap<String, String> prefsMap ) {
+        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
+        String lastPath = prefsMap.get(LAST_GP_PROJECTS_PATH);
+        preferences.put(LAST_GP_PROJECTS_PATH, lastPath);
+    }
 
     public void setLibsFolder( File libsFolder ) {
         this.libsFolder = libsFolder;
@@ -270,5 +288,7 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
         frame.setVisible(true);
         return frame;
     }
+
+
 
 }
