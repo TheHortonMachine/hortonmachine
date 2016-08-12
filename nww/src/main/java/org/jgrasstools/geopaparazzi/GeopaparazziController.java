@@ -98,8 +98,10 @@ import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.modules.v.smoothing.FeatureSlidingAverage;
 import org.jgrasstools.gears.utils.ColorUtilities;
 import org.jgrasstools.gears.utils.chart.Scatter;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
@@ -114,6 +116,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.LineString;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Position;
@@ -726,7 +729,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     + "<b>End time:</b> " + endDateTimeString + "<br/>";
             _infoArea.setText(picInfo);
 
-            setLogChartInBrowser(selectedLog, currentSelectedProject.databaseFile);
+            loadGpsLogChart(selectedLog, currentSelectedProject.databaseFile);
 
             Envelope env = new Envelope();
             for( GpsPoint gpsPoint : selectedLog.points ) {
@@ -751,7 +754,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         // return noModuleLabel;
     }
 
-    private void setLogChartInBrowser( GpsLog log, File dbFile ) throws Exception {
+    private void loadGpsLogChart( GpsLog log, File dbFile ) throws Exception {
         try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath())) {
             log.points.clear();
             DaoGpsLog.collectDataForLog(connection, log);
@@ -759,8 +762,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             String logName = log.text;
             GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
             int size = log.points.size();
-            double[] xProfile = new double[size];
-            double[] yProfile = new double[size];
+
+            List<Coordinate> coords = new ArrayList<>();
             double runningDistance = 0;
             for( int i = 0; i < size - 1; i++ ) {
                 GpsPoint p1 = log.points.get(i);
@@ -778,16 +781,57 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 runningDistance += distance;
 
                 if (i == 0) {
-                    xProfile[i] = 0.0;
-                    yProfile[i] = altim1;
+                    coords.add(new Coordinate(0.0, altim1));
                 }
-                xProfile[i + 1] = runningDistance;
-                yProfile[i + 1] = altim2;
+                coords.add(new Coordinate(runningDistance, altim2));
+            }
+
+            LineString lineString = GeometryUtilities.gf().createLineString(coords.toArray(new Coordinate[0]));
+
+            int lookAhead = 20;
+            double slide = 1;
+            FeatureSlidingAverage fsaElev = new FeatureSlidingAverage(lineString);
+            List<Coordinate> smoothedElev = fsaElev.smooth(lookAhead, false, slide);
+            double[] xProfile = new double[smoothedElev.size()];
+            double[] yProfile = new double[smoothedElev.size()];
+            for( int i = 0; i < xProfile.length; i++ ) {
+                Coordinate c = smoothedElev.get(i);
+                xProfile[i] = c.x;
+                yProfile[i] = c.y;
             }
 
             Scatter scatterProfile = new Scatter("Profile " + logName);
             scatterProfile.addSeries("profile", xProfile, yProfile);
             scatterProfile.setShowLines(true);
+            String colorQuery = "select " //
+                    + GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_COLOR.getFieldName() + " from " + TABLE_GPSLOG_PROPERTIES
+                    + " where " + //
+                    GpsLogsPropertiesTableFields.COLUMN_LOGID.getFieldName() + " = " + log.id;
+
+            String colorStr = RED_HEXA;
+            try (Statement newStatement = connection.createStatement()) {
+                newStatement.setQueryTimeout(30);
+                ResultSet result = newStatement.executeQuery(colorQuery);
+
+                if (result.next()) {
+                    colorStr = result.getString(1);
+                    if (colorStr.equalsIgnoreCase("red")) {
+                        colorStr = RED_HEXA;
+                    }
+                }
+                if (colorStr == null || colorStr.length() == 0) {
+                    colorStr = RED_HEXA;
+                }
+            }
+
+            Color color = Color.RED;
+            try {
+                color = Color.decode(colorStr);
+            } catch (Exception e) {
+                // ignore logger.error("Could not convert color: " + colorStr, e);
+            }
+
+            scatterProfile.setColors(new Color[]{color});
             scatterProfile.setXLabel("progressive distance [m]");
             scatterProfile.setYLabel("elevation [m]");
             JFreeChart chart = scatterProfile.getChart();

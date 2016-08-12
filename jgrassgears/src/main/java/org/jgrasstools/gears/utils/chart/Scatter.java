@@ -55,6 +55,7 @@ public class Scatter implements IChart {
     protected boolean showShapes = true;
     protected JFreeChart chart;
     protected String title;
+    private Color[] colors;
 
     public Scatter( String title ) {
         this.title = title;
@@ -143,7 +144,7 @@ public class Scatter implements IChart {
                     // tooltips?
                     false
             // URLs?
-                    );
+            );
 
             XYPlot plot = (XYPlot) chart.getPlot();
             if (xLog) {
@@ -155,6 +156,12 @@ public class Scatter implements IChart {
                 LogAxis yAxis = new LogAxis("");
                 yAxis.setBase(10);
                 plot.setRangeAxis(yAxis);
+            }
+
+            if (colors != null) {
+                for( int i = 0; i < colors.length; i++ ) {
+                    plot.getRenderer().setSeriesPaint(i, colors[i]);
+                }
             }
 
             ValueAxis rangeAxis = plot.getRangeAxis();
@@ -206,6 +213,10 @@ public class Scatter implements IChart {
             plot.addAnnotation(updateLabel);
         }
         setShapeLinesVisibility(plot);
+    }
+
+    public void setColors( Color[] colors ) {
+        this.colors = colors;
     }
 
     // public static void main( String[] args ) {
