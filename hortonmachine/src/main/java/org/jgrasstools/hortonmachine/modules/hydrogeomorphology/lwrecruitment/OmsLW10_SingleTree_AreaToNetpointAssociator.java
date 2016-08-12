@@ -139,7 +139,7 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
     @Out
     public GridCoverage2D outNetnum = null;
 
-    @Description("TODO treepoints")
+    @Description("outTreePoints_DESCR")
     @Out
     public SimpleFeatureCollection outTreePoints = null;
 
@@ -150,7 +150,8 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
     // VARS DOC START
     public static final String outBasins_DESCR = "The output subbasins raster map.";
     public static final String outNetnum_DESCR = "The output netnumbering raster map.";
-    public static final String outNetPoints_DESCR = "The output points network layer with the additional attributes vegetation height and timber volume .";
+    public static final String outNetPoints_DESCR = "The output points network layer with the additional attributes vegetation height and timber volume.";
+    public static final String outTreePoints_DESCR = "The output tree points layer with additional attribute of the correspondent river section where it will contribute.";
     public static final String pConnectivityThreshold_DESCR = "Threshold on connectivity map for extracting unstable connected pixels of the basins.";
     public static final String pAllometricCoeff2ndOrder_DESCR = "Coefficient of the second order term of tree height of the allometric function relating DBH to H of the trees.";
     public static final String pAllometricCoeff1stOrder_DESCR = "Coefficient of the first order term of tree height of the allometric function relating DBH to H of the trees.";
@@ -353,14 +354,14 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
         String base2 = "D:/lavori_tmp/unibz/2016_06_gsoc/raster/";
 
         OmsLW10_SingleTree_AreaToNetpointAssociator ex = new OmsLW10_SingleTree_AreaToNetpointAssociator();
-        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_hydraulic_inund_wide.shp");
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_width_damsbridg_slope_lateral_inund.shp");
         ex.inTreePoints = OmsVectorReader.readVector(base + "T1_ps_plot.shp");
-        ex.inInundationArea = OmsVectorReader.readVector(base + "inund_area.shp");
+        ex.inInundationArea = OmsVectorReader.readVector(base + "inund_area2.shp");
         ex.inFlow = OmsRasterReader.readRaster(base2 + "basin_drain.asc");
         ex.inNet = OmsRasterReader.readRaster(base2 + "net_7000.asc");
         ex.inConnectivity = OmsRasterReader.readRaster(base2 + "connectivity.asc");
         ex.pConnectivityThreshold = 45.0;
-        ex.pRepresentingHeightDbhPercentile = 83;
+        ex.pRepresentingHeightDbhPercentile = 80;
 
         ex.process();
         SimpleFeatureCollection outNetPoints = ex.outNetPoints;
@@ -368,10 +369,10 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
         GridCoverage2D outNetNum = ex.outNetnum;
         GridCoverage2D outBasins = ex.outBasins;
         
-        OmsVectorWriter.writeVector(base + "net_point_hydraulic_inund_wide_veg_83_rast.shp", outNetPoints);
-        OmsVectorWriter.writeVector(base + "tree_points_83_rast.shp", outTreePoints);
-        OmsRasterWriter.writeRaster(base + "netnum.asc", outNetNum);
-        OmsRasterWriter.writeRaster(base + "basins.asc", outBasins);
+        OmsVectorWriter.writeVector(base + "net_point_width_damsbridg_slope_lateral_inund_veg_80_rast.shp", outNetPoints);
+        OmsVectorWriter.writeVector(base + "tree_points_80_rast.shp", outTreePoints);
+        OmsRasterWriter.writeRaster(base + "netnum_80.asc", outNetNum);
+        OmsRasterWriter.writeRaster(base + "basins_80.asc", outBasins);
 
     }
     

@@ -235,19 +235,19 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
         OmsLW07_HydraulicParamsToSectionsAdder ex = new OmsLW07_HydraulicParamsToSectionsAdder();
         ex.inDtm = OmsRasterReader.readRaster(baseRaster + "dtmfel.asc");
         ex.inNet = OmsVectorReader.readVector(base + "extracted_net.shp");
-//        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_hydraulic_inund.shp");
-        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_width_damsbridg_slope.shp");
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_width_damsbridg_slope_lateral_inund_veg_80_rast.shp");
+//        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_width_damsbridg_slope.shp");
         ex.pDischarge = 3.0;
         ex.outputLevelFile = base + "levels_lateral2.csv";
         ex.outputDischargeFile = base + "discharge_lateral2.csv";
-        ex.doMaxWidening = false;
+        ex.doMaxWidening = true;
 
         ex.process();
         SimpleFeatureCollection outNetPoints = ex.outNetPoints;
         SimpleFeatureCollection outTransSect = ex.outTransSect;
 
-        OmsVectorWriter.writeVector(base + "extracted_bankfullsections_lateral2.shp", outTransSect);
-        OmsVectorWriter.writeVector(base + "net_point_width_damsbridg_slope_lateral.shp", outNetPoints);
+        OmsVectorWriter.writeVector(base + "extracted_bankfullsections_lateral3.shp", outTransSect);
+        OmsVectorWriter.writeVector(base + "net_point_width_damsbridg_slope_lateral_inund_veg_80_rast_lateral3.shp", outNetPoints);
 
     }
 

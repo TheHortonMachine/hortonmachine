@@ -62,15 +62,15 @@ public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
     @In
     public SimpleFeatureCollection inNetPoints = null;
 
-    @Description("ratioLogsLengthChannelWidthHillslope")
+    @Description("ratioLogsLengthChannelWidthHillslope_DESCR")
     @In
     public double pRatioLogsLengthChannelWidthHillslope = 0.8;
 
-    @Description("ratioLogsLengthChannelWidthChannel")
+    @Description("ratioLogsLengthChannelWidthChannel_DESCR")
     @In
     public double pRatioLogsLengthChannelWidthChannel = 1.0;
 
-    @Description("ratioLogsDiameterWaterDepth")
+    @Description("ratioLogsDiameterWaterDepth_DESCR")
     @In
     public double pRatioLogsDiameterWaterDepth = 0.8;
 
@@ -81,6 +81,9 @@ public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
     // VARS DOC START
     public static final String outNetPoints_DESCR = "The output network points layer with the critical sections labelled in the attribute table.";
     public static final String inNetPoints_DESCR = "The input network points layer with the additional attributes vegetation height and timber volume.";
+    public static final String ratioLogsLengthChannelWidthHillslope_DESCR = "The ratio between the lenght of the logs and the maximum channel width for the vegetation coming from the hillslopes (vegetation characteristics of the current section).";
+    public static final String ratioLogsLengthChannelWidthChannel_DESCR = "The ratio between the lenght of the logs and the maximum channel width for the vegetation coming from upstream (vegetation characteristics from upstream not blocked).";
+    public static final String ratioLogsDiameterWaterDepth_DESCR = "The ratio between the diameter of the logs and the water depth corresponding to maximum channel widht.";
     public static final int STATUS = Status.EXPERIMENTAL;
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String NAME = "lw11_networkpropagator";
@@ -95,6 +98,7 @@ public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
      * specify the names of the attributes fields
      */
     private final String FIELD_LINKID = LINKID;
+    private final String FIELD_DBH = VEG_DBH;
 
     @Execute
     public void process() throws Exception {
@@ -107,6 +111,7 @@ public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
         List<PfafstetterNumber> pfafstetterNumberList = new ArrayList<PfafstetterNumber>();
         HashMap<String, TreeMap<Integer, SimpleFeature>> pfafstetterNumber2FeaturesMap = new HashMap<String, TreeMap<Integer, SimpleFeature>>();
 
+        // TODO add the check if the DBH field is available or not for the check on diameter!!
         for( SimpleFeature networkFeature : networkFeatures ) {
             Object pfaffObject = networkFeature.getAttribute(NetworkChannel.PFAFNAME);
             if (pfaffObject instanceof String) {
@@ -135,12 +140,8 @@ public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
          * prepare the output feature collection as an extention of the input with 3 
          * additional attributes for critical sections
          */
-        FeatureExtender ext = new FeatureExtender(inNetPoints.getSchema(),
-                new String[]{FIELD_ISCRITIC_LOCAL_FOR_HEIGHT, FIELD_ISCRITIC_GLOBAL_FOR_HEIGHT, 
-                        FIELD_CRITIC_SOURCE_FOR_HEIGHT, FIELD_ISCRITIC_LOCAL_FOR_DIAMETER, 
-                        FIELD_ISCRITIC_GLOBAL_FOR_DIAMETER, FIELD_CRITIC_SOURCE_FOR_DIAMETER},
-                new Class[]{Integer.class, Integer.class, String.class, Integer.class, Integer.class, String.class});
-        DefaultFeatureCollection outputFC = new DefaultFeatureCollection();
+        FeatureExtender ext = null;
+          DefaultFeatureCollection outputFC = new DefaultFeatureCollection();
         /*
          * consider each link and navigate downstream each
          */
@@ -186,17 +187,38 @@ public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
                 String linkid = feature.getAttribute(FIELD_LINKID).toString();
                 double width = (Double) feature.getAttribute(WIDTH2);
                 double height = (Double) feature.getAttribute(VEG_H);
-                double diameter = (Double) feature.getAttribute(VEG_DBH);
-                double waterDepth = (Double) feature.getAttribute(FIELD_WATER_LEVEL2);
+                Object diameterObj = feature.getAttribute(VEG_DBH);
+                double diameter;
+                if (diameterObj instanceof Double) {
+                    diameter = (Double) diameterObj;
+                } else {
+                    diameter = -1;
+                }
+                Object waterDepthObj = feature.getAttribute(FIELD_WATER_LEVEL2);
+                double waterDepth;
+                if (waterDepthObj instanceof Double) {
+                    waterDepth = (Double) waterDepthObj;
+                } else {
+                    waterDepth = -1;
+                }
+                
+                if (ext ==null) {
+                    if (diameter<0) {
+                        ext = new FeatureExtender(inNetPoints.getSchema(),
+                                new String[]{FIELD_ISCRITIC_LOCAL_FOR_HEIGHT, FIELD_ISCRITIC_GLOBAL_FOR_HEIGHT, FIELD_CRITIC_SOURCE_FOR_HEIGHT},
+                                new Class[]{Integer.class, Integer.class, String.class});
+                    }else{
+                        ext = new FeatureExtender(inNetPoints.getSchema(),
+                                new String[]{FIELD_ISCRITIC_LOCAL_FOR_HEIGHT, FIELD_ISCRITIC_GLOBAL_FOR_HEIGHT, FIELD_CRITIC_SOURCE_FOR_HEIGHT,
+                                        FIELD_ISCRITIC_LOCAL_FOR_DIAMETER, FIELD_ISCRITIC_GLOBAL_FOR_DIAMETER, FIELD_CRITIC_SOURCE_FOR_DIAMETER},
+                                new Class[]{Integer.class, Integer.class, String.class, Integer.class, Integer.class, String.class});
+                    
+                    }
+                }
 
                 if (height > maxUpstreamHeight) {
                     maxUpstreamHeight = height;
                     criticSourceForHeigth = pfafstetterNumber + "-" + linkid;
-                }
-                
-                if (diameter > maxUpstreamDiameter) {
-                    maxUpstreamDiameter = diameter;
-                    criticSourceForDiameter = pfafstetterNumber + "-" + linkid;
                 }
 
                 /*
@@ -204,29 +226,17 @@ public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
                  */
                 // critical from local parameters veg_h > width
                 int isCriticLocalForLogHeight = 0;
-                int isCriticLocalForLogDiameter = 0;
                 int isCriticGlobalForLogHeight = 0;
-                int isCriticGlobalForLogDiameter = 0;
+
                 if (height / width > pRatioLogsLengthChannelWidthHillslope) {
                     isCriticLocalForLogHeight = 1;
                 }
-                
-                // critical from local parameters veg_d > waterdepth
-                if (diameter / waterDepth > pRatioLogsDiameterWaterDepth) {
-                    isCriticLocalForLogDiameter = 1;
-                }
-                
+
                 // critical on vegetation coming from upstream
                 if (maxUpstreamHeight / width > pRatioLogsLengthChannelWidthChannel) {
                     isCriticGlobalForLogHeight = 1;
                     maxUpstreamHeight = -1;
                 }
-                
-                if (maxUpstreamDiameter / waterDepth > pRatioLogsDiameterWaterDepth) {
-                    isCriticGlobalForLogDiameter = 1;
-                    maxUpstreamDiameter = -1;
-                }
-                
 
                 // update the field with the origin of critical sections
                 if (criticSourceForHeigth == null)
@@ -235,25 +245,59 @@ public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
                 if (isCriticGlobalForLogHeight == 0) {
                     tmpCriticSourceForHeight = "";
                 }
-                
-                if (criticSourceForDiameter == null)
-                    criticSourceForDiameter = "";
-                String tmpCriticSourceForDiameter = criticSourceForDiameter;
-                if (isCriticGlobalForLogDiameter == 0) {
-                    tmpCriticSourceForDiameter = "";
+
+                /*
+                 * check on the ratio between the diameter of the logs and the channel depth will be
+                 * done only if the dbh field in the input net points layer is available
+                 */
+                if (diameter > 0.0) {
+                    if (diameter > maxUpstreamDiameter) {
+                        maxUpstreamDiameter = diameter;
+                        criticSourceForDiameter = pfafstetterNumber + "-" + linkid;
+                    }
+
+                    int isCriticLocalForLogDiameter = 0;
+                    int isCriticGlobalForLogDiameter = 0;
+
+                    // critical from local parameters veg_d > waterdepth
+                    if (diameter / waterDepth > pRatioLogsDiameterWaterDepth) {
+                        isCriticLocalForLogDiameter = 1;
+                    }
+                    // critical on vegetation coming from upstream
+                    if (maxUpstreamDiameter / waterDepth > pRatioLogsDiameterWaterDepth) {
+                        isCriticGlobalForLogDiameter = 1;
+                        maxUpstreamDiameter = -1;
+                    }
+
+                    if (criticSourceForDiameter == null)
+                        criticSourceForDiameter = "";
+                    String tmpCriticSourceForDiameter = criticSourceForDiameter;
+                    if (isCriticGlobalForLogDiameter == 0) {
+                        tmpCriticSourceForDiameter = "";
+                    }
+
+                    SimpleFeature newFeature = ext
+                            .extendFeature(feature,
+                                    new Object[]{isCriticLocalForLogHeight, isCriticGlobalForLogHeight, tmpCriticSourceForHeight,
+                                            isCriticLocalForLogDiameter, isCriticGlobalForLogDiameter,
+                                            tmpCriticSourceForDiameter});
+                    outputFC.add(newFeature);
+
+                    lastUpStreamMaxDiameters.add(maxUpstreamDiameter);
+                    lastUpStreamCriticSourceForDiameter.add(criticSourceForDiameter);
+
+                } else {
+                    // no other checks will be done for critical sections
+                    SimpleFeature newFeature = ext.extendFeature(feature,
+                            new Object[]{isCriticLocalForLogHeight, isCriticGlobalForLogHeight, tmpCriticSourceForHeight});
+                    outputFC.add(newFeature);
                 }
-                
-                SimpleFeature newFeature = ext.extendFeature(feature,
-                        new Object[]{isCriticLocalForLogHeight, isCriticGlobalForLogHeight, tmpCriticSourceForHeight, 
-                                isCriticLocalForLogDiameter, isCriticGlobalForLogDiameter, tmpCriticSourceForDiameter});
-                outputFC.add(newFeature);
+
             }
             // add the point to the list for the next step
             lastUpStreamPfafstetters.add(pfafstetterNumber);
             lastUpStreamMaxHeights.add(maxUpstreamHeight);
             lastUpStreamCriticSourceForLength.add(criticSourceForHeigth);
-            lastUpStreamMaxDiameters.add(maxUpstreamDiameter);
-            lastUpStreamCriticSourceForDiameter.add(criticSourceForDiameter);
 
             pm.worked(1);
         }
@@ -261,23 +305,24 @@ public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
 
         outNetPoints = outputFC;
     }
-    
+
     public static void main( String[] args ) throws Exception {
 
         String base = "D:/lavori_tmp/unibz/2016_06_gsoc/data01/";
 
         OmsLW11_NetworkPropagator ex = new OmsLW11_NetworkPropagator();
-        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_hydraulic_inund_wide_veg_83_rast.shp");
+        ex.inNetPoints = OmsVectorReader
+                .readVector(base + "net_point_width_damsbridg_slope_lateral_inund_veg_80_rast_lateral3_nodbh.shp");
         ex.pRatioLogsDiameterWaterDepth = 0.7;
         ex.pRatioLogsLengthChannelWidthChannel = 0.8;
         ex.pRatioLogsLengthChannelWidthHillslope = 0.9;
 
         ex.process();
         SimpleFeatureCollection outNetPoints = ex.outNetPoints;
-        
-        OmsVectorWriter.writeVector(base + "net_point_hydraulic_inund_wide_veg_83_rast_crit.shp", outNetPoints);
+
+        OmsVectorWriter.writeVector(base + "net_point_width_damsbridg_slope_lateral_inund_veg_80_rast_lateral3_crit_nodbh.shp",
+                outNetPoints);
 
     }
-    
 
 }

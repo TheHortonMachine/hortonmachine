@@ -466,8 +466,8 @@ public class OmsLW08_NetworkBufferWidthCalculator extends JGTModel implements LW
         String base = "D:/lavori_tmp/unibz/2016_06_gsoc/data01/";
 
         OmsLW08_NetworkBufferWidthCalculator ex = new OmsLW08_NetworkBufferWidthCalculator();
-        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_hydraulic.shp");
-        ex.inTransSect = OmsVectorReader.readVector(base + "extracted_bankfullsections.shp");
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_width_damsbridg_slope_lateral.shp");
+        ex.inTransSect = OmsVectorReader.readVector(base + "extracted_bankfullsections_lateral2.shp");
         ex.inGeo = OmsVectorReader.readVector(base + "geology.shp");
         ex.pK = 0.07;
         ex.pN = 0.44;
@@ -477,9 +477,9 @@ public class OmsLW08_NetworkBufferWidthCalculator extends JGTModel implements LW
         SimpleFeatureCollection outInundArea = ex.outInundationArea;
         SimpleFeatureCollection outInundSect = ex.outInundationSections;
         
-        OmsVectorWriter.writeVector(base + "net_point_hydraulic_inund.shp", outNetPoints);
-        OmsVectorWriter.writeVector(base + "inund_area.shp", outInundArea);
-        OmsVectorWriter.writeVector(base + "inund_sections.shp", outInundSect);
+        OmsVectorWriter.writeVector(base + "net_point_width_damsbridg_slope_lateral_inund.shp", outNetPoints);
+        OmsVectorWriter.writeVector(base + "inund_area2.shp", outInundArea);
+        OmsVectorWriter.writeVector(base + "inund_sections2.shp", outInundSect);
 
     }
 
