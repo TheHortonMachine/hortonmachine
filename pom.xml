@@ -23,11 +23,11 @@
         <module>jgrassgears</module>
         <module>hortonmachine</module>
         <module>lesto</module>
-        <module>grass</module>
         <module>modules</module>
         <module>gui</module>
-<!--        
 <module>nww</module>
+<!--        
+        <module>grass</module>
  -->
   </modules>
 

@@ -114,7 +114,7 @@ public class ImageGenerator {
     // private AffineTransform worldToScreen;
     // private AffineTransform screenToWorld;
 
-    private StyleFactory sf = CommonFactoryFinder.getStyleFactory(null);
+    private StyleFactory sf;
 
     private IJGTProgressMonitor monitor = new DummyProgressMonitor();
 
@@ -129,6 +129,7 @@ public class ImageGenerator {
     public ImageGenerator( IJGTProgressMonitor monitor ) {
         if (monitor != null)
             this.monitor = monitor;
+        sf = CommonFactoryFinder.getStyleFactory(null);
     }
 
     public void setDoLegacyGrass( boolean doLegacyGrass ) {
@@ -754,7 +755,7 @@ public class ImageGenerator {
         Coordinate ll = new Coordinate(centre.x - boundsXExtension / 2.0, centre.y - boundsYExtension / 2.0);
         Coordinate ur = new Coordinate(centre.x + boundsXExtension / 2.0, centre.y + boundsYExtension / 2.0);
         Envelope tmpEnv = new Envelope(ll, ur);
-//        tmpEnv.expandBy(1000);
+        // tmpEnv.expandBy(1000);
         bounds = new ReferencedEnvelope(tmpEnv, bounds.getCoordinateReferenceSystem());
 
         int imageWidth = (int) (paperFormat.width() / 25.4 * dpi);

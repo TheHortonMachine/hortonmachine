@@ -45,6 +45,7 @@ import javax.swing.JTextPane;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Image;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.Note;
 import org.jgrasstools.gui.utils.DefaultGuiBridgeImpl;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
@@ -59,7 +60,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class GeopaparazziViewer extends GeopaparazziController {
-    private static final Logger logger = LoggerFactory.getLogger(GeopaparazziController.class);
+    private static final Logger logger = LoggerFactory.getLogger(GeopaparazziViewer.class);
     private static final long serialVersionUID = 1L;
 
     private static final int MAX_IMAGE_SIZE = 800;
@@ -132,9 +133,25 @@ public class GeopaparazziViewer extends GeopaparazziController {
     }
 
     @Override
-    protected List<Action> makeProjectAction( ProjectInfo project ) {
+    protected List<Action> makeNotesActions( final Note selectedNote ) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    protected List<Action> makeProjectAction( ProjectInfo project ) {
+        List<Action> actions = new ArrayList<>();
+        actions.add(new AbstractAction("Load Project in Viewer"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                try {
+                    loadProjectData(project, true);
+                } catch (Exception ex) {
+                    logger.error("Error", ex);
+                }
+            }
+        });
+        return actions;
     }
 
     @SuppressWarnings("serial")

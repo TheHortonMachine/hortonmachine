@@ -79,10 +79,10 @@ public class OmsCoverageViewer extends JGTModel {
     @In
     public GridCoverage2D raster = null;
 
-    private StyleFactory sf = CommonFactoryFinder.getStyleFactory(null);
 
     @Execute
     public void viewCoverage() throws Exception {
+        StyleFactory sf = CommonFactoryFinder.getStyleFactory(null);
         // RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
         // Style rasterStyle = SLD.wrapSymbolizers(sym);
 

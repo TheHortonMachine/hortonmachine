@@ -138,7 +138,7 @@ import gov.nasa.worldwind.render.PointPlacemarkAttributes;
 public abstract class GeopaparazziController extends GeopaparazziView implements IOnCloseListener {
     private static final String RED_HEXA = "#FF0000";
 
-    private static final Logger logger = LoggerFactory.getLogger(GeopaparazziView.class);
+    private static final Logger logger = LoggerFactory.getLogger(GeopaparazziController.class);
     private static final long serialVersionUID = 1L;
     private static boolean hasDriver = false;
 
@@ -215,7 +215,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 projectInfos = readProjectInfos(projectFiles);
                 layoutTree(projectInfos, false);
             } catch (Exception e1) {
-                e1.printStackTrace();
+                logger.error("error", e1);
             }
 
         });
@@ -461,10 +461,10 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                                 popupMenu.add(new JSeparator());
                             }
                         }
-                } else if (currentSelectedProject != null) {
-                    List<Action> dbActions = makeProjectAction(currentSelectedProject);
-                    if (dbActions != null)
-                        for( Action action : dbActions ) {
+                } else if (currentSelectedGpsLog != null) {
+                    List<Action> logActions = makeGpsLogActions(currentSelectedGpsLog);
+                    if (logActions != null)
+                        for( Action action : logActions ) {
                             if (action != null) {
                                 JMenuItem item = new JMenuItem(action);
                                 popupMenu.add(item);
@@ -473,10 +473,22 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                                 popupMenu.add(new JSeparator());
                             }
                         }
-                } else if (currentSelectedGpsLog != null) {
-                    List<Action> logActions = makeGpsLogActions(currentSelectedGpsLog);
-                    if (logActions != null)
-                        for( Action action : logActions ) {
+                } else if (currentSelectedNote != null) {
+                    List<Action> notesActions = makeNotesActions(currentSelectedNote);
+                    if (notesActions != null)
+                        for( Action action : notesActions ) {
+                            if (action != null) {
+                                JMenuItem item = new JMenuItem(action);
+                                popupMenu.add(item);
+                                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                            } else {
+                                popupMenu.add(new JSeparator());
+                            }
+                        }
+                } else if (currentSelectedProject != null) {
+                    List<Action> dbActions = makeProjectAction(currentSelectedProject);
+                    if (dbActions != null)
+                        for( Action action : dbActions ) {
                             if (action != null) {
                                 JMenuItem item = new JMenuItem(action);
                                 popupMenu.add(item);
@@ -572,7 +584,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         public int getChildCount( Object parent ) {
             if (parent instanceof ProjectInfo) {
                 ProjectInfo projectInfo = (ProjectInfo) parent;
-                return projectInfo.images.length + projectInfo.logs.size() + projectInfo.notes.size();
+                int childCount = projectInfo.images.length + projectInfo.logs.size() + projectInfo.notes.size();
+                return childCount;
             } else if (parent instanceof Image) {
                 return 0;
             } else if (parent instanceof GpsLog) {
@@ -676,9 +689,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
             _infoArea.setText(text);
 
-            loadProjectData(selectedProject, true);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error", e);
         }
     }
 
@@ -696,7 +708,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 wwjPanel.goTo(selectedImage.getLon(), selectedImage.getLat(), 1000.0, null, false);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error", e);
             setNoProjectLabel();
         }
     }
@@ -720,7 +732,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 wwjPanel.goTo(selectedNote.lon, selectedNote.lat, 1000.0, null, false);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error", e);
             setNoProjectLabel();
         }
     }
@@ -737,10 +749,15 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
             loadGpsLogChart(selectedLog, currentSelectedProject.databaseFile);
 
-            Envelope env = new Envelope();
+            Envelope env = null;
             for( GpsPoint gpsPoint : selectedLog.points ) {
-                env.expandToInclude(gpsPoint.lon, gpsPoint.lat);
+                if (env == null) {
+                    env = new Envelope(new Coordinate(gpsPoint.lon, gpsPoint.lat));
+                } else {
+                    env.expandToInclude(gpsPoint.lon, gpsPoint.lat);
+                }
             }
+            env.expandBy(0.01);
             Sector sector = NwwUtilities.envelope2Sector(new ReferencedEnvelope(env, NwwUtilities.GPS_CRS));
             if (wwjPanel != null)
                 wwjPanel.goTo(sector, false);
@@ -767,7 +784,6 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             DaoGpsLog.collectDataForLog(connection, log);
 
             String logName = log.text;
-            GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
             int size = log.points.size();
 
             List<Coordinate> coords = new ArrayList<>();
@@ -782,9 +798,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 double lat2 = p2.lat;
                 double altim2 = p2.altim;
 
-                gc.setStartingGeographicPoint(lon1, lat1);
-                gc.setDestinationGeographicPoint(lon2, lat2);
-                double distance = gc.getOrthodromicDistance();
+                double distance = NwwUtilities.computeDistance(lat1, lon1, lat2, lon2);
                 runningDistance += distance;
 
                 if (i == 0) {
@@ -855,8 +869,9 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
      * @return
      * @throws Exception 
      */
-    private void loadProjectData( ProjectInfo currentSelectedProject, boolean zoomTo ) throws Exception {
-        geopapDataLayer.removeAllRenderables();
+    public void loadProjectData( ProjectInfo currentSelectedProject, boolean zoomTo ) throws Exception {
+        if (geopapDataLayer != null)
+            geopapDataLayer.removeAllRenderables();
 
         Envelope bounds = new Envelope();
 
@@ -889,7 +904,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 marker.setLabelText(text + " (" + date + ")");
                 marker.setAttributes(notesAttributes);
 
-                geopapDataLayer.addRenderable(marker);
+                if (geopapDataLayer != null)
+                    geopapDataLayer.addRenderable(marker);
 
                 bounds.expandToInclude(lon, lat);
             }
@@ -909,7 +925,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 marker.setLabelText(image.getName());
                 marker.setAttributes(imageAttributes);
 
-                geopapDataLayer.addRenderable(marker);
+                if (geopapDataLayer != null)
+                    geopapDataLayer.addRenderable(marker);
                 bounds.expandToInclude(lon, lat);
             }
 
@@ -997,7 +1014,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     path.setFollowTerrain(true);
                     path.setAttributes(lineAttributes);
 
-                    geopapDataLayer.addRenderable(path);
+                    if (geopapDataLayer != null)
+                        geopapDataLayer.addRenderable(path);
                 }
 
             }
@@ -1005,6 +1023,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         }
 
         if (zoomTo) {
+            bounds.expandBy(0.001);
             Sector sector = NwwUtilities.envelope2Sector(new ReferencedEnvelope(bounds, NwwUtilities.GPS_CRS));
             if (wwjPanel != null)
                 wwjPanel.goTo(sector, false);
@@ -1014,6 +1033,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
     }
 
     protected abstract List<Action> makeGpsLogActions( final GpsLog selectedLog );
+
+    protected abstract List<Action> makeNotesActions( final Note selectedNote );
 
     protected abstract List<Action> makeProjectAction( final ProjectInfo project );
 

@@ -34,6 +34,8 @@ import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.hortonmachine.HortonMachine;
 import org.jgrasstools.lesto.Lesto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import oms3.Access;
 import oms3.ComponentAccess;
@@ -51,6 +53,7 @@ import oms3.annotations.Unit;
  */
 @SuppressWarnings("nls")
 public class JGrasstoolsModulesManager {
+    private static final Logger logger = LoggerFactory.getLogger(JGrasstoolsModulesManager.class);
 
     private static JGrasstoolsModulesManager modulesManager;
 
@@ -90,14 +93,19 @@ public class JGrasstoolsModulesManager {
         // Lesto.getInstance().moduleName2Fields;
 
         // also gather horton and gears
+        logger.debug("init HortonMachine");
         HortonMachine.getInstance();
+        logger.debug("init JGrassGears");
         JGrassGears.getInstance();
 
+        logger.debug("Collecting classes:");
         for( Entry<String, Class< ? >> entry : lestoModuleNames2Class.entrySet() ) {
             String name = entry.getKey();
             if (name.startsWith("Oms")) {
                 continue;
             }
+            
+            logger.debug("\t-> " + name);
             moduleNames2Classes.put(name, entry.getValue());
         }
         // moduleNames2Classes.putAll(lestoModuleNames2Class);

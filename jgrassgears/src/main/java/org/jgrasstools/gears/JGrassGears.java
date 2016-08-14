@@ -29,6 +29,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.jgrasstools.gears.libs.modules.ClassField;
+import org.scannotation.AnnotationDB;
+import org.scannotation.ClasspathUrlFinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import oms3.Access;
 import oms3.ComponentAccess;
 import oms3.annotations.Author;
@@ -42,10 +48,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.jgrasstools.gears.libs.modules.ClassField;
-import org.scannotation.AnnotationDB;
-import org.scannotation.ClasspathUrlFinder;
-
 /**
  * Class presenting modules names and classes.
  * 
@@ -54,7 +56,7 @@ import org.scannotation.ClasspathUrlFinder;
  */
 @SuppressWarnings("nls")
 public class JGrassGears {
-
+    private static final Logger logger = LoggerFactory.getLogger(JGrassGears.class);
     /**
      * A {@link LinkedHashMap map} of all the class names and the class itself.
      */
@@ -88,22 +90,22 @@ public class JGrassGears {
     }
 
     public String[] getAllFields() {
-		return allFields;
-	}
+        return allFields;
+    }
 
-	public void setAllFields(String[] allFields) {
-		this.allFields = allFields;
-	}
+    public void setAllFields( String[] allFields ) {
+        this.allFields = allFields;
+    }
 
-	public String[] getAllClasses() {
-		return allClasses;
-	}
+    public String[] getAllClasses() {
+        return allClasses;
+    }
 
-	public void setAllClasses(String[] allClasses) {
-		this.allClasses = allClasses;
-	}
+    public void setAllClasses( String[] allClasses ) {
+        this.allClasses = allClasses;
+    }
 
-	/**
+    /**
      * Retrieves the {@link JGrassGears}. If it exists, that instance is returned.
      * 
      * @return the JGrassGears annotations class.
@@ -132,6 +134,7 @@ public class JGrassGears {
      */
     public static JGrassGears getInstance( URL baseclassUrl ) {
         jgrassGears = new JGrassGears(baseclassUrl);
+        logger.debug("init JGrassGears modules classes");
         jgrassGears.gatherInformations();
         return jgrassGears;
     }
@@ -142,6 +145,9 @@ public class JGrassGears {
             if (baseclassUrl == null) {
                 baseclassUrl = ClasspathUrlFinder.findClassBase(JGrassGears.class);
             }
+
+            logger.debug("base class url: " + baseclassUrl);
+
             AnnotationDB db = new AnnotationDB();
             db.scanArchives(baseclassUrl);
 
@@ -151,6 +157,7 @@ public class JGrassGears {
                 if (!className.startsWith("org.jgrasstools.gears")) {
                     continue;
                 }
+                logger.debug("check: " + className);
                 int lastDot = className.lastIndexOf('.');
                 String name = className.substring(lastDot + 1);
                 Class< ? > clazz = null;
@@ -288,7 +295,8 @@ public class JGrassGears {
             } else {
                 doc = documentation.value();
             }
-            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_DOCUMENTATION = \"" + doc + QUOTATION_MARK_SEMICOLON_NEW_LINE);
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_DOCUMENTATION = \"" + doc
+                    + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             Keywords keywords = moduleClass.getAnnotation(Keywords.class);
             String k;
             if (keywords == null) {
@@ -296,7 +304,8 @@ public class JGrassGears {
             } else {
                 k = keywords.value();
             }
-            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_KEYWORDS = \"" + k + QUOTATION_MARK_SEMICOLON_NEW_LINE);
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_KEYWORDS = \"" + k
+                    + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             Label label = moduleClass.getAnnotation(Label.class);
             String lab;
             if (label == null) {
@@ -304,7 +313,8 @@ public class JGrassGears {
             } else {
                 lab = label.value();
             }
-            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_LABEL = \"" + lab + QUOTATION_MARK_SEMICOLON_NEW_LINE);
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_LABEL = \"" + lab
+                    + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             Name name = moduleClass.getAnnotation(Name.class);
             String n;
             if (name == null) {
@@ -312,21 +322,26 @@ public class JGrassGears {
             } else {
                 n = name.value();
             }
-            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_NAME = \"" + n + QUOTATION_MARK_SEMICOLON_NEW_LINE);
+            sb.append(
+                    PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_NAME = \"" + n + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             Status status = moduleClass.getAnnotation(Status.class);
 
             sb.append("public static final int " + moduleName.toUpperCase() + "_STATUS = " + status.value() + ";\n");
             License license = moduleClass.getAnnotation(License.class);
-            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_LICENSE = \"" + license.value() + QUOTATION_MARK_SEMICOLON_NEW_LINE);
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_LICENSE = \"" + license.value()
+                    + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             Author author = moduleClass.getAnnotation(Author.class);
             String authorName = author.name();
-            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_AUTHORNAMES = \"" + authorName + QUOTATION_MARK_SEMICOLON_NEW_LINE);
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_AUTHORNAMES = \"" + authorName
+                    + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             String authorContact = author.contact();
-            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_AUTHORCONTACTS = \"" + authorContact + QUOTATION_MARK_SEMICOLON_NEW_LINE);
+            sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_AUTHORCONTACTS = \"" + authorContact
+                    + QUOTATION_MARK_SEMICOLON_NEW_LINE);
 
             UI ui = moduleClass.getAnnotation(UI.class);
             if (ui != null) {
-                sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_UI = \"" + ui.value() + QUOTATION_MARK_SEMICOLON_NEW_LINE);
+                sb.append(PUBLIC_STATIC_FINAL_STRING + moduleName.toUpperCase() + "_UI = \"" + ui.value()
+                        + QUOTATION_MARK_SEMICOLON_NEW_LINE);
             }
 
             List<ClassField> value = entry.getValue();

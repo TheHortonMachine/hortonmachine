@@ -117,14 +117,18 @@ public class OmsMapsViewer extends JGTModel {
     @In
     public String inSld = null;
 
-    private StyleFactory sf = CommonFactoryFinder.getStyleFactory(GeoTools.getDefaultHints());
-    private FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
-    private StyleBuilder sb = new StyleBuilder(sf, ff);
+    private StyleFactory sf = null;
+    private FilterFactory ff = null;
+    private StyleBuilder sb = null;
 
     private Style namedStyle;
 
     @Execute
     public void displayMaps() throws Exception {
+        sf = CommonFactoryFinder.getStyleFactory(GeoTools.getDefaultHints());
+        ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
+        sb = new StyleBuilder(sf, ff);
+
         final MapContext map = new DefaultMapContext();
         map.setTitle("Maps Viewer");
 
@@ -264,12 +268,12 @@ public class OmsMapsViewer extends JGTModel {
             Color fromColor = Color.blue;
             Color midColor = Color.green;
             Color toColor = Color.red;
-            Expression fromColorExpr = sB.colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor
-                    .getBlue(), 255));
-            Expression midColorExpr = sB.colorExpression(new java.awt.Color(midColor.getRed(), midColor.getGreen(), midColor
-                    .getBlue(), 255));
-            Expression toColorExpr = sB.colorExpression(new java.awt.Color(toColor.getRed(), toColor.getGreen(), toColor
-                    .getBlue(), 255));
+            Expression fromColorExpr = sB
+                    .colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor.getBlue(), 255));
+            Expression midColorExpr = sB
+                    .colorExpression(new java.awt.Color(midColor.getRed(), midColor.getGreen(), midColor.getBlue(), 255));
+            Expression toColorExpr = sB
+                    .colorExpression(new java.awt.Color(toColor.getRed(), toColor.getGreen(), toColor.getBlue(), 255));
             Expression fromExpr = sB.literalExpression(min);
             Expression midExpr = sB.literalExpression(min + (max - min) / 2);
             Expression toExpr = sB.literalExpression(max);
