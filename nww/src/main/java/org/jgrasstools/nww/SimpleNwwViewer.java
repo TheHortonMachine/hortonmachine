@@ -7,6 +7,7 @@
 package org.jgrasstools.nww;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 
 import javax.swing.ImageIcon;
@@ -39,8 +40,7 @@ public class SimpleNwwViewer {
 
     public static String APPNAME = "SIMPLE NWW VIEWER";
 
-    /**A way to open the NWW viewer and get the layer panel.
-     * 
+    /**A way to open the NWW viewer and get the tools panel, which has reference to the rest.
      * 
      * @param appName
      * @return
@@ -57,13 +57,20 @@ public class SimpleNwwViewer {
             Class<SimpleNwwViewer> class1 = SimpleNwwViewer.class;
             ImageIcon icon = new ImageIcon(class1.getResource("/org/jgrasstools/images/hm150.png"));
 
-            NwwPanel wwjPanel = new NwwPanel(true);
-            wwjPanel.addOsmLayer();
-            ViewControlsLayer viewControls = wwjPanel.addViewControls();
-            viewControls.setScale(1.5);
+            Component nwwComponent = NwwPanel.createNwwPanel(true);
+            NwwPanel wwjPanel = null;
+            LayersPanelController layerPanel = null;
+            ToolsPanelController toolsPanel = null;
 
-            LayersPanelController layerPanel = new LayersPanelController(wwjPanel);
-            ToolsPanelController toolsPanel = new ToolsPanelController(wwjPanel, layerPanel);
+            if (nwwComponent instanceof NwwPanel) {
+                wwjPanel = (NwwPanel) nwwComponent;
+                wwjPanel.addOsmLayer();
+                ViewControlsLayer viewControls = wwjPanel.addViewControls();
+                viewControls.setScale(1.5);
+
+                layerPanel = new LayersPanelController(wwjPanel);
+                toolsPanel = new ToolsPanelController(wwjPanel, layerPanel);
+            }
 
             final JFrame nwwFrame = new JFrame();
             nwwFrame.setTitle(appName + ": map view");
@@ -77,45 +84,45 @@ public class SimpleNwwViewer {
                 }
             });
             JPanel mapPanel = new JPanel(new BorderLayout());
-            mapPanel.add(wwjPanel, BorderLayout.CENTER);
+            mapPanel.add(nwwComponent, BorderLayout.CENTER);
             nwwFrame.getContentPane().add(mapPanel, BorderLayout.CENTER);
             nwwFrame.setResizable(true);
             nwwFrame.setPreferredSize(new Dimension(800, 800));
             nwwFrame.pack();
             WWUtil.alignComponent(null, nwwFrame, AVKey.CENTER);
 
-            final JFrame layersFrame = new JFrame();
-            layersFrame.setTitle(appName + ": layers view");
-            layersFrame.setIconImage(icon.getImage());
-            layersFrame.setDefaultCloseOperation(onCloseAction);
-            java.awt.EventQueue.invokeLater(new Runnable(){
+            if (wwjPanel != null) {
+                final JFrame layersFrame = new JFrame();
+                layersFrame.setTitle(appName + ": layers view");
+                layersFrame.setIconImage(icon.getImage());
+                layersFrame.setDefaultCloseOperation(onCloseAction);
+                java.awt.EventQueue.invokeLater(new Runnable(){
 
-                public void run() {
-                    layersFrame.setVisible(true);
-                }
-            });
-            layersFrame.getContentPane().add(layerPanel, BorderLayout.CENTER);
-            layersFrame.setResizable(true);
-            layersFrame.setPreferredSize(new Dimension(400, 500));
-            layersFrame.setLocation(0, 0);
-            layersFrame.pack();
+                    public void run() {
+                        layersFrame.setVisible(true);
+                    }
+                });
+                layersFrame.getContentPane().add(layerPanel, BorderLayout.CENTER);
+                layersFrame.setResizable(true);
+                layersFrame.setPreferredSize(new Dimension(400, 500));
+                layersFrame.setLocation(0, 0);
+                layersFrame.pack();
+                final JFrame toolsFrame = new JFrame();
+                toolsFrame.setTitle(appName + ": tools view");
+                toolsFrame.setIconImage(icon.getImage());
+                toolsFrame.setDefaultCloseOperation(onCloseAction);
+                java.awt.EventQueue.invokeLater(new Runnable(){
 
-            final JFrame toolsFrame = new JFrame();
-            toolsFrame.setTitle(appName + ": tools view");
-            toolsFrame.setIconImage(icon.getImage());
-            toolsFrame.setDefaultCloseOperation(onCloseAction);
-            java.awt.EventQueue.invokeLater(new Runnable(){
-
-                public void run() {
-                    toolsFrame.setVisible(true);
-                }
-            });
-            toolsFrame.getContentPane().add(toolsPanel, BorderLayout.CENTER);
-            toolsFrame.setResizable(true);
-            toolsFrame.setPreferredSize(new Dimension(400, 400));
-            toolsFrame.setLocation(0, 510);
-            toolsFrame.pack();
-
+                    public void run() {
+                        toolsFrame.setVisible(true);
+                    }
+                });
+                toolsFrame.getContentPane().add(toolsPanel, BorderLayout.CENTER);
+                toolsFrame.setResizable(true);
+                toolsFrame.setPreferredSize(new Dimension(400, 400));
+                toolsFrame.setLocation(0, 510);
+                toolsFrame.pack();
+            }
             return toolsPanel;
         } catch (Exception e) {
             Logging.logger().log(java.util.logging.Level.SEVERE, "Exception at application start", e);

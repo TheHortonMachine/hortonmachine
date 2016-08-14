@@ -24,7 +24,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -58,6 +61,7 @@ import gov.nasa.worldwind.view.orbit.OrbitViewLimits;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
+@SuppressWarnings("serial")
 public class NwwPanel extends JPanel {
 
     private WorldWindow wwd;
@@ -65,7 +69,27 @@ public class NwwPanel extends JPanel {
 
     private double lastElevation = Double.NaN;
 
-    public NwwPanel(boolean useWwGlCanvas) {
+    public static Component createNwwPanel( boolean useWwGlCanvas ) {
+        try {
+            return new NwwPanel(useWwGlCanvas);
+        } catch (UnsatisfiedLinkError ule) {
+            String msg = "<html><b><font color=red size=+1>";
+            msg += "<p>An error occurred while loading the native NWW libraries,</p>";
+            msg += "<p>check your installation.</p><p></p>";
+            msg += "<i><p>The error is: </p><p>" + ule.getMessage();
+            msg += "</p></i></font></b>";
+            JLabel errorLabel = new JLabel(msg);
+            Border paddingBorder = BorderFactory.createEmptyBorder(10, 10, 10, 10);
+            errorLabel.setBorder(paddingBorder);
+            return errorLabel;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private NwwPanel( boolean useWwGlCanvas ) {
         super(new BorderLayout());
 
         // Configuration.setValue(AVKey.INITIAL_LATITUDE, gpsLogShps[0].y);
@@ -87,7 +111,7 @@ public class NwwPanel extends JPanel {
         List<Layer> addBack = new ArrayList<>();
         Iterator<Layer> layerIterator = layers.iterator();
         List<String> namesToKeep = NwwUtilities.LAYERS_TO_KEEP_FROM_ORIGNALNWW;
-        while (layerIterator.hasNext()) {
+        while( layerIterator.hasNext() ) {
             Layer layer = layerIterator.next();
             if (namesToKeep.contains(layer.getName())) {
                 addBack.add(layer);
@@ -103,8 +127,8 @@ public class NwwPanel extends JPanel {
         this.statusBar.setEventSource(getWwd());
     }
 
-    public ViewControlsLayer addViewControls(double scale, boolean showZoomControls, boolean showPanControls,
-            boolean showheadingControls, boolean showPitchControls, boolean showVerticalExaggerationControls) {
+    public ViewControlsLayer addViewControls( double scale, boolean showZoomControls, boolean showPanControls,
+            boolean showheadingControls, boolean showPitchControls, boolean showVerticalExaggerationControls ) {
         ViewControlsLayer viewControlsLayer = new ViewControlsLayer();
 
         viewControlsLayer.setScale(scale);
@@ -127,7 +151,7 @@ public class NwwPanel extends JPanel {
         addLayer(new OSMMapnikLayer());
     }
 
-    public void setZoomLimits(double minZoom, double maxZoom) {
+    public void setZoomLimits( double minZoom, double maxZoom ) {
         View view = getWwd().getView();
         if (view != null && view instanceof OrbitView) {
             OrbitView oView = (OrbitView) view;
@@ -136,7 +160,7 @@ public class NwwPanel extends JPanel {
         }
     }
 
-    public void setPitchLimits(Angle minAngle, Angle maxangle) {
+    public void setPitchLimits( Angle minAngle, Angle maxangle ) {
         View view = getWwd().getView();
         if (view != null && view instanceof OrbitView) {
             OrbitView oView = (OrbitView) view;
@@ -159,7 +183,7 @@ public class NwwPanel extends JPanel {
      * @param animate
      *            if <code>true</code>, it animates to the position.
      */
-    public synchronized Position goTo(Double lon, Double lat, Double elev, Double azimuth, boolean animate) {
+    public synchronized Position goTo( Double lon, Double lat, Double elev, Double azimuth, boolean animate ) {
         View view = getWwd().getView();
         view.stopAnimations();
         view.stopMovement();
@@ -208,7 +232,7 @@ public class NwwPanel extends JPanel {
      * @param animate
      *            if <code>true</code>, it animates to the position.
      */
-    public void goTo(Sector sector, boolean animate) {
+    public void goTo( Sector sector, boolean animate ) {
         View view = getWwd().getView();
         view.stopAnimations();
         view.stopMovement();
@@ -247,7 +271,7 @@ public class NwwPanel extends JPanel {
      * @param doMercator
      *            if <code>true</code>, mercator is used as opposed to lat/long.
      */
-    public void setFlatGlobe(boolean doMercator) {
+    public void setFlatGlobe( boolean doMercator ) {
         EarthFlat globe = new EarthFlat();
         globe.setElevationModel(new ZeroElevationModel());
         wwd.getModel().setGlobe(globe);
@@ -306,11 +330,11 @@ public class NwwPanel extends JPanel {
         return wwd;
     }
 
-    public void addLayer(Layer layer) {
+    public void addLayer( Layer layer ) {
         getWwd().getModel().getLayers().add(layer);
     }
 
-    public void removeLayer(Layer layer) {
+    public void removeLayer( Layer layer ) {
         LayerList layers = getWwd().getModel().getLayers();
         layers.remove(layer);
     }

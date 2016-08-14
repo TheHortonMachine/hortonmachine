@@ -108,9 +108,11 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
                 ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
                 if (toolsPanelController == null)
                     toolsPanelController = SimpleNwwViewer.openNww(null, JFrame.DO_NOTHING_ON_CLOSE);
-                toolsPanelController.loadFeatureCollection(null, "QueryLayer", null, rfc);
 
-                addQueryToHistoryCombo(sqlText);
+                if (toolsPanelController != null) {
+                    toolsPanelController.loadFeatureCollection(null, "QueryLayer", null, rfc);
+                    addQueryToHistoryCombo(sqlText);
+                }
 
             } catch (Exception e1) {
                 String localizedMessage = e1.getLocalizedMessage();

@@ -23,6 +23,7 @@ import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TA
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.datatransfer.StringSelection;
@@ -345,12 +346,16 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
         layoutTree(null, false);
 
-        wwjPanel = new NwwPanel(true);
-        wwjPanel.addOsmLayer();
-        geopapDataLayer = new RenderableLayer();
-        wwjPanel.addLayer(geopapDataLayer);
+        Component wwjPanelComponent = NwwPanel.createNwwPanel(true);
         _nwwHolder.setLayout(new BorderLayout());
-        _nwwHolder.add(wwjPanel, BorderLayout.CENTER);
+        _nwwHolder.add(wwjPanelComponent, BorderLayout.CENTER);
+
+        if (wwjPanelComponent instanceof NwwPanel) {
+            wwjPanel = (NwwPanel) wwjPanelComponent;
+            wwjPanel.addOsmLayer();
+            geopapDataLayer = new RenderableLayer();
+            wwjPanel.addLayer(geopapDataLayer);
+        }
 
     }
 
@@ -687,7 +692,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     + "<b>Altim:</b> " + (int) selectedImage.getAltim() + " m<br/>";
             _infoArea.setText(picInfo);
 
-            wwjPanel.goTo(selectedImage.getLon(), selectedImage.getLat(), 1000.0, null, false);
+            if (wwjPanel != null)
+                wwjPanel.goTo(selectedImage.getLon(), selectedImage.getLat(), 1000.0, null, false);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -710,8 +716,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     + "<b>Timestamp:</b> " + dateTimeString + "<br/>" //
                     + "<b>Altim:</b> " + (int) selectedNote.altim + " m<br/>";
             _infoArea.setText(picInfo);
-
-            wwjPanel.goTo(selectedNote.lon, selectedNote.lat, 1000.0, null, false);
+            if (wwjPanel != null)
+                wwjPanel.goTo(selectedNote.lon, selectedNote.lat, 1000.0, null, false);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -736,7 +742,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 env.expandToInclude(gpsPoint.lon, gpsPoint.lat);
             }
             Sector sector = NwwUtilities.envelope2Sector(new ReferencedEnvelope(env, NwwUtilities.GPS_CRS));
-            wwjPanel.goTo(sector, false);
+            if (wwjPanel != null)
+                wwjPanel.goTo(sector, false);
 
         } catch (Exception e) {
             logger.error("error", e);
@@ -999,7 +1006,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
         if (zoomTo) {
             Sector sector = NwwUtilities.envelope2Sector(new ReferencedEnvelope(bounds, NwwUtilities.GPS_CRS));
-            wwjPanel.goTo(sector, false);
+            if (wwjPanel != null)
+                wwjPanel.goTo(sector, false);
         }
 
         currentLoadedProject = currentSelectedProject;
