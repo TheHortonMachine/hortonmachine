@@ -89,6 +89,9 @@ public class ImageCache {
     public static final String GEOM_LINE = "geom_line.png";
     public static final String GEOM_POLYGON = "geom_polygon.png";
 
+    public static final String TREE_OPEN = "tree_open.png";
+    public static final String TREE_CLOSED = "tree_closed.png";
+
     private static ImageCache imageCache;
 
     private HashMap<String, ImageIcon> imageMap = new HashMap<String, ImageIcon>();

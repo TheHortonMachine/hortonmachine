@@ -311,6 +311,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     TreePath[] paths = evt.getPaths();
                     currentSelectedProject = null;
                     currentSelectedImage = null;
+                    currentSelectedNote = null;
                     currentSelectedGpsLog = null;
                     _chartHolder.removeAll();
                     if (paths.length > 0) {
@@ -318,21 +319,28 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                         if (selectedItem instanceof ProjectInfo) {
                             currentSelectedProject = (ProjectInfo) selectedItem;
                             selectProjectInfo(currentSelectedProject);
+                            logger.debug("Selected project: " + currentSelectedProject.fileName);
                         }
                         if (selectedItem instanceof Image) {
                             currentSelectedImage = (Image) selectedItem;
                             currentSelectedProject = getProjectForImage(currentSelectedImage);
                             selectImage(currentSelectedImage);
+                            logger.debug("Selected image: " + currentSelectedImage.getName() + " of project "
+                                    + currentSelectedProject.fileName);
                         }
                         if (selectedItem instanceof GpsLog) {
                             currentSelectedGpsLog = (GpsLog) selectedItem;
                             currentSelectedProject = getProjectForGpsLog(currentSelectedGpsLog);
                             selectGpsLog(currentSelectedGpsLog);
+                            logger.debug("Selected gpslog: " + currentSelectedGpsLog.text + " of project "
+                                    + currentSelectedProject.fileName);
                         }
                         if (selectedItem instanceof Note) {
                             currentSelectedNote = (Note) selectedItem;
                             currentSelectedProject = getProjectForNote(currentSelectedNote);
                             selectNote(currentSelectedNote);
+                            logger.debug("Selected note: " + currentSelectedNote.simpleText + " of project "
+                                    + currentSelectedProject.fileName);
                         }
                     }
                 }
@@ -450,6 +458,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             @Override
             public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
                 if (currentSelectedImage != null) {
+                    logger.debug("PopupMenuEvent on image: " + currentSelectedImage.getName());
                     List<Action> tableActions = makeImageAction(currentSelectedImage);
                     if (tableActions != null)
                         for( Action action : tableActions ) {
@@ -462,6 +471,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                             }
                         }
                 } else if (currentSelectedGpsLog != null) {
+                    logger.debug("PopupMenuEvent on log: " + currentSelectedGpsLog.text);
                     List<Action> logActions = makeGpsLogActions(currentSelectedGpsLog);
                     if (logActions != null)
                         for( Action action : logActions ) {
@@ -474,6 +484,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                             }
                         }
                 } else if (currentSelectedNote != null) {
+                    logger.debug("PopupMenuEvent on note: " + currentSelectedNote.simpleText);
                     List<Action> notesActions = makeNotesActions(currentSelectedNote);
                     if (notesActions != null)
                         for( Action action : notesActions ) {
@@ -486,6 +497,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                             }
                         }
                 } else if (currentSelectedProject != null) {
+                    logger.debug("PopupMenuEvent on project: " + currentSelectedProject.fileName);
                     List<Action> dbActions = makeProjectAction(currentSelectedProject);
                     if (dbActions != null)
                         for( Action action : dbActions ) {
@@ -498,6 +510,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                             }
                         }
                 }
+                logger.debug("PopupMenuEvent with no available object to load menu from");
             }
 
             @Override
