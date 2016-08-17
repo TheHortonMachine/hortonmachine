@@ -9,6 +9,7 @@ import javax.swing.JOptionPane;
 
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.jgrasstools.gui.utils.GuiUtilities;
+import org.jgrasstools.nww.shapes.FeatureStoreInfo;
 import org.jgrasstools.nww.shapes.IFeatureShape;
 import org.jgrasstools.nww.shapes.IInfoShape;
 import org.jgrasstools.nww.utils.NwwUtilities;
@@ -22,13 +23,13 @@ public class GenericSelectListener implements SelectListener {
 
     private Component parent;
 
-    public GenericSelectListener( Component parent ) {
+    public GenericSelectListener(Component parent) {
         this.parent = parent;
 
     }
 
     @Override
-    public void selected( SelectEvent event ) {
+    public void selected(SelectEvent event) {
         PickedObject topObject = event.getTopPickedObject();
 
         String eventAction = event.getEventAction();
@@ -38,12 +39,13 @@ public class GenericSelectListener implements SelectListener {
             if (object instanceof IFeatureShape) {
                 IFeatureShape featureShape = (IFeatureShape) object;
                 SimpleFeature feature = featureShape.getFeature();
-                SimpleFeatureStore featureStore = featureShape.getFeatureStore();
+                FeatureStoreInfo featureStoreInfo = featureShape.getFeatureStoreInfo();
 
-                LinkedHashMap<String, String> feature2AlphanumericToHashmap = NwwUtilities.feature2AlphanumericToHashmap(feature);
-                if (featureStore == null) {
+                LinkedHashMap<String, String> feature2AlphanumericToHashmap = NwwUtilities
+                        .feature2AlphanumericToHashmap(feature);
+                if (featureStoreInfo.getFeatureStore() == null) {
                     StringBuilder sb = new StringBuilder();
-                    for( Entry<String, String> entry : feature2AlphanumericToHashmap.entrySet() ) {
+                    for (Entry<String, String> entry : feature2AlphanumericToHashmap.entrySet()) {
                         sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
                     }
                     msg = sb.toString();
@@ -53,7 +55,7 @@ public class GenericSelectListener implements SelectListener {
                     String[] values = new String[size];
                     Set<Entry<String, String>> entrySet = feature2AlphanumericToHashmap.entrySet();
                     int count = 0;
-                    for( Entry<String, String> entry : entrySet ) {
+                    for (Entry<String, String> entry : entrySet) {
                         fieldNames[count] = entry.getKey();
                         String value = entry.getValue();
                         if (value == null) {
@@ -63,7 +65,8 @@ public class GenericSelectListener implements SelectListener {
                         count++;
                     }
 
-                    String[] editedValues = GuiUtilities.showMultiInputDialog(parent, "Edit feature", fieldNames, values);
+                    String[] editedValues = GuiUtilities.showMultiInputDialog(parent, "Edit feature", fieldNames,
+                            values, featureStoreInfo.getField2ValuesMap());
                     if (editedValues != null) {
                         SimpleFeature modifiedFeature = featureShape.modifyFeatureAttribute(fieldNames, editedValues);
                         if (modifiedFeature != null) {

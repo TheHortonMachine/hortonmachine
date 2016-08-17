@@ -19,6 +19,8 @@ package org.jgrasstools.nww.shapes;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
@@ -39,8 +41,9 @@ public interface IFeatureShape {
 
     public SimpleFeature getFeature();
 
-    public SimpleFeatureStore getFeatureStore();
-
+    public FeatureStoreInfo getFeatureStoreInfo();
+    
+   
     /**
      * Modify the attributes of this feature.
      * 
@@ -49,7 +52,8 @@ public interface IFeatureShape {
      * @return the new feature if the editing has been successful.
      */
     default public SimpleFeature modifyFeatureAttribute( String[] names, Object[] values ) {
-        SimpleFeatureStore featureStore = getFeatureStore();
+        FeatureStoreInfo featureStoreInfo = getFeatureStoreInfo();
+        SimpleFeatureStore featureStore = featureStoreInfo.getFeatureStore();
         if (featureStore != null) {
             Transaction transaction = new DefaultTransaction("modify");
             featureStore.setTransaction(transaction);

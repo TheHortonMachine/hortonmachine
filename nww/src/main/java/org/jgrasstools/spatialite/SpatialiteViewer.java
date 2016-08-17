@@ -110,7 +110,7 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
                     toolsPanelController = SimpleNwwViewer.openNww(null, JFrame.DO_NOTHING_ON_CLOSE);
 
                 if (toolsPanelController != null) {
-                    toolsPanelController.loadFeatureCollection(null, "QueryLayer", null, rfc);
+                    toolsPanelController.loadFeatureCollection(null, "QueryLayer", null, rfc, null);
                     addQueryToHistoryCombo(sqlText);
                 }
 

@@ -1,16 +1,15 @@
 package org.jgrasstools.nww.shapes;
 
-import org.geotools.data.simple.SimpleFeatureStore;
 import org.opengis.feature.simple.SimpleFeature;
 
 import gov.nasa.worldwind.render.Polygon;
 
 public class FeaturePolygon extends Polygon implements IFeatureShape {
     private SimpleFeature feature;
-    private SimpleFeatureStore featureStore;
+    private FeatureStoreInfo featureStoreInfo;
     
-    public FeaturePolygon(SimpleFeatureStore featureStore) {
-        this.featureStore = featureStore;
+    public FeaturePolygon(FeatureStoreInfo featureStoreInfo) {
+        this.featureStoreInfo = featureStoreInfo;
     }
 
     public SimpleFeature getFeature() {
@@ -21,7 +20,8 @@ public class FeaturePolygon extends Polygon implements IFeatureShape {
         this.feature = feature;
     }
 
-    public SimpleFeatureStore getFeatureStore() {
-        return featureStore;
+    @Override
+    public FeatureStoreInfo getFeatureStoreInfo() {
+        return featureStoreInfo;
     }
 }

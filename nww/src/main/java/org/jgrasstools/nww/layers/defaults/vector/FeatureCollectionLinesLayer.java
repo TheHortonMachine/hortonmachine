@@ -19,6 +19,7 @@ package org.jgrasstools.nww.layers.defaults.vector;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -27,8 +28,8 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
-import org.jgrasstools.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
 import org.jgrasstools.nww.shapes.FeatureLine;
+import org.jgrasstools.nww.shapes.FeatureStoreInfo;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -65,7 +66,7 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
     private int mElevationMode = WorldWind.CLAMP_TO_GROUND;
     private String title;
     private AirspaceAttributes highlightAttrs;
-    private SimpleFeatureStore featureStore;
+    private FeatureStoreInfo featureStoreInfo;
 
     /**
      * Build the layer.
@@ -73,12 +74,13 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
      * @param title layer name.
      * @param featureCollectionLL the featurecollection in latlong.
      * @param featureStore the feature store. If not null, then the feature attributes will be editable.
+     * @param field2ValuesMap an optional map of fields and possible values.
      */
     public FeatureCollectionLinesLayer( String title, SimpleFeatureCollection featureCollectionLL,
-            SimpleFeatureStore featureStore ) {
+            SimpleFeatureStore featureStore, HashMap<String, String[]> field2ValuesMap ) {
         this.title = title;
         this.featureCollectionLL = featureCollectionLL;
-        this.featureStore = featureStore;
+        this.featureStoreInfo = new FeatureStoreInfo(featureStore, field2ValuesMap);
 
         AirspaceAttributes attrs = new BasicAirspaceAttributes();
         attrs.setDrawInterior(true);
@@ -199,7 +201,7 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
                             verticesList.add(Position.fromDegrees(c.y, c.x, h));
                         }
                     }
-                    FeatureLine path = new FeatureLine(verticesList, featureStore);
+                    FeatureLine path = new FeatureLine(verticesList, featureStoreInfo);
                     path.setFeature(lineFeature);
                     path.setAltitudeMode(mElevationMode);
                     path.setAttributes(mNormalShapeAttributes);

@@ -1,6 +1,5 @@
 package org.jgrasstools.nww.shapes;
 
-import org.geotools.data.simple.SimpleFeatureStore;
 import org.opengis.feature.simple.SimpleFeature;
 
 import gov.nasa.worldwind.geom.Position;
@@ -8,11 +7,11 @@ import gov.nasa.worldwind.render.PointPlacemark;
 
 public class FeaturePoint extends PointPlacemark implements IFeatureShape {
     private SimpleFeature feature;
-    private SimpleFeatureStore featureStore;
+    private FeatureStoreInfo featureStoreInfo;
 
-    public FeaturePoint( Position position, SimpleFeatureStore featureStore ) {
+    public FeaturePoint( Position position, FeatureStoreInfo featureStoreInfo ) {
         super(position);
-        this.featureStore = featureStore;
+        this.featureStoreInfo = featureStoreInfo;
     }
 
     public SimpleFeature getFeature() {
@@ -23,7 +22,8 @@ public class FeaturePoint extends PointPlacemark implements IFeatureShape {
         this.feature = feature;
     }
 
-    public SimpleFeatureStore getFeatureStore() {
-        return featureStore;
+    @Override
+    public FeatureStoreInfo getFeatureStoreInfo() {
+        return featureStoreInfo;
     }
 }
