@@ -94,7 +94,7 @@ public class NwwPanel extends JPanel {
         return null;
     }
 
-    private NwwPanel( boolean useWwGlCanvas ) {
+    protected NwwPanel( boolean useWwGlCanvas ) {
         super(new BorderLayout());
 
         // Configuration.setValue(AVKey.INITIAL_LATITUDE, gpsLogShps[0].y);
