@@ -35,14 +35,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.HashMap;
@@ -261,6 +258,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     }).start();
                 } else {
                     GuiUtilities.showWarningMessage(this, null, "The supplied projects folder doesn't exist.");
+                    _httpServerButton.setSelected(false);
                 }
             } else {
                 // stop server
