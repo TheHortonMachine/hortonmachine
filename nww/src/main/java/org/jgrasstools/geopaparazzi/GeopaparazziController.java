@@ -20,12 +20,12 @@ package org.jgrasstools.geopaparazzi;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOGS;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOG_DATA;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOG_PROPERTIES;
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_METADATA;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ComponentEvent;
@@ -34,12 +34,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -50,15 +46,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
-import javax.imageio.ImageIO;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -81,37 +73,33 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.GeodeticCalculator;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsPoint;
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsDataTableFields;
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsPropertiesTableFields;
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoNotes;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Image;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Note;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsDataTableFields;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsPropertiesTableFields;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsTableFields;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.MetadataTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.v.smoothing.FeatureSlidingAverage;
-import org.jgrasstools.gears.utils.ColorUtilities;
+import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.utils.chart.Scatter;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
-import org.jgrasstools.nww.gui.NwwPanel;
-import org.jgrasstools.nww.shapes.FeatureLine;
-import org.jgrasstools.nww.shapes.FeaturePoint;
-import org.jgrasstools.nww.shapes.InfoPoint;
-import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.gui.utils.ImageCache;
+import org.jgrasstools.nww.gui.NwwPanel;
+import org.jgrasstools.nww.utils.NwwUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -214,6 +202,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             try {
                 projectInfos = readProjectInfos(projectFiles);
                 layoutTree(projectInfos, false);
+                _filterTextfield.setText("");
             } catch (Exception e1) {
                 logger.error("error", e1);
             }
@@ -242,14 +231,15 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         _filterTextfield.addKeyListener(new KeyAdapter(){
             @Override
             public void keyReleased( KeyEvent e ) {
-                String filterText = _filterTextfield.getText();
+                String filterText = _filterTextfield.getText().toLowerCase();
 
                 final List<ProjectInfo> filtered = new ArrayList<ProjectInfo>();
                 if (filterText == null) {
                     filtered.addAll(projectInfos);
                 } else {
                     for( ProjectInfo projectInfo : projectInfos ) {
-                        if (projectInfo.fileName.contains(filterText) || projectInfo.metadata.contains(filterText)) {
+                        if (projectInfo.fileName.toLowerCase().contains(filterText)
+                                || projectInfo.metadata.toLowerCase().contains(filterText)) {
                             filtered.add(projectInfo);
                         }
                     }
@@ -823,9 +813,15 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             LineString lineString = GeometryUtilities.gf().createLineString(coords.toArray(new Coordinate[0]));
 
             int lookAhead = 20;
+            if (lookAhead > coords.size()) {
+                lookAhead = 3;
+            }
             double slide = 1;
             FeatureSlidingAverage fsaElev = new FeatureSlidingAverage(lineString);
             List<Coordinate> smoothedElev = fsaElev.smooth(lookAhead, false, slide);
+            if (smoothedElev==null) {
+                smoothedElev = coords;
+            }
             double[] xProfile = new double[smoothedElev.size()];
             double[] yProfile = new double[smoothedElev.size()];
             for( int i = 0; i < xProfile.length; i++ ) {
@@ -1043,6 +1039,56 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         }
 
         currentLoadedProject = currentSelectedProject;
+    }
+
+    protected void editProjectData( ProjectInfo project ) throws Exception {
+        LinkedHashMap<String, String> metadataMap = new LinkedHashMap<>();
+        try (Connection connection = DriverManager
+                .getConnection("jdbc:sqlite:" + currentSelectedProject.databaseFile.getAbsolutePath())) {
+            try (Statement statement = connection.createStatement()) {
+                statement.setQueryTimeout(30); // set timeout to 30 sec.
+
+                String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
+                        MetadataTableFields.COLUMN_VALUE.getFieldName() + " from " + TABLE_METADATA;
+
+                ResultSet rs = statement.executeQuery(sql);
+                while( rs.next() ) {
+                    String key = rs.getString(MetadataTableFields.COLUMN_KEY.getFieldName());
+                    String value = rs.getString(MetadataTableFields.COLUMN_VALUE.getFieldName());
+                    if (!key.endsWith("ts")) {
+                        // timestamps can't be changed
+                        metadataMap.put(key, value);
+                    }
+                }
+            }
+
+            String title = "Edit Project Info";
+            String[] labels = metadataMap.keySet().toArray(new String[0]);
+            String[] defaultValues = metadataMap.values().toArray(new String[0]);
+            String[] result = GuiUtilities.showMultiInputDialog(this, title, labels, defaultValues, null);
+
+            if (result != null) {
+                try (Statement statement = connection.createStatement()) {
+                    statement.setQueryTimeout(30); // set timeout to 30 sec.
+
+                    for( int i = 0; i < labels.length; i++ ) {
+                        String key = labels[i];
+                        String textData = result[i];
+                        if (textData == null) {
+                            textData = "";
+                        }
+                        textData = SpatialiteDb.escapeSql(textData);
+                        String query = "update " + TABLE_METADATA + " set value='" + textData + "'  where key='" + key + "';";
+
+                        statement.executeUpdate(query);
+                    }
+                }
+                String projectInfo = GeopaparazziWorkspaceUtilities.getProjectInfo(connection);
+                currentSelectedProject.metadata = projectInfo;
+                selectProjectInfo(currentSelectedProject);
+            }
+
+        }
     }
 
     protected abstract List<Action> makeGpsLogActions( final GpsLog selectedLog );
