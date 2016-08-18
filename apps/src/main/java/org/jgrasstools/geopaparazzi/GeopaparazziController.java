@@ -244,6 +244,9 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             }
         });
 
+        _httpServerButton.setIcon(ImageCache.getInstance().getImage(ImageCache.BROWSER));
+        _httpServerButton.setText("");
+        _httpServerButton.setPreferredSize(preferredButtonSize);
         _httpServerButton.setToolTipText("Start/stop a simple http server to connect Geopaparazzi to.");
         _httpServerButton.addActionListener(e -> {
             if (_httpServerButton.isSelected()) {
