@@ -27,15 +27,15 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>org.jogamp.jogl</groupId>
-		    <artifactId>jogl-all</artifactId>
-		    <version>2.1.5-01</version>
+			<groupId>org.jogamp.jogl</groupId>
+			<artifactId>jogl-all</artifactId>
+			<version>2.1.5-01</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jogamp.gluegen</groupId>
 			<artifactId>gluegen-rt-main</artifactId>
 			<version>2.1.5-01</version>
-		</dependency> 
+		</dependency>
 
 		<dependency>
 			<groupId>org.mapsforge</groupId>
@@ -58,11 +58,17 @@
 			<version>${mapsforge.version}</version>
 		</dependency>
 		<dependency>
-		    <groupId>gov.nasa</groupId>
-		    <artifactId>worldwind</artifactId>
-		    <version>2.0.X</version>
+			<groupId>gov.nasa</groupId>
+			<artifactId>worldwind</artifactId>
+			<version>2.0.X</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.nanohttpd</groupId>
+			<artifactId>nanohttpd</artifactId>
+			<version>2.3.1</version>
 		</dependency>
 	</dependencies>
-	
+
 
 </project>

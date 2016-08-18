@@ -94,6 +94,7 @@ import org.jgrasstools.gears.modules.v.smoothing.FeatureSlidingAverage;
 import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.utils.chart.Scatter;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.geopaparazzi.server.GeopaparazziServer;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
@@ -107,6 +108,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.LineString;
 
+import fi.iki.elonen.util.ServerRunner;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
@@ -157,6 +159,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
     private ProjectInfo currentLoadedProject;
 
+    private GeopaparazziServer geopaparazziServer;
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     public GeopaparazziController( GuiBridgeHandler guiBridge ) {
         this.guiBridge = guiBridge;
@@ -191,13 +195,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 GuiUtilities.showWarningMessage(this, null, "The projects folder doesn't exist.");
                 return;
             }
-            File[] projectFiles = geopaparazziFolder.listFiles(new FilenameFilter(){
-                @Override
-                public boolean accept( File dir, String name ) {
-                    return name.endsWith(".gpap");
-                }
-            });
-            Arrays.sort(projectFiles, Collections.reverseOrder());
+            File[] projectFiles = GeopaparazziWorkspaceUtilities.getGeopaparazziFiles(geopaparazziFolder);
 
             try {
                 projectInfos = readProjectInfos(projectFiles);
@@ -246,6 +244,30 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 }
 
                 layoutTree(filtered, false);
+            }
+        });
+
+        _httpServerButton.setToolTipText("Start/stop a simple http server to connect Geopaparazzi to.");
+        _httpServerButton.addActionListener(e -> {
+            if (_httpServerButton.isSelected()) {
+                String folderPath = _projectsFolderTextfield.getText();
+                File folderFile = new File(folderPath);
+                if (folderFile.exists() && folderFile.isDirectory()) {
+                    new Thread(new Runnable(){
+                        public void run() {
+                            geopaparazziServer = new GeopaparazziServer(folderFile);
+                            ServerRunner.executeInstance(geopaparazziServer);
+                        }
+                    }).start();
+                } else {
+                    GuiUtilities.showWarningMessage(this, null, "The supplied projects folder doesn't exist.");
+                }
+            } else {
+                // stop server
+                if (geopaparazziServer != null) {
+                    geopaparazziServer.stop();
+                    geopaparazziServer = null;
+                }
             }
         });
 
@@ -671,6 +693,11 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 prefsMap.put(GuiBridgeHandler.LAST_GP_PROJECTS_PATH, lastPath);
                 guiBridge.setGeopaparazziProjectViewerPreferencesMap(prefsMap);
             }
+
+            // stop server
+            if (geopaparazziServer != null) {
+                geopaparazziServer.stop();
+            }
         } catch (Exception e) {
             logger.error("Error", e);
         }
@@ -819,7 +846,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             double slide = 1;
             FeatureSlidingAverage fsaElev = new FeatureSlidingAverage(lineString);
             List<Coordinate> smoothedElev = fsaElev.smooth(lookAhead, false, slide);
-            if (smoothedElev==null) {
+            if (smoothedElev == null) {
                 smoothedElev = coords;
             }
             double[] xProfile = new double[smoothedElev.size()];

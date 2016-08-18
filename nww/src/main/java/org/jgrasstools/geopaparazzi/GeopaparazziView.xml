@@ -26,7 +26,7 @@
    </super>
    <at name="id">/home/hydrologis/development/jgrasstools-git/nww/src/main/java/org/jgrasstools/geopaparazzi/GeopaparazziView.xml</at>
    <at name="rowspecs">CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(0.5),CENTER:2DLU:NONE,FILL:DEFAULT:GROW(0.5),FILL:DEFAULT:NONE</at>
-   <at name="colspecs">FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.4),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.6),FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE</at>
+   <at name="colspecs">FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.4),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.6),FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE</at>
    <at name="components">
     <object classname="java.util.LinkedList">
      <item >
@@ -46,7 +46,7 @@
          </at>
          <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
         </super>
-        <at name="id">embedded.1292043703</at>
+        <at name="id">embedded.878097205</at>
         <at name="rowspecs">FILL:DEFAULT:GROW(1.0)</at>
         <at name="colspecs">FILL:DEFAULT:GROW(1.0)</at>
         <at name="components">
@@ -98,7 +98,7 @@
                  <at name="scrollableTracksViewportHeight">true</at>
                  <at name="scrollableTracksViewportWidth">true</at>
                  <at name="name">databaseTree</at>
-                 <at name="width">343</at>
+                 <at name="width">223</at>
                  <at name="scollBars">
                   <object classname="com.jeta.forms.store.properties.ScrollBarsProperty">
                    <at name="name">scollBars</at>
@@ -126,7 +126,7 @@
                    </at>
                   </object>
                  </at>
-                 <at name="height">185</at>
+                 <at name="height">167</at>
                 </object>
                </at>
               </object>
@@ -333,7 +333,7 @@
              </object>
             </at>
             <at name="name">projectsFolderTextfield</at>
-            <at name="width">679</at>
+            <at name="width">380</at>
             <at name="height">20</at>
            </object>
           </at>
@@ -400,69 +400,13 @@
      </item>
      <item >
       <at name="value">
-       <object classname="com.jeta.forms.store.memento.BeanMemento">
-        <super classname="com.jeta.forms.store.memento.ComponentMemento">
-         <at name="cellconstraints">
-          <object classname="com.jeta.forms.store.memento.CellConstraintsMemento">
-           <at name="column">10</at>
-           <at name="row">2</at>
-           <at name="colspan">1</at>
-           <at name="rowspan">1</at>
-           <at name="halign">default</at>
-           <at name="valign">default</at>
-           <at name="insets" object="insets">0,0,0,0</at>
-          </object>
-         </at>
-         <at name="componentclass">com.jeta.forms.gui.form.StandardComponent</at>
-        </super>
-        <at name="jetabeanclass">com.jeta.forms.gui.beans.JETABean</at>
-        <at name="beanclass">javax.swing.JButton</at>
-        <at name="beanproperties">
-         <object classname="com.jeta.forms.store.memento.PropertiesMemento">
-          <at name="classname">javax.swing.JButton</at>
-          <at name="properties">
-           <object classname="com.jeta.forms.store.support.PropertyMap">
-            <at name="border">
-             <object classname="com.jeta.forms.store.properties.CompoundBorderProperty">
-              <super classname="com.jeta.forms.store.properties.BorderProperty">
-               <at name="name">border</at>
-              </super>
-              <at name="borders">
-               <object classname="java.util.LinkedList">
-                <item >
-                 <at name="value">
-                  <object classname="com.jeta.forms.store.properties.DefaultBorderProperty">
-                   <super classname="com.jeta.forms.store.properties.BorderProperty">
-                    <at name="name">border</at>
-                   </super>
-                  </object>
-                 </at>
-                </item>
-               </object>
-              </at>
-             </object>
-            </at>
-            <at name="actionCommand">Load</at>
-            <at name="name">loadFolderButton</at>
-            <at name="width">59</at>
-            <at name="text">Load</at>
-            <at name="height">22</at>
-           </object>
-          </at>
-         </object>
-        </at>
-       </object>
-      </at>
-     </item>
-     <item >
-      <at name="value">
        <object classname="com.jeta.forms.store.memento.FormMemento">
         <super classname="com.jeta.forms.store.memento.ComponentMemento">
          <at name="cellconstraints">
           <object classname="com.jeta.forms.store.memento.CellConstraintsMemento">
            <at name="column">6</at>
            <at name="row">4</at>
-           <at name="colspan">5</at>
+           <at name="colspan">7</at>
            <at name="rowspan">3</at>
            <at name="halign">default</at>
            <at name="valign">default</at>
@@ -471,7 +415,7 @@
          </at>
          <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
         </super>
-        <at name="id">embedded.1644302715</at>
+        <at name="id">embedded.1699523108</at>
         <at name="rowspecs">FILL:DEFAULT:GROW(1.0)</at>
         <at name="colspecs">FILL:DEFAULT:GROW(1.0)</at>
         <at name="components">
@@ -501,8 +445,8 @@
                <at name="properties">
                 <object classname="com.jeta.forms.store.support.PropertyMap">
                  <at name="name">nwwHolder</at>
-                 <at name="width">503</at>
-                 <at name="height">214</at>
+                 <at name="width">396</at>
+                 <at name="height">196</at>
                 </object>
                </at>
               </object>
@@ -538,7 +482,7 @@
               </at>
              </object>
             </at>
-            <at name="name"></at>
+            <at name="name"/>
             <at name="fill">
              <object classname="com.jeta.forms.store.properties.effects.PaintProperty">
               <at name="name">fill</at>
@@ -708,7 +652,7 @@
              </object>
             </at>
             <at name="name">filterTextfield</at>
-            <at name="width">266</at>
+            <at name="width">146</at>
             <at name="height">20</at>
            </object>
           </at>
@@ -734,7 +678,7 @@
          </at>
          <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
         </super>
-        <at name="id">embedded.17723400</at>
+        <at name="id">embedded.2046624429</at>
         <at name="rowspecs">FILL:DEFAULT:GROW(1.0)</at>
         <at name="colspecs">FILL:DEFAULT:GROW(1.0)</at>
         <at name="components">
@@ -764,8 +708,8 @@
                <at name="properties">
                 <object classname="com.jeta.forms.store.support.PropertyMap">
                  <at name="name">infoScroll</at>
-                 <at name="width">345</at>
-                 <at name="height">119</at>
+                 <at name="width">225</at>
+                 <at name="height">100</at>
                 </object>
                </at>
               </object>
@@ -801,7 +745,7 @@
               </at>
              </object>
             </at>
-            <at name="name"></at>
+            <at name="name"/>
             <at name="fill">
              <object classname="com.jeta.forms.store.properties.effects.PaintProperty">
               <at name="name">fill</at>
@@ -812,7 +756,6 @@
               <at name="name">scollBars</at>
               <at name="verticalpolicy">21</at>
               <at name="horizontalpolicy">31</at>
-              <at name="scrollname"></at>
               <at name="border">
                <object classname="com.jeta.forms.store.properties.CompoundBorderProperty">
                 <super classname="com.jeta.forms.store.properties.BorderProperty">
@@ -865,7 +808,7 @@
           <object classname="com.jeta.forms.store.memento.CellConstraintsMemento">
            <at name="column">6</at>
            <at name="row">8</at>
-           <at name="colspan">5</at>
+           <at name="colspan">7</at>
            <at name="rowspan">1</at>
            <at name="halign">default</at>
            <at name="valign">default</at>
@@ -874,7 +817,7 @@
          </at>
          <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
         </super>
-        <at name="id">embedded.Gbb65f19Y1567d9e6262AU7ffe</at>
+        <at name="id">embedded.1817486892</at>
         <at name="rowspecs">CENTER:DEFAULT:GROW(1.0)</at>
         <at name="colspecs">FILL:DEFAULT:GROW(1.0)</at>
         <at name="components">
@@ -904,7 +847,7 @@
                <at name="properties">
                 <object classname="com.jeta.forms.store.support.PropertyMap">
                  <at name="name">chartHolder</at>
-                 <at name="width">503</at>
+                 <at name="width">396</at>
                  <at name="height">12</at>
                 </object>
                </at>
@@ -941,7 +884,7 @@
               </at>
              </object>
             </at>
-            <at name="name"></at>
+            <at name="name"/>
             <at name="fill">
              <object classname="com.jeta.forms.store.properties.effects.PaintProperty">
               <at name="name">fill</at>
@@ -952,6 +895,26 @@
               <at name="name">scollBars</at>
               <at name="verticalpolicy">21</at>
               <at name="horizontalpolicy">31</at>
+              <at name="border">
+               <object classname="com.jeta.forms.store.properties.CompoundBorderProperty">
+                <super classname="com.jeta.forms.store.properties.BorderProperty">
+                 <at name="name">border</at>
+                </super>
+                <at name="borders">
+                 <object classname="java.util.LinkedList">
+                  <item >
+                   <at name="value">
+                    <object classname="com.jeta.forms.store.properties.DefaultBorderProperty">
+                     <super classname="com.jeta.forms.store.properties.BorderProperty">
+                      <at name="name">border</at>
+                     </super>
+                    </object>
+                   </at>
+                  </item>
+                 </object>
+                </at>
+               </object>
+              </at>
              </object>
             </at>
            </object>
@@ -980,6 +943,118 @@
          <object classname="com.jeta.forms.store.memento.FormGroupSet">
           <at name="groups">
            <object classname="java.util.HashMap"/>
+          </at>
+         </object>
+        </at>
+       </object>
+      </at>
+     </item>
+     <item >
+      <at name="value">
+       <object classname="com.jeta.forms.store.memento.BeanMemento">
+        <super classname="com.jeta.forms.store.memento.ComponentMemento">
+         <at name="cellconstraints">
+          <object classname="com.jeta.forms.store.memento.CellConstraintsMemento">
+           <at name="column">10</at>
+           <at name="row">2</at>
+           <at name="colspan">1</at>
+           <at name="rowspan">1</at>
+           <at name="halign">default</at>
+           <at name="valign">default</at>
+           <at name="insets" object="insets">0,0,0,0</at>
+          </object>
+         </at>
+         <at name="componentclass">com.jeta.forms.gui.form.StandardComponent</at>
+        </super>
+        <at name="jetabeanclass">com.jeta.forms.gui.beans.JETABean</at>
+        <at name="beanclass">javax.swing.JButton</at>
+        <at name="beanproperties">
+         <object classname="com.jeta.forms.store.memento.PropertiesMemento">
+          <at name="classname">javax.swing.JButton</at>
+          <at name="properties">
+           <object classname="com.jeta.forms.store.support.PropertyMap">
+            <at name="border">
+             <object classname="com.jeta.forms.store.properties.CompoundBorderProperty">
+              <super classname="com.jeta.forms.store.properties.BorderProperty">
+               <at name="name">border</at>
+              </super>
+              <at name="borders">
+               <object classname="java.util.LinkedList">
+                <item >
+                 <at name="value">
+                  <object classname="com.jeta.forms.store.properties.DefaultBorderProperty">
+                   <super classname="com.jeta.forms.store.properties.BorderProperty">
+                    <at name="name">border</at>
+                   </super>
+                  </object>
+                 </at>
+                </item>
+               </object>
+              </at>
+             </object>
+            </at>
+            <at name="actionCommand">Load</at>
+            <at name="name">loadFolderButton</at>
+            <at name="width">59</at>
+            <at name="text">Load</at>
+            <at name="height">22</at>
+           </object>
+          </at>
+         </object>
+        </at>
+       </object>
+      </at>
+     </item>
+     <item >
+      <at name="value">
+       <object classname="com.jeta.forms.store.memento.BeanMemento">
+        <super classname="com.jeta.forms.store.memento.ComponentMemento">
+         <at name="cellconstraints">
+          <object classname="com.jeta.forms.store.memento.CellConstraintsMemento">
+           <at name="column">12</at>
+           <at name="row">2</at>
+           <at name="colspan">1</at>
+           <at name="rowspan">1</at>
+           <at name="halign">default</at>
+           <at name="valign">default</at>
+           <at name="insets" object="insets">0,0,0,0</at>
+          </object>
+         </at>
+         <at name="componentclass">com.jeta.forms.gui.form.StandardComponent</at>
+        </super>
+        <at name="jetabeanclass">com.jeta.forms.gui.beans.JETABean</at>
+        <at name="beanclass">javax.swing.JToggleButton</at>
+        <at name="beanproperties">
+         <object classname="com.jeta.forms.store.memento.PropertiesMemento">
+          <at name="classname">javax.swing.JToggleButton</at>
+          <at name="properties">
+           <object classname="com.jeta.forms.store.support.PropertyMap">
+            <at name="border">
+             <object classname="com.jeta.forms.store.properties.CompoundBorderProperty">
+              <super classname="com.jeta.forms.store.properties.BorderProperty">
+               <at name="name">border</at>
+              </super>
+              <at name="borders">
+               <object classname="java.util.LinkedList">
+                <item >
+                 <at name="value">
+                  <object classname="com.jeta.forms.store.properties.DefaultBorderProperty">
+                   <super classname="com.jeta.forms.store.properties.BorderProperty">
+                    <at name="name">border</at>
+                   </super>
+                  </object>
+                 </at>
+                </item>
+               </object>
+              </at>
+             </object>
+            </at>
+            <at name="actionCommand">HTTP</at>
+            <at name="name">httpServerButton</at>
+            <at name="width">61</at>
+            <at name="text">HTTP</at>
+            <at name="height">22</at>
+           </object>
           </at>
          </object>
         </at>
@@ -1045,31 +1120,31 @@
      <at name="rows">
       <object classname="[Ljava.lang.Object;" size="9">
        <at name="item" index="0">
-        <object classname="[Ljava.lang.Object;" size="11"/>
+        <object classname="[Ljava.lang.Object;" size="13"/>
        </at>
        <at name="item" index="1">
-        <object classname="[Ljava.lang.Object;" size="11"/>
+        <object classname="[Ljava.lang.Object;" size="13"/>
        </at>
        <at name="item" index="2">
-        <object classname="[Ljava.lang.Object;" size="11"/>
+        <object classname="[Ljava.lang.Object;" size="13"/>
        </at>
        <at name="item" index="3">
-        <object classname="[Ljava.lang.Object;" size="11"/>
+        <object classname="[Ljava.lang.Object;" size="13"/>
        </at>
        <at name="item" index="4">
-        <object classname="[Ljava.lang.Object;" size="11"/>
+        <object classname="[Ljava.lang.Object;" size="13"/>
        </at>
        <at name="item" index="5">
-        <object classname="[Ljava.lang.Object;" size="11"/>
+        <object classname="[Ljava.lang.Object;" size="13"/>
        </at>
        <at name="item" index="6">
-        <object classname="[Ljava.lang.Object;" size="11"/>
+        <object classname="[Ljava.lang.Object;" size="13"/>
        </at>
        <at name="item" index="7">
-        <object classname="[Ljava.lang.Object;" size="11"/>
+        <object classname="[Ljava.lang.Object;" size="13"/>
        </at>
        <at name="item" index="8">
-        <object classname="[Ljava.lang.Object;" size="11"/>
+        <object classname="[Ljava.lang.Object;" size="13"/>
        </at>
       </object>
      </at>

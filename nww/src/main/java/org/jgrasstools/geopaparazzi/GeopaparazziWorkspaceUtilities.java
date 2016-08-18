@@ -21,11 +21,14 @@ import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TA
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_NOTES;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -52,6 +55,17 @@ public class GeopaparazziWorkspaceUtilities {
             }
         }
         return infoList;
+    }
+
+    public static File[] getGeopaparazziFiles( final File geopaparazziFolder ) {
+        File[] projectFiles = geopaparazziFolder.listFiles(new FilenameFilter(){
+            @Override
+            public boolean accept( File dir, String name ) {
+                return name.endsWith(".gpap");
+            }
+        });
+        Arrays.sort(projectFiles, Collections.reverseOrder());
+        return projectFiles;
     }
 
     private static LinkedHashMap<String, String> getProjectMetadata( Connection connection ) throws Exception {
