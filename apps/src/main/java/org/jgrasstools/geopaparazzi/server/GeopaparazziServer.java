@@ -43,6 +43,11 @@ public class GeopaparazziServer extends NanoHTTPD {
         this.projectsFolder = projectsFolder;
     }
 
+    public GeopaparazziServer( File projectsFolder, int port ) {
+        super(port);
+        this.projectsFolder = projectsFolder;
+    }
+
     @Override
     public Response serve( IHTTPSession session ) {
         Method method = session.getMethod();

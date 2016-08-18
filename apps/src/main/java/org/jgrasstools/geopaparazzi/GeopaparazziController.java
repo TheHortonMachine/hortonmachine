@@ -49,6 +49,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTextPane;
@@ -253,15 +254,30 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 String folderPath = _projectsFolderTextfield.getText();
                 File folderFile = new File(folderPath);
                 if (folderFile.exists() && folderFile.isDirectory()) {
+                    int port = 8080;
+                    try {
+                        String portChosen = JOptionPane.showInputDialog("Server port to use", "8080");
+                        if (portChosen == null) {
+                            _httpServerButton.setSelected(false);
+                            return;
+                        }
+                        port = Integer.parseInt(portChosen);
+                    } catch (NumberFormatException e1) {
+                        _httpServerButton.setSelected(false);
+                        GuiUtilities.showWarningMessage(this, null, "The port has to be a valid integer.");
+                        return;
+                    }
+
+                    final int fPort = port;
                     new Thread(new Runnable(){
                         public void run() {
-                            geopaparazziServer = new GeopaparazziServer(folderFile);
+                            geopaparazziServer = new GeopaparazziServer(folderFile, fPort);
                             ServerRunner.executeInstance(geopaparazziServer);
                         }
                     }).start();
                 } else {
-                    GuiUtilities.showWarningMessage(this, null, "The supplied projects folder doesn't exist.");
                     _httpServerButton.setSelected(false);
+                    GuiUtilities.showWarningMessage(this, null, "The supplied projects folder doesn't exist.");
                 }
             } else {
                 // stop server
