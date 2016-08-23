@@ -47,6 +47,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.JGrassGears;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.hortonmachine.HortonMachine;
@@ -471,7 +472,9 @@ public class ParametersPanel extends JPanel implements MouseListener {
         if (files != null && files.length > 0) {
             final File gpapFile = files[0];
             GuiUtilities.setLastPath(gpapFile.getAbsolutePath());
-            textField.setText(gpapFile.getAbsolutePath());
+
+            String checkedPath = FileUtilities.replaceBackSlashesWithSlashes(gpapFile.getAbsolutePath());
+            textField.setText(checkedPath);
         }
     }
 

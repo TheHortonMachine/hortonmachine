@@ -256,6 +256,19 @@ public class FileUtilities {
     public static String replaceBackSlashes( String path ) {
         return path.replaceAll("\\\\", "\\\\\\\\"); //$NON-NLS-1$ //$NON-NLS-2$
     }
+    
+    /**
+     * Replaces backslashes with /.
+     * 
+     * @param string the string to check.
+     * @return the string without backslashes.
+     */
+    public static String replaceBackSlashesWithSlashes( String string ) {
+        if (string != null) {
+            string = string.replaceAll("\\\\", "/").replaceAll("\\\\\\\\", "/");
+        }
+        return string;
+    }
 
     /**
      * Returns the name of the file without the extension.

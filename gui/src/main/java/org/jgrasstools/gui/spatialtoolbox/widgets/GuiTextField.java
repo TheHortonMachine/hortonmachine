@@ -37,11 +37,14 @@ import javax.swing.text.JTextComponent;
 import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTProcessingRegion;
+import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gui.spatialtoolbox.core.FieldData;
 import org.jgrasstools.gui.spatialtoolbox.core.SpatialToolboxConstants;
 import org.jgrasstools.gui.spatialtoolbox.core.SpatialToolboxUtils;
 import org.jgrasstools.gui.utils.DefaultGuiBridgeImpl;
 import org.jgrasstools.gui.utils.GuiUtilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 
 /**
@@ -50,6 +53,8 @@ import org.jgrasstools.gui.utils.GuiBridgeHandler;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class GuiTextField extends ModuleGuiElement implements KeyListener, FocusListener {
+
+    private static final Logger logger = LoggerFactory.getLogger(GuiTextField.class);
 
     private JTextComponent text;
     private final FieldData data;
@@ -401,6 +406,15 @@ public class GuiTextField extends ModuleGuiElement implements KeyListener, Focus
         // if (isMapcalc) {
         // MapcalculatorUtils.saveMapcalcHistory(text.getText());
         // }
+
+        logger.info("Is file or folder: " + isFileOrFolder);
+        logger.info("data.fieldValue: " + data.fieldValue);
+
+        // make sure the paths are properly set
+        if (isFileOrFolder && data.fieldValue.length() > 0) {
+            data.fieldValue = checkBackSlash(data.fieldValue);
+            logger.info("processed backslashes of data.fieldValue: " + data.fieldValue);
+        }
         return data;
     }
 
@@ -746,7 +760,7 @@ public class GuiTextField extends ModuleGuiElement implements KeyListener, Focus
      */
     public static String checkBackSlash( String textStr ) {
         if (textStr != null) {
-            textStr = textStr.replaceAll("\\\\", "/");
+            textStr = textStr.replaceAll("\\\\", "/").replaceAll("\\\\\\\\", "/");
         }
         return textStr;
     }
