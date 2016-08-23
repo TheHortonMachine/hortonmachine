@@ -22,6 +22,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,6 +41,13 @@ public class FileUtilities {
 
     public static void copyFile( File in, File out ) throws IOException {
         copyFile(in.getAbsolutePath(), out.getAbsolutePath());
+    }
+
+    public static long getCreationTimestamp(String path) throws IOException{
+        Path pathObj = Paths.get(path);
+        BasicFileAttributes attr = Files.readAttributes(pathObj, BasicFileAttributes.class);
+
+        return attr.creationTime().toMillis();
     }
 
     /**
@@ -256,7 +264,7 @@ public class FileUtilities {
     public static String replaceBackSlashes( String path ) {
         return path.replaceAll("\\\\", "\\\\\\\\"); //$NON-NLS-1$ //$NON-NLS-2$
     }
-    
+
     /**
      * Replaces backslashes with /.
      * 
@@ -327,7 +335,7 @@ public class FileUtilities {
             char ch = fileName.charAt(i);
             if (ch < ' ' || ch >= 0x7F || ch == fileSep // add other illegal chars
                     || (ch == '.' && i == 0) // we don't want to collide with "." or ".."!
-                  || ch == '?'  || ch == escape) {
+                    || ch == '?' || ch == escape) {
                 sb.append(escape);
                 if (ch < 0x10) {
                     sb.append('0');

@@ -577,23 +577,6 @@ public class GearsMessages {
     public static final String OMSSCANLINERASTERIZER_P_MAX_THREADS_DESCRIPTION = "Max threads to use (default 4)";
     public static final String OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION = "The output raster.";
 
-    public static final String OMSFILEITERATOR_DESCRIPTION = "A module that iterates over files in a folder";
-    public static final String OMSFILEITERATOR_DOCUMENTATION = "";
-    public static final String OMSFILEITERATOR_KEYWORDS = "Iterator, File";
-    public static final String OMSFILEITERATOR_LABEL = LIST_READER;
-    public static final String OMSFILEITERATOR_NAME = "fileiterator";
-    public static final int OMSFILEITERATOR_STATUS = 10;
-    public static final String OMSFILEITERATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSFILEITERATOR_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
-    public static final String OMSFILEITERATOR_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSFILEITERATOR_IN_FOLDER_DESCRIPTION = "The folder on which to iterate";
-    public static final String OMSFILEITERATOR_P_REGEX_DESCRIPTION = "Regular expression to match the file names.";
-    public static final String OMSFILEITERATOR_P_CODE_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328). Applied in the case the file is missing.";
-    public static final String OMSFILEITERATOR_FILE_FILTER_DESCRIPTION = "An optional file filter (used when developing).";
-    public static final String OMSFILEITERATOR_OUT_CURRENT_FILE_DESCRIPTION = "The current file of the list of files in the folder.";
-    public static final String OMSFILEITERATOR_FILES_LIST_DESCRIPTION = "All the files that were found matching.";
-    public static final String OMSFILEITERATOR_PATHS_LIST_DESCRIPTION = "All the file path that were found matching.";
-
     public static final String OMSRASTERRESOLUTIONRESAMPLER_DESCRIPTION = "Module to do coverage resolution resampling.";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_DOCUMENTATION = "";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_KEYWORDS = "IO, Coverage, Raster, Convert";
