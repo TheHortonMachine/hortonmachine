@@ -993,6 +993,11 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                         GpsLogsTableFields.COLUMN_LOG_TEXT.getFieldName() + //
                         " from " + TABLE_GPSLOGS; //
 
+                boolean useGpsElev = _useGpsElevationsCheckbox.isSelected();
+                int altitudeMode = WorldWind.CLAMP_TO_GROUND;
+                if (useGpsElev) {
+                    altitudeMode = WorldWind.ABSOLUTE;
+                }
                 // first get the logs
                 ResultSet rs = statement.executeQuery(sql);
                 while( rs.next() ) {
@@ -1008,6 +1013,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     String query = "select " //
                             + GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + ","
                             + GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + ","
+                            + GpsLogsDataTableFields.COLUMN_DATA_ALTIM.getFieldName() + ","
                             + GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName()//
                             + " from " + TABLE_GPSLOG_DATA + " where " + //
                             GpsLogsDataTableFields.COLUMN_LOGID.getFieldName() + " = " + id + " order by "
@@ -1021,7 +1027,10 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                         while( result.next() ) {
                             double lat = result.getDouble(1);
                             double lon = result.getDouble(2);
-                            Position pos = Position.fromDegrees(lat, lon, 0);
+                            double elev = 0.0;
+                            if (useGpsElev)
+                                elev = result.getDouble(3);
+                            Position pos = Position.fromDegrees(lat, lon, elev);
                             verticesList.add(pos);
                             bounds.expandToInclude(lon, lat);
                         }
@@ -1063,7 +1072,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     lineAttributes.setOutlineMaterial(new Material(color));
                     lineAttributes.setOutlineWidth(lineWidth);
                     Path path = new Path(verticesList);
-                    path.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+                    path.setAltitudeMode(altitudeMode);
                     path.setFollowTerrain(true);
                     path.setAttributes(lineAttributes);
 

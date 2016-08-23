@@ -10,6 +10,7 @@ import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -27,13 +28,14 @@ public class GeopaparazziView extends JPanel
    JLabel _projectsFolderLabel = new JLabel();
    JTextField _projectsFolderTextfield = new JTextField();
    JButton _projectsFolderBrowseButton = new JButton();
-   JPanel _nwwHolder = new JPanel();
    JLabel _filterLabel = new JLabel();
    JTextField _filterTextfield = new JTextField();
    JScrollPane _infoScroll = new JScrollPane();
    JPanel _chartHolder = new JPanel();
    JButton _loadFolderButton = new JButton();
    JToggleButton _httpServerButton = new JToggleButton();
+   JPanel _nwwHolder = new JPanel();
+   JCheckBox _useGpsElevationsCheckbox = new JCheckBox();
 
    /**
     * Default constructor
@@ -142,7 +144,6 @@ public class GeopaparazziView extends JPanel
       _projectsFolderBrowseButton.setText("...");
       jpanel1.add(_projectsFolderBrowseButton,cc.xy(8,2));
 
-      jpanel1.add(createPanel1(),cc.xywh(6,4,7,3));
       _filterLabel.setName("filterLabel");
       _filterLabel.setText("Filter projects");
       jpanel1.add(_filterLabel,cc.xy(2,4));
@@ -150,8 +151,8 @@ public class GeopaparazziView extends JPanel
       _filterTextfield.setName("filterTextfield");
       jpanel1.add(_filterTextfield,cc.xy(4,4));
 
-      jpanel1.add(createPanel2(),cc.xywh(2,8,3,1));
-      jpanel1.add(createPanel3(),cc.xywh(6,8,7,1));
+      jpanel1.add(createPanel1(),cc.xywh(2,8,3,1));
+      jpanel1.add(createPanel2(),cc.xywh(6,8,7,1));
       _loadFolderButton.setActionCommand("Load");
       _loadFolderButton.setName("loadFolderButton");
       _loadFolderButton.setText("Load");
@@ -161,6 +162,12 @@ public class GeopaparazziView extends JPanel
       _httpServerButton.setName("httpServerButton");
       _httpServerButton.setText("HTTP");
       jpanel1.add(_httpServerButton,cc.xy(12,2));
+
+      jpanel1.add(createPanel3(),cc.xywh(6,6,7,1));
+      _useGpsElevationsCheckbox.setActionCommand("use GPS elevations for logs");
+      _useGpsElevationsCheckbox.setName("useGpsElevationsCheckbox");
+      _useGpsElevationsCheckbox.setText("use GPS elevations for logs");
+      jpanel1.add(_useGpsElevationsCheckbox,cc.xywh(6,4,7,1));
 
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13 },new int[]{ 1,2,3,4,5,6,7,8,9 });
       return jpanel1;
@@ -189,22 +196,6 @@ public class GeopaparazziView extends JPanel
    public JPanel createPanel1()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Viewer",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
-      jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      _nwwHolder.setName("nwwHolder");
-      jpanel1.add(_nwwHolder,cc.xy(1,1));
-
-      addFillComponents(jpanel1,new int[0],new int[0]);
-      return jpanel1;
-   }
-
-   public JPanel createPanel2()
-   {
-      JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Info",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
@@ -218,7 +209,7 @@ public class GeopaparazziView extends JPanel
       return jpanel1;
    }
 
-   public JPanel createPanel3()
+   public JPanel createPanel2()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Charts",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
@@ -229,6 +220,22 @@ public class GeopaparazziView extends JPanel
 
       _chartHolder.setName("chartHolder");
       jpanel1.add(_chartHolder,cc.xy(1,1));
+
+      addFillComponents(jpanel1,new int[0],new int[0]);
+      return jpanel1;
+   }
+
+   public JPanel createPanel3()
+   {
+      JPanel jpanel1 = new JPanel();
+      TitledBorder titledborder1 = new TitledBorder(null,"Viewer",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
+      jpanel1.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      _nwwHolder.setName("nwwHolder");
+      jpanel1.add(_nwwHolder,cc.xy(1,1));
 
       addFillComponents(jpanel1,new int[0],new int[0]);
       return jpanel1;

@@ -59,7 +59,7 @@ public class GeopaparazziViewer extends GeopaparazziController {
     private static final long serialVersionUID = 1L;
 
     private static final int MAX_IMAGE_SIZE = 800;
-
+    
     public GeopaparazziViewer( GuiBridgeHandler guiBridge ) {
         super(guiBridge);
     }
