@@ -558,6 +558,9 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
                 if (value.trim().length() == 0) {
                     continue;
                 }
+                
+                // make sure there are no backslashes
+                value = FileUtilities.replaceBackSlashesWithSlashes(value);
 
                 scriptBuilder.append(objectName).append(".").append(fieldName).append(" = ");
 
@@ -565,7 +568,6 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
                 field.setAccessible(true);
                 Class< ? > type = field.getType();
                 if (type.isAssignableFrom(String.class)) {
-
                     scriptBuilder.append("\"").append(value).append("\"");
                     if (outputFieldNames.contains(fieldName)) {
                         outputStringsMap.put(fieldName, value);

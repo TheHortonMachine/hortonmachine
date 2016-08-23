@@ -472,9 +472,8 @@ public class ParametersPanel extends JPanel implements MouseListener {
         if (files != null && files.length > 0) {
             final File gpapFile = files[0];
             GuiUtilities.setLastPath(gpapFile.getAbsolutePath());
-
-            String checkedPath = FileUtilities.replaceBackSlashesWithSlashes(gpapFile.getAbsolutePath());
-            textField.setText(checkedPath);
+            
+            textField.setText(gpapFile.getAbsolutePath());
         }
     }
 
