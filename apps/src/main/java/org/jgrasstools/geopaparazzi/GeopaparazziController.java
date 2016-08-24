@@ -271,7 +271,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     final int fPort = port;
                     new Thread(new Runnable(){
                         public void run() {
-                            geopaparazziServer = new GeopaparazziServer(folderFile, fPort);
+                            // TODO enable layers download
+                            geopaparazziServer = new GeopaparazziServer(folderFile, null, fPort);
                             ServerRunner.executeInstance(geopaparazziServer);
                         }
                     }).start();
