@@ -61,7 +61,7 @@ public class GeopaparazziServer extends NanoHTTPD {
     public static void main( String[] args ) {
         String projectsFolder = "/home/hydrologis/Dropbox/geopaparazzi/projects/";
         String dataFolder = "/home/hydrologis/data/";
-        GeopaparazziServer server = new GeopaparazziServer(new File(projectsFolder), new File(dataFolder));
+        GeopaparazziServer server = new GeopaparazziServer(new File(projectsFolder), new File(dataFolder), 8080);
         ServerRunner.executeInstance(server);
     }
 
@@ -133,6 +133,8 @@ public class GeopaparazziServer extends NanoHTTPD {
             } catch (Exception e) {
                 LOG.warning("ERROR: " + e.getMessage());
             }
+        } else if (uri.substring(1).equalsIgnoreCase("sync/upload")) {
+            // TODO
         } else if (uri.substring(1).equalsIgnoreCase("sync/download")) {
             // get post data json
             try {
