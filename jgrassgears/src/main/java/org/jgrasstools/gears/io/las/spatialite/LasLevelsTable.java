@@ -20,11 +20,11 @@ package org.jgrasstools.gears.io.las.spatialite;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.spatialite.compat.IJGTConnection;
 import org.jgrasstools.gears.spatialite.compat.IJGTPreparedStatement;
 import org.jgrasstools.gears.spatialite.compat.IJGTResultSet;
 import org.jgrasstools.gears.spatialite.compat.IJGTStatement;
+import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -59,12 +59,12 @@ public class LasLevelsTable {
      * @return <code>true</code> if the level table exists.
      * @throws Exception 
      */
-    public static boolean hasLevel( SpatialiteDb db, int levelNum ) throws Exception {
+    public static boolean hasLevel( ASpatialDb db, int levelNum ) throws Exception {
         String tablename = TABLENAME + levelNum;
         return db.hasTable(tablename);
     }
 
-    public static void createTable( SpatialiteDb db, int srid, int levelNum ) throws Exception {
+    public static void createTable( ASpatialDb db, int srid, int levelNum ) throws Exception {
         String tablename = TABLENAME + levelNum;
         if (!db.hasTable(tablename)) {
             String[] creates = {//
@@ -95,7 +95,7 @@ public class LasLevelsTable {
      * @throws Exception 
      * 
      */
-    public static void insertLasLevel( SpatialiteDb db, int srid, LasLevel level ) throws Exception {
+    public static void insertLasLevel( ASpatialDb db, int srid, LasLevel level ) throws Exception {
         String sql = "INSERT INTO " + TABLENAME + level.level//
                 + " (" + //
                 COLUMN_GEOM + "," + //
@@ -125,7 +125,7 @@ public class LasLevelsTable {
         }
     }
 
-    public static void insertLasLevels( SpatialiteDb db, int srid, List<LasLevel> levels ) throws Exception {
+    public static void insertLasLevels( ASpatialDb db, int srid, List<LasLevel> levels ) throws Exception {
         if (levels.size() == 0)
             return;
         String sql = "INSERT INTO " + TABLENAME + levels.get(0).level//
@@ -172,7 +172,7 @@ public class LasLevelsTable {
      * @return the list of extracted level cells.
      * @throws Exception
      */
-    public static List<LasLevel> getLasLevels( SpatialiteDb db, int levelNum, Envelope envelope ) throws Exception {
+    public static List<LasLevel> getLasLevels( ASpatialDb db, int levelNum, Envelope envelope ) throws Exception {
         String tableName = TABLENAME + levelNum;
         List<LasLevel> lasLevels = new ArrayList<>();
         String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + //
@@ -229,7 +229,7 @@ public class LasLevelsTable {
      * @return the list of extracted points
      * @throws Exception
      */
-    public static List<LasLevel> getLasLevels( SpatialiteDb db, int levelNum, Geometry geometry ) throws Exception {
+    public static List<LasLevel> getLasLevels( ASpatialDb db, int levelNum, Geometry geometry ) throws Exception {
         String tableName = TABLENAME + levelNum;
         List<LasLevel> lasLevels = new ArrayList<>();
         String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + //

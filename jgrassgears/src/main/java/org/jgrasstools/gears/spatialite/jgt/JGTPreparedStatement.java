@@ -1,7 +1,9 @@
-package org.jgrasstools.gears.spatialite.compat;
+package org.jgrasstools.gears.spatialite.jgt;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+
+import org.jgrasstools.gears.spatialite.compat.IJGTPreparedStatement;
 
 public class JGTPreparedStatement implements IJGTPreparedStatement {
 

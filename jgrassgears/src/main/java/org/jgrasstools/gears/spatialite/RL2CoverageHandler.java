@@ -27,6 +27,8 @@ import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
 import org.jgrasstools.gears.spatialite.compat.IJGTConnection;
 import org.jgrasstools.gears.spatialite.compat.IJGTResultSet;
 import org.jgrasstools.gears.spatialite.compat.IJGTStatement;
+import org.jgrasstools.gears.spatialite.jgt.SpatialiteDb;
+import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -40,13 +42,13 @@ import com.vividsolutions.jts.geom.Polygon;
  */
 public class RL2CoverageHandler {
 
-    private SpatialiteDb mSpatialiteDb;
+    private ASpatialDb mSpatialiteDb;
     private IJGTConnection mConn;
     private String mTargetEpsg;
     private String mTableName;
     private RasterCoverage rasterCoverage;
 
-    public RL2CoverageHandler( SpatialiteDb spatialiteDb, RasterCoverage rasterCoverage ) {
+    public RL2CoverageHandler( ASpatialDb spatialiteDb, RasterCoverage rasterCoverage ) {
         this.mSpatialiteDb = spatialiteDb;
         this.rasterCoverage = rasterCoverage;
         this.mTableName = rasterCoverage.coverage_name;
@@ -116,7 +118,7 @@ public class RL2CoverageHandler {
     }
 
     public static void main( String[] args ) throws Exception {
-        try (SpatialiteDb db = new SpatialiteDb()) {
+        try (ASpatialDb db = new SpatialiteDb()) {
             db.open("/media/hydrologis/SPEEDBALL/DATI/ORTOFOTO/ortofoto.sqlite");
 
             List<RasterCoverage> rcList = db.getRasterCoverages(false);

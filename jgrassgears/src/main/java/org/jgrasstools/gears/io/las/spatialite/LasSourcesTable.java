@@ -22,11 +22,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.spatialite.compat.IJGTConnection;
 import org.jgrasstools.gears.spatialite.compat.IJGTPreparedStatement;
 import org.jgrasstools.gears.spatialite.compat.IJGTResultSet;
 import org.jgrasstools.gears.spatialite.compat.IJGTStatement;
+import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
@@ -49,7 +49,7 @@ public class LasSourcesTable {
     public static final String COLUMN_MINZ = "minelev";
     public static final String COLUMN_MAXZ = "maxelev";
 
-    public static void createTable( SpatialiteDb db, int srid ) throws Exception {
+    public static void createTable( ASpatialDb db, int srid ) throws Exception {
         if (!db.hasTable(TABLENAME)) {
             String[] creates = {//
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT", //
@@ -90,7 +90,7 @@ public class LasSourcesTable {
      * @return
      * @throws Exception 
      */
-    public static long insertLasSource( SpatialiteDb db, int srid, int levels, double resolution, double factor, Polygon polygon,
+    public static long insertLasSource( ASpatialDb db, int srid, int levels, double resolution, double factor, Polygon polygon,
             String name, double minElev, double maxElev ) throws Exception {
         String sql = "INSERT INTO " + TABLENAME//
                 + " (" + COLUMN_GEOM + "," + COLUMN_NAME + "," + COLUMN_RESOLUTION + "," //
@@ -123,7 +123,7 @@ public class LasSourcesTable {
      * @return the list of available {@link LasSource}s.
      * @throws Exception
      */
-    public static List<LasSource> getLasSources( SpatialiteDb db ) throws Exception {
+    public static List<LasSource> getLasSources( ASpatialDb db ) throws Exception {
         List<LasSource> sources = new ArrayList<>();
         String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_NAME + ","
                 + COLUMN_RESOLUTION + "," + COLUMN_FACTOR + "," + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + " FROM "
@@ -161,7 +161,7 @@ public class LasSourcesTable {
      * @return <code>true</code> if the db can be read.
      * @throws Exception
      */
-    public static boolean isLasDatabase( SpatialiteDb db ) throws Exception {
+    public static boolean isLasDatabase( ASpatialDb db ) throws Exception {
         if (!db.hasTable(TABLENAME) || !db.hasTable(LasCellsTable.TABLENAME)) {
             return false;
         }

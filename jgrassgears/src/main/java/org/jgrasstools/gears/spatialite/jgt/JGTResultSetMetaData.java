@@ -1,6 +1,8 @@
-package org.jgrasstools.gears.spatialite.compat;
+package org.jgrasstools.gears.spatialite.jgt;
 
 import java.sql.ResultSetMetaData;
+
+import org.jgrasstools.gears.spatialite.compat.IJGTResultSetMetaData;
 
 public class JGTResultSetMetaData implements IJGTResultSetMetaData {
 

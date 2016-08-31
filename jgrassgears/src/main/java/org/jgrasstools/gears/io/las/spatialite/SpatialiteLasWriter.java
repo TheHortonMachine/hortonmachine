@@ -52,7 +52,8 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator;
-import org.jgrasstools.gears.spatialite.SpatialiteDb;
+import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
+import org.jgrasstools.gears.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -158,7 +159,7 @@ public class SpatialiteLasWriter extends JGTModel {
             }
         }
 
-        try (SpatialiteDb spatialiteDb = new SpatialiteDb()) {
+        try (ASpatialDb spatialiteDb = new SpatialiteDb()) {
             boolean existed = spatialiteDb.open(inSpatialite);
             if (!existed) {
                 pm.beginTask("Create new spatialite database...", IJGTProgressMonitor.UNKNOWN);
@@ -254,7 +255,7 @@ public class SpatialiteLasWriter extends JGTModel {
     }
 
     @SuppressWarnings("unchecked")
-    private void processFile( final SpatialiteDb spatialiteDb, File file, long sourceID, GridCoverage2D ortoGC )
+    private void processFile( final ASpatialDb spatialiteDb, File file, long sourceID, GridCoverage2D ortoGC )
             throws Exception {
         String name = file.getName();
         pm.message("Processing file: " + name);
@@ -478,7 +479,7 @@ public class SpatialiteLasWriter extends JGTModel {
 
     }
 
-    private void insertFirstLevel( final SpatialiteDb spatialiteDb, long sourceID, double north, double south, double east,
+    private void insertFirstLevel( final ASpatialDb spatialiteDb, long sourceID, double north, double south, double east,
             double west, int level ) throws Exception, SQLException {
         List<LasLevel> levelsList = new ArrayList<>();
         double levelCellsize = pCellsize * level * pFactor;
@@ -548,7 +549,7 @@ public class SpatialiteLasWriter extends JGTModel {
         pm.done();
     }
 
-    private void insertLevel( final SpatialiteDb spatialiteDb, long sourceID, double north, double south, double east,
+    private void insertLevel( final ASpatialDb spatialiteDb, long sourceID, double north, double south, double east,
             double west, int level ) throws Exception, SQLException {
         int previousLevelNum = level - 1;
         List<LasLevel> levelsList = new ArrayList<>();

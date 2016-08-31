@@ -1,6 +1,9 @@
-package org.jgrasstools.gears.spatialite.compat;
+package org.jgrasstools.gears.spatialite.jgt;
 
 import java.sql.ResultSet;
+
+import org.jgrasstools.gears.spatialite.compat.IJGTResultSet;
+import org.jgrasstools.gears.spatialite.compat.IJGTResultSetMetaData;
 
 public class JGTResultSet implements IJGTResultSet {
 

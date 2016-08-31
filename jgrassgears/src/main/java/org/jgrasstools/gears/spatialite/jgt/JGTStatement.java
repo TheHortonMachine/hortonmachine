@@ -1,8 +1,11 @@
-package org.jgrasstools.gears.spatialite.compat;
+package org.jgrasstools.gears.spatialite.jgt;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import org.jgrasstools.gears.spatialite.compat.IJGTResultSet;
+import org.jgrasstools.gears.spatialite.compat.IJGTStatement;
 
 public class JGTStatement implements IJGTStatement {
 
