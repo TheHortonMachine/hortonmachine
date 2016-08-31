@@ -862,7 +862,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         try {
             closeCurrentDb();
         } catch (Exception e1) {
-            logger.error("Error closign the database...", e1);
+            logger.error("Error closing the database...", e1);
         }
 
         File[] openFiles = guiBridge.showOpenFileDialog("Open database", GuiUtilities.getLastFile());

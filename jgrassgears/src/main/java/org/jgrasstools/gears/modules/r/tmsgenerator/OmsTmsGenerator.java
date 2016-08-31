@@ -156,7 +156,7 @@ public class OmsTmsGenerator extends JGTModel {
     @In
     public String pEpsg;
 
-    @Description("An optional prj file to use instead of teh epsg code.")
+    @Description("An optional prj file to use instead of the epsg code.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inPrj;
@@ -285,7 +285,7 @@ public class OmsTmsGenerator extends JGTModel {
             File inFolder = new File(inPath);
             final File baseFolder = new File(inFolder, pName);
 
-            final ImageGenerator imgGen = new ImageGenerator(pm);
+            final ImageGenerator imgGen = new ImageGenerator(pm, mercatorCrs);
             if (inWMS != null) {
                 imgGen.setWMS(inWMS);
             }

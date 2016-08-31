@@ -17,15 +17,16 @@
  */
 package org.jgrasstools.gears.io.las.spatialite;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jgrasstools.gears.spatialite.SpatialiteDb;
+import org.jgrasstools.gears.spatialite.compat.IJGTConnection;
+import org.jgrasstools.gears.spatialite.compat.IJGTPreparedStatement;
+import org.jgrasstools.gears.spatialite.compat.IJGTResultSet;
+import org.jgrasstools.gears.spatialite.compat.IJGTStatement;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
@@ -48,7 +49,7 @@ public class LasSourcesTable {
     public static final String COLUMN_MINZ = "minelev";
     public static final String COLUMN_MAXZ = "maxelev";
 
-    public static void createTable( SpatialiteDb db, int srid ) throws SQLException {
+    public static void createTable( SpatialiteDb db, int srid ) throws Exception {
         if (!db.hasTable(TABLENAME)) {
             String[] creates = {//
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT", //
@@ -87,17 +88,17 @@ public class LasSourcesTable {
      * @param maxElev
      * @param factor
      * @return
-     * @throws SQLException
+     * @throws Exception 
      */
     public static long insertLasSource( SpatialiteDb db, int srid, int levels, double resolution, double factor, Polygon polygon,
-            String name, double minElev, double maxElev ) throws SQLException {
+            String name, double minElev, double maxElev ) throws Exception {
         String sql = "INSERT INTO " + TABLENAME//
                 + " (" + COLUMN_GEOM + "," + COLUMN_NAME + "," + COLUMN_RESOLUTION + "," //
                 + COLUMN_FACTOR + "," + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + //
                 ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?,?)";
 
-        Connection conn = db.getConnection();
-        try (PreparedStatement pStmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        IJGTConnection conn = db.getConnection();
+        try (IJGTPreparedStatement pStmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pStmt.setString(1, polygon.toText());
             pStmt.setString(2, name);
             pStmt.setDouble(3, resolution);
@@ -128,10 +129,9 @@ public class LasSourcesTable {
                 + COLUMN_RESOLUTION + "," + COLUMN_FACTOR + "," + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + " FROM "
                 + TABLENAME;
 
-        Connection conn = db.getConnection();
+        IJGTConnection conn = db.getConnection();
         WKBReader wkbReader = new WKBReader();
-        try (Statement stmt = conn.createStatement()) {
-            ResultSet rs = stmt.executeQuery(sql);
+        try (IJGTStatement stmt = conn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 LasSource lasSource = new LasSource();
                 int i = 1;

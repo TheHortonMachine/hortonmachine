@@ -83,6 +83,7 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.filter.expression.Expression;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -126,7 +127,10 @@ public class ImageGenerator {
 
     private File shapesFile;
 
-    public ImageGenerator( IJGTProgressMonitor monitor ) {
+    private CoordinateReferenceSystem forceCrs;
+
+    public ImageGenerator( IJGTProgressMonitor monitor , CoordinateReferenceSystem forceCrs) {
+        this.forceCrs = forceCrs;
         if (monitor != null)
             this.monitor = monitor;
         sf = CommonFactoryFinder.getStyleFactory(null);
@@ -521,6 +525,10 @@ public class ImageGenerator {
             for( Layer layer : synchronizedLayers ) {
                 content.addLayer(layer);
             }
+        }
+        
+        if (forceCrs!=null) {
+            content.getViewport().setCoordinateReferenceSystem(forceCrs);
         }
 
         StreamingRenderer renderer = new StreamingRenderer();

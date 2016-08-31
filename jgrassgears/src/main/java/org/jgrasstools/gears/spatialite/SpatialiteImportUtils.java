@@ -35,6 +35,9 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.spatialite.compat.IJGTConnection;
+import org.jgrasstools.gears.spatialite.compat.IJGTPreparedStatement;
+import org.jgrasstools.gears.spatialite.compat.IJGTStatement;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -184,8 +187,8 @@ public class SpatialiteImportUtils {
         qMarks = qMarks.substring(1);
         String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
 
-        Connection conn = db.getConnection();
-        try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
+        IJGTConnection conn = db.getConnection();
+        try (IJGTPreparedStatement pStmt = conn.prepareStatement(sql)) {
             int count = 0;
             pm.beginTask("Adding data to batch import...", featureCount);
             try {
@@ -239,7 +242,7 @@ public class SpatialiteImportUtils {
         }
         
         
-        try (Statement pStmt = conn.createStatement()) {
+        try (IJGTStatement pStmt = conn.createStatement()) {
             pStmt.executeQuery("Select updateLayerStatistics");
         }
         return noErrors;
