@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.jgrasstools.nww.utils.NwwUtilities;
 
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 import gov.nasa.worldwind.WorldWindow;

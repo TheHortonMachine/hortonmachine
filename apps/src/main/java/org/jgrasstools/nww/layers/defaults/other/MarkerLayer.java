@@ -11,7 +11,8 @@ import java.util.List;
 
 import gov.nasa.worldwind.layers.AbstractLayer;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.render.markers.*;
+import gov.nasa.worldwind.render.markers.Marker;
+import gov.nasa.worldwind.render.markers.MarkerRenderer;
 import gov.nasa.worldwind.terrain.SectorGeometryList;
 import gov.nasa.worldwind.util.Logging;
 

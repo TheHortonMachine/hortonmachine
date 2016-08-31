@@ -6,17 +6,29 @@
 
 package org.jgrasstools.nww.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.TitledBorder;
+
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.event.*;
-import gov.nasa.worldwind.layers.*;
-
-import javax.swing.*;
-import javax.swing.border.*;
-import java.awt.*;
-import java.beans.*;
-import java.util.*;
-import java.util.List;
+import gov.nasa.worldwind.event.RenderingEvent;
+import gov.nasa.worldwind.event.RenderingListener;
+import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.layers.LayerList;
+import gov.nasa.worldwind.layers.TiledImageLayer;
 
 /**
  * Displays the available layers. Provides an interface to enable and disable them. Provides an interface to change

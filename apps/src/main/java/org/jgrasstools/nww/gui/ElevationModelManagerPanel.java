@@ -6,17 +6,23 @@
 
 package org.jgrasstools.nww.gui;
 
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.TitledBorder;
+
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.globes.ElevationModel;
 import gov.nasa.worldwind.terrain.CompoundElevationModel;
-
-import javax.swing.*;
-import javax.swing.border.*;
-import java.awt.*;
-import java.beans.*;
-import java.util.*;
-import java.util.List;
 
 /**
  * Manages visibility and Z order of elevation models, similar to the layer manager.

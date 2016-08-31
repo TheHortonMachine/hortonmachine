@@ -24,13 +24,9 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Polygon;
-
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
 import org.jgrasstools.gears.spatialite.RasterCoverage;
 import org.jgrasstools.gears.utils.CrsUtilities;
@@ -40,6 +36,9 @@ import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.nww.utils.cache.CacheUtils;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Polygon;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;

@@ -19,7 +19,6 @@ package org.jgrasstools.spatialite;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -287,7 +286,7 @@ public class SqlTemplatesAndActions {
                     String query = SpatialiteGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false,
                             true);
                     spatialiteViewer.addTextToQueryEditor(query);
-                } catch (SQLException e1) {
+                } catch (Exception e1) {
                     logger.error("Error", e1);
                 }
             }
@@ -329,7 +328,7 @@ public class SqlTemplatesAndActions {
                     String tableName = table.tableName;
                     long count = spatialiteViewer.currentConnectedDatabase.getCount(tableName);
                     JOptionPane.showMessageDialog(spatialiteViewer, "Count: " + count);
-                } catch (SQLException ex) {
+                } catch (Exception ex) {
                     logger.error("Error", ex);
                 }
             }
@@ -403,7 +402,7 @@ public class SqlTemplatesAndActions {
                             + ",'" + geometryColumn.columnType + "'," + geometryColumn.geomColumn.coord_dimension + ");";
 
                     spatialiteViewer.addTextToQueryEditor(query);
-                } catch (SQLException ex) {
+                } catch (Exception ex) {
                     logger.error("Error", ex);
                 }
             }
@@ -418,7 +417,7 @@ public class SqlTemplatesAndActions {
                     String query = SpatialiteGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false,
                             true);
                     spatialiteViewer.viewSpatialQueryResult(query, spatialiteViewer.pm);
-                } catch (SQLException ex) {
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }

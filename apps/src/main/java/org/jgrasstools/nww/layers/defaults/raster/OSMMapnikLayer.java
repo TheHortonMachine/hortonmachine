@@ -5,12 +5,18 @@
  */
 package org.jgrasstools.nww.layers.defaults.raster;
 
-import gov.nasa.worldwind.avlist.*;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.layers.mercator.*;
-import gov.nasa.worldwind.util.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 
-import java.net.*;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.avlist.AVListImpl;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.layers.mercator.MercatorSector;
+import gov.nasa.worldwind.util.LevelSet;
+import gov.nasa.worldwind.util.Tile;
+import gov.nasa.worldwind.util.TileUrlBuilder;
 
 /**
  * @version $Id: OSMMapnikLayer.java 1171 2013-02-11 21:45:02Z dcollins $

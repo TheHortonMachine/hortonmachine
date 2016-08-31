@@ -6,10 +6,11 @@
 
 package org.jgrasstools.nww.gui;
 
-import gov.nasa.worldwind.WorldWindow;
+import java.awt.BorderLayout;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JPanel;
+
+import gov.nasa.worldwind.WorldWindow;
 
 /**
  * Combines the layer manager and elevation model manager in a single frame.

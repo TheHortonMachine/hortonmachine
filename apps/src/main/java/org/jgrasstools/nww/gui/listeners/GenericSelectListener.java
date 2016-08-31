@@ -7,7 +7,6 @@ import java.util.Set;
 
 import javax.swing.JOptionPane;
 
-import org.geotools.data.simple.SimpleFeatureStore;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.nww.shapes.FeatureStoreInfo;
 import org.jgrasstools.nww.shapes.IFeatureShape;

@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.jgoodies.forms.layout.CellConstraints;
 
-import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
 

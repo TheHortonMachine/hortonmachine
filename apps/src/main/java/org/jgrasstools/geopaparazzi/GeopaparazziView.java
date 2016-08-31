@@ -1,17 +1,15 @@
 package org.jgrasstools.geopaparazzi;
 
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
+
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -19,6 +17,9 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.border.TitledBorder;
+
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 
 public class GeopaparazziView extends JPanel

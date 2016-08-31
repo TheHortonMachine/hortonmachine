@@ -19,8 +19,6 @@ package org.jgrasstools.nww.shapes;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;

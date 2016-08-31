@@ -31,7 +31,6 @@ import javax.swing.border.Border;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.geopaparazzi.GeopaparazziView;
 import org.jgrasstools.nww.layers.defaults.raster.OSMMapnikLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.slf4j.Logger;

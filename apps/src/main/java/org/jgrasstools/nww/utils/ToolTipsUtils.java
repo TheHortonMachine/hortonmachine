@@ -1,7 +1,6 @@
 package org.jgrasstools.nww.utils;
 
 import org.jgrasstools.nww.layers.objects.BasicMarkerWithInfo;
-import org.jgrasstools.nww.shapes.IFeatureShape;
 
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
