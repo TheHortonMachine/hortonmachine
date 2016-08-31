@@ -25,8 +25,8 @@
         <module>lesto</module>
         <module>modules</module>
         <module>gui</module>
-	<module>apps</module>
 <!--        
+	<module>apps</module>
         <module>grass</module>
  -->
   </modules>
