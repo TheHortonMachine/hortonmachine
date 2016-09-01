@@ -89,7 +89,7 @@ import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.v.smoothing.FeatureSlidingAverage;
-import org.jgrasstools.gears.spatialite.SpatialiteDb;
+import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
 import org.jgrasstools.gears.utils.chart.Scatter;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.geopaparazzi.server.GeopaparazziServer;
@@ -1131,7 +1131,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                         if (textData == null) {
                             textData = "";
                         }
-                        textData = SpatialiteDb.escapeSql(textData);
+                        textData = ASpatialDb.escapeSql(textData);
                         String query = "update " + TABLE_METADATA + " set value='" + textData + "'  where key='" + key + "';";
 
                         statement.executeUpdate(query);

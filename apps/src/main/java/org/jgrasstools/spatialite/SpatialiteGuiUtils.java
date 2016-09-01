@@ -3,8 +3,8 @@ package org.jgrasstools.spatialite;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.spatialite.SpatialiteGeometryColumns;
+import org.jgrasstools.gears.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.spatialite.objects.TableLevel;
 
 public class SpatialiteGuiUtils {

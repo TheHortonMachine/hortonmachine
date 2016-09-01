@@ -22,7 +22,8 @@ import java.util.List;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.spatialite.QueryResult;
-import org.jgrasstools.gears.spatialite.SpatialiteDb;
+import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
+import org.jgrasstools.gears.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
@@ -65,13 +66,13 @@ public class SpatialiteLinesLayer extends RenderableLayer implements NwwVectorLa
     private ReferencedEnvelope tableBounds;
     private int featureLimit;
 
-    public SpatialiteLinesLayer( SpatialiteDb db, String tableName, int featureLimit ) {
-        this.db = db;
+    public SpatialiteLinesLayer( ASpatialDb db, String tableName, int featureLimit ) {
+        this.db = (SpatialiteDb) db;
         this.tableName = tableName;
         this.featureLimit = featureLimit;
 
         try {
-            tableBounds = db.getTableBounds(tableName);
+            tableBounds = this.db.getTableBounds(tableName);
         } catch (Exception e) {
             e.printStackTrace();
             tableBounds = CrsUtilities.WORLD;

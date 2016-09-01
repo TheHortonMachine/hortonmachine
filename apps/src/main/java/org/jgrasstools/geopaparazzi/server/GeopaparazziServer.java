@@ -21,9 +21,10 @@ import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.spatialite.SpatialiteGeometryType;
 import org.jgrasstools.gears.spatialite.SpatialiteImportUtils;
+import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
+import org.jgrasstools.gears.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -143,7 +144,7 @@ public class GeopaparazziServer extends NanoHTTPD {
                 }
 
                 File tempDb = File.createTempFile("spatialite4geopaparazzi", ".sqlite");
-                try (SpatialiteDb newDb = new SpatialiteDb()) {
+                try (ASpatialDb newDb = new SpatialiteDb()) {
                     newDb.open(tempDb.getAbsolutePath());
                     newDb.initSpatialMetadata(null);
 
