@@ -18,7 +18,6 @@
 package org.jgrasstools.nww.layers.defaults.spatialite;
 
 import java.awt.Color;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +27,6 @@ import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
-import org.jgrasstools.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
 import org.jgrasstools.nww.shapes.InfoExtrudedPolygon;
 import org.jgrasstools.nww.shapes.InfoPolygon;
 import org.jgrasstools.nww.utils.NwwUtilities;
@@ -78,7 +76,7 @@ public class SpatialitePolygonLayer extends RenderableLayer implements NwwVector
 
         try {
             tableBounds = db.getTableBounds(tableName);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             tableBounds = CrsUtilities.WORLD;
         }

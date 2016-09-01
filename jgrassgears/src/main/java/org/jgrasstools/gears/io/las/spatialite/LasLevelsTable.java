@@ -17,15 +17,14 @@
  */
 package org.jgrasstools.gears.io.las.spatialite;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jgrasstools.gears.spatialite.SpatialiteDb;
+import org.jgrasstools.gears.spatialite.compat.IJGTConnection;
+import org.jgrasstools.gears.spatialite.compat.IJGTPreparedStatement;
+import org.jgrasstools.gears.spatialite.compat.IJGTResultSet;
+import org.jgrasstools.gears.spatialite.compat.IJGTStatement;
+import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -58,14 +57,14 @@ public class LasLevelsTable {
      * @param db the database.
      * @param levelNum the level number to check.
      * @return <code>true</code> if the level table exists.
-     * @throws SQLException
+     * @throws Exception 
      */
-    public static boolean hasLevel( SpatialiteDb db, int levelNum ) throws SQLException {
+    public static boolean hasLevel( ASpatialDb db, int levelNum ) throws Exception {
         String tablename = TABLENAME + levelNum;
         return db.hasTable(tablename);
     }
 
-    public static void createTable( SpatialiteDb db, int srid, int levelNum ) throws SQLException {
+    public static void createTable( ASpatialDb db, int srid, int levelNum ) throws Exception {
         String tablename = TABLENAME + levelNum;
         if (!db.hasTable(tablename)) {
             String[] creates = {//
@@ -93,9 +92,10 @@ public class LasLevelsTable {
 
     /**
      * Insert cell values in the table
+     * @throws Exception 
      * 
      */
-    public static void insertLasLevel( SpatialiteDb db, int srid, LasLevel level ) throws SQLException {
+    public static void insertLasLevel( ASpatialDb db, int srid, LasLevel level ) throws Exception {
         String sql = "INSERT INTO " + TABLENAME + level.level//
                 + " (" + //
                 COLUMN_GEOM + "," + //
@@ -108,8 +108,8 @@ public class LasLevelsTable {
                 COLUMN_MAX_INTENSITY + //
                 ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?,?,?)";
 
-        Connection conn = db.getConnection();
-        try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
+        IJGTConnection conn = db.getConnection();
+        try (IJGTPreparedStatement pStmt = conn.prepareStatement(sql)) {
             int i = 1;
             pStmt.setString(i++, level.polygon.toText());
             pStmt.setLong(i++, level.sourceId);
@@ -125,7 +125,7 @@ public class LasLevelsTable {
         }
     }
 
-    public static void insertLasLevels( SpatialiteDb db, int srid, List<LasLevel> levels ) throws SQLException {
+    public static void insertLasLevels( ASpatialDb db, int srid, List<LasLevel> levels ) throws Exception {
         if (levels.size() == 0)
             return;
         String sql = "INSERT INTO " + TABLENAME + levels.get(0).level//
@@ -140,10 +140,10 @@ public class LasLevelsTable {
                 COLUMN_MAX_INTENSITY + //
                 ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?,?,?)";
 
-        Connection conn = db.getConnection();
+        IJGTConnection conn = db.getConnection();
         boolean autoCommit = conn.getAutoCommit();
         conn.setAutoCommit(false);
-        try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
+        try (IJGTPreparedStatement pStmt = conn.prepareStatement(sql)) {
             for( LasLevel level : levels ) {
                 int i = 1;
                 pStmt.setString(i++, level.polygon.toText());
@@ -172,7 +172,7 @@ public class LasLevelsTable {
      * @return the list of extracted level cells.
      * @throws Exception
      */
-    public static List<LasLevel> getLasLevels( SpatialiteDb db, int levelNum, Envelope envelope ) throws Exception {
+    public static List<LasLevel> getLasLevels( ASpatialDb db, int levelNum, Envelope envelope ) throws Exception {
         String tableName = TABLENAME + levelNum;
         List<LasLevel> lasLevels = new ArrayList<>();
         String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + //
@@ -193,10 +193,9 @@ public class LasLevelsTable {
             sql += " WHERE " + db.getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
         }
 
-        Connection conn = db.getConnection();
+        IJGTConnection conn = db.getConnection();
         WKBReader wkbReader = new WKBReader();
-        try (Statement stmt = conn.createStatement()) {
-            ResultSet rs = stmt.executeQuery(sql);
+        try (IJGTStatement stmt = conn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 LasLevel lasLevel = new LasLevel();
                 lasLevel.level = levelNum;
@@ -230,7 +229,7 @@ public class LasLevelsTable {
      * @return the list of extracted points
      * @throws Exception
      */
-    public static List<LasLevel> getLasLevels( SpatialiteDb db, int levelNum, Geometry geometry ) throws Exception {
+    public static List<LasLevel> getLasLevels( ASpatialDb db, int levelNum, Geometry geometry ) throws Exception {
         String tableName = TABLENAME + levelNum;
         List<LasLevel> lasLevels = new ArrayList<>();
         String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + //
@@ -247,10 +246,9 @@ public class LasLevelsTable {
             sql += " WHERE " + db.getSpatialindexGeometryWherePiece(tableName, null, geometry);
         }
 
-        Connection conn = db.getConnection();
+        IJGTConnection conn = db.getConnection();
         WKBReader wkbReader = new WKBReader();
-        try (Statement stmt = conn.createStatement()) {
-            ResultSet rs = stmt.executeQuery(sql);
+        try (IJGTStatement stmt = conn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 LasLevel lasLevel = new LasLevel();
                 int i = 1;

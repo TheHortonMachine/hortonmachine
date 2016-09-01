@@ -25,12 +25,12 @@ import java.sql.SQLException;
 
 import javax.imageio.ImageIO;
 
-import com.vividsolutions.jts.geom.Coordinate;
-
 import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
 import org.jgrasstools.nww.utils.cache.CacheUtils;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;

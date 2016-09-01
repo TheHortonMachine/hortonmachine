@@ -18,15 +18,14 @@
 package org.jgrasstools.gears.io.las.spatialite;
 
 import java.nio.ByteBuffer;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jgrasstools.gears.spatialite.SpatialiteDb;
+import org.jgrasstools.gears.spatialite.compat.IJGTConnection;
+import org.jgrasstools.gears.spatialite.compat.IJGTPreparedStatement;
+import org.jgrasstools.gears.spatialite.compat.IJGTResultSet;
+import org.jgrasstools.gears.spatialite.compat.IJGTStatement;
+import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -64,7 +63,7 @@ public class LasCellsTable {
 
     public static final String COLUMN_COLORS_BLOB = "colors_blob";
 
-    public static void createTable( SpatialiteDb db, int srid ) throws SQLException {
+    public static void createTable( ASpatialDb db, int srid ) throws Exception {
         if (!db.hasTable(TABLENAME)) {
             String[] creates = {//
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT", //
@@ -99,9 +98,10 @@ public class LasCellsTable {
 
     /**
      * Insert cell values in the table
+     * @throws Exception 
      * 
      */
-    public static void insertLasCell( SpatialiteDb db, int srid, LasCell cell ) throws SQLException {
+    public static void insertLasCell( ASpatialDb db, int srid, LasCell cell ) throws Exception {
         String sql = "INSERT INTO " + TABLENAME//
                 + " (" + //
                 COLUMN_GEOM + "," + //
@@ -122,8 +122,8 @@ public class LasCellsTable {
                 COLUMN_COLORS_BLOB + //
                 ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-        Connection conn = db.getConnection();
-        try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
+        IJGTConnection conn = db.getConnection();
+        try (IJGTPreparedStatement pStmt = conn.prepareStatement(sql)) {
             int i = 1;
             pStmt.setString(i++, cell.polygon.toText());
             pStmt.setLong(i++, cell.sourceId);
@@ -150,7 +150,7 @@ public class LasCellsTable {
         }
     }
 
-    public static void insertLasCells( SpatialiteDb db, int srid, List<LasCell> cells ) throws SQLException {
+    public static void insertLasCells( ASpatialDb db, int srid, List<LasCell> cells ) throws Exception {
         String sql = "INSERT INTO " + TABLENAME//
                 + " (" + //
                 COLUMN_GEOM + "," + //
@@ -171,10 +171,10 @@ public class LasCellsTable {
                 COLUMN_COLORS_BLOB + //
                 ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-        Connection conn = db.getConnection();
+        IJGTConnection conn = db.getConnection();
         boolean autoCommit = conn.getAutoCommit();
         conn.setAutoCommit(false);
-        try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
+        try (IJGTPreparedStatement pStmt = conn.prepareStatement(sql)) {
             for( LasCell cell : cells ) {
                 int i = 1;
                 pStmt.setString(i++, cell.polygon.toText());
@@ -218,7 +218,7 @@ public class LasCellsTable {
      * @return the list of extracted points
      * @throws Exception
      */
-    public static List<LasCell> getLasCells( SpatialiteDb db, Envelope envelope, boolean doPosition, boolean doIntensity,
+    public static List<LasCell> getLasCells( ASpatialDb db, Envelope envelope, boolean doPosition, boolean doIntensity,
             boolean doReturns, boolean doTime, boolean doColor ) throws Exception {
         List<LasCell> lasCells = new ArrayList<>();
         String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
@@ -256,10 +256,9 @@ public class LasCellsTable {
             sql += " WHERE " + db.getSpatialindexBBoxWherePiece(TABLENAME, null, x1, y1, x2, y2);
         }
 
-        Connection conn = db.getConnection();
+        IJGTConnection conn = db.getConnection();
         WKBReader wkbReader = new WKBReader();
-        try (Statement stmt = conn.createStatement()) {
-            ResultSet rs = stmt.executeQuery(sql);
+        try (IJGTStatement stmt = conn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 LasCell lasCell = new LasCell();
                 int i = 1;
@@ -316,7 +315,7 @@ public class LasCellsTable {
      * @return the list of extracted points
      * @throws Exception
      */
-    public static List<LasCell> getLasCells( SpatialiteDb db, Geometry geometry, boolean doPosition, boolean doIntensity,
+    public static List<LasCell> getLasCells( ASpatialDb db, Geometry geometry, boolean doPosition, boolean doIntensity,
             boolean doReturns, boolean doTime, boolean doColor ) throws Exception {
         List<LasCell> lasCells = new ArrayList<>();
         String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
@@ -350,10 +349,9 @@ public class LasCellsTable {
             sql += " WHERE " + db.getSpatialindexGeometryWherePiece(TABLENAME, null, geometry);
         }
 
-        Connection conn = db.getConnection();
+        IJGTConnection conn = db.getConnection();
         WKBReader wkbReader = new WKBReader();
-        try (Statement stmt = conn.createStatement()) {
-            ResultSet rs = stmt.executeQuery(sql);
+        try (IJGTStatement stmt = conn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 LasCell lasCell = new LasCell();
                 int i = 1;
@@ -426,7 +424,7 @@ public class LasCellsTable {
         int points = cell.pointsCount;
         short[][] colorPoints = new short[points][3];
         ByteBuffer buffer = ByteBuffer.wrap(cell.colors);
-        
+
         for( int i = 0; i < points; i++ ) {
             colorPoints[i][0] = buffer.getShort();
             colorPoints[i][1] = buffer.getShort();

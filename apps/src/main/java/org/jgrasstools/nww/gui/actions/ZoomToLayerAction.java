@@ -22,10 +22,10 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 
-import com.vividsolutions.jts.geom.Coordinate;
-
 import org.jgrasstools.nww.gui.NwwPanel;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 /**
  * Zoom to layer action.

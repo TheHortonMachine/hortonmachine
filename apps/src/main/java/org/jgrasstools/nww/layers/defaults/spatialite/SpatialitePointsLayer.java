@@ -17,7 +17,6 @@
  */
 package org.jgrasstools.nww.layers.defaults.spatialite;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +26,6 @@ import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
-import org.jgrasstools.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
 import org.jgrasstools.nww.layers.defaults.other.MarkerLayer;
 import org.jgrasstools.nww.shapes.InfoPoint;
 import org.jgrasstools.nww.utils.NwwUtilities;
@@ -64,7 +62,7 @@ public class SpatialitePointsLayer extends MarkerLayer implements NwwVectorLayer
 
         try {
             tableBounds = db.getTableBounds(tableName);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             tableBounds = CrsUtilities.WORLD;
         }

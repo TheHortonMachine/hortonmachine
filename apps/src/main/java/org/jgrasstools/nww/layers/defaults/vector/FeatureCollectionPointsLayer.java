@@ -17,11 +17,8 @@
  */
 package org.jgrasstools.nww.layers.defaults.vector;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -29,8 +26,6 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
-import org.jgrasstools.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
-import org.jgrasstools.nww.layers.defaults.other.MarkerLayer;
 import org.jgrasstools.nww.shapes.FeaturePoint;
 import org.jgrasstools.nww.shapes.FeatureStoreInfo;
 import org.opengis.feature.simple.SimpleFeature;
@@ -44,9 +39,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.PointPlacemarkAttributes;
-import gov.nasa.worldwind.render.markers.BasicMarkerAttributes;
 import gov.nasa.worldwind.render.markers.BasicMarkerShape;
-import gov.nasa.worldwind.render.markers.Marker;
 
 /**
  * A layer of points.

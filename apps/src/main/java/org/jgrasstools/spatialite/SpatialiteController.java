@@ -862,7 +862,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         try {
             closeCurrentDb();
         } catch (Exception e1) {
-            logger.error("Error closign the database...", e1);
+            logger.error("Error closing the database...", e1);
         }
 
         File[] openFiles = guiBridge.showOpenFileDialog("Open database", GuiUtilities.getLastFile());
@@ -906,7 +906,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
     }
 
-    protected DbLevel gatherDatabaseLevels( SpatialiteDb db ) throws SQLException {
+    protected DbLevel gatherDatabaseLevels( SpatialiteDb db ) throws Exception {
         currentDbLevel = new DbLevel();
         String databasePath = db.getDatabasePath();
         File dbFile = new File(databasePath);
@@ -1043,7 +1043,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         if (!hasError && _refreshTreeAfterQueryCheckbox.isSelected()) {
             try {
                 refreshDatabaseTree();
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 logger.error("error", e);
             }
         }
@@ -1132,7 +1132,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
     protected abstract List<Action> makeTableAction( final TableLevel selectedTable );
 
-    protected void refreshDatabaseTree() throws SQLException {
+    protected void refreshDatabaseTree() throws Exception {
         DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
         setDbTreeTitle(dbLevel.dbName);
         layoutTree(dbLevel, true);

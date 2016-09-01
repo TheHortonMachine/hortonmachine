@@ -1,6 +1,5 @@
 package org.jgrasstools.spatialite;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +10,7 @@ import org.jgrasstools.spatialite.objects.TableLevel;
 public class SpatialiteGuiUtils {
 
     public static String getSelectQuery( SpatialiteDb db, final TableLevel selectedTable, boolean geomFirst,
-            boolean binarizeGeoms ) throws SQLException {
+            boolean binarizeGeoms ) throws Exception {
         String tableName = selectedTable.tableName;
         String letter = tableName.substring(0, 1);
         List<String[]> tableColumns = db.getTableColumns(tableName);

@@ -4,8 +4,6 @@ import java.awt.BorderLayout;
 
 import com.jgoodies.forms.layout.CellConstraints;
 
-import gov.nasa.worldwind.WorldWindow;
-
 public class MainPanelController extends MainPanelView {
 
     public MainPanelController() {

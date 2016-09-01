@@ -5,18 +5,33 @@
  */
 package org.jgrasstools.nww.utils.selection;
 
-import gov.nasa.worldwind.*;
-import gov.nasa.worldwind.event.*;
-import gov.nasa.worldwind.layers.*;
-import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.*;
-import gov.nasa.worldwindx.applications.worldwindow.util.Util;
-
-import javax.media.opengl.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+
+import gov.nasa.worldwind.WWObjectImpl;
+import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.event.Message;
+import gov.nasa.worldwind.event.MessageListener;
+import gov.nasa.worldwind.event.SelectEvent;
+import gov.nasa.worldwind.event.SelectListener;
+import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.layers.LayerList;
+import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.OrderedRenderable;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.OGLStackHandler;
+import gov.nasa.worldwind.util.OGLUtil;
+import gov.nasa.worldwindx.applications.worldwindow.util.Util;
 
 /**
  * ScreenSelector is an application utility that provides interactive screen

@@ -180,7 +180,7 @@ public class MBTilesHelper implements AutoCloseable {
         return query;
     }
 
-    public void addTile(int x, int y, int z, BufferedImage image, String format) throws Exception {
+    public synchronized void addTile(int x, int y, int z, BufferedImage image, String format) throws Exception {
         addedTiles++;
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

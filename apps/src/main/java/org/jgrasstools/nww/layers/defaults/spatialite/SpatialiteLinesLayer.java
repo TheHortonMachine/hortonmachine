@@ -17,7 +17,6 @@
  */
 package org.jgrasstools.nww.layers.defaults.spatialite;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +72,7 @@ public class SpatialiteLinesLayer extends RenderableLayer implements NwwVectorLa
 
         try {
             tableBounds = db.getTableBounds(tableName);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             tableBounds = CrsUtilities.WORLD;
         }

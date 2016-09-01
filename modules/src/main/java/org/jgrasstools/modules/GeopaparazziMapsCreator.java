@@ -188,30 +188,16 @@ public class GeopaparazziMapsCreator extends JGTModel {
     
     public static void main( String[] args ) throws Exception {
         
-//        OmsImageMosaicCreator imagemosaiccreator = new OmsImageMosaicCreator();
-//        imagemosaiccreator.inFolder = "/media/hydrologis/SPEEDBALL/DATI/CTP/trentino_ctp/";
-//        imagemosaiccreator.process();
-        
-//        System.setErr(new PrintStream(new OutputStream() {
-//            public void write(int b) {
-//                //DO NOTHING
-//            }
-//        }));
-        
-        GeopaparazziMapsCreator c = new GeopaparazziMapsCreator();
-        c.inROI = "/media/hydrologis/SPEEDBALL/DATI/CTP/trentino_ctp/trentino_ctp.shp";
-//        c.inZoomLimitROI = "/yourpath/roi_zoom.shp";
-        c.inRaster1 = "/media/hydrologis/SPEEDBALL/DATI/CTP/trentino_ctp/trentino_ctp.shp";
-//        c.inRaster2 = "/yourpath/DTM/aspect.asc";
-//        c.inVector1 = "/yourpath/contours.shp";
-//        c.inVector2 = "/yourpath/lines.shp";
-//        c.inVector3 = "/yourpath/point.shp";
-        c.pMinZoom = 13;
-        c.pMaxZoom = 21;
-//        c.pZoomLimit = 21;
-        c.pImageType = "png";
-        c.pName = "ctp_trento";
-        c.outFolder = "/media/hydrologis/SPEEDBALL/DATI/CTP/";
-        c.process();
+        org.jgrasstools.modules.GeopaparazziMapsCreator _geopaparazzimapscreator = new org.jgrasstools.modules.GeopaparazziMapsCreator();
+        _geopaparazzimapscreator.pMaxZoom = 20;
+//        _geopaparazzimapscreator.inRaster1 = "/home/hydrologis/data/terremoto/terremoto.shp";
+        _geopaparazzimapscreator.inRaster1 = "/home/hydrologis/data/terremoto/15512.tif";
+        _geopaparazzimapscreator.pName = "terremoto_amatrice";
+        _geopaparazzimapscreator.outFolder = "/home/hydrologis/data";
+        _geopaparazzimapscreator.pImageType = "jpg";
+        _geopaparazzimapscreator.inROI = "/home/hydrologis/data/terremoto/terremoto.shp";
+        _geopaparazzimapscreator.pMinZoom = 13;
+        _geopaparazzimapscreator.pZoomLimit = 19;
+        _geopaparazzimapscreator.process();
     }
 }

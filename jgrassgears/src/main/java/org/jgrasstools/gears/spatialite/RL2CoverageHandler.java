@@ -19,19 +19,21 @@ package org.jgrasstools.gears.spatialite;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
+import org.jgrasstools.gears.spatialite.compat.IJGTConnection;
+import org.jgrasstools.gears.spatialite.compat.IJGTResultSet;
+import org.jgrasstools.gears.spatialite.compat.IJGTStatement;
+import org.jgrasstools.gears.spatialite.jgt.SpatialiteDb;
+import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
-
-import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 
 /**
  * Handler for a RL2 coverage.
@@ -40,13 +42,13 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
  */
 public class RL2CoverageHandler {
 
-    private SpatialiteDb mSpatialiteDb;
-    private Connection mConn;
+    private ASpatialDb mSpatialiteDb;
+    private IJGTConnection mConn;
     private String mTargetEpsg;
     private String mTableName;
     private RasterCoverage rasterCoverage;
 
-    public RL2CoverageHandler(SpatialiteDb spatialiteDb, RasterCoverage rasterCoverage) {
+    public RL2CoverageHandler( ASpatialDb spatialiteDb, RasterCoverage rasterCoverage ) {
         this.mSpatialiteDb = spatialiteDb;
         this.rasterCoverage = rasterCoverage;
         this.mTableName = rasterCoverage.coverage_name;
@@ -75,20 +77,20 @@ public class RL2CoverageHandler {
      * @return the {@link BufferedImage}.
      * @throws Exception
      */
-    public BufferedImage getRL2Image(Geometry geom, String geomEpsg, int width, int height) throws Exception {
+    public BufferedImage getRL2Image( Geometry geom, String geomEpsg, int width, int height ) throws Exception {
 
         String sql;
         if (geomEpsg != null) {
-            sql = "select GetMapImageFromRaster('" + mTableName + "', ST_Transform(GeomFromText('" + geom.toText()
-                + "', " + geomEpsg + "), " + mTargetEpsg + ") , " + width + " , " + height
-                + ", 'default', 'image/png', '#ffffff', 0, 80, 1 )";
+            sql = "select GetMapImageFromRaster('" + mTableName + "', ST_Transform(GeomFromText('" + geom.toText() + "', "
+                    + geomEpsg + "), " + mTargetEpsg + ") , " + width + " , " + height
+                    + ", 'default', 'image/png', '#ffffff', 0, 80, 1 )";
         } else {
-            sql = "select GetMapImageFromRaster('" + mTableName + "', GeomFromText('" + geom.toText() + "') , " + width
-                + " , " + height + ", 'default', 'image/png', '#ffffff', 0, 80, 1 )";
+            sql = "select GetMapImageFromRaster('" + mTableName + "', GeomFromText('" + geom.toText() + "') , " + width + " , "
+                    + height + ", 'default', 'image/png', '#ffffff', 0, 80, 1 )";
         }
 
-        try (Statement stmt = mConn.createStatement()) {
-            ResultSet resultSet = stmt.executeQuery(sql);
+        try (IJGTStatement stmt = mConn.createStatement()) {
+            IJGTResultSet resultSet = stmt.executeQuery(sql);
             if (resultSet.next()) {
                 byte[] bytes = resultSet.getBytes(1);
                 if (bytes == null) {
@@ -101,7 +103,7 @@ public class RL2CoverageHandler {
         return null;
     }
 
-    public BufferedImage getRL2ImageForTile(int x, int y, int zoom, int tileSize) throws Exception {
+    public BufferedImage getRL2ImageForTile( int x, int y, int zoom, int tileSize ) throws Exception {
         double northLL = MBTilesHelper.tile2lat(y, zoom);
         double southLL = MBTilesHelper.tile2lat(y + 1, zoom);
         double westLL = MBTilesHelper.tile2lon(x, zoom);
@@ -115,12 +117,12 @@ public class RL2CoverageHandler {
         return image;
     }
 
-    public static void main(String[] args) throws Exception {
-        try (SpatialiteDb db = new SpatialiteDb()) {
+    public static void main( String[] args ) throws Exception {
+        try (ASpatialDb db = new SpatialiteDb()) {
             db.open("/media/hydrologis/SPEEDBALL/DATI/ORTOFOTO/ortofoto.sqlite");
 
             List<RasterCoverage> rcList = db.getRasterCoverages(false);
-            for (RasterCoverage rasterCoverage : rcList) {
+            for( RasterCoverage rasterCoverage : rcList ) {
                 System.out.println(rasterCoverage);
             }
         }

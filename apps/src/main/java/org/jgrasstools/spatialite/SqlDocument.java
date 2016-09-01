@@ -2,9 +2,7 @@ package org.jgrasstools.spatialite;
 
 import java.awt.Color;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Scanner;
 
 import javax.swing.event.DocumentEvent;
@@ -17,7 +15,6 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
-import org.jgrasstools.gears.utils.StreamUtils;
 import org.jgrasstools.gears.utils.StringUtilities;
 
 public class SqlDocument extends DefaultStyledDocument {

@@ -18,10 +18,7 @@
 package org.jgrasstools.gears.spatialite;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +32,10 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
+import org.jgrasstools.gears.spatialite.compat.IJGTConnection;
+import org.jgrasstools.gears.spatialite.compat.IJGTPreparedStatement;
+import org.jgrasstools.gears.spatialite.compat.IJGTStatement;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -69,7 +70,7 @@ public class SpatialiteImportUtils {
      * @return the name of the created table.
      * @throws Exception
      */
-    public static String createTableFromShp( SpatialiteDb db, File shapeFile ) throws Exception {
+    public static String createTableFromShp( ASpatialDb db, File shapeFile ) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
@@ -137,7 +138,7 @@ public class SpatialiteImportUtils {
      * @return <code>false</code>, is an error occurred. 
      * @throws Exception
      */
-    public static boolean importShapefile( SpatialiteDb db, File shapeFile, String tableName, int limit, IJGTProgressMonitor pm )
+    public static boolean importShapefile( ASpatialDb db, File shapeFile, String tableName, int limit, IJGTProgressMonitor pm )
             throws Exception {
         boolean noErrors = true;
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
@@ -165,7 +166,7 @@ public class SpatialiteImportUtils {
         String qMarks = "";
         for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
             String attrName = attributeDescriptor.getLocalName();
-            if (attrName.equals(SpatialiteDb.PK_UID)) {
+            if (attrName.equals(ASpatialDb.PK_UID)) {
                 continue;
             }
             if (attributeDescriptor instanceof GeometryDescriptor) {
@@ -184,8 +185,8 @@ public class SpatialiteImportUtils {
         qMarks = qMarks.substring(1);
         String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
 
-        Connection conn = db.getConnection();
-        try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
+        IJGTConnection conn = db.getConnection();
+        try (IJGTPreparedStatement pStmt = conn.prepareStatement(sql)) {
             int count = 0;
             pm.beginTask("Adding data to batch import...", featureCount);
             try {
@@ -239,7 +240,7 @@ public class SpatialiteImportUtils {
         }
         
         
-        try (Statement pStmt = conn.createStatement()) {
+        try (IJGTStatement pStmt = conn.createStatement()) {
             pStmt.executeQuery("Select updateLayerStatistics");
         }
         return noErrors;
@@ -256,7 +257,7 @@ public class SpatialiteImportUtils {
      * @throws SQLException
      * @throws Exception
      */
-    public static DefaultFeatureCollection tableToFeatureFCollection( SpatialiteDb db, String tableName, int featureLimit,
+    public static DefaultFeatureCollection tableToFeatureFCollection( ASpatialDb db, String tableName, int featureLimit,
             int forceSrid ) throws SQLException, Exception {
         DefaultFeatureCollection fc = new DefaultFeatureCollection();
 
