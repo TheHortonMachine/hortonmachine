@@ -30,6 +30,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -541,13 +542,24 @@ public class SpatialiteDb implements AutoCloseable {
      * @throws Exception
      */
     public SpatialiteGeometryColumns getGeometryColumnsForTable( String tableName ) throws SQLException {
+        String attachedStr = "";
+        if (tableName.indexOf('.') != -1) {
+            // if the tablename contains a dot, then it comes from an attached database
+            
+            // get the database name
+            String[] split = tableName.split("\\.");
+            attachedStr = split[0] + ".";
+            tableName = split[1];
+//            logger.debug(MessageFormat.format("Considering attached database: {0}", attachedStr));
+        }
+        
         String sql = "select " + SpatialiteGeometryColumns.F_TABLE_NAME + ", " //
                 + SpatialiteGeometryColumns.F_GEOMETRY_COLUMN + ", " //
                 + SpatialiteGeometryColumns.GEOMETRY_TYPE + "," //
                 + SpatialiteGeometryColumns.COORD_DIMENSION + ", " //
                 + SpatialiteGeometryColumns.SRID + ", " //
                 + SpatialiteGeometryColumns.SPATIAL_INDEX_ENABLED + " from " //
-                + SpatialiteGeometryColumns.TABLENAME + " where " + SpatialiteGeometryColumns.F_TABLE_NAME + "='" + tableName
+                + attachedStr + SpatialiteGeometryColumns.TABLENAME + " where " + SpatialiteGeometryColumns.F_TABLE_NAME + "='" + tableName
                 + "'";
         try (Statement stmt = mConn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
@@ -1089,6 +1101,11 @@ public class SpatialiteDb implements AutoCloseable {
             alias = alias + ".";
         }
         SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
+        if (tableName.indexOf('.') != -1) {
+            // if the tablename contains a dot, then it comes from an attached database
+            tableName = "DB="+ tableName;
+        }
+        
         String sql = "ST_Intersects(" + alias + gCol.f_geometry_column + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2
                 + ")) = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
                 + "f_table_name = '" + tableName + "' AND " //
@@ -1120,8 +1137,11 @@ public class SpatialiteDb implements AutoCloseable {
         double x2 = envelope.getMaxX();
         double y1 = envelope.getMinY();
         double y2 = envelope.getMaxY();
-
         SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
+        if (tableName.indexOf('.') != -1) {
+            // if the tablename contains a dot, then it comes from an attached database
+            tableName = "DB="+ tableName;
+        }
         String sql = "ST_Intersects(" + alias + gCol.f_geometry_column + ", " + "GeomFromText('" + geometry.toText() + "')"
                 + ") = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
                 + "f_table_name = '" + tableName + "' AND " //

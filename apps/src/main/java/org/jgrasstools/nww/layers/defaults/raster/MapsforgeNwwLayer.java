@@ -26,9 +26,12 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.nww.layers.defaults.NwwLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.nww.utils.cache.CacheUtils;
 import org.mapsforge.core.graphics.GraphicFactory;
+import org.mapsforge.core.model.BoundingBox;
+import org.mapsforge.core.model.LatLong;
 import org.mapsforge.map.awt.AwtGraphicFactory;
 import org.mapsforge.map.layer.renderer.DatabaseRenderer;
 import org.mapsforge.map.model.DisplayModel;
@@ -36,6 +39,8 @@ import org.mapsforge.map.reader.MapDatabase;
 import org.mapsforge.map.rendertheme.ExternalRenderTheme;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
@@ -53,20 +58,31 @@ import gov.nasa.worldwind.util.TileUrlBuilder;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
+public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
 
     private String layerName = "unknown layer";
 
     private static final int TILESIZE = 1024;
 
-    public MapsforgeNwwLayer( File mapsforgeFile, Integer tileSize ) throws Exception {
+    private Coordinate centerCoordinate;
+
+    public MapsforgeNwwLayer(File mapsforgeFile, Integer tileSize) throws Exception {
         super(makeLevels(mapsforgeFile, getTilegenerator(mapsforgeFile, tileSize), tileSize));
         this.layerName = FileUtilities.getNameWithoutExtention(mapsforgeFile);
         this.setUseTransparentTextures(true);
 
+        MapDatabase mapDatabase = new MapDatabase();
+        if (mapsforgeFile.exists()) {
+            mapDatabase.openFile(mapsforgeFile);
+            BoundingBox boundingBox = mapDatabase.getMapFileInfo().boundingBox;
+            LatLong centerPoint = boundingBox.getCenterPoint();
+            centerCoordinate = new Coordinate(centerPoint.longitude, centerPoint.latitude);
+        } else {
+            centerCoordinate = new Coordinate(0, 0);
+        }
     }
 
-    private static OsmTilegenerator getTilegenerator( File mapsforgeFile, Integer tileSize ) {
+    private static OsmTilegenerator getTilegenerator(File mapsforgeFile, Integer tileSize) {
         if (tileSize == null || tileSize < 256) {
             tileSize = TILESIZE;
         }
@@ -97,7 +113,7 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
         return new OsmTilegenerator(mapsforgeFile, dbRenderer, xmlRenderTheme, displayModel);
     }
 
-    private static LevelSet makeLevels( File mapsforgeFile, OsmTilegenerator osmTilegenerator, Integer tileSize )
+    private static LevelSet makeLevels(File mapsforgeFile, OsmTilegenerator osmTilegenerator, Integer tileSize)
             throws MalformedURLException {
         AVList params = new AVListImpl();
         String cacheRelativePath = "mapsforge/" + mapsforgeFile.getName() + "-tiles";
@@ -126,9 +142,9 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
             cacheFolder.mkdirs();
         }
 
-        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder(){
+        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder() {
 
-            public URL getURL( Tile tile, String altImageFormat ) throws MalformedURLException {
+            public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {
                 int zoom = tile.getLevelNumber() + 3;
                 Sector sector = tile.getSector();
                 double north = sector.getMaxLatitude().degrees;
@@ -154,7 +170,6 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
                     }
                     return imgFile.toURI().toURL();
                 } catch (IOException e) {
-                    e.printStackTrace();
                     return null;
                 }
             }
@@ -165,6 +180,11 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer {
 
     public String toString() {
         return layerName;
+    }
+
+    @Override
+    public Coordinate getCenter() {
+        return centerCoordinate;
     }
 
 }
