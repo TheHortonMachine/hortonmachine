@@ -10,4 +10,8 @@ public interface IJGTStatement extends AutoCloseable {
 
     int executeUpdate( String sql ) throws Exception;
 
+    void addBatch( String sqlLine ) throws Exception;
+
+    int[] executeBatch() throws Exception;
+
 }

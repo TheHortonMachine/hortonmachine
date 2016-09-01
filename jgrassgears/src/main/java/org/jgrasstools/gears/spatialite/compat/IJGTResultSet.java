@@ -19,4 +19,8 @@ public interface IJGTResultSet extends AutoCloseable {
     IJGTResultSetMetaData getMetaData() throws Exception;
 
     short getShort( int index )throws Exception;
+
+    boolean getBoolean( int index )throws Exception;
+
+    boolean wasNull() throws Exception;
 }

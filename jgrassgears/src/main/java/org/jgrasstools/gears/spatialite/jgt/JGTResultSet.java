@@ -64,4 +64,14 @@ public class JGTResultSet implements IJGTResultSet {
         return resultSet.getShort(index);
     }
 
+    @Override
+    public boolean getBoolean( int index ) throws Exception {
+        return resultSet.getBoolean(index);
+    }
+
+    @Override
+    public boolean wasNull() throws Exception {
+        return resultSet.wasNull();
+    }
+
 }

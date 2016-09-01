@@ -42,4 +42,14 @@ public class JGTStatement implements IJGTStatement {
         return statement.executeUpdate(sql);
     }
 
+    @Override
+    public void addBatch( String sqlLine ) throws Exception {
+        statement.addBatch(sqlLine);
+    }
+
+    @Override
+    public int[] executeBatch() throws Exception {
+        return statement.executeBatch();
+    }
+
 }
