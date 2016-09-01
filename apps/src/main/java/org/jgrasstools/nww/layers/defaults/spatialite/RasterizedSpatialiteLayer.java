@@ -38,8 +38,8 @@ import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
-import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.spatialite.SpatialiteImportUtils;
+import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
@@ -73,7 +73,7 @@ public class RasterizedSpatialiteLayer extends BasicMercatorTiledImageLayer impl
 
     private Coordinate centre;
 
-    public RasterizedSpatialiteLayer( String title, SpatialiteDb db, String tableName, int featureLimit, Style style,
+    public RasterizedSpatialiteLayer( String title, ASpatialDb db, String tableName, int featureLimit, Style style,
             Integer tileSize, boolean transparentBackground ) throws Exception {
         super(makeLevels(title, getRenderer(db, tableName, featureLimit, style), tileSize, transparentBackground));
         this.layerName = title;
@@ -87,7 +87,7 @@ public class RasterizedSpatialiteLayer extends BasicMercatorTiledImageLayer impl
         }
     }
 
-    private static GTRenderer getRenderer( SpatialiteDb db, String tableName, int featureLimit, Style style ) {
+    private static GTRenderer getRenderer( ASpatialDb db, String tableName, int featureLimit, Style style ) {
         MapContent mapContent = new MapContent();
 
         // read data and convert it to featurecollection

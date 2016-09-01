@@ -39,9 +39,10 @@ import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
 import org.jgrasstools.gears.spatialite.RasterCoverage;
-import org.jgrasstools.gears.spatialite.SpatialiteDb;
 import org.jgrasstools.gears.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.gears.spatialite.SpatialiteGeometryType;
+import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
+import org.jgrasstools.gears.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryType;
@@ -450,7 +451,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
                 layerEventsListener.onLayerAdded(mbTileLayer);
             } else if (selectedFile.getName().endsWith(".rl2")) {
-                SpatialiteDb db = new SpatialiteDb();
+                ASpatialDb db = new SpatialiteDb();
                 db.open(selectedFile.getAbsolutePath());
                 List<RasterCoverage> rasterCoverages = db.getRasterCoverages(false);
                 if (rasterCoverages.size() > 0) {
