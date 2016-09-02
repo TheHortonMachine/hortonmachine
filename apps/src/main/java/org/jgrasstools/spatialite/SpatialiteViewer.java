@@ -30,6 +30,9 @@ import javax.swing.JTextPane;
 
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.jgrasstools.dbs.spatialite.objects.ColumnLevel;
+import org.jgrasstools.dbs.spatialite.objects.DbLevel;
+import org.jgrasstools.dbs.spatialite.objects.TableLevel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gui.console.LogConsoleController;
 import org.jgrasstools.gui.utils.DefaultGuiBridgeImpl;
@@ -40,9 +43,6 @@ import org.jgrasstools.gui.utils.ImageCache;
 import org.jgrasstools.nww.SimpleNwwViewer;
 import org.jgrasstools.nww.gui.ToolsPanelController;
 import org.jgrasstools.nww.utils.NwwUtilities;
-import org.jgrasstools.spatialite.objects.ColumnLevel;
-import org.jgrasstools.spatialite.objects.DbLevel;
-import org.jgrasstools.spatialite.objects.TableLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

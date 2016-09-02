@@ -27,13 +27,13 @@ import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import org.jgrasstools.gears.spatialite.QueryResult;
+import org.jgrasstools.dbs.spatialite.QueryResult;
+import org.jgrasstools.dbs.spatialite.objects.ColumnLevel;
+import org.jgrasstools.dbs.spatialite.objects.TableLevel;
 import org.jgrasstools.gears.spatialite.SpatialiteImportUtils;
 import org.jgrasstools.gui.console.LogConsoleController;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
-import org.jgrasstools.spatialite.objects.ColumnLevel;
-import org.jgrasstools.spatialite.objects.TableLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

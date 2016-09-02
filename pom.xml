@@ -20,13 +20,14 @@
 
     <modules>
 	<module>oms3</module>
+	<module>dbs</module>
         <module>jgrassgears</module>
         <module>hortonmachine</module>
         <module>lesto</module>
         <module>modules</module>
         <module>gui</module>
-<!--        
 	<module>apps</module>
+<!--        
         <module>grass</module>
  -->
   </modules>

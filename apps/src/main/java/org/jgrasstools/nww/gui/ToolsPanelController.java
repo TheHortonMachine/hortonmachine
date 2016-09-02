@@ -37,12 +37,12 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
+import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.spatialite.RasterCoverage;
+import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
+import org.jgrasstools.dbs.spatialite.SpatialiteGeometryType;
+import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
-import org.jgrasstools.gears.spatialite.RasterCoverage;
-import org.jgrasstools.gears.spatialite.SpatialiteGeometryColumns;
-import org.jgrasstools.gears.spatialite.SpatialiteGeometryType;
-import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
-import org.jgrasstools.gears.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryType;
@@ -103,13 +103,13 @@ public class ToolsPanelController extends ToolsPanelView {
 
     private LayerEventsListener layerEventsListener;
 
-    public ToolsPanelController(final NwwPanel wwjPanel, LayerEventsListener layerEventsListener) {
+    public ToolsPanelController( final NwwPanel wwjPanel, LayerEventsListener layerEventsListener ) {
         this.wwjPanel = wwjPanel;
         this.layerEventsListener = layerEventsListener;
 
         String[] supportedExtensions = NwwUtilities.SUPPORTED_EXTENSIONS;
         StringBuilder sb = new StringBuilder();
-        for (String ext : supportedExtensions) {
+        for( String ext : supportedExtensions ) {
             sb.append(",*.").append(ext);
         }
         final String desc = sb.substring(1);
@@ -117,7 +117,7 @@ public class ToolsPanelController extends ToolsPanelView {
         _loadGpsButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            FileFilter fileFilter = new FileFilter() {
+            FileFilter fileFilter = new FileFilter(){
 
                 @Override
                 public String getDescription() {
@@ -125,7 +125,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
 
                 @Override
-                public boolean accept(File f) {
+                public boolean accept( File f ) {
                     if (f.isDirectory()) {
                         return true;
                     }
@@ -153,8 +153,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 layerEventsListener.onLayerAdded(simplePointsLayer);
 
                 try {
-                    new org.jgrasstools.nww.utils.FakeGps(selectedFile, wwjPanel, currentGpsPointLayer,
-                            simplePointsLayer);
+                    new org.jgrasstools.nww.utils.FakeGps(selectedFile, wwjPanel, currentGpsPointLayer, simplePointsLayer);
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -164,7 +163,7 @@ public class ToolsPanelController extends ToolsPanelView {
         _loadFileButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            FileFilter fileFilter = new FileFilter() {
+            FileFilter fileFilter = new FileFilter(){
 
                 @Override
                 public String getDescription() {
@@ -172,12 +171,12 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
 
                 @Override
-                public boolean accept(File f) {
+                public boolean accept( File f ) {
                     if (f.isDirectory()) {
                         return true;
                     }
                     String name = f.getName();
-                    for (String ext : supportedExtensions) {
+                    for( String ext : supportedExtensions ) {
                         if (name.endsWith(ext)) {
                             return true;
                         }
@@ -203,11 +202,11 @@ public class ToolsPanelController extends ToolsPanelView {
                     } catch (Exception e1) {
                         e1.printStackTrace();
                         // try to load it as single files
-                        File[] listFiles = selectedFile.listFiles(new FilenameFilter() {
+                        File[] listFiles = selectedFile.listFiles(new FilenameFilter(){
 
                             @Override
-                            public boolean accept(File dir, String name) {
-                                for (String ext : supportedExtensions) {
+                            public boolean accept( File dir, String name ) {
+                                for( String ext : supportedExtensions ) {
                                     if (name.endsWith(ext)) {
                                         return true;
                                     }
@@ -215,7 +214,7 @@ public class ToolsPanelController extends ToolsPanelView {
                                 return false;
                             }
                         });
-                        for (File file : listFiles) {
+                        for( File file : listFiles ) {
                             GuiUtilities.setLastPath(file.getAbsolutePath());
                             loadFile(file);
                         }
@@ -234,7 +233,7 @@ public class ToolsPanelController extends ToolsPanelView {
         _globeModeCombo.addActionListener(e -> {
             String selected = _globeModeCombo.getSelectedItem().toString();
             EGlobeModes modeFromDescription = EGlobeModes.getModeFromDescription(selected);
-            switch (modeFromDescription) {
+            switch( modeFromDescription ) {
             case FlatEarth:
                 wwjPanel.setFlatGlobe(false);
                 break;
@@ -264,13 +263,12 @@ public class ToolsPanelController extends ToolsPanelView {
         });
 
         final ObjectsOnScreenByBoxSelector byBoxSelector = new ObjectsOnScreenByBoxSelector(wwjPanel.getWwd());
-        byBoxSelector.addListener(new ObjectsOnScreenByBoxSelector.IBoxScreenSelectionListener() {
+        byBoxSelector.addListener(new ObjectsOnScreenByBoxSelector.IBoxScreenSelectionListener(){
 
             @Override
-            public void onSelectionFinished(Geometry selectedArea, List<?> selectedObjs) {
+            public void onSelectionFinished( Geometry selectedArea, List< ? > selectedObjs ) {
                 int size = selectedObjs.size();
-                JOptionPane.showMessageDialog(wwjPanel,
-                        "Selected objects: " + size + "\nin region:\n" + selectedArea.toText());
+                JOptionPane.showMessageDialog(wwjPanel, "Selected objects: " + size + "\nin region:\n" + selectedArea.toText());
             }
         });
         _selectByBoxButton.addActionListener(e -> {
@@ -285,10 +283,10 @@ public class ToolsPanelController extends ToolsPanelView {
             }
         });
         final SectorByBoxSelector zoomBoxSelector = new SectorByBoxSelector(wwjPanel.getWwd());
-        zoomBoxSelector.addListener(new SectorByBoxSelector.IBoxSelectionListener() {
+        zoomBoxSelector.addListener(new SectorByBoxSelector.IBoxSelectionListener(){
 
             @Override
-            public void onSelectionFinished(Sector selectedSector) {
+            public void onSelectionFinished( Sector selectedSector ) {
                 wwjPanel.goTo(selectedSector, false);
                 zoomBoxSelector.disable();
                 zoomBoxSelector.enable();
@@ -342,8 +340,8 @@ public class ToolsPanelController extends ToolsPanelView {
                     + "<p>\nRisque aggrav\u00e9 d'<b>inondation</b> du village de <i>Saint \u00c9tienne de Tin\u00e9e</i> "
                     + "juste en amont.\n</p><p>Last update:DATE</p>";
 
-            String text = JOptionPane.showInputDialog(
-                    "Enter the annotation's position and html text as: width,y position,text", htmldefaultText);
+            String text = JOptionPane.showInputDialog("Enter the annotation's position and html text as: width,y position,text",
+                    htmldefaultText);
             if (text == null) {
                 return;
             }
@@ -363,7 +361,7 @@ public class ToolsPanelController extends ToolsPanelView {
             HtmlScreenAnnotation htmlScreenAnnotation = builder.size(new Dimension(width, 0)).htmlText(htmltext)
                     .position(new Point(xPos, Integer.parseInt(yStr))).build();
 
-            AnnotationLayer layer = new AnnotationLayer() {
+            AnnotationLayer layer = new AnnotationLayer(){
                 @Override
                 public String toString() {
                     return layerName;
@@ -371,9 +369,9 @@ public class ToolsPanelController extends ToolsPanelView {
             };
             layer.addAnnotation(htmlScreenAnnotation);
 
-            new Thread(new Runnable() {
+            new Thread(new Runnable(){
                 public void run() {
-                    while (wwjPanel.getWwd().getModel().getLayers().contains(layer)) {
+                    while( wwjPanel.getWwd().getModel().getLayers().contains(layer) ) {
                         // htmlScreenAnnotation
                         String newText = htmltext.replaceFirst("DATE", new Date().toString());
                         htmlScreenAnnotation.setText(newText);
@@ -402,7 +400,7 @@ public class ToolsPanelController extends ToolsPanelView {
         return wwjPanel;
     }
 
-    private void loadFile(File selectedFile) {
+    private void loadFile( File selectedFile ) {
         String name = FileUtilities.getNameWithoutExtention(selectedFile);
         try {
             if (selectedFile.getName().endsWith(".shp")) {
@@ -427,7 +425,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 if (codesFile.exists()) {
                     List<String> linesList = FileUtilities.readFileToLinesList(codesFile);
                     field2ValuesMap = new HashMap<>();
-                    for (String line : linesList) {
+                    for( String line : linesList ) {
                         String[] split = line.split("=");
                         String key = split[0];
                         String[] values = split[1].split(";");
@@ -466,12 +464,12 @@ public class ToolsPanelController extends ToolsPanelView {
                 db.open(selectedFile.getAbsolutePath());
                 List<String> tableMaps = db.getTables(false);
                 String[] tables = tableMaps.toArray(new String[0]);
-                String tableName = (String) JOptionPane.showInputDialog(this, "Select the table to load",
-                        "Table selection", JOptionPane.QUESTION_MESSAGE, null, tables, tables[0]);
+                String tableName = (String) JOptionPane.showInputDialog(this, "Select the table to load", "Table selection",
+                        JOptionPane.QUESTION_MESSAGE, null, tables, tables[0]);
 
                 if (_useRasterizedCheckbox.isSelected()) {
-                    RasterizedSpatialiteLayer rasterizedSpatialiteLayer = new RasterizedSpatialiteLayer(name, db,
-                            tableName, -1, null, null, true);
+                    RasterizedSpatialiteLayer rasterizedSpatialiteLayer = new RasterizedSpatialiteLayer(name, db, tableName, -1,
+                            null, null, true);
                     wwjPanel.getWwd().getModel().getLayers().add(rasterizedSpatialiteLayer);
                     layerEventsListener.onLayerAdded(rasterizedSpatialiteLayer);
                 } else {
@@ -513,16 +511,16 @@ public class ToolsPanelController extends ToolsPanelView {
      * @param field2ValuesMap
      * @throws Exception
      */
-    public void loadFeatureCollection(File selectedFile, String name, SimpleFeatureStore featureStore,
-            SimpleFeatureCollection readFC, HashMap<String, String[]> field2ValuesMap) throws Exception {
+    public void loadFeatureCollection( File selectedFile, String name, SimpleFeatureStore featureStore,
+            SimpleFeatureCollection readFC, HashMap<String, String[]> field2ValuesMap ) throws Exception {
         if (_useRasterizedCheckbox.isSelected()) {
             Style style = null;
             if (selectedFile != null)
                 style = SldUtilities.getStyleFromFile(selectedFile);
             if (style == null)
                 style = SLD.createSimpleStyle(readFC.getSchema(), Color.BLUE);
-            RasterizedFeatureCollectionLayer collectionLayer = new RasterizedFeatureCollectionLayer(name, readFC, style,
-                    null, true);
+            RasterizedFeatureCollectionLayer collectionLayer = new RasterizedFeatureCollectionLayer(name, readFC, style, null,
+                    true);
 
             wwjPanel.getWwd().getModel().getLayers().add(collectionLayer);
             layerEventsListener.onLayerAdded(collectionLayer);
@@ -533,8 +531,8 @@ public class ToolsPanelController extends ToolsPanelView {
             if (selectedFile != null)
                 absolutePath = selectedFile.getAbsolutePath();
             if (GeometryUtilities.isPolygon(geometryDescriptor)) {
-                FeatureCollectionPolygonLayer featureCollectionPolygonLayer = new FeatureCollectionPolygonLayer(name,
-                        readFC, featureStore, field2ValuesMap);
+                FeatureCollectionPolygonLayer featureCollectionPolygonLayer = new FeatureCollectionPolygonLayer(name, readFC,
+                        featureStore, field2ValuesMap);
 
                 featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
@@ -567,8 +565,8 @@ public class ToolsPanelController extends ToolsPanelView {
                         imagePath = imageFile.getAbsolutePath();
                     }
                 }
-                FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name,
-                        readFC, featureStore, field2ValuesMap, imagePath);
+                FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name, readFC,
+                        featureStore, field2ValuesMap, imagePath);
                 SimpleStyle style = NwwUtilities.getStyle(absolutePath, GeometryType.POINT);
                 if (style != null) {
                     featureCollectionPointsLayer.setStyle(style);

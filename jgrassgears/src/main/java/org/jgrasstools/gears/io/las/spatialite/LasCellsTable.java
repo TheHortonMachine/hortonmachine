@@ -21,11 +21,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jgrasstools.gears.spatialite.compat.IJGTConnection;
-import org.jgrasstools.gears.spatialite.compat.IJGTPreparedStatement;
-import org.jgrasstools.gears.spatialite.compat.IJGTResultSet;
-import org.jgrasstools.gears.spatialite.compat.IJGTStatement;
-import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.IJGTConnection;
+import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
+import org.jgrasstools.dbs.compat.IJGTResultSet;
+import org.jgrasstools.dbs.compat.IJGTStatement;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;

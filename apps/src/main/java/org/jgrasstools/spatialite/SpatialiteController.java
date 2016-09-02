@@ -64,25 +64,26 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import org.geotools.feature.DefaultFeatureCollection;
+import org.jgrasstools.dbs.spatialite.ForeignKey;
+import org.jgrasstools.dbs.spatialite.QueryResult;
+import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
+import org.jgrasstools.dbs.spatialite.SpatialiteGeometryType;
+import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
+import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
+import org.jgrasstools.dbs.spatialite.objects.ColumnLevel;
+import org.jgrasstools.dbs.spatialite.objects.DbLevel;
+import org.jgrasstools.dbs.spatialite.objects.TableLevel;
+import org.jgrasstools.dbs.spatialite.objects.TypeLevel;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.spatialite.ForeignKey;
-import org.jgrasstools.gears.spatialite.QueryResult;
-import org.jgrasstools.gears.spatialite.SpatialiteGeometryColumns;
-import org.jgrasstools.gears.spatialite.SpatialiteGeometryType;
-import org.jgrasstools.gears.spatialite.SpatialiteTableNames;
-import org.jgrasstools.gears.spatialite.jgt.SpatialiteDb;
+import org.jgrasstools.gears.spatialite.GTSpatialiteDb;
 import org.jgrasstools.gui.console.LogConsoleController;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
 import org.jgrasstools.gui.utils.ImageCache;
-import org.jgrasstools.spatialite.objects.ColumnLevel;
-import org.jgrasstools.spatialite.objects.DbLevel;
-import org.jgrasstools.spatialite.objects.TableLevel;
-import org.jgrasstools.spatialite.objects.TypeLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,7 +123,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
     protected GuiBridgeHandler guiBridge;
     protected IJGTProgressMonitor pm = new LogProgressMonitor();
-    protected SpatialiteDb currentConnectedDatabase;
+    protected GTSpatialiteDb currentConnectedDatabase;
     private DbLevel currentDbLevel;
     protected DbLevel currentSelectedDb;
     protected TableLevel currentSelectedTable;
@@ -829,7 +830,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                 logConsole.beginProcess("Create new database");
 
                 try {
-                    currentConnectedDatabase = new SpatialiteDb();
+                    currentConnectedDatabase = new GTSpatialiteDb();
                     currentConnectedDatabase.open(selectedFile.getAbsolutePath());
                     currentConnectedDatabase.initSpatialMetadata(null);
 
@@ -885,7 +886,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                 logConsole.beginProcess("Open database");
 
                 try {
-                    currentConnectedDatabase = new SpatialiteDb();
+                    currentConnectedDatabase = new GTSpatialiteDb();
                     currentConnectedDatabase.open(selectedFile.getAbsolutePath());
 
                     DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);

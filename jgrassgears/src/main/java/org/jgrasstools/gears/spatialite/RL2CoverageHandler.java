@@ -23,12 +23,12 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.IJGTConnection;
+import org.jgrasstools.dbs.compat.IJGTResultSet;
+import org.jgrasstools.dbs.compat.IJGTStatement;
+import org.jgrasstools.dbs.spatialite.RasterCoverage;
 import org.jgrasstools.gears.modules.r.tmsgenerator.MBTilesHelper;
-import org.jgrasstools.gears.spatialite.compat.IJGTConnection;
-import org.jgrasstools.gears.spatialite.compat.IJGTResultSet;
-import org.jgrasstools.gears.spatialite.compat.IJGTStatement;
-import org.jgrasstools.gears.spatialite.jgt.SpatialiteDb;
-import org.jgrasstools.gears.spatialite.compat.ASpatialDb;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -118,7 +118,7 @@ public class RL2CoverageHandler {
     }
 
     public static void main( String[] args ) throws Exception {
-        try (ASpatialDb db = new SpatialiteDb()) {
+        try (ASpatialDb db = new GTSpatialiteDb()) {
             db.open("/media/hydrologis/SPEEDBALL/DATI/ORTOFOTO/ortofoto.sqlite");
 
             List<RasterCoverage> rcList = db.getRasterCoverages(false);
