@@ -727,15 +727,6 @@ public abstract class ASpatialDb implements AutoCloseable {
     }
 
     /**
-     * Execute a insert/update sql file. 
-     * 
-     * @param file the file to run on this db.
-     * @param chunks commit interval.
-     * @throws Exception 
-     */
-    public abstract void executeSqlFile( File file, int chunks, boolean eachLineAnSql ) throws Exception;
-
-    /**
      * Execute an update, insert or delete by sql.
      * 
      * @param sql the sql to run.

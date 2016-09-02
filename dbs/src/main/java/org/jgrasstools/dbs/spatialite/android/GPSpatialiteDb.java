@@ -66,11 +66,6 @@ public class GPSpatialiteDb extends ASpatialDb {
     }
 
     @Override
-    public void executeSqlFile( File file, int chunks, boolean eachLineAnSql ) throws Exception {
-        throw new RuntimeException("Not implemented yet");
-    }
-
-    @Override
     public Envelope getTableBounds( String tableName ) throws Exception {
         throw new RuntimeException("Not implemented yet");
     }

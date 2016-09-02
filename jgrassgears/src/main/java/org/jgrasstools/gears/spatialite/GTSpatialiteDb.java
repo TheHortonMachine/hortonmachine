@@ -17,7 +17,15 @@
  */
 package org.jgrasstools.gears.spatialite;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -201,6 +209,51 @@ public class GTSpatialiteDb extends SpatialiteDb {
             }
             return null;
         }
+    }
+
+    /**
+     * Execute a insert/update sql file. 
+     * 
+     * @param file the file to run on this db.
+     * @param chunks commit interval.
+     * @throws Exception 
+     */
+    public void executeSqlFile( File file, int chunks, boolean eachLineAnSql ) throws Exception {
+        boolean autoCommit = mConn.getAutoCommit();
+        mConn.setAutoCommit(false);
+
+        Predicate<String> validSqlLine = s -> s.length() != 0 //
+                && !s.startsWith("BEGIN") //
+                && !s.startsWith("COMMIT") //
+        ;
+        Predicate<String> commentPredicate = s -> !s.startsWith("--");
+
+        try (IJGTStatement pStmt = mConn.createStatement()) {
+            final int[] counter = {1};
+            Stream<String> linesStream = null;
+            if (eachLineAnSql) {
+                linesStream = Files.lines(Paths.get(file.getAbsolutePath())).map(s -> s.trim()).filter(commentPredicate)
+                        .filter(validSqlLine);
+            } else {
+                linesStream = Arrays.stream(Files.lines(Paths.get(file.getAbsolutePath())).filter(commentPredicate)
+                        .collect(Collectors.joining()).split(";")).filter(validSqlLine);
+            }
+
+            Consumer<String> executeAction = s -> {
+                try {
+                    pStmt.executeUpdate(s);
+                    counter[0]++;
+                    if (counter[0] % chunks == 0) {
+                        mConn.commit();
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            };
+            linesStream.forEach(executeAction);
+            mConn.commit();
+        }
+        mConn.setAutoCommit(autoCommit);
     }
 
 }
