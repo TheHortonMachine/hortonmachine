@@ -15,64 +15,75 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.dbs.spatialite.jgt;
+package org.jgrasstools.dbs.spatialite.android;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 
+import jsqlite.Database;
+import jsqlite.Stmt;
+
 /**
- * Statement wrapper for standard jdbc java.
+ * Statement wrapper for android.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class JGTStatement implements IJGTStatement {
+public class GPStatement implements IJGTStatement {
 
-    private Statement statement;
+    private Database database;
 
-    public JGTStatement( Statement statement ) {
-        this.statement = statement;
+    public GPStatement( Database database ) {
+        this.database = database;
     }
 
     @Override
     public void close() throws SQLException {
-        statement.close();
     }
 
     @Override
-    public void execute( String sql ) throws SQLException {
-        statement.execute(sql);
+    public void execute( String sql ) throws Exception {
+        Stmt stmt = database.prepare(sql);
+        try {
+            stmt.step();
+        } finally {
+            stmt.close();
+        }
     }
 
     @Override
-    public IJGTResultSet executeQuery( String sql ) throws SQLException {
-        ResultSet resultSet = statement.executeQuery(sql);
-        IJGTResultSet ijgtResultSet = new JGTResultSet(resultSet);
+    public IJGTResultSet executeQuery( String sql ) throws Exception {
+        Stmt stmt = database.prepare(sql);
+        IJGTResultSet ijgtResultSet = new GPResultSet(stmt);
         return ijgtResultSet;
     }
 
     @Override
     public void setQueryTimeout( int seconds ) throws SQLException {
-        statement.setQueryTimeout(seconds);
     }
 
     @Override
     public int executeUpdate( String sql ) throws Exception {
-        return statement.executeUpdate(sql);
+        Stmt stmt = database.prepare(sql);
+        try {
+            stmt.step();
+            return 1;
+        } finally {
+            stmt.close();
+        }
     }
 
     @Override
     public void addBatch( String sqlLine ) throws Exception {
-        statement.addBatch(sqlLine);
+        throw new RuntimeException("Function not supported: addBatch()");
+
     }
 
     @Override
     public int[] executeBatch() throws Exception {
-        return statement.executeBatch();
+        throw new RuntimeException("Function not supported: executeBatch()");
     }
 
 }

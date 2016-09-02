@@ -15,86 +15,85 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.dbs.spatialite.jgt;
-
-import java.sql.ResultSet;
+package org.jgrasstools.dbs.spatialite.android;
 
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 
+import jsqlite.Stmt;
+
 /**
- * Resultset wrapper for standard jdbc java.
+ * Resultset wrapper for android.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class JGTResultSet implements IJGTResultSet {
+public class GPResultSet implements IJGTResultSet {
 
-    private ResultSet resultSet;
+    private Stmt stmt;
 
-    public JGTResultSet( ResultSet resultSet ) {
-        this.resultSet = resultSet;
+    public GPResultSet( Stmt stmt ) {
+        this.stmt = stmt;
     }
 
     @Override
     public void close() throws Exception {
-        resultSet.close();
+        stmt.close();
     }
 
     @Override
     public boolean next() throws Exception {
-        return resultSet.next();
+        return stmt.step();
     }
 
     @Override
     public String getString( int index ) throws Exception {
-        return resultSet.getString(index);
+        return stmt.column_string(index - 1);
     }
 
     @Override
     public int getInt( int index ) throws Exception {
-        return resultSet.getInt(index);
+        return stmt.column_int(index - 1);
     }
 
     @Override
     public double getDouble( int index ) throws Exception {
-        return resultSet.getDouble(index);
+        return stmt.column_double(index - 1);
     }
 
     @Override
     public Object getObject( int index ) throws Exception {
-        return resultSet.getObject(index);
+        return stmt.column_bytes(index - 1);
     }
 
     @Override
     public long getLong( int index ) throws Exception {
-        return resultSet.getLong(index);
+        return stmt.column_long(index - 1);
     }
 
     @Override
     public byte[] getBytes( int index ) throws Exception {
-        return resultSet.getBytes(index);
+        return stmt.column_bytes(index - 1);
     }
 
     @Override
     public IJGTResultSetMetaData getMetaData() throws Exception {
-        IJGTResultSetMetaData metaData = new JGTResultSetMetaData(resultSet.getMetaData());
-        return metaData;
+        return new GPResultSetMetaData(stmt);
     }
 
     @Override
     public short getShort( int index ) throws Exception {
-        return resultSet.getShort(index);
+        return (short) stmt.column_int(index - 1);
     }
 
     @Override
     public boolean getBoolean( int index ) throws Exception {
-        return resultSet.getBoolean(index);
+        return stmt.column_int(index - 1) == 0 ? false : true;
     }
 
     @Override
     public boolean wasNull() throws Exception {
-        return resultSet.wasNull();
+        throw new RuntimeException("Function not supported: wasNull()");
     }
 
 }

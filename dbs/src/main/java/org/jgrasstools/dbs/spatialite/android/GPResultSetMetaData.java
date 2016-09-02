@@ -15,44 +15,47 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.dbs.spatialite.jgt;
+package org.jgrasstools.dbs.spatialite.android;
 
-import java.sql.ResultSetMetaData;
 
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 
+import jsqlite.Stmt;
+
 /**
- * Resultset metadata wrapper for standard jdbc java.
+ * Resultset metadata wrapper for android.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class JGTResultSetMetaData implements IJGTResultSetMetaData {
+public class GPResultSetMetaData implements IJGTResultSetMetaData {
 
-    private ResultSetMetaData resultSetMetaData;
+    private Stmt stmt;
 
-    public JGTResultSetMetaData( ResultSetMetaData resultSetMetaData ) {
-        this.resultSetMetaData = resultSetMetaData;
+    public GPResultSetMetaData(Stmt stmt) {
+        this.stmt = stmt;
     }
 
     @Override
     public int getColumnCount() throws Exception {
-        return resultSetMetaData.getColumnCount();
+        return stmt.column_count();
     }
 
     @Override
-    public String getColumnName( int index ) throws Exception {
-        return resultSetMetaData.getColumnName(index);
+    public String getColumnName(int index) throws Exception {
+        return stmt.column_name(index - 1);
     }
 
     @Override
-    public String getColumnTypeName( int index ) throws Exception {
-        return resultSetMetaData.getColumnTypeName(index);
+    public String getColumnTypeName(int index) throws Exception {
+        int type = stmt.column_type(index - 1);
+        // TODO
+        return "" + type;
     }
 
     @Override
-    public int getColumnType( int index ) throws Exception {
-        return resultSetMetaData.getColumnType(index);
+    public int getColumnType(int index) throws Exception {
+        return stmt.column_type(index - 1);
     }
 
 }

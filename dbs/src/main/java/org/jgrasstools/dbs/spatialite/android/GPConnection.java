@@ -15,71 +15,68 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.dbs.spatialite.jgt;
+package org.jgrasstools.dbs.spatialite.android;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 
+import jsqlite.Database;
+
 /**
- * Connection wrapper for standard jdbc java.
+ * Connection wrapper for android.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class JGTConnection implements IJGTConnection {
+public class GPConnection implements IJGTConnection {
 
-    private Connection connection;
+    private Database database;
 
-    public JGTConnection( Connection connection ) {
-        this.connection = connection;
+    public GPConnection(Database database) {
+        this.database = database;
     }
 
     public Connection getOriginalConnection() {
-        return connection;
+        return null;
     }
 
     public IJGTStatement createStatement() throws SQLException {
-        IJGTStatement statement = new JGTStatement(connection.createStatement());
+        IJGTStatement statement = new GPStatement(database);
         return statement;
     }
 
     @Override
-    public IJGTPreparedStatement prepareStatement( String sql ) throws SQLException {
-        PreparedStatement tmp = connection.prepareStatement(sql);
-        IJGTPreparedStatement preparedStatement = new JGTPreparedStatement(tmp);
+    public IJGTPreparedStatement prepareStatement(String sql) throws Exception {
+        IJGTPreparedStatement preparedStatement = new GPPreparedStatement(database, sql);
         return preparedStatement;
     }
 
     @Override
-    public IJGTPreparedStatement prepareStatement( String sql, int returnGeneratedKeys ) throws SQLException {
-        PreparedStatement tmp = connection.prepareStatement(sql, returnGeneratedKeys);
-        IJGTPreparedStatement preparedStatement = new JGTPreparedStatement(tmp);
-        return preparedStatement;
+    public IJGTPreparedStatement prepareStatement(String sql, int returnGeneratedKeys) throws SQLException {
+        throw new RuntimeException("Function not supported: prepareStatement()");
     }
-    
+
     @Override
     public void close() throws Exception {
-        connection.close();
     }
 
     @Override
     public boolean getAutoCommit() throws SQLException {
-        return connection.getAutoCommit();
+        throw new RuntimeException("Function not supported: getAutoCommit()");
     }
 
     @Override
-    public void setAutoCommit( boolean b ) throws SQLException {
-        connection.setAutoCommit(b);
+    public void setAutoCommit(boolean b) throws SQLException {
+        throw new RuntimeException("Function not supported: setAutoCommit()");
     }
 
     @Override
     public void commit() throws SQLException {
-        connection.commit();
+        throw new RuntimeException("Function not supported: commit()");
     }
 
 }

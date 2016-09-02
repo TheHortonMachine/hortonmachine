@@ -23,6 +23,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+/**
+ * Spatialite table namse and groups.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ *
+ */
 public class SpatialiteTableNames {
     public static final String USERDATA = "User Data";
 

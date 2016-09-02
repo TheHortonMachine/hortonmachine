@@ -17,6 +17,12 @@
  */
 package org.jgrasstools.dbs.spatialite;
 
+/**
+ * Class representing a foreign key.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ *
+ */
 public class ForeignKey {
 
     /**

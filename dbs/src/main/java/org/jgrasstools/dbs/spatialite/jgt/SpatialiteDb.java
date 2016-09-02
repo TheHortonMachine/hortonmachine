@@ -44,7 +44,6 @@ import com.vividsolutions.jts.geom.Envelope;
  * A spatialite database.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
- *
  */
 public class SpatialiteDb extends ASpatialDb {
     private static final Logger logger = LoggerFactory.getLogger(SpatialiteDb.class);
