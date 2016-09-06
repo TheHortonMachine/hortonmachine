@@ -52,6 +52,7 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description(OMSVECTORREPROJECTOR_DESCRIPTION)
@@ -96,15 +97,10 @@ public class OmsVectorReprojector extends JGTModel {
             return;
         }
 
-        CoordinateReferenceSystem targetCrs = null;
-        if (doLongitudeFirst != null) {
-            targetCrs = CRS.decode(pCode, doLongitudeFirst);
-        } else {
-            targetCrs = CRS.decode(pCode);
-        }
+        CoordinateReferenceSystem targetCrs = CrsUtilities.getCrsFromEpsg(pCode, doLongitudeFirst);
         if (pForceCode != null) {
             pm.beginTask("Forcing input crs...", IJGTProgressMonitor.UNKNOWN);
-            CoordinateReferenceSystem forcedCrs = CRS.decode(pForceCode);
+            CoordinateReferenceSystem forcedCrs = CrsUtilities.getCrsFromEpsg(pForceCode);
             inVector = new ForceCoordinateSystemFeatureResults(inVector, forcedCrs);
             pm.done();
         }

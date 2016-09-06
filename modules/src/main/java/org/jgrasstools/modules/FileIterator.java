@@ -17,26 +17,33 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_FILE_FILTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_FILES_LIST_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_IN_FOLDER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_OUT_CURRENT_FILE_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_P_CODE_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_P_REGEX_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_PATHS_LIST_DESCRIPTION;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_AUTHORNAMES;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_DESCRIPTION;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_FILES_LIST_DESCRIPTION;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_FILE_FILTER_DESCRIPTION;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_IN_FOLDER_DESCRIPTION;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_KEYWORDS;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_LABEL;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_LICENSE;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_NAME;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_OUT_CURRENT_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_PATHS_LIST_DESCRIPTION;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_P_CODE_DESCRIPTION;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_P_REGEX_DESCRIPTION;
+import static org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator.OMSFILEITERATOR_STATUS;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.CrsUtilities;
+import org.jgrasstools.gears.utils.files.FileTraversal;
+import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -50,13 +57,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.files.FileTraversal;
-import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description(OMSFILEITERATOR_DESCRIPTION)
 @Author(name = OMSFILEITERATOR_AUTHORNAMES, contact = OMSFILEITERATOR_AUTHORCONTACTS)
@@ -109,7 +109,7 @@ public class FileIterator extends JGTModel {
     @Execute
     public void process() throws Exception {
         if (pCode != null) {
-            CoordinateReferenceSystem crs = CRS.decode(pCode);
+            CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg(pCode);
             prjWkt = crs.toWKT();
         }
 

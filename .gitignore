@@ -11,3 +11,7 @@ target
 .directory
 .idea
 *.iml
+*.dll
+*.so
+extras/export/libs
+dbs/copy_to_gp.sh

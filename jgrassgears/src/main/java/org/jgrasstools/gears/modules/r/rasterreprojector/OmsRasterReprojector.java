@@ -62,6 +62,7 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -129,7 +130,7 @@ public class OmsRasterReprojector extends JGTModel {
             return;
         }
 
-        CoordinateReferenceSystem targetCrs = CRS.decode(pCode);
+        CoordinateReferenceSystem targetCrs = CrsUtilities.getCrsFromEpsg(pCode, null);
 
         Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
         if (pInterpolation.equals(BILINEAR)) {

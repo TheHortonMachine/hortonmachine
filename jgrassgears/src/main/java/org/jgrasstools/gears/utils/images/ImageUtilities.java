@@ -19,19 +19,25 @@ package org.jgrasstools.gears.utils.images;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
+import java.util.Hashtable;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.coverage.processing.Operations;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.parameter.Parameter;
 import org.opengis.geometry.Envelope;
 import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * An utility class image handling. 
@@ -85,23 +91,45 @@ public class ImageUtilities {
      * @throws IOException
      */
     public static BufferedImage imageFromReader( AbstractGridCoverage2DReader reader, int cols, int rows, double w, double e,
-            double s, double n ) throws IOException {
+            double s, double n, CoordinateReferenceSystem resampleCrs ) throws IOException {
+        CoordinateReferenceSystem sourceCrs = reader.getCoordinateReferenceSystem();
         GeneralParameterValue[] readParams = new GeneralParameterValue[1];
         Parameter<GridGeometry2D> readGG = new Parameter<GridGeometry2D>(AbstractGridFormat.READ_GRIDGEOMETRY2D);
         GridEnvelope2D gridEnvelope = new GridEnvelope2D(0, 0, cols, rows);
-        DirectPosition2D minDp = new DirectPosition2D(w, s);
-        DirectPosition2D maxDp = new DirectPosition2D(e, n);
+        DirectPosition2D minDp = new DirectPosition2D(sourceCrs, w, s);
+        DirectPosition2D maxDp = new DirectPosition2D(sourceCrs, e, n);
         Envelope env = new Envelope2D(minDp, maxDp);
         readGG.setValue(new GridGeometry2D(gridEnvelope, env));
         readParams[0] = readGG;
 
         GridCoverage2D gridCoverage2D = reader.read(readParams);
+        if (gridCoverage2D == null) {
+            return null;
+        }
+        if (resampleCrs != null) {
+            gridCoverage2D = (GridCoverage2D) Operations.DEFAULT.resample(gridCoverage2D, resampleCrs);
+        }
         RenderedImage image = gridCoverage2D.getRenderedImage();
         if (image instanceof BufferedImage) {
             BufferedImage bImage = (BufferedImage) image;
             return bImage;
+        } else {
+            ColorModel cm = image.getColorModel();
+            int width = image.getWidth();
+            int height = image.getHeight();
+            WritableRaster raster = cm.createCompatibleWritableRaster(width, height);
+            boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+            Hashtable properties = new Hashtable();
+            String[] keys = image.getPropertyNames();
+            if (keys != null) {
+                for( int i = 0; i < keys.length; i++ ) {
+                    properties.put(keys[i], image.getProperty(keys[i]));
+                }
+            }
+            BufferedImage result = new BufferedImage(cm, raster, isAlphaPremultiplied, properties);
+            image.copyData(raster);
+            return result;
         }
-        return null;
     }
 
 }

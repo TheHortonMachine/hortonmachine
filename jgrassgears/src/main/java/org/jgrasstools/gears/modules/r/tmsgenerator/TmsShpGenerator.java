@@ -7,6 +7,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -23,7 +24,7 @@ public class TmsShpGenerator {
     public static void main( String[] args ) throws Exception {
 
         String EPSG_MERCATOR = "EPSG:3857";
-        CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
+        CoordinateReferenceSystem mercatorCrs = CrsUtilities.getCrsFromEpsg(EPSG_MERCATOR, null);
 
         double w = -180;
         double e = 180;

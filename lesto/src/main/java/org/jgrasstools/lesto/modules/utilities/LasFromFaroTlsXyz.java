@@ -46,6 +46,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -88,7 +89,7 @@ public class LasFromFaroTlsXyz extends JGTModel {
     @Execute
     public void process() throws Exception {
         checkNull(inFile, outLas, pCode, pLatitude, pLongitude);
-        CoordinateReferenceSystem crs = CRS.decode(pCode);
+        CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg(pCode);
 
         double latitude = pLatitude;
         double longitude = pLongitude;

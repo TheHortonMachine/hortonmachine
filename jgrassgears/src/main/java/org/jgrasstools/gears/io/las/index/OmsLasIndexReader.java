@@ -118,7 +118,7 @@ public class OmsLasIndexReader extends JGTModel {
             throw new ModelsIllegalargumentException("Either a .prj file of an EPSG code needs to be supplied.", this);
         }
         if (crs == null)
-            crs = CRS.decode(pCode);
+            crs = CrsUtilities.getCrsFromEpsg(pCode, null);
         GeometryFactory gf = GeometryUtilities.gf();
 
         File parentFolder = new File(inFile).getParentFile();

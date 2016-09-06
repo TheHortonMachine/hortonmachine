@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<object classname="com.jeta.forms.store.memento.FormPackage">
+ <at name="fileversion">
+  <object classname="com.jeta.forms.store.memento.FormsVersion2">
+   <at name="major">2</at>
+   <at name="minor">0</at>
+   <at name="sub">0</at>
+  </object>
+ </at>
+ <at name="form">
+  <object classname="com.jeta.forms.store.memento.FormMemento">
+   <super classname="com.jeta.forms.store.memento.ComponentMemento">
+    <at name="cellconstraints">
+     <object classname="com.jeta.forms.store.memento.CellConstraintsMemento">
+      <at name="column">1</at>
+      <at name="row">1</at>
+      <at name="colspan">1</at>
+      <at name="rowspan">1</at>
+      <at name="halign">default</at>
+      <at name="valign">default</at>
+      <at name="insets" object="insets">0,0,0,0</at>
+     </object>
+    </at>
+    <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
+   </super>
+   <at name="id">E:\SOFTWARE\jgrasstools-git\nww\src\main\java\org\jgrasstools\nww\gui\LayersPanelView.xml</at>
+   <at name="rowspecs">CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE</at>
+   <at name="colspecs">FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE</at>
+   <at name="components">
+    <object classname="java.util.LinkedList"/>
+   </at>
+   <at name="properties">
+    <object classname="com.jeta.forms.store.memento.PropertiesMemento">
+     <at name="classname">com.jeta.forms.gui.form.GridView</at>
+     <at name="properties">
+      <object classname="com.jeta.forms.store.support.PropertyMap">
+       <at name="border">
+        <object classname="com.jeta.forms.store.properties.CompoundBorderProperty">
+         <super classname="com.jeta.forms.store.properties.BorderProperty">
+          <at name="name">border</at>
+         </super>
+         <at name="borders">
+          <object classname="java.util.LinkedList">
+           <item >
+            <at name="value">
+             <object classname="com.jeta.forms.store.properties.TitledBorderProperty">
+              <super classname="com.jeta.forms.store.properties.BorderProperty">
+               <at name="name">border</at>
+               <at name="title">Layers</at>
+              </super>
+             </object>
+            </at>
+           </item>
+          </object>
+         </at>
+        </object>
+       </at>
+       <at name="name">layersGridView</at>
+       <at name="fill">
+        <object classname="com.jeta.forms.store.properties.effects.PaintProperty">
+         <at name="name">fill</at>
+        </object>
+       </at>
+       <at name="scollBars">
+        <object classname="com.jeta.forms.store.properties.ScrollBarsProperty">
+         <at name="name">scollBars</at>
+         <at name="verticalpolicy">20</at>
+         <at name="horizontalpolicy">30</at>
+         <at name="scrollname">layersScroller</at>
+         <at name="border">
+          <object classname="com.jeta.forms.store.properties.CompoundBorderProperty">
+           <super classname="com.jeta.forms.store.properties.BorderProperty">
+            <at name="name">border</at>
+           </super>
+           <at name="borders">
+            <object classname="java.util.LinkedList">
+             <item >
+              <at name="value">
+               <object classname="com.jeta.forms.store.properties.DefaultBorderProperty">
+                <super classname="com.jeta.forms.store.properties.BorderProperty">
+                 <at name="name">border</at>
+                </super>
+               </object>
+              </at>
+             </item>
+            </object>
+           </at>
+          </object>
+         </at>
+        </object>
+       </at>
+      </object>
+     </at>
+    </object>
+   </at>
+   <at name="cellpainters">
+    <object classname="com.jeta.forms.store.support.Matrix">
+     <at name="rows">
+      <object classname="[Ljava.lang.Object;" size="73">
+       <at name="item" index="0">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="1">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="2">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="3">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="4">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="5">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="6">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="7">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="8">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="9">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="10">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="11">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="12">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="13">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="14">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="15">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="16">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="17">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="18">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="19">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="20">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="21">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="22">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="23">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="24">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="25">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="26">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="27">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="28">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="29">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="30">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="31">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="32">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="33">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="34">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="35">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="36">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="37">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="38">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="39">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="40">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="41">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="42">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="43">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="44">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="45">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="46">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="47">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="48">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="49">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="50">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="51">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="52">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="53">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="54">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="55">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="56">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="57">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="58">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="59">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="60">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="61">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="62">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="63">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="64">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="65">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="66">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="67">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="68">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="69">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="70">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="71">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+       <at name="item" index="72">
+        <object classname="[Ljava.lang.Object;" size="3"/>
+       </at>
+      </object>
+     </at>
+    </object>
+   </at>
+   <at name="rowgroups">
+    <object classname="com.jeta.forms.store.memento.FormGroupSet">
+     <at name="groups">
+      <object classname="java.util.HashMap"/>
+     </at>
+    </object>
+   </at>
+   <at name="colgroups">
+    <object classname="com.jeta.forms.store.memento.FormGroupSet">
+     <at name="groups">
+      <object classname="java.util.HashMap"/>
+     </at>
+    </object>
+   </at>
+  </object>
+ </at>
+</object>

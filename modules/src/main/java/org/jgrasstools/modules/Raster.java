@@ -43,6 +43,7 @@ import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
@@ -158,7 +159,7 @@ public class Raster {
         xRes = res;
         yRes = res;
         try {
-            crs = CRS.decode(epsg);
+            crs = CrsUtilities.getCrsFromEpsg(epsg);
         } catch (Exception e) {
             throw new IllegalArgumentException("Unable to get CRS from the given epsg: " + epsg);
         }

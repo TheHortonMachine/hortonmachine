@@ -94,20 +94,24 @@ public class HmProcessFactory implements ProcessFactory {
     }
 
     public Map<String, Parameter< ? >> getResultInfo( Name name, Map<String, Object> parameters ) throws IllegalArgumentException {
-        String moduleName = name.getLocalPart();
-        Map<String, List<ClassField>> modulename2fields = JGrassGears.getInstance().moduleName2Fields;
-        List<ClassField> list = modulename2fields.get(moduleName);
-
         Map<String, Parameter< ? >> output = new LinkedHashMap<String, Parameter< ? >>();
-        if (list != null) {
-            for( ClassField classField : list ) {
-                if (classField.isOut) {
-                    String fieldName = classField.fieldName;
-                    String fieldDescription = classField.fieldDescription;
-                    Parameter< ? > param = new Parameter(fieldName, classField.fieldClass, fieldName, fieldDescription);
-                    output.put(param.key, param);
+        try {
+            String moduleName = name.getLocalPart();
+            Map<String, List<ClassField>> modulename2fields = JGrassGears.getInstance().moduleName2Fields;
+            List<ClassField> list = modulename2fields.get(moduleName);
+
+            if (list != null) {
+                for( ClassField classField : list ) {
+                    if (classField.isOut) {
+                        String fieldName = classField.fieldName;
+                        String fieldDescription = classField.fieldDescription;
+                        Parameter< ? > param = new Parameter(fieldName, classField.fieldClass, fieldName, fieldDescription);
+                        output.put(param.key, param);
+                    }
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return output;
     }

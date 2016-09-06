@@ -27,6 +27,10 @@ import com.vividsolutions.jts.geom.Geometry;
 /**
  * Applies a sliding average on linear geometries for smoothing.
  * 
+ * <p>
+ * See: http://grass.osgeo.org/wiki/V.generalize_tutorial
+ * </p>
+ * 
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */

@@ -22,6 +22,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,6 +41,13 @@ public class FileUtilities {
 
     public static void copyFile( File in, File out ) throws IOException {
         copyFile(in.getAbsolutePath(), out.getAbsolutePath());
+    }
+
+    public static long getCreationTimestamp(String path) throws IOException{
+        Path pathObj = Paths.get(path);
+        BasicFileAttributes attr = Files.readAttributes(pathObj, BasicFileAttributes.class);
+
+        return attr.creationTime().toMillis();
     }
 
     /**
@@ -258,6 +266,19 @@ public class FileUtilities {
     }
 
     /**
+     * Replaces backslashes with /.
+     * 
+     * @param string the string to check.
+     * @return the string without backslashes.
+     */
+    public static String replaceBackSlashesWithSlashes( String string ) {
+        if (string != null) {
+            string = string.replaceAll("\\\\", "/").replaceAll("\\\\\\\\", "/");
+        }
+        return string;
+    }
+
+    /**
      * Returns the name of the file without the extension.
      * <p/>
      * <p>Note that if the file has no extension, the name is returned.
@@ -314,7 +335,7 @@ public class FileUtilities {
             char ch = fileName.charAt(i);
             if (ch < ' ' || ch >= 0x7F || ch == fileSep // add other illegal chars
                     || (ch == '.' && i == 0) // we don't want to collide with "." or ".."!
-                  || ch == '?'  || ch == escape) {
+                    || ch == '?' || ch == escape) {
                 sb.append(escape);
                 if (ch < 0x10) {
                     sb.append('0');

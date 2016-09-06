@@ -18,8 +18,7 @@
 package org.jgrasstools.gears.spatialite;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +28,17 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.store.ReprojectingFeatureCollection;
-import org.geotools.referencing.CRS;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.IJGTConnection;
+import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
+import org.jgrasstools.dbs.compat.IJGTStatement;
+import org.jgrasstools.dbs.spatialite.QueryResult;
+import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
+import org.jgrasstools.dbs.spatialite.SpatialiteGeometryType;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -37,6 +46,8 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
@@ -52,6 +63,7 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SpatialiteImportUtils {
+    private static final Logger logger = LoggerFactory.getLogger(SpatialiteImportUtils.class);
 
     /**
      * Create a spatial table using a shapefile as schema.
@@ -61,7 +73,7 @@ public class SpatialiteImportUtils {
      * @return the name of the created table.
      * @throws Exception
      */
-    public static String createTableFromShp(SpatialiteDb db, File shapeFile) throws Exception {
+    public static String createTableFromShp( ASpatialDb db, File shapeFile ) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
@@ -71,12 +83,12 @@ public class SpatialiteImportUtils {
 
         List<String> attrSql = new ArrayList<String>();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
-        for (AttributeDescriptor attributeDescriptor : attributeDescriptors) {
+        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
             if (attributeDescriptor instanceof GeometryDescriptor) {
                 continue;
             }
             String attrName = attributeDescriptor.getLocalName();
-            Class<?> binding = attributeDescriptor.getType().getBinding();
+            Class< ? > binding = attributeDescriptor.getType().getBinding();
             if (binding.isAssignableFrom(Double.class) || binding.isAssignableFrom(Float.class)) {
                 attrSql.add(attrName + " REAL");
             } else if (binding.isAssignableFrom(Long.class) || binding.isAssignableFrom(Integer.class)) {
@@ -92,7 +104,7 @@ public class SpatialiteImportUtils {
 
         String typeString = null;
         org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
-        Class<?> binding = type.getBinding();
+        Class< ? > binding = type.getBinding();
         if (binding.isAssignableFrom(MultiPolygon.class)) {
             typeString = "MULTIPOLYGON";
         } else if (binding.isAssignableFrom(Polygon.class)) {
@@ -125,34 +137,39 @@ public class SpatialiteImportUtils {
      * @param shapeFile the shapefile to import.
      * @param tableName the name of the table to import to.
      * @param limit if > 0, a limit to the imported features is applied.
+     * @param pm the progress monitor.
+     * @return <code>false</code>, is an error occurred. 
      * @throws Exception
      */
-    public static void importShapefile(SpatialiteDb db, File shapeFile, String tableName, int limit) throws Exception {
+    public static boolean importShapefile( ASpatialDb db, File shapeFile, String tableName, int limit, IJGTProgressMonitor pm )
+            throws Exception {
+        boolean noErrors = true;
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
 
         SimpleFeatureCollection features = featureSource.getFeatures();
+        int featureCount = features.size();
 
         List<String[]> tableInfo = db.getTableColumns(tableName);
         List<String> tableColumns = new ArrayList<>();
-        for (String[] item : tableInfo) {
+        for( String[] item : tableInfo ) {
             tableColumns.add(item[0]);
         }
         SpatialiteGeometryColumns geometryColumns = db.getGeometryColumnsForTable(tableName);
         String gCol = geometryColumns.f_geometry_column;
 
         int epsg = geometryColumns.srid;
-        CoordinateReferenceSystem crs = CRS.decode("EPSG:" + epsg);
+        CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg("EPSG:" + epsg);
         ReprojectingFeatureCollection repFeatures = new ReprojectingFeatureCollection(features, crs);
         SimpleFeatureIterator featureIterator = repFeatures.features();
 
         String valueNames = "";
         String qMarks = "";
-        for (AttributeDescriptor attributeDescriptor : attributeDescriptors) {
+        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
             String attrName = attributeDescriptor.getLocalName();
-            if (attrName.equals(SpatialiteDb.PK_UID)) {
+            if (attrName.equals(ASpatialDb.PK_UID)) {
                 continue;
             }
             if (attributeDescriptor instanceof GeometryDescriptor) {
@@ -160,8 +177,8 @@ public class SpatialiteImportUtils {
                 qMarks += ",GeomFromText(?, " + epsg + ")";
             } else {
                 if (!tableColumns.contains(attrName)) {
-                    throw new IllegalArgumentException(
-                        "The imported shapefile doesn't seem to match the table's schema.");
+                    pm.errorMessage("The imported shapefile doesn't seem to match the table's schema.");
+                    return false;
                 }
                 valueNames += "," + attrName;
                 qMarks += ",?";
@@ -171,40 +188,141 @@ public class SpatialiteImportUtils {
         qMarks = qMarks.substring(1);
         String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
 
-        Connection conn = db.getConnection();
-        try (PreparedStatement pStmt = conn.prepareStatement(sql)) {
+        IJGTConnection conn = db.getConnection();
+        try (IJGTPreparedStatement pStmt = conn.prepareStatement(sql)) {
             int count = 0;
-            while (featureIterator.hasNext()) {
-                SimpleFeature f = (SimpleFeature) featureIterator.next();
-                List<Object> attributes = f.getAttributes();
-                for (int i = 0; i < attributes.size(); i++) {
-                    Object object = attributes.get(i);
-                    if (object == null) {
-                        continue;
+            pm.beginTask("Adding data to batch import...", featureCount);
+            try {
+                while( featureIterator.hasNext() ) {
+                    SimpleFeature f = (SimpleFeature) featureIterator.next();
+                    List<Object> attributes = f.getAttributes();
+                    for( int i = 0; i < attributes.size(); i++ ) {
+                        Object object = attributes.get(i);
+                        if (object == null) {
+                            continue;
+                        }
+                        int iPlus = i + 1;
+                        if (object instanceof Double) {
+                            pStmt.setDouble(iPlus, (Double) object);
+                        } else if (object instanceof Float) {
+                            pStmt.setFloat(iPlus, (Float) object);
+                        } else if (object instanceof Integer) {
+                            pStmt.setInt(iPlus, (Integer) object);
+                        } else if (object instanceof String) {
+                            pStmt.setString(iPlus, (String) object);
+                        } else if (object instanceof Geometry) {
+                            pStmt.setString(iPlus, ((Geometry) object).toText());
+                        } else {
+                            pStmt.setString(iPlus, object.toString());
+                        }
                     }
-                    int iPlus = i + 1;
-                    if (object instanceof Double) {
-                        pStmt.setDouble(iPlus, (Double) object);
-                    } else if (object instanceof Float) {
-                        pStmt.setFloat(iPlus, (Float) object);
-                    } else if (object instanceof Integer) {
-                        pStmt.setInt(iPlus, (Integer) object);
-                    } else if (object instanceof String) {
-                        pStmt.setString(iPlus, (String) object);
-                    } else if (object instanceof Geometry) {
-                        pStmt.setString(iPlus, ((Geometry) object).toText());
-                    } else {
-                        pStmt.setString(iPlus, object.toString());
-                    }
-                }
-                pStmt.executeUpdate();
+                    pStmt.addBatch();
 
-                count++;
-                if (limit > 0 && count >= limit) {
-                    break;
+                    count++;
+                    if (limit > 0 && count >= limit) {
+                        break;
+                    }
+                    pm.worked(1);
                 }
+            } catch (Exception e) {
+                logger.error("error", e);
+            } finally {
+                pm.done();
+                featureIterator.close();
             }
-            featureIterator.close();
+
+            try {
+                pm.beginTask("Execute batch import of " + featureCount + " features...", IJGTProgressMonitor.UNKNOWN);
+                pStmt.executeBatch();
+            } catch (Exception e) {
+                logger.error("error", e);
+            } finally {
+                pm.done();
+            }
+
         }
+        
+        
+        try (IJGTStatement pStmt = conn.createStatement()) {
+            pStmt.executeQuery("Select updateLayerStatistics");
+        }
+        return noErrors;
+    }
+
+    /**
+     * get a table as featurecollection.
+     * 
+     * @param db the database.
+     * @param tableName the table to use.
+     * @param featureLimit limit in feature or -1.
+     * @param forceSrid a srid to force to or -1.
+     * @return the extracted featurecollection.
+     * @throws SQLException
+     * @throws Exception
+     */
+    public static DefaultFeatureCollection tableToFeatureFCollection( ASpatialDb db, String tableName, int featureLimit,
+            int forceSrid ) throws SQLException, Exception {
+        DefaultFeatureCollection fc = new DefaultFeatureCollection();
+
+        SpatialiteGeometryColumns geometryColumn = db.getGeometryColumnsForTable(tableName);
+        CoordinateReferenceSystem crs;
+        if (forceSrid == -1) {
+            forceSrid = geometryColumn.srid;
+        }
+        crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumn.srid);
+        QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit, forceSrid);
+        int geometryIndex = tableRecords.geometryIndex;
+        if (geometryIndex == -1) {
+            throw new IllegalArgumentException("Not a geometric layer.");
+        }
+        List<String> names = tableRecords.names;
+        List<String> types = tableRecords.types;
+
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName(tableName);
+        b.setCRS(crs);
+
+        for( int i = 0; i < names.size(); i++ ) {
+            if (i == geometryIndex) {
+                SpatialiteGeometryType geomType = SpatialiteGeometryType.forValue(geometryColumn.geometry_type);
+                Class< ? > geometryClass = geomType.getGeometryClass();
+                b.add(geometryColumn.f_geometry_column, geometryClass);
+                continue;
+            }
+            Class< ? > fieldClass = null;
+            String typeStr = types.get(i);
+            switch( typeStr ) {
+            case "DOUBLE":
+            case "REAL":
+                fieldClass = Double.class;
+                break;
+            case "FLOAT":
+                fieldClass = Float.class;
+                break;
+            case "INTEGER":
+                fieldClass = Integer.class;
+                break;
+            case "TEXT":
+                fieldClass = String.class;
+                break;
+            default:
+                fieldClass = String.class;
+                break;
+            }
+            b.add(names.get(i), fieldClass);
+        }
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+
+        int count = tableRecords.data.size();
+        for( int i = 0; i < count; i++ ) {
+            Object[] objects = tableRecords.data.get(i);
+
+            builder.addAll(objects);
+            SimpleFeature feature = builder.buildFeature(null);
+
+            fc.add(feature);
+        }
+        return fc;
     }
 }

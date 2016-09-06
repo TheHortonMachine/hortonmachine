@@ -56,6 +56,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
@@ -197,7 +198,7 @@ public class OmsGridsGenerator extends JGTModel {
             n = pLat + pRows * pHeight;
             w = pLon;
             e = pLon + pCols * pWidth;
-            crs = CRS.decode(pCode);
+            crs = CrsUtilities.getCrsFromEpsg(pCode, null);
         }
         isSquare = NumericsUtilities.dEq(pWidth, pHeight) ? true : false;
 

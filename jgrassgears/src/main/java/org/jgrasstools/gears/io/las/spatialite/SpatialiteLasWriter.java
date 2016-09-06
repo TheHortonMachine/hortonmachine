@@ -34,18 +34,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.Finalize;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -56,7 +44,7 @@ import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
-import org.geotools.referencing.CRS;
+import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
@@ -65,7 +53,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator;
-import org.jgrasstools.gears.spatialite.SpatialiteDb;
+import org.jgrasstools.gears.spatialite.GTSpatialiteDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -79,6 +67,18 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Polygon;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.Finalize;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description("Inserts las files into a spatialite database.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -159,7 +159,7 @@ public class SpatialiteLasWriter extends JGTModel {
             }
         }
 
-        try (SpatialiteDb spatialiteDb = new SpatialiteDb()) {
+        try (ASpatialDb spatialiteDb = new GTSpatialiteDb()) {
             boolean existed = spatialiteDb.open(inSpatialite);
             if (!existed) {
                 pm.beginTask("Create new spatialite database...", IJGTProgressMonitor.UNKNOWN);
@@ -169,7 +169,7 @@ public class SpatialiteLasWriter extends JGTModel {
 
             try {
                 if (pCode != null) {
-                    crs = CRS.decode(pCode);
+                    crs = CrsUtilities.getCrsFromEpsg(pCode, null);
                 } else {
                     File folderFile = new File(inFolder);
                     File[] prjFiles = folderFile.listFiles(new FilenameFilter(){
@@ -255,7 +255,7 @@ public class SpatialiteLasWriter extends JGTModel {
     }
 
     @SuppressWarnings("unchecked")
-    private void processFile( final SpatialiteDb spatialiteDb, File file, long sourceID, GridCoverage2D ortoGC )
+    private void processFile( final ASpatialDb spatialiteDb, File file, long sourceID, GridCoverage2D ortoGC )
             throws Exception {
         String name = file.getName();
         pm.message("Processing file: " + name);
@@ -430,7 +430,7 @@ public class SpatialiteLasWriter extends JGTModel {
                                 try {
                                     LasCellsTable.insertLasCells(spatialiteDb, srid, processCells);
                                     pm.worked(processCells.size());
-                                } catch (SQLException e) {
+                                } catch (Exception e) {
                                     e.printStackTrace();
                                 }
                             }
@@ -447,7 +447,7 @@ public class SpatialiteLasWriter extends JGTModel {
                         try {
                             LasCellsTable.insertLasCells(spatialiteDb, srid, processCells);
                             pm.worked(processCells.size());
-                        } catch (SQLException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
@@ -479,7 +479,7 @@ public class SpatialiteLasWriter extends JGTModel {
 
     }
 
-    private void insertFirstLevel( final SpatialiteDb spatialiteDb, long sourceID, double north, double south, double east,
+    private void insertFirstLevel( final ASpatialDb spatialiteDb, long sourceID, double north, double south, double east,
             double west, int level ) throws Exception, SQLException {
         List<LasLevel> levelsList = new ArrayList<>();
         double levelCellsize = pCellsize * level * pFactor;
@@ -549,7 +549,7 @@ public class SpatialiteLasWriter extends JGTModel {
         pm.done();
     }
 
-    private void insertLevel( final SpatialiteDb spatialiteDb, long sourceID, double north, double south, double east,
+    private void insertLevel( final ASpatialDb spatialiteDb, long sourceID, double north, double south, double east,
             double west, int level ) throws Exception, SQLException {
         int previousLevelNum = level - 1;
         List<LasLevel> levelsList = new ArrayList<>();

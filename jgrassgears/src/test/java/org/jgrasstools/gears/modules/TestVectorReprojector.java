@@ -23,6 +23,7 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.modules.v.vectorreprojector.OmsVectorReprojector;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.opengis.feature.simple.SimpleFeature;
@@ -51,7 +52,7 @@ public class TestVectorReprojector extends HMTestCase {
         reprojector.process();
 
         CoordinateReferenceSystem sourceCRS = HMTestMaps.getCrs();
-        CoordinateReferenceSystem targetCRS = CRS.decode("EPSG:4326");
+        CoordinateReferenceSystem targetCRS = CrsUtilities.getCrsFromSrid(4326);
 
         MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);
 

@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.jgrasstools</groupId>
+		<artifactId>jgrasstools</artifactId>
+		<version>0.8.0-SNAPSHOT</version>
+	</parent>
+
+	<groupId>org.jgrasstools</groupId>
+	<artifactId>jgt-apps</artifactId>
+	<version>0.8.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<name>JGrasstools Small Applications Components</name>
+
+	<properties>
+		<mapsforge.version>0.4.3</mapsforge.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.jgrasstools</groupId>
+			<artifactId>jgt-gui</artifactId>
+			<version>0.8.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jogamp.jogl</groupId>
+			<artifactId>jogl-all</artifactId>
+			<version>2.1.5-01</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jogamp.gluegen</groupId>
+			<artifactId>gluegen-rt-main</artifactId>
+			<version>2.1.5-01</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mapsforge</groupId>
+			<artifactId>mapsforge-core</artifactId>
+			<version>${mapsforge.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mapsforge</groupId>
+			<artifactId>mapsforge-map</artifactId>
+			<version>${mapsforge.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mapsforge</groupId>
+			<artifactId>mapsforge-map-awt</artifactId>
+			<version>${mapsforge.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mapsforge</groupId>
+			<artifactId>mapsforge-map-reader</artifactId>
+			<version>${mapsforge.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>gov.nasa</groupId>
+			<artifactId>worldwind</artifactId>
+			<version>2.0.X</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.nanohttpd</groupId>
+			<artifactId>nanohttpd</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+	</dependencies>
+
+
+</project>

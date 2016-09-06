@@ -57,6 +57,7 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -104,7 +105,7 @@ public class OmsXyz2Raster extends JGTModel {
     public void process() throws Exception {
         checkNull(inFile, pRes, pCode);
 
-        CoordinateReferenceSystem crs = CRS.decode(pCode);
+        CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg(pCode, null);
         res = pRes;
 
         Envelope env = null;

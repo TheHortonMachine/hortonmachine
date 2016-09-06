@@ -20,12 +20,16 @@
 
     <modules>
 	<module>oms3</module>
+	<module>dbs</module>
         <module>jgrassgears</module>
         <module>hortonmachine</module>
         <module>lesto</module>
-        <module>grass</module>
         <module>modules</module>
         <module>gui</module>
+	<module>apps</module>
+<!--        
+        <module>grass</module>
+ -->
   </modules>
 
 	<issueManagement>
@@ -115,8 +119,6 @@
       <url>http://oss.sonatype.org/content/repositories/snapshots</url>
     </repository>
   </repositories>
-
-    
 	<!-- Build configuration -->
     <build>
         <extensions>
@@ -186,7 +188,7 @@
 						<goal>copy-dependencies</goal>
 					</goals>
 					<configuration>
-						<outputDirectory>${session.executionRootDirectory}/libs-exported</outputDirectory>
+						<outputDirectory>${session.executionRootDirectory}/extras/export/libs</outputDirectory>
 					</configuration>
 				</execution>
 			</executions>

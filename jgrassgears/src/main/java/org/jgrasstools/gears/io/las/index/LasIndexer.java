@@ -135,7 +135,7 @@ public class LasIndexer extends JGTModel {
 
         try {
             if (pCode != null)
-                crs = CRS.decode(pCode);
+                crs = CrsUtilities.getCrsFromEpsg(pCode, null);
         } catch (Exception e1) {
             throw new ModelsIllegalargumentException("An error occurred while reading the projection definition: "
                     + e1.getLocalizedMessage(), this);

@@ -21,6 +21,11 @@
 			<artifactId>jgt-oms3</artifactId>
 			<version>0.8.0-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jgrasstools</groupId>
+			<artifactId>jgt-dbs</artifactId>
+			<version>0.8.0-SNAPSHOT</version>
+		</dependency>
 
 		<!-- Java Advanced Imaging (JAI) 
 		<dependency>
@@ -69,7 +74,33 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		    <version>1.7.5</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		    <version>1.7.5</version>
+		</dependency>
+
 		<!-- GeoTools -->
+		<dependency>
+		  <groupId>org.geotools</groupId>
+		  <artifactId>gt-referencing</artifactId>
+		  <version>${gt.version}</version>
+		</dependency>
+		<dependency>
+		  <groupId>org.geotools</groupId>
+		  <artifactId>gt-epsg-hsql</artifactId>
+		  <version>${gt.version}</version>
+		</dependency>
+		<dependency>
+		  <groupId>org.geotools</groupId>
+		  <artifactId>gt-epsg-extension</artifactId>
+		  <version>${gt.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-data</artifactId>
@@ -139,7 +170,7 @@
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-			<version>1.6</version>
+			<version>2.9.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.vividsolutions</groupId>

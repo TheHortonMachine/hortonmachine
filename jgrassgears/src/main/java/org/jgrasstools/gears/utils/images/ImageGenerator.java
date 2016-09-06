@@ -83,6 +83,7 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.filter.expression.Expression;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -114,7 +115,7 @@ public class ImageGenerator {
     // private AffineTransform worldToScreen;
     // private AffineTransform screenToWorld;
 
-    private StyleFactory sf = CommonFactoryFinder.getStyleFactory(null);
+    private StyleFactory sf;
 
     private IJGTProgressMonitor monitor = new DummyProgressMonitor();
 
@@ -126,9 +127,13 @@ public class ImageGenerator {
 
     private File shapesFile;
 
-    public ImageGenerator( IJGTProgressMonitor monitor ) {
+    private CoordinateReferenceSystem forceCrs;
+
+    public ImageGenerator( IJGTProgressMonitor monitor , CoordinateReferenceSystem forceCrs) {
+        this.forceCrs = forceCrs;
         if (monitor != null)
             this.monitor = monitor;
+        sf = CommonFactoryFinder.getStyleFactory(null);
     }
 
     public void setDoLegacyGrass( boolean doLegacyGrass ) {
@@ -521,6 +526,10 @@ public class ImageGenerator {
                 content.addLayer(layer);
             }
         }
+        
+        if (forceCrs!=null) {
+            content.getViewport().setCoordinateReferenceSystem(forceCrs);
+        }
 
         StreamingRenderer renderer = new StreamingRenderer();
         renderer.setMapContent(content);
@@ -551,7 +560,6 @@ public class ImageGenerator {
 
         renderer.paint(g2d, imageBounds, ref);
 
-        // content.dispose();
         return dumpImage;
     }
 
@@ -755,7 +763,7 @@ public class ImageGenerator {
         Coordinate ll = new Coordinate(centre.x - boundsXExtension / 2.0, centre.y - boundsYExtension / 2.0);
         Coordinate ur = new Coordinate(centre.x + boundsXExtension / 2.0, centre.y + boundsYExtension / 2.0);
         Envelope tmpEnv = new Envelope(ll, ur);
-//        tmpEnv.expandBy(1000);
+        // tmpEnv.expandBy(1000);
         bounds = new ReferencedEnvelope(tmpEnv, bounds.getCoordinateReferenceSystem());
 
         int imageWidth = (int) (paperFormat.width() / 25.4 * dpi);

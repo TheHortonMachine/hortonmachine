@@ -26,9 +26,6 @@ import java.awt.event.ComponentListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -77,6 +74,9 @@ import org.jgrasstools.gui.utils.DataUtilities;
 import org.jgrasstools.gui.utils.DefaultGuiBridgeImpl;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
+import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The spatialtoolbox view controller.
@@ -84,8 +84,10 @@ import org.jgrasstools.gui.utils.GuiUtilities;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class SpatialtoolboxController extends SpatialtoolboxView {
+public class SpatialtoolboxController extends SpatialtoolboxView implements IOnCloseListener {
     private static final long serialVersionUID = 1L;
+    
+    private static final Logger logger = LoggerFactory.getLogger(SpatialtoolboxController.class);
 
     protected ParametersPanel pPanel;
 
@@ -124,7 +126,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
         final ImageIcon moduleIcon = new ImageIcon(class1.getResource("/org/jgrasstools/images/module.gif"));
         final ImageIcon moduleExpIcon = new ImageIcon(class1.getResource("/org/jgrasstools/images/module_exp.gif"));
 
-        parametersPanel.setLayout(new BorderLayout());
+        _parametersPanel.setLayout(new BorderLayout());
 
         addComponentListener(new ComponentListener(){
 
@@ -138,7 +140,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
             }
 
             public void componentHidden( ComponentEvent e ) {
-                freeResources();
+                onClose();
             }
         });
 
@@ -149,20 +151,20 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
         JScrollPane scrollpane = new JScrollPane(pPanel);
         scrollpane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollpane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        parametersPanel.add(scrollpane, BorderLayout.CENTER);
+        _parametersPanel.add(scrollpane, BorderLayout.CENTER);
 
-        processingRegionButton.addActionListener(new ActionListener(){
+        _processingRegionButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
             }
         });
 
-        processingRegionButton.setIcon(processingIcon);
+        _processingRegionButton.setIcon(processingIcon);
 
         // TODO enable when used
-        processingRegionButton.setVisible(false);
+        _processingRegionButton.setVisible(false);
 
-        startButton.setToolTipText("Start the current module.");
-        startButton.addActionListener(new ActionListener(){
+        _startButton.setToolTipText("Start the current module.");
+        _startButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
 
                 final ProcessLogConsoleController logConsole = new ProcessLogConsoleController();
@@ -176,10 +178,10 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
             }
         });
 
-        startButton.setIcon(startIcon);
+        _startButton.setIcon(startIcon);
 
-        runScriptButton.setToolTipText("Run a script from file.");
-        runScriptButton.addActionListener(new ActionListener(){
+        _runScriptButton.setToolTipText("Run a script from file.");
+        _runScriptButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
                 File[] loadFiles = guiBridge.showOpenFileDialog("Load script", GuiUtilities.getLastFile());
                 if (loadFiles != null && loadFiles.length > 0) {
@@ -193,10 +195,10 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
                         StageScriptExecutor exec = new StageScriptExecutor(guiBridge.getLibsFolder());
                         exec.addProcessListener(logConsole);
 
-                        String logLevel = debugCheckbox.isSelected()
+                        String logLevel = _debugCheckbox.isSelected()
                                 ? SpatialToolboxConstants.LOGLEVEL_GUI_ON
                                 : SpatialToolboxConstants.LOGLEVEL_GUI_OFF;
-                        String ramLevel = heapCombo.getSelectedItem().toString();
+                        String ramLevel = _heapCombo.getSelectedItem().toString();
 
                         String sessionId = "File: " + loadFiles[0].getName() + " - "
                                 + TimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.format(new Date());
@@ -213,10 +215,10 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
             }
         });
 
-        runScriptButton.setIcon(runScriptIcon);
+        _runScriptButton.setIcon(runScriptIcon);
 
-        generateScriptButton.setToolTipText("Save the current module as a script to file.");
-        generateScriptButton.addActionListener(new ActionListener(){
+        _generateScriptButton.setToolTipText("Save the current module as a script to file.");
+        _generateScriptButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
                 ModuleDescription module = pPanel.getModule();
                 HashMap<String, Object> fieldName2ValueHolderMap = pPanel.getFieldName2ValueHolderMap();
@@ -237,18 +239,18 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
                 }
             }
         });
-        generateScriptButton.setIcon(generateScriptIcon);
+        _generateScriptButton.setIcon(generateScriptIcon);
 
-        clearFilterButton.addActionListener(new ActionListener(){
+        _clearFilterButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
-                filterField.setText("");
+                _filterField.setText("");
                 layoutTree(false);
             }
         });
-        clearFilterButton.setIcon(trashIcon);
+        _clearFilterButton.setIcon(trashIcon);
 
-        loadExperimentalCheckbox.setSelected(true);
-        loadExperimentalCheckbox.addActionListener(new ActionListener(){
+        _loadExperimentalCheckbox.setSelected(true);
+        _loadExperimentalCheckbox.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
                 layoutTree(true);
             }
@@ -259,15 +261,15 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
         if (debugStr != null && debugStr.trim().length() > 0) {
             doDebug = Boolean.parseBoolean(debugStr);
         }
-        debugCheckbox.setSelected(doDebug);
-        heapCombo.setModel(new DefaultComboBoxModel<>(SpatialToolboxConstants.HEAPLEVELS));
+        _debugCheckbox.setSelected(doDebug);
+        _heapCombo.setModel(new DefaultComboBoxModel<>(SpatialToolboxConstants.HEAPLEVELS));
         String heapStr = prefsMap.get(GuiBridgeHandler.HEAP_KEY);
         if (heapStr == null) {
             heapStr = SpatialToolboxConstants.HEAPLEVELS[0];
         }
-        heapCombo.setSelectedItem(heapStr);
+        _heapCombo.setSelectedItem(heapStr);
 
-        filterField.addKeyListener(new KeyAdapter(){
+        _filterField.addKeyListener(new KeyAdapter(){
             @Override
             public void keyReleased( KeyEvent e ) {
                 layoutTree(true);
@@ -275,7 +277,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
         });
 
         try {
-            modulesTree.setCellRenderer(new DefaultTreeCellRenderer(){
+            _modulesTree.setCellRenderer(new DefaultTreeCellRenderer(){
                 @Override
                 public java.awt.Component getTreeCellRendererComponent( JTree tree, Object value, boolean selected,
                         boolean expanded, boolean leaf, int row, boolean hasFocus ) {
@@ -307,7 +309,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
                 }
             });
 
-            modulesTree.addTreeSelectionListener(new TreeSelectionListener(){
+            _modulesTree.addTreeSelectionListener(new TreeSelectionListener(){
                 public void valueChanged( TreeSelectionEvent evt ) {
                     TreePath[] paths = evt.getPaths();
 
@@ -321,16 +323,16 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
                             // SwingUtilities.invokeLater(new Runnable(){
                             // public void run() {
                             // parametersPanel.invalidate();
-                            parametersPanel.validate();
-                            parametersPanel.repaint();
+                            _parametersPanel.validate();
+                            _parametersPanel.repaint();
                             // }
                             // });
                             break;
                         }
                         if (lastPathComponent instanceof ViewerFolder) {
                             pPanel.setModule(null);
-                            parametersPanel.validate();
-                            parametersPanel.repaint();
+                            _parametersPanel.validate();
+                            _parametersPanel.repaint();
                             break;
                         }
                     }
@@ -346,16 +348,16 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
     private void layoutTree( boolean expandNodes ) {
         TreeMap<String, List<ModuleDescription>> availableModules = JGrasstoolsModulesManager.getInstance().getModulesMap();
 
-        final List<ViewerFolder> viewerFolders = ViewerFolder.hashmap2ViewerFolders(availableModules, filterField.getText(),
-                loadExperimentalCheckbox.isSelected());
+        final List<ViewerFolder> viewerFolders = ViewerFolder.hashmap2ViewerFolders(availableModules, _filterField.getText(),
+                _loadExperimentalCheckbox.isSelected());
         Modules modules = new Modules();
         modules.viewerFolders = viewerFolders;
         ObjectTreeModel model = new ObjectTreeModel();
         model.setRoot(modules);
-        modulesTree.setModel(model);
+        _modulesTree.setModel(model);
 
         if (expandNodes)
-            expandAllNodes(modulesTree, 0, modulesTree.getRowCount());
+            expandAllNodes(_modulesTree, 0, _modulesTree.getRowCount());
     }
 
     private void expandAllNodes( JTree tree, int startingIndex, int rowCount ) {
@@ -478,9 +480,9 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
         return this;
     }
 
-    public void freeResources() {
-        String ramLevel = heapCombo.getSelectedItem().toString();
-        prefsMap.put(GuiBridgeHandler.DEBUG_KEY, debugCheckbox.isSelected() + "");
+    public void onClose() {
+        String ramLevel = _heapCombo.getSelectedItem().toString();
+        prefsMap.put(GuiBridgeHandler.DEBUG_KEY, _debugCheckbox.isSelected() + "");
         prefsMap.put(GuiBridgeHandler.HEAP_KEY, ramLevel);
         guiBridge.setSpatialToolboxPreferencesMap(prefsMap);
 
@@ -523,10 +525,10 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
         };
         logConsole.addFinishRunnable(finishRunnable);
 
-        String logLevel = debugCheckbox.isSelected()
+        String logLevel = _debugCheckbox.isSelected()
                 ? SpatialToolboxConstants.LOGLEVEL_GUI_ON
                 : SpatialToolboxConstants.LOGLEVEL_GUI_OFF;
-        String ramLevel = heapCombo.getSelectedItem().toString();
+        String ramLevel = _heapCombo.getSelectedItem().toString();
 
         String sessionId = moduleClass.getSimpleName() + " " + TimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.format(new Date());
         Process process = exec.exec(sessionId, scriptBuilder.toString(), logLevel, ramLevel, null);
@@ -556,6 +558,9 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
                 if (value.trim().length() == 0) {
                     continue;
                 }
+                
+                // make sure there are no backslashes
+                value = FileUtilities.replaceBackSlashesWithSlashes(value);
 
                 scriptBuilder.append(objectName).append(".").append(fieldName).append(" = ");
 
@@ -563,7 +568,6 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
                 field.setAccessible(true);
                 Class< ? > type = field.getType();
                 if (type.isAssignableFrom(String.class)) {
-
                     scriptBuilder.append("\"").append(value).append("\"");
                     if (outputFieldNames.contains(fieldName)) {
                         outputStringsMap.put(fieldName, value);
@@ -796,24 +800,34 @@ public class SpatialtoolboxController extends SpatialtoolboxView {
     }
 
     public static void main( String[] args ) throws Exception {
+        GuiUtilities.setDefaultLookAndFeel();
+        
+        File libsFile = null;
+        try {
+            String libsPath = args[0];
+            libsFile = new File(libsPath);
+        } catch (Exception e1) {
+            // IGNORE
+        }
+        if (libsFile == null || !libsFile.exists() || !libsFile.isDirectory()) {
+            logger.error("The libraries folder is missing or not properly set.");
+            libsFile = new File("/home/hydrologis/development/jgrasstools-git/extras/export/libs");
+            // System.exit(1);
+        }
+
+        logger.info("Libraries folder used: " + libsFile.getAbsolutePath());
+
         JGrasstoolsModulesManager.getInstance().init();
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
-        gBridge.setLibsFolder(new File("/home/hydrologis/development/jgrasstools-git/libs-exported/"));
+        gBridge.setLibsFolder(libsFile);
         final SpatialtoolboxController controller = new SpatialtoolboxController(gBridge);
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "JGrasstools' Spatial Toolbox");
 
-        WindowListener exitListener = new WindowAdapter(){
-            @Override
-            public void windowClosing( WindowEvent e ) {
-                int confirm = JOptionPane.showOptionDialog(frame, "Are you sure you want to exit?", "Exit Confirmation",
-                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    controller.freeResources();
-                    System.exit(0);
-                }
-            }
-        };
-        frame.addWindowListener(exitListener);
+        Class<SpatialtoolboxController> class1 = SpatialtoolboxController.class;
+        ImageIcon icon = new ImageIcon(class1.getResource("/org/jgrasstools/images/hm150.png"));
+        frame.setIconImage(icon.getImage());
+
+        GuiUtilities.addClosingListener(frame, controller);
     }
 
 }

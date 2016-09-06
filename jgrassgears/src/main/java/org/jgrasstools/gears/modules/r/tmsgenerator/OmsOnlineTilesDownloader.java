@@ -31,6 +31,7 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -148,9 +149,9 @@ public class OmsOnlineTilesDownloader extends JGTModel {
     public void process() throws Exception {
         checkNull(inPath, inServiceUrl, pEpsg, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
 
-        CoordinateReferenceSystem boundsCrs = CRS.decode(pEpsg);
-        CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
-        CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
+        CoordinateReferenceSystem boundsCrs = CrsUtilities.getCrsFromEpsg(pEpsg, null);
+        CoordinateReferenceSystem mercatorCrs = CrsUtilities.getCrsFromEpsg(EPSG_MERCATOR, null);
+        CoordinateReferenceSystem latLongCrs = CrsUtilities.getCrsFromEpsg(EPSG_LATLONG, null);
 
         ReferencedEnvelope inBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, boundsCrs);
 

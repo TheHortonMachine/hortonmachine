@@ -113,7 +113,7 @@ public class HMTestMaps {
         envelopeParams.put(CoverageUtilities.COLS, 10.0);
 
         try {
-            crs = CRS.decode("EPSG:32632");
+            crs = CrsUtilities.getCrsFromEpsg("EPSG:32632");
         } catch (Exception ex) {
             ex.printStackTrace();
         }

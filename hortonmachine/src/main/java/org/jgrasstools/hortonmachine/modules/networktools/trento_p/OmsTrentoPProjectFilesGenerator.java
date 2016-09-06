@@ -56,6 +56,7 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.ITrentoPType;
@@ -123,7 +124,7 @@ public class OmsTrentoPProjectFilesGenerator extends JGTModel {
         }
 
         checkNull(inFolder, pCode);
-        CoordinateReferenceSystem crs = CRS.decode(pCode);
+        CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg(pCode, null);
         pm.beginTask(msg.message("trentoP.generatefile.project"), -1);
         pm.worked(1);
         // if you want to create an empty file
