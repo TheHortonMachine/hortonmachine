@@ -15,18 +15,18 @@
     <version>0.8.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
-    <name>JGrasstools - uDig's geospatial toolbox (but not only)</name>
+    <name>JGrasstools - Spatial Tools for Environmental Modelling</name>
     <url>http://www.jgrasstools.org</url>
 
     <modules>
 	<module>oms3</module>
+	<module>dbs</module>
         <module>jgrassgears</module>
         <module>hortonmachine</module>
         <module>lesto</module>
         <module>modules</module>
         <module>gui</module>
 <!--        
-	<module>dbs</module>
 	<module>apps</module>
         <module>grass</module>
  -->
