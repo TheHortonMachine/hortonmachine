@@ -67,6 +67,8 @@ public class SpatialiteTableNames {
     // INTERNAL DATA
     public static final String INTERNALDATA = "Internal Data";
     public static final List<String> internalDataTables = Arrays.asList(//
+            "sqlite_stat1", //
+            "sqlite_stat3", //
             "ElementaryGeometries", //
             "geometry_columns_auth", //
             "geometry_columns_field_infos", //
