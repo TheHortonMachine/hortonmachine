@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.nww.layers.defaults.raster;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +26,9 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
+import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.images.ImageUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.nww.utils.cache.CacheUtils;
@@ -67,7 +70,11 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer implements N
     private Coordinate centerCoordinate;
 
     public MapsforgeNwwLayer(File mapsforgeFile, Integer tileSize) throws Exception {
-        super(makeLevels(mapsforgeFile, getTilegenerator(mapsforgeFile, tileSize), tileSize));
+        this(mapsforgeFile, tileSize, null);
+    }
+
+    public MapsforgeNwwLayer(File mapsforgeFile, Integer tileSize, Color colorToMakeTransparent) throws Exception {
+        super(makeLevels(mapsforgeFile, getTilegenerator(mapsforgeFile, tileSize), tileSize, colorToMakeTransparent));
         this.layerName = FileUtilities.getNameWithoutExtention(mapsforgeFile);
         this.setUseTransparentTextures(true);
 
@@ -113,8 +120,8 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer implements N
         return new OsmTilegenerator(mapsforgeFile, dbRenderer, xmlRenderTheme, displayModel);
     }
 
-    private static LevelSet makeLevels(File mapsforgeFile, OsmTilegenerator osmTilegenerator, Integer tileSize)
-            throws MalformedURLException {
+    private static LevelSet makeLevels(File mapsforgeFile, OsmTilegenerator osmTilegenerator, Integer tileSize,
+            Color colorToMakeTransparent) throws MalformedURLException {
         AVList params = new AVListImpl();
         String cacheRelativePath = "mapsforge/" + mapsforgeFile.getName() + "-tiles";
 
@@ -166,6 +173,11 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer implements N
                 File imgFile = new File(tileImageFolderFile, y + ".png");
                 try {
                     if (!imgFile.exists()) {
+//                        PrintUtilities.printRenderedImageData(bImg);
+                        
+                        if (colorToMakeTransparent != null) {
+                            bImg = ImageUtilities.makeColorTransparent(bImg, colorToMakeTransparent);
+                        }
                         ImageIO.write(bImg, "png", imgFile);
                     }
                     return imgFile.toURI().toURL();
