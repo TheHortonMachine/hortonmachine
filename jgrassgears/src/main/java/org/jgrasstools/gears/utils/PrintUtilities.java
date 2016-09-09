@@ -46,14 +46,15 @@ public class PrintUtilities {
     /**
      * Print data of a {@link GridCoverage2D}.
      * 
-     * @param coverage the coverage.
+     * @param coverage
+     *            the coverage.
      */
-    public static void printCoverageData( GridCoverage2D coverage ) {
+    public static void printCoverageData(GridCoverage2D coverage) {
         RenderedImage renderedImage = coverage.getRenderedImage();
         RandomIter renderedImageIterator = RandomIterFactory.create(renderedImage, null);
         int[] colsRows = CoverageUtilities.getRegionColsRows(coverage);
-        for( int r = 0; r < colsRows[1]; r++ ) {
-            for( int c = 0; c < colsRows[0]; c++ ) {
+        for (int r = 0; r < colsRows[1]; r++) {
+            for (int c = 0; c < colsRows[0]; c++) {
                 printer.print(renderedImageIterator.getSampleDouble(c, r, 0));
                 printer.print(separator);
             }
@@ -64,20 +65,21 @@ public class PrintUtilities {
     /**
      * Print data of a {@link GridCoverage2D} as java matrix definition.
      * 
-     * @param coverage the coverage.
+     * @param coverage
+     *            the coverage.
      */
-    public static void printCoverageDataAsMatrix( GridCoverage2D coverage ) {
+    public static void printCoverageDataAsMatrix(GridCoverage2D coverage) {
         printer.println("double[][] matrix = new double[][]{//");
         RenderedImage renderedImage = coverage.getRenderedImage();
         RandomIter renderedImageIterator = RandomIterFactory.create(renderedImage, null);
         int[] colsRows = CoverageUtilities.getRegionColsRows(coverage);
-        for( int r = 0; r < colsRows[1]; r++ ) {
+        for (int r = 0; r < colsRows[1]; r++) {
             if (r == 0) {
                 printer.print("/*    */{");
             } else {
                 printer.print("{");
             }
-            for( int c = 0; c < colsRows[0]; c++ ) {
+            for (int c = 0; c < colsRows[0]; c++) {
                 printer.print(renderedImageIterator.getSampleDouble(c, r, 0));
                 if (c < colsRows[0] - 1) {
                     printer.print(", ");
@@ -96,15 +98,22 @@ public class PrintUtilities {
     /**
      * Print data from a {@link RenderedImage}.
      * 
-     * @param renderedImage the image.
+     * @param renderedImage
+     *            the image.
      */
-    public static void printRenderedImageData( RenderedImage renderedImage ) {
+    public static void printRenderedImageData(RenderedImage renderedImage) {
         RandomIter iter = RandomIterFactory.create(renderedImage, null);
         int cols = renderedImage.getWidth();
         int rows = renderedImage.getHeight();
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                printer.print(iter.getSampleDouble(c, r, 0));
+        int numBands = renderedImage.getSampleModel().getNumBands();
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                for (int b = 0; b < numBands; b++) {
+                    if (b > 0) {
+                        printer.print("/");
+                    }
+                    printer.print(iter.getSampleDouble(c, r, b));
+                }
                 printer.print(separator);
             }
             printer.println();
@@ -115,14 +124,15 @@ public class PrintUtilities {
     /**
      * Print data from a {@link Raster}.
      * 
-     * @param raster the image.
+     * @param raster
+     *            the image.
      */
-    public static void printWritableRasterData( Raster raster ) {
+    public static void printWritableRasterData(Raster raster) {
         RandomIter iter = RandomIterFactory.create(raster, null);
         int cols = raster.getWidth();
         int rows = raster.getHeight();
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
                 printer.print(iter.getSampleDouble(c, r, 0));
                 printer.print(separator);
             }
@@ -134,13 +144,14 @@ public class PrintUtilities {
     /**
      * Print data from a matrix.
      * 
-     * @param matrix the matrix.
+     * @param matrix
+     *            the matrix.
      */
-    public static void printMatrixData( double[][] matrix ) {
+    public static void printMatrixData(double[][] matrix) {
         int cols = matrix[0].length;
         int rows = matrix.length;
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
                 printer.print(matrix[r][c]);
                 printer.print(separator);
             }
@@ -151,22 +162,23 @@ public class PrintUtilities {
     /**
      * Print the envelope as WKT.
      * 
-     * @param env the {@link com.vividsolutions.jts.geom.Envelope}.
+     * @param env
+     *            the {@link com.vividsolutions.jts.geom.Envelope}.
      * @return the WKT string.
      */
-    public static String envelope2WKT( com.vividsolutions.jts.geom.Envelope env ) {
+    public static String envelope2WKT(com.vividsolutions.jts.geom.Envelope env) {
         GeometryFactory gf = GeometryUtilities.gf();
         Geometry geometry = gf.toGeometry(env);
         return geometry.toText();
     }
 
-    public static com.vividsolutions.jts.geom.Envelope envelope2D2Envelope( Envelope2D envelope2d ) {
+    public static com.vividsolutions.jts.geom.Envelope envelope2D2Envelope(Envelope2D envelope2d) {
         com.vividsolutions.jts.geom.Envelope jtsEnv = new com.vividsolutions.jts.geom.Envelope(envelope2d.getMinX(),
                 envelope2d.getMaxX(), envelope2d.getMinY(), envelope2d.getMaxY());
         return jtsEnv;
     }
 
-    public static String toString( GridCoverage2D coverage ) {
+    public static String toString(GridCoverage2D coverage) {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
         StringBuilder sb = new StringBuilder();
         sb.append(regionMap.toStringJGT()).append("\n");
