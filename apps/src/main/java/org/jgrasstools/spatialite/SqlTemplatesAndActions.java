@@ -31,6 +31,7 @@ import org.jgrasstools.dbs.spatialite.QueryResult;
 import org.jgrasstools.dbs.spatialite.objects.ColumnLevel;
 import org.jgrasstools.dbs.spatialite.objects.TableLevel;
 import org.jgrasstools.gears.spatialite.SpatialiteImportUtils;
+import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gui.console.LogConsoleController;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
@@ -430,6 +431,48 @@ public class SqlTemplatesAndActions {
             public void actionPerformed( ActionEvent e ) {
                 String query = "SELECT UpdateLayerStatistics();";
                 spatialiteViewer.addTextToQueryEditor(query);
+            }
+        };
+    }
+
+    public static Action getImportSqlFileAction( GuiBridgeHandler guiBridge, SpatialiteViewer spatialiteViewer ) {
+        return new AbstractAction("Import sql file"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                File[] openFiles = guiBridge.showOpenFileDialog("Open sql file", GuiUtilities.getLastFile());
+                if (openFiles != null && openFiles.length > 0) {
+                    try {
+                        GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
+                    } catch (Exception e1) {
+                        logger.error("ERROR", e1);
+                    }
+                } else {
+                    return;
+                }
+
+                final LogConsoleController logConsole = new LogConsoleController(spatialiteViewer.pm);
+                JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+
+                new Thread(() -> {
+                    boolean hasErrors = false;
+                    logConsole.beginProcess("Running sql from file...");
+                    try {
+                        File sqlFile = openFiles[0];
+                        String readFile = FileUtilities.readFile(sqlFile);
+                        spatialiteViewer.runQuery(readFile, spatialiteViewer.pm);
+                        spatialiteViewer.refreshDatabaseTree();
+                    } catch (Exception ex) {
+                        logger.error("Error importing sql from file", ex);
+                    } finally {
+                        logConsole.finishProcess();
+                        logConsole.stopLogging();
+                        if (!hasErrors) {
+                            logConsole.setVisible(false);
+                            window.dispose();
+                        }
+                    }
+                }).start();
+
             }
         };
     }

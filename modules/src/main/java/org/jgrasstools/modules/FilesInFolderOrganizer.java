@@ -208,8 +208,8 @@ public class FilesInFolderOrganizer extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
         FilesInFolderOrganizer fo = new FilesInFolderOrganizer();
-        fo.inFolder = "/media/hydrologis/EXTRA/FOTO/UNORDERED/";
-        fo.inOutputFolder = "/media/hydrologis/EXTRA/FOTO/ORDERED/";
+        fo.inFolder = "/home/hydrologis/Dropbox/Camera Uploads/";
+        fo.inOutputFolder = "/home/hydrologis/Dropbox/cas/FOTO/";
         fo.doCountOnly = false;
         fo.process();
     }

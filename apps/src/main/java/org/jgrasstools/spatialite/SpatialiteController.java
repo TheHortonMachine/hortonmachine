@@ -978,10 +978,20 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
     }
 
     protected boolean runQuery( String sqlText, IJGTProgressMonitor pm ) {
+        if (pm == null) {
+            pm = this.pm;
+        }
         boolean hasError = false;
         if (currentConnectedDatabase != null && sqlText.length() > 0) {
             try {
-                pm.beginTask("Run query: " + sqlText, IJGTProgressMonitor.UNKNOWN);
+                int maxLength = 100;
+                String queryForLog;
+                if (sqlText.length() > maxLength) {
+                    queryForLog = sqlText.substring(0, maxLength) + "...";
+                } else {
+                    queryForLog = sqlText;
+                }
+                pm.beginTask("Run query: " + queryForLog, IJGTProgressMonitor.UNKNOWN);
 
                 int limit = getLimit();
 
@@ -998,9 +1008,9 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                                 int resultCode = currentConnectedDatabase.executeInsertUpdateDeleteSql(sql);
                                 QueryResult dummyQueryResult = new QueryResult();
                                 dummyQueryResult.names.add("Result = " + resultCode);
-                                loadDataViewer(dummyQueryResult);
+                                // loadDataViewer(dummyQueryResult);
                             }
-                            addQueryToHistoryCombo(sql);
+                            // addQueryToHistoryCombo(sql);
                         }
                         if (!hasError && _refreshTreeAfterQueryCheckbox.isSelected()) {
                             try {

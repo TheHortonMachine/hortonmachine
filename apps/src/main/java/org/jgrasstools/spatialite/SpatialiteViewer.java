@@ -167,6 +167,7 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
         actions.add(SqlTemplatesAndActions.getCopyDatabasePathAction(this));
         actions.add(null);
         actions.add(SqlTemplatesAndActions.getCreateTableFromShapefileSchemaAction(guiBridge, this));
+        actions.add(SqlTemplatesAndActions.getImportSqlFileAction(guiBridge, this));
         actions.add(null);
         actions.add(SqlTemplatesAndActions.getUpdateLayerStats(guiBridge, this));
         return actions;
