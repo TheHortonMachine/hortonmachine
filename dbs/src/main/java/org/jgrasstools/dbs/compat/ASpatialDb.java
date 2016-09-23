@@ -75,6 +75,13 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Create Spatial Metadata initialize SPATIAL_REF_SYS and GEOMETRY_COLUMNS.
      * 
+     * <p>If the optional argument mode is not specified then any possible 
+     * ESPG SRID definition will be inserted into the spatial_ref_sys table.</p>
+     * <p>If the mode arg 'WGS84' (alias 'WGS84_ONLY') is specified, then only 
+     * WGS84-related EPSG SRIDs will be inserted</p>
+     * <p>If the mode arg 'NONE' (alias 'EMPTY') is specified, no EPSG SRID 
+     * will be inserted at all</p>
+     * 
      * @param options optional tweaks.
      * @throws Exception 
      */

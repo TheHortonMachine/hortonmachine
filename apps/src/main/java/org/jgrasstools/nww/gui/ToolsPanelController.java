@@ -55,6 +55,7 @@ import org.jgrasstools.nww.layers.defaults.annotations.HtmlScreenAnnotation.Buil
 import org.jgrasstools.nww.layers.defaults.other.CurrentGpsPointLayer;
 import org.jgrasstools.nww.layers.defaults.other.SimplePointsLayer;
 import org.jgrasstools.nww.layers.defaults.other.WhiteNwwLayer;
+import org.jgrasstools.nww.layers.defaults.raster.GridCoverageNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.ImageMosaicNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.MBTilesNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.MapsforgeNwwLayer;
@@ -403,7 +404,11 @@ public class ToolsPanelController extends ToolsPanelView {
     private void loadFile( File selectedFile ) {
         String name = FileUtilities.getNameWithoutExtention(selectedFile);
         try {
-            if (selectedFile.getName().endsWith(".shp")) {
+            if (selectedFile.getName().endsWith(".asc") || selectedFile.getName().endsWith(".tiff")) {
+                GridCoverageNwwLayer coverageNwwLayer = new GridCoverageNwwLayer(selectedFile, null, Color.WHITE);
+                wwjPanel.getWwd().getModel().getLayers().add(coverageNwwLayer);
+                layerEventsListener.onLayerAdded(coverageNwwLayer);
+            } else if (selectedFile.getName().endsWith(".shp")) {
                 // shp or image mosaic?
 
                 String parentFolderName = selectedFile.getParentFile().getName();
