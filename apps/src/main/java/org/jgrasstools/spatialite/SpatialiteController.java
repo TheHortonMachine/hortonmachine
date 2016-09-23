@@ -19,8 +19,11 @@ package org.jgrasstools.spatialite;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
@@ -32,6 +35,7 @@ import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -152,6 +156,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         _limitCountTextfield.setToolTipText("1000 is default and used when no valid number is supplied. -1 means no limit.");
 
         _dataViewerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        addDataTableContextMenu();
 
         _sqlEditorArea.setDocument(new SqlDocument());
 
@@ -600,6 +605,47 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                 if (SwingUtilities.isRightMouseButton(e)) {
                     int row = _databaseTree.getClosestRowForLocation(e.getX(), e.getY());
                     _databaseTree.setSelectionRow(row);
+                    popupMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
+
+            }
+        });
+    }
+
+    private void addDataTableContextMenu() {
+        JPopupMenu popupMenu = new JPopupMenu();
+        popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
+        popupMenu.addPopupMenuListener(new PopupMenuListener(){
+
+            @Override
+            public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
+                JMenuItem item = new JMenuItem(new AbstractAction("Copy cells content"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                        _dataViewerTable.getTransferHandler().exportToClipboard(
+                                _dataViewerTable, clipboard, TransferHandler.COPY);
+                    }
+                });
+                popupMenu.add(item);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) {
+                popupMenu.removeAll();
+            }
+
+            @Override
+            public void popupMenuCanceled( PopupMenuEvent e ) {
+                popupMenu.removeAll();
+            }
+        });
+
+        _dataViewerTable.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked( MouseEvent e ) {
+                if (SwingUtilities.isRightMouseButton(e)) {
                     popupMenu.show(e.getComponent(), e.getX(), e.getY());
                 }
 
