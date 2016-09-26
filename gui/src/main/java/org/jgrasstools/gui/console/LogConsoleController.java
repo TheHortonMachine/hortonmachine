@@ -12,17 +12,20 @@ import javax.swing.text.BadLocationException;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.ImageCache;
 import org.joda.time.DateTime;
 
 public class LogConsoleController extends LogConsoleView {
 
-    private IJGTProgressMonitor pm;
+    private IJGTProgressMonitor pm = new LogProgressMonitor();
     private String processName;
+    private PrintStream logAreaPrintStream;
 
     public LogConsoleController( final IJGTProgressMonitor pm ) {
-        this.pm = pm;
+        if (pm != null)
+            this.pm = pm;
         init();
     }
 
@@ -38,7 +41,7 @@ public class LogConsoleController extends LogConsoleView {
             }
         });
         clearButton.setIcon(ImageCache.getInstance().getImage(ImageCache.TRASH));
-        
+
         copyButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
                 GuiUtilities.copyToClipboard(logArea.getText());
@@ -55,11 +58,11 @@ public class LogConsoleController extends LogConsoleView {
         });
         stopButton.setIcon(ImageCache.getInstance().getImage(ImageCache.PROGRESS_STOP));
 
-        PrintStream printStream = new PrintStream(new CustomOutputStream(logArea));
+        logAreaPrintStream = new PrintStream(new CustomOutputStream(logArea));
 
         // re-assigns standard output stream and error output stream
-        System.setOut(printStream);
-        System.setErr(printStream);
+        System.setOut(logAreaPrintStream);
+        System.setErr(logAreaPrintStream);
 
         setPreferredSize(new Dimension(480, 320));
 
@@ -80,6 +83,10 @@ public class LogConsoleController extends LogConsoleView {
 
         });
 
+    }
+
+    public PrintStream getLogAreaPrintStream() {
+        return logAreaPrintStream;
     }
 
     public void beginProcess( String name ) {
