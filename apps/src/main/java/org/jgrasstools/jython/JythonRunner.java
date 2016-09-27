@@ -27,10 +27,9 @@ public class JythonRunner {
     public void run( String script ) {
         LogConsoleController logConsole = new LogConsoleController(null);
 
-        JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+        guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
 
         new Thread(() -> {
-            boolean hadErrors = false;
             try (PythonInterpreter pythonInterpreter = new PythonInterpreter()) {
                 pythonInterpreter.setOut(logConsole.getLogAreaPrintStream());
                 pythonInterpreter.setErr(logConsole.getLogAreaPrintStream());
@@ -59,7 +58,7 @@ public class JythonRunner {
     }
 
     public static void main( String[] args ) {
-        String script = "/home/hydrologis/development/jython-gvsig-course.git/jython_essentials/basic types.py";
+        String script = "print 'Hello world'";
 
         JythonRunner jythonRunner = new JythonRunner(new DefaultGuiBridgeImpl());
         jythonRunner.run(script);
