@@ -513,8 +513,18 @@ public abstract class ASpatialDb implements AutoCloseable {
      * @throws Exception
      */
     public List<ForeignKey> getForeignKeys(String tableName) throws Exception {
+        String sql = null;
+        if (tableName.indexOf('.') != -1) {
+            // it is an attached database
+            String[] split = tableName.split("\\.");
+            String dbName = split[0];
+            String tmpTableName = split[1];
+            sql = "PRAGMA " + dbName + ".foreign_key_list(" + tmpTableName + ")";
+        } else {
+            sql = "PRAGMA foreign_key_list(" + tableName + ")";
+        }
+        
         List<ForeignKey> fKeys = new ArrayList<ForeignKey>();
-        String sql = "PRAGMA foreign_key_list(" + tableName + ")";
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             IJGTResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
