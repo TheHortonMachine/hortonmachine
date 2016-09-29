@@ -59,14 +59,16 @@ public abstract class ASpatialDb implements AutoCloseable {
      * 
      * <b>Make sure the connection object is created here.</b>
      * 
-     * @param dbPath the database path. If <code>null</code>, an in-memory db is created.
+     * @param dbPath
+     *            the database path. If <code>null</code>, an in-memory db is
+     *            created.
      * @return <code>true</code> if the database did already exist.
      * @throws Exception
      */
-    public abstract boolean open( String dbPath ) throws Exception;
+    public abstract boolean open(String dbPath) throws Exception;
 
     /**
-     * @return the path to the database. 
+     * @return the path to the database.
      */
     public String getDatabasePath() {
         return mDbPath;
@@ -75,26 +77,34 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Create Spatial Metadata initialize SPATIAL_REF_SYS and GEOMETRY_COLUMNS.
      * 
-     * <p>If the optional argument mode is not specified then any possible 
-     * ESPG SRID definition will be inserted into the spatial_ref_sys table.</p>
-     * <p>If the mode arg 'WGS84' (alias 'WGS84_ONLY') is specified, then only 
-     * WGS84-related EPSG SRIDs will be inserted</p>
-     * <p>If the mode arg 'NONE' (alias 'EMPTY') is specified, no EPSG SRID 
-     * will be inserted at all</p>
+     * <p>
+     * If the optional argument mode is not specified then any possible ESPG
+     * SRID definition will be inserted into the spatial_ref_sys table.
+     * </p>
+     * <p>
+     * If the mode arg 'WGS84' (alias 'WGS84_ONLY') is specified, then only
+     * WGS84-related EPSG SRIDs will be inserted
+     * </p>
+     * <p>
+     * If the mode arg 'NONE' (alias 'EMPTY') is specified, no EPSG SRID will be
+     * inserted at all
+     * </p>
      * 
-     * @param options optional tweaks.
-     * @throws Exception 
+     * @param options
+     *            optional tweaks.
+     * @throws Exception
      */
-    public abstract void initSpatialMetadata( String options ) throws Exception;
+    public abstract void initSpatialMetadata(String options) throws Exception;
 
     /**
      * Toggle autocommit mode.
      * 
-     * @param enable if <code>true</code>, autocommit is enabled if not already enabled.
-     *          Vice versa if <code>false</code>.
+     * @param enable
+     *            if <code>true</code>, autocommit is enabled if not already
+     *            enabled. Vice versa if <code>false</code>.
      * @throws SQLException
      */
-    public void enableAutocommit( boolean enable ) throws Exception {
+    public void enableAutocommit(boolean enable) throws Exception {
         boolean autoCommitEnabled = mConn.getAutoCommit();
         if (enable && !autoCommitEnabled) {
             // do enable if not already enabled
@@ -108,7 +118,8 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Get database infos.
      * 
-     * @return the string array of [sqlite_version, spatialite_version, spatialite_target_cpu]
+     * @return the string array of [sqlite_version, spatialite_version,
+     *         spatialite_target_cpu]
      * @throws SQLException
      */
     public String[] getDbInfo() throws Exception {
@@ -116,7 +127,7 @@ public abstract class ASpatialDb implements AutoCloseable {
         String sql = "SELECT sqlite_version(), spatialite_version(), spatialite_target_cpu()";
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             String[] info = new String[3];
-            while( rs.next() ) {
+            while (rs.next()) {
                 // read the result set
                 info[0] = rs.getString(1);
                 info[1] = rs.getString(2);
@@ -129,15 +140,18 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Create a new table.
      * 
-     * @param tableName the table name.
-     * @param fieldData the data for each the field (ex. id INTEGER NOT NULL PRIMARY KEY).
+     * @param tableName
+     *            the table name.
+     * @param fieldData
+     *            the data for each the field (ex. id INTEGER NOT NULL PRIMARY
+     *            KEY).
      * @throws SQLException
      */
-    public void createTable( String tableName, String... fieldData ) throws Exception {
+    public void createTable(String tableName, String... fieldData) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TABLE ");
         sb.append(tableName).append("(");
-        for( int i = 0; i < fieldData.length; i++ ) {
+        for (int i = 0; i < fieldData.length; i++) {
             if (i != 0) {
                 sb.append(",");
             }
@@ -154,9 +168,9 @@ public abstract class ASpatialDb implements AutoCloseable {
      * Delete a geo-table with all attached indexes and stuff.
      * 
      * @param tableName
-     * @throws Exception 
+     * @throws Exception
      */
-    public void deleteGeoTable( String tableName ) throws Exception {
+    public void deleteGeoTable(String tableName) throws Exception {
         String sql = "SELECT DropGeoTable('" + tableName + "');";
 
         try (IJGTStatement stmt = mConn.createStatement()) {
@@ -167,12 +181,15 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Create an single column index.
      * 
-     * @param tableName the table.
-     * @param column the column. 
-     * @param isUnique if <code>true</code>, a unique index will be created.
-     * @throws Exception 
+     * @param tableName
+     *            the table.
+     * @param column
+     *            the column.
+     * @param isUnique
+     *            if <code>true</code>, a unique index will be created.
+     * @throws Exception
      */
-    public void createIndex( String tableName, String column, boolean isUnique ) throws Exception {
+    public void createIndex(String tableName, String column, boolean isUnique) throws Exception {
         String sql = getIndexSql(tableName, column, isUnique);
         try (IJGTStatement stmt = mConn.createStatement()) {
             stmt.executeUpdate(sql);
@@ -189,12 +206,15 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Get the sql to create an index.
      * 
-     * @param tableName the table.
-     * @param column the column. 
-     * @param isUnique if <code>true</code>, a unique index will be created.
+     * @param tableName
+     *            the table.
+     * @param column
+     *            the column.
+     * @param isUnique
+     *            if <code>true</code>, a unique index will be created.
      * @return the index sql.
      */
-    public String getIndexSql( String tableName, String column, boolean isUnique ) {
+    public String getIndexSql(String tableName, String column, boolean isUnique) {
         String unique = "UNIQUE ";
         if (!isUnique) {
             unique = "";
@@ -205,15 +225,19 @@ public abstract class ASpatialDb implements AutoCloseable {
     }
 
     /**
-     * Adds a geometry column to a table. 
+     * Adds a geometry column to a table.
      * 
-     * @param tableName the table name.
-     * @param geomColName the geometry column name.
-     * @param geomType the geometry type (ex. LINESTRING);
-     * @param epsg the optional epsg code (default is 4326);
-     * @throws Exception 
+     * @param tableName
+     *            the table name.
+     * @param geomColName
+     *            the geometry column name.
+     * @param geomType
+     *            the geometry type (ex. LINESTRING);
+     * @param epsg
+     *            the optional epsg code (default is 4326);
+     * @throws Exception
      */
-    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg )
+    public void addGeometryXYColumnAndIndex(String tableName, String geomColName, String geomType, String epsg)
             throws Exception {
         String epsgStr = "4326";
         if (epsg != null) {
@@ -229,8 +253,8 @@ public abstract class ASpatialDb implements AutoCloseable {
         }
 
         try (IJGTStatement stmt = mConn.createStatement()) {
-            String sql = "SELECT AddGeometryColumn('" + tableName + "','" + geomColName + "', " + epsgStr + ", '" + geomTypeStr
-                    + "', 'XY')";
+            String sql = "SELECT AddGeometryColumn('" + tableName + "','" + geomColName + "', " + epsgStr + ", '"
+                    + geomTypeStr + "', 'XY')";
             stmt.execute(sql);
 
             sql = "SELECT CreateSpatialIndex('" + tableName + "', '" + geomColName + "');";
@@ -241,19 +265,23 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Insert a geometry into a table.
      * 
-     * @param tableName the table to use.
-     * @param geometry the geometry to insert.
-     * @param epsg the optional epsg.
-     * @throws Exception 
+     * @param tableName
+     *            the table to use.
+     * @param geometry
+     *            the geometry to insert.
+     * @param epsg
+     *            the optional epsg.
+     * @throws Exception
      */
-    public void insertGeometry( String tableName, Geometry geometry, String epsg ) throws Exception {
+    public void insertGeometry(String tableName, Geometry geometry, String epsg) throws Exception {
         String epsgStr = "4326";
         if (epsg == null) {
             epsgStr = epsg;
         }
 
         SpatialiteGeometryColumns gc = getGeometryColumnsForTable(tableName);
-        String sql = "INSERT INTO " + tableName + " (" + gc.f_geometry_column + ") VALUES (GeomFromText(?, " + epsgStr + "))";
+        String sql = "INSERT INTO " + tableName + " (" + gc.f_geometry_column + ") VALUES (GeomFromText(?, " + epsgStr
+                + "))";
         try (IJGTPreparedStatement pStmt = mConn.prepareStatement(sql)) {
             pStmt.setString(1, geometry.toText());
             pStmt.executeUpdate();
@@ -263,11 +291,12 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Get the list of available tables.
      * 
-     * @param doOrder if <code>true</code>, the names are ordered.
+     * @param doOrder
+     *            if <code>true</code>, the names are ordered.
      * @return the list of names.
-     * @throws Exception 
+     * @throws Exception
      */
-    public List<String> getTables( boolean doOrder ) throws Exception {
+    public List<String> getTables(boolean doOrder) throws Exception {
         List<String> tableNames = new ArrayList<String>();
         String orderBy = " ORDER BY name";
         if (!doOrder) {
@@ -275,7 +304,7 @@ public abstract class ASpatialDb implements AutoCloseable {
         }
         String sql = "SELECT name FROM sqlite_master WHERE type='table' or type='view'" + orderBy;
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
+            while (rs.next()) {
                 String tabelName = rs.getString(1);
                 tableNames.add(tabelName);
             }
@@ -286,22 +315,24 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Get the list of available raster coverages.
      * 
-     * @param doOrder if <code>true</code>, the names are ordered.
+     * @param doOrder
+     *            if <code>true</code>, the names are ordered.
      * @return the list of raster coverages.
-     * @throws Exception 
+     * @throws Exception
      */
-    public List<RasterCoverage> getRasterCoverages( boolean doOrder ) throws Exception {
+    public List<RasterCoverage> getRasterCoverages(boolean doOrder) throws Exception {
         List<RasterCoverage> rasterCoverages = new ArrayList<RasterCoverage>();
         String orderBy = " ORDER BY name";
         if (!doOrder) {
             orderBy = "";
         }
 
-        String sql = "SELECT " + RasterCoverage.COVERAGE_NAME + ", " + RasterCoverage.TITLE + ", " + RasterCoverage.SRID + ", "
-                + RasterCoverage.COMPRESSION + ", " + RasterCoverage.EXTENT_MINX + ", " + RasterCoverage.EXTENT_MINY + ", "
-                + RasterCoverage.EXTENT_MAXX + ", " + RasterCoverage.EXTENT_MAXY + " FROM " + RasterCoverage.TABLENAME + orderBy;
+        String sql = "SELECT " + RasterCoverage.COVERAGE_NAME + ", " + RasterCoverage.TITLE + ", " + RasterCoverage.SRID
+                + ", " + RasterCoverage.COMPRESSION + ", " + RasterCoverage.EXTENT_MINX + ", "
+                + RasterCoverage.EXTENT_MINY + ", " + RasterCoverage.EXTENT_MAXX + ", " + RasterCoverage.EXTENT_MAXY
+                + " FROM " + RasterCoverage.TABLENAME + orderBy;
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
+            while (rs.next()) {
                 RasterCoverage rc = new RasterCoverage();
                 int i = 1;
                 rc.coverage_name = rs.getString(i++);
@@ -324,11 +355,11 @@ public abstract class ASpatialDb implements AutoCloseable {
      * <p>
      * Supported types are:
      * <ul>
-     * <li>{@value SpatialiteTableNames#INTERNALDATA} </li>
-     * <li>{@value SpatialiteTableNames#METADATA} </li>
-     * <li>{@value SpatialiteTableNames#SPATIALINDEX} </li>
-     * <li>{@value SpatialiteTableNames#STYLE} </li>
-     * <li>{@value SpatialiteTableNames#USERDATA} </li>
+     * <li>{@value SpatialiteTableNames#INTERNALDATA}</li>
+     * <li>{@value SpatialiteTableNames#METADATA}</li>
+     * <li>{@value SpatialiteTableNames#SPATIALINDEX}</li>
+     * <li>{@value SpatialiteTableNames#STYLE}</li>
+     * <li>{@value SpatialiteTableNames#USERDATA}</li>
      * <li></li>
      * <li></li>
      * <li></li>
@@ -336,9 +367,9 @@ public abstract class ASpatialDb implements AutoCloseable {
      * 
      * @param doOrder
      * @return the map of tables sorted by aggregated type:
-     * @throws Exception 
+     * @throws Exception
      */
-    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
+    public HashMap<String, List<String>> getTablesMap(boolean doOrder) throws Exception {
         List<String> tableNames = getTables(doOrder);
         HashMap<String, List<String>> tablesMap = SpatialiteTableNames.getTablesSorted(tableNames, doOrder);
         return tablesMap;
@@ -347,14 +378,15 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Checks if the table is available.
      * 
-     * @param tableName the name of the table.
+     * @param tableName
+     *            the name of the table.
      * @return <code>true</code> if the table exists.
-     * @throws Exception 
+     * @throws Exception
      */
-    public boolean hasTable( String tableName ) throws Exception {
+    public boolean hasTable(String tableName) throws Exception {
         String sql = "SELECT name FROM sqlite_master WHERE type='table'";
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
+            while (rs.next()) {
                 String name = rs.getString(1);
                 if (name.equals(tableName)) {
                     return true;
@@ -367,20 +399,31 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Get the column [name, type, pk] values of a table.
      * 
-     * @param tableName the table to check.
+     * @param tableName
+     *            the table to check.
      * @return the list of column [name, type, pk].
      * @throws SQLException
      */
-    public List<String[]> getTableColumns( String tableName ) throws Exception {
+    public List<String[]> getTableColumns(String tableName) throws Exception {
+        String sql;
+        if (tableName.indexOf('.') != -1) {
+            // it is an attached database
+            String[] split = tableName.split("\\.");
+            String dbName = split[0];
+            String tmpTableName = split[1];
+            sql = "PRAGMA " + dbName + ".table_info(" + tmpTableName + ")";
+        } else {
+            sql = "PRAGMA table_info(" + tableName + ")";
+        }
+
         List<String[]> columnNames = new ArrayList<String[]>();
-        String sql = "PRAGMA table_info(" + tableName + ")";
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             IJGTResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
             int nameIndex = -1;
             int typeIndex = -1;
             int pkIndex = -1;
-            for( int i = 1; i <= columnCount; i++ ) {
+            for (int i = 1; i <= columnCount; i++) {
                 String columnName = rsmd.getColumnName(i);
                 if (columnName.equals("name")) {
                     nameIndex = i;
@@ -391,13 +434,13 @@ public abstract class ASpatialDb implements AutoCloseable {
                 }
             }
 
-            while( rs.next() ) {
+            while (rs.next()) {
                 String name = rs.getString(nameIndex);
                 String type = rs.getString(typeIndex);
                 String pk = "0";
                 if (pkIndex > 0)
                     pk = rs.getString(pkIndex);
-                columnNames.add(new String[]{name, type, pk});
+                columnNames.add(new String[] { name, type, pk });
             }
             return columnNames;
         }
@@ -406,30 +449,33 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Get the geometry column definition for a given table.
      * 
-     * @param tableName the table to check.
+     * @param tableName
+     *            the table to check.
      * @return the {@link SpatialiteGeometryColumns column info}.
      * @throws Exception
      */
-    public SpatialiteGeometryColumns getGeometryColumnsForTable( String tableName ) throws Exception {
+    public SpatialiteGeometryColumns getGeometryColumnsForTable(String tableName) throws Exception {
         String attachedStr = "";
         if (tableName.indexOf('.') != -1) {
-            // if the tablename contains a dot, then it comes from an attached database
-            
+            // if the tablename contains a dot, then it comes from an attached
+            // database
+
             // get the database name
             String[] split = tableName.split("\\.");
             attachedStr = split[0] + ".";
             tableName = split[1];
-//            logger.debug(MessageFormat.format("Considering attached database: {0}", attachedStr));
+            // logger.debug(MessageFormat.format("Considering attached database:
+            // {0}", attachedStr));
         }
-        
+
         String sql = "select " + SpatialiteGeometryColumns.F_TABLE_NAME + ", " //
                 + SpatialiteGeometryColumns.F_GEOMETRY_COLUMN + ", " //
                 + SpatialiteGeometryColumns.GEOMETRY_TYPE + "," //
                 + SpatialiteGeometryColumns.COORD_DIMENSION + ", " //
                 + SpatialiteGeometryColumns.SRID + ", " //
                 + SpatialiteGeometryColumns.SPATIAL_INDEX_ENABLED + " from " //
-                + attachedStr + SpatialiteGeometryColumns.TABLENAME + " where " + SpatialiteGeometryColumns.F_TABLE_NAME + "='" + tableName
-                + "'";
+                + attachedStr + SpatialiteGeometryColumns.TABLENAME + " where " + SpatialiteGeometryColumns.F_TABLE_NAME
+                + "='" + tableName + "'";
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
                 SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();
@@ -448,11 +494,12 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Checks if a table is spatial.
      * 
-     * @param tableName the table to check.
+     * @param tableName
+     *            the table to check.
      * @return <code>true</code> if a geometry column is present.
-     * @throws Exception 
+     * @throws Exception
      */
-    public boolean isTableSpatial( String tableName ) throws Exception {
+    public boolean isTableSpatial(String tableName) throws Exception {
         SpatialiteGeometryColumns geometryColumns = getGeometryColumnsForTable(tableName);
         return geometryColumns != null;
     }
@@ -460,20 +507,31 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Get the foreign keys from a table.
      * 
-     * @param tableName the table to check on.
+     * @param tableName
+     *            the table to check on.
      * @return the list of keys.
-     * @throws Exception 
+     * @throws Exception
      */
-    public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
+    public List<ForeignKey> getForeignKeys(String tableName) throws Exception {
+        String sql = null;
+        if (tableName.indexOf('.') != -1) {
+            // it is an attached database
+            String[] split = tableName.split("\\.");
+            String dbName = split[0];
+            String tmpTableName = split[1];
+            sql = "PRAGMA " + dbName + ".foreign_key_list(" + tmpTableName + ")";
+        } else {
+            sql = "PRAGMA foreign_key_list(" + tableName + ")";
+        }
+        
         List<ForeignKey> fKeys = new ArrayList<ForeignKey>();
-        String sql = "PRAGMA foreign_key_list(" + tableName + ")";
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             IJGTResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
             int fromIndex = -1;
             int toIndex = -1;
             int toTableIndex = -1;
-            for( int i = 1; i <= columnCount; i++ ) {
+            for (int i = 1; i <= columnCount; i++) {
                 String columnName = rsmd.getColumnName(i);
                 if (columnName.equals("from")) {
                     fromIndex = i;
@@ -483,7 +541,7 @@ public abstract class ASpatialDb implements AutoCloseable {
                     toTableIndex = i;
                 }
             }
-            while( rs.next() ) {
+            while (rs.next()) {
                 ForeignKey fKey = new ForeignKey();
                 Object fromObj = rs.getObject(fromIndex);
                 Object toObj = rs.getObject(toIndex);
@@ -504,14 +562,15 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Get the record count of a table.
      * 
-     * @param tableName the name of the table.
+     * @param tableName
+     *            the name of the table.
      * @return the record count or -1.
-     * @throws Exception 
+     * @throws Exception
      */
-    public long getCount( String tableName ) throws Exception {
+    public long getCount(String tableName) throws Exception {
         String sql = "select count(*) from " + tableName;
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
+            while (rs.next()) {
                 long count = rs.getLong(1);
                 return count;
             }
@@ -522,18 +581,23 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Get the table records map with geometry in the given envelope.
      * 
-     * <p>If the table is not geometric, the geom is set to null.
+     * <p>
+     * If the table is not geometric, the geom is set to null.
      * 
-     * @param tableName the table name.
-     * @param envelope the envelope to check.
-     * @param limit if > 0 a limit is set.
-     * @param alsoPK_UID if <code>true</code>, also the PK_UID column is considered.
+     * @param tableName
+     *            the table name.
+     * @param envelope
+     *            the envelope to check.
+     * @param limit
+     *            if > 0 a limit is set.
+     * @param alsoPK_UID
+     *            if <code>true</code>, also the PK_UID column is considered.
      * @return the list of found records.
      * @throws SQLException
      * @throws ParseException
      */
-    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
-            int reprojectSrid ) throws Exception {
+    public QueryResult getTableRecordsMapIn(String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
+            int reprojectSrid) throws Exception {
         QueryResult queryResult = new QueryResult();
 
         SpatialiteGeometryColumns gCol = null;
@@ -546,7 +610,7 @@ public abstract class ASpatialDb implements AutoCloseable {
 
         List<String[]> tableColumnsInfo = getTableColumns(tableName);
         List<String> tableColumns = new ArrayList<>();
-        for( String[] info : tableColumnsInfo ) {
+        for (String[] info : tableColumnsInfo) {
             tableColumns.add(info[0]);
         }
         if (hasGeom) {
@@ -564,7 +628,7 @@ public abstract class ASpatialDb implements AutoCloseable {
                         + gCol.f_geometry_column;
             }
         }
-        for( int i = 0; i < tableColumns.size(); i++ ) {
+        for (int i = 0; i < tableColumns.size(); i++) {
             if (hasGeom || i != 0)
                 sql += ",";
             sql += tableColumns.get(i);
@@ -586,7 +650,7 @@ public abstract class ASpatialDb implements AutoCloseable {
             IJGTResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
 
-            for( int i = 1; i <= columnCount; i++ ) {
+            for (int i = 1; i <= columnCount; i++) {
                 String columnName = rsmd.getColumnName(i);
                 queryResult.names.add(columnName);
                 String columnTypeName = rsmd.getColumnTypeName(i);
@@ -596,7 +660,7 @@ public abstract class ASpatialDb implements AutoCloseable {
                 }
             }
 
-            while( rs.next() ) {
+            while (rs.next()) {
                 int i = 1;
                 Object[] rec = new Object[columnCount];
                 if (hasGeom) {
@@ -605,7 +669,7 @@ public abstract class ASpatialDb implements AutoCloseable {
                     rec[i - 1] = geometry;
                     i++;
                 }
-                for( int j = i; j <= columnCount; j++ ) {
+                for (int j = i; j <= columnCount; j++) {
                     Object object = rs.getObject(j);
                     rec[j - 1] = object;
                 }
@@ -618,19 +682,21 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Execute a query from raw sql.
      * 
-     * @param sql the sql to run.
-     * @param limit a limit, ignored if < 1
+     * @param sql
+     *            the sql to run.
+     * @param limit
+     *            a limit, ignored if < 1
      * @return the resulting records.
-     * @throws Exception 
+     * @throws Exception
      */
-    public QueryResult getTableRecordsMapFromRawSql( String sql, int limit ) throws Exception {
+    public QueryResult getTableRecordsMapFromRawSql(String sql, int limit) throws Exception {
         QueryResult queryResult = new QueryResult();
         WKBReader wkbReader = new WKBReader();
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             IJGTResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
             int geometryIndex = -1;
-            for( int i = 1; i <= columnCount; i++ ) {
+            for (int i = 1; i <= columnCount; i++) {
                 int columnType = rsmd.getColumnType(i);
                 String columnName = rsmd.getColumnName(i);
                 queryResult.names.add(columnName);
@@ -642,16 +708,17 @@ public abstract class ASpatialDb implements AutoCloseable {
                 }
             }
             int count = 0;
-            while( rs.next() ) {
+            while (rs.next()) {
                 Object[] rec = new Object[columnCount];
-                for( int j = 1; j <= columnCount; j++ ) {
+                for (int j = 1; j <= columnCount; j++) {
                     if (j == geometryIndex) {
                         byte[] geomBytes = rs.getBytes(j);
                         try {
                             Geometry geometry = wkbReader.read(geomBytes);
                             rec[j - 1] = geometry;
                         } catch (Exception e) {
-                            // ignore this, it could be missing ST_AsBinary() in the sql
+                            // ignore this, it could be missing ST_AsBinary() in
+                            // the sql
                         }
                     } else {
                         Object object = rs.getObject(j);
@@ -670,20 +737,24 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Execute a query from raw sql and put the result in a csv file.
      * 
-     * @param sql the sql to run.
-     * @param csvFile the output file.
-     * @param doHeader if <code>true</code>, the header is written.
-     * @param separator the separator (if null, ";" is used).
-     * @throws Exception 
+     * @param sql
+     *            the sql to run.
+     * @param csvFile
+     *            the output file.
+     * @param doHeader
+     *            if <code>true</code>, the header is written.
+     * @param separator
+     *            the separator (if null, ";" is used).
+     * @throws Exception
      */
-    public void runRawSqlToCsv( String sql, File csvFile, boolean doHeader, String separator ) throws Exception {
+    public void runRawSqlToCsv(String sql, File csvFile, boolean doHeader, String separator) throws Exception {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {
             WKBReader wkbReader = new WKBReader();
             try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
                 IJGTResultSetMetaData rsmd = rs.getMetaData();
                 int columnCount = rsmd.getColumnCount();
                 int geometryIndex = -1;
-                for( int i = 1; i <= columnCount; i++ ) {
+                for (int i = 1; i <= columnCount; i++) {
                     if (i > 1) {
                         bw.write(separator);
                     }
@@ -696,8 +767,8 @@ public abstract class ASpatialDb implements AutoCloseable {
                     }
                 }
                 bw.write("\n");
-                while( rs.next() ) {
-                    for( int j = 1; j <= columnCount; j++ ) {
+                while (rs.next()) {
+                    for (int j = 1; j <= columnCount; j++) {
                         if (j > 1) {
                             bw.write(separator);
                         }
@@ -736,11 +807,12 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Execute an update, insert or delete by sql.
      * 
-     * @param sql the sql to run.
+     * @param sql
+     *            the sql to run.
      * @return the result code of the update.
-     * @throws Exception 
+     * @throws Exception
      */
-    public int executeInsertUpdateDeleteSql( String sql ) throws Exception {
+    public int executeInsertUpdateDeleteSql(String sql) throws Exception {
         try (IJGTStatement stmt = mConn.createStatement()) {
             int executeUpdate = stmt.executeUpdate(sql);
             return executeUpdate;
@@ -750,12 +822,14 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Get the geometries of a table inside a given envelope.
      * 
-     * @param tableName the table name.
-     * @param envelope the envelope to check.
+     * @param tableName
+     *            the table name.
+     * @param envelope
+     *            the envelope to check.
      * @return The list of geometries intersecting the envelope.
-     * @throws Exception 
+     * @throws Exception
      */
-    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws Exception {
+    public List<Geometry> getGeometriesIn(String tableName, Envelope envelope) throws Exception {
         List<Geometry> geoms = new ArrayList<Geometry>();
 
         SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
@@ -770,7 +844,7 @@ public abstract class ASpatialDb implements AutoCloseable {
         }
         WKBReader wkbReader = new WKBReader();
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
+            while (rs.next()) {
                 byte[] geomBytes = rs.getBytes(1);
                 Geometry geometry = wkbReader.read(geomBytes);
                 geoms.add(geometry);
@@ -782,16 +856,21 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Get the where cause of a Spatialindex based BBOX query.
      * 
-     * @param tableName the name of the table.
-     * @param x1 west bound.
-     * @param y1 south bound.
-     * @param x2 east bound.
-     * @param y2 north bound.
+     * @param tableName
+     *            the name of the table.
+     * @param x1
+     *            west bound.
+     * @param y1
+     *            south bound.
+     * @param x2
+     *            east bound.
+     * @param y2
+     *            north bound.
      * @return the sql piece.
-     * @throws Exception 
+     * @throws Exception
      */
-    public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 )
-            throws Exception {
+    public String getSpatialindexBBoxWherePiece(String tableName, String alias, double x1, double y1, double x2,
+            double y2) throws Exception {
         String rowid = "";
         if (alias == null) {
             alias = "";
@@ -802,12 +881,13 @@ public abstract class ASpatialDb implements AutoCloseable {
         }
         SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
         if (tableName.indexOf('.') != -1) {
-            // if the tablename contains a dot, then it comes from an attached database
-            tableName = "DB="+ tableName;
+            // if the tablename contains a dot, then it comes from an attached
+            // database
+            tableName = "DB=" + tableName;
         }
-        
-        String sql = "ST_Intersects(" + alias + gCol.f_geometry_column + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2
-                + ")) = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
+
+        String sql = "ST_Intersects(" + alias + gCol.f_geometry_column + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2
+                + ", " + y2 + ")) = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
                 + "f_table_name = '" + tableName + "' AND " //
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
@@ -816,13 +896,17 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Get the where query piece based on a geometry intersection.
      * 
-     * @param tableName the table to query.
-     * @param alias optinal alias.
-     * @param geometry the geometry to intersect.
+     * @param tableName
+     *            the table to query.
+     * @param alias
+     *            optinal alias.
+     * @param geometry
+     *            the geometry to intersect.
      * @return the query piece.
-     * @throws Exception 
+     * @throws Exception
      */
-    public String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry ) throws Exception {
+    public String getSpatialindexGeometryWherePiece(String tableName, String alias, Geometry geometry)
+            throws Exception {
         String rowid = "";
         if (alias == null) {
             alias = "";
@@ -839,11 +923,12 @@ public abstract class ASpatialDb implements AutoCloseable {
         double y2 = envelope.getMaxY();
         SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
         if (tableName.indexOf('.') != -1) {
-            // if the tablename contains a dot, then it comes from an attached database
-            tableName = "DB="+ tableName;
+            // if the tablename contains a dot, then it comes from an attached
+            // database
+            tableName = "DB=" + tableName;
         }
-        String sql = "ST_Intersects(" + alias + gCol.f_geometry_column + ", " + "GeomFromText('" + geometry.toText() + "')"
-                + ") = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
+        String sql = "ST_Intersects(" + alias + gCol.f_geometry_column + ", " + "GeomFromText('" + geometry.toText()
+                + "')" + ") = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
                 + "f_table_name = '" + tableName + "' AND " //
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
@@ -852,12 +937,13 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Get the bounds of a table.
      * 
-     * @param tableName the table to query.
+     * @param tableName
+     *            the table to query.
      * @return the {@link Envelope} of the table.
-     * @throws Exception 
+     * @throws Exception
      */
-    public abstract Envelope getTableBounds( String tableName ) throws Exception;
-    
+    public abstract Envelope getTableBounds(String tableName) throws Exception;
+
     /**
      * @return the connection to the database.
      */
@@ -874,10 +960,11 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Escape sql.
      * 
-     * @param sql the sql code to escape. 
+     * @param sql
+     *            the sql code to escape.
      * @return the escaped sql.
      */
-    public static String escapeSql( String sql ) {
+    public static String escapeSql(String sql) {
         // ' --> ''
         sql = sql.replaceAll("'", "''");
         // " --> ""
@@ -890,24 +977,28 @@ public abstract class ASpatialDb implements AutoCloseable {
     /**
      * Composes the formatter for unix timstamps in queries.
      * 
-     * <p>The default format is: <b>2015-06-11 03:14:51</b>, as
-     * given by pattern: <b>%Y-%m-%d %H:%M:%S</b>.</p>
+     * <p>
+     * The default format is: <b>2015-06-11 03:14:51</b>, as given by pattern:
+     * <b>%Y-%m-%d %H:%M:%S</b>.
+     * </p>
      * 
-     * @param columnName the timestamp column in the db.
-     * @param datePattern the datepattern.
+     * @param columnName
+     *            the timestamp column in the db.
+     * @param datePattern
+     *            the datepattern.
      * @return the query piece.
      */
-    public static String getTimestampQuery( String columnName, String datePattern ) {
+    public static String getTimestampQuery(String columnName, String datePattern) {
         if (datePattern == null)
             datePattern = "%Y-%m-%d %H:%M:%S";
         String sql = "strftime('" + datePattern + "', " + columnName + " / 1000, 'unixepoch')";
         return sql;
     }
 
-    protected abstract void logWarn( String message );
+    protected abstract void logWarn(String message);
 
-    protected abstract void logInfo( String message );
+    protected abstract void logInfo(String message);
 
-    protected abstract void logDebug( String message );
+    protected abstract void logDebug(String message);
 
 }
