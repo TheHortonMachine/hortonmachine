@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.log4j.BasicConfigurator;
 import org.jgrasstools.gears.JGrassGears;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 
@@ -37,6 +38,8 @@ import org.jgrasstools.gears.utils.files.FileUtilities;
 public class ServiceGenerator {
 
     public static void main( String[] args ) throws IOException {
+        BasicConfigurator.configure();
+        
         File serviceFile = new File("./src/main/resources/META-INF/services/org.jgrasstools.gears.libs.modules.JGTModel");
         if (!serviceFile.exists()) {
             throw new IOException("File doesn't exist: " + serviceFile.getAbsolutePath());
