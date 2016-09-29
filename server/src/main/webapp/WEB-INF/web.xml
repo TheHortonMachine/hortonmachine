@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="file-upload" version="2.4"
+	xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+	<servlet>
+		<servlet-name>TestServlet</servlet-name>
+		<servlet-class>org.jgrasstools.server.jetty.example1.TestServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ProgressServlet</servlet-name>
+		<servlet-class>org.jgrasstools.server.jetty.example1.ProgressServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>TestServlet</servlet-name>
+		<url-pattern>/test</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>ProgressServlet</servlet-name>
+		<url-pattern>/progress</url-pattern>
+	</servlet-mapping>
+
+</web-app>

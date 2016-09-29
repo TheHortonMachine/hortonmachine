@@ -26,6 +26,7 @@
         <module>lesto</module>
         <module>modules</module>
         <module>gui</module>
+	    <module>server</module>
 <!--        
 	<module>apps</module>
         <module>grass</module>
