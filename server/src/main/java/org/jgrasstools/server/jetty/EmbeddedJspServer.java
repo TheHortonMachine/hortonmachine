@@ -2,6 +2,7 @@ package org.jgrasstools.server.jetty;
 
 import org.apache.jasper.servlet.JspServlet;
 import org.apache.log4j.BasicConfigurator;
+import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -9,17 +10,17 @@ import org.eclipse.jetty.webapp.WebAppContext;
 
 public abstract class EmbeddedJspServer {
 
-    private Server server;
+    protected Server _server;
 
     public EmbeddedJspServer( Integer port, String webappFolder ) {
         if (port == null) {
             port = 8080;
         }
-        server = new Server(port);
+        _server = new Server(port);
         try {
 
             ServletHandler servletHandler = new ServletHandler();
-            server.setHandler(servletHandler);
+            _server.setHandler(servletHandler);
 
             // add jsp servlet mappings
             String[] jspExtensions = {"*.jsp", "*.jspf", "*.jspx", "*.xsp", "*.JSP", "*.JSPF", "*.JSPX", "*.XSP"};
@@ -35,9 +36,9 @@ public abstract class EmbeddedJspServer {
 
             configureServletHandler(servletHandler);
 
-            WebAppContext webapp = getWebAppContext(server, webappFolder);
+            WebAppContext webapp = getWebAppContext(_server, webappFolder);
             configureWebAppContext(webapp);
-            server.setHandler(webapp);
+            _server.setHandler(webapp);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -60,14 +61,20 @@ public abstract class EmbeddedJspServer {
      */
     protected abstract void configureServletHandler( ServletHandler servletHandler );
 
+    /**
+     * Run code before server start.
+     */
+    protected abstract void doPreStart();
+
     public void start() throws Exception {
-        server.start();
-        server.dumpStdErr();
-        server.join();
+        doPreStart();
+        _server.start();
+        _server.dumpStdErr();
+        _server.join();
     }
 
     public void stop() throws Exception {
-        server.stop();
+        _server.stop();
     }
 
     private WebAppContext getWebAppContext( Server server, String webFolder ) {
@@ -94,6 +101,7 @@ public abstract class EmbeddedJspServer {
         BasicConfigurator.configure();
 
         String webFolder = "/home/hydrologis/development/jgrasstools-git/server/src/main/webapp";
+        String authRealm = "/home/hydrologis/development/jgrasstools-git/server/src/main/resources/authrealm.txt";
         EmbeddedJspServer jspServer = new EmbeddedJspServer(null, webFolder){
             @Override
             protected void configureWebAppContext( WebAppContext webapp ) {
@@ -101,6 +109,13 @@ public abstract class EmbeddedJspServer {
 
             @Override
             protected void configureServletHandler( ServletHandler servletHandler ) {
+            }
+
+            @Override
+            protected void doPreStart() {
+                HashLoginService loginService = new HashLoginService("AuthRealm");
+                loginService.setConfig(authRealm);
+                _server.addBean(loginService);
             }
         };
         jspServer.start();

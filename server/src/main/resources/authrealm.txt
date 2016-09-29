@@ -1,0 +1,2 @@
+admin: adminpass,admin,user
+andrea: apass,user

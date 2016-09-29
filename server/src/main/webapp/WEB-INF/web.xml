@@ -11,6 +11,15 @@
 		<servlet-name>ProgressServlet</servlet-name>
 		<servlet-class>org.jgrasstools.server.jetty.fileupload.ProgressServlet</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>UserServlet</servlet-name>
+		<servlet-class>org.jgrasstools.server.jetty.security.UserServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>AdminServlet</servlet-name>
+		<servlet-class>org.jgrasstools.server.jetty.security.AdminServlet</servlet-class>
+	</servlet>
+	
 	<servlet-mapping>
 		<servlet-name>FileUpoadServlet</servlet-name>
 		<url-pattern>/upload/upload_file_progress</url-pattern>
@@ -19,5 +28,41 @@
 		<servlet-name>ProgressServlet</servlet-name>
 		<url-pattern>/upload/progress</url-pattern>
 	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>UserServlet</servlet-name>
+		<url-pattern>/user/user.do</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>AdminServlet</servlet-name>
+		<url-pattern>/admin/admin.do</url-pattern>
+	</servlet-mapping>
+
+
+
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>AuthRealm</realm-name>
+		<!-- <realm-name>JCGRealm</realm-name> -->
+	</login-config>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Secure resources</web-resource-name>
+			<url-pattern>/admin/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>admin</role-name>
+		</auth-constraint>
+	</security-constraint>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Secure resources</web-resource-name>
+			<url-pattern>/user/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>user</role-name>
+		</auth-constraint>
+	</security-constraint>
 
 </web-app>
