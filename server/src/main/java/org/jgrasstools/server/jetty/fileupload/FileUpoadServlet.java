@@ -15,7 +15,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
-public class TestServlet extends HttpServlet {
+public class FileUpoadServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     // public static final long MAX_UPLOAD_IN_MEGS = 50;
@@ -41,11 +41,11 @@ public class TestServlet extends HttpServlet {
         ServletFileUpload upload = new ServletFileUpload(factory);
         // upload.setSizeMax(MAX_UPLOAD_IN_MEGS * 1024 * 1024);
 
-        TestProgressListener testProgressListener = new TestProgressListener();
-        upload.setProgressListener(testProgressListener);
+        FileUploadProgressListener fileuploadProgressListener = new FileUploadProgressListener();
+        upload.setProgressListener(fileuploadProgressListener);
 
         HttpSession session = request.getSession();
-        session.setAttribute("testProgressListener", testProgressListener);
+        session.setAttribute("testProgressListener", fileuploadProgressListener);
 
         try {
             List<FileItem> fields = upload.parseRequest(request);
