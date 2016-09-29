@@ -1,18 +1,10 @@
 package org.jgrasstools.server.jetty;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.jasper.servlet.JspServlet;
 import org.apache.log4j.BasicConfigurator;
-import org.eclipse.jetty.annotations.ServletContainerInitializersStarter;
-import org.eclipse.jetty.plus.annotation.ContainerInitializer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 public abstract class EmbeddedJspServer {
@@ -29,20 +21,22 @@ public abstract class EmbeddedJspServer {
             ServletHandler servletHandler = new ServletHandler();
             server.setHandler(servletHandler);
 
-            // org.apache.jasper.servlet.JspServlet
+            // add jsp servlet mappings
             String[] jspExtensions = {"*.jsp", "*.jspf", "*.jspx", "*.xsp", "*.JSP", "*.JSPF", "*.JSPX", "*.XSP"};
             Class<JspServlet> jspServletClass = org.apache.jasper.servlet.JspServlet.class;
-
             for( String jspExt : jspExtensions ) {
                 ServletHolder servletHolder = servletHandler.addServletWithMapping(jspServletClass, jspExt);
                 servletHolder.setInitParameter("logVerbosityLevel", "INFO");
                 servletHolder.setInitParameter("fork", "false");
                 servletHolder.setInitParameter("keepgenerated", "true");
                 servletHolder.setInitParameter("keepgenerated", "true");
+                // <load-on-startup>0</load-on-startup>
             }
-            // <load-on-startup>0</load-on-startup>
+
+            configureServletHandler(servletHandler);
 
             WebAppContext webapp = getWebAppContext(server, webappFolder);
+            configureWebAppContext(webapp);
             server.setHandler(webapp);
 
         } catch (Exception e) {
@@ -58,6 +52,13 @@ public abstract class EmbeddedJspServer {
      * @param webapp the webapp context.
      */
     protected abstract void configureWebAppContext( WebAppContext webapp );
+
+    /**
+     * Configure the servletHandler if necessary.
+     * 
+     * @param servletHandler the handler to configure.
+     */
+    protected abstract void configureServletHandler( ServletHandler servletHandler );
 
     public void start() throws Exception {
         server.start();
@@ -96,8 +97,10 @@ public abstract class EmbeddedJspServer {
         EmbeddedJspServer jspServer = new EmbeddedJspServer(null, webFolder){
             @Override
             protected void configureWebAppContext( WebAppContext webapp ) {
-                // TODO Auto-generated method stub
+            }
 
+            @Override
+            protected void configureServletHandler( ServletHandler servletHandler ) {
             }
         };
         jspServer.start();

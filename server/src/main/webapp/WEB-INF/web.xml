@@ -13,11 +13,11 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>FileUpoadServlet</servlet-name>
-		<url-pattern>/upload_file_progress</url-pattern>
+		<url-pattern>/upload/upload_file_progress</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>ProgressServlet</servlet-name>
-		<url-pattern>/progress</url-pattern>
+		<url-pattern>/upload/progress</url-pattern>
 	</servlet-mapping>
 
 </web-app>

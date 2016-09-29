@@ -66,7 +66,7 @@
 	function getProgress() {
 		dojo
 				.xhrGet({
-					url : 'progress', // this calls the progress servlet
+					url : 'progress', // this calls the '/upload/progress' servlet
 					load : function(data) {
 						dojo.byId('progress-content').innerHTML = data;
 					},
@@ -79,7 +79,7 @@
 </head>
 <body>
 	<div>
-		<form name="form1" id="form1" action="upload_file_progress"
+		<form name="form1" id="form1" action="upload_file_progress" 
 			method="post" enctype="multipart/form-data">
 			<input type="hidden" name="hiddenfield1" value="ok"> File to
 			upload:</input> <input type="file" size="50" name="file1"> <br /> <input
