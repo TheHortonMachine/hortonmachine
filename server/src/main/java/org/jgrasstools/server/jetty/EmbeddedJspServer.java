@@ -11,6 +11,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 public abstract class EmbeddedJspServer {
 
     protected Server _server;
+    protected WebAppContext webapp;
 
     public EmbeddedJspServer( Integer port, String webappFolder ) {
         if (port == null) {
@@ -21,6 +22,8 @@ public abstract class EmbeddedJspServer {
 
             ServletHandler servletHandler = new ServletHandler();
             _server.setHandler(servletHandler);
+
+            configureServletHandler(servletHandler);
 
             // add jsp servlet mappings
             String[] jspExtensions = {"*.jsp", "*.jspf", "*.jspx", "*.xsp", "*.JSP", "*.JSPF", "*.JSPX", "*.XSP"};
@@ -34,9 +37,7 @@ public abstract class EmbeddedJspServer {
                 // <load-on-startup>0</load-on-startup>
             }
 
-            configureServletHandler(servletHandler);
-
-            WebAppContext webapp = getWebAppContext(_server, webappFolder);
+            webapp = getWebAppContext(_server, webappFolder);
             configureWebAppContext(webapp);
             _server.setHandler(webapp);
 
@@ -70,7 +71,7 @@ public abstract class EmbeddedJspServer {
         doPreStart();
         _server.start();
         _server.dumpStdErr();
-        _server.join();
+        // _server.join();
     }
 
     public void stop() throws Exception {
