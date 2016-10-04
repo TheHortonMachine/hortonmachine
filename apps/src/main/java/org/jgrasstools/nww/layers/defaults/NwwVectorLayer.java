@@ -17,7 +17,7 @@
  */
 package org.jgrasstools.nww.layers.defaults;
 
-import org.jgrasstools.nww.gui.style.SimpleStyle;
+import org.jgrasstools.gears.utils.style.SimpleStyle;
 
 /**
  * Common interface for layers.

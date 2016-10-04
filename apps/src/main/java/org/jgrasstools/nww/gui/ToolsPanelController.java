@@ -47,9 +47,10 @@ import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.gears.utils.style.SimpleStyle;
+import org.jgrasstools.gears.utils.style.SimpleStyleUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.nww.gui.listeners.GenericSelectListener;
-import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.annotations.HtmlScreenAnnotation;
 import org.jgrasstools.nww.layers.defaults.annotations.HtmlScreenAnnotation.Builder;
 import org.jgrasstools.nww.layers.defaults.other.CurrentGpsPointLayer;
@@ -541,7 +542,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
-                SimpleStyle style = NwwUtilities.getStyle(absolutePath, GeometryType.POLYGON);
+                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, GeometryType.POLYGON);
                 if (style != null) {
                     featureCollectionPolygonLayer.setStyle(style);
                 }
@@ -553,7 +554,7 @@ public class ToolsPanelController extends ToolsPanelView {
                         featureStore, field2ValuesMap);
                 featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
-                SimpleStyle style = NwwUtilities.getStyle(absolutePath, GeometryType.LINE);
+                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, GeometryType.LINE);
                 if (style != null) {
                     featureCollectionLinesLayer.setStyle(style);
                 }
@@ -572,7 +573,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
                 FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name, readFC,
                         featureStore, field2ValuesMap, imagePath);
-                SimpleStyle style = NwwUtilities.getStyle(absolutePath, GeometryType.POINT);
+                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, GeometryType.POINT);
                 if (style != null) {
                     featureCollectionPointsLayer.setStyle(style);
                 }

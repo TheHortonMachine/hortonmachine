@@ -26,7 +26,7 @@ import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.spatialite.QueryResult;
 import org.jgrasstools.gears.spatialite.GTSpatialiteDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
-import org.jgrasstools.nww.gui.style.SimpleStyle;
+import org.jgrasstools.gears.utils.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
 import org.jgrasstools.nww.shapes.InfoExtrudedPolygon;
 import org.jgrasstools.nww.shapes.InfoPolygon;

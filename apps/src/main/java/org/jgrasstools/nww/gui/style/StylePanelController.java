@@ -11,6 +11,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JColorChooser;
 import javax.swing.SwingUtilities;
 
+import org.jgrasstools.gears.utils.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
 
