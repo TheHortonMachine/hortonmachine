@@ -1,3 +1,4 @@
+<%@page import="com.vividsolutions.jts.geom.Envelope"%>
 <%@page import="java.awt.Color"%>
 <%@page import="org.jgrasstools.gears.utils.style.SimpleStyle"%>
 <%@page import="com.vividsolutions.jts.geom.Coordinate"%>
@@ -55,13 +56,13 @@
 			<h1 style="text-align: center">World Wind Shapefiles Loading</h1>
 		</div>
 		<div class="left">
-
+			<h2>Layers</h2>
 			<form action="">
 				<%
 				    for (NwwDataProvider provider : providers) {
+				        String pname = provider.getName();
 				%>
-				<input type="button" value="<%=provider.getName()%>"
-					onclick="'loadData<%=provider.getName()%>()';" />
+				<input id="<%=pname%>" type="checkbox" onclick="toggleSelection('<%=provider.getName()%>')" checked><%=pname%><br>
 				<%
 				    }
 				%>
@@ -69,9 +70,11 @@
 
 		</div>
 		<div class="right">
-			<canvas id="canvasOne" style="width: 100%; height: auto">
-                Your browser does not support HTML5 Canvas.
-            </canvas>
+			<fieldset>
+				<canvas id="canvasOne" style="width: 100%; height: auto">
+	                Your browser does not support HTML5 Canvas.
+	            </canvas>
+            </fieldset>
 		</div>
 		<div class="clear"></div>
 	</div>
@@ -111,11 +114,15 @@
 				wwd.addLayer(layers[l].layer);
 			}
 
-			
-
-		
-		
-			<%for (NwwDataProvider provider : providers) {%>
+			<%
+			Envelope bounds = null;
+			for (NwwDataProvider provider : providers) {
+				if(bounds==null){
+				    bounds = provider.getBounds();
+				}else{
+				    bounds.expandToInclude(provider.getBounds());
+				}
+			%>
 				<%if (provider.isLines()) {
 					SimpleStyle style =  provider.getStyle();
 					double width = style.strokeWidth;
@@ -136,7 +143,7 @@
 				    int size = provider.size();
 					for (int i=0; i < size;i++) {
 						Geometry geometry = provider.getGeometryAt(i);
-						if(i>1) break;
+						if( i>1000) break;
 					%>
 						pathPositions = [];
 						
@@ -162,16 +169,19 @@
 					float g =  color.getGreen()/255f;
 					float b =  color.getBlue()/255f;
 					float a =  color.getAlpha()/255f;
+					double shapeSize = style.shapeSize;
 					%>
 					
-		            var textAttributes = new WorldWind.TextAttributes(null);
-		            var textLayer = new WorldWind.RenderableLayer("<%=provider.getName()%>");
-
-			        textAttributes.color = new WorldWind.Color(<%= r %>, <%= g %>, <%= b %>, <%= a %>);
-			        // Set the depth test property such that the terrain does not obscure the text.
-			        textAttributes.depthTest = false;
-<%-- 						pathAttributes.outlineWidth = <%= width %>; --%>
-
+					var placemarkAttributes = new WorldWind.PlacemarkAttributes(null)
+		            var placemarkLayer = new WorldWind.RenderableLayer("<%=provider.getName()%>");
+					var color = new WorldWind.Color(<%= r %>, <%= g %>, <%= b %>, <%= a %>);
+ 			        placemarkAttributes.imageScale = <%= shapeSize %>;
+ 			        placemarkAttributes.imageColor = color;
+			        placemarkAttributes.labelAttributes.offset = new WorldWind.Offset( WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 1.0);
+			        placemarkAttributes.labelAttributes.color = color; 
+ 			        placemarkAttributes.drawLeaderLine = true;
+ 			        placemarkAttributes.leaderLineAttributes.outlineColor = WorldWind.Color.RED;
+					
 					var peakPosition;
 					var text;
 					<%
@@ -179,24 +189,55 @@
 					for (int i=0; i < size;i++) {
 						Geometry geometry = provider.getGeometryAt(i);
 						String label = provider.getLabelAt(i);
-						if(label.length()==0) label = "BAU";
+						if(label.length()==0) label = "";
 						Coordinate[] coordinates = geometry.getCoordinates();
 						for (Coordinate c : coordinates) {%>
-							peakPosition = new WorldWind.Position(<%=c.y%>, <%=c.x%>);
-				            text = new WorldWind.GeographicText(peakPosition, "<%= label %>");
-				            text.attributes = textAttributes;
-				            textLayer.addRenderable(text);
+				            placemark = new WorldWind.Placemark(new WorldWind.Position(<%=c.y%>, <%=c.x%>, 1e2), true, null);
+				            placemark.label = "<%= label %>";
+				            placemark.altitudeMode = WorldWind.RELATIVE_TO_GROUND;
+				            placemark.attributes = placemarkAttributes;
+				            placemarkLayer.addRenderable(placemark);
 						<%}%>
 					<%}%>
 					
-					wwd.addLayer(textLayer);
+					wwd.addLayer(placemarkLayer);
 				<%}%>
-			<%}%>
+			<%}
+			
+			Coordinate center = bounds.centre();
+			%>
+			
+			wwd.navigator.lookAtLocation.latitude = <%= center.y%>;
+			wwd.navigator.lookAtLocation.longitude = <%= center.x%>;
+			wwd.navigator.range = 1000000;
+
+<%-- 			wwd.goTo(new WorldWind.Location(<%= center.y%>, <%=center.x%>)); --%>
 			
 			wwd.redraw();
 		}
 
+		function toggleSelection(elementId){
+			var layer = getLayerByName(elementId);
+			if(document.getElementById(elementId).checked) {
+				// enable layer
+				layer.enabled = true;
+			}else{
+				// disable layer
+				layer.enabled = false;
+			}
+			wwd.redraw();
+		}
 		
+		function getLayerByName(name){
+			var l = wwd.layers.length;
+			for (var i = 0; i < l; i++) {
+				var layer = wwd.layers[i];
+				if(layer.displayName == name){
+					return layer;
+				}
+			}
+			return null;
+		}
 		
 	</script>
 </body>

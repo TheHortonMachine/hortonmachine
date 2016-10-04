@@ -39,7 +39,7 @@ public class NwwShapefilesServer extends EmbeddedJspServer {
                             "continent='Europe'", null),
                     new ShapeFileDataProvider(
                             "/home/hydrologis/development/jgrasstools-git/server/src/main/resources/naturalearth/ne_10m_populated_places.shp",
-                            "SOV_A3='ITA'", "NAME")
+                            "SOV_A3='POL'", "NAME")
                     //
             };
             servletContext.setAttribute(NwwDataProvider.PROVIDERS, providers);

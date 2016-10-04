@@ -8,6 +8,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.collection.SubFeatureCollection;
 import org.geotools.geojson.feature.FeatureJSON;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -22,6 +23,7 @@ import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.Filter;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class ShapeFileDataProvider implements NwwDataProvider {
@@ -32,6 +34,7 @@ public class ShapeFileDataProvider implements NwwDataProvider {
     private List<SimpleFeature> featuresList;
     private String shapefile;
     private String labelField;
+    private Envelope bounds;
 
     public ShapeFileDataProvider( String shapefile, String cqlFilterString, String labelField ) throws Exception {
         this.shapefile = shapefile;
@@ -48,6 +51,15 @@ public class ShapeFileDataProvider implements NwwDataProvider {
         geometryDescriptor = readVector.getSchema().getGeometryDescriptor();
 
         featuresList = FeatureUtilities.featureCollectionToList(readVector);
+
+        bounds = readVector.getBounds();// Envelope();
+//        for( SimpleFeature f : featuresList ) {
+//            Geometry defaultGeometry = (Geometry) f.getDefaultGeometry();
+//            if (!defaultGeometry.isEmpty()) {
+//                bounds.expandToInclude(defaultGeometry.getEnvelopeInternal());
+//            }
+//        }
+
     }
 
     public String asGeoJson() throws Exception {
@@ -105,10 +117,15 @@ public class ShapeFileDataProvider implements NwwDataProvider {
 
     @Override
     public String getLabelAt( int index ) {
-        if (labelField!=null) {
-            featuresList.get(index).getAttribute(index).toString();
+        if (labelField != null) {
+            return featuresList.get(index).getAttribute(labelField).toString();
         }
         return "";
+    }
+
+    @Override
+    public Envelope getBounds() {
+        return bounds;
     }
 
 }

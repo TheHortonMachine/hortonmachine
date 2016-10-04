@@ -2,6 +2,7 @@ package org.jgrasstools.server.jetty.map;
 
 import org.jgrasstools.gears.utils.style.SimpleStyle;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 public interface NwwDataProvider {
@@ -23,4 +24,6 @@ public interface NwwDataProvider {
     public Geometry getGeometryAt(int index);
 
     public String getLabelAt(int index);
+    
+    public Envelope getBounds();
 }
