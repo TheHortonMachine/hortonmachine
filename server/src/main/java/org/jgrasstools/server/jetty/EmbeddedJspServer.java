@@ -7,6 +7,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.jgrasstools.server.jetty.utils.DisabledLogging;
 
 public abstract class EmbeddedJspServer {
 
@@ -100,9 +101,9 @@ public abstract class EmbeddedJspServer {
 
     public static void main( String[] args ) throws Exception {
         BasicConfigurator.configure();
+        org.eclipse.jetty.util.log.Log.setLog(new DisabledLogging());
 
         String webFolder = "/home/hydrologis/development/jgrasstools-git/server/src/main/webapp";
-        String authRealm = "/home/hydrologis/development/jgrasstools-git/server/src/main/resources/authrealm.txt";
         EmbeddedJspServer jspServer = new EmbeddedJspServer(null, webFolder){
             @Override
             protected void configureWebAppContext( WebAppContext webapp ) {
@@ -114,9 +115,6 @@ public abstract class EmbeddedJspServer {
 
             @Override
             protected void doPreStart() {
-                HashLoginService loginService = new HashLoginService("AuthRealm");
-                loginService.setConfig(authRealm);
-                _server.addBean(loginService);
             }
         };
         jspServer.start();
