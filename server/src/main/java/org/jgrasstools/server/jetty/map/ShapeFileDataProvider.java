@@ -1,3 +1,20 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.server.jetty.map;
 
 import java.io.File;
@@ -8,7 +25,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.collection.SubFeatureCollection;
 import org.geotools.geojson.feature.FeatureJSON;
-import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -26,6 +43,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
+/**
+ * Data provider for shapefiles.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ */
 public class ShapeFileDataProvider implements NwwDataProvider {
 
     private SimpleFeatureCollection readVector;
@@ -35,6 +57,7 @@ public class ShapeFileDataProvider implements NwwDataProvider {
     private String shapefile;
     private String labelField;
     private Envelope bounds;
+    private CoordinateReferenceSystem crs;
 
     public ShapeFileDataProvider( String shapefile, String cqlFilterString, String labelField ) throws Exception {
         this.shapefile = shapefile;
@@ -48,26 +71,24 @@ public class ShapeFileDataProvider implements NwwDataProvider {
             readVector = new SubFeatureCollection(readVector, filter);
         }
 
+        crs = readVector.getBounds().getCoordinateReferenceSystem();
+
         geometryDescriptor = readVector.getSchema().getGeometryDescriptor();
 
         featuresList = FeatureUtilities.featureCollectionToList(readVector);
 
-        bounds = readVector.getBounds();// Envelope();
-//        for( SimpleFeature f : featuresList ) {
-//            Geometry defaultGeometry = (Geometry) f.getDefaultGeometry();
-//            if (!defaultGeometry.isEmpty()) {
-//                bounds.expandToInclude(defaultGeometry.getEnvelopeInternal());
-//            }
-//        }
-
+        bounds = readVector.getBounds();
     }
 
     public String asGeoJson() throws Exception {
         CoordinateReferenceSystem geojsonCRS = DefaultGeographicCRS.WGS84;
-        ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(readVector, geojsonCRS);
+        SimpleFeatureCollection fc = readVector;
+        if (!CRS.equalsIgnoreMetadata(geojsonCRS, crs)) {
+            fc = new ReprojectingFeatureCollection(readVector, geojsonCRS);
+        }
         FeatureJSON fjson = new FeatureJSON();
         StringWriter writer = new StringWriter();
-        fjson.writeFeatureCollection(rfc, writer);
+        fjson.writeFeatureCollection(fc, writer);
         String geojson = writer.toString();
         return geojson;
     }

@@ -1,3 +1,4 @@
+<%@page import="org.jgrasstools.gears.utils.ColorUtilities"%>
 <%@page import="com.vividsolutions.jts.geom.Envelope"%>
 <%@page import="java.awt.Color"%>
 <%@page import="org.jgrasstools.gears.utils.style.SimpleStyle"%>
@@ -165,18 +166,36 @@
 					SimpleStyle style =  provider.getStyle();
 					double width = style.strokeWidth;
 					Color color = style.strokeColor;
+					
 					float r =  color.getRed()/255f;
 					float g =  color.getGreen()/255f;
 					float b =  color.getBlue()/255f;
+					//String hex = String.format("#%02x%02x%02x", r, g, b);
+					String hex = "#"+Integer.toHexString(color.getRGB()).substring(2);
+					        
 					float a =  color.getAlpha()/255f;
 					double shapeSize = style.shapeSize;
 					%>
 					
+			        var canvas = document.createElement("canvas"),
+		            ctx2d = canvas.getContext("2d"),
+		            size = <%= shapeSize %>, c = size / 2  - 0.5;
+			        canvas.width = size;
+			        canvas.height = size;
+
+			        ctx2d.beginPath();
+			        ctx2d.arc(c, c, c, 0, 2 * Math.PI, false);
+			        ctx2d.fillStyle = '<%= hex %>';
+			        ctx2d.fill();
+					// 			        ctx2d.lineWidth = 5;
+					// 			        ctx2d.strokeStyle = '#003300';
+					// 			        ctx2d.stroke();
+	
 					var placemarkAttributes = new WorldWind.PlacemarkAttributes(null)
 		            var placemarkLayer = new WorldWind.RenderableLayer("<%=provider.getName()%>");
 					var color = new WorldWind.Color(<%= r %>, <%= g %>, <%= b %>, <%= a %>);
- 			        placemarkAttributes.imageScale = <%= shapeSize %>;
  			        placemarkAttributes.imageColor = color;
+ 			       	placemarkAttributes.imageSource = new WorldWind.ImageSource(canvas);
 			        placemarkAttributes.labelAttributes.offset = new WorldWind.Offset( WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 1.0);
 			        placemarkAttributes.labelAttributes.color = color; 
  			        placemarkAttributes.drawLeaderLine = true;

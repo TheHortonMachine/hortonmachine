@@ -1,8 +1,10 @@
 package org.jgrasstools.server.jetty;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.jasper.servlet.JspServlet;
 import org.apache.log4j.BasicConfigurator;
-import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -10,6 +12,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.jgrasstools.server.jetty.utils.DisabledLogging;
 
 public abstract class EmbeddedJspServer {
+    private static final Logger LOG = Logger.getLogger(EmbeddedJspServer.class.getName());
 
     protected Server _server;
     protected WebAppContext webapp;
@@ -44,6 +47,7 @@ public abstract class EmbeddedJspServer {
 
         } catch (Exception e) {
             e.printStackTrace();
+            LOG.log(Level.ALL, "Error", e);
         }
     }
 
