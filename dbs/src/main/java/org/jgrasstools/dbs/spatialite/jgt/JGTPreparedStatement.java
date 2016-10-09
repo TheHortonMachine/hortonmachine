@@ -92,6 +92,11 @@ public class JGTPreparedStatement implements IJGTPreparedStatement {
     }
 
     @Override
+    public void setBoolean( int index, boolean value ) throws Exception {
+        preparedStatement.setBoolean(index, value);
+    }
+
+    @Override
     public ResultSet getGeneratedKeys() throws Exception {
         return preparedStatement.getGeneratedKeys();
     }

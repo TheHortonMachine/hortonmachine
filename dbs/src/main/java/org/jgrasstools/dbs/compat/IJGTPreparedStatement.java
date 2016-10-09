@@ -37,6 +37,8 @@ public interface IJGTPreparedStatement extends AutoCloseable {
 
     void setInt( int index, int value ) throws Exception;
 
+    void setBoolean( int index, boolean value ) throws Exception;
+
     void addBatch() throws Exception;
 
     int[] executeBatch() throws Exception;

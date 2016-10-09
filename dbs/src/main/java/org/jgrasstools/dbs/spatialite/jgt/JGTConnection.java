@@ -20,6 +20,7 @@ package org.jgrasstools.dbs.spatialite.jgt;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 
 import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
@@ -80,6 +81,16 @@ public class JGTConnection implements IJGTConnection {
     @Override
     public void commit() throws SQLException {
         connection.commit();
+    }
+
+    @Override
+    public Savepoint setSavepoint() throws SQLException {
+        return connection.setSavepoint();
+    }
+
+    @Override
+    public void rollback( Savepoint savepoint ) throws SQLException {
+        connection.rollback(savepoint);
     }
 
 }

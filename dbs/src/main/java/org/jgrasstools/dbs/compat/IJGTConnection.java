@@ -17,6 +17,8 @@
  */
 package org.jgrasstools.dbs.compat;
 
+import java.sql.Savepoint;
+
 /**
  * Interface wrapping db connections.
  * 
@@ -35,4 +37,8 @@ public interface IJGTConnection extends AutoCloseable {
     public IJGTPreparedStatement prepareStatement( String sql ) throws Exception;
 
     public IJGTPreparedStatement prepareStatement( String sql, int returnGeneratedKeys ) throws Exception;
+
+    public Savepoint setSavepoint() throws Exception;
+
+    public void rollback( Savepoint savepoint ) throws Exception;
 }
