@@ -18,6 +18,7 @@
 package org.jgrasstools.server.jetty.map;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
 
@@ -147,6 +148,14 @@ public class ShapeFileDataProvider implements NwwDataProvider {
     @Override
     public Envelope getBounds() {
         return bounds;
+    }
+
+    @Override
+    public SimpleFeatureCollection subCollection( String cqlFilterString ) throws Exception {
+        readVector = OmsVectorReader.readVector(shapefile);
+        Filter filter = FilterUtilities.getCQLFilter(cqlFilterString);
+        SubFeatureCollection subCollection = new SubFeatureCollection(readVector, filter);
+        return subCollection;
     }
 
 }

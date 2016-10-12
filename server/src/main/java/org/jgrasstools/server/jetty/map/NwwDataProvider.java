@@ -17,7 +17,11 @@
  */
 package org.jgrasstools.server.jetty.map;
 
+import java.util.List;
+
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.utils.style.SimpleStyle;
+import org.opengis.filter.Filter;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -50,4 +54,6 @@ public interface NwwDataProvider {
     public Envelope getBounds();
     
     public String asGeoJson() throws Exception;
+    
+    public SimpleFeatureCollection subCollection(String cqlFilter) throws Exception;
 }
