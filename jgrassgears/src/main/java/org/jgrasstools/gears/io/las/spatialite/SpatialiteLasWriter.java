@@ -53,7 +53,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator;
-import org.jgrasstools.gears.spatialite.GTSpatialiteDb;
+import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -159,7 +159,7 @@ public class SpatialiteLasWriter extends JGTModel {
             }
         }
 
-        try (ASpatialDb spatialiteDb = new GTSpatialiteDb()) {
+        try (ASpatialDb spatialiteDb = new GTSpatialiteThreadsafeDb()) {
             boolean existed = spatialiteDb.open(inSpatialite);
             if (!existed) {
                 pm.beginTask("Create new spatialite database...", IJGTProgressMonitor.UNKNOWN);

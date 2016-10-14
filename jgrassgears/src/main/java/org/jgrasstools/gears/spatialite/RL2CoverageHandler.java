@@ -118,7 +118,7 @@ public class RL2CoverageHandler {
     }
 
     public static void main( String[] args ) throws Exception {
-        try (ASpatialDb db = new GTSpatialiteDb()) {
+        try (ASpatialDb db = new GTSpatialiteThreadsafeDb()) {
             db.open("/media/hydrologis/SPEEDBALL/DATI/ORTOFOTO/ortofoto.sqlite");
 
             List<RasterCoverage> rcList = db.getRasterCoverages(false);

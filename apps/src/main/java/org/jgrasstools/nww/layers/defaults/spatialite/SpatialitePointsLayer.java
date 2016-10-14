@@ -23,7 +23,7 @@ import java.util.List;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.spatialite.QueryResult;
-import org.jgrasstools.gears.spatialite.GTSpatialiteDb;
+import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
@@ -62,7 +62,7 @@ public class SpatialitePointsLayer extends MarkerLayer implements NwwVectorLayer
         this.tableName = tableName;
 
         try {
-            tableBounds = ((GTSpatialiteDb) db).getTableBounds(tableName);
+            tableBounds = ((GTSpatialiteThreadsafeDb) db).getTableBounds(tableName);
         } catch (Exception e) {
             e.printStackTrace();
             tableBounds = CrsUtilities.WORLD;

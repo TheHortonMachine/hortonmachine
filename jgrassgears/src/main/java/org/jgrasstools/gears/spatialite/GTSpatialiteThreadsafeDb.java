@@ -36,7 +36,7 @@ import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryType;
-import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
+import org.jgrasstools.dbs.spatialite.jgt.SpatialiteThreadsafeDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -48,13 +48,13 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKBReader;
 
 /**
- * A spatialite database.
+ * A spatialite database threadsafe on writing (see package javadoc for more info).
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class GTSpatialiteDb extends SpatialiteDb {
-    private static final Logger logger = LoggerFactory.getLogger(GTSpatialiteDb.class);
+public class GTSpatialiteThreadsafeDb extends SpatialiteThreadsafeDb {
+    private static final Logger logger = LoggerFactory.getLogger(GTSpatialiteThreadsafeDb.class);
 
     /**
      * Extractes a featurecollection from an sql statement.
