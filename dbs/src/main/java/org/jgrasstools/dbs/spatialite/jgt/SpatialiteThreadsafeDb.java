@@ -17,8 +17,10 @@
  */
 package org.jgrasstools.dbs.spatialite.jgt;
 
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -28,81 +30,75 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SpatialiteThreadsafeDb extends SpatialiteDb {
+    private static final Logger logger = LoggerFactory.getLogger(SpatialiteThreadsafeDb.class);
 
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(true);
-    private final Lock readLock = rwLock.readLock();
-    private final Lock writeLock = rwLock.writeLock();
 
-    /**
-     * Getter for the write lock.
-     * 
-     * @return the write lock.
-     */
-    public Lock getWriteLock() {
-        return writeLock;
+    public void lockWrite( String tag ) {
+        // logger.debug("Locking: " + tag);
+        rwLock.writeLock().lock();
     }
 
-    /**
-     * Getter for the read lock.
-     * 
-     * @return the read lock.
-     */
-    public Lock getReadLock() {
-        return readLock;
+    public void unlockWrite( String tag ) {
+        rwLock.writeLock().unlock();
+        // logger.debug("Unlocked: " + tag);
     }
 
     public void deleteGeoTable( String tableName ) throws Exception {
         try {
-            writeLock.lock();
+            lockWrite("deleteGeoTable");
             super.deleteGeoTable(tableName);
         } finally {
-            writeLock.unlock();
+            unlockWrite("deleteGeoTable");
         }
     }
 
     public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg )
             throws Exception {
         try {
-            writeLock.lock();
+            lockWrite("addGeometryXYColumnAndIndex");
             super.addGeometryXYColumnAndIndex(tableName, geomColName, geomType, epsg);
         } finally {
-            writeLock.unlock();
+            unlockWrite("addGeometryXYColumnAndIndex");
         }
     }
 
     public void insertGeometry( String tableName, Geometry geometry, String epsg ) throws Exception {
         try {
-            writeLock.lock();
+            lockWrite("insertGeometry");
             super.insertGeometry(tableName, geometry, epsg);
         } finally {
-            writeLock.unlock();
+            unlockWrite("insertGeometry");
         }
     }
 
     public void createTable( String tableName, String... fieldData ) throws Exception {
+        long cm = System.currentTimeMillis();
         try {
-            writeLock.lock();
+            lockWrite("start createTable " + cm + ":" + tableName);
             super.createTable(tableName, fieldData);
         } finally {
-            writeLock.unlock();
+            unlockWrite("end createTable " + cm + ":" + tableName);
         }
     }
 
     public void createIndex( String tableName, String column, boolean isUnique ) throws Exception {
+        long cm = System.currentTimeMillis();
         try {
-            writeLock.lock();
+            lockWrite("start createIndex " + cm + ":" + tableName + "," + column);
             super.createIndex(tableName, column, isUnique);
         } finally {
-            writeLock.unlock();
+            unlockWrite("end createIndex " + cm + ":" + tableName + "," + column);
         }
     }
 
     public int executeInsertUpdateDeleteSql( String sql ) throws Exception {
+        long cm = System.currentTimeMillis();
         try {
-            writeLock.lock();
+            lockWrite("start executeInsertUpdateDeleteSql " + cm + ":" + sql);
             return super.executeInsertUpdateDeleteSql(sql);
         } finally {
-            writeLock.unlock();
+            unlockWrite("end executeInsertUpdateDeleteSql " + cm + ":" + sql);
         }
     }
 }
