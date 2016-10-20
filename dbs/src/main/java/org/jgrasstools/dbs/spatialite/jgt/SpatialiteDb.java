@@ -94,11 +94,11 @@ public class SpatialiteDb extends ASpatialDb {
                     } catch (Exception e) {
                         if (mPrintInfos) {
                             logger.info("Unable to load mod_rasterlite2.so: " + e.getMessage());
-                            try {
-                                stmt.execute("SELECT load_extension('mod_rasterlite2', 'sqlite3_modrasterlite_init')");
-                            } catch (Exception e1) {
-                                logger.info("Unable to load mod_rasterlite2: " + e1.getMessage());
-                            }
+                        }
+                        try {
+                            stmt.execute("SELECT load_extension('mod_rasterlite2', 'sqlite3_modrasterlite_init')");
+                        } catch (Exception e1) {
+                            logger.info("Unable to load mod_rasterlite2: " + e1.getMessage());
                         }
                     }
                     try {
@@ -106,11 +106,11 @@ public class SpatialiteDb extends ASpatialDb {
                     } catch (Exception e) {
                         if (mPrintInfos) {
                             logger.info("Unable to load mod_spatialite.so: " + e.getMessage());
-                            try {
-                                stmt.execute("SELECT load_extension('mod_spatialite.so', 'sqlite3_modspatialite_init')");
-                            } catch (Exception e1) {
-                                logger.info("Unable to load mod_spatialite: " + e1.getMessage());
-                            }
+                        }
+                        try {
+                            stmt.execute("SELECT load_extension('mod_spatialite', 'sqlite3_modspatialite_init')");
+                        } catch (Exception e1) {
+                            logger.info("Unable to load mod_spatialite: " + e1.getMessage());
                         }
                         throw e;
                     }
