@@ -53,5 +53,14 @@ public class ColorUtilities {
 
         return c;
     }
+    
+    public static String asHex(Color color){
+        int r = color.getRed();
+        int g = color.getGreen();
+        int b = color.getBlue();
+        
+        String hex = String.format("#%02x%02x%02x", r, g, b);
+        return hex;
+    }
 
 }
