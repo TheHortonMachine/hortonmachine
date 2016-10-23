@@ -78,8 +78,7 @@
 							id="<%=tilesProvider.getName()%>"
 							type="checkbox"
 							onclick="toggleSelection('<%=tilesProvider.getName()%>')"
-							<%= tilesProvider.isVisible()? "checked":"" %>
-							><%=tilesProvider.getName()%><br>
+							<%=tilesProvider.isVisible() ? "checked" : ""%>><%=tilesProvider.getName()%><br>
 						<%
 						    }
 						%>
@@ -116,10 +115,12 @@
 		</table>
 	</div>
 	<div class="rightMap">
-		<div
-			id="map"
-			class="map"
-			style="height: 500px;"></div>
+		<div class="mapBorder">
+			<div
+				id="map"
+				class="map"
+				style="height: 500px;"></div>
+		</div>
 	</div>
 	<div class="clear"></div>
 </div>
@@ -127,10 +128,10 @@
 <script>
 
 var layersVisibility = {
-	<%  for (NwwDataProvider provider : providers) { %>
+	<%for (NwwDataProvider provider : providers) {%>
 		'<%=provider.getName()%>' : true,
 	<%}
-	 for (ITilesProvider provider : tilesProviders) { %>
+			for (ITilesProvider provider : tilesProviders) {%>
 		'<%=provider.getName()%>' : <%=provider.isVisible()%>,
 	<%}%>
 };

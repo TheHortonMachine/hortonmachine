@@ -111,6 +111,11 @@ canvas.map {
 	border: 1px solid black;
 }
 
+div.mapBorder{
+	border: 1px solid black;
+	background-color: #ffffff;
+}
+
 /*
   MENU BAR
   */
