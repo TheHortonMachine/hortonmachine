@@ -50,7 +50,7 @@ public class ShapefilesServer extends EmbeddedJspServer {
             
             TilesCollection tc = new TilesCollection();
             ITilesProvider[] tilesProviders = new ITilesProvider[]{
-                    new OsmProvider("OpenStreetMap", true),
+                    new OsmProvider("OpenStreetMap", true, true),
                     tc.getAerialAltoAdigeProvider(),
                     tc.getCtpTrentinoProvider(),
                     tc.getRoadsProvider(),
