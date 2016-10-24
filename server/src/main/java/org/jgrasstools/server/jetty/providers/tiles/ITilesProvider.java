@@ -30,5 +30,7 @@ public interface ITilesProvider {
      * @return the source or null.
      */
     String getSource();
+    
+    boolean isDefault();
 
 }

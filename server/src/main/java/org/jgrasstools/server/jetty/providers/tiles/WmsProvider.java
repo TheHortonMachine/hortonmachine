@@ -8,14 +8,17 @@ public class WmsProvider implements ITilesProvider {
     private String params;
     private String serverType;
     private String source;
+    private boolean isDefault;
 
-    public WmsProvider( String name,String source, boolean visible, String url, String params, String serverType ) {
+    public WmsProvider( String name, String source, boolean visible, String url, String params, String serverType,
+            boolean isDefault ) {
         this.name = name;
         this.source = source;
         this.visible = visible;
         this.url = url;
         this.params = params;
         this.serverType = serverType;
+        this.isDefault = isDefault;
     }
 
     @Override
@@ -52,10 +55,15 @@ public class WmsProvider implements ITilesProvider {
     public String getImagerySet() {
         return null;
     }
-    
+
     @Override
     public String getSource() {
         return source;
+    }
+
+    @Override
+    public boolean isDefault() {
+        return isDefault;
     }
 
 }

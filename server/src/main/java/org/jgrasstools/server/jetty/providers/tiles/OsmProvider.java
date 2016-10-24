@@ -9,10 +9,12 @@ public class OsmProvider implements ITilesProvider {
     private String serverType;
     private String imagerySet;
     private String key;
+    private boolean isDefault;
 
-    public OsmProvider( String name, boolean isVisible ) {
+    public OsmProvider( String name, boolean isVisible, boolean isDefault ) {
         this.name = name;
         visible = isVisible;
+        this.isDefault = isDefault;
     }
 
     @Override
@@ -53,6 +55,11 @@ public class OsmProvider implements ITilesProvider {
     @Override
     public String getSource() {
         return "new ol.source.OSM()";
+    }
+    
+    @Override
+    public boolean isDefault() {
+        return isDefault;
     }
 
 }

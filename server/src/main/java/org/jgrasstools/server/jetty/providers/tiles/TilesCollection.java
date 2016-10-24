@@ -34,24 +34,24 @@ public class TilesCollection {
     private BingProvider aerialWithLabelsProvider;
 
     public TilesCollection() {
-        osmProvider = new OsmProvider("OpenStreetMap", false);
+        osmProvider = new OsmProvider("OpenStreetMap", false, true);
 
         aerialAltoAdigeProvider = new WmsProvider("Aerial Alto Adige", null, false, "http://sdi.provincia.bz.it/geoserver/wms",
-                "{'LAYERS': 'inspire:OI.ORTHOIMAGECOVERAGE.2011', 'TILED': true}", "geoserver");
+                "{'LAYERS': 'inspire:OI.ORTHOIMAGECOVERAGE.2011', 'TILED': true}", "geoserver", false);
         ctpTrentinoProvider = new WmsProvider("CTP Trentino", null, false,
                 "http://geoservices.provincia.tn.it/siat/services/OGC/CTP2013/ImageServer/WMSServer",
-                "{'LAYERS': '0', 'TILED': true}", "geoserver");
+                "{'LAYERS': '0', 'TILED': true}", "geoserver", false);
         aerialEmiliaProvider = new WmsProvider("Aerial Emilia 2011", null, false,
                 "http://servizigis.regione.emilia-romagna.it/wms/agea2011_rgb",
-                "{'LAYERS': 'public/Agea2011_RGB', 'TILED': true}", "geoserver");
+                "{'LAYERS': 'public/Agea2011_RGB', 'TILED': true}", "geoserver", false);
         ctrEmiliaProvider = new WmsProvider("CTR Emilia 2013", null, false,
                 "http://servizigis.regione.emilia-romagna.it/wms/dbtr2013_ctr5",
-                "{'LAYERS': 'public/DBTR2013_Ctr5', 'TILED': true}", "geoserver");
+                "{'LAYERS': 'public/DBTR2013_Ctr5', 'TILED': true}", "geoserver", false);
 
         roadsProvider = new BingProvider("Bing roads", null, "Road",
-                "Your Bing Maps Key from http://www.bingmapsportal.com/ here");
+                "Your Bing Maps Key from http://www.bingmapsportal.com/ here", false);
         aerialWithLabelsProvider = new BingProvider("Bing Aerial", null, "AerialWithLabels",
-                "Your Bing Maps Key from http://www.bingmapsportal.com/ here");
+                "Your Bing Maps Key from http://www.bingmapsportal.com/ here", false);
     }
 
     public OsmProvider getOsmProvider() {

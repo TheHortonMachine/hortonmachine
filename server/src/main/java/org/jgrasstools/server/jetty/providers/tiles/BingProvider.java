@@ -10,12 +10,14 @@ public class BingProvider implements ITilesProvider {
     private String imagerySet;
     private String key;
     private String source;
+    private boolean isDefault;
 
-    public BingProvider( String name, String source, String imagerySet, String key ) {
+    public BingProvider( String name, String source, String imagerySet, String key, boolean isDefault ) {
         this.name = name;
         this.source = source;
         this.imagerySet = imagerySet;
         this.key = key;
+        this.isDefault = isDefault;
     }
 
     @Override
@@ -56,6 +58,11 @@ public class BingProvider implements ITilesProvider {
     @Override
     public String getSource() {
         return source;
+    }
+
+    @Override
+    public boolean isDefault() {
+        return isDefault;
     }
 
 }
