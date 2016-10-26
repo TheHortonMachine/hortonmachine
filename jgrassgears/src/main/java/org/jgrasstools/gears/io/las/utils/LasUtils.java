@@ -335,8 +335,7 @@ public class LasUtils {
         List<File> filesList = iter.filesList;
 
         for( File file : filesList ) {
-            ALasReader r = new LasReader(file, crs);
-            try {
+            try(ALasReader r = new LasReader(file, crs)){
                 r.open();
                 ReferencedEnvelope3D envelope = r.getHeader().getDataEnvelope();
                 Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(envelope);
@@ -344,8 +343,6 @@ public class LasUtils {
                 builder.addAll(objs);
                 SimpleFeature feature = builder.buildFeature(null);
                 newCollection.add(feature);
-            } finally {
-                r.close();
             }
         }
 

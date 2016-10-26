@@ -210,6 +210,7 @@ public class LasCellsTable {
      *
      * @param db the db to use.
      * @param envelope an optional {@link Envelope} to query spatially.
+     * @param exactGeometry an optional exact geometry. If available it is used instead of the envelope.
      * @param doPosition if <code>true</code> position info is extracted.
      * @param doIntensity if <code>true</code> intensity and classification info is extracted.
      * @param doReturns  if <code>true</code> return info is extracted.
@@ -218,8 +219,8 @@ public class LasCellsTable {
      * @return the list of extracted points
      * @throws Exception
      */
-    public static List<LasCell> getLasCells( ASpatialDb db, Envelope envelope, boolean doPosition, boolean doIntensity,
-            boolean doReturns, boolean doTime, boolean doColor ) throws Exception {
+    public static List<LasCell> getLasCells( ASpatialDb db, Envelope envelope, Geometry exactGeometry, boolean doPosition,
+            boolean doIntensity, boolean doReturns, boolean doTime, boolean doColor ) throws Exception {
         List<LasCell> lasCells = new ArrayList<>();
         String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
                 + COLUMN_POINTS_COUNT;
@@ -248,7 +249,9 @@ public class LasCellsTable {
 
         sql += " FROM " + TABLENAME;
 
-        if (envelope != null) {
+        if (exactGeometry != null) {
+            sql += " WHERE " + db.getSpatialindexGeometryWherePiece(TABLENAME, null, exactGeometry);
+        } else if (envelope != null) {
             double x1 = envelope.getMinX();
             double y1 = envelope.getMinY();
             double x2 = envelope.getMaxX();

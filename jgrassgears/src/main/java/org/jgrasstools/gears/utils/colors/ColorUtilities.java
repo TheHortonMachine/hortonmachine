@@ -16,7 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.utils;
+package org.jgrasstools.gears.utils.colors;
 
 import java.awt.Color;
 
@@ -54,6 +54,12 @@ public class ColorUtilities {
         return c;
     }
     
+    /**
+     * Convert a color to its hex representation.
+     * 
+     * @param color the color to convert.
+     * @return the hex.
+     */
     public static String asHex(Color color){
         int r = color.getRed();
         int g = color.getGreen();
