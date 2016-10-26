@@ -216,11 +216,12 @@ public class LasCellsTable {
      * @param doReturns  if <code>true</code> return info is extracted.
      * @param doTime  if <code>true</code> time info is extracted.
      * @param doColor if <code>true</code> color info is extracted.
+     * @param limitTo limit the cells to a value if != -1
      * @return the list of extracted points
      * @throws Exception
      */
     public static List<LasCell> getLasCells( ASpatialDb db, Envelope envelope, Geometry exactGeometry, boolean doPosition,
-            boolean doIntensity, boolean doReturns, boolean doTime, boolean doColor ) throws Exception {
+            boolean doIntensity, boolean doReturns, boolean doTime, boolean doColor, int limitTo ) throws Exception {
         List<LasCell> lasCells = new ArrayList<>();
         String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
                 + COLUMN_POINTS_COUNT;
@@ -257,6 +258,10 @@ public class LasCellsTable {
             double x2 = envelope.getMaxX();
             double y2 = envelope.getMaxY();
             sql += " WHERE " + db.getSpatialindexBBoxWherePiece(TABLENAME, null, x1, y1, x2, y2);
+        }
+
+        if (limitTo > 0) {
+            sql += " LIMIT " + limitTo;
         }
 
         IJGTConnection conn = db.getConnection();

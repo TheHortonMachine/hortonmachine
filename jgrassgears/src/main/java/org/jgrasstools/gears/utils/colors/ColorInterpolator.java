@@ -81,6 +81,14 @@ public class ColorInterpolator {
         List<Color> colorList = new ArrayList<Color>();
         String tableString = new DefaultTables().getTableString(colorTableName);
         String[] split = tableString.split("\n");
+
+        int length = split.length - 1;
+        double delta = (max - min) / length;
+        values = new double[split.length];
+        for( int i = 0; i < split.length; i++ ) {
+            values[i] = min + i * delta;
+        }
+
         List<Double> newValues = null; // if necessary
         for( String line : split ) {
             if (line.startsWith("#")) { //$NON-NLS-1$

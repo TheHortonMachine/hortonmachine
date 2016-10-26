@@ -61,6 +61,7 @@ import org.jgrasstools.nww.layers.defaults.raster.ImageMosaicNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.MBTilesNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.MapsforgeNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.RL2NwwLayer;
+import org.jgrasstools.nww.layers.defaults.spatialite.RasterizedSpatialiteLasLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.RasterizedSpatialiteLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.SpatialiteLinesLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.SpatialitePointsLayer;
@@ -468,32 +469,40 @@ public class ToolsPanelController extends ToolsPanelView {
             } else if (selectedFile.getName().endsWith(".sqlite")) {
                 SpatialiteDb db = new SpatialiteDb();
                 db.open(selectedFile.getAbsolutePath());
-                List<String> tableMaps = db.getTables(false);
-                String[] tables = tableMaps.toArray(new String[0]);
-                String tableName = (String) JOptionPane.showInputDialog(this, "Select the table to load", "Table selection",
-                        JOptionPane.QUESTION_MESSAGE, null, tables, tables[0]);
 
-                if (_useRasterizedCheckbox.isSelected()) {
-                    RasterizedSpatialiteLayer rasterizedSpatialiteLayer = new RasterizedSpatialiteLayer(name, db, tableName, -1,
-                            null, null, true);
+                if (RasterizedSpatialiteLasLayer.isLasDb(db)) {
+                    RasterizedSpatialiteLasLayer rasterizedSpatialiteLayer = new RasterizedSpatialiteLasLayer(name, db, null,
+                            false);
                     wwjPanel.getWwd().getModel().getLayers().add(rasterizedSpatialiteLayer);
                     layerEventsListener.onLayerAdded(rasterizedSpatialiteLayer);
                 } else {
-                    SpatialiteGeometryColumns geometryColumn = db.getGeometryColumnsForTable(tableName);
-                    if (geometryColumn != null) {
-                        SpatialiteGeometryType geomType = SpatialiteGeometryType.forValue(geometryColumn.geometry_type);
-                        if (geomType.isPolygon()) {
-                            SpatialitePolygonLayer layer = new SpatialitePolygonLayer(db, tableName, 10000);
-                            wwjPanel.getWwd().getModel().getLayers().add(layer);
-                            layerEventsListener.onLayerAdded(layer);
-                        } else if (geomType.isLine()) {
-                            SpatialiteLinesLayer layer = new SpatialiteLinesLayer(db, tableName, 10000);
-                            wwjPanel.getWwd().getModel().getLayers().add(layer);
-                            layerEventsListener.onLayerAdded(layer);
-                        } else if (geomType.isPoint()) {
-                            SpatialitePointsLayer layer = new SpatialitePointsLayer(db, tableName, 10000);
-                            wwjPanel.getWwd().getModel().getLayers().add(layer);
-                            layerEventsListener.onLayerAdded(layer);
+                    List<String> tableMaps = db.getTables(false);
+                    String[] tables = tableMaps.toArray(new String[0]);
+                    String tableName = (String) JOptionPane.showInputDialog(this, "Select the table to load", "Table selection",
+                            JOptionPane.QUESTION_MESSAGE, null, tables, tables[0]);
+
+                    if (_useRasterizedCheckbox.isSelected()) {
+                        RasterizedSpatialiteLayer rasterizedSpatialiteLayer = new RasterizedSpatialiteLayer(name, db, tableName,
+                                -1, null, null, true);
+                        wwjPanel.getWwd().getModel().getLayers().add(rasterizedSpatialiteLayer);
+                        layerEventsListener.onLayerAdded(rasterizedSpatialiteLayer);
+                    } else {
+                        SpatialiteGeometryColumns geometryColumn = db.getGeometryColumnsForTable(tableName);
+                        if (geometryColumn != null) {
+                            SpatialiteGeometryType geomType = SpatialiteGeometryType.forValue(geometryColumn.geometry_type);
+                            if (geomType.isPolygon()) {
+                                SpatialitePolygonLayer layer = new SpatialitePolygonLayer(db, tableName, 10000);
+                                wwjPanel.getWwd().getModel().getLayers().add(layer);
+                                layerEventsListener.onLayerAdded(layer);
+                            } else if (geomType.isLine()) {
+                                SpatialiteLinesLayer layer = new SpatialiteLinesLayer(db, tableName, 10000);
+                                wwjPanel.getWwd().getModel().getLayers().add(layer);
+                                layerEventsListener.onLayerAdded(layer);
+                            } else if (geomType.isPoint()) {
+                                SpatialitePointsLayer layer = new SpatialitePointsLayer(db, tableName, 10000);
+                                wwjPanel.getWwd().getModel().getLayers().add(layer);
+                                layerEventsListener.onLayerAdded(layer);
+                            }
                         }
                     }
                 }
