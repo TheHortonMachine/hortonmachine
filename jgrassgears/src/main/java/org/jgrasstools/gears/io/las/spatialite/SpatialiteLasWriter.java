@@ -294,11 +294,14 @@ public class SpatialiteLasWriter extends JGTModel {
             LasCell[][] lasCellsOnMatrixXY = new LasCell[cols][rows];
             pm.beginTask("Sorting points for " + name, (int) recordsCount);
             long readCount = 0;
-            double[] intensities = new double[(int) recordsCount];
+
+            short minIntens = Short.MAX_VALUE; 
+            short maxIntens = -Short.MAX_VALUE; 
             int intensityCount = 0;
             while( reader.hasNextPoint() ) {
                 LasRecord dot = reader.getNextPoint();
-                intensities[intensityCount++] = dot.intensity;
+                minIntens = (short) Math.min(minIntens, dot.intensity);
+                maxIntens = (short) Math.max(maxIntens, dot.intensity);
                 DirectPosition wPoint = new DirectPosition2D(dot.x, dot.y);
                 GridCoordinates2D gridCoord = gridGeometry.worldToGrid(wPoint);
                 int x = gridCoord.x;
@@ -323,12 +326,6 @@ public class SpatialiteLasWriter extends JGTModel {
                 throw new RuntimeException("Didn't read all the data...");
             }
 
-            double[] mode = StatUtils.mode(intensities);
-            double minIntensDouble = StatUtils.min(intensities);
-            // double maxIntensDouble = StatUtils.max(intensities);
-            double delta = (mode[0] - minIntensDouble) * 2 / 3;
-            short minIntens = (short) (mode[0] - delta);
-            short maxIntens = (short) (mode[0] + delta);
             LasSourcesTable.updateMinMaxIntensity(spatialiteDb, sourceID, minIntens, maxIntens);
 
             ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();

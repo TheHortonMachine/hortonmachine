@@ -471,8 +471,16 @@ public class ToolsPanelController extends ToolsPanelView {
                 db.open(selectedFile.getAbsolutePath());
 
                 if (RasterizedSpatialiteLasLayer.isLasDb(db)) {
+                    String[] options = {"elevation", "intensity"};
+                    String option = (String) JOptionPane.showInputDialog(this, "Select data to view", "Data selection",
+                            JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                    boolean doIntensity = false;
+                    if (option.equals(options[1])) {
+                        doIntensity = true;
+                    }
+                    
                     RasterizedSpatialiteLasLayer rasterizedSpatialiteLayer = new RasterizedSpatialiteLasLayer(name, db, null,
-                            true);
+                            true, doIntensity);
                     wwjPanel.getWwd().getModel().getLayers().add(rasterizedSpatialiteLayer);
                     layerEventsListener.onLayerAdded(rasterizedSpatialiteLayer);
                 } else {

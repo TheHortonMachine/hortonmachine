@@ -22,6 +22,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -117,6 +118,15 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
 
     private static LevelSet makeLevels( String title, Integer tileSize, boolean transparentBackground, ASpatialDb db,
             boolean doIntensity ) throws Exception {
+        String plus = doIntensity ? "intensity" : "elevation";
+        String cacheRelativePath = "rasterized_spatialites/" + title + "_" + plus + "-tiles";
+        File cacheRoot = CacheUtils.getCacheRoot();
+        final File cacheFolder = new File(cacheRoot, cacheRelativePath);
+        if (!cacheFolder.exists()) {
+            cacheFolder.mkdirs();
+        }
+        CacheUtils.clearCacheBySourceName(cacheRelativePath);
+
         AVList params = new AVListImpl();
 
         if (tileSize == null || tileSize < 256) {
@@ -150,7 +160,7 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
                 min = Math.min(min, lasSource.minIntens);
                 max = Math.max(max, lasSource.maxIntens);
             }
-            colorInterp = new ColorInterpolator(ColorTables.extrainbow.name(), min, max, null);
+            colorInterp = new ColorInterpolator(ColorTables.rainbow.name(), 0, 255, null);
         }
         final int _lasLevels = lasLevels;
 
@@ -160,7 +170,6 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
         MathTransform nww2DataTransform = CRS.findMathTransform(nwwCRS, dataCrs);
         MathTransform data2NwwTransform = CRS.findMathTransform(dataCrs, nwwCRS);
 
-        String cacheRelativePath = "rasterized_spatialites/" + title + "-tiles";
         // String urlString = folderFile.toURI().toURL().toExternalForm();
         // params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, finalTileSize);
@@ -170,16 +179,9 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
         params.setValue(AVKey.DATASET_NAME, "*");
         params.setValue(AVKey.FORMAT_SUFFIX, ".png");
         params.setValue(AVKey.NUM_LEVELS, 22);
-        params.setValue(AVKey.NUM_EMPTY_LEVELS, 0);
+        params.setValue(AVKey.NUM_EMPTY_LEVELS, 8);
         params.setValue(AVKey.LEVEL_ZERO_TILE_DELTA, new LatLon(Angle.fromDegrees(22.5d), Angle.fromDegrees(45d)));
         params.setValue(AVKey.SECTOR, new MercatorSector(-1.0, 1.0, Angle.NEG180, Angle.POS180));
-
-        File cacheRoot = CacheUtils.getCacheRoot();
-        final File cacheFolder = new File(cacheRoot, cacheRelativePath);
-        if (!cacheFolder.exists()) {
-            cacheFolder.mkdirs();
-        }
-        CacheUtils.clearCacheBySourceName(cacheRelativePath);
 
         params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder(){
 
@@ -229,19 +231,25 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
 
                     if (zoom < 12) {
                         Geometry sourcesUnionNww = JTS.transform(sourcesUnionData, data2NwwTransform);
-                        drawSources(db, pointTransformation, sourcesUnionNww, gr);
-                    } else if (zoom < 15) {
-                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels, data2NwwTransform, doIntensity);
-                    } else if (zoom < 16 && _lasLevels - 1 > 0) {
-                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 1, data2NwwTransform, doIntensity);
-                    } else if (zoom < 17 && _lasLevels - 2 > 0) {
-                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 2, data2NwwTransform, doIntensity);
-                    } else if (zoom < 18 && _lasLevels - 3 > 0) {
-                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 3, data2NwwTransform, doIntensity);
-                    } else if (zoom < 19 && _lasLevels - 4 > 0) {
-                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 4, data2NwwTransform, doIntensity);
+                        drawSources(db, pointTransformation, sourcesUnionNww, gr, finalTileSize);
+                    } else if (zoom < 14) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels, data2NwwTransform,
+                                doIntensity, finalTileSize);
+                    } else if (zoom < 15 && _lasLevels - 1 > 0) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 1, data2NwwTransform,
+                                doIntensity, finalTileSize);
+                    } else if (zoom < 16 && _lasLevels - 2 > 0) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 2, data2NwwTransform,
+                                doIntensity, finalTileSize);
+                    } else if (zoom < 17 && _lasLevels - 3 > 0) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 3, data2NwwTransform,
+                                doIntensity, finalTileSize);
+                    } else if (zoom < 18 && _lasLevels - 4 > 0) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 4, data2NwwTransform,
+                                doIntensity, finalTileSize);
                     } else {
-                        drawCells(db, colorInterp, pointTransformation, polygonData, gr, doIntensity);
+                        drawCells(db, colorInterp, pointTransformation, polygonData, gr, data2NwwTransform, doIntensity,
+                                finalTileSize);
                     }
 
                     File tileImageFolderFile = new File(cacheFolder, zoom + File.separator + x);
@@ -265,61 +273,91 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
     }
 
     private static void drawCells( ASpatialDb db, ColorInterpolator colorInterp, PointTransformation pointTransformation,
-            Geometry polygon, Graphics2D gr, boolean doIntensity ) throws Exception {
+            Geometry polygon, Graphics2D gr, MathTransform data2NwwTransform, boolean doIntensity, int finalTileSize )
+            throws Exception {
         int maxPerImage = 100000;
         List<LasCell> lasCells = LasCellsTable.getLasCells(db, null, polygon, true, true, false, false, false, maxPerImage);
         int size = lasCells.size();
         if (size > 0) {
             int jump = size / maxPerImage;
-            ShapeWriter sw = new ShapeWriter(pointTransformation);
             for( int i = 0; i < size; i = i + 1 + jump ) {
                 LasCell lasCell = lasCells.get(i);
-                Shape shape = sw.toShape(lasCell.polygon);
+                Polygon levelPolygon = lasCell.polygon;
+                Geometry polygonNww = JTS.transform(levelPolygon, data2NwwTransform);
+                GeneralPath p = polygonToPath(pointTransformation, polygonNww, finalTileSize);
                 Color c = colorInterp.getColorFor(doIntensity ? lasCell.avgIntensity : lasCell.avgElev);
                 gr.setPaint(c);
-                Rectangle bounds = shape.getBounds();
-                // System.out.println(bounds.getX() + "/" + bounds.getY() + "//" + c);
-                if (bounds.getWidth() < 5) {
-                    gr.fillRect(bounds.x, bounds.y, 50, 50);
-                } else {
-                    gr.fill(shape);
-                }
+                gr.fill(p);
             }
         }
     }
 
     private static void drawLevels( ASpatialDb db, ColorInterpolator colorInterp, PointTransformation pointTransformation,
-            Geometry polygon, Graphics2D gr, int lasLevelsNum, MathTransform data2NwwTransform, boolean doIntensity ) throws Exception {
+            Geometry polygon, Graphics2D gr, int lasLevelsNum, MathTransform data2NwwTransform, boolean doIntensity,
+            int finalTileSize ) throws Exception {
         int maxPerImage = 100000;
         List<LasLevel> lasLevels = LasLevelsTable.getLasLevels(db, lasLevelsNum, polygon);
 
         int size = lasLevels.size();
         if (size > 0) {
             int jump = size / maxPerImage;
-            ShapeWriter sw = new ShapeWriter(pointTransformation);
             for( int i = 0; i < size; i = i + 1 + jump ) {
                 LasLevel lasLevel = lasLevels.get(i);
-                Geometry polygonNww = JTS.transform(lasLevel.polygon, data2NwwTransform);
-                Shape shape = sw.toShape(polygonNww);
+                Polygon levelPolygon = lasLevel.polygon;
+                Geometry polygonNww = JTS.transform(levelPolygon, data2NwwTransform);
+                GeneralPath p = polygonToPath(pointTransformation, polygonNww, finalTileSize);
                 Color c = colorInterp.getColorFor(doIntensity ? lasLevel.avgIntensity : lasLevel.avgElev);
                 gr.setPaint(c);
-                Rectangle bounds = shape.getBounds();
-                // System.out.println(bounds.getX() + "/" + bounds.getY() + "//" + c);
-                if (bounds.getWidth() < 5) {
-                    gr.fillRect(bounds.x, bounds.y, 50, 50);
-                } else {
-                    gr.fill(shape);
-                }
+                gr.fill(p);
             }
         }
     }
 
-    private static void drawSources( ASpatialDb db, PointTransformation pointTransformation, Geometry sourcesUnion,
-            Graphics2D gr ) throws Exception {
-        ShapeWriter sw = new ShapeWriter(pointTransformation);
-        Shape shape = sw.toShape(sourcesUnion);
+    private static GeneralPath polygonToPath( PointTransformation pointTransformation, Geometry polygon, int finalTileSize ) {
+        GeneralPath p = new GeneralPath();
+
+        int numGeometries = polygon.getNumGeometries();
+        for( int i = 0; i < numGeometries; i++ ) {
+            Geometry geometryN = polygon.getGeometryN(i);
+            Coordinate[] coordinates = geometryN.getCoordinates();
+            Point2D newP = new Point2D.Double();
+            for( int j = 0; j < coordinates.length; j++ ) {
+                pointTransformation.transform(coordinates[j], newP);
+                double x = newP.getX();
+                double y = newP.getY();
+                if (x < 0) {
+                    x = 0;
+                }
+                if (y < 0) {
+                    y = 0;
+                }
+                if (x > TILESIZE) {
+                    x = TILESIZE;
+                }
+                if (y > TILESIZE) {
+                    y = TILESIZE;
+                }
+
+                if (j == 0) {
+                    p.moveTo(x, y);
+                } else {
+                    p.lineTo(x, y);
+                }
+            }
+        }
+        p.closePath();
+        return p;
+    }
+
+    private static void drawSources( ASpatialDb db, PointTransformation pointTransformation, Geometry sourcesUnion, Graphics2D gr,
+            int finalTileSize ) throws Exception {
+        // ShapeWriter sw = new ShapeWriter(pointTransformation);
+        // Shape shape = sw.toShape(sourcesUnion);
         gr.setPaint(Color.red);
-        gr.draw(shape);
+
+        GeneralPath p = polygonToPath(pointTransformation, sourcesUnion, finalTileSize);
+        gr.draw(p);
+        gr.fill(p);
     }
 
     public String toString() {
