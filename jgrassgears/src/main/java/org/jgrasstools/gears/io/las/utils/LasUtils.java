@@ -86,35 +86,6 @@ public class LasUtils {
         ELEVATION, GROUNDELEVATION, CLASSIFICATION, INTENSITY, IMPULSE, NUM_OF_IMPULSES, X, Y
     }
 
-    public static enum POINTTYPE {
-        UNCLASSIFIED(1, "UNCLASSIFIED"), //
-        GROUND(2, "GROUND"), //
-        VEGETATION_MIN(3, "LOW VEGETATION"), //
-        VEGETATION_MED(4, "MEDIUM VEGETATION"), //
-        VEGETATION_MAX(5, "HIGH VEGETATION"), //
-        BUILDING(6, "BUILDING"), //
-        LOW_POINT(7, "LOW POINT (NOISE)"), //
-        MASS_POINT(8, "MODEL KEY-POINT (MASS)"), //
-        WATER(9, "WATER"), //
-        OVERLAP(12, "OVERLAP");
-
-        private String label;
-        private int value;
-
-        POINTTYPE( int value, String label ) {
-            this.value = value;
-            this.label = label;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public int getValue() {
-            return value;
-        }
-    }
-
     /**
      * Read just the version bytes from a las file.
      * 
