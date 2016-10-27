@@ -48,6 +48,8 @@ public class LasSourcesTable {
     public static final String COLUMN_LEVELS = "levels";
     public static final String COLUMN_MINZ = "minelev";
     public static final String COLUMN_MAXZ = "maxelev";
+    public static final String COLUMN_MININTENSITY = "minintens";
+    public static final String COLUMN_MAXINTENSITY = "maxintens";
 
     public static void createTable( ASpatialDb db, int srid ) throws Exception {
         if (!db.hasTable(TABLENAME)) {
@@ -58,7 +60,9 @@ public class LasSourcesTable {
                     COLUMN_FACTOR + " REAL", //
                     COLUMN_LEVELS + " INTEGER", //
                     COLUMN_MINZ + " REAL", //
-                    COLUMN_MAXZ + " REAL"//
+                    COLUMN_MAXZ + " REAL", //
+                    COLUMN_MININTENSITY + " REAL", //
+                    COLUMN_MAXINTENSITY + " REAL"//
             };
             db.createTable(TABLENAME, creates);
             db.addGeometryXYColumnAndIndex(TABLENAME, COLUMN_GEOM, "POLYGON", String.valueOf(srid));
@@ -77,25 +81,18 @@ public class LasSourcesTable {
      * @param name the name of the source.
      * @param minElev the min elevation.
      * @param maxElev the max elevation.
-     * @throws SQLException
-     */
-    /**
-     * @param db
-     * @param srid
-     * @param polygon
-     * @param name
-     * @param minElev
-     * @param maxElev
-     * @param factor
-     * @return
-     * @throws Exception 
+     * @param minIntens the min intensity.
+     * @param maxIntens the max intensity.
+     * @return the source id.
+     * @throws Exception
      */
     public static long insertLasSource( ASpatialDb db, int srid, int levels, double resolution, double factor, Polygon polygon,
-            String name, double minElev, double maxElev ) throws Exception {
+            String name, double minElev, double maxElev, double minIntens, double maxIntens ) throws Exception {
         String sql = "INSERT INTO " + TABLENAME//
                 + " (" + COLUMN_GEOM + "," + COLUMN_NAME + "," + COLUMN_RESOLUTION + "," //
-                + COLUMN_FACTOR + "," + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + //
-                ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?,?)";
+                + COLUMN_FACTOR + "," + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + "," + COLUMN_MININTENSITY + ","
+                + COLUMN_MAXINTENSITY + //
+                ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?,?,?,?)";
 
         IJGTConnection conn = db.getConnection();
         try (IJGTPreparedStatement pStmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -106,6 +103,8 @@ public class LasSourcesTable {
             pStmt.setInt(5, levels);
             pStmt.setDouble(6, minElev);
             pStmt.setDouble(7, maxElev);
+            pStmt.setDouble(8, minIntens);
+            pStmt.setDouble(9, maxIntens);
 
             pStmt.executeUpdate();
             ResultSet rs = pStmt.getGeneratedKeys();
@@ -114,6 +113,23 @@ public class LasSourcesTable {
 
             return generatedId;
         }
+    }
+
+    /**
+     * Update the intensity values.
+     * 
+     * @param db the db.
+     * @param sourceId the source to update.
+     * @param minIntens the min value.
+     * @param maxIntens the max value.
+     * @throws Exception
+     */
+    public static void updateMinMaxIntensity( ASpatialDb db, long sourceId, double minIntens, double maxIntens )
+            throws Exception {
+        String sql = "UPDATE " + TABLENAME//
+                + " SET " + COLUMN_MININTENSITY + "=" + minIntens + ", " + COLUMN_MAXINTENSITY + "=" + maxIntens + //
+                " WHERE " + COLUMN_ID + "=" + sourceId;
+        db.executeInsertUpdateDeleteSql(sql);
     }
 
     /**
@@ -126,8 +142,8 @@ public class LasSourcesTable {
     public static List<LasSource> getLasSources( ASpatialDb db ) throws Exception {
         List<LasSource> sources = new ArrayList<>();
         String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_NAME + ","
-                + COLUMN_RESOLUTION + "," + COLUMN_FACTOR + "," + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + " FROM "
-                + TABLENAME;
+                + COLUMN_RESOLUTION + "," + COLUMN_FACTOR + "," + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + ","
+                + COLUMN_MININTENSITY + "," + COLUMN_MAXINTENSITY + " FROM " + TABLENAME;
 
         IJGTConnection conn = db.getConnection();
         WKBReader wkbReader = new WKBReader();
@@ -147,6 +163,8 @@ public class LasSourcesTable {
                     lasSource.levels = rs.getInt(i++);
                     lasSource.minElev = rs.getDouble(i++);
                     lasSource.maxElev = rs.getDouble(i++);
+                    lasSource.minIntens = rs.getDouble(i++);
+                    lasSource.maxIntens = rs.getDouble(i++);
                     sources.add(lasSource);
                 }
             }

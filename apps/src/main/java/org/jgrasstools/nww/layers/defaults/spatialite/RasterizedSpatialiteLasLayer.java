@@ -90,9 +90,9 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
 
     private Coordinate centre;
 
-    public RasterizedSpatialiteLasLayer( String title, ASpatialDb db, Integer tileSize, boolean transparentBackground )
-            throws Exception {
-        super(makeLevels(title, tileSize, transparentBackground, db));
+    public RasterizedSpatialiteLasLayer( String title, ASpatialDb db, Integer tileSize, boolean transparentBackground,
+            boolean doIntensity ) throws Exception {
+        super(makeLevels(title, tileSize, transparentBackground, db, doIntensity));
         this.layerName = title;
         this.setUseTransparentTextures(true);
 
@@ -115,8 +115,8 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
         return LasSourcesTable.isLasDatabase(db);
     }
 
-    private static LevelSet makeLevels( String title, Integer tileSize, boolean transparentBackground, ASpatialDb db )
-            throws Exception {
+    private static LevelSet makeLevels( String title, Integer tileSize, boolean transparentBackground, ASpatialDb db,
+            boolean doIntensity ) throws Exception {
         AVList params = new AVListImpl();
 
         if (tileSize == null || tileSize < 256) {
@@ -133,15 +133,26 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
         List<Polygon> polList = new ArrayList<>();
+        ColorInterpolator colorInterp;
         int lasLevels = 0;
-        for( LasSource lasSource : lasSources ) {
-            lasLevels = lasSource.levels;
-            polList.add(lasSource.polygon);
-            min = Math.min(min, lasSource.minElev);
-            max = Math.max(max, lasSource.maxElev);
+        if (!doIntensity) {
+            for( LasSource lasSource : lasSources ) {
+                lasLevels = lasSource.levels;
+                polList.add(lasSource.polygon);
+                min = Math.min(min, lasSource.minElev);
+                max = Math.max(max, lasSource.maxElev);
+            }
+            colorInterp = new ColorInterpolator(ColorTables.elev.name(), min, max, null);
+        } else {
+            for( LasSource lasSource : lasSources ) {
+                lasLevels = lasSource.levels;
+                polList.add(lasSource.polygon);
+                min = Math.min(min, lasSource.minIntens);
+                max = Math.max(max, lasSource.maxIntens);
+            }
+            colorInterp = new ColorInterpolator(ColorTables.extrainbow.name(), min, max, null);
         }
         final int _lasLevels = lasLevels;
-        ColorInterpolator colorInterp = new ColorInterpolator(ColorTables.elev.name(), min, max, null);
 
         Geometry sourcesUnionData = CascadedPolygonUnion.union(polList);
         PreparedGeometry preparedCoverage = PreparedGeometryFactory.prepare(sourcesUnionData);
@@ -188,7 +199,6 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
 
                     Rectangle imageBounds = new Rectangle(0, 0, finalTileSize, finalTileSize);
                     ReferencedEnvelope tileEnvNww = new ReferencedEnvelope(west, east, south, north, DefaultGeographicCRS.WGS84);
-                    ReferencedEnvelope tileEnvData = tileEnvNww.transform(dataCrs, true);
 
                     AffineTransform worldToPixel = TransformationUtils.getWorldToPixel(tileEnvNww, imageBounds);
                     PointTransformation pointTransformation = new PointTransformation(){
@@ -217,21 +227,21 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
                     // gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     // RenderingHints.VALUE_ANTIALIAS_ON);
 
-                    if (zoom < 15) {
+                    if (zoom < 12) {
                         Geometry sourcesUnionNww = JTS.transform(sourcesUnionData, data2NwwTransform);
                         drawSources(db, pointTransformation, sourcesUnionNww, gr);
-                    } else if (zoom < 17) {
-                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels, data2NwwTransform);
-                    } else if (zoom < 18 && _lasLevels - 1 > 0) {
-                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 1, data2NwwTransform);
-                    } else if (zoom < 19 && _lasLevels - 2 > 0) {
-                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 2, data2NwwTransform);
-                    } else if (zoom < 20 && _lasLevels - 3 > 0) {
-                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 3, data2NwwTransform);
-                    } else if (zoom < 21 && _lasLevels - 4 > 0) {
-                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 4, data2NwwTransform);
+                    } else if (zoom < 15) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels, data2NwwTransform, doIntensity);
+                    } else if (zoom < 16 && _lasLevels - 1 > 0) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 1, data2NwwTransform, doIntensity);
+                    } else if (zoom < 17 && _lasLevels - 2 > 0) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 2, data2NwwTransform, doIntensity);
+                    } else if (zoom < 18 && _lasLevels - 3 > 0) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 3, data2NwwTransform, doIntensity);
+                    } else if (zoom < 19 && _lasLevels - 4 > 0) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 4, data2NwwTransform, doIntensity);
                     } else {
-                        drawCells(db, colorInterp, pointTransformation, polygonData, gr);
+                        drawCells(db, colorInterp, pointTransformation, polygonData, gr, doIntensity);
                     }
 
                     File tileImageFolderFile = new File(cacheFolder, zoom + File.separator + x);
@@ -255,7 +265,7 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
     }
 
     private static void drawCells( ASpatialDb db, ColorInterpolator colorInterp, PointTransformation pointTransformation,
-            Geometry polygon, Graphics2D gr ) throws Exception {
+            Geometry polygon, Graphics2D gr, boolean doIntensity ) throws Exception {
         int maxPerImage = 100000;
         List<LasCell> lasCells = LasCellsTable.getLasCells(db, null, polygon, true, true, false, false, false, maxPerImage);
         int size = lasCells.size();
@@ -265,7 +275,7 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
             for( int i = 0; i < size; i = i + 1 + jump ) {
                 LasCell lasCell = lasCells.get(i);
                 Shape shape = sw.toShape(lasCell.polygon);
-                Color c = colorInterp.getColorFor(lasCell.avgElev);
+                Color c = colorInterp.getColorFor(doIntensity ? lasCell.avgIntensity : lasCell.avgElev);
                 gr.setPaint(c);
                 Rectangle bounds = shape.getBounds();
                 // System.out.println(bounds.getX() + "/" + bounds.getY() + "//" + c);
@@ -279,31 +289,19 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
     }
 
     private static void drawLevels( ASpatialDb db, ColorInterpolator colorInterp, PointTransformation pointTransformation,
-            Geometry polygon, Graphics2D gr, int lasLevelsNum, MathTransform data2NwwTransform ) throws Exception {
+            Geometry polygon, Graphics2D gr, int lasLevelsNum, MathTransform data2NwwTransform, boolean doIntensity ) throws Exception {
         int maxPerImage = 100000;
         List<LasLevel> lasLevels = LasLevelsTable.getLasLevels(db, lasLevelsNum, polygon);
 
         int size = lasLevels.size();
         if (size > 0) {
             int jump = size / maxPerImage;
-            if (jump == 0) {
-                System.out.println("Jump " + jump );
-            }
-            List<Geometry> geomsList = new ArrayList<>();
-            for( int i = 0; i < size; i = i + 1 + jump ) {
-                LasLevel lasLevel = lasLevels.get(i);
-                Geometry polygonNww = JTS.transform(lasLevel.polygon, data2NwwTransform);
-                geomsList.add(polygonNww);
-            }
-            Geometry union = CascadedPolygonUnion.union(geomsList);
-            System.out.println();
-
             ShapeWriter sw = new ShapeWriter(pointTransformation);
             for( int i = 0; i < size; i = i + 1 + jump ) {
                 LasLevel lasLevel = lasLevels.get(i);
                 Geometry polygonNww = JTS.transform(lasLevel.polygon, data2NwwTransform);
                 Shape shape = sw.toShape(polygonNww);
-                Color c = colorInterp.getColorFor(lasLevel.avgElev);
+                Color c = colorInterp.getColorFor(doIntensity ? lasLevel.avgIntensity : lasLevel.avgElev);
                 gr.setPaint(c);
                 Rectangle bounds = shape.getBounds();
                 // System.out.println(bounds.getX() + "/" + bounds.getY() + "//" + c);

@@ -34,11 +34,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.math3.stat.StatUtils;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
+import org.geotools.data.shapefile.index.quadtree.LazySearchIterator;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
@@ -248,7 +250,7 @@ public class SpatialiteLasWriter extends JGTModel {
                     }
 
                     long id = LasSourcesTable.insertLasSource(spatialiteDb, srid, pLevels, pCellsize, pFactor, polygon, lasName,
-                            envelope.getMinZ(), envelope.getMaxZ());
+                            envelope.getMinZ(), envelope.getMaxZ(), 0, 0);
                     processFile(spatialiteDb, lasFile, id, ortoGC);
                 }
             }
@@ -257,8 +259,7 @@ public class SpatialiteLasWriter extends JGTModel {
     }
 
     @SuppressWarnings("unchecked")
-    private void processFile( final ASpatialDb spatialiteDb, File file, long sourceID, GridCoverage2D ortoGC )
-            throws Exception {
+    private void processFile( final ASpatialDb spatialiteDb, File file, long sourceID, GridCoverage2D ortoGC ) throws Exception {
         String name = file.getName();
         pm.message("Processing file: " + name);
 
@@ -288,13 +289,16 @@ public class SpatialiteLasWriter extends JGTModel {
             pm.message("Splitting " + name + " into " + tilesCount + " tiles.");
             GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(north, south, east, west, cols, rows,
                     reader.getHeader().getCrs());
-            
+
             List<LasRecord>[][] dotOnMatrixXY = new ArrayList[cols][rows];
             LasCell[][] lasCellsOnMatrixXY = new LasCell[cols][rows];
             pm.beginTask("Sorting points for " + name, (int) recordsCount);
             long readCount = 0;
+            double[] intensities = new double[(int) recordsCount];
+            int intensityCount = 0;
             while( reader.hasNextPoint() ) {
                 LasRecord dot = reader.getNextPoint();
+                intensities[intensityCount++] = dot.intensity;
                 DirectPosition wPoint = new DirectPosition2D(dot.x, dot.y);
                 GridCoordinates2D gridCoord = gridGeometry.worldToGrid(wPoint);
                 int x = gridCoord.x;
@@ -315,9 +319,17 @@ public class SpatialiteLasWriter extends JGTModel {
                 readCount++;
             }
             pm.done();
-            if (readCount!=recordsCount) {
+            if (readCount != recordsCount) {
                 throw new RuntimeException("Didn't read all the data...");
             }
+
+            double[] mode = StatUtils.mode(intensities);
+            double minIntensDouble = StatUtils.min(intensities);
+            // double maxIntensDouble = StatUtils.max(intensities);
+            double delta = (mode[0] - minIntensDouble) * 2 / 3;
+            short minIntens = (short) (mode[0] - delta);
+            short maxIntens = (short) (mode[0] + delta);
+            LasSourcesTable.updateMinMaxIntensity(spatialiteDb, sourceID, minIntens, maxIntens);
 
             ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
             List<LasCell> cellsList = new ArrayList<>();
@@ -556,8 +568,8 @@ public class SpatialiteLasWriter extends JGTModel {
         pm.done();
     }
 
-    private void insertLevel( final ASpatialDb spatialiteDb, long sourceID, double north, double south, double east,
-            double west, int level ) throws Exception, SQLException {
+    private void insertLevel( final ASpatialDb spatialiteDb, long sourceID, double north, double south, double east, double west,
+            int level ) throws Exception, SQLException {
         int previousLevelNum = level - 1;
         List<LasLevel> levelsList = new ArrayList<>();
         double levelCellsize = pCellsize * level * pFactor;
