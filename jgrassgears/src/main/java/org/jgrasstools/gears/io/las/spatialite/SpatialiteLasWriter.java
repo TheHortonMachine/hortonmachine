@@ -66,7 +66,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -277,8 +279,8 @@ public class SpatialiteLasWriter extends JGTModel {
             double east = e.getMaxX();
             double west = e.getMinX();
 
-            double[] xRanges = NumericsUtilities.range2Bins(west, east, pCellsize, true);
-            double[] yRanges = NumericsUtilities.range2Bins(south, north, pCellsize, true);
+            double[] xRanges = NumericsUtilities.range2Bins(west, east, pCellsize, false);
+            double[] yRanges = NumericsUtilities.range2Bins(south, north, pCellsize, false);
             int cols = xRanges.length - 1;
             int rows = yRanges.length - 1;
             int tilesCount = cols * rows;
@@ -286,10 +288,11 @@ public class SpatialiteLasWriter extends JGTModel {
             pm.message("Splitting " + name + " into " + tilesCount + " tiles.");
             GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(north, south, east, west, cols, rows,
                     reader.getHeader().getCrs());
-
+            
             List<LasRecord>[][] dotOnMatrixXY = new ArrayList[cols][rows];
             LasCell[][] lasCellsOnMatrixXY = new LasCell[cols][rows];
             pm.beginTask("Sorting points for " + name, (int) recordsCount);
+            long readCount = 0;
             while( reader.hasNextPoint() ) {
                 LasRecord dot = reader.getNextPoint();
                 DirectPosition wPoint = new DirectPosition2D(dot.x, dot.y);
@@ -309,8 +312,12 @@ public class SpatialiteLasWriter extends JGTModel {
                 }
                 dotOnMatrixXY[x][y].add(dot);
                 pm.worked(1);
+                readCount++;
             }
             pm.done();
+            if (readCount!=recordsCount) {
+                throw new RuntimeException("Didn't read all the data...");
+            }
 
             ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
             List<LasCell> cellsList = new ArrayList<>();

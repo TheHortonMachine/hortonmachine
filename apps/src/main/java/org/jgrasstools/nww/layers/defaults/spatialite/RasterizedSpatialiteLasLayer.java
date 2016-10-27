@@ -40,6 +40,8 @@ import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.gears.io.las.spatialite.LasCell;
 import org.jgrasstools.gears.io.las.spatialite.LasCellsTable;
+import org.jgrasstools.gears.io.las.spatialite.LasLevel;
+import org.jgrasstools.gears.io.las.spatialite.LasLevelsTable;
 import org.jgrasstools.gears.io.las.spatialite.LasSource;
 import org.jgrasstools.gears.io.las.spatialite.LasSourcesTable;
 import org.jgrasstools.gears.utils.CrsUtilities;
@@ -131,17 +133,21 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
         List<Polygon> polList = new ArrayList<>();
+        int lasLevels = 0;
         for( LasSource lasSource : lasSources ) {
+            lasLevels = lasSource.levels;
             polList.add(lasSource.polygon);
             min = Math.min(min, lasSource.minElev);
             max = Math.max(max, lasSource.maxElev);
         }
+        final int _lasLevels = lasLevels;
         ColorInterpolator colorInterp = new ColorInterpolator(ColorTables.elev.name(), min, max, null);
 
-        Geometry union = CascadedPolygonUnion.union(polList);
-        PreparedGeometry preparedCoverage = PreparedGeometryFactory.prepare(union);
+        Geometry sourcesUnionData = CascadedPolygonUnion.union(polList);
+        PreparedGeometry preparedCoverage = PreparedGeometryFactory.prepare(sourcesUnionData);
 
-        MathTransform transform = CRS.findMathTransform(nwwCRS, dataCrs);
+        MathTransform nww2DataTransform = CRS.findMathTransform(nwwCRS, dataCrs);
+        MathTransform data2NwwTransform = CRS.findMathTransform(dataCrs, nwwCRS);
 
         String cacheRelativePath = "rasterized_spatialites/" + title + "-tiles";
         // String urlString = folderFile.toURI().toURL().toExternalForm();
@@ -162,6 +168,8 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
+        CacheUtils.clearCacheBySourceName(cacheRelativePath);
+
         params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder(){
 
             public URL getURL( Tile tile, String altImageFormat ) throws MalformedURLException {
@@ -179,22 +187,22 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
                     int y = tileNumber[1];
 
                     Rectangle imageBounds = new Rectangle(0, 0, finalTileSize, finalTileSize);
-                    ReferencedEnvelope tileEnvLL = new ReferencedEnvelope(west, east, south, north, DefaultGeographicCRS.WGS84);
-                    ReferencedEnvelope tileEnvData = tileEnvLL.transform(dataCrs, true);
+                    ReferencedEnvelope tileEnvNww = new ReferencedEnvelope(west, east, south, north, DefaultGeographicCRS.WGS84);
+                    ReferencedEnvelope tileEnvData = tileEnvNww.transform(dataCrs, true);
 
-                    AffineTransform worldToPixel = TransformationUtils.getWorldToPixel(tileEnvData, imageBounds);
+                    AffineTransform worldToPixel = TransformationUtils.getWorldToPixel(tileEnvNww, imageBounds);
                     PointTransformation pointTransformation = new PointTransformation(){
                         @Override
                         public void transform( Coordinate src, Point2D dest ) {
                             worldToPixel.transform(new Point2D.Double(src.x, src.y), dest);
                         }
                     };
-                    Polygon llPolygon = GeometryUtilities.createPolygonFromEnvelope(tileEnvLL);
-                    Geometry polygon = JTS.transform(llPolygon, transform);
+                    Polygon polygonNww = GeometryUtilities.createPolygonFromEnvelope(tileEnvNww);
+                    Geometry polygonData = JTS.transform(polygonNww, nww2DataTransform);
 
                     int imgType;
                     Color backgroundColor;
-                    boolean intersects = preparedCoverage.intersects(polygon);
+                    boolean intersects = preparedCoverage.intersects(polygonData);
                     if (transparentBackground || !intersects) {
                         imgType = BufferedImage.TYPE_INT_ARGB;
                         backgroundColor = new Color(Color.WHITE.getRed(), Color.WHITE.getGreen(), Color.WHITE.getBlue(), 0);
@@ -209,28 +217,22 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
                     // gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     // RenderingHints.VALUE_ANTIALIAS_ON);
 
-                    int maxPerImage = 100000;
-                    List<LasCell> lasCells = LasCellsTable.getLasCells(db, null, polygon, true, true, false, false, false,
-                            maxPerImage);
-                    int size = lasCells.size();
-                    if (size > 0) {
-                        int jump = size / maxPerImage;
-                        ShapeWriter sw = new ShapeWriter(pointTransformation);
-                        for( int i = 0; i < size; i = i + jump ) {
-                            LasCell lasCell = lasCells.get(i);
-                            Shape shape = sw.toShape(lasCell.polygon);
-                            Color c = colorInterp.getColorFor(lasCell.avgElev);
-                            gr.setPaint(c);
-                            Rectangle bounds = shape.getBounds();
-//                            System.out.println(bounds.getX() + "/" + bounds.getY() + "//" + c);
-                            if (bounds.getWidth() < 5) {
-                                gr.fillRect(bounds.x, bounds.y, 50, 50);
-                            } else {
-                                gr.fill(shape);
-                            }
-                        }
+                    if (zoom < 15) {
+                        Geometry sourcesUnionNww = JTS.transform(sourcesUnionData, data2NwwTransform);
+                        drawSources(db, pointTransformation, sourcesUnionNww, gr);
+                    } else if (zoom < 17) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels, data2NwwTransform);
+                    } else if (zoom < 18 && _lasLevels - 1 > 0) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 1, data2NwwTransform);
+                    } else if (zoom < 19 && _lasLevels - 2 > 0) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 2, data2NwwTransform);
+                    } else if (zoom < 20 && _lasLevels - 3 > 0) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 3, data2NwwTransform);
+                    } else if (zoom < 21 && _lasLevels - 4 > 0) {
+                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 4, data2NwwTransform);
+                    } else {
+                        drawCells(db, colorInterp, pointTransformation, polygonData, gr);
                     }
-                    gr.dispose();
 
                     File tileImageFolderFile = new File(cacheFolder, zoom + File.separator + x);
                     if (!tileImageFolderFile.exists()) {
@@ -246,9 +248,80 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
                     return null;
                 }
             }
+
         });
 
         return new LevelSet(params);
+    }
+
+    private static void drawCells( ASpatialDb db, ColorInterpolator colorInterp, PointTransformation pointTransformation,
+            Geometry polygon, Graphics2D gr ) throws Exception {
+        int maxPerImage = 100000;
+        List<LasCell> lasCells = LasCellsTable.getLasCells(db, null, polygon, true, true, false, false, false, maxPerImage);
+        int size = lasCells.size();
+        if (size > 0) {
+            int jump = size / maxPerImage;
+            ShapeWriter sw = new ShapeWriter(pointTransformation);
+            for( int i = 0; i < size; i = i + 1 + jump ) {
+                LasCell lasCell = lasCells.get(i);
+                Shape shape = sw.toShape(lasCell.polygon);
+                Color c = colorInterp.getColorFor(lasCell.avgElev);
+                gr.setPaint(c);
+                Rectangle bounds = shape.getBounds();
+                // System.out.println(bounds.getX() + "/" + bounds.getY() + "//" + c);
+                if (bounds.getWidth() < 5) {
+                    gr.fillRect(bounds.x, bounds.y, 50, 50);
+                } else {
+                    gr.fill(shape);
+                }
+            }
+        }
+    }
+
+    private static void drawLevels( ASpatialDb db, ColorInterpolator colorInterp, PointTransformation pointTransformation,
+            Geometry polygon, Graphics2D gr, int lasLevelsNum, MathTransform data2NwwTransform ) throws Exception {
+        int maxPerImage = 100000;
+        List<LasLevel> lasLevels = LasLevelsTable.getLasLevels(db, lasLevelsNum, polygon);
+
+        int size = lasLevels.size();
+        if (size > 0) {
+            int jump = size / maxPerImage;
+            if (jump == 0) {
+                System.out.println("Jump " + jump );
+            }
+            List<Geometry> geomsList = new ArrayList<>();
+            for( int i = 0; i < size; i = i + 1 + jump ) {
+                LasLevel lasLevel = lasLevels.get(i);
+                Geometry polygonNww = JTS.transform(lasLevel.polygon, data2NwwTransform);
+                geomsList.add(polygonNww);
+            }
+            Geometry union = CascadedPolygonUnion.union(geomsList);
+            System.out.println();
+
+            ShapeWriter sw = new ShapeWriter(pointTransformation);
+            for( int i = 0; i < size; i = i + 1 + jump ) {
+                LasLevel lasLevel = lasLevels.get(i);
+                Geometry polygonNww = JTS.transform(lasLevel.polygon, data2NwwTransform);
+                Shape shape = sw.toShape(polygonNww);
+                Color c = colorInterp.getColorFor(lasLevel.avgElev);
+                gr.setPaint(c);
+                Rectangle bounds = shape.getBounds();
+                // System.out.println(bounds.getX() + "/" + bounds.getY() + "//" + c);
+                if (bounds.getWidth() < 5) {
+                    gr.fillRect(bounds.x, bounds.y, 50, 50);
+                } else {
+                    gr.fill(shape);
+                }
+            }
+        }
+    }
+
+    private static void drawSources( ASpatialDb db, PointTransformation pointTransformation, Geometry sourcesUnion,
+            Graphics2D gr ) throws Exception {
+        ShapeWriter sw = new ShapeWriter(pointTransformation);
+        Shape shape = sw.toShape(sourcesUnion);
+        gr.setPaint(Color.red);
+        gr.draw(shape);
     }
 
     public String toString() {

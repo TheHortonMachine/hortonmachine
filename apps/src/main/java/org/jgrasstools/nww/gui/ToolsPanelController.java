@@ -472,7 +472,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 if (RasterizedSpatialiteLasLayer.isLasDb(db)) {
                     RasterizedSpatialiteLasLayer rasterizedSpatialiteLayer = new RasterizedSpatialiteLasLayer(name, db, null,
-                            false);
+                            true);
                     wwjPanel.getWwd().getModel().getLayers().add(rasterizedSpatialiteLayer);
                     layerEventsListener.onLayerAdded(rasterizedSpatialiteLayer);
                 } else {

@@ -34,7 +34,7 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasReaderBuffered;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -335,7 +335,7 @@ public class LasUtils {
         List<File> filesList = iter.filesList;
 
         for( File file : filesList ) {
-            try(ALasReader r = new LasReader(file, crs)){
+            try(ALasReader r = new LasReaderBuffered(file, crs)){
                 r.open();
                 ReferencedEnvelope3D envelope = r.getHeader().getDataEnvelope();
                 Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(envelope);

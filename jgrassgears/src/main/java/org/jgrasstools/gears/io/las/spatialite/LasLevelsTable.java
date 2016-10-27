@@ -251,6 +251,7 @@ public class LasLevelsTable {
         try (IJGTStatement stmt = conn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 LasLevel lasLevel = new LasLevel();
+                lasLevel.level = levelNum;
                 int i = 1;
                 byte[] geomBytes = rs.getBytes(i++);
                 Geometry tmpGeometry = wkbReader.read(geomBytes);

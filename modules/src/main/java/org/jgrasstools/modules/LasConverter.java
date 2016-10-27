@@ -125,11 +125,10 @@ public class LasConverter extends JGTModel {
     @In
     public String outFile;
 
-    private OmsLasConverter lasconverter;
 
     @Execute
     public void process() throws Exception {
-        lasconverter = new OmsLasConverter();
+        OmsLasConverter lasconverter = new OmsLasConverter();
         lasconverter.inFile = inFile;
         lasconverter.inPolygons = getVector(inPolygons);
         lasconverter.pIntensityrange = pIntensityrange;
@@ -148,4 +147,25 @@ public class LasConverter extends JGTModel {
         lasconverter.process();
     }
 
+    
+    public static void main( String[] args ) throws Exception {
+        LasConverter lasconverter = new LasConverter();
+        lasconverter.inFile = "/home/hydrologis/TMP/GEOLOGICO/las/5h689050990.las";
+//        lasconverter.inPolygons = getVector(inPolygons);
+//        lasconverter.pIntensityrange = pIntensityrange;
+//        lasconverter.pImpulses = pImpulses;
+//        lasconverter.pClasses = pClasses;
+        // lasconverter.pIndexrange = pIndexrange;
+//        lasconverter.pNorth = pNorth;
+//        lasconverter.pSouth = pSouth;
+//        lasconverter.pWest = pWest;
+//        lasconverter.pEast = pEast;
+//        lasconverter.doHeader = doHeader;
+//        lasconverter.doInfo = doInfo;
+//        lasconverter.doBbox = doBbox;
+        lasconverter.outFile = "/home/hydrologis/TMP/GEOLOGICO/las/5h689050990_out.las";
+        lasconverter.process();
+        
+        
+    }
 }

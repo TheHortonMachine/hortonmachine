@@ -27,6 +27,7 @@ import java.nio.channels.FileChannel;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
+import org.jgrasstools.gears.utils.ByteUtilities;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -35,7 +36,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LasReader extends ALasReader {
+public class LasReaderEachPoint extends ALasReader {
     private final byte[] doubleDataArray = new byte[8];
     private final ByteBuffer doubleBb = ByteBuffer.wrap(doubleDataArray);
     private final byte[] longDataArray = new byte[4];
@@ -44,9 +45,6 @@ public class LasReader extends ALasReader {
     private final ByteBuffer shortBb = ByteBuffer.wrap(shortDataArray);
     private final byte[] singleDataArray = new byte[1];
     private final ByteBuffer singleBb = ByteBuffer.wrap(singleDataArray);
-
-    private byte[] readingDataArray = null;
-    private ByteBuffer bufferedReadingBb = null;
 
     private double xScale;
     private double yScale;
@@ -73,17 +71,9 @@ public class LasReader extends ALasReader {
     private double zMin;
 
     private LasHeader header;
-    private int bufferSizeInPointsNum;
-    private int readBufferSize;
 
-    public LasReader( File lasFile, CoordinateReferenceSystem crs ) throws Exception {
-        this(lasFile, 100000, crs);
-    }
-
-    public LasReader( File lasFile, int bufferSizeInPointsNum, CoordinateReferenceSystem crs ) throws Exception {
+    public LasReaderEachPoint( File lasFile, CoordinateReferenceSystem crs ) throws Exception {
         this.lasFile = lasFile;
-        this.bufferSizeInPointsNum = bufferSizeInPointsNum;
-
         if (crs != null) {
             this.crs = crs;
         } else {
@@ -231,32 +221,14 @@ public class LasReader extends ALasReader {
              * move to the data position
              */
             fc.position(offset);
-
-            readBufferSize = bufferSizeInPointsNum * recordLength;
-            readingDataArray = new byte[readBufferSize];
-            bufferedReadingBb = ByteBuffer.wrap(readingDataArray);
-            bufferedReadingBb.order(ByteOrder.LITTLE_ENDIAN);
-
-            // read the first set of data
-            readDataBuffer();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private int readDataBuffer() throws IOException {
-        bufferedReadingBb.clear();
-        int read = fc.read(bufferedReadingBb);
-        bufferedReadingBb.position(0);
-        return read;
-    }
-
     @Override
-    public boolean hasNextPoint() throws IOException {
+    public boolean hasNextPoint() {
         if (readRecords < records) {
-            if (!bufferedReadingBb.hasRemaining()) {
-                readDataBuffer();
-            }
             return true;
         }
         return false;
@@ -264,76 +236,28 @@ public class LasReader extends ALasReader {
 
     @Override
     public LasRecord getNextPoint() throws IOException {
-        int read = 0;
-        final long x = bufferedReadingBb.getInt();
-        final long y = bufferedReadingBb.getInt();
-        final long z = bufferedReadingBb.getInt();
-        final double xd = x * xScale + xOffset;
-        final double yd = y * yScale + yOffset;
-        final double zd = z * zScale + zOffset;
+        int[] readRef = new int[1];
+        LasRecord point = getPoint(readRef);
 
-        read = read + 12;
-        final short intensity = bufferedReadingBb.getShort();
-        read = read + 2;
-        final byte b = get();
-        final short returnNumber = getReturnNumber(b);
-        final short numberOfReturns = getNumberOfReturns(b);
-        final byte classification = bufferedReadingBb.get();
-        read = read + 1;
-
-        // skip:
-        // scan angle rank (1 byte)
-        // file marker (1 byte)
-        // Point Source ID (2 byte)
-
-        // to skip 4 bytes read an int -> was skip(4);
-        bufferedReadingBb.getInt();
-        read = read + 4;
-
-        final LasRecord dot = new LasRecord();
-        dot.x = xd;
-        dot.y = yd;
-        dot.z = zd;
-        dot.intensity = intensity;
-        dot.classification = classification;
-        dot.returnNumber = returnNumber;
-        dot.numberOfReturns = numberOfReturns;
-        if (header.pointDataFormat == 1) {
-            dot.gpsTime = bufferedReadingBb.getDouble();
-            read = read + 8;
-        } else if (header.pointDataFormat == 2) {
-            dot.color[0] = bufferedReadingBb.getShort();
-            dot.color[1] = bufferedReadingBb.getShort();
-            dot.color[2] = bufferedReadingBb.getShort();
-            read = read + 6;
-        } else if (header.pointDataFormat == 3) {
-            dot.gpsTime = bufferedReadingBb.getDouble();
-            dot.color[0] = bufferedReadingBb.getShort();
-            dot.color[1] = bufferedReadingBb.getShort();
-            dot.color[2] = bufferedReadingBb.getShort();
-            read = read + 14;
-        }
-
-        int skip = recordLength - read;
-        if (skip > 0)
-            bufferedReadingBb.position(bufferedReadingBb.position() + skip);
+        int skip = recordLength - readRef[0];
+        skip(skip);
 
         readRecords++;
-        return dot;
+        return point;
     }
 
     public LasRecord getPointAtAddress( long address ) throws IOException {
         fc.position(address);
-        return getPoint();
+        return getPoint(null);
     }
 
     @Override
     public LasRecord getPointAt( long pointNumber ) throws IOException {
         fc.position(offset + pointNumber * recordLength);
-        return getPoint();
+        return getPoint(null);
     }
 
-    private LasRecord getPoint() throws IOException {
+    private LasRecord getPoint( int[] readRef ) throws IOException {
         int read = 0;
         final long x = getLong4Bytes();
         final long y = getLong4Bytes();
@@ -382,6 +306,8 @@ public class LasReader extends ALasReader {
             dot.color[2] = getShort2Bytes();
             read = read + 14;
         }
+        if (readRef != null)
+            readRef[0] = read;
         return dot;
     }
 
