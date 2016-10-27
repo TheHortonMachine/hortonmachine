@@ -125,6 +125,10 @@ public class SpatialiteLasWriter extends JGTModel {
     @In
     public int pFactor = 5;
 
+    @Description("Flag to define if empty cells should also be written into the database.")
+    @In
+    public boolean doEmptyCells = false;
+
     private CoordinateReferenceSystem crs;
 
     private int srid = -9999;
@@ -295,9 +299,8 @@ public class SpatialiteLasWriter extends JGTModel {
             pm.beginTask("Sorting points for " + name, (int) recordsCount);
             long readCount = 0;
 
-            short minIntens = Short.MAX_VALUE; 
-            short maxIntens = -Short.MAX_VALUE; 
-            int intensityCount = 0;
+            short minIntens = Short.MAX_VALUE;
+            short maxIntens = -Short.MAX_VALUE;
             while( reader.hasNextPoint() ) {
                 LasRecord dot = reader.getNextPoint();
                 minIntens = (short) Math.min(minIntens, dot.intensity);
@@ -336,15 +339,38 @@ public class SpatialiteLasWriter extends JGTModel {
             for( int c = 0; c < cols; c++ ) {
                 for( int r = 0; r < rows; r++ ) {
                     List<LasRecord> dotsList = dotOnMatrixXY[c][r];
-                    if (dotsList == null || dotsList.size() == 0) {
-                        continue;
-                    }
-                    int pointCount = dotsList.size();
-                    Coordinate coord = CoverageUtilities.coordinateFromColRow(c, r, gridGeometry);
 
+                    Coordinate coord = CoverageUtilities.coordinateFromColRow(c, r, gridGeometry);
                     Envelope env = new Envelope(coord);
                     env.expandBy(pCellsize / 2.0, pCellsize / 2.0);
                     Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(env);
+
+                    if (dotsList == null || dotsList.size() == 0) {
+                        if (doEmptyCells) {
+                            final LasCell lasCell = new LasCell();
+                            lasCell.polygon = polygon;
+                            lasCell.sourceId = sourceID;
+
+                            lasCell.pointsCount = 0;
+                            lasCell.avgElev = -9999.0;
+                            lasCell.minElev = -9999.0;
+                            lasCell.maxElev = -9999.0;
+                            lasCell.xyzs = new byte[0];
+                            lasCell.avgIntensity = (short) -999;
+                            lasCell.minIntensity = (short) -999;
+                            lasCell.maxIntensity = (short) -999;
+                            lasCell.intensitiesClassifications = new byte[0];
+                            lasCell.returns = new byte[0];
+                            lasCell.minGpsTime = -9999.0;
+                            lasCell.maxGpsTime = -9999.0;
+                            lasCell.gpsTimes = new byte[0];
+                            lasCell.colors = new byte[0];
+
+                            cellsList.add(lasCell);
+                        }
+                        continue;
+                    }
+                    int pointCount = dotsList.size();
 
                     double avgElev = 0.0;
                     double minElev = Double.POSITIVE_INFINITY;

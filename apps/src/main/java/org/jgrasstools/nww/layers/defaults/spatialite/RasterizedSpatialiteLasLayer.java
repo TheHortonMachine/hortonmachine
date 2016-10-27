@@ -20,6 +20,7 @@ package org.jgrasstools.nww.layers.defaults.spatialite;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
@@ -85,6 +86,9 @@ import gov.nasa.worldwind.util.TileUrlBuilder;
  */
 public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
 
+    private static final String ELEVATION = "elevation";
+    private static final String INTENSITY = "intensity";
+
     private String layerName = "unknown layer";
 
     private static final int TILESIZE = 512;
@@ -94,7 +98,8 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
     public RasterizedSpatialiteLasLayer( String title, ASpatialDb db, Integer tileSize, boolean transparentBackground,
             boolean doIntensity ) throws Exception {
         super(makeLevels(title, tileSize, transparentBackground, db, doIntensity));
-        this.layerName = title;
+        String plus = doIntensity ? INTENSITY : ELEVATION;
+        this.layerName = title + " " + plus;
         this.setUseTransparentTextures(true);
 
         try {
@@ -118,7 +123,7 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
 
     private static LevelSet makeLevels( String title, Integer tileSize, boolean transparentBackground, ASpatialDb db,
             boolean doIntensity ) throws Exception {
-        String plus = doIntensity ? "intensity" : "elevation";
+        String plus = doIntensity ? INTENSITY : ELEVATION;
         String cacheRelativePath = "rasterized_spatialites/" + title + "_" + plus + "-tiles";
         File cacheRoot = CacheUtils.getCacheRoot();
         final File cacheFolder = new File(cacheRoot, cacheRelativePath);
@@ -238,15 +243,12 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
                     } else if (zoom < 15 && _lasLevels - 1 > 0) {
                         drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 1, data2NwwTransform,
                                 doIntensity, finalTileSize);
-                    } else if (zoom < 16 && _lasLevels - 2 > 0) {
+                    } else if (zoom < 17 && _lasLevels - 2 > 0) {
                         drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 2, data2NwwTransform,
                                 doIntensity, finalTileSize);
-                    } else if (zoom < 17 && _lasLevels - 3 > 0) {
-                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 3, data2NwwTransform,
-                                doIntensity, finalTileSize);
-                    } else if (zoom < 18 && _lasLevels - 4 > 0) {
-                        drawLevels(db, colorInterp, pointTransformation, polygonData, gr, _lasLevels - 4, data2NwwTransform,
-                                doIntensity, finalTileSize);
+                    } else if (zoom > 18) {
+                        drawPoints(db, colorInterp, pointTransformation, polygonData, gr, data2NwwTransform, doIntensity,
+                                finalTileSize);
                     } else {
                         drawCells(db, colorInterp, pointTransformation, polygonData, gr, data2NwwTransform, doIntensity,
                                 finalTileSize);
@@ -282,12 +284,93 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
             int jump = size / maxPerImage;
             for( int i = 0; i < size; i = i + 1 + jump ) {
                 LasCell lasCell = lasCells.get(i);
+                if (lasCell.pointsCount == 0) {
+                    continue;
+                }
                 Polygon levelPolygon = lasCell.polygon;
                 Geometry polygonNww = JTS.transform(levelPolygon, data2NwwTransform);
                 GeneralPath p = polygonToPath(pointTransformation, polygonNww, finalTileSize);
                 Color c = colorInterp.getColorFor(doIntensity ? lasCell.avgIntensity : lasCell.avgElev);
                 gr.setPaint(c);
                 gr.fill(p);
+            }
+        }
+    }
+
+    private static void drawPoints( ASpatialDb db, ColorInterpolator colorInterp, PointTransformation pointTransformation,
+            Geometry polygon, Graphics2D gr, MathTransform data2NwwTransform, boolean doIntensity, int finalTileSize )
+            throws Exception {
+        int maxPerImage = 100000;
+        List<LasCell> lasCells = LasCellsTable.getLasCells(db, null, polygon, true, true, false, false, false, maxPerImage);
+        int size = lasCells.size();
+        int pointSize = 4;
+        int pointSizehalf = 2;
+        if (size > 0) {
+            int jump = size / maxPerImage;
+            if (jump > 0) {
+                System.err.println("Jump: " + jump);
+            }
+            final Point2D newP = new Point2D.Double();
+            final Coordinate outCoord = new Coordinate();
+            if (!doIntensity) {
+                for( int i = 0; i < size; i = i + 1 + jump ) {
+                    LasCell lasCell = lasCells.get(i);
+                    double[][] cellPositions = LasCellsTable.getCellPositions(lasCell);
+                    if (cellPositions != null)
+                        for( double[] position : cellPositions ) {
+                            Coordinate coord = new Coordinate(position[0], position[1]);
+                            Color c = colorInterp.getColorFor(coord.z);
+                            JTS.transform(coord, outCoord, data2NwwTransform);
+                            pointTransformation.transform(outCoord, newP);
+                            gr.setPaint(c);
+
+                            double x = newP.getX();
+                            double y = newP.getY();
+                            if (x < 0) {
+                                continue;
+                            }
+                            if (y < 0) {
+                                continue;
+                            }
+                            if (x > TILESIZE) {
+                                continue;
+                            }
+                            if (y > TILESIZE) {
+                                continue;
+                            }
+                            gr.fillOval((int) x - pointSizehalf, (int) y - pointSizehalf, pointSize, pointSize);
+                        }
+                }
+            } else {
+                for( int i = 0; i < size; i = i + 1 + jump ) {
+                    LasCell lasCell = lasCells.get(i);
+                    double[][] cellPositions = LasCellsTable.getCellPositions(lasCell);
+                    short[][] cellInt = LasCellsTable.getCellIntensityClass(lasCell);
+                    if (cellPositions != null && cellInt != null)
+                        for( int j = 0; j < cellPositions.length; j++ ) {
+                            Coordinate coord = new Coordinate(cellPositions[j][0], cellPositions[j][1]);
+                            Color c = colorInterp.getColorFor(cellInt[j][0]);
+                            JTS.transform(coord, outCoord, data2NwwTransform);
+                            pointTransformation.transform(outCoord, newP);
+                            gr.setPaint(c);
+
+                            double x = newP.getX();
+                            double y = newP.getY();
+                            if (x < 0) {
+                                continue;
+                            }
+                            if (y < 0) {
+                                continue;
+                            }
+                            if (x > TILESIZE) {
+                                continue;
+                            }
+                            if (y > TILESIZE) {
+                                continue;
+                            }
+                            gr.fillOval((int) x - pointSizehalf, (int) y - pointSizehalf, pointSize, pointSize);
+                        }
+                }
             }
         }
     }
@@ -320,7 +403,7 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
         for( int i = 0; i < numGeometries; i++ ) {
             Geometry geometryN = polygon.getGeometryN(i);
             Coordinate[] coordinates = geometryN.getCoordinates();
-            Point2D newP = new Point2D.Double();
+            final Point2D newP = new Point2D.Double();
             for( int j = 0; j < coordinates.length; j++ ) {
                 pointTransformation.transform(coordinates[j], newP);
                 double x = newP.getX();

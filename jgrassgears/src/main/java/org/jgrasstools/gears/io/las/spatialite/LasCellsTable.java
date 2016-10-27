@@ -405,6 +405,9 @@ public class LasCellsTable {
 
     public static double[][] getCellPositions( LasCell cell ) {
         int points = cell.pointsCount;
+        if (points == 0) {
+            return null;
+        }
         double[][] xyzPoints = new double[points][3];
         ByteBuffer buffer = ByteBuffer.wrap(cell.xyzs);
 
@@ -418,6 +421,9 @@ public class LasCellsTable {
 
     public static short[][] getCellIntensityClass( LasCell cell ) {
         int points = cell.pointsCount;
+        if (points==0) {
+            return null;
+        }
         short[][] intensClassPoints = new short[points][2];
         ByteBuffer buffer = ByteBuffer.wrap(cell.intensitiesClassifications);
 
@@ -430,6 +436,9 @@ public class LasCellsTable {
 
     public static short[][] getCellColors( LasCell cell ) {
         int points = cell.pointsCount;
+        if (points==0) {
+            return null;
+        }
         short[][] colorPoints = new short[points][3];
         ByteBuffer buffer = ByteBuffer.wrap(cell.colors);
 
