@@ -129,7 +129,15 @@ public class SpatialiteLasWriter extends JGTModel {
     @In
     public boolean doEmptyCells = false;
 
+    @Description("Flag to define if the spatial index creation should be ignored (will not create levels).")
+    @In
+    public boolean doAvoidIndex = false;
+
     private CoordinateReferenceSystem crs;
+
+    @Description("Optional las list names to process only those (inside las folder).")
+    @In
+    public List<String> inLasNames;
 
     private int srid = -9999;
 
@@ -137,6 +145,8 @@ public class SpatialiteLasWriter extends JGTModel {
     private double ortoYRes;
 
     private ImageMosaicReader ortoReader;
+
+    public boolean doVerbose = true;
 
     @Execute
     public void process() throws Exception {
@@ -148,6 +158,10 @@ public class SpatialiteLasWriter extends JGTModel {
 
         if (!new File(inFolder).exists()) {
             throw new ModelsIllegalargumentException("The inFolder parameter has to be valid.", this);
+        }
+
+        if (doAvoidIndex) {
+            pLevels = 0;
         }
 
         if (inOrtophoto != null) {
@@ -206,25 +220,34 @@ public class SpatialiteLasWriter extends JGTModel {
                 pm.errorMessage("No crs has been defined. Setting it to 4326 by default.");
             }
 
-            LasSourcesTable.createTable(spatialiteDb, srid);
-            LasCellsTable.createTable(spatialiteDb, srid);
+            LasSourcesTable.createTable(spatialiteDb, srid, doAvoidIndex);
+            LasCellsTable.createTable(spatialiteDb, srid, doAvoidIndex);
 
             pm.message("Las files to be added to the index:");
-            OmsFileIterator iter = new OmsFileIterator();
-            iter.inFolder = inFolder;
-            iter.fileFilter = new FileFilter(){
-                public boolean accept( File file ) {
-                    String name = file.getName();
-                    boolean isLas = name.toLowerCase().endsWith(".las") && !name.toLowerCase().endsWith("indexed.las");
-                    if (isLas) {
-                        pm.message("   " + name);
+            List<File> filesList;
+            if (inLasNames == null) {
+                OmsFileIterator iter = new OmsFileIterator();
+                iter.inFolder = inFolder;
+                iter.fileFilter = new FileFilter(){
+                    public boolean accept( File file ) {
+                        String name = file.getName();
+                        boolean isLas = name.toLowerCase().endsWith(".las") && !name.toLowerCase().endsWith("indexed.las");
+                        if (isLas) {
+                            pm.message("   " + name);
+                        }
+                        return isLas;
                     }
-                    return isLas;
-                }
-            };
-            iter.process();
+                };
+                iter.process();
 
-            List<File> filesList = iter.filesList;
+                filesList = iter.filesList;
+            } else {
+                filesList = new ArrayList<>();
+                for( String lasName : inLasNames ) {
+                    File lasFile = new File(inFolder + File.separator + lasName);
+                    filesList.add(lasFile);
+                }
+            }
             List<LasSource> lasSources = LasSourcesTable.getLasSources(spatialiteDb);
             List<String> existingLasSourcesNames = new ArrayList<String>();
             for( LasSource lasSource : lasSources ) {
@@ -296,7 +319,8 @@ public class SpatialiteLasWriter extends JGTModel {
 
             List<LasRecord>[][] dotOnMatrixXY = new ArrayList[cols][rows];
             LasCell[][] lasCellsOnMatrixXY = new LasCell[cols][rows];
-            pm.beginTask("Sorting points for " + name, (int) recordsCount);
+            if (doVerbose)
+                pm.beginTask("Sorting points for " + name, (int) recordsCount);
             long readCount = 0;
 
             short minIntens = Short.MAX_VALUE;
@@ -321,10 +345,12 @@ public class SpatialiteLasWriter extends JGTModel {
                     dotOnMatrixXY[x][y] = new ArrayList<>();
                 }
                 dotOnMatrixXY[x][y].add(dot);
-                pm.worked(1);
+                if (doVerbose)
+                    pm.worked(1);
                 readCount++;
             }
-            pm.done();
+            if (doVerbose)
+                pm.done();
             if (readCount != recordsCount) {
                 throw new RuntimeException("Didn't read all the data...");
             }
@@ -335,7 +361,10 @@ public class SpatialiteLasWriter extends JGTModel {
             List<LasCell> cellsList = new ArrayList<>();
             final Point2D.Double pos = new Point2D.Double();
             final int[] ortoValues = new int[3];
-            pm.beginTask("Write las data...", cols * rows);
+            if (doVerbose)
+                pm.beginTask("Write las data...", cols * rows);
+            else
+                pm.message("Write las data...");
             for( int c = 0; c < cols; c++ ) {
                 for( int r = 0; r < rows; r++ ) {
                     List<LasRecord> dotsList = dotOnMatrixXY[c][r];
@@ -504,11 +533,14 @@ public class SpatialiteLasWriter extends JGTModel {
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
-            pm.done();
+            if (doVerbose)
+                pm.done();
+            else
+                pm.message("Done.");
 
             if (pLevels > 0) {
                 for( int level = 1; level <= pLevels; level++ ) {
-                    LasLevelsTable.createTable(spatialiteDb, srid, level);
+                    LasLevelsTable.createTable(spatialiteDb, srid, level, doAvoidIndex);
                     if (level == 1) {
                         insertFirstLevel(spatialiteDb, sourceID, north, south, east, west, level);
                     } else {
@@ -528,7 +560,10 @@ public class SpatialiteLasWriter extends JGTModel {
         double[] xRangesLevel = NumericsUtilities.range2Bins(west, east, levelCellsize, false);
         double[] yRangesLevel = NumericsUtilities.range2Bins(south, north, levelCellsize, false);
         int size = (xRangesLevel.length - 1) * (yRangesLevel.length - 1);
-        pm.beginTask("Creating level " + level + " with " + size + " tiles...", xRangesLevel.length - 1);
+        if (doVerbose)
+            pm.beginTask("Creating level " + level + " with " + size + " tiles...", xRangesLevel.length - 1);
+        else
+            pm.message("Creating level " + level + " with " + size + " tiles...");
         for( int x = 0; x < xRangesLevel.length - 1; x++ ) {
             double xmin = xRangesLevel[x];
             double xmax = xRangesLevel[x + 1];
@@ -583,12 +618,16 @@ public class SpatialiteLasWriter extends JGTModel {
                     levelsList = new ArrayList<>();
                 }
             }
-            pm.worked(1);
+            if (doVerbose)
+                pm.worked(1);
         }
         if (levelsList.size() > 0) {
             LasLevelsTable.insertLasLevels(spatialiteDb, srid, levelsList);
         }
-        pm.done();
+        if (doVerbose)
+            pm.done();
+        else
+            pm.message("Done.");
     }
 
     private void insertLevel( final ASpatialDb spatialiteDb, long sourceID, double north, double south, double east, double west,

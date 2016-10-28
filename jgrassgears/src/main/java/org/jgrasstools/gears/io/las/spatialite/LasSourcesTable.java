@@ -51,7 +51,7 @@ public class LasSourcesTable {
     public static final String COLUMN_MININTENSITY = "minintens";
     public static final String COLUMN_MAXINTENSITY = "maxintens";
 
-    public static void createTable( ASpatialDb db, int srid ) throws Exception {
+    public static void createTable( ASpatialDb db, int srid, boolean avoidIndex ) throws Exception {
         if (!db.hasTable(TABLENAME)) {
             String[] creates = {//
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT", //
@@ -65,7 +65,8 @@ public class LasSourcesTable {
                     COLUMN_MAXINTENSITY + " REAL"//
             };
             db.createTable(TABLENAME, creates);
-            db.addGeometryXYColumnAndIndex(TABLENAME, COLUMN_GEOM, "POLYGON", String.valueOf(srid));
+            String epsg = String.valueOf(srid);
+            db.addGeometryXYColumnAndIndex(TABLENAME, COLUMN_GEOM, "POLYGON", epsg, avoidIndex);
         }
     }
 

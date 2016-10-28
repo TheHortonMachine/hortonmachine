@@ -53,11 +53,11 @@ public class SpatialiteThreadsafeDb extends SpatialiteDb {
         }
     }
 
-    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg )
+    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg, boolean avoidIndex )
             throws Exception {
         try {
             lockWrite("addGeometryXYColumnAndIndex");
-            super.addGeometryXYColumnAndIndex(tableName, geomColName, geomType, epsg);
+            super.addGeometryXYColumnAndIndex(tableName, geomColName, geomType, epsg, avoidIndex);
         } finally {
             unlockWrite("addGeometryXYColumnAndIndex");
         }

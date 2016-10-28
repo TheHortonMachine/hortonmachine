@@ -64,7 +64,7 @@ public class LasLevelsTable {
         return db.hasTable(tablename);
     }
 
-    public static void createTable( ASpatialDb db, int srid, int levelNum ) throws Exception {
+    public static void createTable( ASpatialDb db, int srid, int levelNum, boolean avoidIndex ) throws Exception {
         String tablename = TABLENAME + levelNum;
         if (!db.hasTable(tablename)) {
             String[] creates = {//
@@ -78,7 +78,7 @@ public class LasLevelsTable {
                     COLUMN_MAX_INTENSITY + " INTEGER" //
             };
             db.createTable(tablename, creates);
-            db.addGeometryXYColumnAndIndex(tablename, COLUMN_GEOM, "POLYGON", String.valueOf(srid));
+            db.addGeometryXYColumnAndIndex(tablename, COLUMN_GEOM, "POLYGON", String.valueOf(srid), avoidIndex);
 
             db.createIndex(tablename, COLUMN_SOURCE_ID, false);
             // db.createIndex(TABLENAME, COLUMN_MIN_GPSTIME, false);

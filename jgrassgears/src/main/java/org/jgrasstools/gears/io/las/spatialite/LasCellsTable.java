@@ -64,7 +64,7 @@ public class LasCellsTable {
 
     public static final String COLUMN_COLORS_BLOB = "colors_blob";
 
-    public static void createTable( ASpatialDb db, int srid ) throws Exception {
+    public static void createTable( ASpatialDb db, int srid, boolean avoidIndex  ) throws Exception {
         if (!db.hasTable(TABLENAME)) {
             String[] creates = {//
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT", //
@@ -85,7 +85,7 @@ public class LasCellsTable {
                     COLUMN_COLORS_BLOB + " BLOB"//
             };
             db.createTable(TABLENAME, creates);
-            db.addGeometryXYColumnAndIndex(TABLENAME, COLUMN_GEOM, "POLYGON", String.valueOf(srid));
+            db.addGeometryXYColumnAndIndex(TABLENAME, COLUMN_GEOM, "POLYGON", String.valueOf(srid), avoidIndex);
 
             db.createIndex(TABLENAME, COLUMN_SOURCE_ID, false);
             // db.createIndex(TABLENAME, COLUMN_MIN_GPSTIME, false);
