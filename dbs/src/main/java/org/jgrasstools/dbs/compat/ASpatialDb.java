@@ -96,8 +96,8 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @param avoidIndex if <code>true</code>, the index is not created.
      * @throws Exception
      */
-    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg, boolean avoidIndex )
-            throws Exception {
+    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg,
+            boolean avoidIndex ) throws Exception {
         String epsgStr = "4326";
         if (epsg != null) {
             epsgStr = epsg;
@@ -121,6 +121,24 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
                 stmt.execute(sql);
             }
         }
+    }
+
+    /**
+     * Adds a geometry column to a table.
+     * 
+     * @param tableName
+     *            the table name.
+     * @param geomColName
+     *            the geometry column name.
+     * @param geomType
+     *            the geometry type (ex. LINESTRING);
+     * @param epsg
+     *            the optional epsg code (default is 4326);
+     * @throws Exception
+     */
+    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg )
+            throws Exception {
+        addGeometryXYColumnAndIndex(tableName, geomColName, geomType, epsg, false);
     }
 
     /**
