@@ -34,13 +34,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.math3.stat.StatUtils;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
-import org.geotools.data.shapefile.index.quadtree.LazySearchIterator;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
@@ -68,9 +66,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -147,6 +143,7 @@ public class SpatialiteLasWriter extends JGTModel {
     private ImageMosaicReader ortoReader;
 
     public boolean doVerbose = true;
+    private static final String INTERRUPTED_BY_USER = "Interrupted by user.";
 
     @Execute
     public void process() throws Exception {
@@ -254,32 +251,36 @@ public class SpatialiteLasWriter extends JGTModel {
                 existingLasSourcesNames.add(lasSource.name);
             }
             for( File lasFile : filesList ) {
+                if (pm.isCanceled()) {
+                    return;
+                }
                 String lasName = FileUtilities.getNameWithoutExtention(lasFile);
                 if (existingLasSourcesNames.contains(lasName)) {
                     pm.errorMessage("Not inserting already existing file in database: " + lasName);
                     continue;
                 }
+                ReferencedEnvelope3D envelope;
                 try (ALasReader reader = ALasReader.getReader(lasFile, crs)) {
                     reader.open();
                     ILasHeader header = reader.getHeader();
-                    ReferencedEnvelope3D envelope = header.getDataEnvelope();
-                    Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(envelope);
-
-                    GridCoverage2D ortoGC = null;
-                    if (ortoReader != null) {
-                        double west = envelope.getMinX();
-                        double east = envelope.getMaxX();
-                        double south = envelope.getMinY();
-                        double north = envelope.getMaxY();
-                        GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities
-                                .createGridGeometryGeneralParameter(ortoXRes, ortoYRes, north, south, east, west, crs);
-                        ortoGC = ortoReader.read(readGeneralParameterValues);
-                    }
-
-                    long id = LasSourcesTable.insertLasSource(spatialiteDb, srid, pLevels, pCellsize, pFactor, polygon, lasName,
-                            envelope.getMinZ(), envelope.getMaxZ(), 0, 0);
-                    processFile(spatialiteDb, lasFile, id, ortoGC);
+                    envelope = header.getDataEnvelope();
                 }
+                Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(envelope);
+
+                GridCoverage2D ortoGC = null;
+                if (ortoReader != null) {
+                    double west = envelope.getMinX();
+                    double east = envelope.getMaxX();
+                    double south = envelope.getMinY();
+                    double north = envelope.getMaxY();
+                    GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities
+                            .createGridGeometryGeneralParameter(ortoXRes, ortoYRes, north, south, east, west, crs);
+                    ortoGC = ortoReader.read(readGeneralParameterValues);
+                }
+
+                long id = LasSourcesTable.insertLasSource(spatialiteDb, srid, pLevels, pCellsize, pFactor, polygon, lasName,
+                        envelope.getMinZ(), envelope.getMaxZ(), 0, 0);
+                processFile(spatialiteDb, lasFile, id, ortoGC);
             }
 
         }
@@ -353,6 +354,10 @@ public class SpatialiteLasWriter extends JGTModel {
                 pm.done();
             if (readCount != recordsCount) {
                 throw new RuntimeException("Didn't read all the data...");
+            }
+
+            if (pm.isCanceled()) {
+                throw new RuntimeException(INTERRUPTED_BY_USER);
             }
 
             LasSourcesTable.updateMinMaxIntensity(spatialiteDb, sourceID, minIntens, maxIntens);
@@ -509,6 +514,9 @@ public class SpatialiteLasWriter extends JGTModel {
                         cellsList = new ArrayList<>();
                     }
                 }
+                if (pm.isCanceled()) {
+                    throw new RuntimeException(INTERRUPTED_BY_USER);
+                }
             }
             if (cellsList.size() > 0) {
                 // add data to db in a thread to fasten up things
@@ -517,7 +525,8 @@ public class SpatialiteLasWriter extends JGTModel {
                     public void run() {
                         try {
                             LasCellsTable.insertLasCells(spatialiteDb, srid, processCells);
-                            pm.worked(processCells.size());
+                            if (doVerbose)
+                                pm.worked(processCells.size());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -540,6 +549,9 @@ public class SpatialiteLasWriter extends JGTModel {
 
             if (pLevels > 0) {
                 for( int level = 1; level <= pLevels; level++ ) {
+                    if (pm.isCanceled()) {
+                        throw new RuntimeException(INTERRUPTED_BY_USER);
+                    }
                     LasLevelsTable.createTable(spatialiteDb, srid, level, doAvoidIndex);
                     if (level == 1) {
                         insertFirstLevel(spatialiteDb, sourceID, north, south, east, west, level);
@@ -638,7 +650,10 @@ public class SpatialiteLasWriter extends JGTModel {
         double[] xRangesLevel = NumericsUtilities.range2Bins(west, east, levelCellsize, false);
         double[] yRangesLevel = NumericsUtilities.range2Bins(south, north, levelCellsize, false);
         int size = (xRangesLevel.length - 1) * (yRangesLevel.length - 1);
-        pm.beginTask("Creating level " + level + " with " + size + " tiles...", xRangesLevel.length - 1);
+        if (doVerbose)
+            pm.beginTask("Creating level " + level + " with " + size + " tiles...", xRangesLevel.length - 1);
+        else
+            pm.message("Creating level " + level + " with " + size + " tiles...");
         for( int x = 0; x < xRangesLevel.length - 1; x++ ) {
             double xmin = xRangesLevel[x];
             double xmax = xRangesLevel[x + 1];
@@ -693,12 +708,16 @@ public class SpatialiteLasWriter extends JGTModel {
                     levelsList = new ArrayList<>();
                 }
             }
-            pm.worked(1);
+            if (doVerbose)
+                pm.worked(1);
         }
         if (levelsList.size() > 0) {
             LasLevelsTable.insertLasLevels(spatialiteDb, srid, levelsList);
         }
-        pm.done();
+        if (doVerbose)
+            pm.done();
+        else
+            pm.message("Done.");
     }
 
     @Finalize
