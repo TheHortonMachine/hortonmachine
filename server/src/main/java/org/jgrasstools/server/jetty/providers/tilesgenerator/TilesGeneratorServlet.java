@@ -18,6 +18,7 @@
 package org.jgrasstools.server.jetty.providers.tilesgenerator;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,36 +36,27 @@ import org.jgrasstools.server.jetty.providers.IProvider;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class MapsforgeTilesGeneratorServlet extends HttpServlet {
-    private static final Logger LOG = Logger.getLogger(MapsforgeTilesGeneratorServlet.class.getName());
+public class TilesGeneratorServlet extends HttpServlet {
+
+    private static final Logger LOG = Logger.getLogger(TilesGeneratorServlet.class.getName());
 
     private static final long serialVersionUID = 1L;
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void doGet( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException {
         try {
             ServletContext servletContext = request.getServletContext();
 
-            int xTile = Integer.parseInt(request.getParameter("x"));
-            int yTile = Integer.parseInt(request.getParameter("y"));
-            int zoom = Integer.parseInt(request.getParameter("z"));
-            String generatorName = request.getParameter("id");
+            int xTile = Integer.parseInt(request.getParameter(ITilesGenerator.X));
+            int yTile = Integer.parseInt(request.getParameter(ITilesGenerator.Y));
+            int zoom = Integer.parseInt(request.getParameter(ITilesGenerator.Z));
+            String generatorName = request.getParameter(ITilesGenerator.ID);
 
-            ITilesGenerator[] tilesGenerators = (ITilesGenerator[]) servletContext
-                    .getAttribute(IProvider.OFFLINE_MAPSFORGE_TILESGENERATORS);
+            HashMap<String, ITilesGenerator> tilesGenerators = (HashMap<String, ITilesGenerator>) servletContext
+                    .getAttribute(IProvider.OFFLINE_TILESGENERATORS);
 
-            ITilesGenerator tilesGenerator = null;
-            if (tilesGenerators.length == 1) {
-                tilesGenerator = tilesGenerators[0];
-            } else {
-                for( ITilesGenerator iTilesGenerator : tilesGenerators ) {
-                    if (iTilesGenerator.getName().equals(generatorName)) {
-                        tilesGenerator = iTilesGenerator;
-                        break;
-                    }
-                }
-            }
-
+            ITilesGenerator tilesGenerator = tilesGenerators.get(generatorName);
             ServletOutputStream outputStream = response.getOutputStream();
             tilesGenerator.getTile(xTile, yTile, zoom, outputStream);
             outputStream.flush();

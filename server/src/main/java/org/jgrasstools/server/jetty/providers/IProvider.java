@@ -30,6 +30,6 @@ public interface IProvider {
     
     public static final String CSSPROVIDERS = "CSSPROVIDERS";
 
-    public static final String OFFLINE_MAPSFORGE_TILESGENERATORS = "OFFLINE_MAPSFORGE_TILESGENERATORS";
+    public static final String OFFLINE_TILESGENERATORS = "OFFLINE_TILESGENERATORS";
 
 }

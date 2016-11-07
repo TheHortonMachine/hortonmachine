@@ -48,6 +48,7 @@ public class MapsforgeTilesGenerator implements ITilesGenerator {
     private String title;
     private boolean isVisible;
     private boolean isDefault;
+    private String url;
 
     public MapsforgeTilesGenerator( String title, File mapsforgeFile, Integer tileSize, boolean isVisible, boolean isDefault )
             throws Exception {
@@ -92,6 +93,9 @@ public class MapsforgeTilesGenerator implements ITilesGenerator {
         }
 
         osmTilegenerator = new OsmTilegenerator(mapsforgeFile, dbRenderer, xmlRenderTheme, displayModel);
+
+        url = "gettile?z={z}&x={x}&y={y}&id=" + title;
+
     }
 
     @Override
@@ -122,7 +126,7 @@ public class MapsforgeTilesGenerator implements ITilesGenerator {
 
     @Override
     public String getUrl() {
-        return "mapsforgetile?z={z}&x={x}&y={y}";
+        return url;
     }
 
     @Override

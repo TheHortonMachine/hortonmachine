@@ -25,6 +25,11 @@ import java.io.OutputStream;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public interface ITilesGenerator {
+    String ID = "id";
+    String X = "x";
+    String Y = "y";
+    String Z = "z";
+
     public String getName();
 
     public boolean isVisible();
