@@ -49,14 +49,16 @@ public class MapsforgeTilesGenerator implements ITilesGenerator {
     private boolean isVisible;
     private boolean isDefault;
     private String url;
+    
+    private int tileSize = TILESIZE;
 
     public MapsforgeTilesGenerator( String title, File mapsforgeFile, Integer tileSize, boolean isVisible, boolean isDefault )
             throws Exception {
         this.title = title;
         this.isVisible = isVisible;
         this.isDefault = isDefault;
-        if (tileSize == null || tileSize < 256) {
-            tileSize = TILESIZE;
+        if (tileSize != null && tileSize >= TILESIZE) {
+            this.tileSize = tileSize;
         }
         GraphicFactory graphicFactory = AwtGraphicFactory.INSTANCE;
         MapDatabase mapDatabase = new MapDatabase();
@@ -87,7 +89,7 @@ public class MapsforgeTilesGenerator implements ITilesGenerator {
                 xmlRenderTheme = InternalRenderTheme.OSMARENDER;
             }
             displayModel = new DisplayModel();
-            displayModel.setUserScaleFactor(tileSize / 256f);
+            displayModel.setUserScaleFactor(this.tileSize / 256f);
         } else {
             throw new FileNotFoundException("Could not find: " + mapsforgeFile);
         }

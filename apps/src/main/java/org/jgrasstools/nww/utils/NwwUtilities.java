@@ -52,9 +52,8 @@ public class NwwUtilities {
     public static List<String> LAYERS_TO_KEEP_FROM_ORIGNALNWW = Arrays.asList("Scale bar", "Compass", "Bing Imagery");
 
     public static LatLon getEnvelopeCenter( Envelope bounds ) {
-        double x = bounds.getMinX() + (bounds.getMaxX() - bounds.getMinX()) / 2.0;
-        double y = bounds.getMinY() + (bounds.getMaxY() - bounds.getMinY()) / 2.0;
-        LatLon latLon = new LatLon(Angle.fromDegrees(y), Angle.fromDegrees(x));
+        Coordinate centre = bounds.centre();
+        LatLon latLon = new LatLon(Angle.fromDegrees(centre.y), Angle.fromDegrees(centre.x));
         return latLon;
     }
 
