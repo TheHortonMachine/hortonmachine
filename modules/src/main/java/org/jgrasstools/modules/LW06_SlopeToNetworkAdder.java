@@ -72,6 +72,7 @@ public class LW06_SlopeToNetworkAdder extends JGTModel {
         OmsLW06_SlopeToNetworkAdder m = new OmsLW06_SlopeToNetworkAdder();
         m.inNetPoints = getVector(inNetPoints);
         m.inSlope = getRaster(inSlope);
+        m.pm = pm;
         m.process();
         dumpVector(m.outNetPoints, outNetPoints);
     }

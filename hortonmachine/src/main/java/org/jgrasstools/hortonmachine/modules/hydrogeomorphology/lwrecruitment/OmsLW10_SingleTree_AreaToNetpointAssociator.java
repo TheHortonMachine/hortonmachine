@@ -139,7 +139,7 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
     @Out
     public GridCoverage2D outNetnum = null;
 
-    @Description("outTreePoints_DESCR")
+    @Description(outTreePoints_DESCR)
     @Out
     public SimpleFeatureCollection outTreePoints = null;
 

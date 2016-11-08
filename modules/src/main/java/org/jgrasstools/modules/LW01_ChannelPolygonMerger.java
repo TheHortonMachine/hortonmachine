@@ -65,6 +65,7 @@ public class LW01_ChannelPolygonMerger extends JGTModel {
     public void process() throws Exception {
         OmsLW01_ChannelPolygonMerger m = new OmsLW01_ChannelPolygonMerger();
         m.inBankfull = getVector(inBankfull);
+        m.pm = pm;
         m.process();
         dumpVector(m.outBankfull, outBankfull);
     }

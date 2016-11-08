@@ -106,6 +106,7 @@ public class LW04_BankfullWidthAnalyzer extends JGTModel {
         m.pMaxDistanceFromNetpoint = pMaxDistanceFromNetpoint;
         m.pMaxNetworkWidth = pMaxNetworkWidth;
         m.pMinNetworkWidth = pMinNetworkWidth;
+        m.pm = pm;
         m.process();
         dumpVector(m.outNetPoints, outNetPoints);
         dumpVector(m.outProblemPoints, outProblemPoints);

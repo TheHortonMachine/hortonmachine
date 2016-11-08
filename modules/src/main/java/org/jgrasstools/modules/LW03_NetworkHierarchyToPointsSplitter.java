@@ -64,6 +64,7 @@ public class LW03_NetworkHierarchyToPointsSplitter extends JGTModel {
     public void process() throws Exception {
         OmsLW03_NetworkHierarchyToPointsSplitter m = new OmsLW03_NetworkHierarchyToPointsSplitter();
         m.inNet = getVector(inNet);
+        m.pm = pm;
         m.process();
         dumpVector(m.outNetPoints, outNetPoints);
     }

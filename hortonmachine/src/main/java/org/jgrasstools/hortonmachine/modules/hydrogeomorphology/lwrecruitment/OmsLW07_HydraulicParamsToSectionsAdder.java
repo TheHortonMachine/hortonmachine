@@ -85,8 +85,7 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
     @In
     public long pDeltaTMillis = 5000;
     
-    // TODO
-    @Description("doMaxWidening_DESCRIPTION")
+    @Description(doMaxWidening_DESCRIPTION)
     @In
     public boolean doMaxWidening = false;
 
@@ -105,7 +104,7 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends JGTModel implements 
     public SimpleFeatureCollection outNetPoints = null;
 
     @Description(outTransSect_DESCR)
-    @In
+    @Out
     public SimpleFeatureCollection outTransSect = null;
 
     // VARS DOC START

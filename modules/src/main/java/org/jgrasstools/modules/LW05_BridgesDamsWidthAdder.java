@@ -112,6 +112,7 @@ public class LW05_BridgesDamsWidthAdder extends JGTModel {
         m.pBridgesOnNetDistance = pBridgesOnNetDistance;
         m.pFixedDamsWidth = pFixedDamsWidth;
         m.fBridgeLenght = fBridgeLenght;
+        m.pm = pm;
         m.process();
         dumpVector(m.outNetPoints, outNetPoints);
         dumpVector(m.outProblemBridges, outProblemBridges);

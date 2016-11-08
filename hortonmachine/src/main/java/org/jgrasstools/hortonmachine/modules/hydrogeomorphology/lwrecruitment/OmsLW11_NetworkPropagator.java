@@ -62,15 +62,15 @@ public class OmsLW11_NetworkPropagator extends JGTModel implements LWFields {
     @In
     public SimpleFeatureCollection inNetPoints = null;
 
-    @Description("ratioLogsLengthChannelWidthHillslope_DESCR")
+    @Description(ratioLogsLengthChannelWidthHillslope_DESCR)
     @In
     public double pRatioLogsLengthChannelWidthHillslope = 0.8;
 
-    @Description("ratioLogsLengthChannelWidthChannel_DESCR")
+    @Description(ratioLogsLengthChannelWidthChannel_DESCR)
     @In
     public double pRatioLogsLengthChannelWidthChannel = 1.0;
 
-    @Description("ratioLogsDiameterWaterDepth_DESCR")
+    @Description(ratioLogsDiameterWaterDepth_DESCR)
     @In
     public double pRatioLogsDiameterWaterDepth = 0.8;
 
