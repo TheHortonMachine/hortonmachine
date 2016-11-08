@@ -33,6 +33,9 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -104,5 +107,21 @@ public class OmsLW06_SlopeToNetworkAdder extends JGTModel implements LWFields {
         pm.done();
 
     }
+    
+    public static void main( String[] args ) throws Exception {
+
+        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/data01/";
+        String base2 = "D:/lavori_tmp/unibz/2016_06_gsoc/raster/";
+
+        OmsLW06_SlopeToNetworkAdder ex = new OmsLW06_SlopeToNetworkAdder();
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_width_damsbridg.shp");
+        ex.inSlope = OmsRasterReader.readRaster(base2 + "dtmsd8.asc");
+
+        ex.process();
+        SimpleFeatureCollection outNetPoints = ex.outNetPoints;
+
+        OmsVectorWriter.writeVector(base + "net_point_width_damsbridg_slope.shp", outNetPoints);
+
+    }   
 
 }

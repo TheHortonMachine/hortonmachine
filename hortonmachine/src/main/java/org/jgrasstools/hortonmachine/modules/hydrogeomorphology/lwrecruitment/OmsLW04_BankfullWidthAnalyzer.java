@@ -17,6 +17,8 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment;
 
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -39,12 +41,15 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.ARiverSectionsExtractor;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.riversections.OmsRiverSectionsExtractor;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -137,22 +142,32 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
     @Execute
     public void process() throws Exception {
 
-        CoordinateReferenceSystem crs;
-
         // Creates the output points hashmap
-        ConcurrentHashMap<SimpleFeature, double[]> allNetPointsMap = new ConcurrentHashMap<SimpleFeature, double[]>();
+        LinkedHashMap<SimpleFeature, double[]> allNetPointsMap = new LinkedHashMap<SimpleFeature, double[]>();
 
-        crs = inNetPoints.getBounds().getCoordinateReferenceSystem();
+        CoordinateReferenceSystem crs = inNetPoints.getBounds().getCoordinateReferenceSystem();
 
         // Insert the points in the final hashmap
         List<SimpleFeature> netFeatures = FeatureUtilities.featureCollectionToList(inNetPoints);
+        netFeatures.sort(new Comparator<SimpleFeature>(){
+            public int compare( SimpleFeature o1, SimpleFeature o2 ) {
+                int i1 = ((Number) o1.getAttribute(LWFields.LINKID)).intValue();
+                int i2 = ((Number) o2.getAttribute(LWFields.LINKID)).intValue();
+                if (i1 < i2) {
+                    return -1;
+                } else if (i1 > i2) {
+                    return 1;
+                }
+                return 0;
+            }
+        });
         for( SimpleFeature netFeature : netFeatures ) {
             allNetPointsMap.put(netFeature, new double[NEW_NETWORK_ATTRIBUTES_NUM]);
         }
 
         // Generates supporting variables
-        ConcurrentHashMap<SimpleFeature, String> problemPointsMap = new ConcurrentHashMap<SimpleFeature, String>();
-        ConcurrentHashMap<SimpleFeature, double[]> validPointsMap = new ConcurrentHashMap<SimpleFeature, double[]>();
+        LinkedHashMap<SimpleFeature, String> problemPointsMap = new LinkedHashMap<SimpleFeature, String>();
+        LinkedHashMap<SimpleFeature, double[]> validPointsMap = new LinkedHashMap<SimpleFeature, double[]>();
         ConcurrentLinkedQueue<Object[]> validPointsLineList = new ConcurrentLinkedQueue<Object[]>();
         handleChannelEdited(inBankfull, allNetPointsMap, validPointsMap, problemPointsMap, validPointsLineList);
 
@@ -163,8 +178,8 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
     }
 
     private void handleChannelEdited( SimpleFeatureCollection channeleditedFC,
-            ConcurrentHashMap<SimpleFeature, double[]> netPointsMap, ConcurrentHashMap<SimpleFeature, double[]> validPointsMap,
-            ConcurrentHashMap<SimpleFeature, String> problemPointsMap, ConcurrentLinkedQueue<Object[]> validPointsLineList ) {
+            LinkedHashMap<SimpleFeature, double[]> netPointsMap, LinkedHashMap<SimpleFeature, double[]> validPointsMap,
+            LinkedHashMap<SimpleFeature, String> problemPointsMap, ConcurrentLinkedQueue<Object[]> validPointsLineList ) {
 
         // index the bankfull geometries
         List<Geometry> channelGeometriesList = FeatureUtilities.featureCollectionToGeometriesList(channeleditedFC, true, null);
@@ -179,9 +194,16 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
         /*
          * Main cycle over all the channel points to extract the bakfull width
          */
+        Point previousNetPoint = null;
+        double progressive = 0;
         for( Entry<SimpleFeature, double[]> entry : entrySet ) {
             SimpleFeature netFeature = entry.getKey();
             Point netPoint = (Point) netFeature.getDefaultGeometry();
+            if (previousNetPoint != null) {
+                progressive += netPoint.distance(previousNetPoint);
+            }
+            previousNetPoint = netPoint;
+
             Object linkId = netFeature.getAttribute(LINKID);
             Object pfaf = netFeature.getAttribute(PFAF);
 
@@ -303,8 +325,8 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
                      */
                     if (coordinates.length == 1) {
                         Coordinate coordinate = coordinates[0];
-                        assign(validPointsMap, problemPointsMap, validPointsLineList, netFeature, linkId, pfaf, attributes,
-                                nearestOnChannelCoordinate, coordinate);
+                        assign(validPointsMap, problemPointsMap, validPointsLineList, netFeature, linkId, pfaf, progressive,
+                                attributes, nearestOnChannelCoordinate, coordinate);
                     } else {
                         double minDistance = Double.POSITIVE_INFINITY;
                         Coordinate nearest = null;
@@ -319,8 +341,8 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
                                 nearest = coordinate;
                             }
                         }
-                        assign(validPointsMap, problemPointsMap, validPointsLineList, netFeature, linkId, pfaf, attributes,
-                                nearestOnChannelCoordinate, nearest);
+                        assign(validPointsMap, problemPointsMap, validPointsLineList, netFeature, linkId, pfaf, progressive,
+                                attributes, nearestOnChannelCoordinate, nearest);
                     }
                 }
             }
@@ -333,10 +355,10 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
      * check the width of the section against the given thresholds
      * and create the section linestring
      */
-    private void assign( ConcurrentHashMap<SimpleFeature, double[]> validPointsMap,
-            ConcurrentHashMap<SimpleFeature, String> problemPointsMap, ConcurrentLinkedQueue<Object[]> validPointsLineList,
-            SimpleFeature netFeature, Object linkId, Object pfaf, double[] attributes, Coordinate nearestOnChannelCoordinate,
-            Coordinate coordinate ) {
+    private void assign( LinkedHashMap<SimpleFeature, double[]> validPointsMap,
+            LinkedHashMap<SimpleFeature, String> problemPointsMap, ConcurrentLinkedQueue<Object[]> validPointsLineList,
+            SimpleFeature netFeature, Object linkId, Object pfaf, double progressive, double[] attributes,
+            Coordinate nearestOnChannelCoordinate, Coordinate coordinate ) {
         double width = coordinate.distance(nearestOnChannelCoordinate);
         if (width > pMaxNetworkWidth) {
             problemPointsMap.put(netFeature, FOUND_INVALID_NETWORK_WIDTH_LARGE);
@@ -347,14 +369,14 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
             attributes[1] = WIDTH_FROM_CHANNELEDIT;
 
             LineString widthLine = gf.createLineString(new Coordinate[]{coordinate, nearestOnChannelCoordinate});
-            Object[] newLineAttr = {widthLine, pfaf, linkId};
+            Object[] newLineAttr = {widthLine, pfaf, linkId, linkId, progressive};
             validPointsLineList.add(newLineAttr);
             validPointsMap.put(netFeature, attributes);
         }
     }
 
     private DefaultFeatureCollection getNetworkPoints( CoordinateReferenceSystem crs,
-            ConcurrentHashMap<SimpleFeature, double[]> validPointsMap ) throws Exception {
+            LinkedHashMap<SimpleFeature, double[]> validPointsMap ) throws Exception {
 
         FeatureExtender ext = null;
         DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
@@ -363,8 +385,8 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
             SimpleFeature pointFeature = entry.getKey();
 
             if (ext == null) {
-                ext = new FeatureExtender(pointFeature.getFeatureType(), new String[]{WIDTH, WIDTH_FROM}, new Class[]{
-                        Double.class, Double.class});
+                ext = new FeatureExtender(pointFeature.getFeatureType(), new String[]{WIDTH, WIDTH_FROM},
+                        new Class[]{Double.class, Double.class});
             }
 
             double[] attributes = entry.getValue();
@@ -380,7 +402,7 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
     }
 
     private DefaultFeatureCollection getProblemPoints( CoordinateReferenceSystem crs,
-            ConcurrentHashMap<SimpleFeature, String> problemPointsMap ) throws Exception {
+            LinkedHashMap<SimpleFeature, String> problemPointsMap ) throws Exception {
 
         FeatureExtender ext = null;
 
@@ -409,6 +431,8 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
         b.add("the_geom", LineString.class);
         b.add(PFAF, String.class);
         b.add(LINKID, Integer.class);
+        b.add(ARiverSectionsExtractor.FIELD_SECTION_ID, Integer.class);
+        b.add(ARiverSectionsExtractor.FIELD_PROGRESSIVE, Double.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
@@ -421,5 +445,27 @@ public class OmsLW04_BankfullWidthAnalyzer extends JGTModel implements LWFields 
         }
 
         return newCollection;
+    }
+
+    public static void main( String[] args ) throws Exception {
+
+        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/data01/";
+
+        OmsLW04_BankfullWidthAnalyzer ex = new OmsLW04_BankfullWidthAnalyzer();
+        ex.inBankfull = OmsVectorReader.readVector(base + "channelpolygon_merged.shp");
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point.shp");
+        // ex.inSections = OmsVectorReader.readVector(base + "shape/sections_adige_75.shp");
+        // ex.pMaxDistanceFromNetpoint = 20;
+        // ex.pMaxNetworkWidth = 75;
+        // ex.pMinNetworkWidth =
+        ex.process();
+        SimpleFeatureCollection outNetPoints = ex.outNetPoints;
+        SimpleFeatureCollection outBankfullSections = ex.outBankfullSections;
+        SimpleFeatureCollection outProblemPoints = ex.outProblemPoints;
+
+        OmsVectorWriter.writeVector(base + "net_point_width.shp", outNetPoints);
+        OmsVectorWriter.writeVector(base + "bankfullsections.shp", outBankfullSections);
+        OmsVectorWriter.writeVector(base + "problempoints.shp", outProblemPoints);
+
     }
 }

@@ -17,16 +17,16 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_NetworkPropagator.AUTHORS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_NetworkPropagator.CONTACTS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_NetworkPropagator.DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_NetworkPropagator.KEYWORDS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_NetworkPropagator.LABEL;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_NetworkPropagator.LICENSE;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_NetworkPropagator.NAME;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_NetworkPropagator.STATUS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_NetworkPropagator.inNetPoints_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_NetworkPropagator.outNetPoints_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW11_NetworkPropagator.AUTHORS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW11_NetworkPropagator.CONTACTS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW11_NetworkPropagator.DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW11_NetworkPropagator.KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW11_NetworkPropagator.LABEL;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW11_NetworkPropagator.LICENSE;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW11_NetworkPropagator.NAME;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW11_NetworkPropagator.STATUS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW11_NetworkPropagator.inNetPoints_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW11_NetworkPropagator.outNetPoints_DESCR;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -40,7 +40,7 @@ import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW10_NetworkPropagator;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW11_NetworkPropagator;
 
 @Description(DESCRIPTION)
 @Author(name = AUTHORS, contact = CONTACTS)
@@ -63,7 +63,7 @@ public class LW10_NetworkPropagator extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        OmsLW10_NetworkPropagator m = new OmsLW10_NetworkPropagator();
+        OmsLW11_NetworkPropagator m = new OmsLW11_NetworkPropagator();
         m.inNetPoints = getVector(inNetPoints);
         m.process();
         dumpVector(m.outNetPoints, outNetPoints);

@@ -30,6 +30,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.LWFields;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -95,6 +96,7 @@ public abstract class ARiverSectionsExtractor {
         sectionTypeBuilder.add("the_geom", LineString.class);
         sectionTypeBuilder.add(FIELD_SECTION_ID, Integer.class);
         sectionTypeBuilder.add(FIELD_PROGRESSIVE, Double.class);
+        sectionTypeBuilder.add(LWFields.GAUKLER, Double.class);
         SimpleFeatureType sectionType = sectionTypeBuilder.buildFeatureType();
         SimpleFeatureBuilder sectionBuilder = new SimpleFeatureBuilder(sectionType);
 
@@ -133,10 +135,11 @@ public abstract class ARiverSectionsExtractor {
                 LineString sectionGeometry = netPoint.sectionGeometry;
 
                 Coordinate[] sectionCoordinates = sectionGeometry.getCoordinates();
-                LineString simpleSectionGeometry = gf.createLineString(new Coordinate[]{sectionCoordinates[0],
-                        sectionCoordinates[sectionCoordinates.length - 1]});
+                LineString simpleSectionGeometry = gf.createLineString(
+                        new Coordinate[]{sectionCoordinates[0], sectionCoordinates[sectionCoordinates.length - 1]});
 
-                Object[] sectionValues = new Object[]{simpleSectionGeometry, sectionId, netPoint.progressiveDistance};
+                Object[] sectionValues = new Object[]{simpleSectionGeometry, sectionId, netPoint.progressiveDistance,
+                        netPoint.getSectionGauklerStrickler()};
                 sectionBuilder.addAll(sectionValues);
 
                 SimpleFeature sectionFeature = sectionBuilder.buildFeature(null);
@@ -215,6 +218,13 @@ public abstract class ARiverSectionsExtractor {
             Integer sectionId = sectionEntry.getKey();
             SimpleFeature sectionFeature = sectionEntry.getValue();
             double progressive = ((Number) sectionFeature.getAttribute(ARiverSectionsExtractor.FIELD_PROGRESSIVE)).doubleValue();
+            Object attribute = sectionFeature.getAttribute(LWFields.GAUKLER);
+            if (attribute == null) {
+                throw new ModelsRuntimeException("The input section data do not have the value of KS.",
+                        "ARiverSectionsExtractor");
+            }
+            double ks = ((Number) attribute).doubleValue();
+
             Geometry sectionLine = (Geometry) sectionFeature.getDefaultGeometry();
 
             Geometry intersectionPoint = riverGeometry.intersection(sectionLine);
@@ -231,7 +241,7 @@ public abstract class ARiverSectionsExtractor {
                 sectionCoords[count++] = ((Geometry) sectionPoint.getDefaultGeometry()).getCoordinate();
             }
             LineString sectionLineWithPoints = gf.createLineString(sectionCoords);
-            RiverPoint rp = new RiverPoint(intersectionPoint.getCoordinate(), progressive, sectionLineWithPoints, null);
+            RiverPoint rp = new RiverPoint(intersectionPoint.getCoordinate(), progressive, sectionLineWithPoints, ks);
             rp.setSectionId(sectionId);
             riverInfo.orderedNetworkPoints.add(rp);
         }

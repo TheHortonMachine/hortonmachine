@@ -59,14 +59,14 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
-@Description(OmsLW09_AreaToNetpointAssociator.DESCRIPTION)
-@Author(name = OmsLW09_AreaToNetpointAssociator.AUTHORS, contact = OmsLW09_AreaToNetpointAssociator.CONTACTS)
-@Keywords(OmsLW09_AreaToNetpointAssociator.KEYWORDS)
-@Label(OmsLW09_AreaToNetpointAssociator.LABEL)
-@Name("_" + OmsLW09_AreaToNetpointAssociator.NAME)
-@Status(OmsLW09_AreaToNetpointAssociator.STATUS)
-@License(OmsLW09_AreaToNetpointAssociator.LICENSE)
-public class OmsLW09_AreaToNetpointAssociator extends JGTModel {
+@Description(OmsLW10_CHM_AreaToNetpointAssociator.DESCRIPTION)
+@Author(name = OmsLW10_CHM_AreaToNetpointAssociator.AUTHORS, contact = OmsLW10_CHM_AreaToNetpointAssociator.CONTACTS)
+@Keywords(OmsLW10_CHM_AreaToNetpointAssociator.KEYWORDS)
+@Label(OmsLW10_CHM_AreaToNetpointAssociator.LABEL)
+@Name("_" + OmsLW10_CHM_AreaToNetpointAssociator.NAME)
+@Status(OmsLW10_CHM_AreaToNetpointAssociator.STATUS)
+@License(OmsLW10_CHM_AreaToNetpointAssociator.LICENSE)
+public class OmsLW10_CHM_AreaToNetpointAssociator extends JGTModel {
 
     @Description(inNetPoints_DESCR)
     @In
@@ -100,10 +100,6 @@ public class OmsLW09_AreaToNetpointAssociator extends JGTModel {
     @In
     public GridCoverage2D inStand = null;
 
-    @Description(inSlope_DESCR)
-    @In
-    public GridCoverage2D inSlope = null;
-
     @Description(inConnectivity_DESCR)
     @In
     public GridCoverage2D inConnectivity = null;
@@ -130,7 +126,6 @@ public class OmsLW09_AreaToNetpointAssociator extends JGTModel {
     public static final String outNetPoints_DESCR = "The output points network layer with the additional attributes vegetation height and timber volume .";
     public static final String pConnectivityThreshold_DESCR = "Threshold on connectivity map for extracting unstable connected pixels of the basins.";
     public static final String inConnectivity_DESCR = "The input downslope connectivity index raster map.";
-    public static final String inSlope_DESCR = "The input slope raster map.";
     public static final String inStand_DESCR = "The input total stand volume raster map.";
     public static final String inDsm_DESCR = "The input superficial elevation raster map.";
     public static final String inDtm_DESCR = "The input terrain elevation raster map.";
@@ -141,7 +136,7 @@ public class OmsLW09_AreaToNetpointAssociator extends JGTModel {
     public static final String inNetPoints_DESCR = "The input hierarchy point network layer.";
     public static final int STATUS = Status.EXPERIMENTAL;
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String NAME = "lw09_areatonetpointassociator";
+    public static final String NAME = "lw10_areatonetpointassociator";
     public static final String LABEL = JGTConstants.HYDROGEOMORPHOLOGY + "/LWRecruitment";
     public static final String KEYWORDS = "network, vector, bankflull, width, inundation, vegetation";
     public static final String CONTACTS = "http://www.hydrologis.com";
@@ -161,7 +156,7 @@ public class OmsLW09_AreaToNetpointAssociator extends JGTModel {
         /*
          * extract the inundated area from the polygon
          */
-        PreparedGeometry preparedFooldingArea = getFloofindArea(inInundationArea);
+        PreparedGeometry preparedFloodingArea = getFloodingArea(inInundationArea);
 
         /*
          * extract the Canopy Height Model from DTM and DSM
@@ -205,7 +200,7 @@ public class OmsLW09_AreaToNetpointAssociator extends JGTModel {
                      * - point is inside the inundated area
                      * and fill the hashmaps with the correspondent positions.
                      */
-                    if (connectivityDouble < pConnectivityThreshold || preparedFooldingArea.intersects(point)) {
+                    if (connectivityDouble < pConnectivityThreshold || preparedFloodingArea.intersects(point)) {
                         double chmDouble = chmIter.getSampleDouble(c, r, 0);
                         double standDouble = standIter.getSampleDouble(c, r, 0);
                         DescriptiveStatistics summaryHeightStatistics = heightBasin2ValueMap.get(netNum);
@@ -230,7 +225,7 @@ public class OmsLW09_AreaToNetpointAssociator extends JGTModel {
          * create the structure for the output attributes and insert the summary statistics
          * as attributes
          */
-        FeatureExtender ext = new FeatureExtender(inNetPoints.getSchema(), new String[]{LWFields.VOLUME, LWFields.MEDIAN},
+        FeatureExtender ext = new FeatureExtender(inNetPoints.getSchema(), new String[]{LWFields.VEG_VOL, LWFields.VEG_H},
                 new Class[]{Double.class, Double.class});
         List<SimpleFeature> inNetworkPointsList = FeatureUtilities.featureCollectionToList(inNetPoints);
         DefaultFeatureCollection finalNetworkPointsFC = new DefaultFeatureCollection();
@@ -262,7 +257,7 @@ public class OmsLW09_AreaToNetpointAssociator extends JGTModel {
     /*
     * extract the inundated area from the polygon
     */
-    private PreparedGeometry getFloofindArea( SimpleFeatureCollection inFloodingAreas ) throws Exception {
+    private PreparedGeometry getFloodingArea( SimpleFeatureCollection inFloodingAreas ) throws Exception {
         List<Geometry> geometriesList = FeatureUtilities.featureCollectionToGeometriesList(inFloodingAreas, true, null);
         Geometry polygonUnion = CascadedPolygonUnion.union(geometriesList);
         PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(polygonUnion);

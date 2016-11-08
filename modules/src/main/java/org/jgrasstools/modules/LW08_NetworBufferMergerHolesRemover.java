@@ -17,16 +17,16 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworBufferMergerHolesRemover.AUTHORS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworBufferMergerHolesRemover.CONTACTS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworBufferMergerHolesRemover.DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworBufferMergerHolesRemover.KEYWORDS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworBufferMergerHolesRemover.LABEL;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworBufferMergerHolesRemover.LICENSE;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworBufferMergerHolesRemover.NAME;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworBufferMergerHolesRemover.STATUS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworBufferMergerHolesRemover.inInundationArea_DESCR;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworBufferMergerHolesRemover.outInundationArea_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW09_NetworBufferMergerHolesRemover.AUTHORS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW09_NetworBufferMergerHolesRemover.CONTACTS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW09_NetworBufferMergerHolesRemover.DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW09_NetworBufferMergerHolesRemover.KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW09_NetworBufferMergerHolesRemover.LABEL;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW09_NetworBufferMergerHolesRemover.LICENSE;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW09_NetworBufferMergerHolesRemover.NAME;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW09_NetworBufferMergerHolesRemover.STATUS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW09_NetworBufferMergerHolesRemover.inInundationArea_DESCR;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW09_NetworBufferMergerHolesRemover.outInundationArea_DESCR;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -40,7 +40,7 @@ import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW08_NetworBufferMergerHolesRemover;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment.OmsLW09_NetworBufferMergerHolesRemover;
 
 @Description(DESCRIPTION)
 @Author(name = AUTHORS, contact = CONTACTS)
@@ -63,7 +63,7 @@ public class LW08_NetworBufferMergerHolesRemover extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        OmsLW08_NetworBufferMergerHolesRemover m = new OmsLW08_NetworBufferMergerHolesRemover();
+        OmsLW09_NetworBufferMergerHolesRemover m = new OmsLW09_NetworBufferMergerHolesRemover();
         m.inInundationArea = getVector(inInundationArea);
         m.process();
         dumpVector(m.outInundationArea, outInundationArea);

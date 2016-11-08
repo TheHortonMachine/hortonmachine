@@ -756,6 +756,7 @@ public class ModelsEngine {
                     }
                 }
             }
+            pointsIter.close();
         }
 
         // FIND CONFLUENCES AND NETWORK STARTING POINTS (MOST UPSTREAM)

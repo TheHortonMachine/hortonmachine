@@ -30,10 +30,16 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -57,12 +63,17 @@ public class OmsLW03_NetworkHierarchyToPointsSplitter extends JGTModel implement
     @In
     public SimpleFeatureCollection inNet = null;
 
+    @Description(pGauklerStrickler_DESCR)
+    @In
+    public double pGauklerStrickler = 30.0;
+
     @Description(outNetPoints_DESCR)
     @Out
     public SimpleFeatureCollection outNetPoints = null;
 
     // VARS DOC START
     public static final String outNetPoints_DESCR = "The output points network layer";
+    public static final String pGauklerStrickler_DESCR = "A constant value of the Gaukler and Strickler coefficient to assign to all the sections";
     public static final String inNet_DESCR = "The input hierarchy network layer";
     public static final int STATUS = Status.EXPERIMENTAL;
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
@@ -78,6 +89,10 @@ public class OmsLW03_NetworkHierarchyToPointsSplitter extends JGTModel implement
     public void process() throws Exception {
         checkNull(inNet);
 
+        if (pGauklerStrickler < 10) {
+            throw new ModelsIllegalargumentException("KS can't be negative.", this);
+        }
+
         // Creates the list of contained features
         List<SimpleFeature> netList = FeatureUtilities.featureCollectionToList(inNet);
 
@@ -91,6 +106,7 @@ public class OmsLW03_NetworkHierarchyToPointsSplitter extends JGTModel implement
         b.add("the_geom", Point.class);
         b.add(PFAF, String.class);
         b.add(LINKID, Integer.class);
+        b.add(GAUKLER, Double.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
@@ -109,7 +125,7 @@ public class OmsLW03_NetworkHierarchyToPointsSplitter extends JGTModel implement
 
                     Point point = gf.createPoint(coordinates[j]);
 
-                    Object[] values = new Object[]{point, pfaf, count};
+                    Object[] values = new Object[]{point, pfaf, count, pGauklerStrickler};
                     builder.addAll(values);
                     SimpleFeature feature = builder.buildFeature(null);
 
@@ -120,6 +136,20 @@ public class OmsLW03_NetworkHierarchyToPointsSplitter extends JGTModel implement
 
         }
         outNetPoints = outNetPointsFC;
+    }
+    public static void main( String[] args ) throws Exception {
+
+        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/data01/";
+
+        OmsLW03_NetworkHierarchyToPointsSplitter ex = new OmsLW03_NetworkHierarchyToPointsSplitter();
+        ex.inNet = OmsVectorReader.readVector(base + "extracted_net.shp");
+        ex.pGauklerStrickler = 30.0;
+
+        ex.process();
+        SimpleFeatureCollection outNetPoints = ex.outNetPoints;
+        
+        OmsVectorWriter.writeVector(base + "net_point.shp", outNetPoints);
+
     }
 
 }

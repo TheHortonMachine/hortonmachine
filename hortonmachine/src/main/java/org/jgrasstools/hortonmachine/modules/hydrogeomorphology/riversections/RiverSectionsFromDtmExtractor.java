@@ -48,7 +48,7 @@ import com.vividsolutions.jts.linearref.LengthIndexedLine;
 public class RiverSectionsFromDtmExtractor extends ARiverSectionsExtractor {
 
     /**
-     * Constructor.
+     * Extracts sections on the dtm from a riverline at regular intervals.
      * 
      * @param riverLine the river line to consider for the cross sections extraction.
      *          <b>The river line has to be oriented from upstream to downstream.</b>
@@ -78,28 +78,101 @@ public class RiverSectionsFromDtmExtractor extends ARiverSectionsExtractor {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(elevation);
         Envelope envelope = regionMap.toEnvelope();
 
+        riverPointsList = new ArrayList<RiverPoint>();
+        LengthIndexedLine indexedLine = new LengthIndexedLine(riverLine);
+
         double length = riverLine.getLength();
         int totalWork = (int) (length / sectionsInterval);
         monitor.beginTask("Extracting sections...", totalWork);
-
-        riverPointsList = new ArrayList<RiverPoint>();
-        LengthIndexedLine indexedLine = new LengthIndexedLine(riverLine);
         double runningLength = 0;
         while( runningLength <= length ) {
             // important to extract from left to right
+
+            // TODO extract with point before and after in order to have more regular sections
             Coordinate leftPoint = indexedLine.extractPoint(runningLength, sectionsWidth);
             Coordinate rightPoint = indexedLine.extractPoint(runningLength, -sectionsWidth);
             if (envelope.intersects(leftPoint) && envelope.intersects(rightPoint)) {
-                RiverPoint netPoint = getNetworkPoint(riverLine, elevIter, gridGeometry, runningLength, leftPoint, rightPoint);
+                RiverPoint netPoint = getNetworkPoint(riverLine, elevIter, gridGeometry, runningLength, null, leftPoint,
+                        rightPoint);
                 if (netPoint != null)
                     riverPointsList.add(netPoint);
-
             }
             runningLength = runningLength + sectionsInterval;
             monitor.worked(1);
         }
         monitor.done();
 
+        process(riverLine, sectionsWidth, bridgePoints, bridgeWidthAttribute, bridgeBuffer, elevIter, gridGeometry, envelope,
+                indexedLine);
+    }
+
+    /**
+     * Extracts sections on the dtm on predefined points with a given id and KS.
+     * 
+     * @param riverLine the river line to consider for the cross sections extraction.
+     *          <b>The river line has to be oriented from upstream to downstream.</b>
+     * @param riverPointCoordinates the points coordinates.
+     * @param riverPointIds the points ids.
+     * @param riverPointKs the points KS.
+     * @param elevation the elevation {@link GridCoverage2D}.
+     * @param sectionsInterval the distance to use between extracted sections. 
+     * @param sectionsWidth the width of the extracted sections.
+     * @param bridgePoints the list of bridge {@link Point}s. 
+     * @param bridgeWidthAttribute the name of the attribute in the bridges feature that defines the width of the bridge.
+     * @param bridgeBuffer a buffer to use for the bridge inside which the bridge is considered to be on the river.
+     * @param monitor the progress monitor.
+     * @throws Exception
+     */
+    public RiverSectionsFromDtmExtractor( //
+            LineString riverLine, //
+            Coordinate[] riverPointCoordinates, //
+            int[] riverPointIds, //
+            double[] riverPointKs, GridCoverage2D elevation, //
+            double sectionsInterval, //
+            double sectionsWidth, //
+            List<FeatureMate> bridgePoints, //
+            String bridgeWidthAttribute, //
+            double bridgeBuffer, //
+            IJGTProgressMonitor monitor //
+    ) throws Exception {
+        crs = elevation.getCoordinateReferenceSystem();
+
+        RandomIter elevIter = CoverageUtilities.getRandomIterator(elevation);
+        GridGeometry2D gridGeometry = elevation.getGridGeometry();
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(elevation);
+        Envelope envelope = regionMap.toEnvelope();
+
+        riverPointsList = new ArrayList<RiverPoint>();
+        LengthIndexedLine indexedLine = new LengthIndexedLine(riverLine);
+
+        monitor.beginTask("Extracting sections in supplied net points...", riverPointCoordinates.length);
+        for( int i = 0; i < riverPointCoordinates.length; i++ ) {
+            double pointIndex = indexedLine.indexOf(riverPointCoordinates[i]);
+            // important to extract from left to right
+            Coordinate leftPoint = indexedLine.extractPoint(pointIndex, sectionsWidth);
+            Coordinate rightPoint = indexedLine.extractPoint(pointIndex, -sectionsWidth);
+            if (envelope.intersects(leftPoint) && envelope.intersects(rightPoint)) {
+                // TODO add ks of net point for section
+
+                RiverPoint netPoint = getNetworkPoint(riverLine, elevIter, gridGeometry, pointIndex, riverPointKs[i], leftPoint,
+                        rightPoint);
+                netPoint.setSectionId(riverPointIds[i]);
+//                netPoint.setSectionGaukler(riverPointKs[i]);
+                
+                if (netPoint != null)
+                    riverPointsList.add(netPoint);
+            }
+            monitor.worked(1);
+        }
+        monitor.done();
+
+        process(riverLine, sectionsWidth, bridgePoints, bridgeWidthAttribute, bridgeBuffer, elevIter, gridGeometry, envelope,
+                indexedLine);
+    }
+
+    private void process( LineString riverLine, double sectionsWidth, List<FeatureMate> bridgePoints, String bridgeWidthAttribute,
+            double bridgeBuffer, RandomIter elevIter, GridGeometry2D gridGeometry, Envelope envelope,
+            LengthIndexedLine indexedLine ) throws TransformException {
         /*
          * handle bridges
          */
@@ -125,18 +198,20 @@ public class RiverSectionsFromDtmExtractor extends ARiverSectionsExtractor {
                     Coordinate rightPostBridgePoint = indexedLine.extractPoint(post, -sectionsWidth);
 
                     // bridge extraction
-                    RiverPoint netPoint = getNetworkPoint(riverLine, elevIter, gridGeometry, bridgeIndex, leftBridgePoint,
+                    RiverPoint netPoint = getNetworkPoint(riverLine, elevIter, gridGeometry, bridgeIndex, null, leftBridgePoint,
                             rightBridgePoint);
                     if (netPoint != null)
                         riverPointsList.add(netPoint);
 
                     // pre bridge extraction
-                    netPoint = getNetworkPoint(riverLine, elevIter, gridGeometry, pre, leftPreBridgePoint, rightPreBridgePoint);
+                    netPoint = getNetworkPoint(riverLine, elevIter, gridGeometry, pre, null, leftPreBridgePoint,
+                            rightPreBridgePoint);
                     if (netPoint != null)
                         riverPointsList.add(netPoint);
 
                     // post bridge extraction
-                    netPoint = getNetworkPoint(riverLine, elevIter, gridGeometry, post, leftPostBridgePoint, rightPostBridgePoint);
+                    netPoint = getNetworkPoint(riverLine, elevIter, gridGeometry, post, null, leftPostBridgePoint,
+                            rightPostBridgePoint);
                     if (netPoint != null)
                         riverPointsList.add(netPoint);
                 }
@@ -162,7 +237,6 @@ public class RiverSectionsFromDtmExtractor extends ARiverSectionsExtractor {
             }
         }
         Collections.sort(riverPointsList);
-        monitor.done();
     }
     /**
      * Extract a {@link RiverPoint}.
@@ -171,13 +245,14 @@ public class RiverSectionsFromDtmExtractor extends ARiverSectionsExtractor {
      * @param elevIter the elevation raster.
      * @param gridGeometry the raster geometry.
      * @param progressiveDistance the progressive distance along the main river.
+     * @param ks the KS for the section.
      * @param leftPoint the left point of the section.
      * @param rightPoint the right point of the section.
      * @return the created {@link RiverPoint}.
      * @throws TransformException
      */
     private RiverPoint getNetworkPoint( LineString riverLine, RandomIter elevIter, GridGeometry2D gridGeometry,
-            double progressiveDistance, Coordinate leftPoint, Coordinate rightPoint ) throws TransformException {
+            double progressiveDistance, Double ks, Coordinate leftPoint, Coordinate rightPoint ) throws TransformException {
         List<ProfilePoint> sectionPoints = CoverageUtilities.doProfile(elevIter, gridGeometry, rightPoint, leftPoint);
         List<Coordinate> coordinate3dList = new ArrayList<Coordinate>();
         for( ProfilePoint sectionPoint : sectionPoints ) {
@@ -185,8 +260,8 @@ public class RiverSectionsFromDtmExtractor extends ARiverSectionsExtractor {
             position.z = sectionPoint.getElevation();
             coordinate3dList.add(position);
         }
-        LineString bridgeLine3d = gf.createLineString(coordinate3dList.toArray(new Coordinate[0]));
-        Geometry crossPoint = bridgeLine3d.intersection(riverLine);
+        LineString sectionLine3d = gf.createLineString(coordinate3dList.toArray(new Coordinate[0]));
+        Geometry crossPoint = sectionLine3d.intersection(riverLine);
         Coordinate coordinate = crossPoint.getCoordinate();
         if (coordinate == null) {
             return null;
@@ -194,7 +269,7 @@ public class RiverSectionsFromDtmExtractor extends ARiverSectionsExtractor {
         int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, null);
         double elev = elevIter.getSampleDouble(colRow[0], colRow[1], 0);
         coordinate.z = elev;
-        RiverPoint netPoint = new RiverPoint(coordinate, progressiveDistance, bridgeLine3d, null);
+        RiverPoint netPoint = new RiverPoint(coordinate, progressiveDistance, sectionLine3d, ks);
         return netPoint;
     }
 

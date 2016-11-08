@@ -33,6 +33,8 @@ import oms3.annotations.Unit;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -118,6 +120,7 @@ public class OmsLW05_BridgesDamsWidthAdder extends JGTModel implements LWFields 
          * of the input layer with dams consider only the check dams to 
          * contract the channel, check dams have TYPE 230 and 237
          */
+        //TODO: remove this filter??
         Filter briglieFilter = FilterUtilities.getCQLFilter("TYPE > 230 AND TYPE < 237");
 
         /*
@@ -221,4 +224,21 @@ public class OmsLW05_BridgesDamsWidthAdder extends JGTModel implements LWFields 
 
     }
 
+    public static void main( String[] args ) throws Exception {
+
+        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/data01/";
+
+        OmsLW05_BridgesDamsWidthAdder ex = new OmsLW05_BridgesDamsWidthAdder();
+        ex.inNetPoints = OmsVectorReader.readVector(base + "net_point_width.shp");
+        ex.inBridges = OmsVectorReader.readVector(base + "W_Brcke_2008_extract.shp");
+        ex.inDams = OmsVectorReader.readVector(base + "W_Querwerke_2008_extract.shp");
+        ex.pFixedDamsWidth = 2.0;
+
+        ex.process();
+        SimpleFeatureCollection outNetPoints = ex.outNetPoints;
+        
+        OmsVectorWriter.writeVector(base + "net_point_width_damsbridg.shp", outNetPoints);
+
+    }
+    
 }

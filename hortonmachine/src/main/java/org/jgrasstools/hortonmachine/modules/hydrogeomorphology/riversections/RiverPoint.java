@@ -60,7 +60,7 @@ public class RiverPoint implements Comparable<RiverPoint> {
 
     private List<Double> sectionProgressive = null;
 
-    private List<Double> sectionGauklerStrickler = null;
+    private Double sectionGauklerStrickler;
 
     private Coordinate[] sectionCoordinates = null;
 
@@ -84,12 +84,13 @@ public class RiverPoint implements Comparable<RiverPoint> {
      * @param sectionGeometry optional section {@link LineString geometry}.
      *          The line has to be constructed of 3d {@link Coordinate}s that 
      *          go from left to right  looking downstream.
+     * @param sectionGauklerStrickler the option KS value. If null, default is assigned.         
      */
     public RiverPoint( Coordinate point, double progressiveDistance, LineString sectionGeometry,
-            List<Double> sectionGauklerStrickler ) {
+            Double sectionGauklerStrickler ) {
         this.point = point;
         this.progressiveDistance = progressiveDistance;
-        
+
         if (sectionGeometry != null) {
             this.sectionGeometry = sectionGeometry;
 
@@ -117,15 +118,10 @@ public class RiverPoint implements Comparable<RiverPoint> {
             startNodeIndex = 0;
             endNodeIndex = sectionProgressive.size() - 1;
 
-            if (sectionGauklerStrickler==null) {
-                sectionGauklerStrickler = new ArrayList<>();
-                // TODO make this more custom. For now ok for testing 
-                for( int i = 0; i < sectionProgressive.size(); i++ ) {
-                    sectionGauklerStrickler.add(30.0);
-                }
+            if (sectionGauklerStrickler != null) {
+                this.sectionGauklerStrickler = sectionGauklerStrickler;
             }
-            this.sectionGauklerStrickler = sectionGauklerStrickler;
-            
+
             hasSection = true;
         }
     }
@@ -137,9 +133,13 @@ public class RiverPoint implements Comparable<RiverPoint> {
     public List<Double> getSectionProgressive() {
         return sectionProgressive;
     }
-    
-    public List<Double> getSectionGauklerStrickler() {
+
+    public double getSectionGauklerStrickler() {
         return sectionGauklerStrickler;
+    }
+
+    public boolean hasGauklerStrickler() {
+        return sectionGauklerStrickler != null;
     }
 
     /**
@@ -181,6 +181,17 @@ public class RiverPoint implements Comparable<RiverPoint> {
      */
     public void setSectionId( int sectionId ) {
         this.sectionId = sectionId;
+    }
+
+    /**
+     * Sets the section ks for the current section.
+     * 
+     * <p>If not set the sectionId is -1.</p>
+     * 
+     * @param sectionId the sectionId to set.
+     */
+    public void setSectionGaukler( double sectionGauklerStrickler ) {
+        this.sectionGauklerStrickler = sectionGauklerStrickler;
     }
 
     /**

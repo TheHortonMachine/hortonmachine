@@ -71,7 +71,7 @@ public class LasUtils {
     public static final String ID = "rid"; // record id
     public static final String ELEVATION = "elev";
     public static final String INTENSITY = "intensity";
-    public static final String CLASSIFICATION = "classifica";
+    public static final String CLASSIFICATION = "classificazione";
     public static final String IMPULSE = "impulse";
     public static final String NUM_OF_IMPULSES = "numimpulse";
     private static SimpleFeatureBuilder lasSimpleFeatureBuilder;
