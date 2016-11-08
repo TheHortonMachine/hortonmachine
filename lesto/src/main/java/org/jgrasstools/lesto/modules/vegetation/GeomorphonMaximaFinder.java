@@ -25,7 +25,6 @@ import static org.jgrasstools.lesto.modules.vegetation.OmsGeomorphonMaximaFinder
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -88,17 +87,6 @@ public class GeomorphonMaximaFinder extends JGTModel {
         gmf.pm = pm;
         gmf.process();
         dumpVector(gmf.outMaxima, outMaxima);
-    }
-
-    public static void main( String[] args ) throws Exception {
-        GeomorphonMaximaFinder gmf = new GeomorphonMaximaFinder();
-        gmf.inDSM = "/home/hydrologis/Dropbox/hydrologis/lavori/2016_unibz/test_geomorphon_jgtools/plot10_dsm.tif";
-        gmf.inDTM = "/home/hydrologis/Dropbox/hydrologis/lavori/2016_unibz/test_geomorphon_jgtools/plot10_dtm.tif";
-        gmf.pRadius = 1.4;
-        gmf.pThreshold = 0.96;
-        gmf.pElevDiffThres = 6.2;
-        gmf.outMaxima = "/home/hydrologis/Dropbox/hydrologis/lavori/2016_unibz/test_geomorphon_jgtools/plot10_geomorph_2_1_10.shp";
-        gmf.process();
     }
 
 }
