@@ -18,6 +18,8 @@ org.jgrasstools.lesto.modules.utilities.LasOverviewCreator
 org.jgrasstools.lesto.modules.utilities.LasPointDensityExtractor
 org.jgrasstools.lesto.modules.utilities.LasSlicer
 org.jgrasstools.lesto.modules.vector.LasChmTriangulation
+org.jgrasstools.lesto.modules.vegetation.GeomorphonMaximaFinder
+org.jgrasstools.lesto.modules.vegetation.OmsGeomorphonMaximaFinder
 org.jgrasstools.lesto.modules.vegetation.OmsPointCloudMaximaFinder
 org.jgrasstools.lesto.modules.vegetation.PointCloudMaximaFinder
 org.jgrasstools.lesto.modules.vegetation.RasterMaximaFinder

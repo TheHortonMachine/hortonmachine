@@ -36,7 +36,33 @@ package org.jgrasstools.hortonmachine.modules.geomorphology.geomorphon;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GeomorphonClassification {
+public enum GeomorphonClassification {
+    FLAT(1000, "flat"), //
+    PEAK(1001, "peak"), //
+    RIDGE(1002, "ridge"), //
+    SHOULDER(1003, "shoulder"), //
+    SPUR(1004, "spur"), //
+    SLOPE(1005, "slope"), //
+    HOLLOW(1006, "hollow"), //
+    FOOTSLOPE(1007, "footslope"), //
+    VALLEY(1008, "valley"), //
+    PIT(1009, "pit");
+
+    private int code;
+    private String label;
+
+    private GeomorphonClassification( int code, String label ) {
+        this.code = code;
+        this.label = label;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public String getLabel() {
+        return label;
+    }
 
     /**
      * The geomorphon classification matrix.
@@ -45,27 +71,27 @@ public class GeomorphonClassification {
      * <p>rows = minuses count
      */
     private static int[][] categories = new int[][]{//
-    /*    */{1000, 1000, 1000, 1007, 1007, 1008, 1008, 1008, 1009},// 0
-            {1000, 1000, 1007, 1007, 1007, 1008, 1008, 1008, -1},// 1
-            {1000, 1003, 1005, 1005, 1006, 1006, 1008, -1, -1},// 2
-            {1003, 1003, 1005, 1005, 1005, 1006, -1, -1, -1},// 3
-            {1003, 1003, 1004, 1005, 1005, -1, -1, -1, -1},// 4
-            {1002, 1002, 1004, 1004, -1, -1, -1, -1, -1},// 5
-            {1002, 1002, 1002, -1, -1, -1, -1, -1, -1},// 6
-            {1002, 1002, -1, -1, -1, -1, -1, -1, -1},// 7
+            /*    */{1000, 1000, 1000, 1007, 1007, 1008, 1008, 1008, 1009}, // 0
+            {1000, 1000, 1007, 1007, 1007, 1008, 1008, 1008, -1}, // 1
+            {1000, 1003, 1005, 1005, 1006, 1006, 1008, -1, -1}, // 2
+            {1003, 1003, 1005, 1005, 1005, 1006, -1, -1, -1}, // 3
+            {1003, 1003, 1004, 1005, 1005, -1, -1, -1, -1}, // 4
+            {1002, 1002, 1004, 1004, -1, -1, -1, -1, -1}, // 5
+            {1002, 1002, 1002, -1, -1, -1, -1, -1, -1}, // 6
+            {1002, 1002, -1, -1, -1, -1, -1, -1, -1}, // 7
             {1001, -1, -1, -1, -1, -1, -1, -1, -1},// 8
     };
 
     private static int[][] colorsRGB = new int[][]{//
-    /*    */{127, 127, 127},// 1000
-            {108, 0, 0},// 1001
-            {255, 0, 0},// 1002
-            {255, 165, 0},// 1003
-            {255, 219, 61},// 1004
-            {255, 255, 0},// 1005
-            {143, 203, 44},// 1006
-            {50, 189, 160},// 1007
-            {0, 0, 255},// 1008
+            /*    */{127, 127, 127}, // 1000
+            {108, 0, 0}, // 1001
+            {255, 0, 0}, // 1002
+            {255, 165, 0}, // 1003
+            {255, 219, 61}, // 1004
+            {255, 255, 0}, // 1005
+            {143, 203, 44}, // 1006
+            {50, 189, 160}, // 1007
+            {0, 0, 255}, // 1008
             {0, 0, 0},// 1009
     };
 
