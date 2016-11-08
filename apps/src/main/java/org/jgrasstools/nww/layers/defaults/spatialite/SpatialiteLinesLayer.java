@@ -23,9 +23,9 @@ import java.util.List;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.spatialite.QueryResult;
-import org.jgrasstools.gears.spatialite.GTSpatialiteDb;
+import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
-import org.jgrasstools.nww.gui.style.SimpleStyle;
+import org.jgrasstools.gears.utils.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
 import org.jgrasstools.nww.shapes.InfoLine;
 import org.jgrasstools.nww.utils.NwwUtilities;
@@ -62,12 +62,12 @@ public class SpatialiteLinesLayer extends RenderableLayer implements NwwVectorLa
     private String title;
 
     private String tableName;
-    private GTSpatialiteDb db;
+    private GTSpatialiteThreadsafeDb db;
     private ReferencedEnvelope tableBounds;
     private int featureLimit;
 
     public SpatialiteLinesLayer( ASpatialDb db, String tableName, int featureLimit ) {
-        this.db = (GTSpatialiteDb) db;
+        this.db = (GTSpatialiteThreadsafeDb) db;
         this.tableName = tableName;
         this.featureLimit = featureLimit;
 

@@ -31,10 +31,10 @@ import org.jgrasstools.gears.io.las.core.liblas.LiblasJNALibrary;
 import org.jgrasstools.gears.io.las.core.liblas.LiblasReader;
 import org.jgrasstools.gears.io.las.core.liblas.LiblasWrapper;
 import org.jgrasstools.gears.io.las.core.liblas.LiblasWriter;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasReaderBuffered;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasReaderEachPoint;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
 import org.jgrasstools.gears.io.las.utils.LasUtils;
-import org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator;
 import org.jgrasstools.gears.utils.HMTestCase;
 @SuppressWarnings("nls")
 public class TestLasIO extends HMTestCase {
@@ -95,6 +95,29 @@ public class TestLasIO extends HMTestCase {
         processFile(name, expectedCount, true);
     }
 
+    public void testLasContentReader() throws Exception {
+
+        String name = "las/1.0_0.las";
+        checkFileContent(fileFromName(name));
+        name = "las/1.0_1.las";
+        checkFileContent(fileFromName(name));
+        name = "las/1.1_0.las";
+        checkFileContent(fileFromName(name));
+        name = "las/1.1_1.las";
+        checkFileContent(fileFromName(name));
+        name = "las/1.2_0.las";
+        checkFileContent(fileFromName(name));
+        name = "las/1.2_1.las";
+        checkFileContent(fileFromName(name));
+        name = "las/1.2_2.las";
+        checkFileContent(fileFromName(name));
+        name = "las/1.2_3.las";
+        checkFileContent(fileFromName(name));
+        name = "las/1.2-with-color.las";
+        checkFileContent(fileFromName(name));
+
+    }
+
     public void testLazReader() throws Exception {
         if (doNative) {
             String name = "las/1.2-with-color.laz";
@@ -110,7 +133,7 @@ public class TestLasIO extends HMTestCase {
             if (recordsCount != 0) {
                 // we have laz support
                 assertEquals(expectedCount, recordsCount);
-            }else{
+            } else {
                 System.out.println("No laz support");
             }
             libLasReader.close();
@@ -154,7 +177,7 @@ public class TestLasIO extends HMTestCase {
         URL lasUrl = this.getClass().getClassLoader().getResource(lasWriteFileName);
         File lasFile = new File(lasUrl.toURI());
 
-        LasReader lasReader = new LasReader(lasFile, null);
+        LasReaderBuffered lasReader = new LasReaderBuffered(lasFile, null);
         lasReader.open();
         ILasHeader lasHeader = lasReader.getHeader();
 
@@ -171,7 +194,7 @@ public class TestLasIO extends HMTestCase {
         }
         lasWriter.close();
 
-        LasReader tmpLasReader = new LasReader(lasTmp, null);
+        LasReaderBuffered tmpLasReader = new LasReaderBuffered(lasTmp, null);
         tmpLasReader.open();
         ILasHeader tmpLasHeader = tmpLasReader.getHeader();
         checkHeader(lasHeader, tmpLasHeader);
@@ -184,8 +207,8 @@ public class TestLasIO extends HMTestCase {
         lasTmp.deleteOnExit();
     }
 
-    private void processFile( String name, long expectedCount, boolean hasColor ) throws URISyntaxException, Exception,
-            IOException {
+    private void processFile( String name, long expectedCount, boolean hasColor )
+            throws URISyntaxException, Exception, IOException {
         URL lasUrl = this.getClass().getClassLoader().getResource(name);
         File lasFile = new File(lasUrl.toURI());
         LiblasReader libLasReader = null;
@@ -197,7 +220,7 @@ public class TestLasIO extends HMTestCase {
             assertEquals(hasColor, libLasHeader.hasRGB());
         }
 
-        LasReader lasReader = new LasReader(lasFile, null);
+        LasReaderBuffered lasReader = new LasReaderBuffered(lasFile, null);
         lasReader.open();
         ILasHeader lasHeader = lasReader.getHeader();
         assertEquals(hasColor, lasHeader.hasRGB());
@@ -250,6 +273,37 @@ public class TestLasIO extends HMTestCase {
 
     }
 
+    private void checkFileContent( File lasFile ) throws URISyntaxException, Exception, IOException {
+        try (LasReaderBuffered lasReaderBuffered = new LasReaderBuffered(lasFile, null);
+                LasReaderEachPoint lasReaderEachPoint = new LasReaderEachPoint(lasFile, null);) {
+            lasReaderBuffered.open();
+            lasReaderEachPoint.open();
+
+            long count = 0;
+            while( lasReaderEachPoint.hasNextPoint() ) {
+                assertTrue(lasReaderBuffered.hasNextPoint());
+
+                LasRecord lasBuf = lasReaderBuffered.getNextPoint();
+                LasRecord lasEach = lasReaderEachPoint.getNextPoint();
+                boolean areEqual = LasUtils.lasRecordEqual(lasBuf, lasEach);
+                if (!areEqual) {
+                    System.err.println(count);
+                }
+                assertTrue(areEqual);
+                count++;
+            }
+
+            // System.out.println("Read points: " + count);
+        }
+
+    }
+
+    private File fileFromName( String name ) throws URISyntaxException {
+        URL lasUrl = this.getClass().getClassLoader().getResource(name);
+        File lasFile = new File(lasUrl.toURI());
+        return lasFile;
+    }
+
     private void checkHeader( ILasHeader header, ILasHeader tmpHeader ) {
         assertEquals(header.getOffset(), tmpHeader.getOffset());
         // assertEquals(header.getRecordLength(), tmpHeader.getRecordLength());
@@ -263,5 +317,5 @@ public class TestLasIO extends HMTestCase {
         assertEquals(lasEnv.getMaxY(), tmpLasEnv.getMaxY(), DELTA);
         assertEquals(lasEnv.getMaxZ(), tmpLasEnv.getMaxZ(), DELTA);
     }
-    
+
 }

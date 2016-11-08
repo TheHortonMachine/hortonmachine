@@ -34,7 +34,7 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasReaderBuffered;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -84,35 +84,6 @@ public class LasUtils {
 
     public static enum VALUETYPE {
         ELEVATION, GROUNDELEVATION, CLASSIFICATION, INTENSITY, IMPULSE, NUM_OF_IMPULSES, X, Y
-    }
-
-    public static enum POINTTYPE {
-        UNCLASSIFIED(1, "UNCLASSIFIED"), //
-        GROUND(2, "GROUND"), //
-        VEGETATION_MIN(3, "LOW VEGETATION"), //
-        VEGETATION_MED(4, "MEDIUM VEGETATION"), //
-        VEGETATION_MAX(5, "HIGH VEGETATION"), //
-        BUILDING(6, "BUILDING"), //
-        LOW_POINT(7, "LOW POINT (NOISE)"), //
-        MASS_POINT(8, "MODEL KEY-POINT (MASS)"), //
-        WATER(9, "WATER"), //
-        OVERLAP(12, "OVERLAP");
-
-        private String label;
-        private int value;
-
-        POINTTYPE( int value, String label ) {
-            this.value = value;
-            this.label = label;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public int getValue() {
-            return value;
-        }
     }
 
     /**
@@ -335,8 +306,7 @@ public class LasUtils {
         List<File> filesList = iter.filesList;
 
         for( File file : filesList ) {
-            ALasReader r = new LasReader(file, crs);
-            try {
+            try(ALasReader r = new LasReaderBuffered(file, crs)){
                 r.open();
                 ReferencedEnvelope3D envelope = r.getHeader().getDataEnvelope();
                 Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(envelope);
@@ -344,8 +314,6 @@ public class LasUtils {
                 builder.addAll(objs);
                 SimpleFeature feature = builder.buildFeature(null);
                 newCollection.add(feature);
-            } finally {
-                r.close();
             }
         }
 

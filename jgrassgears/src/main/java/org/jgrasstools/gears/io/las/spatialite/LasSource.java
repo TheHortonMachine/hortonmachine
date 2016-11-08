@@ -51,4 +51,6 @@ public class LasSource {
     public String name;
     public double minElev;
     public double maxElev;
+    public double minIntens;
+    public double maxIntens;
 }

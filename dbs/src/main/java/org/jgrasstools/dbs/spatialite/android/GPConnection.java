@@ -19,6 +19,7 @@ package org.jgrasstools.dbs.spatialite.android;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 
 import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
@@ -77,6 +78,16 @@ public class GPConnection implements IJGTConnection {
     @Override
     public void commit() throws SQLException {
         throw new RuntimeException("Function not supported: commit()");
+    }
+
+    @Override
+    public Savepoint setSavepoint() throws Exception {
+        throw new RuntimeException("Function not supported: setSavepoint()");
+    }
+
+    @Override
+    public void rollback( Savepoint savepoint ) throws Exception {
+        throw new RuntimeException("Function not supported: rollback()");
     }
 
 }

@@ -56,7 +56,7 @@ import oms3.annotations.UI;
  */
 @SuppressWarnings("nls")
 public class JGrassGears {
-    private static final Logger logger = LoggerFactory.getLogger(JGrassGears.class);
+    // private static final Logger logger = LoggerFactory.getLogger(JGrassGears.class);
     /**
      * A {@link LinkedHashMap map} of all the class names and the class itself.
      */
@@ -134,7 +134,7 @@ public class JGrassGears {
      */
     public static JGrassGears getInstance( URL baseclassUrl ) {
         jgrassGears = new JGrassGears(baseclassUrl);
-        logger.debug("init JGrassGears modules classes");
+        // logger.debug("init JGrassGears modules classes");
         jgrassGears.gatherInformations();
         return jgrassGears;
     }
@@ -146,7 +146,7 @@ public class JGrassGears {
                 baseclassUrl = ClasspathUrlFinder.findClassBase(JGrassGears.class);
             }
 
-            logger.debug("base class url: " + baseclassUrl);
+            // logger.debug("base class url: " + baseclassUrl);
 
             AnnotationDB db = new AnnotationDB();
             db.scanArchives(baseclassUrl);
@@ -157,7 +157,7 @@ public class JGrassGears {
                 if (!className.startsWith("org.jgrasstools.gears")) {
                     continue;
                 }
-                logger.debug("check: " + className);
+                // logger.debug("check: " + className);
                 int lastDot = className.lastIndexOf('.');
                 String name = className.substring(lastDot + 1);
                 Class< ? > clazz = null;

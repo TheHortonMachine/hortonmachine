@@ -60,7 +60,7 @@ public abstract class ALasReader extends Las implements AutoCloseable{
      * 
      * @return <code>true</code> if there are still data to read.
      */
-    public abstract boolean hasNextPoint();
+    public abstract boolean hasNextPoint() throws IOException;
 
     /**
      * Read the next record into a {@link LasRecord} object.

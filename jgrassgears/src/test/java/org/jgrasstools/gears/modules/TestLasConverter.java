@@ -24,7 +24,7 @@ import java.util.List;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasReaderBuffered;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
@@ -64,7 +64,7 @@ public class TestLasConverter extends HMTestCase {
         }
         w.close();
 
-        ALasReader r = new LasReader(tmpFile, crs);
+        ALasReader r = new LasReaderBuffered(tmpFile, crs);
         r.open();
         r.getHeader();
         assertTrue(r.hasNextPoint());

@@ -20,6 +20,7 @@ package org.jgrasstools.dbs.spatialite.jgt;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
@@ -72,9 +73,8 @@ public class SpatialiteDb extends ASpatialDb {
         Connection tmpConn = DriverManager.getConnection("jdbc:sqlite:" + dbPath, config.toProperties());
         mConn = new JGTConnection(tmpConn);
         if (mPrintInfos)
-            try (IJGTStatement stmt = mConn.createStatement()) {
-                stmt.execute("SELECT sqlite_version()");
-                IJGTResultSet rs = stmt.executeQuery("SELECT sqlite_version() AS 'SQLite Version';");
+            try (IJGTStatement stmt = mConn.createStatement();
+                    IJGTResultSet rs = stmt.executeQuery("SELECT sqlite_version() AS 'SQLite Version';")) {
                 while( rs.next() ) {
                     String sqliteVersion = rs.getString(1);
                     logger.info("SQLite Version: " + sqliteVersion);
@@ -94,11 +94,11 @@ public class SpatialiteDb extends ASpatialDb {
                     } catch (Exception e) {
                         if (mPrintInfos) {
                             logger.info("Unable to load mod_rasterlite2.so: " + e.getMessage());
-                            try {
-                                stmt.execute("SELECT load_extension('mod_rasterlite2', 'sqlite3_modrasterlite_init')");
-                            } catch (Exception e1) {
-                                logger.info("Unable to load mod_rasterlite2: " + e1.getMessage());
-                            }
+                        }
+                        try {
+                            stmt.execute("SELECT load_extension('mod_rasterlite2', 'sqlite3_modrasterlite_init')");
+                        } catch (Exception e1) {
+                            logger.info("Unable to load mod_rasterlite2: " + e1.getMessage());
                         }
                     }
                     try {
@@ -106,11 +106,11 @@ public class SpatialiteDb extends ASpatialDb {
                     } catch (Exception e) {
                         if (mPrintInfos) {
                             logger.info("Unable to load mod_spatialite.so: " + e.getMessage());
-                            try {
-                                stmt.execute("SELECT load_extension('mod_spatialite.so', 'sqlite3_modspatialite_init')");
-                            } catch (Exception e1) {
-                                logger.info("Unable to load mod_spatialite: " + e1.getMessage());
-                            }
+                        }
+                        try {
+                            stmt.execute("SELECT load_extension('mod_spatialite', 'sqlite3_modspatialite_init')");
+                        } catch (Exception e1) {
+                            logger.info("Unable to load mod_spatialite: " + e1.getMessage());
                         }
                         throw e;
                     }
@@ -195,6 +195,42 @@ public class SpatialiteDb extends ASpatialDb {
                 return env;
             }
             return null;
+        }
+    }
+
+    /**
+     * Get database infos.
+     * 
+     * @return the string array of [sqlite_version, spatialite_version,
+     *         spatialite_target_cpu]
+     * @throws SQLException
+     */
+    public String[] getDbInfo() throws Exception {
+        // checking SQLite and SpatiaLite version + target CPU
+        String sql = "SELECT sqlite_version(), spatialite_version(), spatialite_target_cpu()";
+        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
+            String[] info = new String[3];
+            while( rs.next() ) {
+                // read the result set
+                info[0] = rs.getString(1);
+                info[1] = rs.getString(2);
+                info[2] = rs.getString(3);
+            }
+            return info;
+        }
+    }
+
+    /**
+     * Delete a geo-table with all attached indexes and stuff.
+     * 
+     * @param tableName
+     * @throws Exception
+     */
+    public void deleteGeoTable( String tableName ) throws Exception {
+        String sql = "SELECT DropGeoTable('" + tableName + "');";
+
+        try (IJGTStatement stmt = mConn.createStatement()) {
+            stmt.execute(sql);
         }
     }
 

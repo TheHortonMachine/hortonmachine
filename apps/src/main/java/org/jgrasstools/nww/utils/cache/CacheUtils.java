@@ -20,6 +20,7 @@ package org.jgrasstools.nww.utils.cache;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.io.File;
+import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -27,6 +28,7 @@ import org.jgrasstools.gui.utils.GuiUtilities;
 
 import gov.nasa.worldwind.cache.BasicDataFileStore;
 import gov.nasa.worldwind.cache.FileStore;
+import gov.nasa.worldwindx.examples.util.FileStoreDataSet;
 
 /**
  * Utils related to data caches.
@@ -35,6 +37,24 @@ import gov.nasa.worldwind.cache.FileStore;
  *
  */
 public class CacheUtils {
+
+    public static void clearCacheBySourceName( String sourceName ) {
+        try {
+            FileStore store = new BasicDataFileStore();
+            File cacheRoot = store.getWriteLocation();
+            List<FileStoreDataSet> dataSets = FileStoreDataSet.getDataSets(cacheRoot);
+            for( FileStoreDataSet fileStoreDataSet : dataSets ) {
+                String cacheName = fileStoreDataSet.getName();
+                if (cacheName.contains(sourceName)) {
+                    // remove it
+                    fileStoreDataSet.delete(false);
+                    break;
+                }
+            }
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+    }
 
     public static void openCacheManager() {
         JFrame frame = new JFrame();

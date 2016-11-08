@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
@@ -96,7 +97,7 @@ public class JGrasstoolsModulesManager {
         logger.debug("init HortonMachine");
         HortonMachine.getInstance();
         logger.debug("init JGrassGears");
-        JGrassGears.getInstance();
+        Map<String, Class< ? >> gearsModuleName2Class = JGrassGears.getInstance().moduleName2Class;
 
         logger.debug("Collecting classes:");
         for( Entry<String, Class< ? >> entry : lestoModuleNames2Class.entrySet() ) {
@@ -108,15 +109,15 @@ public class JGrasstoolsModulesManager {
             logger.debug("\t-> " + name);
             moduleNames2Classes.put(name, entry.getValue());
         }
-        // moduleNames2Classes.putAll(lestoModuleNames2Class);
-        // for( Entry<String, List<ClassField>> entry : lestoModuleName2Fields.entrySet() ) {
-        // String name = entry.getKey();
-        // if (name.startsWith("Oms")) {
-        // continue;
-        // }
-        // moduleName2Fields.put(name, entry.getValue());
-        // }
-        // moduleName2Fields.putAll(lestoModuleName2Fields);
+        for( Entry<String, Class< ? >> entry : gearsModuleName2Class.entrySet() ) {
+            String name = entry.getKey();
+            if (name.startsWith("Oms")) {
+                continue;
+            }
+            
+            logger.debug("\t-> " + name);
+            moduleNames2Classes.put(name, entry.getValue());
+        }
 
         Collection<Class< ? >> classesList = moduleNames2Classes.values();
         for( Class< ? > moduleClass : classesList ) {

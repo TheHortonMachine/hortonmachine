@@ -24,9 +24,9 @@ import java.util.List;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.spatialite.QueryResult;
-import org.jgrasstools.gears.spatialite.GTSpatialiteDb;
+import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
-import org.jgrasstools.nww.gui.style.SimpleStyle;
+import org.jgrasstools.gears.utils.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
 import org.jgrasstools.nww.shapes.InfoExtrudedPolygon;
 import org.jgrasstools.nww.shapes.InfoPolygon;
@@ -66,12 +66,12 @@ public class SpatialitePolygonLayer extends RenderableLayer implements NwwVector
 
     private int mElevationMode = WorldWind.CLAMP_TO_GROUND;
     private String tableName;
-    private GTSpatialiteDb db;
+    private GTSpatialiteThreadsafeDb db;
     private ReferencedEnvelope tableBounds;
     private int featureLimit;
 
     public SpatialitePolygonLayer( ASpatialDb db, String tableName, int featureLimit ) {
-        this.db = (GTSpatialiteDb) db;
+        this.db = (GTSpatialiteThreadsafeDb) db;
         this.tableName = tableName;
         this.featureLimit = featureLimit;
 

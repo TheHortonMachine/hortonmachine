@@ -26,7 +26,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.jgrasstools.nww.gui.style.SimpleStyle;
+import org.jgrasstools.gears.utils.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
 import org.jgrasstools.nww.shapes.FeatureExtrudedPolygon;
 import org.jgrasstools.nww.shapes.FeaturePolygon;

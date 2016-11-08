@@ -47,9 +47,10 @@ import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.gears.utils.style.SimpleStyle;
+import org.jgrasstools.gears.utils.style.SimpleStyleUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.nww.gui.listeners.GenericSelectListener;
-import org.jgrasstools.nww.gui.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.annotations.HtmlScreenAnnotation;
 import org.jgrasstools.nww.layers.defaults.annotations.HtmlScreenAnnotation.Builder;
 import org.jgrasstools.nww.layers.defaults.other.CurrentGpsPointLayer;
@@ -60,6 +61,7 @@ import org.jgrasstools.nww.layers.defaults.raster.ImageMosaicNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.MBTilesNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.MapsforgeNwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.RL2NwwLayer;
+import org.jgrasstools.nww.layers.defaults.spatialite.RasterizedSpatialiteLasLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.RasterizedSpatialiteLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.SpatialiteLinesLayer;
 import org.jgrasstools.nww.layers.defaults.spatialite.SpatialitePointsLayer;
@@ -467,32 +469,48 @@ public class ToolsPanelController extends ToolsPanelView {
             } else if (selectedFile.getName().endsWith(".sqlite")) {
                 SpatialiteDb db = new SpatialiteDb();
                 db.open(selectedFile.getAbsolutePath());
-                List<String> tableMaps = db.getTables(false);
-                String[] tables = tableMaps.toArray(new String[0]);
-                String tableName = (String) JOptionPane.showInputDialog(this, "Select the table to load", "Table selection",
-                        JOptionPane.QUESTION_MESSAGE, null, tables, tables[0]);
 
-                if (_useRasterizedCheckbox.isSelected()) {
-                    RasterizedSpatialiteLayer rasterizedSpatialiteLayer = new RasterizedSpatialiteLayer(name, db, tableName, -1,
-                            null, null, true);
+                if (RasterizedSpatialiteLasLayer.isLasDb(db)) {
+                    String[] options = {"elevation", "intensity"};
+                    String option = (String) JOptionPane.showInputDialog(this, "Select data to view", "Data selection",
+                            JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                    boolean doIntensity = false;
+                    if (option.equals(options[1])) {
+                        doIntensity = true;
+                    }
+                    
+                    RasterizedSpatialiteLasLayer rasterizedSpatialiteLayer = new RasterizedSpatialiteLasLayer(name, db, null,
+                            true, doIntensity);
                     wwjPanel.getWwd().getModel().getLayers().add(rasterizedSpatialiteLayer);
                     layerEventsListener.onLayerAdded(rasterizedSpatialiteLayer);
                 } else {
-                    SpatialiteGeometryColumns geometryColumn = db.getGeometryColumnsForTable(tableName);
-                    if (geometryColumn != null) {
-                        SpatialiteGeometryType geomType = SpatialiteGeometryType.forValue(geometryColumn.geometry_type);
-                        if (geomType.isPolygon()) {
-                            SpatialitePolygonLayer layer = new SpatialitePolygonLayer(db, tableName, 10000);
-                            wwjPanel.getWwd().getModel().getLayers().add(layer);
-                            layerEventsListener.onLayerAdded(layer);
-                        } else if (geomType.isLine()) {
-                            SpatialiteLinesLayer layer = new SpatialiteLinesLayer(db, tableName, 10000);
-                            wwjPanel.getWwd().getModel().getLayers().add(layer);
-                            layerEventsListener.onLayerAdded(layer);
-                        } else if (geomType.isPoint()) {
-                            SpatialitePointsLayer layer = new SpatialitePointsLayer(db, tableName, 10000);
-                            wwjPanel.getWwd().getModel().getLayers().add(layer);
-                            layerEventsListener.onLayerAdded(layer);
+                    List<String> tableMaps = db.getTables(false);
+                    String[] tables = tableMaps.toArray(new String[0]);
+                    String tableName = (String) JOptionPane.showInputDialog(this, "Select the table to load", "Table selection",
+                            JOptionPane.QUESTION_MESSAGE, null, tables, tables[0]);
+
+                    if (_useRasterizedCheckbox.isSelected()) {
+                        RasterizedSpatialiteLayer rasterizedSpatialiteLayer = new RasterizedSpatialiteLayer(name, db, tableName,
+                                -1, null, null, true);
+                        wwjPanel.getWwd().getModel().getLayers().add(rasterizedSpatialiteLayer);
+                        layerEventsListener.onLayerAdded(rasterizedSpatialiteLayer);
+                    } else {
+                        SpatialiteGeometryColumns geometryColumn = db.getGeometryColumnsForTable(tableName);
+                        if (geometryColumn != null) {
+                            SpatialiteGeometryType geomType = SpatialiteGeometryType.forValue(geometryColumn.geometry_type);
+                            if (geomType.isPolygon()) {
+                                SpatialitePolygonLayer layer = new SpatialitePolygonLayer(db, tableName, 10000);
+                                wwjPanel.getWwd().getModel().getLayers().add(layer);
+                                layerEventsListener.onLayerAdded(layer);
+                            } else if (geomType.isLine()) {
+                                SpatialiteLinesLayer layer = new SpatialiteLinesLayer(db, tableName, 10000);
+                                wwjPanel.getWwd().getModel().getLayers().add(layer);
+                                layerEventsListener.onLayerAdded(layer);
+                            } else if (geomType.isPoint()) {
+                                SpatialitePointsLayer layer = new SpatialitePointsLayer(db, tableName, 10000);
+                                wwjPanel.getWwd().getModel().getLayers().add(layer);
+                                layerEventsListener.onLayerAdded(layer);
+                            }
                         }
                     }
                 }
@@ -541,7 +559,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
-                SimpleStyle style = NwwUtilities.getStyle(absolutePath, GeometryType.POLYGON);
+                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, GeometryType.POLYGON);
                 if (style != null) {
                     featureCollectionPolygonLayer.setStyle(style);
                 }
@@ -553,7 +571,7 @@ public class ToolsPanelController extends ToolsPanelView {
                         featureStore, field2ValuesMap);
                 featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
-                SimpleStyle style = NwwUtilities.getStyle(absolutePath, GeometryType.LINE);
+                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, GeometryType.LINE);
                 if (style != null) {
                     featureCollectionLinesLayer.setStyle(style);
                 }
@@ -572,7 +590,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
                 FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name, readFC,
                         featureStore, field2ValuesMap, imagePath);
-                SimpleStyle style = NwwUtilities.getStyle(absolutePath, GeometryType.POINT);
+                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, GeometryType.POINT);
                 if (style != null) {
                     featureCollectionPointsLayer.setStyle(style);
                 }

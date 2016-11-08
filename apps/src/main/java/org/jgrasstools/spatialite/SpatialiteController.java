@@ -82,7 +82,7 @@ import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.spatialite.GTSpatialiteDb;
+import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.jgrasstools.gui.console.LogConsoleController;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
@@ -127,7 +127,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
     protected GuiBridgeHandler guiBridge;
     protected IJGTProgressMonitor pm = new LogProgressMonitor();
-    protected GTSpatialiteDb currentConnectedDatabase;
+    protected GTSpatialiteThreadsafeDb currentConnectedDatabase;
     private DbLevel currentDbLevel;
     protected DbLevel currentSelectedDb;
     protected TableLevel currentSelectedTable;
@@ -158,7 +158,10 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         _dataViewerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         addDataTableContextMenu();
 
-        _sqlEditorArea.setDocument(new SqlDocument());
+        // WrapEditorKit kit = new WrapEditorKit();
+        // _sqlEditorArea.setEditorKit(kit);
+        SqlDocument doc = new SqlDocument();
+        _sqlEditorArea.setDocument(doc);
 
         _newDbButton.setVerticalTextPosition(SwingConstants.BOTTOM);
         _newDbButton.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -623,8 +626,8 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                        _dataViewerTable.getTransferHandler().exportToClipboard(
-                                _dataViewerTable, clipboard, TransferHandler.COPY);
+                        _dataViewerTable.getTransferHandler().exportToClipboard(_dataViewerTable, clipboard,
+                                TransferHandler.COPY);
                     }
                 });
                 popupMenu.add(item);
@@ -876,7 +879,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                 logConsole.beginProcess("Create new database");
 
                 try {
-                    currentConnectedDatabase = new GTSpatialiteDb();
+                    currentConnectedDatabase = new GTSpatialiteThreadsafeDb();
                     currentConnectedDatabase.open(selectedFile.getAbsolutePath());
                     currentConnectedDatabase.initSpatialMetadata(null);
 
@@ -932,7 +935,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                 logConsole.beginProcess("Open database");
 
                 try {
-                    currentConnectedDatabase = new GTSpatialiteDb();
+                    currentConnectedDatabase = new GTSpatialiteThreadsafeDb();
                     currentConnectedDatabase.open(selectedFile.getAbsolutePath());
 
                     DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);

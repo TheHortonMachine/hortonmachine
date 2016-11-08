@@ -69,6 +69,7 @@ import com.vividsolutions.jts.noding.MCIndexNoder;
 import com.vividsolutions.jts.noding.NodedSegmentString;
 import com.vividsolutions.jts.operation.linemerge.LineMerger;
 import com.vividsolutions.jts.operation.polygonize.Polygonizer;
+import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
 /**
  * Utilities related to {@link Geometry}.
@@ -158,6 +159,26 @@ public class GeometryUtilities {
         Coordinate[] c = new Coordinate[]{new Coordinate(minX, minY), new Coordinate(minX, maxY), new Coordinate(maxX, maxY),
                 new Coordinate(maxX, minY), new Coordinate(minX, minY)};
         return gf().createPolygon(c);
+    }
+
+    public static Geometry createPolygonsFromRanges( double[] xRanges, double[] yRanges ) {
+        List<Geometry> geomsList = new ArrayList<>();
+        int cols = xRanges.length - 1;
+        int rows = yRanges.length - 1;
+        for( int x = 0; x < cols - 1; x++ ) {
+            double x1 = xRanges[x];
+            double x2 = xRanges[x + 1];
+            for( int y = 0; y < rows - 1; y++ ) {
+                double y1 = xRanges[y];
+                double y2 = xRanges[y + 1];
+
+                Envelope env = new Envelope(x1, x2, y1, y2);
+                Polygon poly = GeometryUtilities.createPolygonFromEnvelope(env);
+                geomsList.add(poly);
+            }
+        }
+        Geometry union = CascadedPolygonUnion.union(geomsList);
+        return union;
     }
 
     public static List<Geometry> extractSubGeometries( Geometry geometry ) {

@@ -37,7 +37,7 @@ public class GPPreparedStatement implements IJGTPreparedStatement {
 
     private int batchCount = 0;
 
-    public GPPreparedStatement(Database database, String sql) throws Exception {
+    public GPPreparedStatement( Database database, String sql ) throws Exception {
         preparedStmt = database.prepare(sql);
     }
 
@@ -46,7 +46,7 @@ public class GPPreparedStatement implements IJGTPreparedStatement {
     }
 
     @Override
-    public void setString(int index, String text) throws Exception {
+    public void setString( int index, String text ) throws Exception {
         preparedStmt.bind(index, text);
     }
 
@@ -60,17 +60,17 @@ public class GPPreparedStatement implements IJGTPreparedStatement {
     }
 
     @Override
-    public void setDouble(int index, double value) throws Exception {
+    public void setDouble( int index, double value ) throws Exception {
         preparedStmt.bind(index, value);
     }
 
     @Override
-    public void setFloat(int index, float value) throws Exception {
+    public void setFloat( int index, float value ) throws Exception {
         preparedStmt.bind(index, value);
     }
 
     @Override
-    public void setInt(int index, int value) throws Exception {
+    public void setInt( int index, int value ) throws Exception {
         preparedStmt.bind(index, value);
     }
 
@@ -90,18 +90,23 @@ public class GPPreparedStatement implements IJGTPreparedStatement {
     }
 
     @Override
-    public void setLong(int index, long value) throws Exception {
+    public void setLong( int index, long value ) throws Exception {
         preparedStmt.bind(index, value);
     }
 
     @Override
-    public void setBytes(int index, byte[] value) throws Exception {
+    public void setBytes( int index, byte[] value ) throws Exception {
         preparedStmt.bind(index, value);
     }
 
     @Override
-    public void setShort(int index, short value) throws Exception {
+    public void setShort( int index, short value ) throws Exception {
         preparedStmt.bind(index, value);
+    }
+
+    @Override
+    public void setBoolean( int index, boolean value ) throws java.lang.Exception {
+        preparedStmt.bind(index, value ? 1 : 0);
     }
 
     @Override
