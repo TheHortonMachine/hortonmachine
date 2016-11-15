@@ -62,6 +62,11 @@ public class JGTResultSet implements IJGTResultSet {
     }
 
     @Override
+    public float getFloat( int index ) throws Exception {
+        return resultSet.getFloat(index);
+    }
+
+    @Override
     public Object getObject( int index ) throws Exception {
         return resultSet.getObject(index);
     }

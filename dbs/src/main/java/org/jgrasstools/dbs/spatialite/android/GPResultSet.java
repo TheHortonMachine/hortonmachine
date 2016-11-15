@@ -62,6 +62,11 @@ public class GPResultSet implements IJGTResultSet {
     }
 
     @Override
+    public float getFloat( int index ) throws Exception {
+        return (float) stmt.column_double(index - 1);
+    }
+
+    @Override
     public Object getObject( int index ) throws Exception {
         return stmt.column_bytes(index - 1);
     }
