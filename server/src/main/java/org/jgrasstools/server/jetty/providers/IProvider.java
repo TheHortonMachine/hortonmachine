@@ -27,6 +27,8 @@ public interface IProvider {
     public static final String DATAPROVIDERS = "DATAPROVIDERS";
     
     public static final String TILESPROVIDERS = "TILESPROVIDERS";
+
+    public static final String DEFAULT_BACKGROUND = "DEFAULT_BACKGROUND";
     
     public static final String CSSPROVIDERS = "CSSPROVIDERS";
 

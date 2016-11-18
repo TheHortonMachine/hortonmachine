@@ -48,10 +48,10 @@ public class TilesGeneratorServlet extends HttpServlet {
         try {
             ServletContext servletContext = request.getServletContext();
 
-            int xTile = Integer.parseInt(request.getParameter(ITilesGenerator.X));
-            int yTile = Integer.parseInt(request.getParameter(ITilesGenerator.Y));
-            int zoom = Integer.parseInt(request.getParameter(ITilesGenerator.Z));
-            String generatorName = request.getParameter(ITilesGenerator.ID);
+            int xTile = Integer.parseInt(request.getParameter(ITilesObject.X));
+            int yTile = Integer.parseInt(request.getParameter(ITilesObject.Y));
+            int zoom = Integer.parseInt(request.getParameter(ITilesObject.Z));
+            String generatorName = request.getParameter(ITilesObject.ID);
 
             HashMap<String, ITilesGenerator> tilesGenerators = (HashMap<String, ITilesGenerator>) servletContext
                     .getAttribute(IProvider.OFFLINE_TILESGENERATORS);

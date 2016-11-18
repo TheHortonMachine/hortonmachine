@@ -1,10 +1,8 @@
 package org.jgrasstools.server.jetty.providers.tiles;
 
-public interface ITilesProvider {
-    
-    String getName();
-    
-    boolean isVisible();
+import org.jgrasstools.server.jetty.providers.tilesgenerator.ITilesObject;
+
+public interface ITilesProvider  extends ITilesObject{
     
     String getUrl();
     
@@ -30,7 +28,4 @@ public interface ITilesProvider {
      * @return the source or null.
      */
     String getSource();
-    
-    boolean isDefault();
-
 }
