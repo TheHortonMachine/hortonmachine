@@ -165,7 +165,7 @@ public class OmsLW10_SingleTree_AreaToNetpointAssociator extends JGTModel {
     public static final String inFlow_DESCR = "The input flow directions raster map.";
     public static final String inInundationArea_DESCR = "The input polygon layer with the inundation areas.";
     public static final String inNetPoints_DESCR = "The input hierarchy point network layer.";
-    public static final String inTreePoints_DESCR = "TODO";
+    public static final String inTreePoints_DESCR = "The input layer of single trees.";
     public static final int STATUS = Status.EXPERIMENTAL;
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String NAME = "lw10_singletreeareatonetpointassociator";
