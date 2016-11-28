@@ -60,6 +60,7 @@ public class ProcessLogConsoleController extends ProcessLogConsoleView implement
             "Error: Could not find mediaLib", //
             "SLF4J: ", //
             "[main] INFO ", //
+            " INFO [main] ", //
             "Occurs in: com.sun.media.jai.mlib.MediaLibAccessor", //
             "A descriptor is already registered", //
             "java.lang.NoClassDefFoundError: com/sun/medialib/mlib/Image", //
