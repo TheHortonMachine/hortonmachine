@@ -189,15 +189,15 @@ public class GeopaparazziMapsCreator extends JGTModel {
     public static void main( String[] args ) throws Exception {
         
         org.jgrasstools.modules.GeopaparazziMapsCreator _geopaparazzimapscreator = new org.jgrasstools.modules.GeopaparazziMapsCreator();
-        _geopaparazzimapscreator.pMaxZoom = 20;
+        _geopaparazzimapscreator.pMaxZoom = 19;
 //        _geopaparazzimapscreator.inRaster1 = "/home/hydrologis/data/terremoto/terremoto.shp";
-        _geopaparazzimapscreator.inRaster1 = "/home/hydrologis/data/terremoto/15512.tif";
-        _geopaparazzimapscreator.pName = "terremoto_amatrice";
-        _geopaparazzimapscreator.outFolder = "/home/hydrologis/data";
+        _geopaparazzimapscreator.inRaster1 = "/home/hydrologis/Dropbox/hydrologis/lavori/2016_11_gvsigconf/2016_12_geopap_workshop/data/ETSIGCT25830big.tif";
+        _geopaparazzimapscreator.pName = "valencia";
+        _geopaparazzimapscreator.outFolder = "/home/hydrologis/Desktop/gvsigreview/";
         _geopaparazzimapscreator.pImageType = "jpg";
-        _geopaparazzimapscreator.inROI = "/home/hydrologis/data/terremoto/terremoto.shp";
+        _geopaparazzimapscreator.inROI = "/home/hydrologis/Desktop/gvsigreview/roi.shp";
         _geopaparazzimapscreator.pMinZoom = 13;
-        _geopaparazzimapscreator.pZoomLimit = 19;
+//        _geopaparazzimapscreator.pZoomLimit = 19;
         _geopaparazzimapscreator.process();
     }
 }

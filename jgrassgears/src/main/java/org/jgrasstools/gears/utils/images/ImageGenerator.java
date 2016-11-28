@@ -521,15 +521,16 @@ public class ImageGenerator {
         MapContent content = new MapContent();
         content.setTitle("dump");
 
+        if (forceCrs!=null) {
+            content.getViewport().setCoordinateReferenceSystem(forceCrs);
+        }
+
         synchronized (synchronizedLayers) {
             for( Layer layer : synchronizedLayers ) {
                 content.addLayer(layer);
             }
         }
         
-        if (forceCrs!=null) {
-            content.getViewport().setCoordinateReferenceSystem(forceCrs);
-        }
 
         StreamingRenderer renderer = new StreamingRenderer();
         renderer.setMapContent(content);

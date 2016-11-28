@@ -261,7 +261,8 @@ public class StageScriptExecutor {
         logBuilder.setLength(0);
 
         StringBuilder preCommentsBuilder = new StringBuilder();
-        preCommentsBuilder.append("Process started: " + SpatialToolboxConstants.dateTimeFormatterYYYYMMDDHHMMSS.format(new Date()));
+        preCommentsBuilder
+                .append("Process started: " + SpatialToolboxConstants.dateTimeFormatterYYYYMMDDHHMMSS.format(new Date()));
         preCommentsBuilder.append(nl);
 
         // command launched

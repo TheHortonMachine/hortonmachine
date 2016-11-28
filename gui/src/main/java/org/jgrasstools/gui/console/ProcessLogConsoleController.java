@@ -23,6 +23,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -49,6 +52,21 @@ public class ProcessLogConsoleController extends ProcessLogConsoleView implement
     private StyledDocument doc;
     private JTextPane logPane;
     private JScrollPane scrollPane;
+
+    private List<String> invalidStarts = Arrays.asList(new String[]{//
+            "log4j:WARN", //
+            "Error while parsing JAI", //
+            "Error in registry file", //
+            "Error: Could not find mediaLib", //
+            "SLF4J: ", //
+            "[main] INFO ", //
+            "Occurs in: com.sun.media.jai.mlib.MediaLibAccessor", //
+            "A descriptor is already registered", //
+            "java.lang.NoClassDefFoundError: com/sun/medialib/mlib/Image", //
+            "Caused by: java.lang.ClassNotFoundException: com.sun.medialib.mlib.Image", //
+            "\tat ", //
+            "\t... ", //
+    });
 
     public ProcessLogConsoleController() {
         init();
@@ -157,7 +175,8 @@ public class ProcessLogConsoleController extends ProcessLogConsoleView implement
         try {
             // logPane.setText(message);
             if (doc != null) {
-                doc.insertString(doc.getLength(), message + "\n", style.getAttributeSet());
+                if (isValid(message))
+                    doc.insertString(doc.getLength(), message + "\n", style.getAttributeSet());
                 // logPane.setCaretPosition(doc.getLength());
             }
         } catch (Exception exc) {
@@ -166,6 +185,12 @@ public class ProcessLogConsoleController extends ProcessLogConsoleView implement
 
         scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
 
+    }
+
+    private boolean isValid( String message ) {
+        // remove logs and strange messages from the libs
+        Optional<String> first = invalidStarts.parallelStream().filter(iv -> message.startsWith(iv)).findFirst();
+        return !first.isPresent();
     }
 
     public void onProcessStopped() {
