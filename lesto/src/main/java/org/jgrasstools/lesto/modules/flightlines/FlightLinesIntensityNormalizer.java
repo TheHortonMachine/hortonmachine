@@ -41,7 +41,7 @@ import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasWriterEachPoint;
 import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -182,7 +182,7 @@ public class FlightLinesIntensityNormalizer extends JGTModel {
         File lasFile = new File(inLas);
         File outLasFile = new File(outLas);
         try (ALasReader reader = ALasReader.getReader(lasFile, crs);//
-                ALasWriter writer = new LasWriter(outLasFile, crs);) {
+                ALasWriter writer = ALasWriter.getWriter(outLasFile, crs);) {
             reader.setOverrideGpsTimeType(timeType);
             ILasHeader header = reader.getHeader();
             int gpsTimeType = header.getGpsTimeType();

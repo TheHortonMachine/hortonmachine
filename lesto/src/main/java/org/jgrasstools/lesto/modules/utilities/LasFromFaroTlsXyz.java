@@ -40,7 +40,7 @@ import oms3.annotations.Unit;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasWriterEachPoint;
 import org.jgrasstools.gears.io.las.index.LasIndexer;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -176,7 +176,7 @@ public class LasFromFaroTlsXyz extends JGTModel {
         pm.message("Keeping point: " + readRecords.size());
 
         File outFile = new File(outLas);
-        try (ALasWriter writer = new LasWriter(outFile, crs)) {
+        try (ALasWriter writer = ALasWriter.getWriter(outFile, crs)) {
             writer.setBounds(xMin, xMax, yMin, yMax, zMin, zMax);
             writer.setPointFormat(3);
             writer.open();

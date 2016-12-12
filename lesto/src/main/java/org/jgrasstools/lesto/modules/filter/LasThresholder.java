@@ -18,6 +18,15 @@
 package org.jgrasstools.lesto.modules.filter;
 import java.io.File;
 
+import org.jgrasstools.gears.io.las.core.ALasReader;
+import org.jgrasstools.gears.io.las.core.ALasWriter;
+import org.jgrasstools.gears.io.las.core.ILasHeader;
+import org.jgrasstools.gears.io.las.core.LasRecord;
+import org.jgrasstools.gears.io.las.utils.LasUtils;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -28,16 +37,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.jgrasstools.gears.io.las.core.ALasReader;
-import org.jgrasstools.gears.io.las.core.ALasWriter;
-import org.jgrasstools.gears.io.las.core.ILasHeader;
-import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
-import org.jgrasstools.gears.io.las.utils.LasUtils;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("A module that applies threshold and filters on a value inside the las")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -84,7 +83,7 @@ public class LasThresholder extends JGTModel {
         File outFile = new File(outLas);
 
         try (ALasReader reader = ALasReader.getReader(lasFile, crs);//
-                ALasWriter writer = new LasWriter(outFile, crs);) {
+                ALasWriter writer = ALasWriter.getWriter(outFile, crs);) {
             reader.open();
             ILasHeader header = reader.getHeader();
             long recordsNum = header.getRecordsCount();

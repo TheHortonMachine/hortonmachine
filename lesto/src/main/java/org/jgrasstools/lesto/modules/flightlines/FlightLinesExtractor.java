@@ -37,7 +37,7 @@ import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasWriterEachPoint;
 import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -188,7 +188,7 @@ public class FlightLinesExtractor extends JGTModel {
                 if (millis <= markersArray[j]) {
                     if (writers[j] == null) {
                         File file = new File(outFolderFile, nameWithoutExtention + "_" + j + ".las");
-                        writers[j] = new LasWriter(file, crs);
+                        writers[j] = ALasWriter.getWriter(file, crs);
                         writers[j].setBounds(header2);
                         writers[j].open();
                     }

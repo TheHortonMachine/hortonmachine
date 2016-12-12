@@ -25,7 +25,7 @@ import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasReaderBuffered;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasWriterEachPoint;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -56,7 +56,7 @@ public class TestLasConverter extends HMTestCase {
         r2.classification = 3;
         list.add(r2);
 
-        ALasWriter w = new LasWriter(tmpFile, crs);
+        ALasWriter w = ALasWriter.getWriter(tmpFile, crs);
         w.setBounds(r1.x, r1.x, r2.y, r1.y, r1.z, r2.z);
         w.open();
         for( LasRecord lasRecord : list ) {

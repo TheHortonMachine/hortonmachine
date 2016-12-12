@@ -24,6 +24,7 @@ import java.net.URL;
 
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.core.liblas.LiblasHeader;
@@ -33,7 +34,8 @@ import org.jgrasstools.gears.io.las.core.liblas.LiblasWrapper;
 import org.jgrasstools.gears.io.las.core.liblas.LiblasWriter;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasReaderBuffered;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasReaderEachPoint;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasWriterBuffered;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasWriterEachPoint;
 import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.jgrasstools.gears.utils.HMTestCase;
 @SuppressWarnings("nls")
@@ -186,7 +188,7 @@ public class TestLasIO extends HMTestCase {
          */
         File lasTmp = File.createTempFile("lasreader", ".las");
 
-        LasWriter lasWriter = new LasWriter(lasTmp, DefaultGeographicCRS.WGS84);
+        ALasWriter lasWriter = ALasWriter.getWriter(lasTmp, DefaultGeographicCRS.WGS84);
         lasWriter.setBounds(lasHeader);
         lasWriter.open();
         while( lasReader.hasNextPoint() ) {

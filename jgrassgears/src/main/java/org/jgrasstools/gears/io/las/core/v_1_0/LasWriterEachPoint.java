@@ -41,9 +41,10 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
  * A las writer.
  * 
+ * @deprecated this is very slow, use {@link LasWriterBuffered} instead.
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LasWriter extends ALasWriter {
+public class LasWriterEachPoint extends ALasWriter {
     private static final String OPEN_METHOD_MSG = "This needs to be called before the open method.";
     private final byte[] doubleDataArray = new byte[8];
     private final ByteBuffer doubleBb = ByteBuffer.wrap(doubleDataArray);
@@ -91,7 +92,7 @@ public class LasWriter extends ALasWriter {
      * @param outFile the output file.
      * @param crs the {@link CoordinateReferenceSystem crs}. If <code>null</code>, no prj file is written.
      */
-    public LasWriter( File outFile, CoordinateReferenceSystem crs ) {
+    public LasWriterEachPoint( File outFile, CoordinateReferenceSystem crs ) {
         this.outFile = outFile;
         this.crs = crs;
 

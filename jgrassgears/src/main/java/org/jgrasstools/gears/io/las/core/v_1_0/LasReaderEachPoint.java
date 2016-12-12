@@ -27,13 +27,13 @@ import java.nio.channels.FileChannel;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.utils.ByteUtilities;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Las record reader for las spec 1.0. 
  * 
+ * @deprecated this class is very slow, use {@link LasReaderBuffered} instead.
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class LasReaderEachPoint extends ALasReader {

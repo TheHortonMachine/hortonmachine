@@ -27,7 +27,7 @@ import org.jgrasstools.gears.io.las.core.liblas.LiblasReader;
 import org.jgrasstools.gears.io.las.core.liblas.LiblasWrapper;
 import org.jgrasstools.gears.io.las.core.liblas.LiblasWriter;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasReaderBuffered;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasWriterBuffered;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -103,7 +103,7 @@ public abstract class Las {
         if (supportsNative()) {
             return new LiblasWriter(lasFile, crs);
         } else {
-            return new LasWriter(lasFile, crs);
+            return new LasWriterBuffered(lasFile, crs);
         }
     }
 

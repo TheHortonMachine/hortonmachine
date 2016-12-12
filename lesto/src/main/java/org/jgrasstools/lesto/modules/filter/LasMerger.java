@@ -24,6 +24,15 @@ import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.geotools.geometry.jts.ReferencedEnvelope3D;
+import org.jgrasstools.gears.io.las.core.ALasReader;
+import org.jgrasstools.gears.io.las.core.ALasWriter;
+import org.jgrasstools.gears.io.las.core.ILasHeader;
+import org.jgrasstools.gears.io.las.core.LasRecord;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -34,16 +43,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.geometry.jts.ReferencedEnvelope3D;
-import org.jgrasstools.gears.io.las.core.ALasReader;
-import org.jgrasstools.gears.io.las.core.ALasWriter;
-import org.jgrasstools.gears.io.las.core.ILasHeader;
-import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("A module that merges las files to a single one.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -107,7 +106,7 @@ public class LasMerger extends JGTModel {
         }
 
         File outFile = new File(outLas);
-        ALasWriter writer = new LasWriter(outFile, crs);
+        ALasWriter writer = ALasWriter.getWriter(outFile, crs);
         writer.setBounds(xMin, xMax, yMin, yMax, zMin, zMax);
         writer.open();
 
