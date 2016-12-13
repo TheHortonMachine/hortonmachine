@@ -17,9 +17,6 @@
  */
 package org.jgrasstools.lesto.modules.utilities;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
@@ -107,21 +104,5 @@ public class LasElevationHandler extends JGTModel {
         }
     }
 
-    public static void main( String[] args ) throws Exception {
-
-        Files.list(Paths.get("/home/hydrologis/TMP/geologico/iotest/")).filter(p -> p.getFileName().toString().endsWith(".las"))
-                .forEach(path -> {
-                    LasElevationHandler eh = new LasElevationHandler();
-                    eh.inFile = path.toString();
-                    eh.inDtm = "/home/hydrologis/TMP/geologico/iotest/DTMclip.tif";
-                    eh.outFile = path.toString() + "_norm.las";
-                    try {
-                        eh.process();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-
-    }
 
 }

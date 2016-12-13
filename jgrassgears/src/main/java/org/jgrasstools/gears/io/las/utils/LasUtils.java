@@ -189,7 +189,8 @@ public class LasUtils {
      * @param elevIsGround if <code>true</code>, the elevation is the ground height.
      * @return the list of las records.
      */
-    public static List<LasRecord> getLasRecordsFromFeatureCollection( SimpleFeatureCollection lasCollection, boolean elevIsGround ) {
+    public static List<LasRecord> getLasRecordsFromFeatureCollection( SimpleFeatureCollection lasCollection,
+            boolean elevIsGround ) {
         List<SimpleFeature> featuresList = FeatureUtilities.featureCollectionToList(lasCollection);
         List<LasRecord> lasList = new ArrayList<LasRecord>();
         for( SimpleFeature lasFeature : featuresList ) {
@@ -216,53 +217,17 @@ public class LasUtils {
     }
 
     /**
-     * Converts las gps time to {@link DateTime}.
+     * Converts las adjusted standard gps time to {@link DateTime}.
      * 
-     * <p>
-     * Time based on Global Encoding Bit:
-     * <pre>
-     *     LAS 1.0:
-     *     LAS 1.1:
-     *       no encoding information available
-     *   
-     *     LAS 1.2:
-     *       0: GPS Time is GPS Week Time
-     *       1: GPS Time is POSIX Time or (!!) Standard GPS Time minus 1 x 10**9
-     *   
-     *     LAS 1.3:
-     *     LAS 1.4:
-     *       0: GPS Time is GPS Week Time
-     *       1: GPS Time is Standard GPS Time minus 1 x 10**9
-     * </pre>
-     * 
-     * <p>
-     * Discussions:
-     * <ul>
-     * <li>https://groups.google.com/d/msg/lastools/ik_knw5njqY/7nAqsJfV4dUJ</li>
-     * </ul>
-     * 
-     * @param gpsTime the time value.
-     * @param gpsTimeType the time type (0=week.seconds, 1=adjusted standard gps time)
+     * @param adjustedStandardGpsTime the time value.
      * @return the UTC date object.
      */
-    public static DateTime gpsTimeToDateTime( double gpsTime, int gpsTimeType ) {
-        if (gpsTimeType == 0) {
-            String[] split = String.valueOf(gpsTime).split("\\.");
-            int week = Integer.parseInt(split[0]);
-            // int seconds = Integer.parseInt(split[1]);
-            long seconds = Long.parseLong(split[1]);
-            double standardGpsTimeSeconds = week * 604800 + seconds;
-            double standardGpsTimeMillis = standardGpsTimeSeconds * 1000;
-            DateTime dt = gpsEpoch.plus((long) standardGpsTimeMillis);
-            return dt;
-        } else {
-            // gps time is adjusted gps time
-            double standardGpsTimeSeconds = gpsTime + 1E9;
-            double standardGpsTimeMillis = standardGpsTimeSeconds * 1000;
-            DateTime dt1 = gpsEpoch.plus((long) standardGpsTimeMillis);
-            return dt1;
-        }
-
+    public static DateTime adjustedStandardGpsTime2DateTime( double adjustedStandardGpsTime ) {
+        // gps time is adjusted gps time
+        double standardGpsTimeSeconds = adjustedStandardGpsTime + 1E9;
+        double standardGpsTimeMillis = standardGpsTimeSeconds * 1000;
+        DateTime dt1 = gpsEpoch.plus((long) standardGpsTimeMillis);
+        return dt1;
     }
 
     /**
@@ -306,7 +271,7 @@ public class LasUtils {
         List<File> filesList = iter.filesList;
 
         for( File file : filesList ) {
-            try(ALasReader r = new LasReaderBuffered(file, crs)){
+            try (ALasReader r = new LasReaderBuffered(file, crs)) {
                 r.open();
                 ReferencedEnvelope3D envelope = r.getHeader().getDataEnvelope();
                 Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(envelope);
@@ -360,10 +325,10 @@ public class LasUtils {
         StringBuilder retValue = new StringBuilder();
         retValue.append("Dot ( \n").append(TAB).append("x = ").append(dot.x).append(CR).append(TAB).append("y = ").append(dot.y)
                 .append(CR).append(TAB).append("z = ").append(dot.z).append(CR).append(TAB).append("intensity = ")
-                .append(dot.intensity).append(CR).append(TAB).append("impulse = ").append(dot.returnNumber).append(CR)
-                .append(TAB).append("impulseNum = ").append(dot.numberOfReturns).append(CR).append(TAB)
-                .append("classification = ").append(dot.classification).append(CR).append(TAB).append("gpsTime = ")
-                .append(dot.gpsTime).append(CR).append(" )");
+                .append(dot.intensity).append(CR).append(TAB).append("impulse = ").append(dot.returnNumber).append(CR).append(TAB)
+                .append("impulseNum = ").append(dot.numberOfReturns).append(CR).append(TAB).append("classification = ")
+                .append(dot.classification).append(CR).append(TAB).append("gpsTime = ").append(dot.gpsTime).append(CR)
+                .append(" )");
         return retValue.toString();
     }
 
@@ -703,7 +668,7 @@ public class LasUtils {
         }
 
         return new double[]{//
-        /*    */useGround ? minAzimuthPoint.groundElevation : minAzimuthPoint.z, //
+                /*    */useGround ? minAzimuthPoint.groundElevation : minAzimuthPoint.z, //
                 minAzimuthPoint.x, //
                 minAzimuthPoint.y, //
                 LasUtils.distance(baseRecord, minAzimuthPoint), //

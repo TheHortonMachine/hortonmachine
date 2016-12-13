@@ -25,23 +25,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasWriterEachPoint;
+import org.jgrasstools.gears.io.las.utils.GpsTimeConverter;
 import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -62,6 +51,17 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.index.strtree.STRtree;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description("A module that normalizes flightlines based on the aircraft position.")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
@@ -181,7 +181,7 @@ public class FlightLinesIntensityNormalizer extends JGTModel {
         CoordinateReferenceSystem crs = null;
         File lasFile = new File(inLas);
         File outLasFile = new File(outLas);
-        try (ALasReader reader = ALasReader.getReader(lasFile, crs);//
+        try (ALasReader reader = ALasReader.getReader(lasFile, crs); //
                 ALasWriter writer = ALasWriter.getWriter(outLasFile, crs);) {
             reader.setOverrideGpsTimeType(timeType);
             ILasHeader header = reader.getHeader();
@@ -193,7 +193,12 @@ public class FlightLinesIntensityNormalizer extends JGTModel {
             while( reader.hasNextPoint() ) {
                 LasRecord r = reader.getNextPoint();
 
-                DateTime gpsTimeToDateTime = LasUtils.gpsTimeToDateTime(r.gpsTime, gpsTimeType);
+                DateTime gpsTimeToDateTime;
+                if (timeType == 0) {
+                    gpsTimeToDateTime = GpsTimeConverter.gps2DateTime(r.gpsTime);
+                } else {
+                    gpsTimeToDateTime = LasUtils.adjustedStandardGpsTime2DateTime(r.gpsTime);
+                }
                 long gpsMillis = gpsTimeToDateTime.getMillis();
                 Coordinate lasCoordinate = new Coordinate(r.x, r.y, r.z);
                 Envelope pEnv = new Envelope(new Coordinate(gpsMillis, gpsMillis));

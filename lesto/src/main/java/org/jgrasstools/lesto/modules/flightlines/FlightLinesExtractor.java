@@ -17,10 +17,28 @@
  */
 package org.jgrasstools.lesto.modules.flightlines;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import org.jgrasstools.gears.io.las.core.ALasReader;
+import org.jgrasstools.gears.io.las.core.ALasWriter;
+import org.jgrasstools.gears.io.las.core.ILasHeader;
+import org.jgrasstools.gears.io.las.core.LasRecord;
+import org.jgrasstools.gears.io.las.utils.GpsTimeConverter;
+import org.jgrasstools.gears.io.las.utils.LasUtils;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.chart.CategoryHistogram;
+import org.jgrasstools.gears.utils.chart.PlotFrame;
+import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.time.UtcTimeUtilities;
+import org.joda.time.DateTime;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -32,22 +50,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.jgrasstools.gears.io.las.core.ALasReader;
-import org.jgrasstools.gears.io.las.core.ALasWriter;
-import org.jgrasstools.gears.io.las.core.ILasHeader;
-import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasWriterEachPoint;
-import org.jgrasstools.gears.io.las.utils.LasUtils;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.chart.CategoryHistogram;
-import org.jgrasstools.gears.utils.chart.PlotFrame;
-import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.jgrasstools.gears.utils.time.UtcTimeUtilities;
-import org.joda.time.DateTime;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("A module that splits las files in its flightlines")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -78,7 +80,7 @@ public class FlightLinesExtractor extends JGTModel {
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In
     public String outFolder;
-    
+
     @Execute
     public void process() throws Exception {
         checkNull(inLas, outFolder);
@@ -106,11 +108,10 @@ public class FlightLinesExtractor extends JGTModel {
         }
 
         pm.beginTask("Creating histogram...", (int) header.getRecordsCount());
-        TreeMap<String, Integer> histogramMap = new TreeMap<String, Integer>();
+        TreeMap<Long, Integer> histogramMap = new TreeMap<Long, Integer>();
         while( reader.hasNextPoint() ) {
             LasRecord readNextLasDot = reader.getNextPoint();
-            DateTime gpsTimeToDateTime = LasUtils.gpsTimeToDateTime(readNextLasDot.gpsTime, gpsTimeType);
-            String dateSeconds = UtcTimeUtilities.toStringWithSeconds(gpsTimeToDateTime);
+            long dateSeconds = getDateSeconds(gpsTimeType, readNextLasDot);
             Integer count = histogramMap.get(dateSeconds);
             if (count == null) {
                 histogramMap.put(dateSeconds, 0);
@@ -122,16 +123,15 @@ public class FlightLinesExtractor extends JGTModel {
         reader.close();
         pm.done();
 
-        Set<Entry<String, Integer>> entrySet = histogramMap.entrySet();
+        Set<Entry<Long, Integer>> entrySet = histogramMap.entrySet();
         pm.beginTask("Defining time markers...", entrySet.size() * 2);
-        String[] cat = new String[entrySet.size()];
+        long[] cat = new long[entrySet.size()];
         double[] values = new double[entrySet.size()];
         int i = 0;
-        for( Entry<String, Integer> entry : entrySet ) {
+        for( Entry<Long, Integer> entry : entrySet ) {
             cat[i] = entry.getKey();
             values[i] = entry.getValue();
-
-            System.out.println(cat[i] + " - " + values[i]);
+            // System.out.println(cat[i] + " - " + values[i]);
             i++;
             pm.worked(1);
         }
@@ -139,25 +139,22 @@ public class FlightLinesExtractor extends JGTModel {
         // find the time markers that split the flight lines
         TreeSet<Long> lineMarkers = new TreeSet<Long>();
         // lineMarkers.add(UtcTimeUtilities.fromStringWithSeconds(cat[0]).getMillis());
-        DateTime currentDate = null;
+        long lastSeconds = 0;
         for( int j = 1; j < cat.length; j++ ) {
-            String prev = cat[j - 1];
-            String current = cat[j];
+            long prevSeconds = cat[j - 1];
+            long currentSeconds = cat[j];
+            lastSeconds = currentSeconds;
 
-            DateTime prevDate = UtcTimeUtilities.fromStringWithSeconds(prev);
-            currentDate = UtcTimeUtilities.fromStringWithSeconds(current);
-
-            long millis = currentDate.getMillis() - prevDate.getMillis();
-            long seconds = millis / 1000;
+            long seconds = currentSeconds - prevSeconds;
             if (seconds > 30) { // flightline split
-                lineMarkers.add(prevDate.getMillis());
-                pm.message("Adding time marker at: " + prevDate);
+                lineMarkers.add(prevSeconds);
+                pm.message("Adding time marker at: " + prevSeconds);
             }
             pm.worked(1);
         }
         pm.done();
         // add last value
-        lineMarkers.add(currentDate.getMillis());
+        lineMarkers.add(lastSeconds);
 
         long[] markersArray = new long[lineMarkers.size()];
         int index = 0;
@@ -175,17 +172,12 @@ public class FlightLinesExtractor extends JGTModel {
         reader = ALasReader.getReader(lasFile, crs);
         reader.setOverrideGpsTimeType(timeType);
         ILasHeader header2 = reader.getHeader();
-        int gpsTimeType2 = header2.getGpsTimeType();
         while( reader.hasNextPoint() ) {
             LasRecord readNextLasDot = reader.getNextPoint();
-            DateTime gpsTimeToDateTime = LasUtils.gpsTimeToDateTime(readNextLasDot.gpsTime, gpsTimeType2);
-
-            // round to seconds
-            long millis = (long) (gpsTimeToDateTime.getMillis() / 1000.0);
-            millis = millis * 1000;
+            long dateSeconds = getDateSeconds(gpsTimeType, readNextLasDot);
 
             for( int j = 0; j < markersArray.length; j++ ) {
-                if (millis <= markersArray[j]) {
+                if (dateSeconds <= markersArray[j]) {
                     if (writers[j] == null) {
                         File file = new File(outFolderFile, nameWithoutExtention + "_" + j + ".las");
                         writers[j] = ALasWriter.getWriter(file, crs);
@@ -208,11 +200,45 @@ public class FlightLinesExtractor extends JGTModel {
         }
 
         if (doPlot) {
-            CategoryHistogram hi = new CategoryHistogram(cat, values);
-            
+            String[] catStr = new String[cat.length];
+            for( int j = 0; j < cat.length; j++ ) {
+                catStr[j] = String.valueOf(cat[j]);
+            }
+            CategoryHistogram hi = new CategoryHistogram(catStr, values);
+
             PlotFrame frame = new PlotFrame(hi);
             frame.plot();
         }
+    }
+
+    private long getDateSeconds( int gpsTimeType, LasRecord readNextLasDot ) {
+        long dateSeconds;
+        if (gpsTimeType == 0) {
+            DateTime dt = GpsTimeConverter.gps2DateTime(readNextLasDot.gpsTime);
+            dateSeconds = dt.getMillis() / 1000;
+        } else {
+            DateTime gpsTimeToDateTime = LasUtils.adjustedStandardGpsTime2DateTime(readNextLasDot.gpsTime);
+            dateSeconds = gpsTimeToDateTime.getMillis() / 1000;
+        }
+        return dateSeconds;
+    }
+
+    public static void main( String[] args ) throws Exception {
+
+        Files.list(Paths.get("/media/hydrologis/LATEMAR/lavori_tmp/2016_10_geologico/test_flightlines/57_Class_LAS/"))
+                .filter(p -> p.getFileName().toString().endsWith(".las")).forEach(path -> {
+                    FlightLinesExtractor eh = new FlightLinesExtractor();
+                    eh.inLas = path.toString();
+                    eh.doPlot = false;
+                    eh.pGpsTimeType = WEEK_SECONDS_TIME;
+                    eh.outFolder = "/media/hydrologis/LATEMAR/lavori_tmp/2016_10_geologico/test_flightlines/57_Class_LAS/flightlines";
+                    try {
+                        eh.process();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+
     }
 
 }
