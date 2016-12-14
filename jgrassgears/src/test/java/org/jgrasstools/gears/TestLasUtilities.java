@@ -65,13 +65,13 @@ public class TestLasUtilities extends HMTestCase {
     public void testWeekSecondsTimeConversion() throws Exception {
         double weekSecondsTime = 1622.379604;
         DateTime gpsTimeToDateTime = GpsTimeConverter.gps2DateTime(weekSecondsTime);
-        String expected = "1980-01-06 01:27:02";
-        assertEquals(expected, gpsTimeToDateTime.toString(JGTConstants.dateTimeFormatterYYYYMMDDHHMMSS));
+        String expected = "1980-01-06 00:27:02";
+        assertEquals(expected, gpsTimeToDateTime.toString(JGTConstants.utcDateFormatterYYYYMMDDHHMMSS));
 
         weekSecondsTime = 1622.386961;
         gpsTimeToDateTime = GpsTimeConverter.gps2DateTime(weekSecondsTime);
-        expected = "1980-01-06 01:27:02";
-        assertEquals(expected, gpsTimeToDateTime.toString(JGTConstants.dateTimeFormatterYYYYMMDDHHMMSS));
+        expected = "1980-01-06 00:27:02";
+        assertEquals(expected, gpsTimeToDateTime.toString(JGTConstants.utcDateFormatterYYYYMMDDHHMMSS));
     }
 
     public void testAvg() throws Exception {
