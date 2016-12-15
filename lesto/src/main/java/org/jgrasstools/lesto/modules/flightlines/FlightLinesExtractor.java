@@ -214,7 +214,7 @@ public class FlightLinesExtractor extends JGTModel {
     private long getDateSeconds( int gpsTimeType, LasRecord readNextLasDot ) {
         long dateSeconds;
         if (gpsTimeType == 0) {
-            DateTime dt = GpsTimeConverter.gps2DateTime(readNextLasDot.gpsTime);
+            DateTime dt = GpsTimeConverter.gpsWeekTime2DateTime(readNextLasDot.gpsTime);
             dateSeconds = dt.getMillis() / 1000;
         } else {
             DateTime gpsTimeToDateTime = LasUtils.adjustedStandardGpsTime2DateTime(readNextLasDot.gpsTime);

@@ -195,7 +195,7 @@ public class FlightLinesIntensityNormalizer extends JGTModel {
 
                 DateTime gpsTimeToDateTime;
                 if (timeType == 0) {
-                    gpsTimeToDateTime = GpsTimeConverter.gps2DateTime(r.gpsTime);
+                    gpsTimeToDateTime = GpsTimeConverter.gpsWeekTime2DateTime(r.gpsTime);
                 } else {
                     gpsTimeToDateTime = LasUtils.adjustedStandardGpsTime2DateTime(r.gpsTime);
                 }

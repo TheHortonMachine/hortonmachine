@@ -23,9 +23,9 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 /**
- * Gep Time converter
+ * Gps Time converter
  * 
- * <p>Adapted from teh javascript version of: https://losc.ligo.org/gps/</p>
+ * <p>Adapted from the javascript version of: https://losc.ligo.org/gps/</p>
  * <p>Following may be helpful for conversion when new leap seconds are
  * announced.
  * <pre>
@@ -34,6 +34,11 @@ import org.joda.time.format.DateTimeFormatter;
  * </pre>
  * 
  * <p>source: https://losc.ligo.org/s/js/gpstimeutil.js</p>
+ * 
+ * <p>GPS time was born at the 1/5/1980 to 1/6/1980 midnight. 
+ * January 6, 1980 is a Sunday. GPS Time counts in weeks and seconds of a week 
+ * from this instant. The weeks begin at the Saturday/Sunday transition. 
+ * The days of the week are numbered, with Sunday being 0, Saturday is day 6
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  *
@@ -109,15 +114,15 @@ public class GpsTimeConverter {
     }
 
     /**
-     * Convert GPS Time to {@link DateTime}.
+     * Convert GPS Week Time to {@link DateTime}.
      * 
-     * @param gpsTime the gps time.
+     * @param gpsWeekTime the gps time.
      * @return the {@link DateTime} of the gps time.
      */
-    public static DateTime gps2DateTime( double gpsTime ) {
+    public static DateTime gpsWeekTime2DateTime( double gpsWeekTime ) {
         double fpart, ipart, unixTime;
-        fpart = gpsTime % 1;
-        ipart = Math.floor(gpsTime);
+        fpart = gpsWeekTime % 1;
+        ipart = Math.floor(gpsWeekTime);
         unixTime = ipart + 315964800 - countleaps(ipart, false);
 
         if (isleap(ipart + 1)) {
@@ -132,13 +137,26 @@ public class GpsTimeConverter {
     }
 
     /**
+     * Convert GPS Week Time to the day of the week.
+     * 
+     * @param gpsWeekTime the gps time.
+     * @return the day of the week.
+     */
+    public static EGpsWeekDays gpsWeekTime2WeekDay( double gpsWeekTime ) {
+        int seconds = (int) gpsWeekTime;
+        // week starts with Sunday
+        EGpsWeekDays day4Seconds = EGpsWeekDays.getDay4Seconds(seconds);
+        return day4Seconds;
+    }
+
+    /**
      * Convert GPS Time to ISO8601 time string.
      * 
-     * @param gpsTime the gps time.
+     * @param gpsWeekTime the gps time.
      * @return the ISO8601 string of the gps time.
      */
-    public static String gps2ISO8601( double gpsTime ) {
-        DateTime gps2unix = gps2DateTime(gpsTime);
+    public static String gpsWeekTime2ISO8601( double gpsWeekTime ) {
+        DateTime gps2unix = gpsWeekTime2DateTime(gpsWeekTime);
         return gps2unix.toString(ISO8601Formatter);
     }
 

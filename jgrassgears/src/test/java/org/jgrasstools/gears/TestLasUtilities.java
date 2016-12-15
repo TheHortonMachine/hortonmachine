@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jgrasstools.gears.io.las.core.LasRecord;
+import org.jgrasstools.gears.io.las.utils.EGpsWeekDays;
 import org.jgrasstools.gears.io.las.utils.GpsTimeConverter;
 import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.jgrasstools.gears.io.las.utils.LasUtils.VALUETYPE;
@@ -64,14 +65,29 @@ public class TestLasUtilities extends HMTestCase {
 
     public void testWeekSecondsTimeConversion() throws Exception {
         double weekSecondsTime = 1622.379604;
-        DateTime gpsTimeToDateTime = GpsTimeConverter.gps2DateTime(weekSecondsTime);
+        DateTime gpsTimeToDateTime = GpsTimeConverter.gpsWeekTime2DateTime(weekSecondsTime);
         String expected = "1980-01-06 00:27:02";
         assertEquals(expected, gpsTimeToDateTime.toString(JGTConstants.utcDateFormatterYYYYMMDDHHMMSS));
 
         weekSecondsTime = 1622.386961;
-        gpsTimeToDateTime = GpsTimeConverter.gps2DateTime(weekSecondsTime);
+        gpsTimeToDateTime = GpsTimeConverter.gpsWeekTime2DateTime(weekSecondsTime);
         expected = "1980-01-06 00:27:02";
         assertEquals(expected, gpsTimeToDateTime.toString(JGTConstants.utcDateFormatterYYYYMMDDHHMMSS));
+    }
+
+    public void testWeekDaysFromTime() throws Exception {
+        double seconds = 43574.480238020005;
+        assertEquals(EGpsWeekDays.SUNDAY, EGpsWeekDays.getDay4Seconds(seconds));
+        seconds = 108370.480238020005;
+        assertEquals(EGpsWeekDays.MONDAY, EGpsWeekDays.getDay4Seconds(seconds));
+        seconds = 238270.480238020005;
+        assertEquals(EGpsWeekDays.TUESDAY, EGpsWeekDays.getDay4Seconds(seconds));
+        seconds = 382270.1111110005;
+        assertEquals(EGpsWeekDays.THURSDAY, EGpsWeekDays.getDay4Seconds(seconds));
+        seconds = 490570.9463;
+        assertEquals(EGpsWeekDays.FRIDAY, EGpsWeekDays.getDay4Seconds(seconds));
+        seconds = 600821.123456;
+        assertEquals(EGpsWeekDays.SATURDAY, EGpsWeekDays.getDay4Seconds(seconds));
     }
 
     public void testAvg() throws Exception {
