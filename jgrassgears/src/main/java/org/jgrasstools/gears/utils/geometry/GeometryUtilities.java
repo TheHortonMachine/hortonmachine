@@ -1024,12 +1024,12 @@ public class GeometryUtilities {
      */
     @SuppressWarnings("unchecked")
     public static List<LineString> mergeLinestrings( List<LineString> multiLines ) {
-        LineMerger lseq = new LineMerger();
+        LineMerger lineMerger = new LineMerger();
         for( int i = 0; i < multiLines.size(); i++ ) {
             Geometry line = multiLines.get(i);
-            lseq.add(line);
+            lineMerger.add(line);
         }
-        Collection<Geometry> merged = lseq.getMergedLineStrings();
+        Collection<Geometry> merged = lineMerger.getMergedLineStrings();
         List<LineString> mergedList = new ArrayList<>();
         for( Geometry geom : merged ) {
             mergedList.add((LineString) geom);

@@ -1,9 +1,13 @@
 package org.jgrasstools.gears;
 
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.*;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.angleBetween3D;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getAngleBetweenLinePlane;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getTriangleCentroid;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getTriangleWindingRule;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -69,7 +73,7 @@ public class TestGeometryUtilities extends HMTestCase {
         azimuth = GeometryUtilities.azimuth(lr, ll);
         assertEquals(270.0, azimuth, DELTA);
     }
-    
+
     public void testAnglesAndAzimuth() throws Exception {
         LineSegment ls1 = new LineSegment(ll, ul);
         LineSegment ls2 = new LineSegment(ll, ur);
@@ -90,6 +94,27 @@ public class TestGeometryUtilities extends HMTestCase {
         ls2 = new LineSegment(lr, ll);
         angleBetween = GeometryUtilities.angleBetween(ls1, ls2);
         assertEquals(315.0, angleBetween, DELTA);
+    }
+
+    public void testLineMerger() throws Exception {
+        String l1 = "LINESTRING (0 300, 200 300, 200 200)";
+        String l2 = "LINESTRING (200 0, 200 200)";
+        String l3 = "LINESTRING (50 100, 250 100, 300 100)";
+        String l4 = "LINESTRING (300 100, 300 0)";
+        String l5 = "LINESTRING (50 100, 50 0, 200 0)";
+
+        WKTReader r = new WKTReader();
+        LineString g1 = (LineString) r.read(l1);
+        LineString g2 = (LineString) r.read(l2);
+        LineString g3 = (LineString) r.read(l3);
+        LineString g4 = (LineString) r.read(l4);
+        LineString g5 = (LineString) r.read(l5);
+
+        List<LineString> mergeLinestrings = GeometryUtilities.mergeLinestrings(Arrays.asList(g1, g2, g3, g4));
+        assertEquals(2, mergeLinestrings.size());
+        mergeLinestrings = GeometryUtilities.mergeLinestrings(Arrays.asList(g1, g2, g3, g4, g5));
+        assertEquals(1, mergeLinestrings.size());
+
     }
 
     public void testLines2Polygon() throws Exception {
