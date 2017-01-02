@@ -15,7 +15,7 @@
 	<name>JGrasstools Small Applications Components</name>
 
 	<properties>
-		<mapsforge.version>0.4.3</mapsforge.version>
+		<mapsforge.version>0.7.0</mapsforge.version>
 	</properties>
 
 	<dependencies>
@@ -60,6 +60,11 @@
 		<dependency>
 			<groupId>org.mapsforge</groupId>
 			<artifactId>mapsforge-map-reader</artifactId>
+			<version>${mapsforge.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mapsforge</groupId>
+			<artifactId>mapsforge-themes</artifactId>
 			<version>${mapsforge.version}</version>
 		</dependency>
 		<dependency>
