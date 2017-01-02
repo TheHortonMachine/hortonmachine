@@ -234,7 +234,7 @@ public class ToolsPanelController extends ToolsPanelView {
 							if (selectedFiles[0].getName().endsWith(".map")) {
 								try {
 									String layerName = selectedFiles[0].getParentFile().getName() + "-maps";
-									MapsforgeNwwLayer mbTileLayer = new MapsforgeNwwLayer(layerName, selectedFiles, null);
+									MapsforgeNwwLayer mbTileLayer = new MapsforgeNwwLayer(layerName, selectedFiles, null, null);
 									wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
 									layerEventsListener.onLayerAdded(mbTileLayer);
 								} catch (Exception e1) {
@@ -471,7 +471,7 @@ public class ToolsPanelController extends ToolsPanelView {
 				layerEventsListener.onLayerAdded(mbTileLayer);
 			} else if (selectedFile.getName().endsWith(".map")) {
 				String layerName = FileUtilities.getNameWithoutExtention(selectedFile);
-				MapsforgeNwwLayer mbTileLayer = new MapsforgeNwwLayer(layerName, new File[] { selectedFile }, null);
+				MapsforgeNwwLayer mbTileLayer = new MapsforgeNwwLayer(layerName, new File[] { selectedFile }, null, null);
 				wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
 				layerEventsListener.onLayerAdded(mbTileLayer);
 			} else if (selectedFile.getName().endsWith(".rl2")) {

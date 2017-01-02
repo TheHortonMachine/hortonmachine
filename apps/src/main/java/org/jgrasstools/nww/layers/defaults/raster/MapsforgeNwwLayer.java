@@ -17,7 +17,6 @@
  */
 package org.jgrasstools.nww.layers.defaults.raster;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -27,11 +26,9 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 
 import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.jgrasstools.gears.utils.images.ImageUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.nww.utils.cache.CacheUtils;
-import org.mapsforge.core.graphics.GraphicFactory;
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.map.awt.graphics.AwtGraphicFactory;
@@ -45,9 +42,7 @@ import org.mapsforge.map.layer.renderer.MapWorkerPool;
 import org.mapsforge.map.model.DisplayModel;
 import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.reader.ReadBuffer;
-import org.mapsforge.map.rendertheme.ExternalRenderTheme;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
-import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.mapsforge.map.rendertheme.rule.RenderThemeFuture;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -76,14 +71,10 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer implements N
 
 	private Coordinate centerCoordinate;
 
-	public MapsforgeNwwLayer(String layerName, File[] mapsforgeFiles, Integer tileSize) throws Exception {
-		this(layerName, mapsforgeFiles, tileSize, null);
-	}
-
-	public MapsforgeNwwLayer(String layerName, File[] mapsforgeFiles, Integer tileSize, Color colorToMakeTransparent)
+	public MapsforgeNwwLayer(String layerName, File[] mapsforgeFiles, Integer tileSize, Float scaleFactor)
 			throws Exception {
-		super(makeLevels(layerName, getTilegenerator(mapsforgeFiles, tileSize), tileSize, colorToMakeTransparent));
-		this.layerName = FileUtilities.getNameWithoutExtention(mapsforgeFiles[0]);
+		super(makeLevels(layerName, getTilegenerator(mapsforgeFiles, tileSize, scaleFactor), tileSize));
+		this.layerName = layerName;
 		this.setUseTransparentTextures(true);
 
 		MultiMapDataStore mapDatabase = new MultiMapDataStore(DataPolicy.RETURN_ALL);
@@ -95,10 +86,12 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer implements N
 		mapDatabase.close();
 	}
 
-	private static OsmTilegenerator getTilegenerator(File[] mapsforgeFiles, Integer tileSize) {
+	private static OsmTilegenerator getTilegenerator(File[] mapsforgeFiles, Integer tileSize, Float scaleFactor) {
 		if (tileSize == null || tileSize < 256) {
 			tileSize = TILESIZE;
 		}
+		if (scaleFactor == null)
+			scaleFactor = 1.5f;
 
 		MapWorkerPool.NUMBER_OF_THREADS = 4;
 		// Map buffer size
@@ -107,8 +100,8 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer implements N
 		FrameBufferController.setUseSquareFrameBuffer(false);
 
 		DisplayModel model = new DisplayModel();
-		model.setUserScaleFactor(1.5f);
-		model.setFixedTileSize(tileSize); // TODO check
+		model.setUserScaleFactor(scaleFactor);
+		model.setFixedTileSize(tileSize);
 
 		DataPolicy dataPolicy = DataPolicy.RETURN_ALL;
 		MultiMapDataStore mapDatabase = new MultiMapDataStore(dataPolicy);
@@ -124,6 +117,7 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer implements N
 		// activities will block until the theme is created.
 		new Thread(theme).start();
 
+		// TODO get back external themes
 		// DatabaseRenderer dbRenderer = null;
 		// XmlRenderTheme xmlRenderTheme = null;
 		// DisplayModel displayModel = null;
@@ -151,8 +145,8 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer implements N
 		return new OsmTilegenerator(mapDatabase, renderer, theme, model, tileSize);
 	}
 
-	private static LevelSet makeLevels(String layerName, OsmTilegenerator osmTilegenerator, Integer tileSize,
-			Color colorToMakeTransparent) throws MalformedURLException {
+	private static LevelSet makeLevels(String layerName, OsmTilegenerator osmTilegenerator, Integer tileSize)
+			throws MalformedURLException {
 		AVList params = new AVListImpl();
 		String cacheRelativePath = "mapsforge/" + layerName + "-tiles";
 
@@ -205,9 +199,6 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer implements N
 						BufferedImage bImg = osmTilegenerator.getImage(zoom, x, y);
 						// PrintUtilities.printRenderedImageData(bImg);
 
-						if (colorToMakeTransparent != null) {
-							bImg = ImageUtilities.makeColorTransparent(bImg, colorToMakeTransparent);
-						}
 						ImageIO.write(bImg, "png", imgFile);
 					}
 					return imgFile.toURI().toURL();
