@@ -435,7 +435,7 @@ public class ToolsPanelController extends ToolsPanelView {
 				String fileName = FileUtilities.getNameWithoutExtention(selectedFile);
 				try {
 					if (parentFolderName.equals(fileName)) {
-						ImageMosaicNwwLayer imageMosaicNwwLayer = new ImageMosaicNwwLayer(selectedFile, null);
+						ImageMosaicNwwLayer imageMosaicNwwLayer = new ImageMosaicNwwLayer(selectedFile, null, null);
 						wwjPanel.getWwd().getModel().getLayers().add(imageMosaicNwwLayer);
 						layerEventsListener.onLayerAdded(imageMosaicNwwLayer);
 						return;
