@@ -27,13 +27,21 @@ import javax.imageio.ImageIO;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.nww.layers.defaults.raster.OsmTilegenerator;
 import org.mapsforge.core.graphics.GraphicFactory;
-import org.mapsforge.map.awt.AwtGraphicFactory;
+import org.mapsforge.map.awt.graphics.AwtGraphicFactory;
+import org.mapsforge.map.controller.FrameBufferController;
+import org.mapsforge.map.datastore.MultiMapDataStore;
+import org.mapsforge.map.datastore.MultiMapDataStore.DataPolicy;
+import org.mapsforge.map.layer.cache.InMemoryTileCache;
+import org.mapsforge.map.layer.labels.TileBasedLabelStore;
 import org.mapsforge.map.layer.renderer.DatabaseRenderer;
+import org.mapsforge.map.layer.renderer.MapWorkerPool;
 import org.mapsforge.map.model.DisplayModel;
-import org.mapsforge.map.reader.MapDatabase;
+import org.mapsforge.map.reader.MapFile;
+import org.mapsforge.map.reader.ReadBuffer;
 import org.mapsforge.map.rendertheme.ExternalRenderTheme;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
+import org.mapsforge.map.rendertheme.rule.RenderThemeFuture;
 
 /**
  * Tiles generator for mapsforge files.
@@ -52,7 +60,7 @@ public class MapsforgeTilesGenerator implements ITilesGenerator {
     
     private int tileSize = TILESIZE;
 
-    public MapsforgeTilesGenerator( String title, File mapsforgeFile, Integer tileSize, boolean isVisible, boolean isDefault )
+    public MapsforgeTilesGenerator( String title, File[] mapsforgeFiles, Integer tileSize, boolean isVisible, boolean isDefault, Float scaleFactor )
             throws Exception {
         this.title = title;
         this.isVisible = isVisible;
@@ -60,41 +68,36 @@ public class MapsforgeTilesGenerator implements ITilesGenerator {
         if (tileSize != null && tileSize >= TILESIZE) {
             this.tileSize = tileSize;
         }
-        GraphicFactory graphicFactory = AwtGraphicFactory.INSTANCE;
-        MapDatabase mapDatabase = new MapDatabase();
-        DatabaseRenderer dbRenderer = null;
-        XmlRenderTheme xmlRenderTheme = null;
-        DisplayModel displayModel = null;
-        if (mapsforgeFile.exists()) {
-            String fileName = FileUtilities.getNameWithoutExtention(mapsforgeFile);
-            if (title == null) {
-                title = fileName;
-            }
-            cacheFolder = new File(mapsforgeFile.getParentFile(), fileName + "-tiles");
-            cacheFolder.mkdir();
+        
+        
+        if (scaleFactor == null)
+			scaleFactor = 1.5f;
 
-            // open map file
-            mapDatabase.openFile(mapsforgeFile);
-            dbRenderer = new DatabaseRenderer(mapDatabase, graphicFactory);
+		MapWorkerPool.NUMBER_OF_THREADS = 4;
+		// Map buffer size
+		ReadBuffer.setMaximumBufferSize(6500000);
+		// Square frame buffer
+		FrameBufferController.setUseSquareFrameBuffer(false);
 
-            String mapName = FileUtilities.getNameWithoutExtention(mapsforgeFile);
-            File xmlStyleFile = new File(mapsforgeFile.getParentFile(), mapName + ".xml");
-            if (xmlStyleFile.exists()) {
-                try {
-                    xmlRenderTheme = new ExternalRenderTheme(xmlStyleFile);
-                } catch (Exception e) {
-                    xmlRenderTheme = InternalRenderTheme.OSMARENDER;
-                }
-            } else {
-                xmlRenderTheme = InternalRenderTheme.OSMARENDER;
-            }
-            displayModel = new DisplayModel();
-            displayModel.setUserScaleFactor(this.tileSize / 256f);
-        } else {
-            throw new FileNotFoundException("Could not find: " + mapsforgeFile);
-        }
+		DisplayModel model = new DisplayModel();
+		model.setUserScaleFactor(scaleFactor);
+		model.setFixedTileSize(tileSize);
 
-        osmTilegenerator = new OsmTilegenerator(mapsforgeFile, dbRenderer, xmlRenderTheme, displayModel);
+		DataPolicy dataPolicy = DataPolicy.RETURN_ALL;
+		MultiMapDataStore mapDatabase = new MultiMapDataStore(dataPolicy);
+		for (int i = 0; i < mapsforgeFiles.length; i++)
+			mapDatabase.addMapDataStore(new MapFile(mapsforgeFiles[i]), false, false);
+
+		InMemoryTileCache tileCache = new InMemoryTileCache(200);
+		DatabaseRenderer renderer = new DatabaseRenderer(mapDatabase, AwtGraphicFactory.INSTANCE, tileCache,
+				new TileBasedLabelStore(tileCache.getCapacityFirstLevel()), true, true);
+		InternalRenderTheme xmlRenderTheme = InternalRenderTheme.DEFAULT;
+		RenderThemeFuture theme = new RenderThemeFuture(AwtGraphicFactory.INSTANCE, xmlRenderTheme, model);
+		// super important!! without the following line, all rendering
+		// activities will block until the theme is created.
+		new Thread(theme).start();
+        
+        osmTilegenerator = new OsmTilegenerator(mapDatabase, renderer, theme, model, tileSize);
 
         url = "gettile?z={z}&x={x}&y={y}&id=" + title;
 
