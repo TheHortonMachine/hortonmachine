@@ -20,15 +20,14 @@ package org.jgrasstools.gears.io.rasterreader;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_DO_LEGACY_GRASS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_FILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_FILE_NOVALUE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_GEO_DATA_NOVALUE_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_DO_LEGACY_GRASS_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_FILE_NOVALUE_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_FILE_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_GEO_DATA_NOVALUE_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_OUT_RASTER_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_COLS_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_EAST_DESCRIPTION;
@@ -38,6 +37,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_SOUTH_D
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_WEST_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_X_RES_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_P_Y_RES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_STATUS;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.AIG;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIF;
@@ -77,21 +77,8 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.grid.ViewType;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.coverageio.gdal.BaseGDALGridCoverage2DReader;
@@ -120,6 +107,18 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Envelope;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description(OMSRASTERREADER_DESCRIPTION)
 @Author(name = OMSRASTERREADER_AUTHORNAMES, contact = OMSRASTERREADER_AUTHORCONTACTS)
@@ -350,8 +349,7 @@ public class OmsRasterReader extends JGTModel {
         final BaseGDALGridCoverage2DReader reader = new AIGReader(source, hints);
         originalEnvelope = reader.getOriginalEnvelope();
         if (!doEnvelope) {
-            GridCoverage2D coverage = (GridCoverage2D) reader.read(generalParameter);
-            outRaster = coverage.view(ViewType.GEOPHYSICS);
+            outRaster = (GridCoverage2D) reader.read(generalParameter);
 
             resample();
             checkNovalues();
@@ -369,8 +367,7 @@ public class OmsRasterReader extends JGTModel {
         }
         originalEnvelope = geoTiffReader.getOriginalEnvelope();
         if (!doEnvelope) {
-            GridCoverage2D coverage = geoTiffReader.read(generalParameter);
-            outRaster = coverage.view(ViewType.GEOPHYSICS);
+            outRaster = geoTiffReader.read(generalParameter);
 
             resample();
             checkNovalues();
@@ -381,8 +378,7 @@ public class OmsRasterReader extends JGTModel {
         ArcGridReader arcGridReader = new ArcGridReader(mapFile);
         originalEnvelope = arcGridReader.getOriginalEnvelope();
         if (!doEnvelope) {
-            GridCoverage2D coverage = arcGridReader.read(generalParameter);
-            outRaster = coverage.view(ViewType.GEOPHYSICS);
+            outRaster = arcGridReader.read(generalParameter);
 
             resample();
             checkNovalues();
@@ -393,8 +389,7 @@ public class OmsRasterReader extends JGTModel {
         WorldImageReader worldImageReader = new WorldImageReader(mapFile);
         originalEnvelope = worldImageReader.getOriginalEnvelope();
         if (!doEnvelope) {
-            GridCoverage2D coverage = worldImageReader.read(generalParameter);
-            outRaster = coverage.view(ViewType.RENDERED);
+            outRaster = worldImageReader.read(generalParameter);
 
             resample();
             // checkNovalues();

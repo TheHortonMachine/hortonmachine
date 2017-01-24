@@ -65,5 +65,10 @@ public class ImageMosaicCreator extends JGTModel {
         imagemosaiccreator.process();
     }
     
-
+    
+    public static void main( String[] args ) throws Exception {
+        ImageMosaicCreator c = new ImageMosaicCreator();
+        c.inFolder="/home/hydrologis/TMP/tifftest/";
+        c.process();
+    }
 }

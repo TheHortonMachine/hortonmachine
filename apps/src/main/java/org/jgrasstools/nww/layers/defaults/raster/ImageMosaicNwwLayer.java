@@ -32,6 +32,7 @@ import javax.imageio.ImageIO;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
+import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.GridReaderLayer;
 import org.geotools.map.MapContent;
@@ -48,6 +49,7 @@ import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.nww.utils.cache.CacheUtils;
+import org.opengis.parameter.GeneralParameterValue;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -75,8 +77,8 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
 
     private Coordinate centerCoordinate;
 
-    public ImageMosaicNwwLayer( File imageMosaicShpFile, Integer tileSize ) throws Exception {
-        super(makeLevels(imageMosaicShpFile, getRenderer(imageMosaicShpFile), tileSize));
+    public ImageMosaicNwwLayer( File imageMosaicShpFile, Integer tileSize, GeneralParameterValue[] gp ) throws Exception {
+        super(makeLevels(imageMosaicShpFile, getRenderer(imageMosaicShpFile, gp), tileSize));
         this.layerName = FileUtilities.getNameWithoutExtention(imageMosaicShpFile);
 
         ReferencedEnvelope envelope = OmsVectorReader.readEnvelope(imageMosaicShpFile.getAbsolutePath());
@@ -96,16 +98,22 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
 
     }
 
-    private static GTRenderer getRenderer( File imsf ) {
+    private static GTRenderer getRenderer( File imsf, GeneralParameterValue[] gp ) {
 
         AbstractGridFormat format = GridFormatFinder.findFormat(imsf);
         AbstractGridCoverage2DReader coverageTilesReader = format.getReader(imsf);
-
+        
         MapContent mapContent = new MapContent();
         try {
             RasterSymbolizer sym = SldUtilities.sf.getDefaultRasterSymbolizer();
             Style style = SLD.wrapSymbolizers(sym);
-            GridReaderLayer layer = new GridReaderLayer(coverageTilesReader, style);
+            
+            GridReaderLayer layer;
+            if(gp == null){
+                layer = new GridReaderLayer(coverageTilesReader, style);
+            }else{
+                layer = new GridReaderLayer(coverageTilesReader, style, gp);
+            }
             mapContent.addLayer(layer);
             mapContent.getViewport().setCoordinateReferenceSystem(CrsUtilities.WGS84);
         } catch (Exception e) {

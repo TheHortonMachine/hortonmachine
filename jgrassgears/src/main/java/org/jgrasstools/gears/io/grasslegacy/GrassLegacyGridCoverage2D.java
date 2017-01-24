@@ -23,7 +23,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.RenderableImage;
 import java.util.HashMap;
-import java.util.Set;
 
 import javax.media.jai.Interpolation;
 
@@ -31,7 +30,6 @@ import org.geotools.coverage.GridSampleDimension;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.grid.ViewType;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
@@ -257,14 +255,6 @@ public class GrassLegacyGridCoverage2D extends GridCoverage2D {
 
     public GridCoverage2D geophysics( final boolean geo ) {
         return this;
-    }
-
-    public GridCoverage2D view( final ViewType type ) {
-        return this;
-    }
-
-    public synchronized Set<ViewType> getViewTypes() {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     public synchronized boolean dispose( final boolean force ) {

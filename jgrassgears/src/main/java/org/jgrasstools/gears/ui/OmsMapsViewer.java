@@ -55,11 +55,19 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
+import org.geotools.gce.imagemosaic.ImageMosaicFormat;
+import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.map.DefaultMapContext;
+import org.geotools.map.FeatureLayer;
+import org.geotools.map.GridCoverageLayer;
+import org.geotools.map.GridReaderLayer;
+import org.geotools.map.MapContent;
 import org.geotools.map.MapContext;
+import org.geotools.map.RasterLayer;
 import org.geotools.styling.ColorMap;
 import org.geotools.styling.ColorMapEntry;
 import org.geotools.styling.FeatureTypeStyle;
@@ -85,6 +93,9 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Expression;
+import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.parameter.ParameterValue;
 
 @Description(OMSMAPSVIEWER_DESCRIPTION)
 @Documentation(OMSMAPSVIEWER_DOCUMENTATION)
@@ -104,6 +115,8 @@ public class OmsMapsViewer extends JGTModel {
     @Description(OMSMAPSVIEWER_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster = null;
+
+    public ImageMosaicReader inImageMosaicReader = null;
 
     @Description(OMSMAPSVIEWER_IN_VECTORS_DESCRIPTION)
     @In
@@ -129,7 +142,7 @@ public class OmsMapsViewer extends JGTModel {
         ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
         sb = new StyleBuilder(sf, ff);
 
-        final MapContext map = new DefaultMapContext();
+        final MapContent map = new MapContent();
         map.setTitle("Maps Viewer");
 
         RasterSymbolizer rasterSym = sf.createRasterSymbolizer();
@@ -138,6 +151,8 @@ public class OmsMapsViewer extends JGTModel {
             inRasters = new GridCoverage2D[]{inRaster};
         }
         addCoverages(map, sb, rasterSym);
+
+        addImageMosaic(map, inImageMosaicReader);
 
         if (inVector != null) {
             inVectors = new SimpleFeatureCollection[]{inVector};
@@ -156,7 +171,6 @@ public class OmsMapsViewer extends JGTModel {
                     System.out.println(xml);
                 }
             }
-
         }
         addFeatureCollections(map);
 
@@ -178,7 +192,30 @@ public class OmsMapsViewer extends JGTModel {
         }
     }
 
-    private void addFeatureCollections( MapContext map ) {
+    private void addImageMosaic( MapContent map, ImageMosaicReader imReader ) {
+        if (imReader != null) {
+            RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
+            Style style = SLD.wrapSymbolizers(sym);
+
+            final ParameterValue<Color> inTransp = AbstractGridFormat.INPUT_TRANSPARENT_COLOR.createValue();
+            inTransp.setValue(Color.white);
+
+            // final ParameterValue<Color> outTransp =
+            // ImageMosaicFormat.OUTPUT_TRANSPARENT_COLOR.createValue();
+            // outTransp.setValue(Color.black);
+
+            // final ParameterValue<Boolean> blendPV =ImageMosaicFormat.FADING.createValue();
+            // blendPV.setValue(blend);
+
+            GeneralParameterValue[] gp = new GeneralParameterValue[]{inTransp};
+
+            GridReaderLayer layer = new GridReaderLayer(imReader, style, gp);
+            map.addLayer(layer);
+        }
+
+    }
+
+    private void addFeatureCollections( MapContent map ) {
         for( SimpleFeatureCollection fc : inVectors ) {
             GeometryDescriptor geometryDescriptor = fc.getSchema().getGeometryDescriptor();
             GeometryType type = GeometryUtilities.getGeometryType(geometryDescriptor.getType());
@@ -237,13 +274,14 @@ public class OmsMapsViewer extends JGTModel {
                 break;
             }
 
-            map.addLayer(fc, namedStyle);
+            FeatureLayer layer = new FeatureLayer(fc, namedStyle);
+            map.addLayer(layer);
 
         }
 
     }
 
-    private void addCoverages( final MapContext map, StyleBuilder sB, RasterSymbolizer rasterSym ) {
+    private void addCoverages( final MapContent map, StyleBuilder sB, RasterSymbolizer rasterSym ) {
         ColorMap colorMap = sf.createColorMap();
 
         for( GridCoverage2D coverage : inRasters ) {
@@ -297,7 +335,9 @@ public class OmsMapsViewer extends JGTModel {
 
             Style rasterStyle = SLD.wrapSymbolizers(rasterSym);
 
-            map.addLayer(coverage, rasterStyle);
+            GridCoverageLayer layer = new GridCoverageLayer(coverage, rasterStyle);
+
+            map.addLayer(layer);
         }
     }
 
@@ -323,13 +363,5 @@ public class OmsMapsViewer extends JGTModel {
         }.start();
 
     }
-
-    // @SuppressWarnings("nls")
-    // public static void main( String[] args ) throws Exception {
-    // GridCoverage2D coverage = OmsRasterReader.readRaster("/home/moovida/TMP/byumba_basins.asc");
-    // SimpleFeatureCollection shapefile = OmsShapefileFeatureReader
-    // .readShapefile("/home/moovida/TMP/byumba_extrbasins.shp");
-    // displayRasterAndFeatures(coverage, shapefile);
-    // }
 
 }
