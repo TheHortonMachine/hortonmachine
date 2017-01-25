@@ -56,6 +56,7 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
+import org.apache.log4j.BasicConfigurator;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -226,7 +227,7 @@ public class OmsMapsViewer extends JGTModel {
             
             
             
-            GeneralParameterValue[] gp = new GeneralParameterValue[]{bkg, resol};
+            GeneralParameterValue[] gp =  new GeneralParameterValue[]{blendPV, inTransp};
 
             for( ImageMosaicReader imageMosaicReader : imReader ) {
                 GridReaderLayer layer = new GridReaderLayer(imageMosaicReader, style, gp);
@@ -386,19 +387,20 @@ public class OmsMapsViewer extends JGTModel {
     }
 
     public static void main( String[] args ) throws Exception {
+    	BasicConfigurator.configure();
         OmsMapsViewer mv = new OmsMapsViewer();
         mv.inVectors =new SimpleFeatureCollection[]{
                 OmsVectorReader
-                .readVector("/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR10000_test.shp"),
-                OmsVectorReader
-                .readVector("/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR2000_25832.shp")
+                .readVector("E:/DATI/CARTE_TECNICHE/toscana/CTR10000_1995_2010_tiled/CTR10000_1995_2010_tiled.shp"),
+//                OmsVectorReader
+//                .readVector("E:/DATI/CARTE_TECNICHE/toscana/CTR2000_25832_tiled/CTR2000_25832_tiled.shp")
         };
-        mv.inSld = "/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR10000_test.sld";
+        //mv.inSld = "/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR10000_test.sld";
         mv.inImageMosaicReader =new ImageMosaicReader[]{
                 new ImageMosaicReader(
-                new File("/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR10000_1995_2010_tiled/CTR10000_1995_2010_tiled.shp")),
-                new ImageMosaicReader(
-                        new File("/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR2000_25832_tiled/CTR2000_25832_tiled.shp")),
+                new File("E:/DATI/CARTE_TECNICHE/toscana/CTR10000_1995_2010_tiled/CTR10000_1995_2010_tiled.shp")),
+//                new ImageMosaicReader(
+//                        new File("E:/DATI/CARTE_TECNICHE/toscana/CTR2000_25832_tiled/CTR2000_25832_tiled.shp")),
         };
         mv.displayMaps();
 

@@ -169,4 +169,8 @@ public class FileIterator extends JGTModel {
         fiter.pCode = epsg;
         fiter.process();
     }
+    
+    public static void main(String[] args) throws Exception {
+		addPrj("E:/DATI/CARTE_TECNICHE/toscana/CTR10000_1995_2010_tiled/", "EPSG:25832");
+	}
 }
