@@ -32,6 +32,7 @@ import javax.imageio.ImageIO;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
+import org.geotools.gce.imagemosaic.ImageMosaicFormat;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.GridReaderLayer;
@@ -45,11 +46,14 @@ import org.geotools.styling.Style;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.SldUtilities;
+import org.jgrasstools.gears.utils.colors.ColorUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.images.ImageUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.jgrasstools.nww.utils.cache.CacheUtils;
 import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.parameter.ParameterValue;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -131,6 +135,13 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
         }
 
         int finalTileSize = tileSize;
+        Rectangle imageBounds = new Rectangle(0, 0, finalTileSize, finalTileSize);
+        BufferedImage transparentImage = new BufferedImage(imageBounds.width, imageBounds.height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D gr = transparentImage.createGraphics();
+        gr.setPaint(ColorUtilities.makeTransparent(Color.WHITE, 0));
+        gr.fill(imageBounds);
+        gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        gr.dispose();
 
         String tilesPart = "-tiles";
         String cacheRelativePath = "imagemosaics/" + imsf.getName() + tilesPart;
@@ -171,9 +182,9 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
                 int y = tileNumber[1];
 
                 Rectangle imageBounds = new Rectangle(0, 0, finalTileSize, finalTileSize);
-                BufferedImage image = new BufferedImage(imageBounds.width, imageBounds.height, BufferedImage.TYPE_INT_RGB);
+                BufferedImage image = new BufferedImage(imageBounds.width, imageBounds.height, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D gr = image.createGraphics();
-                gr.setPaint(Color.WHITE);
+                gr.setPaint(ColorUtilities.makeTransparent(Color.WHITE, 0));
                 gr.fill(imageBounds);
                 gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -181,6 +192,10 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
                     synchronized (renderer) {
                         renderer.paint(gr, imageBounds,
                                 new ReferencedEnvelope(west, east, south, north, DefaultGeographicCRS.WGS84));
+                        if (ImageUtilities.isAllOneColor(image)) {
+                            image = transparentImage;
+                        }
+                        //image = ImageUtilities.makeColorTransparent(image, Color.white);
                         File tileImageFolderFile = new File(cacheFolder, zoom + File.separator + x);
                         if (!tileImageFolderFile.exists()) {
                             tileImageFolderFile.mkdirs();

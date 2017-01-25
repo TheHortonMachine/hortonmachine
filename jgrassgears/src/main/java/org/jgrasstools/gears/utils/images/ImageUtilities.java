@@ -145,10 +145,10 @@ public class ImageUtilities {
      * @param colorToMakeTransparent the color to make transparent.
      * @return the new image.
      */
-    public static BufferedImage makeColorTransparent(BufferedImage bufferedImageToProcess, final Color colorToMakeTransparent) {
-        ImageFilter filter = new RGBImageFilter() {
+    public static BufferedImage makeColorTransparent( BufferedImage bufferedImageToProcess, final Color colorToMakeTransparent ) {
+        ImageFilter filter = new RGBImageFilter(){
             public int markerRGB = colorToMakeTransparent.getRGB() | 0xFF000000;
-            public final int filterRGB(int x, int y, int rgb) {
+            public final int filterRGB( int x, int y, int rgb ) {
                 if ((rgb | 0xFF000000) == markerRGB) {
                     // Mark the alpha bits as zero - transparent
                     return 0x00FFFFFF & rgb;
@@ -164,6 +164,33 @@ public class ImageUtilities {
         g2.drawImage(image, 0, 0, null);
         g2.dispose();
         return bufferedImage;
+    }
+
+    /**
+     * Checks if an image is all of one color.
+     * 
+     * @param image the image to check.
+     * @return <code>true</code> if the image is all of the same color.
+     */
+    public static boolean isAllOneColor( BufferedImage image ) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int previousRgb = 0;
+        boolean isFirst = true;
+        for( int x = 0; x < width; x++ ) {
+            for( int y = 0; y < height; y++ ) {
+                int rgb = image.getRGB(x, y);
+                if (isFirst) {
+                    isFirst = false;
+                } else {
+                    if (rgb != previousRgb) {
+                        return false;
+                    }
+                }
+                previousRgb = rgb;
+            }
+        }
+        return true;
     }
 
 }

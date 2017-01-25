@@ -38,7 +38,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.RenderedImage;
 import java.io.File;
+import java.io.IOException;
 
+import javax.media.jai.Interpolation;
 import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
 
@@ -87,7 +89,9 @@ import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.swing.JMapFrame;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.type.GeometryDescriptor;
@@ -96,6 +100,8 @@ import org.opengis.filter.expression.Expression;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
+
+import it.geosolutions.jaiext.interpolators.InterpolationBilinear;
 
 @Description(OMSMAPSVIEWER_DESCRIPTION)
 @Documentation(OMSMAPSVIEWER_DOCUMENTATION)
@@ -116,7 +122,7 @@ public class OmsMapsViewer extends JGTModel {
     @In
     public GridCoverage2D inRaster = null;
 
-    public ImageMosaicReader inImageMosaicReader = null;
+    public ImageMosaicReader[] inImageMosaicReader = null;
 
     @Description(OMSMAPSVIEWER_IN_VECTORS_DESCRIPTION)
     @In
@@ -157,26 +163,24 @@ public class OmsMapsViewer extends JGTModel {
         if (inVector != null) {
             inVectors = new SimpleFeatureCollection[]{inVector};
             // does it have style
-            if (inSld != null) {
-                File sldFile = new File(inSld);
-                if (sldFile.exists()) {
-                    SLDParser stylereader = new SLDParser(sf, sldFile);
-                    StyledLayerDescriptor sld = stylereader.parseSLD();
-
-                    namedStyle = SLD.defaultStyle(sld);
-                    SLDTransformer aTransformer = new SLDTransformer();
-                    aTransformer.setIndentation(4);
-                    String xml = ""; //$NON-NLS-1$
-                    xml = aTransformer.transform(sld);
-                    System.out.println(xml);
-                }
+        }
+        if (inSld != null) {
+            File sldFile = new File(inSld);
+            if (sldFile.exists()) {
+                
+                namedStyle = SldUtilities.getStyleFromFile(sldFile);
+                // SLDTransformer aTransformer = new SLDTransformer();
+                // aTransformer.setIndentation(4);
+                // String xml = ""; //$NON-NLS-1$
+                // xml = aTransformer.transform(sld);
+                // System.out.println(xml);
             }
         }
         addFeatureCollections(map);
 
         // Create a JMapFrame with a menu to choose the display style for the
         final JMapFrame frame = new JMapFrame(map);
-        frame.setSize(800, 600);
+        frame.setSize(1800, 1200);
         frame.enableStatusBar(true);
         frame.enableTool(JMapFrame.Tool.ZOOM, JMapFrame.Tool.PAN, JMapFrame.Tool.RESET);
         frame.enableToolBar(true);
@@ -192,7 +196,7 @@ public class OmsMapsViewer extends JGTModel {
         }
     }
 
-    private void addImageMosaic( MapContent map, ImageMosaicReader imReader ) {
+    private void addImageMosaic( MapContent map, ImageMosaicReader[] imReader ) {
         if (imReader != null) {
             RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
             Style style = SLD.wrapSymbolizers(sym);
@@ -200,17 +204,34 @@ public class OmsMapsViewer extends JGTModel {
             final ParameterValue<Color> inTransp = AbstractGridFormat.INPUT_TRANSPARENT_COLOR.createValue();
             inTransp.setValue(Color.white);
 
-            // final ParameterValue<Color> outTransp =
-            // ImageMosaicFormat.OUTPUT_TRANSPARENT_COLOR.createValue();
-            // outTransp.setValue(Color.black);
-
+            final ParameterValue<Color> outTransp = ImageMosaicFormat.OUTPUT_TRANSPARENT_COLOR.createValue();
+            outTransp.setValue(Color.white);
+            final ParameterValue<Color> backTransp = ImageMosaicFormat.BACKGROUND_COLOR.createValue();
+            backTransp.setValue(Color.RED);
+            // GeneralParameterValue[] gp = new GeneralParameterValue[]{inTransp, backTransp,
+            // outTransp};
             // final ParameterValue<Boolean> blendPV =ImageMosaicFormat.FADING.createValue();
             // blendPV.setValue(blend);
+            final ParameterValue<Boolean> blendPV = ImageMosaicFormat.FADING.createValue();
+            blendPV.setValue(true);
+            
+            final ParameterValue<Interpolation> interpol = ImageMosaicFormat.INTERPOLATION.createValue();
+            interpol.setValue(new javax.media.jai.InterpolationBilinear());
 
-            GeneralParameterValue[] gp = new GeneralParameterValue[]{inTransp};
+            final ParameterValue<Boolean> resol = ImageMosaicFormat.ACCURATE_RESOLUTION.createValue();
+            resol.setValue(true);
+            
+            final ParameterValue<double[]> bkg = ImageMosaicFormat.BACKGROUND_VALUES.createValue();
+            bkg.setValue(new double[]{0});
+            
+            
+            
+            GeneralParameterValue[] gp = new GeneralParameterValue[]{bkg, resol};
 
-            GridReaderLayer layer = new GridReaderLayer(imReader, style, gp);
-            map.addLayer(layer);
+            for( ImageMosaicReader imageMosaicReader : imReader ) {
+                GridReaderLayer layer = new GridReaderLayer(imageMosaicReader, style, gp);
+                map.addLayer(layer);
+            }
         }
 
     }
@@ -223,21 +244,21 @@ public class OmsMapsViewer extends JGTModel {
             switch( type ) {
             case MULTIPOLYGON:
             case POLYGON:
+                if (namedStyle == null) {
+                    Stroke polygonStroke = sf.createStroke(ff.literal(Color.BLACK), ff.literal(1));
+                    Fill polygonFill = sf.createFill(ff.literal(Color.RED), ff.literal(0.5));
 
-                Stroke polygonStroke = sf.createStroke(ff.literal(Color.BLACK), ff.literal(1));
-                Fill polygonFill = sf.createFill(ff.literal(Color.RED), ff.literal(0.5));
+                    Rule polygonRule = sf.createRule();
+                    PolygonSymbolizer polygonSymbolizer = sf.createPolygonSymbolizer(polygonStroke, polygonFill, null);
+                    polygonRule.symbolizers().add(polygonSymbolizer);
 
-                Rule polygonRule = sf.createRule();
-                PolygonSymbolizer polygonSymbolizer = sf.createPolygonSymbolizer(polygonStroke, polygonFill, null);
-                polygonRule.symbolizers().add(polygonSymbolizer);
+                    FeatureTypeStyle polygonFeatureTypeStyle = sf.createFeatureTypeStyle();
+                    polygonFeatureTypeStyle.rules().add(polygonRule);
 
-                FeatureTypeStyle polygonFeatureTypeStyle = sf.createFeatureTypeStyle();
-                polygonFeatureTypeStyle.rules().add(polygonRule);
-
-                namedStyle = sf.createStyle();
-                namedStyle.featureTypeStyles().add(polygonFeatureTypeStyle);
-                namedStyle.setName("polygons");
-
+                    namedStyle = sf.createStyle();
+                    namedStyle.featureTypeStyles().add(polygonFeatureTypeStyle);
+                    namedStyle.setName("polygons");
+                }
                 break;
             case MULTIPOINT:
             case POINT:
@@ -361,6 +382,25 @@ public class OmsMapsViewer extends JGTModel {
                 }
             }
         }.start();
+
+    }
+
+    public static void main( String[] args ) throws Exception {
+        OmsMapsViewer mv = new OmsMapsViewer();
+        mv.inVectors =new SimpleFeatureCollection[]{
+                OmsVectorReader
+                .readVector("/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR10000_test.shp"),
+                OmsVectorReader
+                .readVector("/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR2000_25832.shp")
+        };
+        mv.inSld = "/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR10000_test.sld";
+        mv.inImageMosaicReader =new ImageMosaicReader[]{
+                new ImageMosaicReader(
+                new File("/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR10000_1995_2010_tiled/CTR10000_1995_2010_tiled.shp")),
+                new ImageMosaicReader(
+                        new File("/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR2000_25832_tiled/CTR2000_25832_tiled.shp")),
+        };
+        mv.displayMaps();
 
     }
 
