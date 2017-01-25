@@ -203,9 +203,9 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
 						renderer.paint(gr, imageBounds,
                                 referencedEnvelope);
 						gr.dispose();
-//                        if (removeSameColorImages && ImageUtilities.isAllOneColor(image)) {
-//                            image = transparentImage;
-//                        }
+                        if (removeSameColorImages && ImageUtilities.isAllOneColor(image)) {
+                            image = transparentImage;
+                        }
                         //image = ImageUtilities.makeColorTransparent(image, Color.white);
                         File tileImageFolderFile = new File(cacheFolder, zoom + File.separator + x);
                         if (!tileImageFolderFile.exists()) {

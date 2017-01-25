@@ -98,11 +98,9 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Expression;
-import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
 
-import it.geosolutions.jaiext.interpolators.InterpolationBilinear;
 
 @Description(OMSMAPSVIEWER_DESCRIPTION)
 @Documentation(OMSMAPSVIEWER_DOCUMENTATION)
