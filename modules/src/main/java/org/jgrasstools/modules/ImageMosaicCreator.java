@@ -68,7 +68,7 @@ public class ImageMosaicCreator extends JGTModel {
     
     public static void main( String[] args ) throws Exception {
         ImageMosaicCreator c = new ImageMosaicCreator();
-        c.inFolder="/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR2000_25832_tiled/";
+        c.inFolder="/media/hydrologis/Samsung_T3/IMAGEMOSAICTEST/ctr10k/";
         c.process();
     }
 }

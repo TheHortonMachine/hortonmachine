@@ -512,22 +512,6 @@ public class GearsMessages {
     public static final String OMSLINESPOLYGONIZER_F_NEW_ID_DESCRIPTION = "The field of the polygonized layer containing the id (default is 'id').";
     public static final String OMSLINESPOLYGONIZER_OUT_MAP_DESCRIPTION = "The map of polygons.";
 
-    public static final String OMSMAPSVIEWER_DESCRIPTION = "A simple geodata viewer.";
-    public static final String OMSMAPSVIEWER_DOCUMENTATION = "OmsMapsViewer.html";
-    public static final String OMSMAPSVIEWER_KEYWORDS = "Coverage, Raster, Viewer, UI";
-    public static final String OMSMAPSVIEWER_LABEL = OTHER;
-    public static final String OMSMAPSVIEWER_NAME = "mapsviewer";
-    public static final int OMSMAPSVIEWER_STATUS = 40;
-    public static final String OMSMAPSVIEWER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSMAPSVIEWER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSMAPSVIEWER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSMAPSVIEWER_UI = "hide";
-    public static final String OMSMAPSVIEWER_IN_RASTERS_DESCRIPTION = "The rasters to visualize.";
-    public static final String OMSMAPSVIEWER_IN_RASTER_DESCRIPTION = "The raster to visualize.";
-    public static final String OMSMAPSVIEWER_IN_VECTORS_DESCRIPTION = "The feature collections to visualize.";
-    public static final String OMSMAPSVIEWER_IN_VECTOR_DESCRIPTION = "The feature collection to visualize.";
-    public static final String OMSMAPSVIEWER_IN_S_L_D_DESCRIPTION = "The feature collections style layer.";
-
     public static final String OMSRASTERCORRECTOR_DESCRIPTION = "Raster corrector module.";
     public static final String OMSRASTERCORRECTOR_DOCUMENTATION = "";
     public static final String OMSRASTERCORRECTOR_KEYWORDS = "IO, Coverage, Raster, Correct, OmsRasterReader";

@@ -17,21 +17,7 @@
  */
 package org.jgrasstools.gears.ui;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_DOCUMENTATION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_UI;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_IN_RASTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_IN_RASTERS_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_IN_S_L_D_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_IN_VECTOR_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_IN_VECTORS_DESCRIPTION;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.OTHER;
 
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
@@ -43,6 +29,48 @@ import java.io.IOException;
 import javax.media.jai.Interpolation;
 import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.factory.GeoTools;
+import org.geotools.gce.imagemosaic.ImageMosaicFormat;
+import org.geotools.gce.imagemosaic.ImageMosaicReader;
+import org.geotools.map.FeatureLayer;
+import org.geotools.map.GridCoverageLayer;
+import org.geotools.map.GridReaderLayer;
+import org.geotools.map.MapContent;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.styling.ColorMap;
+import org.geotools.styling.ColorMapEntry;
+import org.geotools.styling.FeatureTypeStyle;
+import org.geotools.styling.Fill;
+import org.geotools.styling.Graphic;
+import org.geotools.styling.LineSymbolizer;
+import org.geotools.styling.Mark;
+import org.geotools.styling.PointSymbolizer;
+import org.geotools.styling.PolygonSymbolizer;
+import org.geotools.styling.RasterSymbolizer;
+import org.geotools.styling.Rule;
+import org.geotools.styling.SLD;
+import org.geotools.styling.Stroke;
+import org.geotools.styling.Style;
+import org.geotools.styling.StyleBuilder;
+import org.geotools.styling.StyleFactory;
+import org.geotools.swing.JMapFrame;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.SldUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.gears.utils.style.SimpleStyleUtilities;
+import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.expression.Expression;
+import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.parameter.ParameterValue;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -56,91 +84,46 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.io.AbstractGridFormat;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.factory.GeoTools;
-import org.geotools.gce.imagemosaic.ImageMosaicFormat;
-import org.geotools.gce.imagemosaic.ImageMosaicReader;
-import org.geotools.map.DefaultMapContext;
-import org.geotools.map.FeatureLayer;
-import org.geotools.map.GridCoverageLayer;
-import org.geotools.map.GridReaderLayer;
-import org.geotools.map.MapContent;
-import org.geotools.map.MapContext;
-import org.geotools.map.RasterLayer;
-import org.geotools.styling.ColorMap;
-import org.geotools.styling.ColorMapEntry;
-import org.geotools.styling.FeatureTypeStyle;
-import org.geotools.styling.Fill;
-import org.geotools.styling.Graphic;
-import org.geotools.styling.Mark;
-import org.geotools.styling.PointSymbolizer;
-import org.geotools.styling.PolygonSymbolizer;
-import org.geotools.styling.RasterSymbolizer;
-import org.geotools.styling.Rule;
-import org.geotools.styling.SLD;
-import org.geotools.styling.SLDParser;
-import org.geotools.styling.SLDTransformer;
-import org.geotools.styling.Stroke;
-import org.geotools.styling.Style;
-import org.geotools.styling.StyleBuilder;
-import org.geotools.styling.StyleFactory;
-import org.geotools.styling.StyledLayerDescriptor;
-import org.geotools.swing.JMapFrame;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.SldUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryType;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.filter.FilterFactory;
-import org.opengis.filter.expression.Expression;
-import org.opengis.parameter.GeneralParameterDescriptor;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.parameter.ParameterValue;
-
-import it.geosolutions.jaiext.interpolators.InterpolationBilinear;
-
-@Description(OMSMAPSVIEWER_DESCRIPTION)
-@Documentation(OMSMAPSVIEWER_DOCUMENTATION)
-@Author(name = OMSMAPSVIEWER_AUTHORNAMES, contact = OMSMAPSVIEWER_AUTHORCONTACTS)
-@Keywords(OMSMAPSVIEWER_KEYWORDS)
-@Label(OMSMAPSVIEWER_LABEL)
-@Name(OMSMAPSVIEWER_NAME)
-@Status(OMSMAPSVIEWER_STATUS)
-@License(OMSMAPSVIEWER_LICENSE)
-@UI(OMSMAPSVIEWER_UI)
+@Description(OmsMapsViewer.OMSMAPSVIEWER_DESCRIPTION)
+@Documentation(OmsMapsViewer.OMSMAPSVIEWER_DOCUMENTATION)
+@Author(name = OmsMapsViewer.OMSMAPSVIEWER_AUTHORNAMES, contact = OmsMapsViewer.OMSMAPSVIEWER_AUTHORCONTACTS)
+@Keywords(OmsMapsViewer.OMSMAPSVIEWER_KEYWORDS)
+@Label(OmsMapsViewer.OMSMAPSVIEWER_LABEL)
+@Name(OmsMapsViewer.OMSMAPSVIEWER_NAME)
+@Status(OmsMapsViewer.OMSMAPSVIEWER_STATUS)
+@License(OmsMapsViewer.OMSMAPSVIEWER_LICENSE)
+@UI(OmsMapsViewer.OMSMAPSVIEWER_UI)
 public class OmsMapsViewer extends JGTModel {
 
     @Description(OMSMAPSVIEWER_IN_RASTERS_DESCRIPTION)
     @In
-    public GridCoverage2D[] inRasters = new GridCoverage2D[0];
+    public String[] inRasters = null;
 
-    @Description(OMSMAPSVIEWER_IN_RASTER_DESCRIPTION)
-    @In
-    public GridCoverage2D inRaster = null;
-
-    public ImageMosaicReader[] inImageMosaicReader = null;
+    public String[] inImageMosaics = null;
 
     @Description(OMSMAPSVIEWER_IN_VECTORS_DESCRIPTION)
     @In
-    public SimpleFeatureCollection[] inVectors = new SimpleFeatureCollection[0];
+    public String[] inVectors = null;
 
-    @Description(OMSMAPSVIEWER_IN_VECTOR_DESCRIPTION)
-    @In
-    public SimpleFeatureCollection inVector = null;
-
-    @Description(OMSMAPSVIEWER_IN_S_L_D_DESCRIPTION)
-    @In
-    public String inSld = null;
+    public static final String OMSMAPSVIEWER_DESCRIPTION = "A simple geodata viewer.";
+    public static final String OMSMAPSVIEWER_DOCUMENTATION = "OmsMapsViewer.html";
+    public static final String OMSMAPSVIEWER_KEYWORDS = "Coverage, Raster, Viewer, UI";
+    public static final String OMSMAPSVIEWER_LABEL = OTHER;
+    public static final String OMSMAPSVIEWER_NAME = "mapsviewer";
+    public static final int OMSMAPSVIEWER_STATUS = 40;
+    public static final String OMSMAPSVIEWER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSMAPSVIEWER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSMAPSVIEWER_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSMAPSVIEWER_UI = "hide";
+    public static final String OMSMAPSVIEWER_IN_RASTERS_DESCRIPTION = "The rasters to visualize.";
+    public static final String OMSMAPSVIEWER_IN_RASTER_DESCRIPTION = "The raster to visualize.";
+    public static final String OMSMAPSVIEWER_IN_VECTORS_DESCRIPTION = "The feature collections to visualize.";
+    public static final String OMSMAPSVIEWER_IN_VECTOR_DESCRIPTION = "The feature collection to visualize.";
+    public static final String OMSMAPSVIEWER_IN_S_L_D_DESCRIPTION = "The feature collections style layer.";
 
     private StyleFactory sf = null;
     private FilterFactory ff = null;
     private StyleBuilder sb = null;
-
-    private Style namedStyle;
 
     @Execute
     public void displayMaps() throws Exception {
@@ -151,32 +134,13 @@ public class OmsMapsViewer extends JGTModel {
         final MapContent map = new MapContent();
         map.setTitle("Maps Viewer");
 
-        RasterSymbolizer rasterSym = sf.createRasterSymbolizer();
+        addImageMosaic(map);
 
-        if (inRaster != null) {
-            inRasters = new GridCoverage2D[]{inRaster};
-        }
-        addCoverages(map, sb, rasterSym);
+        addCoverages(map);
 
-        addImageMosaic(map, inImageMosaicReader);
-
-        if (inVector != null) {
-            inVectors = new SimpleFeatureCollection[]{inVector};
-            // does it have style
-        }
-        if (inSld != null) {
-            File sldFile = new File(inSld);
-            if (sldFile.exists()) {
-                
-                namedStyle = SldUtilities.getStyleFromFile(sldFile);
-                // SLDTransformer aTransformer = new SLDTransformer();
-                // aTransformer.setIndentation(4);
-                // String xml = ""; //$NON-NLS-1$
-                // xml = aTransformer.transform(sld);
-                // System.out.println(xml);
-            }
-        }
         addFeatureCollections(map);
+
+        map.getViewport().setCoordinateReferenceSystem(DefaultGeographicCRS.WGS84);
 
         // Create a JMapFrame with a menu to choose the display style for the
         final JMapFrame frame = new JMapFrame(map);
@@ -196,8 +160,8 @@ public class OmsMapsViewer extends JGTModel {
         }
     }
 
-    private void addImageMosaic( MapContent map, ImageMosaicReader[] imReader ) {
-        if (imReader != null) {
+    private void addImageMosaic( MapContent map ) throws Exception {
+        if (inImageMosaics != null) {
             RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
             Style style = SLD.wrapSymbolizers(sym);
 
@@ -206,47 +170,56 @@ public class OmsMapsViewer extends JGTModel {
 
             final ParameterValue<Color> outTransp = ImageMosaicFormat.OUTPUT_TRANSPARENT_COLOR.createValue();
             outTransp.setValue(Color.white);
-            final ParameterValue<Color> backTransp = ImageMosaicFormat.BACKGROUND_COLOR.createValue();
-            backTransp.setValue(Color.RED);
-            // GeneralParameterValue[] gp = new GeneralParameterValue[]{inTransp, backTransp,
-            // outTransp};
-            // final ParameterValue<Boolean> blendPV =ImageMosaicFormat.FADING.createValue();
-            // blendPV.setValue(blend);
-            final ParameterValue<Boolean> blendPV = ImageMosaicFormat.FADING.createValue();
-            blendPV.setValue(true);
-            
+            final ParameterValue<Color> backColor = ImageMosaicFormat.BACKGROUND_COLOR.createValue();
+            backColor.setValue(Color.RED);
+            final ParameterValue<Boolean> fading = ImageMosaicFormat.FADING.createValue();
+            fading.setValue(true);
+
             final ParameterValue<Interpolation> interpol = ImageMosaicFormat.INTERPOLATION.createValue();
             interpol.setValue(new javax.media.jai.InterpolationBilinear());
 
             final ParameterValue<Boolean> resol = ImageMosaicFormat.ACCURATE_RESOLUTION.createValue();
             resol.setValue(true);
+
             
+            final ParameterValue<Boolean> multiThread= ImageMosaicFormat.ALLOW_MULTITHREADING.createValue();
+            multiThread.setValue(true);
+
+            final ParameterValue<Boolean> usejai = ImageMosaicFormat.USE_JAI_IMAGEREAD.createValue();
+            usejai.setValue(false);
+
             final ParameterValue<double[]> bkg = ImageMosaicFormat.BACKGROUND_VALUES.createValue();
             bkg.setValue(new double[]{0});
-            
-            
-            
-            GeneralParameterValue[] gp = new GeneralParameterValue[]{bkg, resol};
 
-            for( ImageMosaicReader imageMosaicReader : imReader ) {
-                GridReaderLayer layer = new GridReaderLayer(imageMosaicReader, style, gp);
+            GeneralParameterValue[] gp = new GeneralParameterValue[]{inTransp, multiThread};
+
+            for( String imageMosaicPath : inImageMosaics ) {
+                ImageMosaicReader imr = new ImageMosaicReader(new File(imageMosaicPath));
+                GridReaderLayer layer = new GridReaderLayer(imr, style, gp);
                 map.addLayer(layer);
             }
         }
 
     }
 
-    private void addFeatureCollections( MapContent map ) {
-        for( SimpleFeatureCollection fc : inVectors ) {
+    private void addFeatureCollections( MapContent map ) throws Exception {
+        if (inVectors == null) {
+            return;
+        }
+        for( String path : inVectors ) {
+            SimpleFeatureCollection fc = OmsVectorReader.readVector(path);
             GeometryDescriptor geometryDescriptor = fc.getSchema().getGeometryDescriptor();
             GeometryType type = GeometryUtilities.getGeometryType(geometryDescriptor.getType());
+
+            File file = new File(path);
+            Style style = SldUtilities.getStyleFromFile(file);
 
             switch( type ) {
             case MULTIPOLYGON:
             case POLYGON:
-                if (namedStyle == null) {
-                    Stroke polygonStroke = sf.createStroke(ff.literal(Color.BLACK), ff.literal(1));
-                    Fill polygonFill = sf.createFill(ff.literal(Color.RED), ff.literal(0.5));
+                if (style == null) {
+                    Stroke polygonStroke = sf.createStroke(ff.literal(Color.BLUE), ff.literal(2));
+                    Fill polygonFill = sf.createFill(ff.literal(Color.BLUE), ff.literal(0.0));
 
                     Rule polygonRule = sf.createRule();
                     PolygonSymbolizer polygonSymbolizer = sf.createPolygonSymbolizer(polygonStroke, polygonFill, null);
@@ -255,14 +228,14 @@ public class OmsMapsViewer extends JGTModel {
                     FeatureTypeStyle polygonFeatureTypeStyle = sf.createFeatureTypeStyle();
                     polygonFeatureTypeStyle.rules().add(polygonRule);
 
-                    namedStyle = sf.createStyle();
-                    namedStyle.featureTypeStyles().add(polygonFeatureTypeStyle);
-                    namedStyle.setName("polygons");
+                    style = sf.createStyle();
+                    style.featureTypeStyles().add(polygonFeatureTypeStyle);
+                    style.setName("polygons");
                 }
                 break;
             case MULTIPOINT:
             case POINT:
-                if (namedStyle == null) {
+                if (style == null) {
                     Mark circleMark = sf.getCircleMark();
                     Fill fill = sf.createFill(ff.literal(Color.RED));
                     circleMark.setFill(fill);
@@ -281,32 +254,50 @@ public class OmsMapsViewer extends JGTModel {
                     FeatureTypeStyle pointsFeatureTypeStyle = sf.createFeatureTypeStyle();
                     pointsFeatureTypeStyle.rules().add(pointRule);
 
-                    namedStyle = sf.createStyle();
-                    namedStyle.featureTypeStyles().add(pointsFeatureTypeStyle);
-                    namedStyle.setName("points");
+                    style = sf.createStyle();
+                    style.featureTypeStyles().add(pointsFeatureTypeStyle);
+                    style.setName("points");
                 }
                 break;
             case MULTILINE:
             case LINE:
+                if (style == null) {
+                    Stroke lineStroke = sf.createStroke(ff.literal(Color.RED), ff.literal(2));
 
+                    Rule lineRule = sf.createRule();
+                    LineSymbolizer lineSymbolizer = sf.createLineSymbolizer(lineStroke, null);
+                    lineRule.symbolizers().add(lineSymbolizer);
+
+                    FeatureTypeStyle lineFeatureTypeStyle = sf.createFeatureTypeStyle();
+                    lineFeatureTypeStyle.rules().add(lineRule);
+
+                    style = sf.createStyle();
+                    style.featureTypeStyles().add(lineFeatureTypeStyle);
+                    style.setName("lines");
+                }
                 break;
 
             default:
                 break;
             }
 
-            FeatureLayer layer = new FeatureLayer(fc, namedStyle);
+            FeatureLayer layer = new FeatureLayer(fc, style);
             map.addLayer(layer);
 
         }
 
     }
 
-    private void addCoverages( final MapContent map, StyleBuilder sB, RasterSymbolizer rasterSym ) {
+    private void addCoverages( final MapContent map ) throws Exception {
+        if (inRasters == null) {
+            return;
+        }
+        RasterSymbolizer rasterSym = sf.createRasterSymbolizer();
         ColorMap colorMap = sf.createColorMap();
 
-        for( GridCoverage2D coverage : inRasters ) {
-            RenderedImage renderedImage = coverage.getRenderedImage();
+        for( String rasterPath : inRasters ) {
+            GridCoverage2D readRaster = OmsRasterReader.readRaster(rasterPath);
+            RenderedImage renderedImage = readRaster.getRenderedImage();
             double max = Double.NEGATIVE_INFINITY;
             double min = Double.POSITIVE_INFINITY;
             RectIter iter = RectIterFactory.create(renderedImage, null);
@@ -327,15 +318,15 @@ public class OmsMapsViewer extends JGTModel {
             Color fromColor = Color.blue;
             Color midColor = Color.green;
             Color toColor = Color.red;
-            Expression fromColorExpr = sB
+            Expression fromColorExpr = sb
                     .colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor.getBlue(), 255));
-            Expression midColorExpr = sB
+            Expression midColorExpr = sb
                     .colorExpression(new java.awt.Color(midColor.getRed(), midColor.getGreen(), midColor.getBlue(), 255));
-            Expression toColorExpr = sB
+            Expression toColorExpr = sb
                     .colorExpression(new java.awt.Color(toColor.getRed(), toColor.getGreen(), toColor.getBlue(), 255));
-            Expression fromExpr = sB.literalExpression(min);
-            Expression midExpr = sB.literalExpression(min + (max - min) / 2);
-            Expression toExpr = sB.literalExpression(max);
+            Expression fromExpr = sb.literalExpression(min);
+            Expression midExpr = sb.literalExpression(min + (max - min) / 2);
+            Expression toExpr = sb.literalExpression(max);
 
             ColorMapEntry entry = sf.createColorMapEntry();
             entry.setQuantity(fromExpr);
@@ -356,50 +347,16 @@ public class OmsMapsViewer extends JGTModel {
 
             Style rasterStyle = SLD.wrapSymbolizers(rasterSym);
 
-            GridCoverageLayer layer = new GridCoverageLayer(coverage, rasterStyle);
+            GridCoverageLayer layer = new GridCoverageLayer(readRaster, rasterStyle);
 
             map.addLayer(layer);
         }
     }
 
-    public static synchronized void displayRasterAndFeatures( final GridCoverage2D raster,
-            final SimpleFeatureCollection... vectors ) throws Exception {
-
-        new Thread(){
-            @Override
-            public void run() {
-                OmsMapsViewer viewer = new OmsMapsViewer();
-                if (raster != null) {
-                    viewer.inRasters = new GridCoverage2D[]{raster};
-                }
-                if (vectors != null) {
-                    viewer.inVectors = vectors;
-                }
-                try {
-                    viewer.displayMaps();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-
-    }
-
     public static void main( String[] args ) throws Exception {
         OmsMapsViewer mv = new OmsMapsViewer();
-        mv.inVectors =new SimpleFeatureCollection[]{
-                OmsVectorReader
-                .readVector("/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR10000_test.shp"),
-                OmsVectorReader
-                .readVector("/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR2000_25832.shp")
-        };
-        mv.inSld = "/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR10000_test.sld";
-        mv.inImageMosaicReader =new ImageMosaicReader[]{
-                new ImageMosaicReader(
-                new File("/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR10000_1995_2010_tiled/CTR10000_1995_2010_tiled.shp")),
-                new ImageMosaicReader(
-                        new File("/media/hydrologis/Samsung_T3/HUBERG/BIGDATA/CARTE_TECNICHE/toscana/CTR2000_25832_tiled/CTR2000_25832_tiled.shp")),
-        };
+        mv.inVectors = new String[]{"/media/hydrologis/Samsung_T3/IMAGEMOSAICTEST/ctr10k.shp"};
+        mv.inImageMosaics = new String[]{"/media/hydrologis/Samsung_T3/IMAGEMOSAICTEST/ctr10k/ctr10k.shp"};
         mv.displayMaps();
 
     }

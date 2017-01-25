@@ -36,7 +36,7 @@ import org.jgrasstools.gears.utils.geometry.GeometryType;
  */
 @SuppressWarnings("nls")
 public class SimpleStyleUtilities {
-    
+
     public static final String SPHERE = "gov.nasa.worldwind.render.markers.Sphere";
     public static final String CUBE = "gov.nasa.worldwind.render.markers.Cube";
     public static final String CONE = "gov.nasa.worldwind.render.markers.Cone";
@@ -52,7 +52,7 @@ public class SimpleStyleUtilities {
     /**
      * @return
      */
-    public static Style createSimpleLineStyle(Color color, float width) {
+    public static Style createSimpleLineStyle( Color color, float width ) {
         FeatureTypeStyle featureTypeStyle = Utilities.sf.createFeatureTypeStyle();
         featureTypeStyle.rules().add(createSimpleLineRule(color, width));
 
@@ -71,11 +71,10 @@ public class SimpleStyleUtilities {
      *            the line width.
      * @return the rule.
      */
-    public static Rule createSimpleLineRule(Color color, float width) {
+    public static Rule createSimpleLineRule( Color color, float width ) {
         LineSymbolizer lineSymbolizer = Utilities.sf.createLineSymbolizer();
-        lineSymbolizer.setStroke(
-                Utilities.sf.createStroke(Utilities.ff.literal("#" + Integer.toHexString(color.getRGB() & 0xffffff)),
-                        Utilities.ff.literal(width)));
+        lineSymbolizer.setStroke(Utilities.sf.createStroke(
+                Utilities.ff.literal("#" + Integer.toHexString(color.getRGB() & 0xffffff)), Utilities.ff.literal(width)));
 
         Rule rule = Utilities.sf.createRule();
         rule.setName("New rule");
@@ -83,7 +82,7 @@ public class SimpleStyleUtilities {
 
         return rule;
     }
-    
+
     public static SimpleStyle getStyle( String path, GeometryType geomType ) throws Exception {
         SimpleStyle simpleStyle = new SimpleStyle();
         if (path == null) {
@@ -106,18 +105,18 @@ public class SimpleStyleUtilities {
                     PolygonSymbolizerWrapper polygonSymbolizerWrapper = ruleWrapper.getGeometrySymbolizersWrapper()
                             .adapt(PolygonSymbolizerWrapper.class);
 
-                    simpleStyle.fillColor = Color.decode(polygonSymbolizerWrapper.getFillColor());
-                    simpleStyle.fillOpacity = Double.parseDouble(polygonSymbolizerWrapper.getFillOpacity());
-                    simpleStyle.strokeColor = Color.decode(polygonSymbolizerWrapper.getStrokeColor());
-                    simpleStyle.strokeWidth = Double.parseDouble(polygonSymbolizerWrapper.getStrokeWidth());
+                    simpleStyle.fillColor = Color.decode(checkColor(polygonSymbolizerWrapper.getFillColor()));
+                    simpleStyle.fillOpacity = Double.parseDouble(checkNumeric(polygonSymbolizerWrapper.getFillOpacity()));
+                    simpleStyle.strokeColor = Color.decode(checkColor(polygonSymbolizerWrapper.getStrokeColor()));
+                    simpleStyle.strokeWidth = Double.parseDouble(checkNumeric(polygonSymbolizerWrapper.getStrokeWidth()));
                     break;
                 case LINE:
                 case MULTILINE:
                     LineSymbolizerWrapper lineSymbolizerWrapper = ruleWrapper.getGeometrySymbolizersWrapper()
                             .adapt(LineSymbolizerWrapper.class);
 
-                    simpleStyle.strokeColor = Color.decode(lineSymbolizerWrapper.getStrokeColor());
-                    simpleStyle.strokeWidth = Double.parseDouble(lineSymbolizerWrapper.getStrokeWidth());
+                    simpleStyle.strokeColor = Color.decode(checkColor(lineSymbolizerWrapper.getStrokeColor()));
+                    simpleStyle.strokeWidth = Double.parseDouble(checkNumeric(lineSymbolizerWrapper.getStrokeWidth()));
 
                     break;
                 case POINT:
@@ -125,11 +124,11 @@ public class SimpleStyleUtilities {
                     PointSymbolizerWrapper pointSymbolizerWrapper = ruleWrapper.getGeometrySymbolizersWrapper()
                             .adapt(PointSymbolizerWrapper.class);
 
-                    simpleStyle.fillColor = Color.decode(pointSymbolizerWrapper.getFillColor());
-                    simpleStyle.fillOpacity = Double.parseDouble(pointSymbolizerWrapper.getFillOpacity());
-                    simpleStyle.strokeColor = Color.decode(pointSymbolizerWrapper.getStrokeColor());
-                    simpleStyle.strokeWidth = Double.parseDouble(pointSymbolizerWrapper.getStrokeWidth());
-                    simpleStyle.shapeSize = Double.parseDouble(pointSymbolizerWrapper.getSize());
+                    simpleStyle.fillColor = Color.decode(checkColor(pointSymbolizerWrapper.getFillColor()));
+                    simpleStyle.fillOpacity = Double.parseDouble(checkNumeric(pointSymbolizerWrapper.getFillOpacity()));
+                    simpleStyle.strokeColor = Color.decode(checkColor(pointSymbolizerWrapper.getStrokeColor()));
+                    simpleStyle.strokeWidth = Double.parseDouble(checkNumeric(pointSymbolizerWrapper.getStrokeWidth()));
+                    simpleStyle.shapeSize = Double.parseDouble(checkNumeric(pointSymbolizerWrapper.getSize()));
                     String markName = pointSymbolizerWrapper.getMarkName();
                     if (markName != null && markName.trim().length() != 0) {
                         switch( markName ) {
@@ -157,5 +156,19 @@ public class SimpleStyleUtilities {
         }
 
         return null;
+    }
+
+    private static String checkNumeric( String numeric ) {
+        if (numeric == null) {
+            return "0.0";
+        }
+        return numeric;
+    }
+
+    private static String checkColor( String colorString ) {
+        if (colorString == null) {
+            return "#00000000";
+        }
+        return colorString;
     }
 }

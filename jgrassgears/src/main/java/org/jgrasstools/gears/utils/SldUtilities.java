@@ -70,7 +70,7 @@ public class SldUtilities {
     /**
      * Get the style from an sld file.
      * 
-     * @param file the SLD file.
+     * @param file the SLD file or a companion file.
      * @return the {@link Style} object.
      * @throws IOException
      */
