@@ -169,8 +169,4 @@ public class FileIterator extends JGTModel {
         fiter.pCode = epsg;
         fiter.process();
     }
-    
-    public static void main( String[] args ) throws Exception {
-        addPrj("/media/hydrologis/Samsung_T3/IMAGEMOSAICTEST/ctr10k/", "EPSG:25832");
-    }
 }

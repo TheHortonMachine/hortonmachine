@@ -64,11 +64,4 @@ public class ImageMosaicCreator extends JGTModel {
         imagemosaiccreator.doReset = doReset;
         imagemosaiccreator.process();
     }
-    
-    
-    public static void main( String[] args ) throws Exception {
-        ImageMosaicCreator c = new ImageMosaicCreator();
-        c.inFolder="/media/hydrologis/Samsung_T3/IMAGEMOSAICTEST/ctr10k/";
-        c.process();
-    }
 }

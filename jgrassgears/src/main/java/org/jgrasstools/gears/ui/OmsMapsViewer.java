@@ -24,12 +24,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.RenderedImage;
 import java.io.File;
-import java.io.IOException;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
 
+import org.apache.log4j.BasicConfigurator;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -65,7 +65,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.jgrasstools.gears.utils.style.SimpleStyleUtilities;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Expression;
@@ -354,6 +353,7 @@ public class OmsMapsViewer extends JGTModel {
     }
 
     public static void main( String[] args ) throws Exception {
+    	BasicConfigurator.configure();
         OmsMapsViewer mv = new OmsMapsViewer();
         mv.inVectors = new String[]{"/media/hydrologis/Samsung_T3/IMAGEMOSAICTEST/ctr10k.shp"};
         mv.inImageMosaics = new String[]{"/media/hydrologis/Samsung_T3/IMAGEMOSAICTEST/ctr10k/ctr10k.shp"};

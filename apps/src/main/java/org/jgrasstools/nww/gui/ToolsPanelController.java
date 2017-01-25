@@ -447,9 +447,9 @@ public class ToolsPanelController extends ToolsPanelView {
                         multiThread.setValue(true);
                         final ParameterValue<Boolean> usejai = ImageMosaicFormat.USE_JAI_IMAGEREAD.createValue();
                         usejai.setValue(true);
-                        GeneralParameterValue[] gp = new GeneralParameterValue[]{fading, inTransp,usejai, multiThread};
+                        GeneralParameterValue[] gp = new GeneralParameterValue[]{ inTransp,usejai, multiThread};
 
-                        ImageMosaicNwwLayer imageMosaicNwwLayer = new ImageMosaicNwwLayer(selectedFile, null, gp);
+                        ImageMosaicNwwLayer imageMosaicNwwLayer = new ImageMosaicNwwLayer(selectedFile, null, gp, true);
                         wwjPanel.getWwd().getModel().getLayers().add(imageMosaicNwwLayer);
                         layerEventsListener.onLayerAdded(imageMosaicNwwLayer);
                         return;

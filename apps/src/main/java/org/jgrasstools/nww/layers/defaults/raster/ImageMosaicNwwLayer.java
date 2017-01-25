@@ -81,8 +81,9 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
 
     private Coordinate centerCoordinate;
 
-    public ImageMosaicNwwLayer( File imageMosaicShpFile, Integer tileSize, GeneralParameterValue[] gp ) throws Exception {
-        super(makeLevels(imageMosaicShpFile, getRenderer(imageMosaicShpFile, gp), tileSize));
+    public ImageMosaicNwwLayer( File imageMosaicShpFile, Integer tileSize, GeneralParameterValue[] gp,
+            boolean removeSameColorImages ) throws Exception {
+        super(makeLevels(imageMosaicShpFile, getRenderer(imageMosaicShpFile, gp), tileSize, removeSameColorImages));
         this.layerName = FileUtilities.getNameWithoutExtention(imageMosaicShpFile);
 
         ReferencedEnvelope envelope = OmsVectorReader.readEnvelope(imageMosaicShpFile.getAbsolutePath());
@@ -104,31 +105,32 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
 
     private static GTRenderer getRenderer( File imsf, GeneralParameterValue[] gp ) {
 
-        AbstractGridFormat format = GridFormatFinder.findFormat(imsf);
-        AbstractGridCoverage2DReader coverageTilesReader = format.getReader(imsf);
-        
-        MapContent mapContent = new MapContent();
+        GTRenderer renderer = null;
         try {
+            ImageMosaicReader coverageTilesReader = new ImageMosaicReader(imsf);
+
+            MapContent mapContent = new MapContent();
             RasterSymbolizer sym = SldUtilities.sf.getDefaultRasterSymbolizer();
             Style style = SLD.wrapSymbolizers(sym);
-            
+
             GridReaderLayer layer;
-            if(gp == null){
+            if (gp == null) {
                 layer = new GridReaderLayer(coverageTilesReader, style);
-            }else{
+            } else {
                 layer = new GridReaderLayer(coverageTilesReader, style, gp);
             }
             mapContent.addLayer(layer);
             mapContent.getViewport().setCoordinateReferenceSystem(CrsUtilities.WGS84);
+            renderer = new StreamingRenderer();
+            renderer.setMapContent(mapContent);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        GTRenderer renderer = new StreamingRenderer();
-        renderer.setMapContent(mapContent);
         return renderer;
     }
 
-    private static LevelSet makeLevels( File imsf, GTRenderer renderer, Integer tileSize ) throws MalformedURLException {
+    private static LevelSet makeLevels( File imsf, GTRenderer renderer, Integer tileSize, boolean removeSameColorImages )
+            throws MalformedURLException {
         AVList params = new AVListImpl();
         if (tileSize == null || tileSize < 256) {
             tileSize = TILESIZE;
@@ -181,6 +183,15 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
                 int x = tileNumber[0];
                 int y = tileNumber[1];
 
+                File tileImageFolderFile = new File(cacheFolder, zoom + File.separator + x);
+                if (!tileImageFolderFile.exists()) {
+                    tileImageFolderFile.mkdirs();
+                }
+                File imgFile = new File(tileImageFolderFile, y + ".png");
+                if (imgFile.exists()) {
+                    return imgFile.toURI().toURL();
+                }
+
                 Rectangle imageBounds = new Rectangle(0, 0, finalTileSize, finalTileSize);
                 BufferedImage image = new BufferedImage(imageBounds.width, imageBounds.height, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D gr = image.createGraphics();
@@ -190,17 +201,20 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
 
                 try {
                     synchronized (renderer) {
-                        renderer.paint(gr, imageBounds,
-                                new ReferencedEnvelope(west, east, south, north, DefaultGeographicCRS.WGS84));
-                        if (ImageUtilities.isAllOneColor(image)) {
+                        ReferencedEnvelope referencedEnvelope = new ReferencedEnvelope(west, east, south, north,
+                                DefaultGeographicCRS.WGS84);
+                        renderer.paint(gr, imageBounds, referencedEnvelope);
+                        gr.dispose();
+                        if (removeSameColorImages && ImageUtilities.isAllOneColor(image)) {
                             image = transparentImage;
                         }
-                        //image = ImageUtilities.makeColorTransparent(image, Color.white);
-                        File tileImageFolderFile = new File(cacheFolder, zoom + File.separator + x);
-                        if (!tileImageFolderFile.exists()) {
-                            tileImageFolderFile.mkdirs();
-                        }
-                        File imgFile = new File(tileImageFolderFile, y + ".png");
+                        // image = ImageUtilities.makeColorTransparent(image, Color.white);
+                        // File tileImageFolderFile = new File(cacheFolder, zoom + File.separator +
+                        // x);
+                        // if (!tileImageFolderFile.exists()) {
+                        // tileImageFolderFile.mkdirs();
+                        // }
+                        // File imgFile = new File(tileImageFolderFile, y + ".png");
                         if (!imgFile.exists()) {
                             ImageIO.write(image, "png", imgFile);
                         }
