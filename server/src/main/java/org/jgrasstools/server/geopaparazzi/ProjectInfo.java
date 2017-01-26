@@ -6,7 +6,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * (http://www.eclipse.org/legal/epl-v10.html).
  */
-package org.jgrasstools.geopaparazzi;
+package org.jgrasstools.server.geopaparazzi;
 
 import java.io.File;
 import java.util.List;

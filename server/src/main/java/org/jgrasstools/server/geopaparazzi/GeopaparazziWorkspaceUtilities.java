@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.geopaparazzi;
+package org.jgrasstools.server.geopaparazzi;
 
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_METADATA;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_NOTES;
@@ -200,6 +200,40 @@ public class GeopaparazziWorkspaceUtilities {
             }
         }
         return out.toString();
+    }
+    
+    public static String loadProjectsList(File gpapProjectsFolder) {
+        try {
+            File[] geopaparazziProjectFiles = GeopaparazziWorkspaceUtilities.getGeopaparazziFiles(gpapProjectsFolder);
+            List<HashMap<String, String>> projectMetadataList = GeopaparazziWorkspaceUtilities
+                    .readProjectMetadata(geopaparazziProjectFiles);
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("{");
+            sb.append("\"projects\": [");
+
+            for( int i = 0; i < projectMetadataList.size(); i++ ) {
+                HashMap<String, String> metadataMap = projectMetadataList.get(i);
+                long fileSize = geopaparazziProjectFiles[i].length();
+                if (i > 0)
+                    sb.append(",");
+                sb.append("{");
+                sb.append("    \"id\": \"" + geopaparazziProjectFiles[i].getName() + "\",");
+                sb.append("    \"title\": \"" + metadataMap.get("description") + "\",");
+                sb.append("    \"date\": \"" + metadataMap.get("creationts") + "\",");
+                sb.append("    \"author\": \"" + metadataMap.get("creationuser") + "\",");
+                sb.append("    \"name\": \"" + metadataMap.get("name") + "\",");
+                sb.append("    \"size\": \"" + fileSize + "\"");
+                sb.append("}");
+            }
+
+            sb.append("]");
+            sb.append("}");
+
+            return sb.toString();
+        } catch (Exception e) {
+            return "An error occurred: " + e.getMessage();
+        }
     }
 
 }

@@ -1,4 +1,4 @@
-package org.jgrasstools.geopaparazzi;
+package org.jgrasstools.server.geopaparazzi;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

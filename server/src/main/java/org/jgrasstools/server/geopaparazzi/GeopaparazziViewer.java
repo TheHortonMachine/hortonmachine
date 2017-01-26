@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.geopaparazzi;
+package org.jgrasstools.server.geopaparazzi;
 
 import java.awt.BorderLayout;
 import java.awt.Graphics2D;

@@ -37,13 +37,15 @@ public abstract class EmbeddedJspServer {
                 servletHolder.setInitParameter("logVerbosityLevel", "INFO");
                 servletHolder.setInitParameter("fork", "false");
                 servletHolder.setInitParameter("keepgenerated", "true");
-                servletHolder.setInitParameter("keepgenerated", "true");
+                // servletHolder.setInitParameter("keepgenerated", "true");
                 // <load-on-startup>0</load-on-startup>
             }
 
-            webapp = getWebAppContext(_server, webappFolder);
-            configureWebAppContext(webapp);
-            _server.setHandler(webapp);
+            if (webappFolder != null) {
+                webapp = getWebAppContext(_server, webappFolder);
+                configureWebAppContext(webapp);
+                _server.setHandler(webapp);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
