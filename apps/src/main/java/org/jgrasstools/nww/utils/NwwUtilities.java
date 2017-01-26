@@ -38,7 +38,10 @@ import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwindx.examples.util.ToolTipController;
+import gov.nasa.worldwind.layers.CompassLayer;
+import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.layers.LayerList;
+import gov.nasa.worldwindx.jgt.ToolTipController;
 
 public class NwwUtilities {
 
@@ -329,5 +332,25 @@ public class NwwUtilities {
         float distance = (float) (b * A * (sigma - deltaSigma));
         return distance;
     }
+    
+    /**
+     * Insert a layer before the compass layer.
+     * 
+     * @param wwd the {@link WorldWindow}.
+     * @param layer the layer to insert.
+     */
+    public static void insertBeforeCompass(WorldWindow wwd, Layer layer)
+    {
+        // Insert the layer into the layer list just before the compass.
+        int compassPosition = 0;
+        LayerList layers = wwd.getModel().getLayers();
+        for (Layer l : layers)
+        {
+            if (l instanceof CompassLayer)
+                compassPosition = layers.indexOf(l);
+        }
+        layers.add(compassPosition, layer);
+    }
+
 
 }

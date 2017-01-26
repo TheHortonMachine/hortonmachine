@@ -20,12 +20,16 @@ package org.jgrasstools.gears.libs.logging;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * A simple logger, to be properly implemented.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class JGTLogger {
+    private static final Logger logger = LoggerFactory.getLogger(JGTLogger.class);
 
     public static final boolean LOG_INFO = true;
     public static final boolean LOG_DEBUG = false;
@@ -38,22 +42,21 @@ public class JGTLogger {
     public static void logInfo( Object owner, String msg ) {
         if (LOG_INFO) {
             msg = toMessage(owner, msg);
-            System.out.println(msg);
+            logger.info(msg);
         }
     }
 
     public static void logDebug( Object owner, String msg ) {
         if (LOG_DEBUG) {
             msg = toMessage(owner, msg);
-            System.out.println(msg);
+            logger.debug(msg);
         }
     }
 
     public static void logError( Object owner, String msg, Throwable e ) {
         if (LOG_ERROR) {
             msg = toMessage(owner, msg);
-            System.err.println(msg);
-            e.printStackTrace();
+            logger.error(msg, e);
         }
     }
 

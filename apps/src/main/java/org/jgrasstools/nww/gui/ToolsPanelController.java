@@ -438,7 +438,6 @@ public class ToolsPanelController extends ToolsPanelView {
                 String fileName = FileUtilities.getNameWithoutExtention(selectedFile);
                 try {
                     if (parentFolderName.equals(fileName)) {
-
                         final ParameterValue<Color> inTransp = AbstractGridFormat.INPUT_TRANSPARENT_COLOR.createValue();
                         inTransp.setValue(Color.white);
                         final ParameterValue<Boolean> fading = ImageMosaicFormat.FADING.createValue();

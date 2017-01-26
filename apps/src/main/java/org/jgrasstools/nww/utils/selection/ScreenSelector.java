@@ -17,6 +17,8 @@ import java.util.List;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
+import org.jgrasstools.gears.libs.logging.JGTLogger;
+
 import gov.nasa.worldwind.WWObjectImpl;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.event.Message;
@@ -31,7 +33,6 @@ import gov.nasa.worldwind.render.OrderedRenderable;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.util.OGLStackHandler;
 import gov.nasa.worldwind.util.OGLUtil;
-import gov.nasa.worldwindx.applications.worldwindow.util.Util;
 
 /**
  * ScreenSelector is an application utility that provides interactive screen
@@ -137,7 +138,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
             return this.rect;
         }
 
-        public void startSelection(Point point) {
+        public void startSelection( Point point ) {
             if (point == null) {
                 String msg = Logging.getMessage("nullValue.PointIsNull");
                 Logging.logger().severe(msg);
@@ -149,7 +150,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
             this.rect.setRect(point.x, point.y, 0, 0);
         }
 
-        public void endSelection(Point point) {
+        public void endSelection( Point point ) {
             if (point == null) {
                 String msg = Logging.getMessage("nullValue.PointIsNull");
                 Logging.logger().severe(msg);
@@ -204,7 +205,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
             return this.interiorColor;
         }
 
-        public void setInteriorColor(Color color) {
+        public void setInteriorColor( Color color ) {
             this.interiorColor = color;
         }
 
@@ -212,7 +213,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
             return this.borderColor;
         }
 
-        public void setBorderColor(Color color) {
+        public void setBorderColor( Color color ) {
             this.borderColor = color;
         }
 
@@ -221,11 +222,11 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
                       // renderables, except other screen objects.
         }
 
-        public void pick(DrawContext dc, Point pickPoint) {
+        public void pick( DrawContext dc, Point pickPoint ) {
             // Intentionally left blank. SelectionRectangle is not pickable.
         }
 
-        public void render(DrawContext dc) {
+        public void render( DrawContext dc ) {
             if (dc == null) {
                 String msg = Logging.getMessage("nullValue.DrawContextIsNull");
                 Logging.logger().severe(msg);
@@ -238,12 +239,12 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
                 this.makeOrderedRenderable(dc);
         }
 
-        protected void makeOrderedRenderable(DrawContext dc) {
+        protected void makeOrderedRenderable( DrawContext dc ) {
             if (this.hasSelection())
                 dc.addOrderedRenderable(this);
         }
 
-        protected void drawOrderedRenderable(DrawContext dc) {
+        protected void drawOrderedRenderable( DrawContext dc ) {
             int attrs = GL2.GL_COLOR_BUFFER_BIT // For blend enable, alpha
                                                 // enable, blend func, alpha
                                                 // func.
@@ -334,7 +335,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
     protected List<MessageListener> messageListeners = new ArrayList<MessageListener>();
     protected boolean armed;
 
-    public ScreenSelector(WorldWindow worldWindow) {
+    public ScreenSelector( WorldWindow worldWindow ) {
         if (worldWindow == null) {
             String msg = Logging.getMessage("nullValue.WorldWindow");
             Logging.logger().severe(msg);
@@ -369,7 +370,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         return this.selectionRect.getInteriorColor();
     }
 
-    public void setInteriorColor(Color color) {
+    public void setInteriorColor( Color color ) {
         this.selectionRect.setInteriorColor(color);
     }
 
@@ -377,7 +378,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         return this.selectionRect.getBorderColor();
     }
 
-    public void setBorderColor(Color color) {
+    public void setBorderColor( Color color ) {
         this.selectionRect.setBorderColor(color);
     }
 
@@ -422,11 +423,11 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         this.getWwd().getInputHandler().removeMouseMotionListener(this);
     }
 
-    public List<?> getSelectedObjects() {
+    public List< ? > getSelectedObjects() {
         return this.selectedObjects;
     }
 
-    public void addMessageListener(MessageListener listener) {
+    public void addMessageListener( MessageListener listener ) {
         if (listener == null) {
             String msg = Logging.getMessage("nullValue.ListenerIsNull");
             Logging.logger().severe(msg);
@@ -436,7 +437,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         this.messageListeners.add(listener);
     }
 
-    public void removeMessageListener(MessageListener listener) {
+    public void removeMessageListener( MessageListener listener ) {
         if (listener == null) {
             String msg = Logging.getMessage("nullValue.ListenerIsNull");
             Logging.logger().severe(msg);
@@ -446,8 +447,8 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         this.messageListeners.remove(listener);
     }
 
-    protected void sendMessage(Message message) {
-        for (MessageListener listener : this.messageListeners) {
+    protected void sendMessage( Message message ) {
+        for( MessageListener listener : this.messageListeners ) {
             try {
                 listener.onMessage(message);
             } catch (Exception e) {
@@ -459,12 +460,12 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         }
     }
 
-    public void mouseClicked(MouseEvent mouseEvent) {
+    public void mouseClicked( MouseEvent mouseEvent ) {
         // Intentionally left blank. ScreenSelector does not respond to mouse
         // clicked events.
     }
 
-    public void mousePressed(MouseEvent mouseEvent) {
+    public void mousePressed( MouseEvent mouseEvent ) {
         if (mouseEvent == null) // Ignore null events.
             return;
 
@@ -483,7 +484,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
                               // from responding to it.
     }
 
-    public void mouseReleased(MouseEvent mouseEvent) {
+    public void mouseReleased( MouseEvent mouseEvent ) {
         if (mouseEvent == null) // Ignore null events.
             return;
 
@@ -496,17 +497,17 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
                               // from responding to it.
     }
 
-    public void mouseEntered(MouseEvent mouseEvent) {
+    public void mouseEntered( MouseEvent mouseEvent ) {
         // Intentionally left blank. ScreenSelector does not respond to mouse
         // entered events.
     }
 
-    public void mouseExited(MouseEvent mouseEvent) {
+    public void mouseExited( MouseEvent mouseEvent ) {
         // Intentionally left blank. ScreenSelector does not respond to mouse
         // exited events.
     }
 
-    public void mouseDragged(MouseEvent mouseEvent) {
+    public void mouseDragged( MouseEvent mouseEvent ) {
         if (mouseEvent == null) // Ignore null events.
             return;
 
@@ -518,12 +519,12 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
                               // from responding to it.
     }
 
-    public void mouseMoved(MouseEvent mouseEvent) {
+    public void mouseMoved( MouseEvent mouseEvent ) {
         // Intentionally left blank. ScreenSelector does not respond to mouse
         // moved events.
     }
 
-    protected void selectionStarted(MouseEvent mouseEvent) {
+    protected void selectionStarted( MouseEvent mouseEvent ) {
         this.selectionRect.startSelection(mouseEvent.getPoint());
         this.getWwd().getSceneController().setPickRectangle(null);
         this.getWwd().addSelectListener(this); // Listen for changes in the pick
@@ -536,8 +537,8 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         this.sendMessage(new Message(SELECTION_STARTED, this));
     }
 
-    @SuppressWarnings({ "UnusedParameters" })
-    protected void selectionEnded(MouseEvent mouseEvent) {
+    @SuppressWarnings({"UnusedParameters"})
+    protected void selectionEnded( MouseEvent mouseEvent ) {
         this.selectionRect.clearSelection();
         this.getWwd().getSceneController().setPickRectangle(null);
         this.getWwd().removeSelectListener(this); // Stop listening for changes
@@ -552,7 +553,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         this.sendMessage(new Message(SELECTION_ENDED, this));
     }
 
-    protected void selectionChanged(MouseEvent mouseEvent) {
+    protected void selectionChanged( MouseEvent mouseEvent ) {
         // Limit the end point to the World Window's viewport rectangle. This
         // ensures that a user drag event to define
         // the selection does not exceed the viewport and the viewing frustum.
@@ -567,8 +568,8 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         // controller from changes to rectangle
         // returned by ScreenRectangle.getSelection.
         this.selectionRect.endSelection(p);
-        this.getWwd().getSceneController().setPickRectangle(
-                this.selectionRect.hasSelection() ? new Rectangle(this.selectionRect.getSelection()) : null);
+        this.getWwd().getSceneController()
+                .setPickRectangle(this.selectionRect.hasSelection() ? new Rectangle(this.selectionRect.getSelection()) : null);
         this.getWwd().redraw();
     }
 
@@ -587,7 +588,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
      * @return a new Point representing the specified point limited to the World
      *         Window's viewport rectangle.
      */
-    protected Point limitPointToWorldWindow(Point point) {
+    protected Point limitPointToWorldWindow( Point point ) {
         Rectangle viewport = this.getWwd().getView().getViewport();
 
         int x = point.x;
@@ -605,7 +606,7 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         return new Point(x, y);
     }
 
-    public void selected(SelectEvent event) {
+    public void selected( SelectEvent event ) {
         try {
             // Respond to box rollover select events when armed.
             if (event.getEventAction().equals(SelectEvent.BOX_ROLLOVER) && this.armed)
@@ -613,11 +614,12 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         } catch (Exception e) {
             // Wrap the handler in a try/catch to keep exceptions from bubbling
             // up
-            Util.getLogger().warning(e.getMessage() != null ? e.getMessage() : e.toString());
+
+            JGTLogger.logError(this, e);
         }
     }
 
-    protected void selectObjects(List<?> list) {
+    protected void selectObjects( List< ? > list ) {
         if (this.selectedObjects.equals(list))
             return; // Same thing selected.
 

@@ -28,7 +28,7 @@ import org.jgrasstools.gui.utils.GuiUtilities;
 
 import gov.nasa.worldwind.cache.BasicDataFileStore;
 import gov.nasa.worldwind.cache.FileStore;
-import gov.nasa.worldwindx.examples.util.FileStoreDataSet;
+import gov.nasa.worldwindx.jgt.FileStoreDataSet;
 
 /**
  * Utils related to data caches.

@@ -36,7 +36,7 @@ import javax.swing.event.ListSelectionListener;
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.cache.BasicDataFileStore;
 import gov.nasa.worldwind.cache.FileStore;
-import gov.nasa.worldwindx.examples.util.FileStoreDataSet;
+import gov.nasa.worldwindx.jgt.FileStoreDataSet;
 
 /**
  * The DataCacheViewer is a tool that allows the user to view and delete cached WorldWind files based on how old they
