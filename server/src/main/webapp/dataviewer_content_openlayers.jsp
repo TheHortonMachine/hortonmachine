@@ -1,3 +1,4 @@
+<%@page import="org.jgrasstools.gears.utils.colors.ColorUtilities"%>
 <%@page
 	import="org.jgrasstools.server.jetty.providers.tiles.BingProvider"%>
 <%@page
@@ -13,7 +14,6 @@
 <%@page
 	import="org.jgrasstools.server.jetty.providers.data.NwwDataProvider"%>
 <%@page import="java.util.List"%>
-<%@page import="org.jgrasstools.gears.utils.ColorUtilities"%>
 <%@page import="com.vividsolutions.jts.geom.Envelope"%>
 <%@page import="java.awt.Color"%>
 <%@page import="org.jgrasstools.gears.utils.style.SimpleStyle"%>

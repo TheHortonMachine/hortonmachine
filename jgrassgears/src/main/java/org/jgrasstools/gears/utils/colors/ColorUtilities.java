@@ -64,11 +64,12 @@ public class ColorUtilities {
         int r = color.getRed();
         int g = color.getGreen();
         int b = color.getBlue();
+        int a = color.getAlpha();
 
-        String hex = String.format("#%02x%02x%02x", r, g, b);
+        String hex = String.format("#%02x%02x%02x%02x", r, g, b, a);
         return hex;
     }
-
+    
     /**
      * Add alpha to a color.
      * 

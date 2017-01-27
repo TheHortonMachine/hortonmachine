@@ -39,10 +39,10 @@ public class ShapefilesServer extends EmbeddedJspServer {
         try {
             NwwDataProvider[] providers = new NwwDataProvider[]{ //
                     new ShapeFileDataProvider(
-                            "/home/hydrologis/development/jgrasstools-git/server/src/main/resources/naturalearth/ne_10m_roads.shp",
+                            "/home/hydrologis/data/naturalearth/ne_10m_roads/ne_10m_roads.shp",
                             "continent='Europe'", null),
                     new ShapeFileDataProvider(
-                            "/home/hydrologis/development/jgrasstools-git/server/src/main/resources/naturalearth/ne_10m_populated_places.shp",
+                            "/home/hydrologis/data/naturalearth/ne_10m_populated_places/ne_10m_populated_places.shp",
                             "SOV_A3='POL'", "NAME")
                     //
             };
