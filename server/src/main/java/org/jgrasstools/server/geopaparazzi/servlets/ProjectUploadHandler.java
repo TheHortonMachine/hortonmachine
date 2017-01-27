@@ -21,7 +21,7 @@ public class ProjectUploadHandler extends AbstractHandler {
     public void handle( String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response )
             throws IOException, ServletException {
         try {
-            GeopaparazziServerUtilities.handleProjectUpload(gpapProjectsFolder, request, response);
+            GeopaparazziServerUtilities.handleProjectUpload(gpapProjectsFolder, response, request);
         } catch (Exception e) {
             e.printStackTrace();
         }
