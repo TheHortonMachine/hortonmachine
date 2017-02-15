@@ -44,6 +44,8 @@ import com.vividsolutions.jts.geom.Coordinate;
  * 
  * <p>The ecefToWgs84 method adapted from the goGPS project.</p> 
  * 
+ * <p>Note that all coordinates need to have a Z available. If the Z is NaN, then it is set to 0.</p>
+ * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class ENU {
@@ -73,6 +75,7 @@ public class ENU {
      * @param baseCoordinateLL the WGS84 coordinate to use a origin of the ENU. 
      */
     public ENU( Coordinate baseCoordinateLL ) {
+        checkZ(baseCoordinateLL);
         this._baseCoordinateLL = baseCoordinateLL;
         _lambda = toRadians(baseCoordinateLL.y);
         _phi = toRadians(baseCoordinateLL.x);
@@ -105,6 +108,7 @@ public class ENU {
      * @throws MatrixException 
      */
     public Coordinate wgs84ToEnu( Coordinate cLL ) {
+        checkZ(cLL);
         Coordinate cEcef = wgs84ToEcef(cLL);
         Coordinate enu = ecefToEnu(cEcef);
         return enu;
@@ -118,6 +122,7 @@ public class ENU {
      * @throws MatrixException 
      */
     public Coordinate enuToWgs84( Coordinate enu ) {
+        checkZ(enu);
         Coordinate cEcef = enuToEcef(enu);
         Coordinate wgs84 = ecefToWgs84(cEcef);
         return wgs84;
@@ -210,6 +215,12 @@ public class ENU {
         double lon = toDegrees(lamGeod);
         double lat = toDegrees(phiGeod);
         return new Coordinate(lon, lat, h);
+    }
+
+    private void checkZ( Coordinate coordinate ) {
+        if (Double.isNaN(coordinate.z)) {
+            coordinate.z = 0.0;
+        }
     }
 
 }
