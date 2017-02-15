@@ -1,17 +1,51 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.gears.utils;
 
+import static java.lang.Math.atan;
+import static java.lang.Math.atan2;
+import static java.lang.Math.cos;
+import static java.lang.Math.pow;
+import static java.lang.Math.sin;
+import static java.lang.Math.sqrt;
+import static java.lang.Math.tan;
+import static java.lang.Math.toDegrees;
+import static java.lang.Math.toRadians;
+
+import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.jgrasstools.gears.utils.math.matrixes.MatrixException;
+
 import com.vividsolutions.jts.geom.Coordinate;
-import static java.lang.Math.*;
 
 /**
  * Conversion of Geodetic coordinates to the Local Tangent Plane.
  * 
  * <p>Class that supports WGS84 to East-North-Up conversion. The conversions
- * reference the base coordinate that is given at construction time.
+ * reference the base coordinate that is given at construction time.</p>
  * 
  * <p>Math is available in the paper: Conversion of Geodetic coordinates to the 
- * Local Tangent Plane.
+ * Local Tangent Plane.</p>
  * 
+ * <p>The ecefToWgs84 method adapted from the goGPS project.</p> 
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
  */
 public class ENU {
 
@@ -20,7 +54,19 @@ public class ENU {
     private static double flatness = (semiMajorAxis - smeiMinorAxis) / semiMajorAxis;
     private static double eccentricityP2 = flatness * (2 - flatness);
 
-    private Coordinate baseCoordinateLL;
+    private Coordinate _baseCoordinateLL;
+    private double _lambda;
+    private double _phi;
+    private double _sinLambda;
+    private double _cosLambda;
+    private double _cosPhi;
+    private double _sinPhi;
+    private double _N;
+    private RealMatrix _rotationMatrix;
+    private double _ecefROriginX;
+    private double _ecefROriginY;
+    private double _ecefROriginZ;
+    private RealMatrix _inverseRotationMatrix;
 
     /**
      * Create a new East North Up system.
@@ -28,7 +74,54 @@ public class ENU {
      * @param baseCoordinateLL the WGS84 coordinate to use a origin of the ENU. 
      */
     public ENU( Coordinate baseCoordinateLL ) {
-        this.baseCoordinateLL = baseCoordinateLL;
+        this._baseCoordinateLL = baseCoordinateLL;
+        _lambda = toRadians(baseCoordinateLL.y);
+        _phi = toRadians(baseCoordinateLL.x);
+        _sinLambda = sin(_lambda);
+        _cosLambda = cos(_lambda);
+        _cosPhi = cos(_phi);
+        _sinPhi = sin(_phi);
+        _N = semiMajorAxis / sqrt(1 - eccentricityP2 * pow(_sinLambda, 2.0));
+
+        double[][] rot = new double[][]{//
+                {-_sinPhi, _cosPhi, 0}, //
+                {-_cosPhi * _sinLambda, -_sinLambda * _sinPhi, _cosLambda}, //
+                {_cosLambda * _cosPhi, _cosLambda * _sinPhi, _sinLambda},//
+        };
+        _rotationMatrix = MatrixUtils.createRealMatrix(rot);
+        _inverseRotationMatrix = new LUDecomposition(_rotationMatrix).getSolver().getInverse();
+
+        // the origin of the LTP expressed in ECEF-r coordinates
+        double h = _baseCoordinateLL.z;
+        _ecefROriginX = (h + _N) * _cosLambda * _cosPhi;
+        _ecefROriginY = (h + _N) * _cosLambda * _sinPhi;
+        _ecefROriginZ = (h + (1 - eccentricityP2) * _N) * _sinLambda;
+    }
+
+    /**
+     * Converts the wgs84 coordinate to ENU.
+     * 
+     * @param cLL the wgs84 coordinate.
+     * @return the ENU coordinate.
+     * @throws MatrixException 
+     */
+    public Coordinate wgs84ToEnu( Coordinate cLL ) throws MatrixException {
+        Coordinate cEcef = wgs84ToEcef(cLL);
+        Coordinate enu = ecefToEnu(cEcef);
+        return enu;
+    }
+
+    /**
+     * Converts the ENU coordinate to wgs84.
+     * 
+     * @param enu the ENU coordinate.
+     * @return the wgs84 coordinate.
+     * @throws MatrixException 
+     */
+    public Coordinate enuToWgs84( Coordinate enu ) throws MatrixException {
+        Coordinate cEcef = enuToEcef(enu);
+        Coordinate wgs84 = ecefToWgs84(cEcef);
+        return wgs84;
     }
 
     /**
@@ -58,42 +151,66 @@ public class ENU {
      * 
      * @param cEcef the ECEF coordinate.
      * @return the ENU coordinate.
+     * @throws MatrixException 
      */
-    public Coordinate ecefToEnu( Coordinate cEcef ) {
-        double lambda = toRadians(baseCoordinateLL.y);
-        double phi = toRadians(baseCoordinateLL.x);
-        double sinLambda = sin(lambda);
-        double cosLambda = cos(lambda);
-        double cosPhi = cos(phi);
-        double sinPhi = sin(phi);
-        double N = semiMajorAxis / sqrt(1 - eccentricityP2 * pow(sinLambda, 2.0));
+    public Coordinate ecefToEnu( Coordinate cEcef ) throws MatrixException {
+        double deltaX = cEcef.x - _ecefROriginX;
+        double deltaY = cEcef.y - _ecefROriginY;
+        double deltaZ = cEcef.z - _ecefROriginZ;
 
-        // the origin of the LTP expressed in ECEF-r coordinates
-        double h = baseCoordinateLL.z;
-        double x0 = (h + N) * cosLambda * cosPhi;
-        double y0 = (h + N) * cosLambda * sinPhi;
-        double z0 = (h + (1 - eccentricityP2) * N) * sinLambda;
+        double[][] deltas = new double[][]{{deltaX}, {deltaY}, {deltaZ}};
+        RealMatrix deltaMatrix = MatrixUtils.createRealMatrix(deltas);
 
-        double deltaX = cEcef.x - x0;
-        double deltaY = cEcef.y - y0;
-        double deltaZ = cEcef.z - z0;
+        RealMatrix enuMatrix = _rotationMatrix.multiply(deltaMatrix);
+        double[] column = enuMatrix.getColumn(0);
 
-        double xLTP = -sinPhi * deltaX + cosPhi * deltaY;
-        double yLTP = -cosPhi * sinLambda * deltaX - sinLambda * sinPhi * deltaY + cosLambda * deltaZ;
-        double zLTP = cosLambda * cosPhi * deltaX + cosLambda * sinPhi * deltaY + sinLambda * deltaZ;
-
-        return new Coordinate(xLTP, yLTP, zLTP);
+        return new Coordinate(column[0], column[1], column[2]);
     }
 
     /**
-     * Converts the wgs84 coordinate to ENU.
+     * Converts an ENU coordinate to Earth-Centered Earth-Fixed (ECEF).
      * 
-     * @param cLL the wgs84 coordinate.
-     * @return the ENU coordinate.
+     * @param cEnu the enu coordinate.
+     * @return the ecef coordinate.
      */
-    public Coordinate wgs84ToEnu( Coordinate cLL ) {
-        Coordinate cEcef = wgs84ToEcef(cLL);
-        Coordinate enu = ecefToEnu(cEcef);
-        return enu;
+    public Coordinate enuToEcef( Coordinate cEnu ) {
+        double[][] enu = new double[][]{{cEnu.x}, {cEnu.y}, {cEnu.z}};
+        RealMatrix enuMatrix = MatrixUtils.createRealMatrix(enu);
+
+        RealMatrix deltasMatrix = _inverseRotationMatrix.multiply(enuMatrix);
+
+        double[] column = deltasMatrix.getColumn(0);
+        double cecfX = column[0] + _ecefROriginX;
+        double cecfY = column[1] + _ecefROriginY;
+        double cecfZ = column[2] + _ecefROriginZ;
+
+        return new Coordinate(cecfX, cecfY, cecfZ);
     }
+
+    /**
+     * Converts a Earth-Centered Earth-Fixed (ECEF) coordinate to WGS84.
+     * 
+     * @param ecef the ecef coordinate.
+     * @return the wgs84 coordinate.
+     */
+    public Coordinate ecefToWgs84( Coordinate ecef ) {
+        // Radius computation
+        double r = sqrt(pow(ecef.x, 2) + pow(ecef.y, 2) + pow(ecef.z, 2));
+        // Geocentric longitude
+        double lamGeoc = atan2(ecef.y, ecef.x);
+        // Geocentric latitude
+        double phiGeoc = atan(ecef.z / sqrt(pow(ecef.x, 2) + pow(ecef.y, 2)));
+        // Computation of geodetic coordinates
+        double psi = atan(tan(phiGeoc) / sqrt(1 - eccentricityP2));
+        double phiGeod = atan((r * sin(phiGeoc) + eccentricityP2 * semiMajorAxis / sqrt(1 - eccentricityP2) * pow(sin(psi), 3))
+                / (r * cos(phiGeoc) - eccentricityP2 * semiMajorAxis * pow(cos(psi), 3)));
+        double lamGeod = lamGeoc;
+        double N = semiMajorAxis / sqrt(1 - eccentricityP2 * pow(sin(phiGeod), 2));
+        double h = r * cos(phiGeoc) / cos(phiGeod) - N;
+
+        double lon = toDegrees(lamGeod);
+        double lat = toDegrees(phiGeod);
+        return new Coordinate(lon, lat, h);
+    }
+
 }

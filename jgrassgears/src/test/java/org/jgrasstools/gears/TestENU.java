@@ -4,6 +4,7 @@ import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.utils.ENU;
 import org.jgrasstools.gears.utils.HMTestCase;
+import org.jgrasstools.gears.utils.math.matrixes.MatrixException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -18,9 +19,9 @@ public class TestENU extends HMTestCase {
         ENU enu = new ENU(cLA);
         Coordinate c = enu.wgs84ToEcef(cLA);
 
-        assertTrue(isDeltaOk(-2430601.8, c.x));
-        assertTrue(isDeltaOk(-4702442.7, c.y));
-        assertTrue(isDeltaOk(3546587.4, c.z));
+        assertTrue(Math.abs(-2430601.8 - c.x) < 0.05);
+        assertTrue(Math.abs(-4702442.7- c.y) < 0.05);
+        assertTrue(Math.abs(3546587.4- c.z) < 0.05);
 
         Coordinate ecefC = new Coordinate(c.x + 1, c.y, c.z);
         Coordinate cEnu = enu.ecefToEnu(ecefC);
@@ -44,13 +45,13 @@ public class TestENU extends HMTestCase {
         assertTrue(isDeltaOk(0.55919291, cEnu.z));
     }
 
-    public void testWithGeotools() {
+    public void testWithGeotools() throws MatrixException {
         Coordinate c1 = new Coordinate(11, 46, 0);
         Coordinate c2 = new Coordinate(11.001, 46.001, 0);
 
         GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
         gc.setStartingGeographicPoint(c1.x, c1.y);
-        gc.setDestinationGeographicPoint(c1.x, c1.y);
+        gc.setDestinationGeographicPoint(c2.x, c2.y);
         double orthodromicDistance = gc.getOrthodromicDistance();
 
         ENU enu = new ENU(c1);
@@ -59,10 +60,59 @@ public class TestENU extends HMTestCase {
 
         double distance = ce1.distance(ce2);
         assertTrue(isDeltaOk(orthodromicDistance, distance));
+        
+        Coordinate c1Back = enu.enuToWgs84(ce1);
+        Coordinate c2Back = enu.enuToWgs84(ce2);
+        
+        assertEquals(0, c1.distance(c1Back), 0.000001);
+        assertEquals(0, c2.distance(c2Back), 0.000001);
+        
     }
+
+//    public void testEnu2WithGeotools() throws MatrixException {
+//        Coordinate c1 = new Coordinate(11, 46, 0);
+//        Coordinate c2 = new Coordinate(11.001, 46.001, 0);
+//
+//        GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
+//        gc.setStartingGeographicPoint(c1.x, c1.y);
+//        gc.setDestinationGeographicPoint(c2.x, c2.y);
+//        double orthodromicDistance = gc.getOrthodromicDistance();
+//
+//        ENU2 enu1 = ENU2.globalGeodInstance(c1.y, c1.x, c1.z);
+//        enu1.computeLocal(enu1);
+//        double e1 = enu1.getE();
+//        double n1 = enu1.getN();
+//        double u1 = enu1.getU();
+//        Coordinate ce1 = new Coordinate(e1, n1, u1);
+//        ENU2 enu2 = ENU2.globalGeodInstance(c2.y, c2.x, c2.z);
+//        enu2.computeLocal(enu1);
+//        double e2 = enu2.getE();
+//        double n2 = enu2.getN();
+//        double u2 = enu2.getU();
+//        Coordinate ce2 = new Coordinate(e2, n2, u2);
+//
+//        double distance = ce1.distance(ce2);
+//        assertTrue(isDeltaOk(orthodromicDistance, distance));
+//
+//        // now go back
+//        
+//        double x = enu1.getX();
+//        double y = enu1.getY();
+//        double z = enu1.getZ();
+//        
+//        ENU2 enu11 = ENU2.globalXYZInstance(x,y,z);
+//        enu11.computeGeodetic();
+//        double lon1 = enu11.getGeodeticLongitude();
+//        double lat1 = enu11.getGeodeticLatitude();
+//        double elev1 = enu11.getGeodeticHeight();
+//        Coordinate c1back = new Coordinate(lon1, lat1, elev1);
+//        // ENU2 enu22 = ENU2.globalENUInstance(e2,n2,u2 );
+//        System.out.println(c1back);
+//
+//    }
 
     private boolean isDeltaOk( double value1, double value2 ) {
         double delta = Math.abs(value2 - value1);
-        return delta < 1e8;
+        return delta < 1e-6;
     }
 }
