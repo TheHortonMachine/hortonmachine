@@ -30,7 +30,6 @@ import static java.lang.Math.toRadians;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.jgrasstools.gears.utils.math.matrixes.MatrixException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -105,7 +104,7 @@ public class ENU {
      * @return the ENU coordinate.
      * @throws MatrixException 
      */
-    public Coordinate wgs84ToEnu( Coordinate cLL ) throws MatrixException {
+    public Coordinate wgs84ToEnu( Coordinate cLL ) {
         Coordinate cEcef = wgs84ToEcef(cLL);
         Coordinate enu = ecefToEnu(cEcef);
         return enu;
@@ -118,7 +117,7 @@ public class ENU {
      * @return the wgs84 coordinate.
      * @throws MatrixException 
      */
-    public Coordinate enuToWgs84( Coordinate enu ) throws MatrixException {
+    public Coordinate enuToWgs84( Coordinate enu ) {
         Coordinate cEcef = enuToEcef(enu);
         Coordinate wgs84 = ecefToWgs84(cEcef);
         return wgs84;
@@ -153,7 +152,7 @@ public class ENU {
      * @return the ENU coordinate.
      * @throws MatrixException 
      */
-    public Coordinate ecefToEnu( Coordinate cEcef ) throws MatrixException {
+    public Coordinate ecefToEnu( Coordinate cEcef ) {
         double deltaX = cEcef.x - _ecefROriginX;
         double deltaY = cEcef.y - _ecefROriginY;
         double deltaZ = cEcef.z - _ecefROriginZ;
