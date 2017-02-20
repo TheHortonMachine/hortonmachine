@@ -103,6 +103,10 @@ public class StageScriptExecutor {
                 return name.endsWith("jar");
             }
         });
+        
+        if (jarFiles == null) {
+            jarFiles = new File[0];
+        }
 
         Arrays.sort(jarFiles, new Comparator<File>(){
             public int compare( File o1, File o2 ) {

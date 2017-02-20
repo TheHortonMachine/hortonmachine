@@ -59,6 +59,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import org.apache.log4j.BasicConfigurator;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -800,6 +801,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
     }
 
     public static void main( String[] args ) throws Exception {
+        BasicConfigurator.configure();
         GuiUtilities.setDefaultLookAndFeel();
         
         File libsFile = null;

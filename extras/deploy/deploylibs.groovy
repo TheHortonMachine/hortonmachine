@@ -90,6 +90,17 @@ JGTMODULESCOPY: {
     def modCopyToFile = new File(modulesFolderFile.absolutePath, modJar.name).absolutePath;
     (new AntBuilder()).copy( file : modJar , tofile : modCopyToFile )
 
+    // take latest dbs jar
+    jarFiles = new File("./dbs/target").listFiles(new FilenameFilter() {  
+        public boolean accept(File f, String filename) {  
+            return filename.startsWith("jgt-dbs-") && filename.endsWith(".jar")  
+        }  
+    });
+    Arrays.sort(jarFiles, Collections.reverseOrder());
+    def dbsJar = jarFiles[0];
+    def dbsCopyToFile = new File(modulesFolderFile.absolutePath, dbsJar.name).absolutePath;
+    (new AntBuilder()).copy( file : dbsJar , tofile : dbsCopyToFile )
+
     // take latest lesto jar
     jarFiles = new File("./lesto/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
@@ -112,10 +123,10 @@ JGTMODULESCOPY: {
     def guiCopyToFile = new File(modulesFolderFile.absolutePath, guiJar.name).absolutePath;
     (new AntBuilder()).copy( file : guiJar , tofile : guiCopyToFile )
 
-    // take latest nww jar
-    jarFiles = new File("./nww/target").listFiles(new FilenameFilter() {  
+    // take latest apps jar
+    jarFiles = new File("./apps/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
-            return filename.startsWith("jgt-nww-") && filename.endsWith(".jar")  
+            return filename.startsWith("jgt-apps-") && filename.endsWith(".jar")  
         }  
     });
     Arrays.sort(jarFiles, Collections.reverseOrder());
