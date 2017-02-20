@@ -25,6 +25,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_LABE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_STATUS;
+
+import java.io.File;
+import java.io.FilenameFilter;
+
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_DO_LENIENT_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_DO_LONGITUDE_FIRST_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_IN_VECTOR_DESCRIPTION;
@@ -45,6 +49,7 @@ import oms3.annotations.UI;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectorreprojector.OmsVectorReprojector;
+import org.jgrasstools.gears.utils.DataUtilities;
 
 @Description(OMSVECTORREPROJECTOR_DESCRIPTION)
 @Author(name = OMSVECTORREPROJECTOR_AUTHORNAMES, contact = OMSVECTORREPROJECTOR_AUTHORCONTACTS)
@@ -85,16 +90,49 @@ public class VectorReprojector extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        OmsVectorReprojector vectorreprojector = new OmsVectorReprojector();
-        vectorreprojector.inVector = getVector(inVector);
-        vectorreprojector.pCode = pCode;
-        vectorreprojector.doLongitudeFirst = doLongitudeFirst;
-        vectorreprojector.pForceCode = pForceCode;
-        vectorreprojector.doLenient = doLenient;
-        vectorreprojector.pm = pm;
-        vectorreprojector.doProcess = doProcess;
-        vectorreprojector.doReset = doReset;
-        vectorreprojector.process();
-        dumpVector(vectorreprojector.outVector, outVector);
+        checkNull(inVector, outVector);
+        File inVectorFile = new File(inVector);
+        if (inVectorFile.isDirectory()) {
+            File[] listFiles = inVectorFile.listFiles(new FilenameFilter(){
+                @Override
+                public boolean accept( File dir, String name ) {
+                    return DataUtilities.isSupportedVectorExtension(name);
+                }
+            });
+            
+            File outVectorFolder = new File(outVector);
+            if (!outVectorFolder.isDirectory()) {
+                outVectorFolder = outVectorFolder.getParentFile();
+            }
+            
+            for( File inFile : listFiles ) {
+                String name = inFile.getName();
+                File outFile = new File(outVectorFolder, name);
+                
+                OmsVectorReprojector vectorreprojector = new OmsVectorReprojector();
+                vectorreprojector.inVector = getVector(inFile.getAbsolutePath());
+                vectorreprojector.pCode = pCode;
+                vectorreprojector.doLongitudeFirst = doLongitudeFirst;
+                vectorreprojector.pForceCode = pForceCode;
+                vectorreprojector.doLenient = doLenient;
+                vectorreprojector.pm = pm;
+                vectorreprojector.doProcess = doProcess;
+                vectorreprojector.doReset = doReset;
+                vectorreprojector.process();
+                dumpVector(vectorreprojector.outVector, outFile.getAbsolutePath());
+            }
+        } else {
+            OmsVectorReprojector vectorreprojector = new OmsVectorReprojector();
+            vectorreprojector.inVector = getVector(inVector);
+            vectorreprojector.pCode = pCode;
+            vectorreprojector.doLongitudeFirst = doLongitudeFirst;
+            vectorreprojector.pForceCode = pForceCode;
+            vectorreprojector.doLenient = doLenient;
+            vectorreprojector.pm = pm;
+            vectorreprojector.doProcess = doProcess;
+            vectorreprojector.doReset = doReset;
+            vectorreprojector.process();
+            dumpVector(vectorreprojector.outVector, outVector);
+        }
     }
 }

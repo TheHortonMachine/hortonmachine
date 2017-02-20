@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gui.utils;
+package org.jgrasstools.gears.utils;
 
 /**
  * Utilities to handle data.
@@ -36,7 +36,7 @@ public class DataUtilities {
      */
     public static boolean isSupportedVectorExtension( String name ) {
         for( String ext : supportedVectors ) {
-            if (name.endsWith(ext)) {
+            if (name.toLowerCase().endsWith(ext)) {
                 return true;
             }
         }
@@ -51,7 +51,7 @@ public class DataUtilities {
      */
     public static boolean isSupportedRasterExtension( String name ) {
         for( String ext : supportedRasters ) {
-            if (name.endsWith(ext)) {
+            if (name.toLowerCase().endsWith(ext)) {
                 return true;
             }
         }
