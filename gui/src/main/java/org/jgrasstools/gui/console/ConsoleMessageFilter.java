@@ -36,6 +36,7 @@ public class ConsoleMessageFilter {
         containsStrings.add("Error while parsing JAI registry");
         containsStrings.add("A descriptor is already registered");
         containsStrings.add("Error in registry file");
+        containsStrings.add("Logging initialized");
 
         containsStream = containsStrings.parallelStream();
 
