@@ -17,21 +17,22 @@
  */
 package org.jgrasstools.gears.io.geopaparazzi.geopap4;
 
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_IMAGES;
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_IMAGE_DATA;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Point;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.opengis.feature.simple.SimpleFeature;
-
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.Exception;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-
-import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.*;
+import org.jgrasstools.dbs.compat.IJGTConnection;
+import org.jgrasstools.dbs.compat.IJGTResultSet;
+import org.jgrasstools.dbs.compat.IJGTStatement;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageDataTableFields;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTableFields;
 
 /**
  * Data access object for images.
@@ -46,7 +47,7 @@ public class DaoImages {
      *
      * @throws IOException if something goes wrong.
      */
-    public static void createTables(Connection connection) throws IOException, SQLException {
+    public static void createTables( Connection connection ) throws IOException, SQLException {
         StringBuilder sB = new StringBuilder();
         sB.append("CREATE TABLE ");
         sB.append(TABLE_IMAGES);
@@ -130,17 +131,14 @@ public class DaoImages {
         }
     }
 
+    public static void addImage( Connection connection, long id, double lon, double lat, double altim, double azim,
+            long timestamp, String text, byte[] image, byte[] thumb, long noteId ) throws IOException, SQLException {
 
-    public static void addImage(Connection connection, long id, double lon, double lat, double altim, double azim, long timestamp, String text, byte[] image, byte[] thumb, long noteId)
-            throws IOException, SQLException {
-
-        String insertSQL1 = "INSERT INTO " + TableDescriptions.TABLE_IMAGE_DATA
-                + "(" + //
+        String insertSQL1 = "INSERT INTO " + TableDescriptions.TABLE_IMAGE_DATA + "(" + //
                 ImageDataTableFields.COLUMN_ID.getFieldName() + ", " + //
                 ImageDataTableFields.COLUMN_IMAGE.getFieldName() + ", " + //
                 ImageDataTableFields.COLUMN_THUMBNAIL.getFieldName() + //
-                ") VALUES"
-                + "(?,?,?)";
+                ") VALUES" + "(?,?,?)";
         try (PreparedStatement writeImageDataStatement = connection.prepareStatement(insertSQL1)) {
             writeImageDataStatement.setLong(1, id);
             writeImageDataStatement.setBytes(2, image);
@@ -149,9 +147,7 @@ public class DaoImages {
             writeImageDataStatement.executeUpdate();
         }
 
-
-        String insertSQL2 = "INSERT INTO " + TableDescriptions.TABLE_IMAGES
-                + "(" + //
+        String insertSQL2 = "INSERT INTO " + TableDescriptions.TABLE_IMAGES + "(" + //
                 ImageTableFields.COLUMN_ID.getFieldName() + ", " + //
                 ImageTableFields.COLUMN_LON.getFieldName() + ", " + //
                 ImageTableFields.COLUMN_LAT.getFieldName() + ", " + //
@@ -161,9 +157,8 @@ public class DaoImages {
                 ImageTableFields.COLUMN_TEXT.getFieldName() + ", " + //
                 ImageTableFields.COLUMN_ISDIRTY.getFieldName() + ", " + //
                 ImageTableFields.COLUMN_NOTE_ID.getFieldName() + ", " + //
-                ImageTableFields.COLUMN_IMAGEDATA_ID.getFieldName() +//
-                ") VALUES"
-                + "(?,?,?,?,?,?,?,?,?,?)";
+                ImageTableFields.COLUMN_IMAGEDATA_ID.getFieldName() + //
+                ") VALUES" + "(?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement writeImageStatement = connection.prepareStatement(insertSQL2)) {
             writeImageStatement.setLong(1, id);
             writeImageStatement.setDouble(2, lon);
@@ -180,17 +175,14 @@ public class DaoImages {
         }
     }
 
-
-    public static String getImageName(Connection connection, long imageId) throws Exception {
-        String sql = "select " +
-                ImageTableFields.COLUMN_TEXT.getFieldName() + //
+    public static String getImageName( IJGTConnection connection, long imageId ) throws Exception {
+        String sql = "select " + ImageTableFields.COLUMN_TEXT.getFieldName() + //
                 " from " + TABLE_IMAGES + //
                 " where " + ImageTableFields.COLUMN_ID.getFieldName() + " = " + imageId;
 
-        try (Statement statement = connection.createStatement()) {
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
-            ResultSet rs = statement.executeQuery(sql);
             if (rs.next()) {
                 String text = rs.getString(ImageTableFields.COLUMN_TEXT.getFieldName());
                 if (text != null && text.trim().length() != 0) {
@@ -201,7 +193,6 @@ public class DaoImages {
         }
     }
 
-
     /**
      * Get the list of Images from the db.
      *
@@ -209,25 +200,24 @@ public class DaoImages {
      *
      * @throws IOException if something goes wrong.
      */
-    public static List<Image> getImagesList(Connection connection) throws Exception {
+    public static List<Image> getImagesList( IJGTConnection connection ) throws Exception {
         List<Image> images = new ArrayList<Image>();
         String sql = "select " + //
-                ImageTableFields.COLUMN_ID.getFieldName() + "," +//
-                ImageTableFields.COLUMN_LON.getFieldName() + "," +//
-                ImageTableFields.COLUMN_LAT.getFieldName() + "," +//
-                ImageTableFields.COLUMN_ALTIM.getFieldName() + "," +//
-                ImageTableFields.COLUMN_TS.getFieldName() + "," +//
-                ImageTableFields.COLUMN_AZIM.getFieldName() + "," +//
-                ImageTableFields.COLUMN_TEXT.getFieldName() + "," +//
-                ImageTableFields.COLUMN_NOTE_ID.getFieldName() + "," +//
-                ImageTableFields.COLUMN_IMAGEDATA_ID.getFieldName() +//
+                ImageTableFields.COLUMN_ID.getFieldName() + "," + //
+                ImageTableFields.COLUMN_LON.getFieldName() + "," + //
+                ImageTableFields.COLUMN_LAT.getFieldName() + "," + //
+                ImageTableFields.COLUMN_ALTIM.getFieldName() + "," + //
+                ImageTableFields.COLUMN_TS.getFieldName() + "," + //
+                ImageTableFields.COLUMN_AZIM.getFieldName() + "," + //
+                ImageTableFields.COLUMN_TEXT.getFieldName() + "," + //
+                ImageTableFields.COLUMN_NOTE_ID.getFieldName() + "," + //
+                ImageTableFields.COLUMN_IMAGEDATA_ID.getFieldName() + //
                 " from " + TABLE_IMAGES;
 
-        try (Statement statement = connection.createStatement()) {
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
-
-            ResultSet rs = statement.executeQuery(sql);
-            while (rs.next()) {
+            
+            while( rs.next() ) {
                 long id = rs.getLong(1);
                 double lon = rs.getDouble(2);
                 double lat = rs.getDouble(3);
@@ -245,7 +235,6 @@ public class DaoImages {
         return images;
     }
 
-
     /**
      * Get Image data from data id.
      *
@@ -254,16 +243,15 @@ public class DaoImages {
      * @return
      * @throws Exception
      */
-    public static byte[] getImageData(Connection connection, long imageDataId) throws Exception {
+    public static byte[] getImageData( IJGTConnection connection, long imageDataId ) throws Exception {
         String sql = "select " + //
-                ImageDataTableFields.COLUMN_IMAGE.getFieldName() +//
-                " from " + TABLE_IMAGE_DATA + " where " +//
+                ImageDataTableFields.COLUMN_IMAGE.getFieldName() + //
+                " from " + TABLE_IMAGE_DATA + " where " + //
                 ImageDataTableFields.COLUMN_ID.getFieldName() + " = " + imageDataId;
 
-        try (Statement statement = connection.createStatement()) {
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
-            ResultSet rs = statement.executeQuery(sql);
             if (rs.next()) {
                 byte[] bytes = rs.getBytes(1);
                 return bytes;

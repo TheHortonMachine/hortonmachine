@@ -52,6 +52,11 @@ public class GPResultSet implements IJGTResultSet {
     }
 
     @Override
+    public String getString( String name) throws Exception {
+        throw new RuntimeException("Function not supported: getString( String name)");
+    }
+
+    @Override
     public int getInt( int index ) throws Exception {
         return stmt.column_int(index - 1);
     }
@@ -99,6 +104,21 @@ public class GPResultSet implements IJGTResultSet {
     @Override
     public boolean wasNull() throws Exception {
         throw new RuntimeException("Function not supported: wasNull()");
+    }
+
+    @Override
+    public int getInt( String name ) throws Exception {
+        throw new RuntimeException("Function not supported: getInt( String name)");
+    }
+
+    @Override
+    public double getDouble( String name ) throws Exception {
+        throw new RuntimeException("Function not supported: getDouble( String name)");
+    }
+
+    @Override
+    public long getLong( String name ) throws Exception {
+        throw new RuntimeException("Function not supported: getLong( String name)");
     }
 
 }

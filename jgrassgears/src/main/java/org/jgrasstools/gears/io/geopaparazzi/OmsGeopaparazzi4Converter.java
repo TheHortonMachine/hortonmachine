@@ -35,13 +35,13 @@
  */
 package org.jgrasstools.gears.io.geopaparazzi;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_TAGS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_LOG_LINES_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_LOG_POINTS_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_MEDIA_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_NOTES_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_OUT_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_TAGS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
@@ -58,7 +58,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -79,6 +78,10 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.jgrasstools.dbs.compat.IJGTConnection;
+import org.jgrasstools.dbs.compat.IJGTResultSet;
+import org.jgrasstools.dbs.compat.IJGTStatement;
+import org.jgrasstools.dbs.spatialite.jgt.SqliteDb;
 import org.jgrasstools.gears.io.geopaparazzi.forms.Utilities;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
@@ -169,26 +172,11 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     private static final String TAG_VALUE = "value";
     private static final String TAG_TYPE = "type";
 
-    private static boolean hasDriver = false;
-
-    static {
-        try {
-            // make sure sqlite driver are there
-            Class.forName("org.sqlite.JDBC");
-            hasDriver = true;
-        } catch (Exception e) {
-        }
-    }
-
     private File chartsFolderFile;
 
     @Execute
     public void process() throws Exception {
         checkNull(inGeopaparazzi);
-
-        if (!hasDriver) {
-            throw new ModelsIllegalargumentException("Can't find any sqlite driver. Check your settings.", this, pm);
-        }
 
         File geopapDatabaseFile = new File(inGeopaparazzi);
         if (!geopapDatabaseFile.exists()) {
@@ -205,7 +193,10 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         chartsFolderFile = new File(outputFolderFile, CHARTS_FOLDER_NAME);
         chartsFolderFile.mkdir();
 
-        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + geopapDatabaseFile.getAbsolutePath())) {
+        try (SqliteDb db = new SqliteDb()) {
+            db.open(geopapDatabaseFile.getAbsolutePath());
+
+            IJGTConnection connection = db.getConnection();
             projectInfo(connection, outputFolderFile);
 
             /*
@@ -227,7 +218,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
     }
 
-    private void projectInfo( Connection connection, File outputFolderFile ) throws Exception {
+    private void projectInfo( IJGTConnection connection, File outputFolderFile ) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("PROJECT INFO\n");
         sb.append("----------------------\n\n");
@@ -247,14 +238,14 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
      * @return the map of metadata.
      * @throws SQLException
      */
-    public static LinkedHashMap<String, String> getMetadataMap( Connection connection ) throws SQLException {
+    public static LinkedHashMap<String, String> getMetadataMap( IJGTConnection connection ) throws Exception {
         LinkedHashMap<String, String> metadataMap = new LinkedHashMap<>();
-        try (Statement statement = connection.createStatement()) {
+        try (IJGTStatement statement = connection.createStatement()) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
             String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
                     MetadataTableFields.COLUMN_VALUE.getFieldName() + " from " + TABLE_METADATA;
-            ResultSet rs = statement.executeQuery(sql);
+            IJGTResultSet rs = statement.executeQuery(sql);
             while( rs.next() ) {
                 String key = rs.getString(MetadataTableFields.COLUMN_KEY.getFieldName());
                 String value = rs.getString(MetadataTableFields.COLUMN_VALUE.getFieldName());
@@ -275,14 +266,15 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         return metadataMap;
     }
 
-    private void simpleNotesToShapefile( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
+    private void simpleNotesToShapefile( IJGTConnection connection, File outputFolderFile, IJGTProgressMonitor pm )
+            throws Exception {
         File outputShapeFile = new File(outputFolderFile, "notes_simple.shp");
 
         SimpleFeatureCollection newCollection = simpleNotes2featurecollection(connection, pm);
         dumpVector(newCollection, outputShapeFile.getAbsolutePath());
     }
 
-    private void complexNotesToShapefile( Connection connection, File outputFolderFile, IJGTProgressMonitor pm )
+    private void complexNotesToShapefile( IJGTConnection connection, File outputFolderFile, IJGTProgressMonitor pm )
             throws Exception {
         HashMap<String, SimpleFeatureCollection> name2CollectionMap = complexNotes2featurecollections(connection, pm);
 
@@ -369,8 +361,8 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
      * @return
      * @throws SQLException
      */
-    public static SimpleFeatureCollection simpleNotes2featurecollection( Connection connection, IJGTProgressMonitor pm )
-            throws SQLException {
+    public static SimpleFeatureCollection simpleNotes2featurecollection( IJGTConnection connection, IJGTProgressMonitor pm )
+            throws Exception {
         String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
         String descFN = NotesTableFields.COLUMN_DESCRIPTION.getFieldName();
         String tsFN = NotesTableFields.COLUMN_TS.getFieldName();
@@ -408,11 +400,8 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         pm.beginTask("Processing simple notes...", -1);
         SimpleFeatureCollection newCollection = new DefaultFeatureCollection();
 
-        try (Statement statement = connection.createStatement()) {
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
 
-            statement.setQueryTimeout(30); // set timeout to 30 sec.
-
-            ResultSet rs = statement.executeQuery(sql);
             while( rs.next() ) {
                 String form = rs.getString(formFN);
                 if (form != null && form.trim().length() != 0) {
@@ -448,8 +437,8 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         return newCollection;
     }
 
-    public static HashMap<String, SimpleFeatureCollection> complexNotes2featurecollections( Connection connection,
-            IJGTProgressMonitor pm ) throws SQLException, Exception {
+    public static HashMap<String, SimpleFeatureCollection> complexNotes2featurecollections( IJGTConnection connection,
+            IJGTProgressMonitor pm ) throws Exception {
         pm.beginTask("Import complex notes...", -1);
 
         GeometryFactory gf = GeometryUtilities.gf();
@@ -473,10 +462,8 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 dirtyFN + "," + //
                 formFN + " from " + //
                 TABLE_NOTES;
-        try (Statement statement = connection.createStatement()) {
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
-
-            ResultSet rs = statement.executeQuery(sql);
             while( rs.next() ) {
                 String idString = rs.getString(idFN);
                 System.out.println(idString);
@@ -649,7 +636,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
      * @return the list of gps logs.
      * @throws SQLException
      */
-    public static List<GpsLog> getGpsLogsList( Connection connection ) throws SQLException {
+    public static List<GpsLog> getGpsLogsList( IJGTConnection connection ) throws Exception {
         List<GpsLog> logsList = DaoGpsLog.getLogsList(connection);
 
         try {
@@ -765,7 +752,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         DefaultFeatureCollection collection;
     }
 
-    private void gpsLogToShapefiles( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
+    private void gpsLogToShapefiles( IJGTConnection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
         List<GpsLog> logsList = getGpsLogsList(connection);
 
         /*
@@ -873,14 +860,14 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
     }
 
-    private void mediaToShapeFile( Connection connection, File mediaFolderFile, IJGTProgressMonitor pm ) throws Exception {
+    private void mediaToShapeFile( IJGTConnection connection, File mediaFolderFile, IJGTProgressMonitor pm ) throws Exception {
         SimpleFeatureCollection newCollection = media2FeatureCollection(connection, mediaFolderFile, pm);
         File outputPointsShapeFile = new File(mediaFolderFile.getParentFile(), "mediapoints.shp");
         dumpVector(newCollection, outputPointsShapeFile.getAbsolutePath());
 
     }
 
-    public static SimpleFeatureCollection media2FeatureCollection( Connection connection, File mediaFolderFile,
+    public static SimpleFeatureCollection media2FeatureCollection( IJGTConnection connection, File mediaFolderFile,
             IJGTProgressMonitor pm ) throws Exception, IOException, FileNotFoundException {
         DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
         try {
@@ -936,7 +923,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         return newCollection;
     }
 
-    public static SimpleFeatureCollection media2IdBasedFeatureCollection( Connection connection, IJGTProgressMonitor pm )
+    public static SimpleFeatureCollection media2IdBasedFeatureCollection( IJGTConnection connection, IJGTProgressMonitor pm )
             throws Exception, IOException, FileNotFoundException {
         try {
 
@@ -983,7 +970,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         }
     }
 
-    public static void writeImageFromId( Connection connection, long imageId, File newImageFile ) throws Exception {
+    public static void writeImageFromId( IJGTConnection connection, long imageId, File newImageFile ) throws Exception {
         byte[] imageData = DaoImages.getImageData(connection, imageId);
 
         try (OutputStream outStream = new FileOutputStream(newImageFile)) {

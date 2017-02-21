@@ -74,6 +74,10 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.IJGTConnection;
+import org.jgrasstools.dbs.compat.IJGTResultSet;
+import org.jgrasstools.dbs.compat.IJGTStatement;
+import org.jgrasstools.dbs.spatialite.jgt.SqliteDb;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsPoint;
@@ -126,16 +130,6 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
     private static final Logger logger = LoggerFactory.getLogger(GeopaparazziController.class);
     private static final long serialVersionUID = 1L;
-    private static boolean hasDriver = false;
-
-    static {
-        try {
-            // make sure sqlite driver are there
-            Class.forName("org.sqlite.JDBC");
-            hasDriver = true;
-        } catch (Exception e) {
-        }
-    }
 
     protected HashMap<String, String> prefsMap = new HashMap<>();
 
@@ -402,7 +396,9 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
     private List<ProjectInfo> readProjectInfos( File[] projectFiles ) throws Exception {
         List<ProjectInfo> infoList = new ArrayList<ProjectInfo>();
         for( File geopapDatabaseFile : projectFiles ) {
-            try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + geopapDatabaseFile.getAbsolutePath())) {
+            try (SqliteDb db = new SqliteDb()) {
+                db.open(geopapDatabaseFile.getAbsolutePath());
+                IJGTConnection connection = db.getConnection();
                 String projectInfo = GeopaparazziWorkspaceUtilities.getProjectInfo(connection);
                 ProjectInfo info = new ProjectInfo();
                 info.databaseFile = geopapDatabaseFile;
@@ -829,7 +825,10 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
     }
 
     private void loadGpsLogChart( GpsLog log, File dbFile ) throws Exception {
-        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath())) {
+        try (SqliteDb db = new SqliteDb()) {
+            db.open(dbFile.getAbsolutePath());
+            IJGTConnection connection = db.getConnection();
+
             log.points.clear();
             DaoGpsLog.collectDataForLog(connection, log);
 
@@ -886,9 +885,9 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     GpsLogsPropertiesTableFields.COLUMN_LOGID.getFieldName() + " = " + log.id;
 
             String colorStr = RED_HEXA;
-            try (Statement newStatement = connection.createStatement()) {
+            try (IJGTStatement newStatement = connection.createStatement();
+                    IJGTResultSet result = newStatement.executeQuery(colorQuery);) {
                 newStatement.setQueryTimeout(30);
-                ResultSet result = newStatement.executeQuery(colorQuery);
 
                 if (result.next()) {
                     colorStr = result.getString(1);
@@ -1099,15 +1098,14 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
     protected void editProjectData( ProjectInfo project ) throws Exception {
         LinkedHashMap<String, String> metadataMap = new LinkedHashMap<>();
-        try (Connection connection = DriverManager
-                .getConnection("jdbc:sqlite:" + currentSelectedProject.databaseFile.getAbsolutePath())) {
-            try (Statement statement = connection.createStatement()) {
+        try (SqliteDb db = new SqliteDb()) {
+            db.open(currentSelectedProject.databaseFile.getAbsolutePath());
+            IJGTConnection connection = db.getConnection();
+            String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
+                    MetadataTableFields.COLUMN_VALUE.getFieldName() + " from " + TABLE_METADATA;
+            try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
                 statement.setQueryTimeout(30); // set timeout to 30 sec.
 
-                String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
-                        MetadataTableFields.COLUMN_VALUE.getFieldName() + " from " + TABLE_METADATA;
-
-                ResultSet rs = statement.executeQuery(sql);
                 while( rs.next() ) {
                     String key = rs.getString(MetadataTableFields.COLUMN_KEY.getFieldName());
                     String value = rs.getString(MetadataTableFields.COLUMN_VALUE.getFieldName());
@@ -1124,7 +1122,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             String[] result = GuiUtilities.showMultiInputDialog(this, title, labels, defaultValues, null);
 
             if (result != null) {
-                try (Statement statement = connection.createStatement()) {
+                try (IJGTStatement statement = connection.createStatement();) {
                     statement.setQueryTimeout(30); // set timeout to 30 sec.
 
                     for( int i = 0; i < labels.length; i++ ) {

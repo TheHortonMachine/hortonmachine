@@ -52,6 +52,11 @@ public class JGTResultSet implements IJGTResultSet {
     }
 
     @Override
+    public String getString( String name ) throws Exception {
+        return resultSet.getString(name);
+    }
+
+    @Override
     public int getInt( int index ) throws Exception {
         return resultSet.getInt(index);
     }
@@ -100,6 +105,21 @@ public class JGTResultSet implements IJGTResultSet {
     @Override
     public boolean wasNull() throws Exception {
         return resultSet.wasNull();
+    }
+
+    @Override
+    public int getInt( String name ) throws Exception {
+        return resultSet.getInt(name);
+    }
+
+    @Override
+    public double getDouble( String name ) throws Exception {
+        return resultSet.getDouble(name);
+    }
+
+    @Override
+    public long getLong( String name ) throws Exception {
+        return resultSet.getLong(name);
     }
 
 }

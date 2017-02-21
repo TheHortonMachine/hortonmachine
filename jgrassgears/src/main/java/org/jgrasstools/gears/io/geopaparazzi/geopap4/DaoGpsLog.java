@@ -24,13 +24,15 @@ import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TA
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.jgrasstools.dbs.compat.IJGTConnection;
+import org.jgrasstools.dbs.compat.IJGTResultSet;
+import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazziProject3To4Converter;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsDataTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsPropertiesTableFields;
@@ -256,20 +258,19 @@ public class DaoGpsLog {
      * @return the list of logs.
      * @throws SQLException
      */
-    public static List<GpsLog> getLogsList( Connection connection ) throws SQLException {
+    public static List<GpsLog> getLogsList( IJGTConnection connection ) throws Exception {
         List<GpsLog> logsList = new ArrayList<>();
-        try (Statement statement = connection.createStatement()) {
+        String sql = "select " + //
+                GpsLogsTableFields.COLUMN_ID.getFieldName() + "," + //
+                GpsLogsTableFields.COLUMN_LOG_STARTTS.getFieldName() + "," + //
+                GpsLogsTableFields.COLUMN_LOG_ENDTS.getFieldName() + "," + //
+                GpsLogsTableFields.COLUMN_LOG_TEXT.getFieldName() + //
+                " from " + TABLE_GPSLOGS; //
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
-            String sql = "select " + //
-                    GpsLogsTableFields.COLUMN_ID.getFieldName() + "," + //
-                    GpsLogsTableFields.COLUMN_LOG_STARTTS.getFieldName() + "," + //
-                    GpsLogsTableFields.COLUMN_LOG_ENDTS.getFieldName() + "," + //
-                    GpsLogsTableFields.COLUMN_LOG_TEXT.getFieldName() + //
-                    " from " + TABLE_GPSLOGS; //
 
             // first get the logs
-            ResultSet rs = statement.executeQuery(sql);
             while( rs.next() ) {
                 long id = rs.getLong(1);
 
@@ -293,9 +294,9 @@ public class DaoGpsLog {
      * 
      * @param connection the connection to use.
      * @param log the log.
-     * @throws SQLException
+     * @throws Exception 
      */
-    public static void collectDataForLog( Connection connection, GpsLog log ) throws SQLException {
+    public static void collectDataForLog( IJGTConnection connection, GpsLog log ) throws Exception {
         long logId = log.id;
 
         String query = "select "
@@ -313,9 +314,8 @@ public class DaoGpsLog {
                 GpsLogsDataTableFields.COLUMN_LOGID.getFieldName() + " = " + logId + " order by "
                 + GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName();
 
-        try (Statement newStatement = connection.createStatement()) {
+        try (IJGTStatement newStatement = connection.createStatement(); IJGTResultSet result = newStatement.executeQuery(query);) {
             newStatement.setQueryTimeout(30);
-            ResultSet result = newStatement.executeQuery(query);
 
             while( result.next() ) {
                 double lat = result.getDouble(1);

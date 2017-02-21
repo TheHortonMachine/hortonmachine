@@ -28,6 +28,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jgrasstools.dbs.compat.IJGTConnection;
+import org.jgrasstools.dbs.compat.IJGTResultSet;
+import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
 
 /**
@@ -143,11 +146,9 @@ public class DaoNotes {
      * @param connection the db to take from .
      * @param nswe      optional bounds as [n, s, w, e].
      * @return the list of notes inside the bounds.
-     * @throws IOException if something goes wrong.
-     * @throws SQLException 
+     * @throws Exception 
      */
-    public static List<Note> getNotesList( Connection connection, float[] nswe)
-            throws IOException, SQLException {
+    public static List<Note> getNotesList( IJGTConnection connection, float[] nswe ) throws Exception {
 
         String query = "SELECT " + //
                 NotesTableFields.COLUMN_ID.getFieldName() + ", " + //
@@ -167,10 +168,9 @@ public class DaoNotes {
         }
 
         List<Note> notes = new ArrayList<>();
-        try (Statement statement = connection.createStatement()) {
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(query);) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
-            ResultSet rs = statement.executeQuery(query);
             while( rs.next() ) {
                 Note note = new Note();
                 note.id = rs.getLong(1);

@@ -24,8 +24,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +36,8 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
+import org.jgrasstools.dbs.compat.IJGTConnection;
+import org.jgrasstools.dbs.spatialite.jgt.SqliteDb;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Image;
@@ -82,7 +82,9 @@ public class GeopaparazziViewer extends GeopaparazziController {
     private BufferedImage readImageToBufferedImage( long imageId, File dbFile, boolean doOriginalSize )
             throws Exception, SQLException {
         BufferedImage bufferedImage = null;
-        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath())) {
+        try (SqliteDb db = new SqliteDb()) {
+            db.open(dbFile.getAbsolutePath());
+            IJGTConnection connection = db.getConnection();
             byte[] imageData = DaoImages.getImageData(connection, imageId);
             InputStream imageStream = null;
             try {

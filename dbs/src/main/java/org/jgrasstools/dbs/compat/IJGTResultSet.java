@@ -29,13 +29,21 @@ public interface IJGTResultSet extends AutoCloseable {
 
     String getString( int index ) throws Exception;
 
+    String getString( String name ) throws Exception;
+
     int getInt( int index ) throws Exception;
 
+    int getInt( String name ) throws Exception;
+
     double getDouble( int index ) throws Exception;
+
+    double getDouble( String name ) throws Exception;
 
     Object getObject( int index ) throws Exception;
 
     long getLong( int index ) throws Exception;
+
+    long getLong( String name ) throws Exception;
 
     byte[] getBytes( int index ) throws Exception;
 

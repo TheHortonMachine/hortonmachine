@@ -34,6 +34,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.jgrasstools.dbs.compat.IJGTConnection;
+import org.jgrasstools.dbs.compat.IJGTResultSet;
+import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.MetadataTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
@@ -98,15 +101,13 @@ public class GeopaparazziWorkspaceUtilities {
         return infoMap;
     }
 
-    public static String getProjectInfo( Connection connection ) throws Exception {
+    public static String getProjectInfo( IJGTConnection connection ) throws Exception {
         StringBuilder sb = new StringBuilder();
-        try (Statement statement = connection.createStatement()) {
+        String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
+                MetadataTableFields.COLUMN_VALUE.getFieldName() + " from " + TABLE_METADATA;
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
-            String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
-                    MetadataTableFields.COLUMN_VALUE.getFieldName() + " from " + TABLE_METADATA;
-
-            ResultSet rs = statement.executeQuery(sql);
             while( rs.next() ) {
                 String key = rs.getString(MetadataTableFields.COLUMN_KEY.getFieldName());
                 String value = rs.getString(MetadataTableFields.COLUMN_VALUE.getFieldName());
@@ -201,8 +202,8 @@ public class GeopaparazziWorkspaceUtilities {
         }
         return out.toString();
     }
-    
-    public static String loadProjectsList(File gpapProjectsFolder) {
+
+    public static String loadProjectsList( File gpapProjectsFolder ) {
         try {
             File[] geopaparazziProjectFiles = GeopaparazziWorkspaceUtilities.getGeopaparazziFiles(gpapProjectsFolder);
             List<HashMap<String, String>> projectMetadataList = GeopaparazziWorkspaceUtilities
