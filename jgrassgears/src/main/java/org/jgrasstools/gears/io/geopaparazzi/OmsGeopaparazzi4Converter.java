@@ -57,10 +57,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -162,6 +159,10 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     public static final String THE_GEOPAPARAZZI_DATABASE_FILE = "The geopaparazzi database file (*.gpap).";
     public static final String DESCRIPTION = "Converts a geopaparazzi 4 project database into shapefiles.";
     // VARS DOCS END
+
+    public static final String GPS_LOGS = "GPS logs";
+    public static final String MEDIA_NOTES = "Media Notes";
+    public static final String SIMPLE_NOTES = "Simple Notes";
 
     public static final String EMPTY_STRING = " - ";
 
@@ -309,30 +310,29 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
      * @return the list of potential layers.
      * @throws SQLException 
      */
-    public static List<String> getLayerNamesList( Connection connection ) throws SQLException {
+    public static List<String> getLayerNamesList( IJGTConnection connection ) throws Exception {
         List<String> layerNames = new ArrayList<>();
         String sql = "select count(*) from " + TABLE_NOTES;
         int count = countRows(connection, sql);
         if (count > 0)
-            layerNames.add("Simple Notes");
+            layerNames.add(SIMPLE_NOTES);
 
         sql = "select count(*) from " + TABLE_IMAGES;
         count = countRows(connection, sql);
         if (count > 0)
-            layerNames.add("Media Notes");
+            layerNames.add(MEDIA_NOTES);
 
         sql = "select count(*) from " + TABLE_GPSLOGS;
         count = countRows(connection, sql);
         if (count > 0)
-            layerNames.add("GPS logs");
+            layerNames.add(GPS_LOGS);
 
         String formFN = NotesTableFields.COLUMN_FORM.getFieldName();
         String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
         sql = "select distinct " + textFN + " from " + TABLE_NOTES + " where " + formFN + " is not null and " + formFN + "<>''";
-        try (Statement statement = connection.createStatement()) {
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
-            ResultSet rs = statement.executeQuery(sql);
             while( rs.next() ) {
                 String formName = rs.getString(1);
                 layerNames.add(formName);
@@ -342,9 +342,8 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         return layerNames;
     }
 
-    private static int countRows( Connection connection, String sql ) throws SQLException {
-        try (Statement statement = connection.createStatement()) {
-            ResultSet rs = statement.executeQuery(sql);
+    private static int countRows( IJGTConnection connection, String sql ) throws Exception {
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
             if (rs.next()) {
                 int notesCount = rs.getInt(1);
                 return notesCount;
