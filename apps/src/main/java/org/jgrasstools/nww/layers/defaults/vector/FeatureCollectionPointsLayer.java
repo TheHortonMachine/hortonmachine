@@ -28,6 +28,7 @@ import org.jgrasstools.gears.utils.style.SimpleStyle;
 import org.jgrasstools.nww.layers.defaults.NwwEditableVectorLayer;
 import org.jgrasstools.nww.shapes.FeaturePoint;
 import org.jgrasstools.nww.shapes.FeatureStoreInfo;
+import org.jgrasstools.nww.utils.NwwUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -61,10 +62,13 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
 
     private FeatureStoreInfo featureStoreInfo;
 
+    private SimpleFeatureStore featureStore;
+
     public FeatureCollectionPointsLayer( String title, SimpleFeatureCollection featureCollectionLL,
             SimpleFeatureStore featureStore, HashMap<String, String[]> field2ValuesMap, Object imageObject ) {
         this.title = title;
         this.featureCollectionLL = featureCollectionLL;
+        this.featureStore = featureStore;
         featureStoreInfo = new FeatureStoreInfo(featureStore, field2ValuesMap);
 
         basicMarkerAttributes = new PointPlacemarkAttributes();
@@ -81,8 +85,17 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
         } else {
             basicMarkerAttributes.setScale(mMarkerSize);
         }
-        SimpleFeatureIterator featureIterator = featureCollectionLL.features();
         try {
+            loadData();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadData() throws Exception {
+        SimpleFeatureIterator featureIterator = getfeatureCollection().features();
+        try {
+            removeAllRenderables();
             while( featureIterator.hasNext() ) {
                 SimpleFeature pointFeature = featureIterator.next();
                 addPoint(pointFeature);
@@ -90,7 +103,13 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
         } finally {
             featureIterator.close();
         }
+    }
 
+    private SimpleFeatureCollection getfeatureCollection() throws Exception {
+        if (featureStore != null) {
+            return NwwUtilities.readAndReproject(featureStore);
+        }
+        return featureCollectionLL;
     }
 
     private void addPoint( SimpleFeature pointFeature ) {
@@ -159,8 +178,13 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
 
     @Override
     public Coordinate getCenter() {
-        ReferencedEnvelope bounds = featureCollectionLL.getBounds();
-        return bounds.centre();
+        try {
+            ReferencedEnvelope bounds = getfeatureCollection().getBounds();
+            return bounds.centre();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new Coordinate(0, 0);
     }
 
     @Override
@@ -181,5 +205,14 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
     @Override
     public void add( SimpleFeature feature ) {
         addPoint(feature);
+    }
+
+    @Override
+    public void reload() {
+        try {
+            loadData();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

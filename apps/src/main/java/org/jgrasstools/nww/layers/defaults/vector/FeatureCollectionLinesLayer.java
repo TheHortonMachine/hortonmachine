@@ -18,9 +18,11 @@
 package org.jgrasstools.nww.layers.defaults.vector;
 
 import java.awt.Color;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -31,6 +33,7 @@ import org.jgrasstools.nww.layers.defaults.NwwEditableVectorLayer;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
 import org.jgrasstools.nww.shapes.FeatureLine;
 import org.jgrasstools.nww.shapes.FeatureStoreInfo;
+import org.jgrasstools.nww.utils.NwwUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -62,12 +65,13 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
 
     private Material mStrokeMaterial = Material.BLACK;
     private double mStrokeWidth = 2;
-    private SimpleFeatureCollection featureCollectionLL;
 
     private int mElevationMode = WorldWind.CLAMP_TO_GROUND;
     private String title;
     private AirspaceAttributes highlightAttrs;
     private FeatureStoreInfo featureStoreInfo;
+    private SimpleFeatureStore featureStore;
+    private SimpleFeatureCollection featureCollectionLL;
 
     /**
      * Build the layer.
@@ -80,8 +84,9 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
     public FeatureCollectionLinesLayer( String title, SimpleFeatureCollection featureCollectionLL,
             SimpleFeatureStore featureStore, HashMap<String, String[]> field2ValuesMap ) {
         this.title = title;
-        this.featureCollectionLL = featureCollectionLL;
+        this.featureStore = featureStore;
         this.featureStoreInfo = new FeatureStoreInfo(featureStore, field2ValuesMap);
+        this.featureCollectionLL = featureCollectionLL;
 
         AirspaceAttributes attrs = new BasicAirspaceAttributes();
         attrs.setDrawInterior(true);
@@ -95,6 +100,13 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
 
         setStyle(null);
         loadData();
+    }
+
+    private SimpleFeatureCollection getfeatureCollection() throws Exception {
+        if (featureStore != null) {
+            return NwwUtilities.readAndReproject(featureStore);
+        }
+        return featureCollectionLL;
     }
 
     @Override
@@ -143,16 +155,21 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
     public class WorkerThread extends Thread {
 
         public void run() {
-            SimpleFeatureIterator featureIterator = featureCollectionLL.features();
-            while( featureIterator.hasNext() ) {
-                SimpleFeature lineFeature = featureIterator.next();
-                boolean doExtrude = false;
-                if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {
-                    doExtrude = true;
+            try {
+                removeAllRenderables();
+                SimpleFeatureIterator featureIterator = getfeatureCollection().features();
+                while( featureIterator.hasNext() ) {
+                    SimpleFeature lineFeature = featureIterator.next();
+                    boolean doExtrude = false;
+                    if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {
+                        doExtrude = true;
+                    }
+                    addLine(lineFeature, doExtrude);
                 }
-                addLine(lineFeature, doExtrude);
+                featureIterator.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            featureIterator.close();
         }
 
     }
@@ -223,8 +240,13 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
 
     @Override
     public Coordinate getCenter() {
-        ReferencedEnvelope bounds = featureCollectionLL.getBounds();
-        return bounds.centre();
+        try {
+            ReferencedEnvelope bounds = getfeatureCollection().getBounds();
+            return bounds.centre();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new Coordinate(0, 0);
     }
 
     @Override
@@ -245,6 +267,11 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
     @Override
     public void add( SimpleFeature feature ) {
         addLine(feature, mApplyExtrusion);
+    }
+
+    @Override
+    public void reload() {
+        loadData();
     }
 
 }

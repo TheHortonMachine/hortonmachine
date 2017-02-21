@@ -70,6 +70,7 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
     private int mElevationMode = WorldWind.CLAMP_TO_GROUND;
     private String title;
     private FeatureStoreInfo featureStoreInfo;
+    private SimpleFeatureStore featureStore;
 
     /**
      * Build the layer.
@@ -86,6 +87,7 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
             SimpleFeatureStore featureStore, HashMap<String, String[]> field2ValuesMap ) {
         this.title = title;
         this.featureCollectionLL = featureCollectionLL;
+        this.featureStore = featureStore;
         this.featureStoreInfo = new FeatureStoreInfo(featureStore, field2ValuesMap);
 
         setStyle(null);
@@ -150,6 +152,7 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
     public class WorkerThread extends Thread {
 
         public void run() {
+            removeAllRenderables();
             SimpleFeatureIterator featureIterator = featureCollectionLL.features();
             while( featureIterator.hasNext() ) {
                 SimpleFeature polygonAreaFeature = featureIterator.next();
@@ -330,10 +333,22 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
         }
     }
 
+    private SimpleFeatureCollection getfeatureCollection() throws Exception {
+        if (featureStore != null) {
+            return NwwUtilities.readAndReproject(featureStore);
+        }
+        return featureCollectionLL;
+    }
+
     @Override
     public Coordinate getCenter() {
-        ReferencedEnvelope bounds = featureCollectionLL.getBounds();
-        return bounds.centre();
+        try {
+            ReferencedEnvelope bounds = getfeatureCollection().getBounds();
+            return bounds.centre();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new Coordinate(0, 0);
     }
 
     @Override
@@ -358,6 +373,11 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
 
     @Override
     public void add( SimpleFeature feature ) {
-       addPolygon(feature);
+        addPolygon(feature);
+    }
+
+    @Override
+    public void reload() {
+        loadData();
     }
 }

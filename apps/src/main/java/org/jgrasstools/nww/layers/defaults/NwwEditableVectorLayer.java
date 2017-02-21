@@ -34,4 +34,6 @@ public interface NwwEditableVectorLayer extends NwwVectorLayer {
     public FeatureStoreInfo getStoreInfo();
     
     public void add(SimpleFeature feature);
+
+    public void reload();
 }
