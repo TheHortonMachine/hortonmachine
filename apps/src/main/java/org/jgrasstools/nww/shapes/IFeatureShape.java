@@ -25,6 +25,7 @@ import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
@@ -74,6 +75,33 @@ public interface IFeatureShape {
             }
         }
         return null;
+    }
+
+    /**
+     * Add a feature to the store.
+     * 
+     * @param feature the feature to add.
+     */
+    default public void addFeature( SimpleFeature feature) {
+        FeatureStoreInfo featureStoreInfo = getFeatureStoreInfo();
+        SimpleFeatureStore featureStore = featureStoreInfo.getFeatureStore();
+        if (featureStore != null) {
+            Transaction transaction = new DefaultTransaction("add");
+            featureStore.setTransaction(transaction);
+            
+            try {
+                DefaultFeatureCollection fc = new DefaultFeatureCollection();
+                fc.add(feature);
+                featureStore.addFeatures(fc);
+                transaction.commit();
+            } catch (Exception eek) {
+                try {
+                    transaction.rollback();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     public void setFeature( SimpleFeature feature );

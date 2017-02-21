@@ -17,22 +17,21 @@
  */
 package org.jgrasstools.nww.layers.defaults;
 
-import org.jgrasstools.gears.utils.style.SimpleStyle;
+import org.jgrasstools.nww.shapes.FeatureStoreInfo;
+import org.opengis.feature.simple.SimpleFeature;
 
 /**
- * Common interface for layers.
+ * Common interface for editable layers.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public interface NwwVectorLayer extends NwwLayer {
-    public enum GEOMTYPE {
-        POINT, LINE, POLYGON, UNKNOWN
-    };
+public interface NwwEditableVectorLayer extends NwwVectorLayer {
 
-    public GEOMTYPE getType();
-
-    public void setStyle(SimpleStyle style);
     
-    public SimpleStyle getStyle();
+    public boolean isEditable();
+
+    public FeatureStoreInfo getStoreInfo();
+    
+    public void add(SimpleFeature feature);
 }

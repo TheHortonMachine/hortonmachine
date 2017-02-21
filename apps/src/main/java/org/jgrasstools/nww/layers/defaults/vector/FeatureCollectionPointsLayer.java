@@ -25,7 +25,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.utils.style.SimpleStyle;
-import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
+import org.jgrasstools.nww.layers.defaults.NwwEditableVectorLayer;
 import org.jgrasstools.nww.shapes.FeaturePoint;
 import org.jgrasstools.nww.shapes.FeatureStoreInfo;
 import org.opengis.feature.simple.SimpleFeature;
@@ -46,7 +46,7 @@ import gov.nasa.worldwind.render.markers.BasicMarkerShape;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class FeatureCollectionPointsLayer extends RenderableLayer implements NwwVectorLayer {
+public class FeatureCollectionPointsLayer extends RenderableLayer implements NwwEditableVectorLayer {
 
     private PointPlacemarkAttributes basicMarkerAttributes;
 
@@ -59,11 +59,13 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
 
     private SimpleFeatureCollection featureCollectionLL;
 
-    public FeatureCollectionPointsLayer(String title, SimpleFeatureCollection featureCollectionLL,
-            SimpleFeatureStore featureStore, HashMap<String, String[]> field2ValuesMap, Object imageObject) {
+    private FeatureStoreInfo featureStoreInfo;
+
+    public FeatureCollectionPointsLayer( String title, SimpleFeatureCollection featureCollectionLL,
+            SimpleFeatureStore featureStore, HashMap<String, String[]> field2ValuesMap, Object imageObject ) {
         this.title = title;
         this.featureCollectionLL = featureCollectionLL;
-        FeatureStoreInfo featureStoreInfo = new FeatureStoreInfo(featureStore, field2ValuesMap);
+        featureStoreInfo = new FeatureStoreInfo(featureStore, field2ValuesMap);
 
         basicMarkerAttributes = new PointPlacemarkAttributes();
         basicMarkerAttributes.setLabelMaterial(mFillMaterial);
@@ -81,25 +83,9 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
         }
         SimpleFeatureIterator featureIterator = featureCollectionLL.features();
         try {
-            while (featureIterator.hasNext()) {
+            while( featureIterator.hasNext() ) {
                 SimpleFeature pointFeature = featureIterator.next();
-                Geometry geometry = (Geometry) pointFeature.getDefaultGeometry();
-                if (geometry == null) {
-                    continue;
-                }
-                int numGeometries = geometry.getNumGeometries();
-                for (int i = 0; i < numGeometries; i++) {
-                    Geometry geometryN = geometry.getGeometryN(i);
-                    if (geometryN instanceof Point) {
-                        Point point = (Point) geometryN;
-                        FeaturePoint marker = new FeaturePoint(Position.fromDegrees(point.getY(), point.getX(), 0),
-                                featureStoreInfo);
-                        marker.setFeature(pointFeature);
-                        marker.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
-                        marker.setAttributes(basicMarkerAttributes);
-                        addRenderable(marker);
-                    }
-                }
+                addPoint(pointFeature);
             }
         } finally {
             featureIterator.close();
@@ -107,7 +93,26 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
 
     }
 
-    public void setStyle(SimpleStyle style) {
+    private void addPoint( SimpleFeature pointFeature ) {
+        Geometry geometry = (Geometry) pointFeature.getDefaultGeometry();
+        if (geometry == null) {
+            return;
+        }
+        int numGeometries = geometry.getNumGeometries();
+        for( int i = 0; i < numGeometries; i++ ) {
+            Geometry geometryN = geometry.getGeometryN(i);
+            if (geometryN instanceof Point) {
+                Point point = (Point) geometryN;
+                FeaturePoint marker = new FeaturePoint(Position.fromDegrees(point.getY(), point.getX(), 0), featureStoreInfo);
+                marker.setFeature(pointFeature);
+                marker.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+                marker.setAttributes(basicMarkerAttributes);
+                addRenderable(marker);
+            }
+        }
+    }
+
+    public void setStyle( SimpleStyle style ) {
         if (style != null) {
             mFillMaterial = new Material(style.fillColor);
             mFillOpacity = style.fillOpacity;
@@ -161,5 +166,20 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
     @Override
     public GEOMTYPE getType() {
         return GEOMTYPE.POINT;
+    }
+
+    @Override
+    public boolean isEditable() {
+        return featureStoreInfo.getFeatureStore() != null;
+    }
+
+    @Override
+    public FeatureStoreInfo getStoreInfo() {
+        return featureStoreInfo;
+    }
+
+    @Override
+    public void add( SimpleFeature feature ) {
+        addPoint(feature);
     }
 }

@@ -27,6 +27,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.utils.style.SimpleStyle;
+import org.jgrasstools.nww.layers.defaults.NwwEditableVectorLayer;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer;
 import org.jgrasstools.nww.shapes.FeatureLine;
 import org.jgrasstools.nww.shapes.FeatureStoreInfo;
@@ -49,7 +50,7 @@ import gov.nasa.worldwind.render.airspaces.BasicAirspaceAttributes;
  * 
  * @author Andrea Antonello andrea.antonello@gmail.com
  */
-public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwVectorLayer {
+public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwEditableVectorLayer {
 
     private String mHeightFieldName;
     private double mVerticalExageration = 1.0;
@@ -154,62 +155,63 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
             featureIterator.close();
         }
 
-        private void addLine( SimpleFeature lineFeature, boolean doExtrude ) {
-            Geometry geometry = (Geometry) lineFeature.getDefaultGeometry();
-            if (geometry == null) {
-                return;
-            }
-            Coordinate[] coordinates = geometry.getCoordinates();
-            if (coordinates.length < 2)
-                return;
+    }
 
-            boolean hasZ = !Double.isNaN(geometry.getCoordinate().z);
+    private void addLine( SimpleFeature lineFeature, boolean doExtrude ) {
+        Geometry geometry = (Geometry) lineFeature.getDefaultGeometry();
+        if (geometry == null) {
+            return;
+        }
+        Coordinate[] coordinates = geometry.getCoordinates();
+        if (coordinates.length < 2)
+            return;
 
-            double h = 0.0;
-            switch( mElevationMode ) {
-            case WorldWind.CLAMP_TO_GROUND:
-                hasZ = false;
-                break;
-            case WorldWind.RELATIVE_TO_GROUND:
-                hasZ = false;
-            case WorldWind.ABSOLUTE:
-            default:
-                if (mHasConstantHeight) {
-                    h = mConstantHeight;
-                }
-                if (mHeightFieldName != null) {
-                    double tmpH = ((Number) lineFeature.getAttribute(mHeightFieldName)).doubleValue();
-                    tmpH = tmpH * mVerticalExageration;
-                    h += tmpH;
-                }
-                break;
+        boolean hasZ = !Double.isNaN(geometry.getCoordinate().z);
+
+        double h = 0.0;
+        switch( mElevationMode ) {
+        case WorldWind.CLAMP_TO_GROUND:
+            hasZ = false;
+            break;
+        case WorldWind.RELATIVE_TO_GROUND:
+            hasZ = false;
+        case WorldWind.ABSOLUTE:
+        default:
+            if (mHasConstantHeight) {
+                h = mConstantHeight;
             }
-            int numGeometries = geometry.getNumGeometries();
-            for( int i = 0; i < numGeometries; i++ ) {
-                Geometry geometryN = geometry.getGeometryN(i);
-                if (geometryN instanceof LineString) {
-                    LineString line = (LineString) geometryN;
-                    Coordinate[] lineCoords = line.getCoordinates();
-                    int numVertices = lineCoords.length;
-                    List<Position> verticesList = new ArrayList<>(numVertices);
-                    for( int j = 0; j < numVertices; j++ ) {
-                        Coordinate c = lineCoords[j];
-                        if (hasZ) {
-                            double z = c.z;
-                            verticesList.add(Position.fromDegrees(c.y, c.x, z + h));
-                        } else {
-                            verticesList.add(Position.fromDegrees(c.y, c.x, h));
-                        }
+            if (mHeightFieldName != null) {
+                double tmpH = ((Number) lineFeature.getAttribute(mHeightFieldName)).doubleValue();
+                tmpH = tmpH * mVerticalExageration;
+                h += tmpH;
+            }
+            break;
+        }
+        int numGeometries = geometry.getNumGeometries();
+        for( int i = 0; i < numGeometries; i++ ) {
+            Geometry geometryN = geometry.getGeometryN(i);
+            if (geometryN instanceof LineString) {
+                LineString line = (LineString) geometryN;
+                Coordinate[] lineCoords = line.getCoordinates();
+                int numVertices = lineCoords.length;
+                List<Position> verticesList = new ArrayList<>(numVertices);
+                for( int j = 0; j < numVertices; j++ ) {
+                    Coordinate c = lineCoords[j];
+                    if (hasZ) {
+                        double z = c.z;
+                        verticesList.add(Position.fromDegrees(c.y, c.x, z + h));
+                    } else {
+                        verticesList.add(Position.fromDegrees(c.y, c.x, h));
                     }
-                    FeatureLine path = new FeatureLine(verticesList, featureStoreInfo);
-                    path.setFeature(lineFeature);
-                    path.setAltitudeMode(mElevationMode);
-                    path.setAttributes(mNormalShapeAttributes);
-                    path.setHighlightAttributes(highlightAttrs);
-                    path.setExtrude(doExtrude);
-
-                    addRenderable(path);
                 }
+                FeatureLine path = new FeatureLine(verticesList, featureStoreInfo);
+                path.setFeature(lineFeature);
+                path.setAltitudeMode(mElevationMode);
+                path.setAttributes(mNormalShapeAttributes);
+                path.setHighlightAttributes(highlightAttrs);
+                path.setExtrude(doExtrude);
+
+                addRenderable(path);
             }
         }
     }
@@ -228,6 +230,21 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwV
     @Override
     public GEOMTYPE getType() {
         return GEOMTYPE.LINE;
+    }
+
+    @Override
+    public boolean isEditable() {
+        return featureStoreInfo.getFeatureStore() != null;
+    }
+
+    @Override
+    public FeatureStoreInfo getStoreInfo() {
+        return featureStoreInfo;
+    }
+
+    @Override
+    public void add( SimpleFeature feature ) {
+        addLine(feature, mApplyExtrusion);
     }
 
 }
