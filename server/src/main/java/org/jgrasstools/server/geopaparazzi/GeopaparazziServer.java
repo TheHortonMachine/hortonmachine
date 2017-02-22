@@ -1,31 +1,19 @@
 package org.jgrasstools.server.geopaparazzi;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
-import org.apache.log4j.BasicConfigurator;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.jgrasstools.dbs.compat.ASpatialDb;
-import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.spatialite.SpatialiteImportUtils;
 import org.jgrasstools.server.geopaparazzi.servlets.ProjectDownloadHandler;
 import org.jgrasstools.server.geopaparazzi.servlets.ProjectListHandler;
 import org.jgrasstools.server.geopaparazzi.servlets.ProjectUploadHandler;
 import org.jgrasstools.server.geopaparazzi.servlets.WelcomeHandler;
 import org.jgrasstools.server.jetty.EmbeddedJspServer;
 import org.jgrasstools.server.jetty.utils.DisabledLogging;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class GeopaparazziServer extends EmbeddedJspServer {
     private static final Logger LOG = Logger.getLogger(GeopaparazziServer.class.getName());
@@ -179,7 +167,6 @@ public class GeopaparazziServer extends EmbeddedJspServer {
     // }
 
     public static void main( String[] args ) throws Exception {
-        BasicConfigurator.configure();
         org.eclipse.jetty.util.log.Log.setLog(new DisabledLogging());
 
         File gpapProjectsFolder = new File("/home/hydrologis/Dropbox/geopaparazzi/projects");

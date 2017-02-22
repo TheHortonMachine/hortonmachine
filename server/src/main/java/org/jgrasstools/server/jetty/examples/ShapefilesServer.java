@@ -1,6 +1,5 @@
 package org.jgrasstools.server.jetty.examples;
 
-import org.apache.log4j.BasicConfigurator;
 import org.eclipse.jetty.server.handler.ContextHandler.Context;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -66,7 +65,6 @@ public class ShapefilesServer extends EmbeddedJspServer {
     }
 
     public static void main( String[] args ) throws Exception {
-        BasicConfigurator.configure();
         org.eclipse.jetty.util.log.Log.setLog(new DisabledLogging());
 
         String webFolder = "/home/hydrologis/development/jgrasstools-git/server/src/main/webapp";

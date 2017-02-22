@@ -4,7 +4,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.jasper.servlet.JspServlet;
-import org.apache.log4j.BasicConfigurator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -106,7 +105,6 @@ public abstract class EmbeddedJspServer {
     }
 
     public static void main( String[] args ) throws Exception {
-        BasicConfigurator.configure();
         org.eclipse.jetty.util.log.Log.setLog(new DisabledLogging());
 
         String webFolder = "/home/hydrologis/development/jgrasstools-git/server/src/main/webapp";

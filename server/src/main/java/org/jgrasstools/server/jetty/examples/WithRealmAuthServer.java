@@ -1,6 +1,5 @@
 package org.jgrasstools.server.jetty.examples;
 
-import org.apache.log4j.BasicConfigurator;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -34,7 +33,6 @@ public class WithRealmAuthServer extends EmbeddedJspServer {
     }
 
     public static void main( String[] args ) throws Exception {
-        BasicConfigurator.configure();
 
         String webFolder = "/home/hydrologis/development/jgrasstools-git/server/src/main/webapp";
         authRealm = "/home/hydrologis/development/jgrasstools-git/server/src/main/resources/authrealm.txt";

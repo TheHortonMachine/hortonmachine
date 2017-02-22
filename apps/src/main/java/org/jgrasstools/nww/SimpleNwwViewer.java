@@ -14,7 +14,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.apache.log4j.BasicConfigurator;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.nww.gui.LayersPanelController;
 import org.jgrasstools.nww.gui.NwwPanel;
@@ -132,8 +131,6 @@ public class SimpleNwwViewer {
     }
 
     public static void main( String[] args ) {
-        BasicConfigurator.configure();
-
         if (Configuration.isMacOS() && APPNAME != null) {
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", APPNAME);
         }
