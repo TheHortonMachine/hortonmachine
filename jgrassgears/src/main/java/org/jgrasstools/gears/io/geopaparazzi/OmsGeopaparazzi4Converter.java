@@ -94,6 +94,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.StringUtilities;
 import org.jgrasstools.gears.utils.chart.Scatter;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -174,6 +175,17 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     private static final String TAG_TYPE = "type";
 
     private File chartsFolderFile;
+
+    private static final GeometryFactory gf = GeometryUtilities.gf();
+    private static final String idFN = NotesTableFields.COLUMN_ID.getFieldName();
+    private static final String tsFN = NotesTableFields.COLUMN_TS.getFieldName();
+    private static final String altimFN = NotesTableFields.COLUMN_ALTIM.getFieldName();
+    private static final String dirtyFN = NotesTableFields.COLUMN_ISDIRTY.getFieldName();
+    private static final String formFN = NotesTableFields.COLUMN_FORM.getFieldName();
+    private static final String latFN = NotesTableFields.COLUMN_LAT.getFieldName();
+    private static final String lonFN = NotesTableFields.COLUMN_LON.getFieldName();
+    private static final String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
+    private static final String descFN = NotesTableFields.COLUMN_DESCRIPTION.getFieldName();
 
     @Execute
     public void process() throws Exception {
@@ -353,25 +365,16 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     }
 
     /**
+     * Convert the simple notes to a featurecollection.
      * 
-     * 
-     * @param connection
-     * @param pm
-     * @return
-     * @throws SQLException
+     * @param connection the db connection.
+     * @param pm the monitor.
+     * @return the extracted collection.
+     * @throws Exception
      */
     public static SimpleFeatureCollection simpleNotes2featurecollection( IJGTConnection connection, IJGTProgressMonitor pm )
             throws Exception {
-        String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
-        String descFN = NotesTableFields.COLUMN_DESCRIPTION.getFieldName();
-        String tsFN = NotesTableFields.COLUMN_TS.getFieldName();
-        String altimFN = NotesTableFields.COLUMN_ALTIM.getFieldName();
-        String dirtyFN = NotesTableFields.COLUMN_ISDIRTY.getFieldName();
-        String formFN = NotesTableFields.COLUMN_FORM.getFieldName();
-        String latFN = NotesTableFields.COLUMN_LAT.getFieldName();
-        String lonFN = NotesTableFields.COLUMN_LON.getFieldName();
 
-        GeometryFactory gf = GeometryUtilities.gf();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("gpsimplenotes"); //$NON-NLS-1$
         b.setCRS(DefaultGeographicCRS.WGS84);
@@ -391,7 +394,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 descFN + "," + //
                 dirtyFN + "," + //
                 formFN + " from " + //
-                TABLE_NOTES;
+                TABLE_NOTES + " where " + formFN + " is null or " + formFN + " = ''";
 
         SimpleFeatureType featureType = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
@@ -436,18 +439,17 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         return newCollection;
     }
 
+    /**
+     * Convert the complex notes to a map of featurecollection.
+     * 
+     * @param connection the db connection.
+     * @param pm the monitor.
+     * @return the extracted collection as name-collection map..
+     * @throws Exception
+     */
     public static HashMap<String, SimpleFeatureCollection> complexNotes2featurecollections( IJGTConnection connection,
             IJGTProgressMonitor pm ) throws Exception {
         pm.beginTask("Import complex notes...", -1);
-
-        GeometryFactory gf = GeometryUtilities.gf();
-        String idFN = NotesTableFields.COLUMN_ID.getFieldName();
-        String tsFN = NotesTableFields.COLUMN_TS.getFieldName();
-        String altimFN = NotesTableFields.COLUMN_ALTIM.getFieldName();
-        String dirtyFN = NotesTableFields.COLUMN_ISDIRTY.getFieldName();
-        String formFN = NotesTableFields.COLUMN_FORM.getFieldName();
-        String latFN = NotesTableFields.COLUMN_LAT.getFieldName();
-        String lonFN = NotesTableFields.COLUMN_LON.getFieldName();
 
         HashMap<String, BuilderAndCollectionPair> forms2PropertiesMap = new HashMap<>();
         HashMap<String, SimpleFeatureCollection> name2CollectionMap = new HashMap<>();
@@ -460,7 +462,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 tsFN + "," + //
                 dirtyFN + "," + //
                 formFN + " from " + //
-                TABLE_NOTES;
+                TABLE_NOTES + " where " + formFN + " is not null and " + formFN + " != ''";
         try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
             while( rs.next() ) {
@@ -492,80 +494,14 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
                 LinkedHashMap<String, String> valuesMap = new LinkedHashMap<>();
                 LinkedHashMap<String, String> typesMap = new LinkedHashMap<>();
-                for( String formName : formNames4Section ) {
-                    JSONObject form4Name = Utilities.getForm4Name(formName, sectionObject);
-                    JSONArray formItems = Utilities.getFormItems(form4Name);
-
-                    int length = formItems.length();
-                    for( int i = 0; i < length; i++ ) {
-                        JSONObject jsonObject = formItems.getJSONObject(i);
-
-                        if (!jsonObject.has(TAG_KEY)) {
-                            continue;
-                        }
-                        String key = jsonObject.getString(TAG_KEY).trim();
-
-                        String value = null;
-                        if (jsonObject.has(TAG_VALUE)) {
-                            value = jsonObject.get(TAG_VALUE).toString().trim();
-                        }
-                        String type = null;
-                        if (jsonObject.has(TAG_TYPE)) {
-                            type = jsonObject.getString(TAG_TYPE).trim();
-                        }
-
-                        if (value != null) {
-                            valuesMap.put(key, value);
-                            typesMap.put(key, type);
-                        }
-                    }
-                }
+                extractValues(sectionObject, formNames4Section, valuesMap, typesMap);
 
                 Set<Entry<String, String>> entrySet = valuesMap.entrySet();
                 TreeMap<String, Integer> namesMap = new TreeMap<String, Integer>();
                 // check if there is a builder already
                 String uniqueSectionName = sectionName + "_" + entrySet.size();
-                BuilderAndCollectionPair builderAndCollectionPair = forms2PropertiesMap.get(uniqueSectionName);
-                if (builderAndCollectionPair == null) {
-                    SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-                    b.setName(sectionName); // $NON-NLS-1$
-                    b.setCRS(DefaultGeographicCRS.WGS84);
-                    b.add("the_geom", Point.class); //$NON-NLS-1$
-                    b.add(tsFN, String.class); // $NON-NLS-1$
-                    b.add(altimFN, Double.class); // $NON-NLS-1$
-                    b.add(dirtyFN, Integer.class); // $NON-NLS-1$
-                    for( Entry<String, String> entry : entrySet ) {
-                        String key = entry.getKey();
-                        key = key.replaceAll("\\s+", "_");
-                        if (key.length() > 10) {
-                            pm.errorMessage("Need to trim key: " + key);
-                            key = key.substring(0, 10);
-                        }
-                        Integer nCount = namesMap.get(key);
-                        if (nCount == null) {
-                            nCount = 1;
-                            namesMap.put(key, 1);
-                        } else {
-                            nCount++;
-                            namesMap.put(key, nCount);
-                            if (nCount < 10) {
-                                key = key.substring(0, key.length() - 1) + nCount;
-                            } else {
-                                key = key.substring(0, key.length() - 2) + nCount;
-                            }
-                        }
-                        b.add(key, String.class);
-                    }
-                    SimpleFeatureType featureType = b.buildFeatureType();
-                    SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-
-                    DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
-                    builderAndCollectionPair = new BuilderAndCollectionPair();
-                    builderAndCollectionPair.builder = builder;
-                    builderAndCollectionPair.collection = newCollection;
-
-                    forms2PropertiesMap.put(uniqueSectionName, builderAndCollectionPair);
-                }
+                BuilderAndCollectionPair builderAndCollectionPair = getBuilderAndCollectionPair(pm, forms2PropertiesMap,
+                        sectionName, entrySet, namesMap, uniqueSectionName);
 
                 int size = entrySet.size();
                 Object[] values = new Object[size + 4];
@@ -628,12 +564,219 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         return name2CollectionMap;
     }
 
+    private static BuilderAndCollectionPair getBuilderAndCollectionPair( IJGTProgressMonitor pm,
+            HashMap<String, BuilderAndCollectionPair> forms2PropertiesMap, String sectionName,
+            Set<Entry<String, String>> entrySet, TreeMap<String, Integer> namesMap, String uniqueSectionName ) {
+        BuilderAndCollectionPair builderAndCollectionPair = forms2PropertiesMap.get(uniqueSectionName);
+        if (builderAndCollectionPair == null) {
+            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+            b.setName(sectionName); // $NON-NLS-1$
+            b.setCRS(DefaultGeographicCRS.WGS84);
+            b.add("the_geom", Point.class); //$NON-NLS-1$
+            b.add(tsFN, String.class); // $NON-NLS-1$
+            b.add(altimFN, Double.class); // $NON-NLS-1$
+            b.add(dirtyFN, Integer.class); // $NON-NLS-1$
+            for( Entry<String, String> entry : entrySet ) {
+                String key = entry.getKey();
+                key = key.replaceAll("\\s+", "_");
+                if (key.length() > 10) {
+                    pm.errorMessage("Need to trim key: " + key);
+                    key = key.substring(0, 10);
+                }
+                Integer nCount = namesMap.get(key);
+                if (nCount == null) {
+                    nCount = 1;
+                    namesMap.put(key, 1);
+                } else {
+                    nCount++;
+                    namesMap.put(key, nCount);
+                    if (nCount < 10) {
+                        key = key.substring(0, key.length() - 1) + nCount;
+                    } else {
+                        key = key.substring(0, key.length() - 2) + nCount;
+                    }
+                }
+                b.add(key, String.class);
+            }
+            SimpleFeatureType featureType = b.buildFeatureType();
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+
+            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
+            builderAndCollectionPair = new BuilderAndCollectionPair();
+            builderAndCollectionPair.builder = builder;
+            builderAndCollectionPair.collection = newCollection;
+
+            forms2PropertiesMap.put(uniqueSectionName, builderAndCollectionPair);
+        }
+        return builderAndCollectionPair;
+    }
+
+    private static void extractValues( JSONObject sectionObject, List<String> formNames4Section,
+            LinkedHashMap<String, String> valuesMap, LinkedHashMap<String, String> typesMap ) {
+        for( String formName : formNames4Section ) {
+            JSONObject form4Name = Utilities.getForm4Name(formName, sectionObject);
+            JSONArray formItems = Utilities.getFormItems(form4Name);
+
+            int length = formItems.length();
+            for( int i = 0; i < length; i++ ) {
+                JSONObject jsonObject = formItems.getJSONObject(i);
+
+                if (!jsonObject.has(TAG_KEY)) {
+                    continue;
+                }
+                String key = jsonObject.getString(TAG_KEY).trim();
+
+                String value = null;
+                if (jsonObject.has(TAG_VALUE)) {
+                    value = jsonObject.get(TAG_VALUE).toString().trim();
+                }
+                String type = null;
+                if (jsonObject.has(TAG_TYPE)) {
+                    type = jsonObject.getString(TAG_TYPE).trim();
+                }
+
+                if (value != null) {
+                    valuesMap.put(key, value);
+                    typesMap.put(key, type);
+                }
+            }
+        }
+    }
+
+    /**
+     * Convert the comples notes identified by a name to a featurecollection.
+     * 
+     * @param noteName the name of the note to extract.
+     * @param connection the db connection.
+     * @param pm the monitor.
+     * @return the extracted collection.
+     * @throws Exception
+     */
+    public static SimpleFeatureCollection complexNote2featurecollection( String noteName, IJGTConnection connection,
+            IJGTProgressMonitor pm ) throws Exception {
+        pm.beginTask("Import complex notes...", -1);
+
+        HashMap<String, BuilderAndCollectionPair> forms2PropertiesMap = new HashMap<>();
+
+        String sql = "select " + //
+                idFN + "," + //
+                latFN + "," + //
+                lonFN + "," + //
+                altimFN + "," + //
+                tsFN + "," + //
+                dirtyFN + "," + //
+                formFN + " from " + //
+                TABLE_NOTES + " where " + formFN + " like '%sectionname\":\"" + noteName + "%'";
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
+            statement.setQueryTimeout(30); // set timeout to 30 sec.
+            while( rs.next() ) {
+//                String idString = rs.getString(idFN);
+//                System.out.println(idString);
+                String formString = rs.getString(formFN);
+                if (formString == null || formString.trim().length() == 0) {
+                    continue;
+                }
+
+                double lat = rs.getDouble(latFN);
+                double lon = rs.getDouble(lonFN);
+                double altim = rs.getDouble(altimFN);
+                long ts = rs.getLong(tsFN);
+                String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
+                int isDirty = rs.getInt(dirtyFN);
+                if (lat == 0 || lon == 0) {
+                    continue;
+                }
+
+                // and then create the features
+                Coordinate c = new Coordinate(lon, lat);
+                Point point = gf.createPoint(c);
+
+                JSONObject sectionObject = new JSONObject(formString);
+                String sectionName = sectionObject.getString("sectionname");
+                if (!sectionName.equals(noteName)) {
+                    continue;
+                }
+
+                sectionName = sectionName.replaceAll("\\s+", "_");
+                LinkedHashMap<String, String> valuesMap = new LinkedHashMap<>();
+                LinkedHashMap<String, String> typesMap = new LinkedHashMap<>();
+                List<String> formNames4Section = Utilities.getFormNames4Section(sectionObject);
+
+                extractValues(sectionObject, formNames4Section, valuesMap, typesMap);
+
+                Set<Entry<String, String>> entrySet = valuesMap.entrySet();
+                TreeMap<String, Integer> namesMap = new TreeMap<String, Integer>();
+                // check if there is a builder already
+                String uniqueSectionName = sectionName + "_" + entrySet.size();
+                BuilderAndCollectionPair builderAndCollectionPair = getBuilderAndCollectionPair(pm, forms2PropertiesMap,
+                        sectionName, entrySet, namesMap, uniqueSectionName);
+
+                int size = entrySet.size();
+                Object[] values = new Object[size + 4];
+                values[0] = point;
+                values[1] = dateTimeString;
+                values[2] = altim;
+                values[3] = isDirty;
+                int i = 4;
+                for( Entry<String, String> entry : entrySet ) {
+                    String key = entry.getKey();
+
+                    String value = entry.getValue();
+
+                    String type = typesMap.get(key);
+                    if (isMedia(type)) {
+                        // extract images to media folder
+                        String[] imageSplit = value.split(OmsGeopaparazziProject3To4Converter.IMAGE_ID_SEPARATOR);
+                        StringBuilder sb = new StringBuilder();
+                        for( String image : imageSplit ) {
+                            image = image.trim();
+                            if (image.length() == 0)
+                                continue;
+                            long imageId = Long.parseLong(image);
+                            String imageName = DaoImages.getImageName(connection, imageId);
+                            sb.append(OmsGeopaparazziProject3To4Converter.IMAGE_ID_SEPARATOR);
+                            sb.append(MEDIA_FOLDER_NAME + "/").append(imageName);
+                        }
+                        if (sb.length() > 0) {
+                            value = sb.substring(1);
+                        } else {
+                            value = "";
+                        }
+                    }
+
+                    if (value.length() > 253) {
+                        pm.errorMessage("Need to trim value: " + value);
+                        value = value.substring(0, 252);
+                    }
+                    values[i] = value;
+                    i++;
+                }
+                try {
+                    builderAndCollectionPair.builder.addAll(values);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                SimpleFeature feature = builderAndCollectionPair.builder.buildFeature(null);
+                builderAndCollectionPair.collection.add(feature);
+            }
+
+            if (forms2PropertiesMap.size() > 0) {
+                BuilderAndCollectionPair builderAndCollectionPair = forms2PropertiesMap.values().iterator().next();
+                SimpleFeatureCollection collection = builderAndCollectionPair.collection;
+                return collection;
+            }
+            return null;
+        } finally {
+            pm.done();
+        }
+    }
+
     /**
      * Get the list of gps logs.
      * 
      * @param connection the db connection.
      * @return the list of gps logs.
-     * @throws SQLException
+     * @throws Exception
      */
     public static List<GpsLog> getGpsLogsList( IJGTConnection connection ) throws Exception {
         List<GpsLog> logsList = DaoGpsLog.getLogsList(connection);
@@ -651,6 +794,14 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         return logsList;
     }
 
+    /**
+     * Convert the logs to a featurecollection.
+     * 
+     * @param pm the monitor.
+     * @param logsList the list of logs as gathered from {@link #getGpsLogsList(IJGTConnection)}.
+     * @return the extracted collection.
+     * @throws Exception
+     */
     public static DefaultFeatureCollection getLogLinesFeatureCollection( IJGTProgressMonitor pm, List<GpsLog> logsList ) {
         GeometryFactory gf = GeometryUtilities.gf();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
@@ -974,6 +1125,25 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
         try (OutputStream outStream = new FileOutputStream(newImageFile)) {
             outStream.write(imageData);
+        }
+    }
+
+    public static void main( String[] args ) throws Exception {
+        try (SqliteDb db = new SqliteDb()) {
+            db.open("/home/hydrologis/TMP/geopaparazzi_20140819_misonet.gpap");
+
+            IJGTConnection connection = db.getConnection();
+
+            List<String> layerNamesList = getLayerNamesList(connection);
+            for( String layer : layerNamesList ) {
+                System.out.println(layer);
+            }
+
+            SimpleFeatureCollection simple = simpleNotes2featurecollection(connection, new LogProgressMonitor());
+            System.out.println("simple: " + simple.size());
+            SimpleFeatureCollection examples = complexNote2featurecollection("examples", connection, new LogProgressMonitor());
+            System.out.println("exam: " + examples.size());
+
         }
     }
 
