@@ -59,6 +59,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
@@ -79,6 +80,8 @@ import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import oms3.annotations.Out;
+
 /**
  * The spatialtoolbox view controller.
  * 
@@ -87,7 +90,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SpatialtoolboxController extends SpatialtoolboxView implements IOnCloseListener {
     private static final long serialVersionUID = 1L;
-    
+
     private static final Logger logger = LoggerFactory.getLogger(SpatialtoolboxController.class);
 
     protected ParametersPanel pPanel;
@@ -559,7 +562,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
                 if (value.trim().length() == 0) {
                     continue;
                 }
-                
+
                 // make sure there are no backslashes
                 value = FileUtilities.replaceBackSlashesWithSlashes(value);
 
@@ -607,108 +610,116 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         }
 
         scriptBuilder.append(objectName).append(".process();\n");
-        // dumpSimpleOutputs(module, scriptBuilder);
+
+        scriptBuilder.append("println \"\"\n");
+        scriptBuilder.append("println \"\"\n");
+        Field[] fields = moduleClass.getDeclaredFields();
+        for( Field field : fields ) {
+            // If the field is annotated by @ExcelColumn
+            try {
+                if (field.isAnnotationPresent(Out.class)) {
+                    String fieldName = field.getName();
+                    field.setAccessible(true);
+                    Class< ? > type = field.getType();
+
+                    dumpSimpleOutputs(objectName, type, fieldName, scriptBuilder);
+                    // scriptBuilder.append(";\n");
+                }
+
+                // scriptBuilder.append(objectName).append(".").append(fieldName).append(" = ");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         return scriptBuilder;
     }
 
-    // private void dumpSimpleOutputs( ModuleDescription module, StringBuilder scriptSb ) {
-    // scriptSb.append("println \"\"\n");
-    // scriptSb.append("println \"\"\n");
-    //
-    // // make print whatever is simple output
-    // String mainVarName = variableNamesMap.get(mainModuleDescription);
-    // List<FieldData> outputsList = mainModuleDescription.getOutputsList();
-    // for( FieldData fieldData : outputsList ) {
-    // if (fieldData.isSimpleType()) {
-    // String varPlusField = mainVarName + "." + fieldData.fieldName;
-    // // String ifString = "if( " + varPlusField + " != null )\n";
-    // // scriptSb.append(ifString);
-    // scriptSb.append("println \"");
-    // String fieldDescription = fieldData.fieldDescription.trim();
-    // if (fieldDescription.endsWith(".")) {
-    // fieldDescription = fieldDescription.substring(0, fieldDescription.length() - 1);
-    // }
-    // scriptSb.append(fieldDescription);
-    // scriptSb.append(" = \" + ");
-    // scriptSb.append(varPlusField);
-    // scriptSb.append("\n");
-    // }
-    // }
-    //
-    // // in case make print double[] and double[][] outputs
-    // scriptSb.append("println \"\"\n\n");
-    // for( FieldData fieldData : outputsList ) {
-    // String varPlusField = mainVarName + "." + fieldData.fieldName;
-    // if (fieldData.isSimpleArrayType()) {
-    // if (fieldData.fieldType.equals(double[][].class.getCanonicalName())
-    // || fieldData.fieldType.equals(float[][].class.getCanonicalName())
-    // || fieldData.fieldType.equals(int[][].class.getCanonicalName())) {
-    //
-    // String ifString = "if( " + varPlusField + " != null ) {\n";
-    // scriptSb.append(ifString);
-    // String typeStr = null;
-    // if (fieldData.fieldType.equals(double[][].class.getCanonicalName())) {
-    // typeStr = "double[][]";
-    // } else if (fieldData.fieldType.equals(float[][].class.getCanonicalName())) {
-    // typeStr = "float[][]";
-    // } else if (fieldData.fieldType.equals(int[][].class.getCanonicalName())) {
-    // typeStr = "int[][]";
-    // }
-    //
-    // scriptSb.append("println \"");
-    // scriptSb.append(fieldData.fieldDescription);
-    // scriptSb.append("\"\n");
-    // scriptSb.append("println \"-----------------------------------\"\n");
-    // scriptSb.append(typeStr);
-    // scriptSb.append(" matrix = ");
-    // scriptSb.append(varPlusField);
-    // scriptSb.append("\n");
-    //
-    // scriptSb.append("for( int i = 0; i < matrix.length; i++ ) {\n");
-    // scriptSb.append("for( int j = 0; j < matrix[0].length; j++ ) {\n");
-    // scriptSb.append("print matrix[i][j] + \" \";\n");
-    // scriptSb.append("}\n");
-    // scriptSb.append("println \" \";\n");
-    // scriptSb.append("}\n");
-    // scriptSb.append("}\n");
-    // scriptSb.append("\n");
-    // } else if (fieldData.fieldType.equals(double[].class.getCanonicalName())
-    // || fieldData.fieldType.equals(float[].class.getCanonicalName())
-    // || fieldData.fieldType.equals(int[].class.getCanonicalName())) {
-    //
-    // String ifString = "if( " + varPlusField + " != null ) {\n";
-    // scriptSb.append(ifString);
-    //
-    // String typeStr = null;
-    // if (fieldData.fieldType.equals(double[].class.getCanonicalName())) {
-    // typeStr = "double[]";
-    // } else if (fieldData.fieldType.equals(float[].class.getCanonicalName())) {
-    // typeStr = "float[]";
-    // } else if (fieldData.fieldType.equals(int[].class.getCanonicalName())) {
-    // typeStr = "int[]";
-    // }
-    // scriptSb.append("println \"");
-    // scriptSb.append(fieldData.fieldDescription);
-    // scriptSb.append("\"\n");
-    // scriptSb.append("println \"-----------------------------------\"\n");
-    // scriptSb.append(typeStr);
-    // scriptSb.append(" array = ");
-    // scriptSb.append(mainVarName);
-    // scriptSb.append(".");
-    // scriptSb.append(fieldData.fieldName);
-    // scriptSb.append("\n");
-    //
-    // scriptSb.append("for( int i = 0; i < array.length; i++ ) {\n");
-    // scriptSb.append("println array[i] + \" \";\n");
-    // scriptSb.append("}\n");
-    // scriptSb.append("}\n");
-    // scriptSb.append("\n");
-    // }
-    // scriptSb.append("println \" \"\n\n");
-    // }
-    // }
-    // }
+    private void dumpSimpleOutputs( String objectName, Class< ? > type, String fieldName, StringBuilder scriptSb ) {
+        scriptSb.append("println \"\"\n");
+        scriptSb.append("println \"\"\n");
+
+        if (type.isAssignableFrom(String.class) || type.isAssignableFrom(double.class) || type.isAssignableFrom(Double.class)//
+                || type.isAssignableFrom(int.class) || type.isAssignableFrom(Integer.class) || type.isAssignableFrom(long.class)//
+                || type.isAssignableFrom(Long.class) || type.isAssignableFrom(float.class) || type.isAssignableFrom(Float.class)//
+                || type.isAssignableFrom(short.class) || type.isAssignableFrom(Short.class)
+                || type.isAssignableFrom(boolean.class)//
+                || type.isAssignableFrom(Boolean.class)) {
+
+            scriptSb.append("println \"");
+            scriptSb.append(fieldName);
+            scriptSb.append(" = \" + ");
+            scriptSb.append(fieldName);
+            scriptSb.append("\n");
+        }
+
+        // in case make print double[] and double[][] outputs
+        scriptSb.append("println \"\"\n\n");
+        if (type.isAssignableFrom(double[][].class) || type.isAssignableFrom(float[][].class)
+                || type.isAssignableFrom(int[][].class)) {
+
+            String ifString = "if( " + objectName + "." + fieldName + " != null ) {\n";
+            scriptSb.append(ifString);
+            String typeStr = null;
+            if (type.isAssignableFrom(double[][].class)) {
+                typeStr = "double[][]";
+            } else if (type.isAssignableFrom(float[][].class)) {
+                typeStr = "float[][]";
+            } else if (type.isAssignableFrom(int[][].class)) {
+                typeStr = "int[][]";
+            }
+
+            scriptSb.append("println \"");
+            scriptSb.append(fieldName);
+            scriptSb.append("\"\n");
+            scriptSb.append("println \"-----------------------------------\"\n");
+            scriptSb.append(typeStr);
+            scriptSb.append(" matrix = ");
+            scriptSb.append(objectName + "." + fieldName);
+            scriptSb.append("\n");
+
+            scriptSb.append("for( int i = 0; i < matrix.length; i++ ) {\n");
+            scriptSb.append("for( int j = 0; j < matrix[0].length; j++ ) {\n");
+            scriptSb.append("print matrix[i][j] + \" \";\n");
+            scriptSb.append("}\n");
+            scriptSb.append("println \" \";\n");
+            scriptSb.append("}\n");
+            scriptSb.append("}\n");
+            scriptSb.append("\n");
+        } else if (type.isAssignableFrom(double[].class) || type.isAssignableFrom(float[].class)
+                || type.isAssignableFrom(int[].class)) {
+
+            String ifString = "if( " + objectName + "." + fieldName + " != null ) {\n";
+            scriptSb.append(ifString);
+
+            String typeStr = null;
+            if (type.isAssignableFrom(double[].class)) {
+                typeStr = "double[]";
+            } else if (type.isAssignableFrom(float[].class)) {
+                typeStr = "float[]";
+            } else if (type.isAssignableFrom(int[].class)) {
+                typeStr = "int[]";
+            }
+            scriptSb.append("println \"");
+            scriptSb.append(fieldName);
+            scriptSb.append("\"\n");
+            scriptSb.append("println \"-----------------------------------\"\n");
+            scriptSb.append(typeStr);
+            scriptSb.append(" array = ");
+            scriptSb.append(objectName);
+            scriptSb.append(".");
+            scriptSb.append(fieldName);
+            scriptSb.append("\n");
+
+            scriptSb.append("for( int i = 0; i < array.length; i++ ) {\n");
+            scriptSb.append("println array[i] + \" \";\n");
+            scriptSb.append("}\n");
+            scriptSb.append("}\n");
+            scriptSb.append("\n");
+        }
+        scriptSb.append("println \" \"\n\n");
+    }
 
     public static Method getMethodAnnotatedWith( final Class< ? > klass, Class< ? extends Annotation> annotation ) {
         Method[] allMethods = klass.getDeclaredMethods();
@@ -803,7 +814,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
     public static void main( String[] args ) throws Exception {
         BasicConfigurator.configure();
         GuiUtilities.setDefaultLookAndFeel();
-        
+
         File libsFile = null;
         try {
             String libsPath = args[0];
