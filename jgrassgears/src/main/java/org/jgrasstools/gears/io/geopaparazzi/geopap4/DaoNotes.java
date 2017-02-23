@@ -191,16 +191,26 @@ public class DaoNotes {
      * Get the current data envelope.
      * 
      * @param connection the db connection.
+     * @param noteTypeName if <code>null</code>, simple notes are handled. Else this 
+     *          is taken as name for the note type.
      * @return the envelope.
      * @throws Exception
      */
-    public static ReferencedEnvelope getEnvelope( IJGTConnection connection ) throws Exception {
+    public static ReferencedEnvelope getEnvelope( IJGTConnection connection, String noteTypeName ) throws Exception {
         String query = "SELECT min(" + //
                 NotesTableFields.COLUMN_LON.getFieldName() + "), max" + //
                 NotesTableFields.COLUMN_LON.getFieldName() + "), min" + //
                 NotesTableFields.COLUMN_LAT.getFieldName() + "), max" + //
                 NotesTableFields.COLUMN_LAT.getFieldName() + ") " + //
                 " FROM " + TABLE_NOTES;
+
+        if (noteTypeName != null) {
+            query += " where " + NotesTableFields.COLUMN_TEXT.getFieldName() + "='" + noteTypeName + "'";
+        } else {
+            String formFN = NotesTableFields.COLUMN_FORM.getFieldName();
+            query += " where " + formFN + " is null OR " + formFN + "=''";
+        }
+
         try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(query);) {
             if (rs.next()) {
                 double minX = rs.getDouble(1);
@@ -211,6 +221,9 @@ public class DaoNotes {
                 ReferencedEnvelope env = new ReferencedEnvelope(minX, maxX, minY, maxY, DefaultGeographicCRS.WGS84);
                 return env;
             }
+        } catch (Exception e) {
+            // print trace but return null
+            e.printStackTrace();
         }
 
         return null;
