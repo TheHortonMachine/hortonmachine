@@ -48,7 +48,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOGS;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_IMAGES;
-import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_METADATA;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_NOTES;
 
 import java.awt.image.BufferedImage;
@@ -86,7 +85,6 @@ import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsPoint;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Image;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTableFields;
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.MetadataTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -169,10 +167,6 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
     public static final String MEDIA_FOLDER_NAME = "media";
     public static final String CHARTS_FOLDER_NAME = "charts";
-
-    private static final String TAG_KEY = "key";
-    private static final String TAG_VALUE = "value";
-    private static final String TAG_TYPE = "type";
 
     private File chartsFolderFile;
 
@@ -340,15 +334,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     public static SimpleFeatureCollection simpleNotes2featurecollection( IJGTConnection connection, IJGTProgressMonitor pm )
             throws Exception {
 
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("gpsimplenotes"); //$NON-NLS-1$
-        b.setCRS(DefaultGeographicCRS.WGS84);
-        b.add("the_geom", Point.class); //$NON-NLS-1$
-        b.add(textFN, String.class);
-        b.add(descFN, String.class);
-        b.add(tsFN, String.class);
-        b.add(altimFN, Double.class);
-        b.add(dirtyFN, Integer.class);
+        SimpleFeatureType featureType = GeopaparazziUtilities.getSimpleNotesfeatureType();
 
         String sql = "select " + //
                 latFN + "," + //
@@ -361,7 +347,6 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 formFN + " from " + //
                 TABLE_NOTES + " where " + formFN + " is null or " + formFN + " = ''";
 
-        SimpleFeatureType featureType = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
 
         pm.beginTask("Processing simple notes...", -1);
@@ -459,7 +444,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
                 LinkedHashMap<String, String> valuesMap = new LinkedHashMap<>();
                 LinkedHashMap<String, String> typesMap = new LinkedHashMap<>();
-                extractValues(sectionObject, formNames4Section, valuesMap, typesMap);
+                GeopaparazziUtilities.extractValues(sectionObject, formNames4Section, valuesMap, typesMap);
 
                 Set<Entry<String, String>> entrySet = valuesMap.entrySet();
                 TreeMap<String, Integer> namesMap = new TreeMap<String, Integer>();
@@ -576,38 +561,6 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         return builderAndCollectionPair;
     }
 
-    private static void extractValues( JSONObject sectionObject, List<String> formNames4Section,
-            LinkedHashMap<String, String> valuesMap, LinkedHashMap<String, String> typesMap ) {
-        for( String formName : formNames4Section ) {
-            JSONObject form4Name = Utilities.getForm4Name(formName, sectionObject);
-            JSONArray formItems = Utilities.getFormItems(form4Name);
-
-            int length = formItems.length();
-            for( int i = 0; i < length; i++ ) {
-                JSONObject jsonObject = formItems.getJSONObject(i);
-
-                if (!jsonObject.has(TAG_KEY)) {
-                    continue;
-                }
-                String key = jsonObject.getString(TAG_KEY).trim();
-
-                String value = null;
-                if (jsonObject.has(TAG_VALUE)) {
-                    value = jsonObject.get(TAG_VALUE).toString().trim();
-                }
-                String type = null;
-                if (jsonObject.has(TAG_TYPE)) {
-                    type = jsonObject.getString(TAG_TYPE).trim();
-                }
-
-                if (value != null) {
-                    valuesMap.put(key, value);
-                    typesMap.put(key, type);
-                }
-            }
-        }
-    }
-
     /**
      * Convert the comples notes identified by a name to a featurecollection.
      * 
@@ -631,12 +584,12 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 tsFN + "," + //
                 dirtyFN + "," + //
                 formFN + " from " + //
-                TABLE_NOTES + " where " + formFN + " like '%sectionname\":\"" + noteName + "%'";
+                TABLE_NOTES + " where " + textFN + "='" + noteName + "'";
         try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
             while( rs.next() ) {
-//                String idString = rs.getString(idFN);
-//                System.out.println(idString);
+                // String idString = rs.getString(idFN);
+                // System.out.println(idString);
                 String formString = rs.getString(formFN);
                 if (formString == null || formString.trim().length() == 0) {
                     continue;
@@ -667,7 +620,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 LinkedHashMap<String, String> typesMap = new LinkedHashMap<>();
                 List<String> formNames4Section = Utilities.getFormNames4Section(sectionObject);
 
-                extractValues(sectionObject, formNames4Section, valuesMap, typesMap);
+                GeopaparazziUtilities.extractValues(sectionObject, formNames4Section, valuesMap, typesMap);
 
                 Set<Entry<String, String>> entrySet = valuesMap.entrySet();
                 TreeMap<String, Integer> namesMap = new TreeMap<String, Integer>();
@@ -769,14 +722,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
      */
     public static DefaultFeatureCollection getLogLinesFeatureCollection( IJGTProgressMonitor pm, List<GpsLog> logsList ) {
         GeometryFactory gf = GeometryUtilities.gf();
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("geopaparazzilogs");
-        b.setCRS(DefaultGeographicCRS.WGS84);
-        b.add("the_geom", MultiLineString.class);
-        b.add("STARTDATE", String.class);
-        b.add("ENDDATE", String.class);
-        b.add("DESCR", String.class);
-        SimpleFeatureType featureType = b.buildFeatureType();
+        SimpleFeatureType featureType = GeopaparazziUtilities.getGpsLogLinesFeatureType();
         pm.beginTask("Import gps to lines...", logsList.size());
         DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
         for( GpsLog log : logsList ) {
@@ -1049,18 +995,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
              */
             DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
 
-            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-            b.setName("geopaparazzimediapoints");
-            b.setCRS(DefaultGeographicCRS.WGS84);
-            b.add("the_geom", Point.class);
-            String altimFN = ImageTableFields.COLUMN_ALTIM.getFieldName();
-            String tsFN = ImageTableFields.COLUMN_TS.getFieldName();
-            String azimFN = ImageTableFields.COLUMN_AZIM.getFieldName();
-            b.add(altimFN, String.class);
-            b.add(tsFN, String.class);
-            b.add(azimFN, Double.class);
-            b.add("imageid", Long.class);
-            SimpleFeatureType featureType = b.buildFeatureType();
+            SimpleFeatureType featureType = GeopaparazziUtilities.getMediaFeaturetype();
 
             List<Image> imagesList = DaoImages.getImagesList(connection);
             pm.beginTask("Importing media...", imagesList.size());

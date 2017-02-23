@@ -33,14 +33,28 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
 
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.spatialite.jgt.SqliteDb;
+import org.jgrasstools.gears.io.geopaparazzi.forms.Utilities;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.MetadataTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.opengis.feature.simple.SimpleFeatureType;
+
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.Point;
 
 /**
  * Geopaparazzi utils.
@@ -54,6 +68,10 @@ public class GeopaparazziUtilities {
     public static final String PROJECT_CREATION_TS = "creationts";
     public static final String PROJECT_DESCRIPTION = "description";
     public static final String GPAP_EXTENSION = "gpap";
+
+    private static final String TAG_KEY = "key";
+    private static final String TAG_VALUE = "value";
+    private static final String TAG_TYPE = "type";
 
     public static List<HashMap<String, String>> readProjectMetadata( File[] projectFiles ) throws Exception {
         List<HashMap<String, String>> infoList = new ArrayList<HashMap<String, String>>();
@@ -78,7 +96,6 @@ public class GeopaparazziUtilities {
         return projectFiles;
     }
 
-    
     /**
      * Get the map of metadata of the project.
      * 
@@ -247,6 +264,152 @@ public class GeopaparazziUtilities {
             return sb.toString();
         } catch (Exception e) {
             return "An error occurred: " + e.getMessage();
+        }
+    }
+
+    public static SimpleFeatureType getSimpleNotesfeatureType() {
+        String tsFN = NotesTableFields.COLUMN_TS.getFieldName();
+        String altimFN = NotesTableFields.COLUMN_ALTIM.getFieldName();
+        String dirtyFN = NotesTableFields.COLUMN_ISDIRTY.getFieldName();
+        String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
+        String descFN = NotesTableFields.COLUMN_DESCRIPTION.getFieldName();
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("gpsimplenotes"); //$NON-NLS-1$
+        b.setCRS(DefaultGeographicCRS.WGS84);
+        b.add("the_geom", Point.class); //$NON-NLS-1$
+        b.add(textFN, String.class);
+        b.add(descFN, String.class);
+        b.add(tsFN, String.class);
+        b.add(altimFN, Double.class);
+        b.add(dirtyFN, Integer.class);
+        SimpleFeatureType featureType = b.buildFeatureType();
+        return featureType;
+    }
+
+    public static SimpleFeatureType getGpsLogLinesFeatureType() {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("geopaparazzilogs");
+        b.setCRS(DefaultGeographicCRS.WGS84);
+        b.add("the_geom", MultiLineString.class);
+        b.add("STARTDATE", String.class);
+        b.add("ENDDATE", String.class);
+        b.add("DESCR", String.class);
+        SimpleFeatureType featureType = b.buildFeatureType();
+        return featureType;
+    }
+
+    public static SimpleFeatureType getMediaFeaturetype() {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("geopaparazzimediapoints");
+        b.setCRS(DefaultGeographicCRS.WGS84);
+        b.add("the_geom", Point.class);
+        String altimFN = ImageTableFields.COLUMN_ALTIM.getFieldName();
+        String tsFN = ImageTableFields.COLUMN_TS.getFieldName();
+        String azimFN = ImageTableFields.COLUMN_AZIM.getFieldName();
+        b.add(altimFN, String.class);
+        b.add(tsFN, String.class);
+        b.add(azimFN, Double.class);
+        b.add("imageid", Long.class);
+        SimpleFeatureType featureType = b.buildFeatureType();
+        return featureType;
+    }
+
+    public static SimpleFeatureType getComplexNotefeatureType( String noteName, IJGTConnection connection ) throws Exception {
+        String tsFN = NotesTableFields.COLUMN_TS.getFieldName();
+        String altimFN = NotesTableFields.COLUMN_ALTIM.getFieldName();
+        String dirtyFN = NotesTableFields.COLUMN_ISDIRTY.getFieldName();
+        String formFN = NotesTableFields.COLUMN_FORM.getFieldName();
+        String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
+
+        String sql = "select " + //
+                formFN + " from " + //
+                TABLE_NOTES + " where " + textFN + "='" + noteName + "'";
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
+            while( rs.next() ) {
+                String formString = rs.getString(formFN);
+                if (formString == null || formString.trim().length() == 0) {
+                    continue;
+                }
+                JSONObject sectionObject = new JSONObject(formString);
+                String sectionName = sectionObject.getString("sectionname");
+                if (!sectionName.equals(noteName)) {
+                    continue;
+                }
+
+                sectionName = sectionName.replaceAll("\\s+", "_");
+                LinkedHashMap<String, String> valuesMap = new LinkedHashMap<>();
+                LinkedHashMap<String, String> typesMap = new LinkedHashMap<>();
+                List<String> formNames4Section = Utilities.getFormNames4Section(sectionObject);
+
+                extractValues(sectionObject, formNames4Section, valuesMap, typesMap);
+
+                Set<Entry<String, String>> entrySet = valuesMap.entrySet();
+                TreeMap<String, Integer> namesMap = new TreeMap<String, Integer>();
+
+                SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+                b.setName(sectionName); // $NON-NLS-1$
+                b.setCRS(DefaultGeographicCRS.WGS84);
+                b.add("the_geom", Point.class); //$NON-NLS-1$
+                b.add(tsFN, String.class); // $NON-NLS-1$
+                b.add(altimFN, Double.class); // $NON-NLS-1$
+                b.add(dirtyFN, Integer.class); // $NON-NLS-1$
+                for( Entry<String, String> entry : entrySet ) {
+                    String key = entry.getKey();
+                    key = key.replaceAll("\\s+", "_");
+                    if (key.length() > 10) {
+                        key = key.substring(0, 10);
+                    }
+                    Integer nCount = namesMap.get(key);
+                    if (nCount == null) {
+                        nCount = 1;
+                        namesMap.put(key, 1);
+                    } else {
+                        nCount++;
+                        namesMap.put(key, nCount);
+                        if (nCount < 10) {
+                            key = key.substring(0, key.length() - 1) + nCount;
+                        } else {
+                            key = key.substring(0, key.length() - 2) + nCount;
+                        }
+                    }
+                    b.add(key, String.class);
+                }
+                SimpleFeatureType featureType = b.buildFeatureType();
+                return featureType;
+            }
+            return null;
+        }
+    }
+
+    public static void extractValues( JSONObject sectionObject, List<String> formNames4Section,
+            LinkedHashMap<String, String> valuesMap, LinkedHashMap<String, String> typesMap ) {
+        for( String formName : formNames4Section ) {
+            JSONObject form4Name = Utilities.getForm4Name(formName, sectionObject);
+            JSONArray formItems = Utilities.getFormItems(form4Name);
+
+            int length = formItems.length();
+            for( int i = 0; i < length; i++ ) {
+                JSONObject jsonObject = formItems.getJSONObject(i);
+
+                if (!jsonObject.has(TAG_KEY)) {
+                    continue;
+                }
+                String key = jsonObject.getString(TAG_KEY).trim();
+
+                String value = null;
+                if (jsonObject.has(TAG_VALUE)) {
+                    value = jsonObject.get(TAG_VALUE).toString().trim();
+                }
+                String type = null;
+                if (jsonObject.has(TAG_TYPE)) {
+                    type = jsonObject.getString(TAG_TYPE).trim();
+                }
+
+                if (value != null) {
+                    valuesMap.put(key, value);
+                    typesMap.put(key, type);
+                }
+            }
         }
     }
 
