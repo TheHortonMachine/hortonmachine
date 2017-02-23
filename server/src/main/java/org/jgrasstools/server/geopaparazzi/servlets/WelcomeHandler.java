@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.jgrasstools.gears.io.geopaparazzi.GeopaparazziUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.jgrasstools.server.geopaparazzi.GeopaparazziWorkspaceUtilities;
 
 public class WelcomeHandler extends AbstractHandler {
 
@@ -26,7 +26,7 @@ public class WelcomeHandler extends AbstractHandler {
             response.setContentType("text/html");
             PrintWriter out = response.getWriter();
 
-            File[] projectsList = GeopaparazziWorkspaceUtilities.getGeopaparazziFiles(gpapProjectsFolder);
+            File[] projectsList = GeopaparazziUtilities.getGeopaparazziFiles(gpapProjectsFolder);
             String tmpMsg = "<html><body><h1>Geopaparazzi projects on the server</h1>\n";
             tmpMsg += "<p><ol>";
             for( File file : projectsList ) {

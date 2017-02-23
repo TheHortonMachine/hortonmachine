@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.jgrasstools.gears.io.geopaparazzi.GeopaparazziUtilities;
 
 public class GeopaparazziServerUtilities {
 
@@ -111,7 +112,7 @@ public class GeopaparazziServerUtilities {
     public static void handleProjectList( HttpServletResponse response, File gpapProjectsFolder ) throws IOException {
         response.setContentType("text/json");
         PrintWriter out = response.getWriter();
-        String projectsList = GeopaparazziWorkspaceUtilities.loadProjectsList(gpapProjectsFolder);
+        String projectsList = GeopaparazziUtilities.loadProjectsList(gpapProjectsFolder);
         out.write(projectsList);
     }
 }

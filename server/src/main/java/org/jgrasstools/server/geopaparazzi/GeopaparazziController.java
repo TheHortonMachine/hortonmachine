@@ -78,6 +78,7 @@ import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.spatialite.jgt.SqliteDb;
+import org.jgrasstools.gears.io.geopaparazzi.GeopaparazziUtilities;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsPoint;
@@ -185,7 +186,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 GuiUtilities.showWarningMessage(this, null, "The projects folder doesn't exist.");
                 return;
             }
-            File[] projectFiles = GeopaparazziWorkspaceUtilities.getGeopaparazziFiles(geopaparazziFolder);
+            File[] projectFiles = GeopaparazziUtilities.getGeopaparazziFiles(geopaparazziFolder);
 
             try {
                 projectInfos = readProjectInfos(projectFiles);
@@ -399,7 +400,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             try (SqliteDb db = new SqliteDb()) {
                 db.open(geopapDatabaseFile.getAbsolutePath());
                 IJGTConnection connection = db.getConnection();
-                String projectInfo = GeopaparazziWorkspaceUtilities.getProjectInfo(connection);
+                String projectInfo = GeopaparazziUtilities.getProjectInfo(connection);
                 ProjectInfo info = new ProjectInfo();
                 info.databaseFile = geopapDatabaseFile;
                 info.fileName = geopapDatabaseFile.getName();
@@ -744,7 +745,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         try {
             checkLoadedProject();
             String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedImage.getTs()));
-            String picInfo = "<b>Image:</b> " + GeopaparazziWorkspaceUtilities.escapeHTML(selectedImage.getName()) + "<br/>" //
+            String picInfo = "<b>Image:</b> " + GeopaparazziUtilities.escapeHTML(selectedImage.getName()) + "<br/>" //
                     + "<b>Timestamp:</b> " + dateTimeString + "<br/>" //
                     + "<b>Azimuth:</b> " + (int) selectedImage.getAzim() + " deg<br/>" //
                     + "<b>Altim:</b> " + (int) selectedImage.getAltim() + " m<br/>";
@@ -769,8 +770,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         try {
             checkLoadedProject();
             String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedNote.timeStamp));
-            String picInfo = "<b>Text:</b> " + GeopaparazziWorkspaceUtilities.escapeHTML(selectedNote.simpleText) + "<br/>" //
-                    + "<b>Description:</b> " + GeopaparazziWorkspaceUtilities.escapeHTML(selectedNote.description) + "<br/>" //
+            String picInfo = "<b>Text:</b> " + GeopaparazziUtilities.escapeHTML(selectedNote.simpleText) + "<br/>" //
+                    + "<b>Description:</b> " + GeopaparazziUtilities.escapeHTML(selectedNote.description) + "<br/>" //
                     + "<b>Timestamp:</b> " + dateTimeString + "<br/>" //
                     + "<b>Altim:</b> " + (int) selectedNote.altim + " m<br/>";
             _infoArea.setText(picInfo);
@@ -788,7 +789,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             checkLoadedProject();
             String startDateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedLog.startTime));
             String endDateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedLog.endTime));
-            String picInfo = "<b>Gps log:</b> " + GeopaparazziWorkspaceUtilities.escapeHTML(selectedLog.text) + "<br/>" //
+            String picInfo = "<b>Gps log:</b> " + GeopaparazziUtilities.escapeHTML(selectedLog.text) + "<br/>" //
                     + "<b>Start time:</b> " + startDateTimeString + "<br/>" //
                     + "<b>End time:</b> " + endDateTimeString + "<br/>";
             _infoArea.setText(picInfo);
@@ -934,7 +935,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath())) {
 
             // NOTES
-            List<String[]> noteDataList = GeopaparazziWorkspaceUtilities.getNotesText(connection);
+            List<String[]> noteDataList = GeopaparazziUtilities.getNotesText(connection);
             StringBuilder sb = new StringBuilder();
             sb.append("\n\n// GP NOTES\n");
             int index = 0;
@@ -1137,7 +1138,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                         statement.executeUpdate(query);
                     }
                 }
-                String projectInfo = GeopaparazziWorkspaceUtilities.getProjectInfo(connection);
+                String projectInfo = GeopaparazziUtilities.getProjectInfo(connection);
                 currentSelectedProject.metadata = projectInfo;
                 selectProjectInfo(currentSelectedProject);
             }

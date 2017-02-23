@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.server.geopaparazzi;
+package org.jgrasstools.gears.io.geopaparazzi;
 
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_METADATA;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_NOTES;
@@ -23,8 +23,8 @@ import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TA
 import java.io.File;
 import java.io.FilenameFilter;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,23 +37,30 @@ import java.util.List;
 import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
+import org.jgrasstools.dbs.spatialite.jgt.SqliteDb;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.MetadataTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
 
 /**
- * Workspace utils.
+ * Geopaparazzi utils.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
- *
  */
-public class GeopaparazziWorkspaceUtilities {
+public class GeopaparazziUtilities {
+
+    public static final String PROJECT_NAME = "name";
+    public static final String PROJECT_CREATION_USER = "creationuser";
+    public static final String PROJECT_CREATION_TS = "creationts";
+    public static final String PROJECT_DESCRIPTION = "description";
+    public static final String GPAP_EXTENSION = "gpap";
 
     public static List<HashMap<String, String>> readProjectMetadata( File[] projectFiles ) throws Exception {
         List<HashMap<String, String>> infoList = new ArrayList<HashMap<String, String>>();
         for( File geopapDatabaseFile : projectFiles ) {
-            try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + geopapDatabaseFile.getAbsolutePath())) {
-                HashMap<String, String> projectInfo = getProjectMetadata(connection);
+            try (SqliteDb db = new SqliteDb()) {
+                db.open(geopapDatabaseFile.getAbsolutePath());
+                HashMap<String, String> projectInfo = getProjectMetadata(db.getConnection());
                 infoList.add(projectInfo);
             }
         }
@@ -64,41 +71,47 @@ public class GeopaparazziWorkspaceUtilities {
         File[] projectFiles = geopaparazziFolder.listFiles(new FilenameFilter(){
             @Override
             public boolean accept( File dir, String name ) {
-                return name.endsWith(".gpap");
+                return name.endsWith(GPAP_EXTENSION);
             }
         });
         Arrays.sort(projectFiles, Collections.reverseOrder());
         return projectFiles;
     }
 
-    private static LinkedHashMap<String, String> getProjectMetadata( Connection connection ) throws Exception {
-        LinkedHashMap<String, String> infoMap = new LinkedHashMap<String, String>();
-        try (Statement statement = connection.createStatement()) {
+    
+    /**
+     * Get the map of metadata of the project.
+     * 
+     * @param connection the db connection. 
+     * @return the map of metadata.
+     * @throws SQLException
+     */
+    public static LinkedHashMap<String, String> getProjectMetadata( IJGTConnection connection ) throws Exception {
+        LinkedHashMap<String, String> metadataMap = new LinkedHashMap<>();
+        try (IJGTStatement statement = connection.createStatement()) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
             String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
                     MetadataTableFields.COLUMN_VALUE.getFieldName() + " from " + TABLE_METADATA;
-
-            ResultSet rs = statement.executeQuery(sql);
+            IJGTResultSet rs = statement.executeQuery(sql);
             while( rs.next() ) {
                 String key = rs.getString(MetadataTableFields.COLUMN_KEY.getFieldName());
                 String value = rs.getString(MetadataTableFields.COLUMN_VALUE.getFieldName());
-
                 if (!key.endsWith("ts")) {
-                    infoMap.put(key, value);
+                    metadataMap.put(key, value);
                 } else {
                     try {
                         long ts = Long.parseLong(value);
                         String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
-                        infoMap.put(key, dateTimeString);
+                        metadataMap.put(key, dateTimeString);
                     } catch (Exception e) {
-                        infoMap.put(key, value);
+                        metadataMap.put(key, value);
                     }
                 }
             }
 
         }
-        return infoMap;
+        return metadataMap;
     }
 
     public static String getProjectInfo( IJGTConnection connection ) throws Exception {
@@ -205,8 +218,8 @@ public class GeopaparazziWorkspaceUtilities {
 
     public static String loadProjectsList( File gpapProjectsFolder ) {
         try {
-            File[] geopaparazziProjectFiles = GeopaparazziWorkspaceUtilities.getGeopaparazziFiles(gpapProjectsFolder);
-            List<HashMap<String, String>> projectMetadataList = GeopaparazziWorkspaceUtilities
+            File[] geopaparazziProjectFiles = GeopaparazziUtilities.getGeopaparazziFiles(gpapProjectsFolder);
+            List<HashMap<String, String>> projectMetadataList = GeopaparazziUtilities
                     .readProjectMetadata(geopaparazziProjectFiles);
 
             StringBuilder sb = new StringBuilder();
@@ -220,10 +233,10 @@ public class GeopaparazziWorkspaceUtilities {
                     sb.append(",");
                 sb.append("{");
                 sb.append("    \"id\": \"" + geopaparazziProjectFiles[i].getName() + "\",");
-                sb.append("    \"title\": \"" + metadataMap.get("description") + "\",");
-                sb.append("    \"date\": \"" + metadataMap.get("creationts") + "\",");
-                sb.append("    \"author\": \"" + metadataMap.get("creationuser") + "\",");
-                sb.append("    \"name\": \"" + metadataMap.get("name") + "\",");
+                sb.append("    \"title\": \"" + metadataMap.get(PROJECT_DESCRIPTION) + "\",");
+                sb.append("    \"date\": \"" + metadataMap.get(PROJECT_CREATION_TS) + "\",");
+                sb.append("    \"author\": \"" + metadataMap.get(PROJECT_CREATION_USER) + "\",");
+                sb.append("    \"name\": \"" + metadataMap.get(PROJECT_NAME) + "\",");
                 sb.append("    \"size\": \"" + fileSize + "\"");
                 sb.append("}");
             }

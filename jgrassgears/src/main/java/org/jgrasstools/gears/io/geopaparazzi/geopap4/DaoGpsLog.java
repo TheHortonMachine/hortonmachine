@@ -20,6 +20,7 @@ package org.jgrasstools.gears.io.geopaparazzi.geopap4;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOGS;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOG_DATA;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOG_PROPERTIES;
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_IMAGES;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -30,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
@@ -37,6 +40,7 @@ import org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazziProject3To4Converter
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsDataTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsPropertiesTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsTableFields;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTableFields;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)
@@ -357,5 +361,35 @@ public class DaoGpsLog {
         public String toString() {
             return text;
         }
+    }
+    
+    
+    /**
+     * Get the current data envelope.
+     * 
+     * @param connection the db connection.
+     * @return the envelope.
+     * @throws Exception
+     */
+    public static ReferencedEnvelope getEnvelope( IJGTConnection connection ) throws Exception {
+        String query = "SELECT min(" + //
+                GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + "), max" + //
+                GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + "), min" + //
+                GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + "), max" + //
+                GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + ") " + //
+                " FROM " + TABLE_GPSLOG_DATA;
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(query);) {
+            if (rs.next()) {
+                double minX = rs.getDouble(1);
+                double maxX = rs.getDouble(2);
+                double minY = rs.getDouble(3);
+                double maxY = rs.getDouble(4);
+
+                ReferencedEnvelope env = new ReferencedEnvelope(minX, maxX, minY, maxY, DefaultGeographicCRS.WGS84);
+                return env;
+            }
+        }
+
+        return null;
     }
 }
