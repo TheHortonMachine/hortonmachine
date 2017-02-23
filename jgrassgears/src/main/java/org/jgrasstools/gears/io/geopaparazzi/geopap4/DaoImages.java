@@ -271,9 +271,9 @@ public class DaoImages {
      */
     public static ReferencedEnvelope getEnvelope( IJGTConnection connection ) throws Exception {
         String query = "SELECT min(" + //
-                ImageTableFields.COLUMN_LON.getFieldName() + "), max" + //
-                ImageTableFields.COLUMN_LON.getFieldName() + "), min" + //
-                ImageTableFields.COLUMN_LAT.getFieldName() + "), max" + //
+                ImageTableFields.COLUMN_LON.getFieldName() + "), max(" + //
+                ImageTableFields.COLUMN_LON.getFieldName() + "), min(" + //
+                ImageTableFields.COLUMN_LAT.getFieldName() + "), max(" + //
                 ImageTableFields.COLUMN_LAT.getFieldName() + ") " + //
                 " FROM " + TABLE_IMAGES;
         try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(query);) {

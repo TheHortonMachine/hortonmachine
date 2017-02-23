@@ -159,10 +159,6 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     public static final String DESCRIPTION = "Converts a geopaparazzi 4 project database into shapefiles.";
     // VARS DOCS END
 
-    public static final String GPS_LOGS = "GPS logs";
-    public static final String MEDIA_NOTES = "Media Notes";
-    public static final String SIMPLE_NOTES = "Simple Notes";
-
     public static final String EMPTY_STRING = " - ";
 
     public static final String MEDIA_FOLDER_NAME = "media";
@@ -275,52 +271,6 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             pm.worked(1);
         }
         pm.done();
-    }
-
-    /**
-     * @return the list of potential layers.
-     * @throws SQLException 
-     */
-    public static List<String> getLayerNamesList( IJGTConnection connection ) throws Exception {
-        List<String> layerNames = new ArrayList<>();
-        String sql = "select count(*) from " + TABLE_NOTES;
-        int count = countRows(connection, sql);
-        if (count > 0)
-            layerNames.add(SIMPLE_NOTES);
-
-        sql = "select count(*) from " + TABLE_IMAGES;
-        count = countRows(connection, sql);
-        if (count > 0)
-            layerNames.add(MEDIA_NOTES);
-
-        sql = "select count(*) from " + TABLE_GPSLOGS;
-        count = countRows(connection, sql);
-        if (count > 0)
-            layerNames.add(GPS_LOGS);
-
-        String formFN = NotesTableFields.COLUMN_FORM.getFieldName();
-        String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
-        sql = "select distinct " + textFN + " from " + TABLE_NOTES + " where " + formFN + " is not null and " + formFN + "<>''";
-        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
-            statement.setQueryTimeout(30); // set timeout to 30 sec.
-
-            while( rs.next() ) {
-                String formName = rs.getString(1);
-                layerNames.add(formName);
-            }
-        }
-
-        return layerNames;
-    }
-
-    private static int countRows( IJGTConnection connection, String sql ) throws Exception {
-        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
-            if (rs.next()) {
-                int notesCount = rs.getInt(1);
-                return notesCount;
-            }
-        }
-        return 0;
     }
 
     /**
@@ -1034,7 +984,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
             IJGTConnection connection = db.getConnection();
 
-            List<String> layerNamesList = getLayerNamesList(connection);
+            List<String> layerNamesList = GeopaparazziUtilities.getLayerNamesList(connection);
             for( String layer : layerNamesList ) {
                 System.out.println(layer);
             }

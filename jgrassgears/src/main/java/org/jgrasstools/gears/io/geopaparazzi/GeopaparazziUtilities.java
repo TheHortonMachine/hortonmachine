@@ -17,6 +17,8 @@
  */
 package org.jgrasstools.gears.io.geopaparazzi;
 
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOGS;
+import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_IMAGES;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_METADATA;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_NOTES;
 
@@ -48,7 +50,6 @@ import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTabl
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.MetadataTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -68,6 +69,10 @@ public class GeopaparazziUtilities {
     public static final String PROJECT_CREATION_TS = "creationts";
     public static final String PROJECT_DESCRIPTION = "description";
     public static final String GPAP_EXTENSION = "gpap";
+
+    public static final String GPS_LOGS = "GPS logs";
+    public static final String MEDIA_NOTES = "Media Notes";
+    public static final String SIMPLE_NOTES = "Simple Notes";
 
     private static final String TAG_KEY = "key";
     private static final String TAG_VALUE = "value";
@@ -131,7 +136,53 @@ public class GeopaparazziUtilities {
         return metadataMap;
     }
 
-    public static String getProjectInfo( IJGTConnection connection ) throws Exception {
+    /**
+     * @return the list of potential layers.
+     * @throws SQLException 
+     */
+    public static List<String> getLayerNamesList( IJGTConnection connection ) throws Exception {
+        String formFN = NotesTableFields.COLUMN_FORM.getFieldName();
+        String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
+        List<String> layerNames = new ArrayList<>();
+        String sql = "select count(*) from " + TABLE_NOTES + " where " + formFN + " is null or " + formFN + " = ''";
+        int count = countRows(connection, sql);
+        if (count > 0)
+            layerNames.add(SIMPLE_NOTES);
+
+        sql = "select count(*) from " + TABLE_IMAGES;
+        count = countRows(connection, sql);
+        if (count > 0)
+            layerNames.add(MEDIA_NOTES);
+
+        sql = "select count(*) from " + TABLE_GPSLOGS;
+        count = countRows(connection, sql);
+        if (count > 0)
+            layerNames.add(GPS_LOGS);
+
+        sql = "select distinct " + textFN + " from " + TABLE_NOTES + " where " + formFN + " is not null and " + formFN + "<>''";
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
+            statement.setQueryTimeout(30); // set timeout to 30 sec.
+
+            while( rs.next() ) {
+                String formName = rs.getString(1);
+                layerNames.add(formName);
+            }
+        }
+
+        return layerNames;
+    }
+
+    private static int countRows( IJGTConnection connection, String sql ) throws Exception {
+        try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
+            if (rs.next()) {
+                int notesCount = rs.getInt(1);
+                return notesCount;
+            }
+        }
+        return 0;
+    }
+
+    public static String getProjectInfo( IJGTConnection connection, boolean doHtml ) throws Exception {
         StringBuilder sb = new StringBuilder();
         String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
                 MetadataTableFields.COLUMN_VALUE.getFieldName() + " from " + TABLE_METADATA;
@@ -142,15 +193,23 @@ public class GeopaparazziUtilities {
                 String key = rs.getString(MetadataTableFields.COLUMN_KEY.getFieldName());
                 String value = rs.getString(MetadataTableFields.COLUMN_VALUE.getFieldName());
 
+                String openBold = "<b>";
+                String closeBold = "</b>";
+                String nl = "<br/>";
+                if (!doHtml) {
+                    openBold = "";
+                    closeBold = "";
+                    nl = "\n";
+                }
                 if (!key.endsWith("ts")) {
-                    sb.append("<b>").append(key).append(":</b> ").append(escapeHTML(value)).append("<br/>");
+                    sb.append(openBold).append(key).append(":" + closeBold + " ").append(escapeHTML(value)).append(nl);
                 } else {
                     try {
                         long ts = Long.parseLong(value);
                         String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
-                        sb.append("<b>").append(key).append(":</b> ").append(dateTimeString).append("<br/>");
+                        sb.append(openBold).append(key).append(":" + closeBold + " ").append(dateTimeString).append(nl);
                     } catch (Exception e) {
-                        sb.append("<b>").append(key).append(":</b> ").append(escapeHTML(value)).append("<br/>");
+                        sb.append(openBold).append(key).append(":" + closeBold + " ").append(escapeHTML(value)).append(nl);
                     }
                 }
             }

@@ -198,9 +198,9 @@ public class DaoNotes {
      */
     public static ReferencedEnvelope getEnvelope( IJGTConnection connection, String noteTypeName ) throws Exception {
         String query = "SELECT min(" + //
-                NotesTableFields.COLUMN_LON.getFieldName() + "), max" + //
-                NotesTableFields.COLUMN_LON.getFieldName() + "), min" + //
-                NotesTableFields.COLUMN_LAT.getFieldName() + "), max" + //
+                NotesTableFields.COLUMN_LON.getFieldName() + "), max(" + //
+                NotesTableFields.COLUMN_LON.getFieldName() + "), min(" + //
+                NotesTableFields.COLUMN_LAT.getFieldName() + "), max(" + //
                 NotesTableFields.COLUMN_LAT.getFieldName() + ") " + //
                 " FROM " + TABLE_NOTES;
 

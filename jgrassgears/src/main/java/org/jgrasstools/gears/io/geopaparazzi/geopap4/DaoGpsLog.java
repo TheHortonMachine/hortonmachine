@@ -373,9 +373,9 @@ public class DaoGpsLog {
      */
     public static ReferencedEnvelope getEnvelope( IJGTConnection connection ) throws Exception {
         String query = "SELECT min(" + //
-                GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + "), max" + //
-                GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + "), min" + //
-                GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + "), max" + //
+                GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + "), max(" + //
+                GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + "), min(" + //
+                GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + "), max(" + //
                 GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + ") " + //
                 " FROM " + TABLE_GPSLOG_DATA;
         try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(query);) {
