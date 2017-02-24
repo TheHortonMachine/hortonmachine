@@ -77,12 +77,12 @@
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-api</artifactId>
-		    <version>1.7.5</version>
+		    <version>${slf4j.version}</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-simple</artifactId>
-		    <version>1.7.5</version>
+		    <version>${slf4j.version}</version>
 		</dependency>
 
 		<!-- GeoTools -->
@@ -139,11 +139,6 @@
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-arcgrid</artifactId>
-			<version>${gt.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-imagemosaic</artifactId>
 			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
