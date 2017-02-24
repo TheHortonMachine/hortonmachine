@@ -74,9 +74,25 @@ public class GeopaparazziUtilities {
     public static final String MEDIA_NOTES = "Media Notes";
     public static final String SIMPLE_NOTES = "Simple Notes";
 
-    private static final String TAG_KEY = "key";
-    private static final String TAG_VALUE = "value";
-    private static final String TAG_TYPE = "type";
+    public static final String TAG_KEY = "key";
+    public static final String TAG_VALUE = "value";
+    public static final String TAG_TYPE = "type";
+
+    public static final String NOTES_tsFN = NotesTableFields.COLUMN_TS.getFieldName();
+    public static final String NOTES_altimFN = NotesTableFields.COLUMN_ALTIM.getFieldName();
+    public static final String NOTES_dirtyFN = NotesTableFields.COLUMN_ISDIRTY.getFieldName();
+    public static final String NOTES_textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
+    public static final String NOTES_descFN = NotesTableFields.COLUMN_DESCRIPTION.getFieldName();
+    public static final String NOTES_formFN = NotesTableFields.COLUMN_FORM.getFieldName();
+
+    public static final String GPSLOG_descrFN = "DESCR";
+    public static final String GPSLOG_enddateFN = "ENDDATE";
+    public static final String GPSLOG_startdateFN = "STARTDATE";
+
+    public static final String IMAGES_altimFN = ImageTableFields.COLUMN_ALTIM.getFieldName();
+    public static final String IMAGES_tsFN = ImageTableFields.COLUMN_TS.getFieldName();
+    public static final String IMAGES_azimFN = ImageTableFields.COLUMN_AZIM.getFieldName();
+    public static final String IMAGES_imageidFN = "imageid";
 
     public static List<HashMap<String, String>> readProjectMetadata( File[] projectFiles ) throws Exception {
         List<HashMap<String, String>> infoList = new ArrayList<HashMap<String, String>>();
@@ -327,20 +343,16 @@ public class GeopaparazziUtilities {
     }
 
     public static SimpleFeatureType getSimpleNotesfeatureType() {
-        String tsFN = NotesTableFields.COLUMN_TS.getFieldName();
-        String altimFN = NotesTableFields.COLUMN_ALTIM.getFieldName();
-        String dirtyFN = NotesTableFields.COLUMN_ISDIRTY.getFieldName();
-        String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
-        String descFN = NotesTableFields.COLUMN_DESCRIPTION.getFieldName();
+
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("gpsimplenotes"); //$NON-NLS-1$
         b.setCRS(DefaultGeographicCRS.WGS84);
         b.add("the_geom", Point.class); //$NON-NLS-1$
-        b.add(textFN, String.class);
-        b.add(descFN, String.class);
-        b.add(tsFN, String.class);
-        b.add(altimFN, Double.class);
-        b.add(dirtyFN, Integer.class);
+        b.add(NOTES_textFN, String.class);
+        b.add(NOTES_descFN, String.class);
+        b.add(NOTES_tsFN, String.class);
+        b.add(NOTES_altimFN, Double.class);
+        b.add(NOTES_dirtyFN, Integer.class);
         SimpleFeatureType featureType = b.buildFeatureType();
         return featureType;
     }
@@ -350,9 +362,9 @@ public class GeopaparazziUtilities {
         b.setName("geopaparazzilogs");
         b.setCRS(DefaultGeographicCRS.WGS84);
         b.add("the_geom", MultiLineString.class);
-        b.add("STARTDATE", String.class);
-        b.add("ENDDATE", String.class);
-        b.add("DESCR", String.class);
+        b.add(GPSLOG_startdateFN, String.class);
+        b.add(GPSLOG_enddateFN, String.class);
+        b.add(GPSLOG_descrFN, String.class);
         SimpleFeatureType featureType = b.buildFeatureType();
         return featureType;
     }
@@ -362,30 +374,22 @@ public class GeopaparazziUtilities {
         b.setName("geopaparazzimediapoints");
         b.setCRS(DefaultGeographicCRS.WGS84);
         b.add("the_geom", Point.class);
-        String altimFN = ImageTableFields.COLUMN_ALTIM.getFieldName();
-        String tsFN = ImageTableFields.COLUMN_TS.getFieldName();
-        String azimFN = ImageTableFields.COLUMN_AZIM.getFieldName();
-        b.add(altimFN, String.class);
-        b.add(tsFN, String.class);
-        b.add(azimFN, Double.class);
-        b.add("imageid", Long.class);
+
+        b.add(IMAGES_altimFN, String.class);
+        b.add(IMAGES_tsFN, String.class);
+        b.add(IMAGES_azimFN, Double.class);
+        b.add(IMAGES_imageidFN, Long.class);
         SimpleFeatureType featureType = b.buildFeatureType();
         return featureType;
     }
 
     public static SimpleFeatureType getComplexNotefeatureType( String noteName, IJGTConnection connection ) throws Exception {
-        String tsFN = NotesTableFields.COLUMN_TS.getFieldName();
-        String altimFN = NotesTableFields.COLUMN_ALTIM.getFieldName();
-        String dirtyFN = NotesTableFields.COLUMN_ISDIRTY.getFieldName();
-        String formFN = NotesTableFields.COLUMN_FORM.getFieldName();
-        String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
-
         String sql = "select " + //
-                formFN + " from " + //
-                TABLE_NOTES + " where " + textFN + "='" + noteName + "'";
+                NOTES_formFN + " from " + //
+                TABLE_NOTES + " where " + NOTES_textFN + "='" + noteName + "'";
         try (IJGTStatement statement = connection.createStatement(); IJGTResultSet rs = statement.executeQuery(sql);) {
             while( rs.next() ) {
-                String formString = rs.getString(formFN);
+                String formString = rs.getString(NOTES_formFN);
                 if (formString == null || formString.trim().length() == 0) {
                     continue;
                 }
@@ -409,9 +413,9 @@ public class GeopaparazziUtilities {
                 b.setName(sectionName); // $NON-NLS-1$
                 b.setCRS(DefaultGeographicCRS.WGS84);
                 b.add("the_geom", Point.class); //$NON-NLS-1$
-                b.add(tsFN, String.class); // $NON-NLS-1$
-                b.add(altimFN, Double.class); // $NON-NLS-1$
-                b.add(dirtyFN, Integer.class); // $NON-NLS-1$
+                b.add(NOTES_tsFN, String.class); // $NON-NLS-1$
+                b.add(NOTES_altimFN, Double.class); // $NON-NLS-1$
+                b.add(NOTES_dirtyFN, Integer.class); // $NON-NLS-1$
                 for( Entry<String, String> entry : entrySet ) {
                     String key = entry.getKey();
                     key = key.replaceAll("\\s+", "_");

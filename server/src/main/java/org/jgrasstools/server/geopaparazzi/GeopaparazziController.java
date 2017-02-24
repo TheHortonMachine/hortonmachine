@@ -400,7 +400,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             try (SqliteDb db = new SqliteDb()) {
                 db.open(geopapDatabaseFile.getAbsolutePath());
                 IJGTConnection connection = db.getConnection();
-                String projectInfo = GeopaparazziUtilities.getProjectInfo(connection);
+                String projectInfo = GeopaparazziUtilities.getProjectInfo(connection, true);
                 ProjectInfo info = new ProjectInfo();
                 info.databaseFile = geopapDatabaseFile;
                 info.fileName = geopapDatabaseFile.getName();
@@ -1138,7 +1138,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                         statement.executeUpdate(query);
                     }
                 }
-                String projectInfo = GeopaparazziUtilities.getProjectInfo(connection);
+                String projectInfo = GeopaparazziUtilities.getProjectInfo(connection, true);
                 currentSelectedProject.metadata = projectInfo;
                 selectProjectInfo(currentSelectedProject);
             }
