@@ -381,15 +381,25 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
         layoutTree(null, false);
 
-        Component wwjPanelComponent = NwwPanel.createNwwPanel(true);
-        _nwwHolder.setLayout(new BorderLayout());
-        _nwwHolder.add(wwjPanelComponent, BorderLayout.CENTER);
+        Component wwjPanelComponent = null;
+        try {
+            wwjPanelComponent = NwwPanel.createNwwPanel(true);
+        } catch (UnsatisfiedLinkError e1) {
+            // ignore
+        }
 
         if (wwjPanelComponent instanceof NwwPanel) {
+            _nwwHolder.setLayout(new BorderLayout());
+            _nwwHolder.add(wwjPanelComponent, BorderLayout.CENTER);
             wwjPanel = (NwwPanel) wwjPanelComponent;
             wwjPanel.addOsmLayer();
             geopapDataLayer = new RenderableLayer();
             wwjPanel.addLayer(geopapDataLayer);
+        } else {
+            _nwwHolderFrame.setVisible(false);
+            _chartHolderFrame.setVisible(false);
+            
+            setPreferredSize(new Dimension(400, 600));
         }
 
     }

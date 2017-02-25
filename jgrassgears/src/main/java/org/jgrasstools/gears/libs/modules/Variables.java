@@ -39,7 +39,7 @@ public interface Variables {
     public String DIFFERENCE = "difference";
     public String SYMDIFFERENCE = "symdifference";
 
-    public String TCA = "tca";
+    public String TCA = "only tca";
     public String TCA_SLOPE = "tca and slope";
     public String TCA_CONVERGENT = "tca in convergent sites";
 
