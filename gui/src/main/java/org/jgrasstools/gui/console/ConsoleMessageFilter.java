@@ -31,13 +31,23 @@ public class ConsoleMessageFilter {
     private static Stream<String> containsStream;
     private static Stream<String> endsStream;
     static {
+
         List<String> containsStrings = new ArrayList<String>();
         containsStrings.add("Kakadu");
         containsStrings.add("Error while parsing JAI registry");
         containsStrings.add("A descriptor is already registered");
         containsStrings.add("Error in registry file");
         containsStrings.add("Logging initialized");
-
+        containsStrings.add("log4j:WARN");
+        containsStrings.add("Error: Could not find mediaLib");
+        containsStrings.add("SLF4J: ");
+        containsStrings.add("[main] INFO ");
+        containsStrings.add(" INFO [main] ");
+        containsStrings.add("Occurs in: com.sun.media.jai.mlib.MediaLibAccessor");
+        containsStrings.add("java.lang.NoClassDefFoundError: com/sun/medialib/mlib/Image");
+        containsStrings.add("Caused by: java.lang.ClassNotFoundException: com.sun.medialib.mlib.Image");
+        // "\tat ", //
+        // "\t... ", //
         containsStream = containsStrings.parallelStream();
 
         List<String> endStrings = new ArrayList<String>();

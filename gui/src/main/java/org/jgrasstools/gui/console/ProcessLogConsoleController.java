@@ -53,22 +53,6 @@ public class ProcessLogConsoleController extends ProcessLogConsoleView implement
     private JTextPane logPane;
     private JScrollPane scrollPane;
 
-    private List<String> invalidStarts = Arrays.asList(new String[]{//
-            "log4j:WARN", //
-            "Error while parsing JAI", //
-            "Error in registry file", //
-            "Error: Could not find mediaLib", //
-            "SLF4J: ", //
-            "[main] INFO ", //
-            " INFO [main] ", //
-            "Occurs in: com.sun.media.jai.mlib.MediaLibAccessor", //
-            "A descriptor is already registered", //
-            "java.lang.NoClassDefFoundError: com/sun/medialib/mlib/Image", //
-            "Caused by: java.lang.ClassNotFoundException: com.sun.medialib.mlib.Image", //
-            "\tat ", //
-            "\t... ", //
-    });
-
     public ProcessLogConsoleController() {
         init();
     }
@@ -176,7 +160,7 @@ public class ProcessLogConsoleController extends ProcessLogConsoleView implement
         try {
             // logPane.setText(message);
             if (doc != null) {
-                if (isValid(message))
+                if (!ConsoleMessageFilter.doRemove(message))
                     doc.insertString(doc.getLength(), message + "\n", style.getAttributeSet());
                 // logPane.setCaretPosition(doc.getLength());
             }
@@ -186,12 +170,6 @@ public class ProcessLogConsoleController extends ProcessLogConsoleView implement
 
         scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
 
-    }
-
-    private boolean isValid( String message ) {
-        // remove logs and strange messages from the libs
-        Optional<String> first = invalidStarts.parallelStream().filter(iv -> message.startsWith(iv)).findFirst();
-        return !first.isPresent();
     }
 
     public void onProcessStopped() {
