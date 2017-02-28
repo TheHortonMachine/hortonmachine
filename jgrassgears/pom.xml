@@ -4,13 +4,13 @@
 	<parent>
 		<groupId>org.jgrasstools</groupId>
 		<artifactId>jgrasstools</artifactId>
-		<version>0.8.1-SNAPSHOT</version>
+		<version>0.8.1</version>
 	</parent>
 
 
 	<groupId>org.jgrasstools</groupId>
 	<artifactId>jgt-jgrassgears</artifactId>
-	<version>0.8.1-SNAPSHOT</version>
+	<version>0.8.1</version>
 	<packaging>jar</packaging>
 	<name>JGrass Gears</name>
 
@@ -19,12 +19,12 @@
 		<dependency>
 			<groupId>org.jgrasstools</groupId>
 			<artifactId>jgt-oms3</artifactId>
-			<version>0.8.1-SNAPSHOT</version>
+			<version>0.8.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jgrasstools</groupId>
 			<artifactId>jgt-dbs</artifactId>
-			<version>0.8.1-SNAPSHOT</version>
+			<version>0.8.1</version>
 		</dependency>
 
 		<!-- Java Advanced Imaging (JAI) 
