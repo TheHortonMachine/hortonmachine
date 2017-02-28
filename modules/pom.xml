@@ -5,12 +5,12 @@
   <parent>
     <groupId>org.jgrasstools</groupId>
     <artifactId>jgrasstools</artifactId>
-    <version>0.8.1</version>
+    <version>0.8.2-SNAPSHOT</version>
   </parent>
 
   <groupId>org.jgrasstools</groupId>
   <artifactId>jgt-modules</artifactId>
-  <version>0.8.1</version>
+  <version>0.8.2-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>JGrasstools Simple Modules Wrapper</name>
   
@@ -18,13 +18,13 @@
 	<dependency>
 		<groupId>org.jgrasstools</groupId>
 		<artifactId>jgt-hortonmachine</artifactId>
-        <version>0.8.1</version>
+        <version>0.8.2-SNAPSHOT</version>
 </dependency>
 
 	<dependency>
 		<groupId>org.jgrasstools</groupId>
 		<artifactId>jgt-lesto</artifactId>
-        <version>0.8.1</version>
+        <version>0.8.2-SNAPSHOT</version>
 	</dependency>
 
     <dependency>
