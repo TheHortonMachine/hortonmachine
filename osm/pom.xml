@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.jgrasstools</groupId>
+		<artifactId>jgrasstools</artifactId>
+		<version>0.8.2-SNAPSHOT</version>
+	</parent>
+
+	<groupId>org.jgrasstools</groupId>
+	<artifactId>jgt-osm</artifactId>
+	<version>0.8.2-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<name>JGrasstools Openstreetmap Support</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.jgrasstools</groupId>
+			<artifactId>jgt-jgrassgears</artifactId>
+			<version>0.8.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>de.westnordost</groupId>
+			<artifactId>osmapi</artifactId>
+			<version>1.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.5</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>doclint-java8-disable</id>
+			<activation>
+				<jdk>[1.8,)</jdk>
+			</activation>
+			<properties>
+				<javadoc.opts>-Xdoclint:none</javadoc.opts>
+			</properties>
+		</profile>
+	</profiles>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<configuration>
+							<additionalparam>${javadoc.opts}</additionalparam>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
