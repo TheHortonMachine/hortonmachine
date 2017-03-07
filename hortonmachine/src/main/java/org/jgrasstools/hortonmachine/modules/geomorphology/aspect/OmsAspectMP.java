@@ -222,14 +222,14 @@ public class OmsAspectMP
     // Test ***********************************************
     
     public static void main( String[] args ) throws Exception {
-        OmsAspectMP aspect = new OmsAspectMP();
+        OmsAspect aspect = new OmsAspect();
         aspect.pm = new PrintStreamProgressMonitor();
         
         ExecutionPlanner.defaultPlannerFactory = () -> new FixedChunkSizePlanner();
         //ExecutionPlanner.defaultPlannerFactory = () -> new InThreadExecutionPlanner();
         
         long start = System.currentTimeMillis();
-        aspect.inElev = aspect.getRaster( "/home/falko/Data/ncrast/elevation.tif" );
+        aspect.inElev = aspect.getRaster( "/home/falko/Data/ncrast/elevation_3857.tif" );
         System.out.println( "inElev: " + aspect.inElev );
         
         ComponentAccess.callAnnotated( aspect, Initialize.class, true );
