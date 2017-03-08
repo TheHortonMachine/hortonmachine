@@ -30,7 +30,7 @@ public class DefaultTables {
                 "255 0 255\n" + //
                 "255 0 0\n";
 
-        map.put(ColorTables.rainbow.name(), rainbow);
+        map.put(EColorTables.rainbow.name(), rainbow);
 
         String extRainbow = "255 255 0\n" + //
                 "128 255 0\n" + //
@@ -44,12 +44,12 @@ public class DefaultTables {
                 "255 0 128\n" + //
                 "255 0 0\n";
 
-        map.put(ColorTables.extrainbow.name(), extRainbow);
+        map.put(EColorTables.extrainbow.name(), extRainbow);
 
         String aspect = "255 255 255\n" + //
                 "0 0 0\n" + //
                 "255 255 255";
-        map.put(ColorTables.aspect.name(), aspect);
+        map.put(EColorTables.aspect.name(), aspect);
 
         String bath = "-30000    0   0   0    -20000    0   0   0  \n" + //
                 "-20000    0   0   0    -10000    0   0   59  \n" + //
@@ -69,7 +69,7 @@ public class DefaultTables {
                 "2000      255 255 0    3000      255 255 127\n" + //
                 "3000      255 255 127  4000      255 255 244\n" + //
                 "4000      255 255 255  10000     255 255 255";
-        map.put(ColorTables.bathymetric.name(), bath);
+        map.put(EColorTables.bathymetric.name(), bath);
 
         String elev = "0 191 191 \n" + //
                 "0 255 0 \n" + //
@@ -77,7 +77,7 @@ public class DefaultTables {
                 "255 127 0\n" + //
                 "191 127 63 \n" + //
                 "20 21 20\n";
-        map.put(ColorTables.elev.name(), elev);
+        map.put(EColorTables.elev.name(), elev);
 
         String flow = "1 255 255 0\n" + //
                 "2 0 255 0\n" + //
@@ -88,7 +88,7 @@ public class DefaultTables {
                 "7 255 165 0\n" + //
                 "8 30 144 255\n" + //
                 "10 255 0 0\n";
-        map.put(ColorTables.flow.name(), flow);
+        map.put(EColorTables.flow.name(), flow);
 
         String loga = "-1.0 255 255 255 0 255 255 255\n" + //
                 "0.0 255 255 0 1 0 255 0\n" + //
@@ -98,7 +98,7 @@ public class DefaultTables {
                 "1000 255 0 255 10000 255 0 0\n" + //
                 "10000 255 0 0 100000 110 0 0\n" + //
                 "100000 110 0 0 1000000 0 0 0\n";
-        map.put(ColorTables.logarithmic.name(), loga);
+        map.put(EColorTables.logarithmic.name(), loga);
 
         String tca = "1 255 255 255\n" + //
                 "10 0 255 0\n" + //
@@ -108,14 +108,14 @@ public class DefaultTables {
                 "100000 255 0 0\n" + //
                 "1000000 110 0 0\n" + //
                 "10000000 0 0 0\n";
-        map.put(ColorTables.tca.name(), tca);
+        map.put(EColorTables.tca.name(), tca);
 
         String sea = "-30000.0 255 255 255 -8000.0 255 255 255\n" + //
                 "-8000.0 0 0 255 -2500.0 30 144 255\n" + //
                 "-2500.0 30 144 255 -2000 162 208 252\n" + //
                 "-2000 162 208 252 -1500 250 117 117\n" + //
                 "-1500 250 117 117 0.0 255 0 0\n";
-        map.put(ColorTables.sea.name(), sea);
+        map.put(EColorTables.sea.name(), sea);
 
         String radiation = "198 198 224\n" + //
                 "0 0 115\n" + //
@@ -129,25 +129,25 @@ public class DefaultTables {
                 "255 180 0\n" + //
                 "255 0 0\n";
 
-        map.put(ColorTables.radiation.name(), radiation);
+        map.put(EColorTables.radiation.name(), radiation);
 
         String net = "2 255 0 0 2 255 0 0";
-        map.put(ColorTables.net.name(), net);
+        map.put(EColorTables.net.name(), net);
 
         String greyscale = "0 0 0 \n" + //
                 "255 255 255\n";
-        map.put(ColorTables.greyscale.name(), greyscale);
+        map.put(EColorTables.greyscale.name(), greyscale);
 
         String greyscaleInverse = "255 255 255\n" + //
                 "0 0 0\n";
-        map.put(ColorTables.greyscaleinverse.name(), greyscaleInverse);
+        map.put(EColorTables.greyscaleinverse.name(), greyscaleInverse);
 
         String shalstab = "1.0 255 0 0 1.0 255 0 0\n" + //
                 "2.0 0 255 0 2.0 0 255 0\n" + //
                 "3.0 255 255 0 3.0 255 255 0\n" + //
                 "4.0 0 0 255 4.0 0 0 255\n" + //
                 "8888.0 77 77 77 8888.0 77 77 77\n";
-        map.put(ColorTables.shalstab.name(), shalstab);
+        map.put(EColorTables.shalstab.name(), shalstab);
 
         String slope = " -5.0 255 0 0   -2.0 255 0 128  \n" + //
                 " -2.0 255 0 128 -1.0 255 0 255  \n" + //
@@ -171,7 +171,7 @@ public class DefaultTables {
                 "1.0 255 0 255 2.0 255 0 128\n" + //
                 "2.0 255 0 128 5.0 255 0 0";
 
-        map.put(ColorTables.slope.name(), slope);
+        map.put(EColorTables.slope.name(), slope);
 
         String geomorphon = "1000.0 127 127 127\n" + //
                 "1001.0 108 0 0\n" + //
@@ -182,7 +182,7 @@ public class DefaultTables {
                 "1006.0 143 203 44\n" + //
                 "1007.0 50 189 160\n" + //
                 "1008.0 0 0 255\n";
-        map.put(ColorTables.geomorphon.name(), geomorphon);
+        map.put(EColorTables.geomorphon.name(), geomorphon);
     }
 
     /**

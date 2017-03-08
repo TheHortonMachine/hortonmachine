@@ -32,7 +32,7 @@ import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.features.FilterUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.style.SimpleStyle;
 import org.jgrasstools.gears.utils.style.SimpleStyleUtilities;
@@ -128,11 +128,11 @@ public class ShapeFileDataProvider implements NwwDataProvider {
     public SimpleStyle getStyle() throws Exception {
         SimpleStyle style = null;
         if (isPoints()) {
-            style = SimpleStyleUtilities.getStyle(shapefile, GeometryType.POINT);
+            style = SimpleStyleUtilities.getStyle(shapefile, EGeometryType.POINT);
         } else if (isLines()) {
-            style = SimpleStyleUtilities.getStyle(shapefile, GeometryType.LINE);
+            style = SimpleStyleUtilities.getStyle(shapefile, EGeometryType.LINE);
         } else if (isPolygon()) {
-            style = SimpleStyleUtilities.getStyle(shapefile, GeometryType.POLYGON);
+            style = SimpleStyleUtilities.getStyle(shapefile, EGeometryType.POLYGON);
         }
         return style;
     }

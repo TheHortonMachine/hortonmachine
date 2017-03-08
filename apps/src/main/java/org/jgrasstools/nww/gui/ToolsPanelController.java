@@ -43,12 +43,12 @@ import org.geotools.styling.Style;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.spatialite.RasterCoverage;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
-import org.jgrasstools.dbs.spatialite.SpatialiteGeometryType;
+import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.style.SimpleStyle;
 import org.jgrasstools.gears.utils.style.SimpleStyleUtilities;
@@ -529,7 +529,7 @@ public class ToolsPanelController extends ToolsPanelView {
                     } else {
                         SpatialiteGeometryColumns geometryColumn = db.getGeometryColumnsForTable(tableName);
                         if (geometryColumn != null) {
-                            SpatialiteGeometryType geomType = SpatialiteGeometryType.forValue(geometryColumn.geometry_type);
+                            ESpatialiteGeometryType geomType = ESpatialiteGeometryType.forValue(geometryColumn.geometry_type);
                             if (geomType.isPolygon()) {
                                 SpatialitePolygonLayer layer = new SpatialitePolygonLayer(db, tableName, 10000);
                                 wwjPanel.getWwd().getModel().getLayers().add(layer);
@@ -591,7 +591,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
-                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, GeometryType.POLYGON);
+                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, EGeometryType.POLYGON);
                 if (style != null) {
                     featureCollectionPolygonLayer.setStyle(style);
                 }
@@ -603,7 +603,7 @@ public class ToolsPanelController extends ToolsPanelView {
                         featureStore, field2ValuesMap);
                 featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
-                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, GeometryType.LINE);
+                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, EGeometryType.LINE);
                 if (style != null) {
                     featureCollectionLinesLayer.setStyle(style);
                 }
@@ -622,7 +622,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
                 FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name, readFC,
                         featureStore, field2ValuesMap, imagePath);
-                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, GeometryType.POINT);
+                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, EGeometryType.POINT);
                 if (style != null) {
                     featureCollectionPointsLayer.setStyle(style);
                 }

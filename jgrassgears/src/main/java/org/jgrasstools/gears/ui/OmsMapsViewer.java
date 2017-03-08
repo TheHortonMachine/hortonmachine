@@ -62,7 +62,7 @@ import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.SldUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.FilterFactory;
@@ -207,7 +207,7 @@ public class OmsMapsViewer extends JGTModel {
         for( String path : inVectors ) {
             SimpleFeatureCollection fc = OmsVectorReader.readVector(path);
             GeometryDescriptor geometryDescriptor = fc.getSchema().getGeometryDescriptor();
-            GeometryType type = GeometryUtilities.getGeometryType(geometryDescriptor.getType());
+            EGeometryType type = GeometryUtilities.getGeometryType(geometryDescriptor.getType());
 
             File file = new File(path);
             Style style = SldUtilities.getStyleFromFile(file);

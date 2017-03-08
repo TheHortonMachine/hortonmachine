@@ -177,8 +177,8 @@ public class DaoGpsLog {
 
     public static void addGpsLog( Connection connection, OmsGeopaparazziProject3To4Converter.GpsLog log, float width,
             String color, boolean visible ) throws Exception {
-        Date startTS = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(log.startTime);
-        Date endTS = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(log.endTime);
+        Date startTS = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(log.startTime);
+        Date endTS = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(log.endTime);
 
         String insertSQL1 = "INSERT INTO " + TableDescriptions.TABLE_GPSLOGS + "(" + //
                 TableDescriptions.GpsLogsTableFields.COLUMN_ID.getFieldName() + ", " + //
@@ -233,7 +233,7 @@ public class DaoGpsLog {
      */
     public static void addGpsLogDataPoint( Connection connection, OmsGeopaparazziProject3To4Converter.GpsPoint point,
             long gpslogId ) throws Exception {
-        Date timestamp = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(point.utctime);
+        Date timestamp = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(point.utctime);
 
         String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_GPSLOG_DATA + "(" + //
                 TableDescriptions.GpsLogsDataTableFields.COLUMN_ID.getFieldName() + ", " + //

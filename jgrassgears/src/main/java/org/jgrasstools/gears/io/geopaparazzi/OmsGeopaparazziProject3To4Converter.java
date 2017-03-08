@@ -280,7 +280,7 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
                         form = sectionObject.toString();
                     }
 
-                    Date ts = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(dateTimeString);
+                    Date ts = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(dateTimeString);
 
                     DaoNotes.addNote(geopap4Connection, id, lon, lat, altim, ts.getTime(), text, form);
                 } catch (Exception e) {
@@ -450,7 +450,7 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
                         altim = Double.parseDouble(altimString);
                     }
 
-                    Date timestamp = TimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.parse(dateString + "_" + timeString);
+                    Date timestamp = ETimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.parse(dateString + "_" + timeString);
 
                     /*
                      * image bytes read as they are on disk, so that they can be decoded in geopap

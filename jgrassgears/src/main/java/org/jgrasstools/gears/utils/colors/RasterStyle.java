@@ -20,7 +20,7 @@ package org.jgrasstools.gears.utils.colors;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.modules.r.summary.OmsRasterSummary;
-import org.jgrasstools.gears.utils.colors.ColorTables;
+import org.jgrasstools.gears.utils.colors.EColorTables;
 import org.jgrasstools.gears.utils.colors.RasterStyleUtilities;
 
 /**
@@ -65,7 +65,7 @@ public class RasterStyle {
         sb.append(colorTableName);
         sb.append(" could not be found in the default colortables.\n");
         sb.append("Available colortables are:\n");
-        for (ColorTables colorTable : ColorTables.values()) {
+        for (EColorTables colorTable : EColorTables.values()) {
             sb.append("\t");
             sb.append(colorTable.name());
             sb.append("\n");

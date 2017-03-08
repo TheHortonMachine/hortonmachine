@@ -30,7 +30,7 @@ import com.vividsolutions.jts.geom.Polygon;
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public enum SpatialiteGeometryType {
+public enum ESpatialiteGeometryType {
     /*
      * XY
      */
@@ -96,7 +96,7 @@ public enum SpatialiteGeometryType {
      * @param spaceDimensionsCast the space dimension cast sql piece.
      * @param multiSingleCast     the cast sql piece for single or multi geom.
      */
-    SpatialiteGeometryType( int type, String description, String geometryTypeCast, String spaceDimensionsCast,
+    ESpatialiteGeometryType( int type, String description, String geometryTypeCast, String spaceDimensionsCast,
             String multiSingleCast, Class< ? > geometryClass ) {
         this.type = type;
         this.description = description;
@@ -149,9 +149,9 @@ public enum SpatialiteGeometryType {
      * Get the type from the int value in spatialite 4.
      *
      * @param value the type.
-     * @return the {@link SpatialiteGeometryType}.
+     * @return the {@link ESpatialiteGeometryType}.
      */
-    public static SpatialiteGeometryType forValue( int value ) {
+    public static ESpatialiteGeometryType forValue( int value ) {
         switch( value ) {
         case 0:
             return GEOMETRY_XY;
@@ -281,7 +281,7 @@ public enum SpatialiteGeometryType {
      * @param geometryType the geometry type to check.
      * @return <code>true</code>, if the geometry is compatible.
      */
-    public boolean isGeometryTypeCompatible( SpatialiteGeometryType geometryType ) {
+    public boolean isGeometryTypeCompatible( ESpatialiteGeometryType geometryType ) {
         String otherDescription = geometryType.getDescription();
         String thisDescription = getDescription();
         /*
@@ -359,13 +359,13 @@ public enum SpatialiteGeometryType {
     }
 
     /**
-     * Get the {@link SpatialiteGeometryType} int value from the geometry type name as of spatialite 3.
+     * Get the {@link ESpatialiteGeometryType} int value from the geometry type name as of spatialite 3.
      * <p/>
      * @param name the geometry type name.
      * @return the type or -1 if type is unknown.
      */
     public static int forValue( String name ) {
-        SpatialiteGeometryType type = forName(name);
+        ESpatialiteGeometryType type = forName(name);
         if (type != null) {
             return type.getType();
         }
@@ -378,8 +378,8 @@ public enum SpatialiteGeometryType {
      * @param name the geometry type name.
      * @return the type or <code>null</code> if unknown.
      */
-    public static SpatialiteGeometryType forName( String name ) {
-        for( SpatialiteGeometryType type : values() ) {
+    public static ESpatialiteGeometryType forName( String name ) {
+        for( ESpatialiteGeometryType type : values() ) {
             if (type.getDescription().startsWith(name.toLowerCase()))
                 return type;
         }

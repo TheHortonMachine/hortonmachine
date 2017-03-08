@@ -24,7 +24,7 @@ package org.jgrasstools.gears.utils.images;
  * @since 0.7.6
  *
  */
-public enum PaperFormat {
+public enum EPaperFormat {
     A0Landscape(1189, 841), //
     A0Portrait(841, 1189), //
     A1Landscape(841, 594), //
@@ -45,7 +45,7 @@ public enum PaperFormat {
      * @param width in millimeters.
      * @param height in millimeters.
      */
-    PaperFormat( int width, int height ) {
+    EPaperFormat( int width, int height ) {
         this.width = width;
         this.height = height;
     }

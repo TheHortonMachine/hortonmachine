@@ -63,7 +63,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -126,9 +126,9 @@ public class OmsVectorIntersector extends JGTModel {
             throw new ModelsIllegalargumentException("No features found in the layer.", this);
         }
 
-        GeometryType geometryType = GeometryUtilities.getGeometryType((Geometry) mainFeatures.get(0).getDefaultGeometry());
+        EGeometryType geometryType = GeometryUtilities.getGeometryType((Geometry) mainFeatures.get(0).getDefaultGeometry());
         Class< ? > multiClazz = geometryType.getMultiClazz();
-        GeometryType newGeometryType = GeometryType.forClass(multiClazz);
+        EGeometryType newGeometryType = EGeometryType.forClass(multiClazz);
         FeatureGeometrySubstitutor sub = new FeatureGeometrySubstitutor(inMap1.getSchema(), multiClazz);
 
         pm.beginTask("Performing intersection...", mainFeatures.size());
@@ -137,7 +137,7 @@ public class OmsVectorIntersector extends JGTModel {
             if (preparedIntersectionGeometry.intersects(geometry)) {
                 Geometry intersection = geometry.intersection(intersectionGeometry);
 
-                GeometryType intersectionGeometryType = GeometryUtilities.getGeometryType(intersection);
+                EGeometryType intersectionGeometryType = GeometryUtilities.getGeometryType(intersection);
                 if (intersectionGeometryType.isCompatibleWith(newGeometryType)) {
                     SimpleFeature newFeature = sub.substituteGeometry(feature, intersection);
                     ((DefaultFeatureCollection) outMap).add(newFeature);

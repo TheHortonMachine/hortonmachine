@@ -49,7 +49,7 @@ import org.jgrasstools.gears.io.geopaparazzi.forms.Utilities;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.MetadataTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -140,7 +140,7 @@ public class GeopaparazziUtilities {
                 } else {
                     try {
                         long ts = Long.parseLong(value);
-                        String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
+                        String dateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
                         metadataMap.put(key, dateTimeString);
                     } catch (Exception e) {
                         metadataMap.put(key, value);
@@ -222,7 +222,7 @@ public class GeopaparazziUtilities {
                 } else {
                     try {
                         long ts = Long.parseLong(value);
-                        String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
+                        String dateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
                         sb.append(openBold).append(key).append(":" + closeBold + " ").append(dateTimeString).append(nl);
                     } catch (Exception e) {
                         sb.append(openBold).append(key).append(":" + closeBold + " ").append(escapeHTML(value)).append(nl);
@@ -265,7 +265,7 @@ public class GeopaparazziUtilities {
                 double lon = rs.getDouble(lonFN);
                 double altim = rs.getDouble(altimFN);
                 long ts = rs.getLong(tsFN);
-                String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
+                String dateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
                 String text = rs.getString(textFN);
                 String descr = rs.getString(descFN);
                 if (descr == null)

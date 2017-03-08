@@ -22,14 +22,14 @@ import java.awt.Color;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
-public enum LogStyle {
+public enum ELogStyle {
     NORMAL, COMMENT, ERROR;
 
     private SimpleAttributeSet errorSet;
     private SimpleAttributeSet commentSet;
     private SimpleAttributeSet normalSet;
 
-    LogStyle() {
+    ELogStyle() {
         errorSet = new SimpleAttributeSet();
         StyleConstants.setForeground(errorSet, Color.RED);
         // StyleConstants.setBackground(errorSet, Color.YELLOW);

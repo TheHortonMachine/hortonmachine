@@ -71,7 +71,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.dbs.spatialite.ForeignKey;
 import org.jgrasstools.dbs.spatialite.QueryResult;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
-import org.jgrasstools.dbs.spatialite.SpatialiteGeometryType;
+import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
 import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.dbs.spatialite.objects.ColumnLevel;
@@ -288,7 +288,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                         } else if (columnLevel.references != null) {
                             setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_INDEX));
                         } else if (columnLevel.geomColumn != null) {
-                            SpatialiteGeometryType gType = SpatialiteGeometryType.forValue(columnLevel.geomColumn.geometry_type);
+                            ESpatialiteGeometryType gType = ESpatialiteGeometryType.forValue(columnLevel.geomColumn.geometry_type);
                             switch( gType ) {
                             case POINT_XY:
                             case POINT_XYM:

@@ -23,7 +23,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
-import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -238,7 +238,7 @@ public class FeatureMate {
      * @throws IllegalArgumentException in the case the geometry is a point.
      */
     public void convertToLine() throws IllegalArgumentException {
-        GeometryType geometryType = GeometryUtilities.getGeometryType(getGeometry());
+        EGeometryType geometryType = GeometryUtilities.getGeometryType(getGeometry());
         switch( geometryType ) {
         case MULTIPOLYGON:
         case POLYGON:
@@ -265,7 +265,7 @@ public class FeatureMate {
      * <p>To get the original geometry one can simply call {@link #resetGeometry()}. 
      */
     public void convertToPoint() {
-        GeometryType geometryType = GeometryUtilities.getGeometryType(getGeometry());
+        EGeometryType geometryType = GeometryUtilities.getGeometryType(getGeometry());
         switch( geometryType ) {
         case MULTIPOLYGON:
         case POLYGON:

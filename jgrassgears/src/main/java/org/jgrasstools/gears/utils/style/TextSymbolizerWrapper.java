@@ -16,7 +16,7 @@ import org.geotools.styling.LinePlacement;
 import org.geotools.styling.PointPlacement;
 import org.geotools.styling.Symbolizer;
 import org.geotools.styling.TextSymbolizer;
-import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.opengis.filter.expression.Expression;
 
 /**
@@ -57,10 +57,10 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
     private String perpendicularOffset;
     private String followLineVO;
     private String maxAngleDeltaVO;
-    private GeometryType geomType;
+    private EGeometryType geomType;
     private String labelName;
 
-    public TextSymbolizerWrapper(Symbolizer symbolizer, RuleWrapper parent, GeometryType geomType) {
+    public TextSymbolizerWrapper(Symbolizer symbolizer, RuleWrapper parent, EGeometryType geomType) {
         super(symbolizer, parent);
         this.geomType = geomType;
 

@@ -59,7 +59,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.utils.DataUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -203,7 +203,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
                         String ramLevel = _heapCombo.getSelectedItem().toString();
 
                         String sessionId = "File: " + loadFiles[0].getName() + " - "
-                                + TimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.format(new Date());
+                                + ETimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.format(new Date());
                         Process process = exec.exec(sessionId, readFile, logLevel, ramLevel, null);
                         logConsole.beginProcess(process, sessionId);
 
@@ -532,7 +532,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
                 : SpatialToolboxConstants.LOGLEVEL_GUI_OFF;
         String ramLevel = _heapCombo.getSelectedItem().toString();
 
-        String sessionId = moduleClass.getSimpleName() + " " + TimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.format(new Date());
+        String sessionId = moduleClass.getSimpleName() + " " + ETimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.format(new Date());
         Process process = exec.exec(sessionId, scriptBuilder.toString(), logLevel, ramLevel, null);
         logConsole.beginProcess(process, sessionId);
     }

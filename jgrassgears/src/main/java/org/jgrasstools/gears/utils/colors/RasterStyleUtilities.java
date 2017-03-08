@@ -222,7 +222,7 @@ public class RasterStyleUtilities {
         // String createStyleForColortable = createStyleForColortable("aspect", 0.0, 360.0, null,
         // 0.5);
         // System.out.println(createStyleForColortable);
-         String createStyleForColortable = createStyleForColortable(ColorTables.extrainbow.name(),
+         String createStyleForColortable = createStyleForColortable(EColorTables.extrainbow.name(),
          73.835, 144.889, null, 0.8);
          System.out.println(createStyleForColortable);
         // String createStyleForColortable = createStyleForColortable(DefaultTables.SLOPE, 0.0,

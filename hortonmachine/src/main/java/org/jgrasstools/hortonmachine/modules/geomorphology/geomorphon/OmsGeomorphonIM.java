@@ -39,7 +39,7 @@ import oms3.annotations.Unit;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModelIM;
-import org.jgrasstools.gears.utils.colors.ColorTables;
+import org.jgrasstools.gears.utils.colors.EColorTables;
 import org.opengis.referencing.operation.TransformException;
 
 @Description("The Geomorphon method for rasters - image mosaic version")
@@ -88,7 +88,7 @@ public class OmsGeomorphonIM extends JGTModelIM {
         processByTileCells();
 
         makeMosaic();
-        makeStyle(ColorTables.geomorphon, 1000, 1008);
+        makeStyle(EColorTables.geomorphon, 1000, 1008);
         
         dispose();
     }

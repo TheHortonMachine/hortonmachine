@@ -34,12 +34,12 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.jgrasstools.gears.libs.exceptions.ModelsUserCancelException;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gui.console.ConsoleMessageFilter;
 import org.jgrasstools.gui.console.IProcessListener;
-import org.jgrasstools.gui.console.LogStyle;
+import org.jgrasstools.gui.console.ELogStyle;
 
 import oms3.CLI;
 
@@ -307,7 +307,7 @@ public class StageScriptExecutor {
             // + nl);
             // preCommentsBuilder.append("");
         }
-        printMessage(preCommentsBuilder.toString(), LogStyle.COMMENT);
+        printMessage(preCommentsBuilder.toString(), ELogStyle.COMMENT);
         isRunning = true;
 
         new Thread(){
@@ -319,7 +319,7 @@ public class StageScriptExecutor {
                     br = new BufferedReader(isr);
                     String line;
                     while( (line = br.readLine()) != null ) {
-                        printMessage(line, LogStyle.NORMAL);
+                        printMessage(line, ELogStyle.NORMAL);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -333,7 +333,7 @@ public class StageScriptExecutor {
                         }
                     printMessage(
                             "Process finished: " + SpatialToolboxConstants.dateTimeFormatterYYYYMMDDHHMMSS.format(new Date()),
-                            LogStyle.COMMENT);
+                            ELogStyle.COMMENT);
                     isRunning = false;
                     updateListenersForModuleStop();
                 }
@@ -361,7 +361,7 @@ public class StageScriptExecutor {
                         if (line.startsWith(userCanceled)) {
                             line = "Process cancelled by user.";
                         }
-                        printMessage(line, LogStyle.ERROR);
+                        printMessage(line, ELogStyle.ERROR);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -396,7 +396,7 @@ public class StageScriptExecutor {
         }
     }
 
-    private synchronized void printMessage( String message, LogStyle style ) {
+    private synchronized void printMessage( String message, ELogStyle style ) {
         String[] split = message.split(nl);
         for( String string : split ) {
             for( IProcessListener listener : listeners ) {
@@ -416,9 +416,9 @@ public class StageScriptExecutor {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
-            printMessage(sw.toString(), LogStyle.ERROR);
+            printMessage(sw.toString(), ELogStyle.ERROR);
         } else {
-            printMessage(e.getLocalizedMessage(), LogStyle.ERROR);
+            printMessage(e.getLocalizedMessage(), ELogStyle.ERROR);
         }
     }
 

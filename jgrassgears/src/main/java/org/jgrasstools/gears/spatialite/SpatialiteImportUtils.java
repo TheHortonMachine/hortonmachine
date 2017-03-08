@@ -37,7 +37,7 @@ import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.spatialite.QueryResult;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
-import org.jgrasstools.dbs.spatialite.SpatialiteGeometryType;
+import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -284,7 +284,7 @@ public class SpatialiteImportUtils {
 
         for( int i = 0; i < names.size(); i++ ) {
             if (i == geometryIndex) {
-                SpatialiteGeometryType geomType = SpatialiteGeometryType.forValue(geometryColumn.geometry_type);
+                ESpatialiteGeometryType geomType = ESpatialiteGeometryType.forValue(geometryColumn.geometry_type);
                 Class< ? > geometryClass = geomType.getGeometryClass();
                 b.add(geometryColumn.f_geometry_column, geometryClass);
                 continue;

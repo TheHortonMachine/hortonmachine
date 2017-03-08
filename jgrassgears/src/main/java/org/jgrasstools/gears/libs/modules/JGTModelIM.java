@@ -51,7 +51,7 @@ import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.modules.r.imagemosaic.OmsImageMosaicCreator;
 import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.colors.ColorTables;
+import org.jgrasstools.gears.utils.colors.EColorTables;
 import org.jgrasstools.gears.utils.colors.RasterStyleUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -386,7 +386,7 @@ public abstract class JGTModelIM extends JGTModel {
         }
     }
 
-    protected void makeStyle( ColorTables colorTable, double min, double max ) throws Exception {
+    protected void makeStyle( EColorTables colorTable, double min, double max ) throws Exception {
         for( int i = 0; i < outRasterFiles.size(); i++ ) {
             File outputFile = outRasterFiles.get(i);
             if (outputFile != null) {
@@ -395,7 +395,7 @@ public abstract class JGTModelIM extends JGTModel {
                     continue;
                 }
                 if (colorTable == null)
-                    colorTable = ColorTables.extrainbow;
+                    colorTable = EColorTables.extrainbow;
                 String name = outParentFolder.getName();
                 String style = RasterStyleUtilities.createStyleForColortable(colorTable.name(), min, max, null, 1.0);
                 File styleFile = new File(outParentFolder, name + ".sld");

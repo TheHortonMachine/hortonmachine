@@ -15,12 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gui.console;
+package org.jgrasstools.gears.utils.colors;
 
-public interface IProcessListener {
-
-    public void onMessage( String message, ELogStyle style );
-
-    public void onProcessStopped();
-
+public enum EColorTables {
+    rainbow, //
+    extrainbow, //
+    aspect, //
+    flow, //
+    bathymetric, //
+    elev, //
+    logarithmic, //
+    radiation, //
+    net, //
+    shalstab, //
+    greyscale, //
+    greyscaleinverse, //
+    geomorphon, //
+    tca, //
+    sea, //
+    slope; //
 }

@@ -27,7 +27,7 @@ import java.util.TimeZone;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public enum TimeUtilities {
+public enum ETimeUtilities {
     /**
      * singleton instance.
      */
@@ -85,7 +85,7 @@ public enum TimeUtilities {
      */
     public final SimpleDateFormat EXIFFORMATTER = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", dateLocale); //$NON-NLS-1$
 
-    private TimeUtilities() {
+    private ETimeUtilities() {
         TIME_FORMATTER_SQLITE_UTC.setTimeZone(TimeZone.getTimeZone(UTC));
         TIME_FORMATTER_GPX_UTC.setTimeZone(TimeZone.getTimeZone(UTC));
         TIME_FORMATTER_UTC.setTimeZone(TimeZone.getTimeZone(UTC));
@@ -101,7 +101,7 @@ public enum TimeUtilities {
      * @throws Exception if something goes wrong.
      */
     public static String utcToLocalTime( String dateTime ) throws Exception {
-        Date date = TimeUtilities.INSTANCE.TIME_FORMATTER_UTC.parse(dateTime);
-        return TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(date);
+        Date date = ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.parse(dateTime);
+        return ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(date);
     }
 }
