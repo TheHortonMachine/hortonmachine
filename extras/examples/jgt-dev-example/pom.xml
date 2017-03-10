@@ -19,21 +19,21 @@
     <dependency>
             <groupId>org.jgrasstools</groupId>
             <artifactId>jgt-jgrassgears</artifactId>
-            <version>0.7.1</version>
+            <version>0.8.1</version>
     </dependency>
 
     <!-- for hortonmachine -->
     <dependency>
             <groupId>org.jgrasstools</groupId>
             <artifactId>jgt-hortonmachine</artifactId>
-            <version>0.7.1</version>
+            <version>0.8.1</version>
     </dependency>
 
     <!-- for oms -->
     <dependency>
             <groupId>org.jgrasstools</groupId>
             <artifactId>jgt-oms3</artifactId>
-            <version>0.7.1</version>
+            <version>0.8.1</version>
     </dependency>
 
     <dependency>

@@ -18,9 +18,9 @@
 package org.jgrasstools.examples;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
-import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
-import org.jgrasstools.gears.modules.r.rasterreprojector.RasterReprojector;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
+import org.jgrasstools.gears.modules.r.rasterreprojector.OmsRasterReprojector;
 
 public class RasterReprojectionExample {
 
@@ -30,17 +30,17 @@ public class RasterReprojectionExample {
         String outputRaster = "your output path here";
 
         // read the raster
-        GridCoverage2D readCoverage = RasterReader.readRaster(inputRaster);
+        GridCoverage2D readCoverage = OmsRasterReader.readRaster(inputRaster);
 
         // reproject
-        RasterReprojector rasterReprojector = new RasterReprojector();
+        OmsRasterReprojector rasterReprojector = new OmsRasterReprojector();
         rasterReprojector.inRaster = readCoverage;
         rasterReprojector.pCode = "EPSG:32632";
         rasterReprojector.process();
         GridCoverage2D outRaster = rasterReprojector.outRaster;
 
         // write the raster
-        RasterWriter.writeRaster(outputRaster, outRaster);
+        OmsRasterWriter.writeRaster(outputRaster, outRaster);
 
     }
 
