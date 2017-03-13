@@ -52,7 +52,7 @@ import org.jgrasstools.gears.libs.modules.ExecutionPlanner;
 import org.jgrasstools.gears.libs.modules.FixedChunkSizePlanner;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.GridNodeMultiProcessing;
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -222,8 +222,9 @@ public class OmsAspectMP
     // Test ***********************************************
     
     public static void main( String[] args ) throws Exception {
-        OmsAspect aspect = new OmsAspect();
-        aspect.pm = new PrintStreamProgressMonitor();
+        OmsAspectMP aspect = new OmsAspectMP();
+        aspect.pm = new DummyProgressMonitor();
+        //aspect.pm = new PrintStreamProgressMonitor();
         
         ExecutionPlanner.defaultPlannerFactory = () -> new FixedChunkSizePlanner();
         //ExecutionPlanner.defaultPlannerFactory = () -> new InThreadExecutionPlanner();
@@ -238,6 +239,7 @@ public class OmsAspectMP
         
         System.out.println( "" + (System.currentTimeMillis()-start) + "ms" );
         System.out.println( "outAspect: " + aspect.outAspect );
+        System.exit( 0 );
     }
     
 }

@@ -16,6 +16,7 @@ package org.jgrasstools.gears.libs.modules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -27,6 +28,9 @@ import java.util.concurrent.RejectedExecutionException;
 public class FixedChunkSizePlanner
         extends ExecutionPlanner {
 
+    /**
+     * The absolut upper limit of the chunk size.
+     */
     public static final int             MAX_CHUNK_SIZE = 100000;
     
     private int                         targetChunkSize = -1;
@@ -62,26 +66,28 @@ public class FixedChunkSizePlanner
 
     
     protected void submitChunk( List<MultiProcessingTask> chunk ) {
-//        System.out.println( "submitting chunk: size=" + chunk.size() );
+       // System.out.println( "submitting chunk: size=" + chunk.size() );
+        // work task
         Runnable work = () -> {
             try {
-//                System.out.println( Thread.currentThread().getName() + ": starting..." );
+                //System.out.println( Thread.currentThread().getName() + ": starting..." );
                 for (MultiProcessingTask task : chunk) {
                     task.calculate();
                 }
-//                System.out.println( Thread.currentThread().getName() + ": chunk done." );
+                //System.out.println( Thread.currentThread().getName() + ": chunk done." );
             }
             catch (Exception e) {
                 handleException( e );
             }
         };
+        // submit
         boolean success = false;
-        for (int waitMillis=100; !success; /*waitMillis=Math.min( 1000, waitMillis*2 )*/ ) {
+        for (int waitMillis=10; !success; waitMillis=Math.min( 100, waitMillis*2 ) ) {
             try {
                 success = submitted.add( defaultExecutor.submit( work ) );
             }
             catch (RejectedExecutionException e) {
-//                System.out.println( "waiting " + waitMillis + "ms ..." );
+               // System.out.println( "waiting " + waitMillis + "ms ..." );
                 try { Thread.sleep( waitMillis ); } catch (InterruptedException e1) {}
             }
         }
@@ -103,7 +109,12 @@ public class FixedChunkSizePlanner
             accu = null;
         }
         for (Future f : submitted) {
-            f.get();
+            try {
+                f.get();
+            }
+            catch (InterruptedException|CancellationException e) {
+                //
+            }
         }
     }
 }

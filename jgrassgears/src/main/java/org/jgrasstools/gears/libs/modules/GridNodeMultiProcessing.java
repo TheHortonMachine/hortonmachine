@@ -66,9 +66,11 @@ public abstract class GridNodeMultiProcessing
         // Cycling into the valid region.
         for (int r = 1; r < rows - 1; r++) {
             for (int c = 1; c < cols - 1; c++) {
-                GridNode node = new GridNode( elevationIter, cols, rows, xRes, yRes, c, r );
+                int _c = c, _r = r;
                 planner.submit( () -> { 
                     if (!pm.isCanceled()) {
+                        // GridNode ctor does a lot of calculating -> must be inside the loop
+                        GridNode node = new GridNode( elevationIter, cols, rows, xRes, yRes, _c, _r );
                         calculator.calculate( node );
                         pm.worked( 1 );
                     }

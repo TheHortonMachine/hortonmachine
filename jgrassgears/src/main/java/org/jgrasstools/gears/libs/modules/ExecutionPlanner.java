@@ -18,8 +18,9 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -34,11 +35,26 @@ import java.util.function.Supplier;
 public abstract class ExecutionPlanner {
 
     static {
+        ThreadFactory threadFactory = new ThreadFactory() {
+            volatile int threadNumber = 0;
+            
+            @Override
+            public Thread newThread( Runnable r ) {
+                Thread t = new Thread( r, "process-worker-" + threadNumber++ );
+                t.setDaemon( false );
+                //t.setPriority( DEFAULT_THREAD_PRIORITY );
+                return t;
+            }
+        };
+        
         int procNum = Runtime.getRuntime().availableProcessors();
         defaultExecutor = new ThreadPoolExecutor( procNum, procNum, 60L, TimeUnit.SECONDS,
                 // keep a small number of chunks queued so that Thread.sleep() after
                 // refused submit has something to do
-                new ArrayBlockingQueue( 1 ) );        
+                new LinkedBlockingDeque( procNum ),
+               // new SynchronousQueue(),
+               // new ArrayBlockingQueue( procNum ) );
+                threadFactory );
     }
     
     /**
