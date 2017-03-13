@@ -15,12 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gui.console;
+package org.jgrasstools.dbs.spatialite.android;
 
-public interface IProcessListener {
+import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.ITransactionExecuter;
 
-    public void onMessage( String message, ELogStyle style );
+/**
+ * The transaction executor for the jgrasstools part.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ */
+public abstract class GPTransactionExecuter implements ITransactionExecuter {
 
-    public void onProcessStopped();
+    private ASpatialDb db;
+
+    public GPTransactionExecuter( ASpatialDb db ) {
+        this.db = db;
+    }
+
+    public void execute() throws Exception {
+        executeInTransaction();
+    }
 
 }

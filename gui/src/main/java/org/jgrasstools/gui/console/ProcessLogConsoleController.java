@@ -156,7 +156,7 @@ public class ProcessLogConsoleController extends ProcessLogConsoleView implement
         return this;
     }
 
-    public void onMessage( String message, LogStyle style ) {
+    public void onMessage( String message, ELogStyle style ) {
         try {
             // logPane.setText(message);
             if (doc != null) {

@@ -151,7 +151,7 @@ public class OmsLinesRasterizer extends JGTModel {
         GridGeometry2D inGrid = gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, crs);
 
         GeometryType type = schema.getGeometryDescriptor().getType();
-        if (getGeometryType(type) != org.jgrasstools.gears.utils.geometry.GeometryType.LINE && getGeometryType(type) != org.jgrasstools.gears.utils.geometry.GeometryType.MULTILINE) {
+        if (getGeometryType(type) != org.jgrasstools.gears.utils.geometry.EGeometryType.LINE && getGeometryType(type) != org.jgrasstools.gears.utils.geometry.EGeometryType.MULTILINE) {
             throw new ModelsRuntimeException("The module works only with line vectors.", this);
         }
 

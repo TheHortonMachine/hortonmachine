@@ -22,7 +22,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.jgrasstools.gears.io.dxfdwg.libs.dxf.DxfGroup;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -75,13 +75,13 @@ public class DxfUtils {
     public static String feature2Dxf( FeatureMate featureMate, String layerName, String elevationAttrName, boolean suffix,
             boolean force2CoordsToLine ) {
         Geometry g = featureMate.getGeometry();
-        GeometryType geometryType = GeometryUtilities.getGeometryType(g);
+        EGeometryType geometryType = GeometryUtilities.getGeometryType(g);
 
-        if (geometryType == GeometryType.POINT || geometryType == GeometryType.MULTIPOINT) {
+        if (geometryType == EGeometryType.POINT || geometryType == EGeometryType.MULTIPOINT) {
             return point2Dxf(featureMate, layerName, elevationAttrName);
-        } else if (geometryType == GeometryType.LINE || geometryType == GeometryType.MULTILINE) {
+        } else if (geometryType == EGeometryType.LINE || geometryType == EGeometryType.MULTILINE) {
             return lineString2Dxf(featureMate, layerName, elevationAttrName, force2CoordsToLine);
-        } else if (geometryType == GeometryType.POLYGON || geometryType == GeometryType.MULTIPOLYGON) {
+        } else if (geometryType == EGeometryType.POLYGON || geometryType == EGeometryType.MULTIPOLYGON) {
             return polygon2Dxf(featureMate, layerName, elevationAttrName, suffix);
         } else if (g instanceof GeometryCollection) {
             StringBuilder sb = new StringBuilder();

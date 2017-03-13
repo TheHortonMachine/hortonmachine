@@ -47,7 +47,7 @@ public class FixedChunkSizePlanner
             }
             int procNum  = Runtime.getRuntime().availableProcessors();
             targetChunkSize = Math.min( numberOfTasks / (procNum*3), MAX_CHUNK_SIZE );
-            System.out.println( "targetChunkSize: " + targetChunkSize );
+//            System.out.println( "targetChunkSize: " + targetChunkSize );
 
             accu = new ArrayList( targetChunkSize );
         }
@@ -62,14 +62,14 @@ public class FixedChunkSizePlanner
 
     
     protected void submitChunk( List<MultiProcessingTask> chunk ) {
-        System.out.println( "submitting chunk: size=" + chunk.size() );
+//        System.out.println( "submitting chunk: size=" + chunk.size() );
         Runnable work = () -> {
             try {
-                System.out.println( Thread.currentThread().getName() + ": starting..." );
+//                System.out.println( Thread.currentThread().getName() + ": starting..." );
                 for (MultiProcessingTask task : chunk) {
                     task.calculate();
                 }
-                System.out.println( Thread.currentThread().getName() + ": chunk done." );
+//                System.out.println( Thread.currentThread().getName() + ": chunk done." );
             }
             catch (Exception e) {
                 handleException( e );
@@ -81,7 +81,7 @@ public class FixedChunkSizePlanner
                 success = submitted.add( defaultExecutor.submit( work ) );
             }
             catch (RejectedExecutionException e) {
-                System.out.println( "waiting " + waitMillis + "ms ..." );
+//                System.out.println( "waiting " + waitMillis + "ms ..." );
                 try { Thread.sleep( waitMillis ); } catch (InterruptedException e1) {}
             }
         }

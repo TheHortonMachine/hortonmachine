@@ -11,7 +11,7 @@ import org.geotools.styling.RasterSymbolizer;
 import org.geotools.styling.Rule;
 import org.geotools.styling.Symbolizer;
 import org.geotools.styling.TextSymbolizer;
-import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 
 /**
  * A wrapper for the {@link Rule} object to ease gui use.
@@ -82,18 +82,18 @@ public class RuleWrapper {
      * 
      * @return the symbolizer type.
      */
-    public GeometryType getType() {
+    public EGeometryType getType() {
         SymbolizerWrapper geometrySymbolizersWrapper = getGeometrySymbolizersWrapper();
         if (geometrySymbolizersWrapper == null) {
             return null;
         }
         Symbolizer symbolizer = geometrySymbolizersWrapper.getSymbolizer();
         if (symbolizer instanceof PointSymbolizer) {
-            return GeometryType.POINT;
+            return EGeometryType.POINT;
         } else if (symbolizer instanceof LineSymbolizer) {
-            return GeometryType.LINE;
+            return EGeometryType.LINE;
         } else if (symbolizer instanceof PolygonSymbolizer) {
-            return GeometryType.POLYGON;
+            return EGeometryType.POLYGON;
         } else if (symbolizer instanceof RasterSymbolizer) {
             throw new RuntimeException("Not implemented yet!");
         }

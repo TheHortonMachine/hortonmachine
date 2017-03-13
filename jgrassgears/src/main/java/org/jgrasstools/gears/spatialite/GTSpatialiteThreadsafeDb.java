@@ -35,7 +35,7 @@ import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
-import org.jgrasstools.dbs.spatialite.SpatialiteGeometryType;
+import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.jgt.SpatialiteThreadsafeDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -94,7 +94,7 @@ public class GTSpatialiteThreadsafeDb extends SpatialiteThreadsafeDb {
             int geometryIndex = -1;
 
             CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumns.srid);
-            SpatialiteGeometryType geomType = SpatialiteGeometryType.forValue(geometryColumns.geometry_type);
+            ESpatialiteGeometryType geomType = ESpatialiteGeometryType.forValue(geometryColumns.geometry_type);
 
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
             b.setName("sql");

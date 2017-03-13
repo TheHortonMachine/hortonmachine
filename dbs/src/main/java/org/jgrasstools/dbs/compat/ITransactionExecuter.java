@@ -15,23 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gears.utils.colors;
+package org.jgrasstools.dbs.compat;
 
-public enum ColorTables {
-    rainbow, //
-    extrainbow, //
-    aspect, //
-    flow, //
-    bathymetric, //
-    elev, //
-    logarithmic, //
-    radiation, //
-    net, //
-    shalstab, //
-    greyscale, //
-    greyscaleinverse, //
-    geomorphon, //
-    tca, //
-    sea, //
-    slope; //
+/**
+ * Transaction execution interface.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ */
+public interface ITransactionExecuter {
+
+    /**
+     * Method that will hold what to execute inside the transaction.
+     * 
+     * @throws Exception
+     */
+    public void executeInTransaction() throws Exception;
+    
+    /**
+     * Method to execute the process.
+     * 
+     * @throws Exception
+     */
+    public void execute() throws Exception;
 }

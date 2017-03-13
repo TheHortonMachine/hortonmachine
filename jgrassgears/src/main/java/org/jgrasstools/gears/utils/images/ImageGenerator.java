@@ -673,7 +673,7 @@ public class ImageGenerator {
      * @throws Exception 
      * @since 0.7.6
      */
-    public void dumpPngImageForScaleAndPaper( String imagePath, ReferencedEnvelope bounds, double scale, PaperFormat paperFormat,
+    public void dumpPngImageForScaleAndPaper( String imagePath, ReferencedEnvelope bounds, double scale, EPaperFormat paperFormat,
             Double dpi, BufferedImage legend, int legendX, int legendY, String scalePrefix, float scaleSize, int scaleX,
             int scaleY ) throws Exception {
         if (dpi == null) {
@@ -748,7 +748,7 @@ public class ImageGenerator {
      * @throws Exception 
      * @since 0.7.6
      */
-    public void dump2Graphics2D( Graphics2D graphics2d, ReferencedEnvelope bounds, double scale, PaperFormat paperFormat,
+    public void dump2Graphics2D( Graphics2D graphics2d, ReferencedEnvelope bounds, double scale, EPaperFormat paperFormat,
             Double dpi, BufferedImage legend, int legendX, int legendY, String scalePrefix, float scaleSize, int scaleX,
             int scaleY ) throws Exception {
         if (dpi == null) {

@@ -90,7 +90,7 @@ import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsDa
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsPropertiesTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.MetadataTableFields;
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
@@ -754,7 +754,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
     private void selectImage( org.jgrasstools.gears.io.geopaparazzi.geopap4.Image selectedImage ) {
         try {
             checkLoadedProject();
-            String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedImage.getTs()));
+            String dateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedImage.getTs()));
             String picInfo = "<b>Image:</b> " + GeopaparazziUtilities.escapeHTML(selectedImage.getName()) + "<br/>" //
                     + "<b>Timestamp:</b> " + dateTimeString + "<br/>" //
                     + "<b>Azimuth:</b> " + (int) selectedImage.getAzim() + " deg<br/>" //
@@ -779,7 +779,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
     private void selectNote( Note selectedNote ) {
         try {
             checkLoadedProject();
-            String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedNote.timeStamp));
+            String dateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedNote.timeStamp));
             String picInfo = "<b>Text:</b> " + GeopaparazziUtilities.escapeHTML(selectedNote.simpleText) + "<br/>" //
                     + "<b>Description:</b> " + GeopaparazziUtilities.escapeHTML(selectedNote.description) + "<br/>" //
                     + "<b>Timestamp:</b> " + dateTimeString + "<br/>" //
@@ -797,8 +797,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
     private void selectGpsLog( GpsLog selectedLog ) {
         try {
             checkLoadedProject();
-            String startDateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedLog.startTime));
-            String endDateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedLog.endTime));
+            String startDateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedLog.startTime));
+            String endDateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(selectedLog.endTime));
             String picInfo = "<b>Gps log:</b> " + GeopaparazziUtilities.escapeHTML(selectedLog.text) + "<br/>" //
                     + "<b>Start time:</b> " + startDateTimeString + "<br/>" //
                     + "<b>End time:</b> " + endDateTimeString + "<br/>";
@@ -1017,9 +1017,9 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     long id = rs.getLong(1);
 
                     long startDateTime = rs.getLong(2);
-                    String startDateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(startDateTime));
+                    String startDateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(startDateTime));
                     long endDateTime = rs.getLong(3);
-                    String endDateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(endDateTime));
+                    String endDateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(endDateTime));
                     String text = rs.getString(4);
 
                     // points

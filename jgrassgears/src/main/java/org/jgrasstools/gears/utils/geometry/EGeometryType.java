@@ -23,7 +23,7 @@ import com.vividsolutions.jts.geom.*;
 /**
  * Geometry types used by the utility.
  */
-public enum GeometryType {
+public enum EGeometryType {
     POINT(Point.class, MultiPoint.class), //
     MULTIPOINT(MultiPoint.class, MultiPoint.class), //
     LINE(LineString.class, MultiLineString.class), //
@@ -36,7 +36,7 @@ public enum GeometryType {
     private Class<?> clazz;
     private Class<?> multiClazz;
 
-    GeometryType(Class<?> clazz, Class<?> multiClazz) {
+    EGeometryType(Class<?> clazz, Class<?> multiClazz) {
         this.clazz = clazz;
         this.multiClazz = multiClazz;
     } //
@@ -49,7 +49,7 @@ public enum GeometryType {
         return multiClazz;
     }
 
-    public static GeometryType forClass(Class<?> clazz) {
+    public static EGeometryType forClass(Class<?> clazz) {
         if (POINT.getClazz().isAssignableFrom(clazz)) {
             return POINT;
         } else if (MULTIPOINT.getClazz().isAssignableFrom(clazz)) {
@@ -80,7 +80,7 @@ public enum GeometryType {
         }
     }
 
-    public boolean isCompatibleWith(GeometryType geometryType) {
+    public boolean isCompatibleWith(EGeometryType geometryType) {
         switch (geometryType) {
             case LINE:
                 return this == LINE;

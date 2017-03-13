@@ -50,7 +50,7 @@ import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTModelIM;
-import org.jgrasstools.gears.utils.colors.ColorTables;
+import org.jgrasstools.gears.utils.colors.EColorTables;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
 @Description(OMSASPECT_DESCRIPTION)
@@ -95,7 +95,7 @@ public class OmsAspectIM extends JGTModelIM {
         processByTileCells();
 
         makeMosaic();
-        makeStyle(ColorTables.aspect, 0, 360);
+        makeStyle(EColorTables.aspect, 0, 360);
         
         dispose();
     }

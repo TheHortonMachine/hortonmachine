@@ -67,7 +67,7 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -152,7 +152,7 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
             double value = -1;
             Coordinate c;
             Coordinate[] coordinates = geometry.getCoordinates();
-            if (getGeometryType(geometry) == GeometryType.POINT || getGeometryType(geometry) == GeometryType.MULTIPOINT) {
+            if (getGeometryType(geometry) == EGeometryType.POINT || getGeometryType(geometry) == EGeometryType.MULTIPOINT) {
                 c = coordinates[0];
                 if (!inCoverageEnvelope.contains(c.x, c.y)) {
                     continue;
@@ -166,7 +166,7 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
 
                 SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value});
                 ((DefaultFeatureCollection) outVector).add(extendedFeature);
-            } else if (getGeometryType(geometry) == GeometryType.LINE || getGeometryType(geometry) == GeometryType.MULTILINE) {
+            } else if (getGeometryType(geometry) == EGeometryType.LINE || getGeometryType(geometry) == EGeometryType.MULTILINE) {
                 if (pPos.trim().equalsIgnoreCase(START)) {
                     c = coordinates[0];
                 } else if (pPos.trim().equalsIgnoreCase(END)) {
@@ -184,8 +184,8 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
                             new Class< ? >[]{Double.class});
                 SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value});
                 ((DefaultFeatureCollection) outVector).add(extendedFeature);
-            } else if (getGeometryType(geometry) == GeometryType.POLYGON
-                    || getGeometryType(geometry) == GeometryType.MULTIPOLYGON) {
+            } else if (getGeometryType(geometry) == EGeometryType.POLYGON
+                    || getGeometryType(geometry) == EGeometryType.MULTIPOLYGON) {
                 if (fExt == null) {
                     String max = fNew + "_max";
                     String min = fNew + "_min";

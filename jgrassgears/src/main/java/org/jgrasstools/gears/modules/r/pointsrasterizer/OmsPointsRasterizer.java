@@ -101,7 +101,7 @@ public class OmsPointsRasterizer extends JGTModel {
 
         SimpleFeatureType schema = inVector.getSchema();
         GeometryType type = schema.getGeometryDescriptor().getType();
-        if (getGeometryType(type) != org.jgrasstools.gears.utils.geometry.GeometryType.POINT && getGeometryType(type) != org.jgrasstools.gears.utils.geometry.GeometryType.POINT) {
+        if (getGeometryType(type) != org.jgrasstools.gears.utils.geometry.EGeometryType.POINT && getGeometryType(type) != org.jgrasstools.gears.utils.geometry.EGeometryType.POINT) {
             throw new ModelsRuntimeException("The module works only with point vectors.", this);
         }
 

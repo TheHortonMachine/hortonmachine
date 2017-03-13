@@ -28,7 +28,7 @@ import java.util.List;
 import org.jgrasstools.dbs.spatialite.QueryResult;
 import org.jgrasstools.dbs.spatialite.RasterCoverage;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
-import org.jgrasstools.dbs.spatialite.SpatialiteGeometryType;
+import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
 
 import com.vividsolutions.jts.geom.Envelope;
@@ -410,7 +410,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
                 queryResult.names.add(columnName);
                 String columnTypeName = rsmd.getColumnTypeName(i);
                 queryResult.types.add(columnTypeName);
-                if (columnTypeName.equals("BLOB") && SpatialiteGeometryType.forValue(columnType) != null) {
+                if (columnTypeName.equals("BLOB") && ESpatialiteGeometryType.forValue(columnType) != null) {
                     geometryIndex = i;
                     queryResult.geometryIndex = i - 1;
                 }
@@ -470,7 +470,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
                     String columnTypeName = rsmd.getColumnTypeName(i);
                     String columnName = rsmd.getColumnName(i);
                     bw.write(columnName);
-                    if (columnTypeName.equals("BLOB") && SpatialiteGeometryType.forValue(columnType) != null) {
+                    if (columnTypeName.equals("BLOB") && ESpatialiteGeometryType.forValue(columnType) != null) {
                         geometryIndex = i;
                     }
                 }

@@ -86,7 +86,7 @@ import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Image;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.TimeUtilities;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -314,7 +314,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 double lon = rs.getDouble(lonFN);
                 double altim = rs.getDouble(altimFN);
                 long ts = rs.getLong(tsFN);
-                String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
+                String dateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
                 String text = rs.getString(textFN);
                 String descr = rs.getString(descFN);
                 if (descr == null)
@@ -377,7 +377,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 double lon = rs.getDouble(lonFN);
                 double altim = rs.getDouble(altimFN);
                 long ts = rs.getLong(tsFN);
-                String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
+                String dateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
                 int isDirty = rs.getInt(dirtyFN);
                 if (lat == 0 || lon == 0) {
                     continue;
@@ -549,7 +549,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 double lon = rs.getDouble(lonFN);
                 double altim = rs.getDouble(altimFN);
                 long ts = rs.getLong(tsFN);
-                String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
+                String dateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
                 int isDirty = rs.getInt(dirtyFN);
                 if (lat == 0 || lon == 0) {
                     continue;
@@ -679,8 +679,8 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             List<GpsPoint> points = log.points;
 
             List<Coordinate> coordList = new ArrayList<>();
-            String startDate = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(log.startTime));
-            String endDate = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(log.endTime));
+            String startDate = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(log.startTime));
+            String endDate = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(log.endTime));
             for( GpsPoint gpsPoint : points ) {
                 Coordinate c = new Coordinate(gpsPoint.lon, gpsPoint.lat);
                 coordList.add(c);
@@ -798,7 +798,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                     Coordinate c = new Coordinate(gpsPoint.lon, gpsPoint.lat);
                     Point point = gf.createPoint(c);
 
-                    String ts = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(gpsPoint.utctime));
+                    String ts = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(gpsPoint.utctime));
                     Object[] values = new Object[]{point, gpsPoint.altim, ts};
 
                     SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
@@ -916,7 +916,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
                 Point point = gf.createPoint(new Coordinate(image.getLon(), image.getLat()));
                 long ts = image.getTs();
-                String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
+                String dateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
 
                 String imageRelativePath = mediaFolderFile.getName() + "/" + image.getName();
                 Object[] values = new Object[]{point, image.getAltim(), dateTimeString, image.getAzim(), imageRelativePath};
@@ -953,7 +953,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             for( Image image : imagesList ) {
                 Point point = gf.createPoint(new Coordinate(image.getLon(), image.getLat()));
                 long ts = image.getTs();
-                String dateTimeString = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
+                String dateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(ts));
 
                 Object[] values = new Object[]{point, image.getAltim(), dateTimeString, image.getAzim(), image.getImageDataId()};
 

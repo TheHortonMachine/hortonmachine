@@ -62,7 +62,13 @@ public class GPSpatialiteDb extends ASpatialDb {
 
     @Override
     public void initSpatialMetadata( String options ) throws Exception {
-        // does nothing
+        if (options == null) {
+            options = "";
+        }
+        String sql = "SELECT InitSpatialMetadata(" + options + ")";
+        try (IJGTStatement stmt = mConn.createStatement()) {
+            stmt.execute(sql);
+        }
     }
 
     @Override

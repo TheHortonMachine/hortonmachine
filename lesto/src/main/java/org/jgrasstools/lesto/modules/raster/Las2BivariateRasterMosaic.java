@@ -63,7 +63,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ThreadedRunnable;
 import org.jgrasstools.gears.modules.r.imagemosaic.OmsImageMosaicCreator;
 import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.colors.ColorTables;
+import org.jgrasstools.gears.utils.colors.EColorTables;
 import org.jgrasstools.gears.utils.colors.RasterStyleUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -219,7 +219,7 @@ public class Las2BivariateRasterMosaic extends JGTModel {
 
         String name = outFolderFile.getName();
         String style = RasterStyleUtilities
-                .createStyleForColortable(ColorTables.extrainbow.name(), minValue, maxValue, null, 1.0);
+                .createStyleForColortable(EColorTables.extrainbow.name(), minValue, maxValue, null, 1.0);
         File styleFile = new File(outFolderFile, name + ".sld");
         FileUtilities.writeFile(style, styleFile);
 

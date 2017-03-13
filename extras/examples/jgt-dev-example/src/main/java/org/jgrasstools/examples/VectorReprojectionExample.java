@@ -18,10 +18,10 @@
 package org.jgrasstools.examples;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.vectorreader.VectorReader;
-import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.modules.v.vectorreprojector.VectorReprojector;
+import org.jgrasstools.gears.modules.v.vectorreprojector.OmsVectorReprojector;
 
 public class VectorReprojectionExample extends JGTModel {
     public static void main( String[] args ) throws Exception {
@@ -30,17 +30,17 @@ public class VectorReprojectionExample extends JGTModel {
         String outputVector = "your output path here";
 
         // read the vector
-        SimpleFeatureCollection readFeatureCollection = VectorReader.readVector(inputVector);
+        SimpleFeatureCollection readFeatureCollection = OmsVectorReader.readVector(inputVector);
 
         // reproject
-        VectorReprojector vectorReprojector = new VectorReprojector();
+        OmsVectorReprojector vectorReprojector = new OmsVectorReprojector();
         vectorReprojector.inVector = readFeatureCollection;
         vectorReprojector.pCode = "EPSG:32632";
         vectorReprojector.process();
         SimpleFeatureCollection outVector = vectorReprojector.outVector;
 
         // write the vetor
-        VectorWriter.writeVector(outputVector, outVector);
+        OmsVectorWriter.writeVector(outputVector, outVector);
 
     }
 }

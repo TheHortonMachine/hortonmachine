@@ -75,7 +75,7 @@ public class DaoMetadata {
     public static void fillProjectMetadata(Connection connection, String name, String description, String notes, String creationUser) throws Exception {
         Date creationDate = new Date();
         if (name == null) {
-            name = "project-" + TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(creationDate);
+            name = "project-" + ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(creationDate);
         }
         if (description == null) {
             description = EMPTY_VALUE;

@@ -27,7 +27,7 @@ import java.util.List;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.style.SimpleStyle;
 import org.jgrasstools.gears.utils.style.SimpleStyleUtilities;
@@ -110,7 +110,7 @@ public class ShapefilesFolderLayer extends RenderableLayer implements NwwLayer {
                         double fillOpacity = 0.7;
                         double strokeWidth = 2;
                         BasicShapeAttributes shapeAttributes = new BasicShapeAttributes();
-                        SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), GeometryType.POLYGON);
+                        SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), EGeometryType.POLYGON);
                         if (style != null) {
                             fillMaterial = new Material(style.fillColor);
                             fillOpacity = style.fillOpacity;
@@ -135,7 +135,7 @@ public class ShapefilesFolderLayer extends RenderableLayer implements NwwLayer {
                         Material strokeMaterial = Material.BLACK;
                         double strokeWidth = 2;
                         BasicShapeAttributes shapeAttributes = new BasicShapeAttributes();
-                        SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), GeometryType.LINE);
+                        SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), EGeometryType.LINE);
                         if (style != null) {
                             strokeMaterial = new Material(style.strokeColor);
                             strokeWidth = style.strokeWidth;
@@ -155,7 +155,7 @@ public class ShapefilesFolderLayer extends RenderableLayer implements NwwLayer {
                     } else if (GeometryUtilities.isPoint(geometryDescriptor)) {
                         Material fillMaterial = Material.GREEN;
                         double markerSize = 5d;
-                        SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), GeometryType.POINT);
+                        SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), EGeometryType.POINT);
                         if (style != null) {
                             fillMaterial = new Material(style.fillColor);
                             markerSize = style.shapeSize;

@@ -47,7 +47,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTModelIM;
-import org.jgrasstools.gears.utils.colors.ColorTables;
+import org.jgrasstools.gears.utils.colors.EColorTables;
 
 @Description(OMSGRADIENT_DESCRIPTION)
 @Documentation(OMSGRADIENT_DOCUMENTATION)
@@ -93,7 +93,7 @@ public class OmsGradientIM extends JGTModelIM {
         processByTileCells();
 
         makeMosaic();
-        makeStyle(ColorTables.extrainbow, 0, 1);
+        makeStyle(EColorTables.extrainbow, 0, 1);
         
         dispose();
     }

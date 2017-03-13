@@ -19,7 +19,7 @@ package org.jgrasstools.dbs.spatialite.objects;
 
 import org.jgrasstools.dbs.spatialite.ForeignKey;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
-import org.jgrasstools.dbs.spatialite.SpatialiteGeometryType;
+import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 
 /**
  * Class representing a db column.
@@ -60,7 +60,7 @@ public class ColumnLevel {
             }
             return col;
         } else {
-            String gType = SpatialiteGeometryType.forValue(geomColumn.geometry_type).getDescription();
+            String gType = ESpatialiteGeometryType.forValue(geomColumn.geometry_type).getDescription();
             boolean indexEnabled = geomColumn.spatial_index_enabled == 1 ? true : false;
             return columnName + " [" + gType + ",EPSG:" + geomColumn.srid + ",idx:" + indexEnabled + "]";
         }

@@ -86,7 +86,7 @@ public class OmsRasterVectorIntersector extends JGTModel {
 
         SimpleFeatureType schema = inVector.getSchema();
         GeometryType type = schema.getGeometryDescriptor().getType();
-        if (getGeometryType(type) != org.jgrasstools.gears.utils.geometry.GeometryType.POLYGON && getGeometryType(type) != org.jgrasstools.gears.utils.geometry.GeometryType.MULTIPOLYGON) {
+        if (getGeometryType(type) != org.jgrasstools.gears.utils.geometry.EGeometryType.POLYGON && getGeometryType(type) != org.jgrasstools.gears.utils.geometry.EGeometryType.MULTIPOLYGON) {
             throw new ModelsRuntimeException("The module works only with polygon vectors.", this);
         }
 

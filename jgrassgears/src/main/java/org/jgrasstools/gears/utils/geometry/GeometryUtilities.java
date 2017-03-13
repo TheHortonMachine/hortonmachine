@@ -268,52 +268,52 @@ public class GeometryUtilities {
     }
 
     /**
-     * Returns the {@link GeometryType} for a given {@link Geometry}.
+     * Returns the {@link EGeometryType} for a given {@link Geometry}.
      * 
      * @param geometry the geometry to check.
      * @return the type.
      */
-    public static GeometryType getGeometryType( Geometry geometry ) {
+    public static EGeometryType getGeometryType( Geometry geometry ) {
         if (geometry instanceof LineString) {
-            return GeometryType.LINE;
+            return EGeometryType.LINE;
         } else if (geometry instanceof MultiLineString) {
-            return GeometryType.MULTILINE;
+            return EGeometryType.MULTILINE;
         } else if (geometry instanceof Point) {
-            return GeometryType.POINT;
+            return EGeometryType.POINT;
         } else if (geometry instanceof MultiPoint) {
-            return GeometryType.MULTIPOINT;
+            return EGeometryType.MULTIPOINT;
         } else if (geometry instanceof Polygon) {
-            return GeometryType.POLYGON;
+            return EGeometryType.POLYGON;
         } else if (geometry instanceof MultiPolygon) {
-            return GeometryType.MULTIPOLYGON;
+            return EGeometryType.MULTIPOLYGON;
         } else if (geometry instanceof GeometryCollection) {
-            return GeometryType.GEOMETRYCOLLECTION;
+            return EGeometryType.GEOMETRYCOLLECTION;
         } else {
             return null;
         }
     }
 
     /**
-     * Returns the {@link GeometryType} for a given {@link org.opengis.feature.type.GeometryType}.
+     * Returns the {@link EGeometryType} for a given {@link org.opengis.feature.type.GeometryType}.
      * 
      * @param geometryType the geometry type to check.
      * @return the type.
      */
-    public static GeometryType getGeometryType( org.opengis.feature.type.GeometryType geometryType ) {
+    public static EGeometryType getGeometryType( org.opengis.feature.type.GeometryType geometryType ) {
         Class< ? > binding = geometryType.getBinding();
 
         if (binding == LineString.class) {
-            return GeometryType.LINE;
+            return EGeometryType.LINE;
         } else if (binding == MultiLineString.class) {
-            return GeometryType.MULTILINE;
+            return EGeometryType.MULTILINE;
         } else if (binding == Point.class) {
-            return GeometryType.POINT;
+            return EGeometryType.POINT;
         } else if (binding == MultiPoint.class) {
-            return GeometryType.MULTIPOINT;
+            return EGeometryType.MULTIPOINT;
         } else if (binding == Polygon.class) {
-            return GeometryType.POLYGON;
+            return EGeometryType.POLYGON;
         } else if (binding == MultiPolygon.class) {
-            return GeometryType.MULTIPOLYGON;
+            return EGeometryType.MULTIPOLYGON;
         } else {
             return null;
         }

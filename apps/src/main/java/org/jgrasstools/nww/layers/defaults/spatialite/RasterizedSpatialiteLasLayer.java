@@ -49,7 +49,7 @@ import org.jgrasstools.gears.io.las.spatialite.LasSourcesTable;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.TransformationUtils;
 import org.jgrasstools.gears.utils.colors.ColorInterpolator;
-import org.jgrasstools.gears.utils.colors.ColorTables;
+import org.jgrasstools.gears.utils.colors.EColorTables;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
 import org.jgrasstools.nww.layers.defaults.raster.BasicMercatorTiledImageLayer;
@@ -157,7 +157,7 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
                 min = Math.min(min, lasSource.minElev);
                 max = Math.max(max, lasSource.maxElev);
             }
-            colorInterp = new ColorInterpolator(ColorTables.elev.name(), min, max, null);
+            colorInterp = new ColorInterpolator(EColorTables.elev.name(), min, max, null);
         } else {
             for( LasSource lasSource : lasSources ) {
                 lasLevels = lasSource.levels;
@@ -165,7 +165,7 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
                 min = Math.min(min, lasSource.minIntens);
                 max = Math.max(max, lasSource.maxIntens);
             }
-            colorInterp = new ColorInterpolator(ColorTables.rainbow.name(), 0, 255, null);
+            colorInterp = new ColorInterpolator(EColorTables.rainbow.name(), 0, 255, null);
         }
         final int _lasLevels = lasLevels;
 

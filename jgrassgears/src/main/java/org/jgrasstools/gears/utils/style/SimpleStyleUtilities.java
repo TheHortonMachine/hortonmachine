@@ -27,7 +27,7 @@ import org.geotools.styling.LineSymbolizer;
 import org.geotools.styling.Rule;
 import org.geotools.styling.Style;
 import org.jgrasstools.gears.utils.SldUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 
 /**
  * Simple styles generator.
@@ -83,7 +83,7 @@ public class SimpleStyleUtilities {
         return rule;
     }
 
-    public static SimpleStyle getStyle( String path, GeometryType geomType ) throws Exception {
+    public static SimpleStyle getStyle( String path, EGeometryType geomType ) throws Exception {
         SimpleStyle simpleStyle = new SimpleStyle();
         if (path == null) {
             return simpleStyle;
