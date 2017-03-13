@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
 
 /**
  * 
@@ -31,7 +30,7 @@ public class FixedChunkSizePlanner
     /**
      * The absolut upper limit of the chunk size.
      */
-    public static final int             MAX_CHUNK_SIZE = 100000;
+    public static final int             MAX_CHUNK_SIZE = 10000;
     
     private int                         targetChunkSize = -1;
     
@@ -83,13 +82,8 @@ public class FixedChunkSizePlanner
         // submit
         boolean success = false;
         for (int waitMillis=10; !success; waitMillis=Math.min( 100, waitMillis*2 ) ) {
-            try {
-                success = submitted.add( defaultExecutor.submit( work ) );
-            }
-            catch (RejectedExecutionException e) {
-               // System.out.println( "waiting " + waitMillis + "ms ..." );
-                try { Thread.sleep( waitMillis ); } catch (InterruptedException e1) {}
-            }
+           // System.out.println( Thread.currentThread().getName() + ": " + taskCount.availablePermits() );
+            success = submitted.add( defaultExecutor.submit( work ) );
         }
     }
     

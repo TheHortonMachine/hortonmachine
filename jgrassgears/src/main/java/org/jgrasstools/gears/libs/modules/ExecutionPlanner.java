@@ -19,7 +19,7 @@
 package org.jgrasstools.gears.libs.modules;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -48,14 +48,17 @@ public abstract class ExecutionPlanner {
         };
         
         int procNum = Runtime.getRuntime().availableProcessors();
-        defaultExecutor = new ThreadPoolExecutor( procNum, procNum, 60L, TimeUnit.SECONDS,
-                // keep a small number of chunks queued so that Thread.sleep() after
-                // refused submit has something to do
-                new LinkedBlockingDeque( procNum ),
+        ThreadPoolExecutor threadPool = new ThreadPoolExecutor( procNum, procNum, 60L, TimeUnit.SECONDS,
+                // with BlockingExecutorService on top we can have unbound queue
+                new LinkedTransferQueue(),
+               // new LinkedBlockingDeque( procNum ),
                // new SynchronousQueue(),
                // new ArrayBlockingQueue( procNum ) );
                 threadFactory );
+        
+        defaultExecutor = new BlockingExecutorService( threadPool, procNum );
     }
+    
     
     /**
      * The default {@link ExecutorService} to be used by all planners.
@@ -64,7 +67,7 @@ public abstract class ExecutionPlanner {
      * unbound queue or an unlimited number of threads. In other words, the executor
      * has to refuse submits when system resources are running out.
      */
-    public static ExecutorService defaultExecutor; 
+    public static final BlockingExecutorService defaultExecutor; 
     
     /**
      * Set this to change the default planner for all modules.

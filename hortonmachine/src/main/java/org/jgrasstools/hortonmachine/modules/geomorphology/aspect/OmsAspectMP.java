@@ -44,6 +44,7 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_outAsp
 
 import java.awt.image.WritableRaster;
 
+import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
@@ -52,19 +53,16 @@ import org.jgrasstools.gears.libs.modules.ExecutionPlanner;
 import org.jgrasstools.gears.libs.modules.FixedChunkSizePlanner;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.GridNodeMultiProcessing;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-import oms3.ComponentAccess;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
-import oms3.annotations.Finalize;
 import oms3.annotations.In;
-import oms3.annotations.Initialize;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
@@ -123,6 +121,47 @@ public class OmsAspectMP
         
         CoverageUtilities.setNovalueBorder( aspectWR );
         outAspect = CoverageUtilities.buildCoverage( "aspect", aspectWR, regionMap( inElev ), inElev.getCoordinateReferenceSystem() );
+    }
+
+    
+    public void processSerial() throws Exception {
+        double radtodeg = doRadiants ? 1.0 : NumericsUtilities.RADTODEG;
+
+        int rows = regionMap( inElev ).getRows();
+        int cols = regionMap( inElev ).getCols();
+        double xRes = regionMap( inElev ).getXres();
+        double yRes = regionMap( inElev ).getYres();
+        WritableRaster aspectWR = CoverageUtilities.createDoubleWritableRaster( cols, rows, null, null, null );
+        WritableRandomIter aspectIter = RandomIterFactory.createWritable( aspectWR, null );
+
+        pm.beginTask( msg.message( "aspect.calculating" ), rows*cols );
+        RandomIter elevationIter = CoverageUtilities.getRandomIterator( inElev );
+
+        // Cycling into the valid region.
+        for (int r = 1; r < rows - 1; r++) {
+            for (int c = 1; c < cols - 1; c++) {
+                GridNode node = new GridNode( elevationIter, cols, rows, xRes, yRes, c, r );
+                double aspect = calculate( node, radtodeg );
+                aspectIter.setSample( node.col, node.row, 0, aspect );
+                pm.worked( 1 );
+            }
+        }
+    }
+
+    
+    public void processPlanner() throws Exception {
+        double radtodeg = doRadiants ? 1.0 : NumericsUtilities.RADTODEG;
+
+        int rows = regionMap( inElev ).getRows();
+        int cols = regionMap( inElev ).getCols();
+        WritableRaster aspectWR = CoverageUtilities.createDoubleWritableRaster( cols, rows, null, null, null );
+        WritableRandomIter aspectIter = RandomIterFactory.createWritable( aspectWR, null );
+
+        pm.beginTask( msg.message( "aspect.calculating" ), rows*cols );
+        processGridNodes( inElev, gridNode -> {
+            double aspect = calculate( gridNode, radtodeg );
+            aspectIter.setSample( gridNode.col, gridNode.row, 0, aspect );
+        });
     }
 
     
@@ -223,22 +262,31 @@ public class OmsAspectMP
     
     public static void main( String[] args ) throws Exception {
         OmsAspectMP aspect = new OmsAspectMP();
-        aspect.pm = new DummyProgressMonitor();
-        //aspect.pm = new PrintStreamProgressMonitor();
+        //aspect.pm = new DummyProgressMonitor();
+        aspect.pm = new PrintStreamProgressMonitor();
         
-        ExecutionPlanner.defaultPlannerFactory = () -> new FixedChunkSizePlanner();
-        //ExecutionPlanner.defaultPlannerFactory = () -> new InThreadExecutionPlanner();
-        
-        long start = System.currentTimeMillis();
-        aspect.inElev = aspect.getRaster( "/home/falko/Data/ncrast/elevation_3857.tif" );
+       // aspect.inElev = aspect.getRaster( "/home/falko/Data/ncrast/elevation.tif" );
+        aspect.inElev = aspect.getRaster( "/home/falko/Data/ncrast/DTM_calvello/dtm_all.asc" );
         System.out.println( "inElev: " + aspect.inElev );
+        long start = System.currentTimeMillis();
         
-        ComponentAccess.callAnnotated( aspect, Initialize.class, true );
-        ComponentAccess.callAnnotated( aspect, Execute.class, false );
-        ComponentAccess.callAnnotated( aspect, Finalize.class, true );
+//        // serial
+//        start = System.currentTimeMillis();
+//        aspect.processSerial();        
+//        System.out.println( "Serial: " + (System.currentTimeMillis()-start) + "ms" );
+
+        // FixedChunkSizePlanner
+        ExecutionPlanner.defaultPlannerFactory = () -> new FixedChunkSizePlanner();
+        start = System.currentTimeMillis();
+        aspect.processPlanner();        
+        System.out.println( "FixedChunkSizePlanner: " + (System.currentTimeMillis()-start) + "ms" );
         
-        System.out.println( "" + (System.currentTimeMillis()-start) + "ms" );
-        System.out.println( "outAspect: " + aspect.outAspect );
+//        // InThreadExecutionPlanner
+//        ExecutionPlanner.defaultPlannerFactory = () -> new InThreadExecutionPlanner();
+//        start = System.currentTimeMillis();
+//        aspect.processPlanner();        
+//        System.out.println( "" + (System.currentTimeMillis()-start) + "ms" );
+        
         System.exit( 0 );
     }
     
