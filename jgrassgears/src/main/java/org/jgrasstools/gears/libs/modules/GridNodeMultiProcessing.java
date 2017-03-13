@@ -68,11 +68,11 @@ public abstract class GridNodeMultiProcessing
             for (int c = 1; c < cols - 1; c++) {
                 int _c = c, _r = r;
                 planner.submit( () -> { 
-                    if (!pm.isCanceled()) {
+                    if (true /*!pm.isCanceled()*/) {
                         // GridNode ctor does a lot of calculating -> must be inside the loop
                         GridNode node = new GridNode( elevationIter, cols, rows, xRes, yRes, _c, _r );
                         calculator.calculate( node );
-                        pm.worked( 1 );
+                       // pm.worked( 1 );
                     }
                 });
             }
