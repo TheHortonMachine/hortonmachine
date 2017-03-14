@@ -135,13 +135,13 @@ public class OmsAspectSmp extends GridNodeMultiProcessing {
 
     private void doFalko( int cols, int rows, WritableRaster aspectWR, long t2 ) throws Exception {
         WritableRandomIter aspectIter11 = RandomIterFactory.createWritable(aspectWR, null);
-        pm.beginTask(msg.message("aspect.calculating"), rows * cols);
+        // pm.beginTask(msg.message("aspect.calculating"), rows * cols);
         processGridNodes(inElev, gridNode -> {
             double aspect = calculate(gridNode, radtodeg, doRound);
             aspectIter11.setSample(gridNode.col, gridNode.row, 0, aspect);
-            pm.worked(1);
+            // pm.worked(1);
         });
-        pm.done();
+        // pm.done();
         long t3 = System.currentTimeMillis();
         System.out.println("FALKO = " + (t3 - t2));
     }
@@ -149,7 +149,7 @@ public class OmsAspectSmp extends GridNodeMultiProcessing {
     private long doNormal( int cols, int rows, double xRes, double yRes, RandomIter elevationIter, WritableRaster aspectWR,
             long t0 ) {
         WritableRandomIter aspectIter1 = RandomIterFactory.createWritable(aspectWR, null);
-        pm.beginTask(msg.message("aspect.calculating"), rows);
+        // pm.beginTask(msg.message("aspect.calculating"), rows);
         // Cycling into the valid region.
         for( int r = 1; r < rows - 1; r++ ) {
             for( int c = 1; c < cols - 1; c++ ) {
@@ -157,38 +157,41 @@ public class OmsAspectSmp extends GridNodeMultiProcessing {
                 double aspect = calculate(node, radtodeg, doRound);
                 aspectIter1.setSample(c, r, 0, aspect);
             }
-            pm.worked(1);
+            // pm.worked(1);
         }
-        pm.done();
+        // pm.done();
         long t1 = System.currentTimeMillis();
         System.out.println("NORMAL = " + (t1 - t0));
         return t1;
     }
 
-    private long doInStream( int cols, int rows, double xRes, double yRes, RandomIter elevationIter, WritableRaster aspectWR, long t1 ) {
+    private long doInStream( int cols, int rows, double xRes, double yRes, RandomIter elevationIter, WritableRaster aspectWR,
+            long t1 ) {
         int procNum = Runtime.getRuntime().availableProcessors();
-        double[] range2Bins = NumericsUtilities.range2Bins(1, rows - 1, procNum);
+        int step = (int) (rows / (double) procNum);
+        double[] range2Bins = NumericsUtilities.range2Bins(1, rows - 1, step, false);
         double[][] runs = new double[range2Bins.length - 1][2];
         for( int i = 0; i < range2Bins.length - 1; i++ ) {
             runs[i][0] = range2Bins[i];
             runs[i][1] = range2Bins[i + 1];
         }
 
-        pm.beginTask(msg.message("aspect.calculating"), rows);
-      
+        // pm.beginTask(msg.message("aspect.calculating"), rows);
+
         WritableRandomIter aspectIter = RandomIterFactory.createWritable(aspectWR, null);
         Stream<double[]> boundsArray = StreamUtils.fromArray(runs);
         boundsArray.parallel().forEach(bound -> {
+            pm.message("WORKING BETWEEN: " + (int) bound[0] + " and " + (int) (bound[1] - 1));
             for( int r = (int) bound[0]; r < bound[1] - 1; r++ ) {
                 for( int c = 1; c < cols - 1; c++ ) {
                     GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r);
                     double aspect = calculate(node, radtodeg, doRound);
                     aspectIter.setSample(c, r, 0, aspect);
                 }
-                pm.worked(1);
+                // pm.worked(1);
             }
         });
-        pm.done();
+        // pm.done();
         long t2 = System.currentTimeMillis();
         System.out.println("STREAM = " + (t2 - t1));
         return t2;
