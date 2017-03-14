@@ -122,6 +122,50 @@ public class OmsAspectSmp extends GridNodeMultiProcessing {
 
         WritableRaster aspectWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
 
+        long t0 = System.currentTimeMillis();
+        long t1 = doNormal(cols, rows, xRes, yRes, elevationIter, aspectWR, t0);
+
+        long t2 = doInStream(cols, rows, xRes, yRes, elevationIter, aspectWR, t1);
+
+        doFalko(cols, rows, aspectWR, t2);
+
+        CoverageUtilities.setNovalueBorder(aspectWR);
+        outAspect = CoverageUtilities.buildCoverage("aspect", aspectWR, regionMap, inElev.getCoordinateReferenceSystem());
+    }
+
+    private void doFalko( int cols, int rows, WritableRaster aspectWR, long t2 ) throws Exception {
+        WritableRandomIter aspectIter11 = RandomIterFactory.createWritable(aspectWR, null);
+        pm.beginTask(msg.message("aspect.calculating"), rows * cols);
+        processGridNodes(inElev, gridNode -> {
+            double aspect = calculate(gridNode, radtodeg, doRound);
+            aspectIter11.setSample(gridNode.col, gridNode.row, 0, aspect);
+            pm.worked(1);
+        });
+        pm.done();
+        long t3 = System.currentTimeMillis();
+        System.out.println("FALKO = " + (t3 - t2));
+    }
+
+    private long doNormal( int cols, int rows, double xRes, double yRes, RandomIter elevationIter, WritableRaster aspectWR,
+            long t0 ) {
+        WritableRandomIter aspectIter1 = RandomIterFactory.createWritable(aspectWR, null);
+        pm.beginTask(msg.message("aspect.calculating"), rows);
+        // Cycling into the valid region.
+        for( int r = 1; r < rows - 1; r++ ) {
+            for( int c = 1; c < cols - 1; c++ ) {
+                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r);
+                double aspect = calculate(node, radtodeg, doRound);
+                aspectIter1.setSample(c, r, 0, aspect);
+            }
+            pm.worked(1);
+        }
+        pm.done();
+        long t1 = System.currentTimeMillis();
+        System.out.println("NORMAL = " + (t1 - t0));
+        return t1;
+    }
+
+    private long doInStream( int cols, int rows, double xRes, double yRes, RandomIter elevationIter, WritableRaster aspectWR, long t1 ) {
         int procNum = Runtime.getRuntime().availableProcessors();
         double[] range2Bins = NumericsUtilities.range2Bins(1, rows - 1, procNum);
         double[][] runs = new double[range2Bins.length - 1][2];
@@ -131,7 +175,7 @@ public class OmsAspectSmp extends GridNodeMultiProcessing {
         }
 
         pm.beginTask(msg.message("aspect.calculating"), rows);
-        long t0 = System.currentTimeMillis();
+      
         WritableRandomIter aspectIter = RandomIterFactory.createWritable(aspectWR, null);
         Stream<double[]> boundsArray = StreamUtils.fromArray(runs);
         boundsArray.parallel().forEach(bound -> {
@@ -145,35 +189,9 @@ public class OmsAspectSmp extends GridNodeMultiProcessing {
             }
         });
         pm.done();
-        long t1 = System.currentTimeMillis();
-        System.out.println("T1 = " + (t1 - t0));
-
-        WritableRandomIter aspectIter1 = RandomIterFactory.createWritable(aspectWR, null);
-        pm.beginTask(msg.message("aspect.calculating"), rows);
-        // Cycling into the valid region.
-        for( int r = 1; r < rows - 1; r++ ) {
-            for( int c = 1; c < cols - 1; c++ ) {
-                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r);
-                double aspect = calculate(node, radtodeg, doRound);
-                aspectIter1.setSample(c, r, 0, aspect);
-            }
-            pm.worked(1);
-        }
-        pm.done();
         long t2 = System.currentTimeMillis();
-        System.out.println("T2 = " + (t2 - t1));
-
-        WritableRandomIter aspectIter11 = RandomIterFactory.createWritable(aspectWR, null);
-        pm.beginTask(msg.message("aspect.calculating"), rows * cols);
-        processGridNodes(inElev, gridNode -> {
-            double aspect = calculate(gridNode, radtodeg, doRound);
-            aspectIter11.setSample(gridNode.col, gridNode.row, 0, aspect);
-        });
-        long t3 = System.currentTimeMillis();
-        System.out.println("T3 = " + (t3 - t2));
-
-        CoverageUtilities.setNovalueBorder(aspectWR);
-        outAspect = CoverageUtilities.buildCoverage("aspect", aspectWR, regionMap, inElev.getCoordinateReferenceSystem());
+        System.out.println("STREAM = " + (t2 - t1));
+        return t2;
     }
 
     public static void main( String[] args ) throws Exception {
