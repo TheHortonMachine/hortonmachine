@@ -1036,4 +1036,24 @@ public class GeometryUtilities {
         }
         return mergedList;
     }
+
+    /**
+     * Get the position of a point (left, right, on line) for a given line.
+     * 
+     * @param point the point to check.
+     * @param lineStart the start coordinate of the line.
+     * @param lineEnd the end coordinate of the line.
+     * @return 1 if the point is left of the line, -1 if it is right, 0 if it is on the line.
+     */
+    public static int getPointPositionAgainstLine( Coordinate point, Coordinate lineStart, Coordinate lineEnd ) {
+        double value = (lineEnd.x - lineStart.x) * (point.y - lineStart.y) - (point.x - lineStart.x) * (lineEnd.y - lineStart.y);
+        if (value > 0) {
+            return 1;
+        } else if (value < 0) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+
 }

@@ -485,4 +485,20 @@ public class TestGeometryUtilities extends HMTestCase {
 
     }
 
+    public void testPointOnLineSide() throws Exception {
+        Coordinate lineStart = new Coordinate(0, 0);
+        Coordinate lineEnd = new Coordinate(200, 200);
+
+        Coordinate p1 = new Coordinate(50, 150);
+        Coordinate p2 = new Coordinate(50, 50);
+        Coordinate p3 = new Coordinate(152, 50);
+
+        int position = GeometryUtilities.getPointPositionAgainstLine(p1, lineStart, lineEnd);
+        assertEquals(1, position);
+        position = GeometryUtilities.getPointPositionAgainstLine(p2, lineStart, lineEnd);
+        assertEquals(0, position);
+        position = GeometryUtilities.getPointPositionAgainstLine(p3, lineStart, lineEnd);
+        assertEquals(-1, position);
+    }
+
 }
