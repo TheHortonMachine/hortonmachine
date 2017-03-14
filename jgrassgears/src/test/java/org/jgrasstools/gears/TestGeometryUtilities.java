@@ -499,6 +499,36 @@ public class TestGeometryUtilities extends HMTestCase {
         assertEquals(0, position);
         position = GeometryUtilities.getPointPositionAgainstLine(p3, lineStart, lineEnd);
         assertEquals(-1, position);
+
+        // horizontal
+        lineStart = new Coordinate(0, 0);
+        lineEnd = new Coordinate(200, 0);
+        
+        p1 = new Coordinate(50, 150);
+        p2 = new Coordinate(10, 0);
+        p3 = new Coordinate(50, -50);
+        
+        position = GeometryUtilities.getPointPositionAgainstLine(p1, lineStart, lineEnd);
+        assertEquals(1, position);
+        position = GeometryUtilities.getPointPositionAgainstLine(p2, lineStart, lineEnd);
+        assertEquals(0, position);
+        position = GeometryUtilities.getPointPositionAgainstLine(p3, lineStart, lineEnd);
+        assertEquals(-1, position);
+
+        // vertical
+        lineStart = new Coordinate(0, 200);
+        lineEnd = new Coordinate(0, 0);
+        
+        p1 = new Coordinate(50, 150);
+        p2 = new Coordinate(0, 100);
+        p3 = new Coordinate(-50, 50);
+        
+        position = GeometryUtilities.getPointPositionAgainstLine(p1, lineStart, lineEnd);
+        assertEquals(1, position);
+        position = GeometryUtilities.getPointPositionAgainstLine(p2, lineStart, lineEnd);
+        assertEquals(0, position);
+        position = GeometryUtilities.getPointPositionAgainstLine(p3, lineStart, lineEnd);
+        assertEquals(-1, position);
     }
 
 }
