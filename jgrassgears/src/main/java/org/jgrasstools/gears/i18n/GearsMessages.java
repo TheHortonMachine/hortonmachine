@@ -42,17 +42,6 @@ public class GearsMessages {
     public static final String GENERIC_P_X_RES_DESCRIPTION = "The requested resolution in x.";
     public static final String GENERIC_P_Y_RES_DESCRIPTION = "The requested resolution in y.";
 
-    public static final String OMSGEOPAPARAZZICONVERTER_LABEL = JGTConstants.VECTORPROCESSING;
-    public static final String OMSGEOPAPARAZZICONVERTER_TAGS = "geopaparazzi, vector";
-    public static final String OMSGEOPAPARAZZICONVERTER_NAME = "geopapconvert";
-    public static final String OMSGEOPAPARAZZICONVERTER_OUT_DATA_DESCRIPTION = "The output folder";
-    public static final String OMSGEOPAPARAZZICONVERTER_DO_BOOKMARKS_DESCRIPTION = "Flag to create bookmarks points";
-    public static final String OMSGEOPAPARAZZICONVERTER_DO_MEDIA_DESCRIPTION = "Flag to create media points";
-    public static final String OMSGEOPAPARAZZICONVERTER_DO_LOG_POINTS_DESCRIPTION = "Flag to create log points";
-    public static final String OMSGEOPAPARAZZICONVERTER_DO_LOG_LINES_DESCRIPTION = "Flag to create log lines";
-    public static final String OMSGEOPAPARAZZICONVERTER_DO_NOTES_DESCRIPTION = "Flag to create notes";
-    public static final String OMSGEOPAPARAZZICONVERTER_IN_GEOPAPARAZZI_DESCRIPTION = "The geopaparazzi folder";
-
     public static final String OMSLINESMOOTHERMCMASTER_DESCRIPTION = "The McMasters Sliding Averaging smoothing algorithm.";
     public static final String OMSLINESMOOTHERMCMASTER_DOCUMENTATION = "OmsLineSmootherMcMaster.html";
     public static final String OMSLINESMOOTHERMCMASTER_KEYWORDS = "Smoothing, Vector, OmsLineSmootherJaitools";

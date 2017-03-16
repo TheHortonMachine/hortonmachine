@@ -50,9 +50,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.*;
 
 @Description(OmsGeopaparazzi3Converter.DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
-@Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
+@Keywords(OmsGeopaparazzi3Converter.OMSGEOPAPARAZZICONVERTER_TAGS)
 @Label(JGTConstants.MOBILE)
-@Name("_" + OMSGEOPAPARAZZICONVERTER_NAME + "_v3")
+@Name("_" + OmsGeopaparazzi3Converter.OMSGEOPAPARAZZICONVERTER_NAME + "_v3")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
 public class OmsGeopaparazzi3Converter extends JGTModel {
@@ -85,6 +85,16 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
 
     // VARS DOCS START
     public static final String DESCRIPTION = "Converts a geopaparazzi 3 project folder into shapefiles.";
+    public static final String OMSGEOPAPARAZZICONVERTER_LABEL = JGTConstants.VECTORPROCESSING;
+    public static final String OMSGEOPAPARAZZICONVERTER_TAGS = "geopaparazzi, vector";
+    public static final String OMSGEOPAPARAZZICONVERTER_NAME = "geopapconvert";
+    public static final String OMSGEOPAPARAZZICONVERTER_OUT_DATA_DESCRIPTION = "The output folder";
+    public static final String OMSGEOPAPARAZZICONVERTER_DO_BOOKMARKS_DESCRIPTION = "Flag to create bookmarks points";
+    public static final String OMSGEOPAPARAZZICONVERTER_DO_MEDIA_DESCRIPTION = "Flag to create media points";
+    public static final String OMSGEOPAPARAZZICONVERTER_DO_LOG_POINTS_DESCRIPTION = "Flag to create log points";
+    public static final String OMSGEOPAPARAZZICONVERTER_DO_LOG_LINES_DESCRIPTION = "Flag to create log lines";
+    public static final String OMSGEOPAPARAZZICONVERTER_DO_NOTES_DESCRIPTION = "Flag to create notes";
+    public static final String OMSGEOPAPARAZZICONVERTER_IN_GEOPAPARAZZI_DESCRIPTION = "The geopaparazzi folder";
     // VARS DOCS END
 
     private static final String TAG_KEY = "key";

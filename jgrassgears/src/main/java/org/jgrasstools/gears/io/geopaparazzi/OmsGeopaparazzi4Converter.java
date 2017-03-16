@@ -35,19 +35,10 @@
  */
 package org.jgrasstools.gears.io.geopaparazzi;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_LOG_LINES_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_LOG_POINTS_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_MEDIA_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DO_NOTES_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_OUT_DATA_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_TAGS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
-import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOGS;
-import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_IMAGES;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_NOTES;
 
 import java.awt.image.BufferedImage;
@@ -56,7 +47,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -83,10 +73,10 @@ import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsPoint;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Image;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTableFields;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -97,7 +87,6 @@ import org.jgrasstools.gears.utils.StringUtilities;
 import org.jgrasstools.gears.utils.chart.Scatter;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -121,9 +110,9 @@ import oms3.annotations.UI;
 
 @Description(OmsGeopaparazzi4Converter.DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
-@Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
+@Keywords(OmsGeopaparazzi4Converter.OMSGEOPAPARAZZICONVERTER_TAGS)
 @Label(JGTConstants.MOBILE)
-@Name("_" + OMSGEOPAPARAZZICONVERTER_NAME + "_v4")
+@Name("_" + OmsGeopaparazzi4Converter.OMSGEOPAPARAZZICONVERTER_NAME + "_v4")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
 public class OmsGeopaparazzi4Converter extends JGTModel {
@@ -157,6 +146,16 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     // VARS DOCS START
     public static final String THE_GEOPAPARAZZI_DATABASE_FILE = "The geopaparazzi database file (*.gpap).";
     public static final String DESCRIPTION = "Converts a geopaparazzi 4 project database into shapefiles.";
+    public static final String OMSGEOPAPARAZZICONVERTER_LABEL = JGTConstants.VECTORPROCESSING;
+    public static final String OMSGEOPAPARAZZICONVERTER_TAGS = "geopaparazzi, vector";
+    public static final String OMSGEOPAPARAZZICONVERTER_NAME = "geopapconvert";
+    public static final String OMSGEOPAPARAZZICONVERTER_OUT_DATA_DESCRIPTION = "The output folder";
+    public static final String OMSGEOPAPARAZZICONVERTER_DO_BOOKMARKS_DESCRIPTION = "Flag to create bookmarks points";
+    public static final String OMSGEOPAPARAZZICONVERTER_DO_MEDIA_DESCRIPTION = "Flag to create media points";
+    public static final String OMSGEOPAPARAZZICONVERTER_DO_LOG_POINTS_DESCRIPTION = "Flag to create log points";
+    public static final String OMSGEOPAPARAZZICONVERTER_DO_LOG_LINES_DESCRIPTION = "Flag to create log lines";
+    public static final String OMSGEOPAPARAZZICONVERTER_DO_NOTES_DESCRIPTION = "Flag to create notes";
+    public static final String OMSGEOPAPARAZZICONVERTER_IN_GEOPAPARAZZI_DESCRIPTION = "The geopaparazzi folder";
     // VARS DOCS END
 
     public static final String EMPTY_STRING = " - ";

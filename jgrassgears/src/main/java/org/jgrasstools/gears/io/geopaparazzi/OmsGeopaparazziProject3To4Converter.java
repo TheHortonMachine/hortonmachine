@@ -35,20 +35,40 @@
  */
 package org.jgrasstools.gears.io.geopaparazzi;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.MultiLineString;
-import com.vividsolutions.jts.geom.Point;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
-import oms3.annotations.*;
-import oms3.annotations.Label;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import javax.imageio.ImageIO;
+
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.geopaparazzi.forms.Utilities;
-import org.jgrasstools.gears.io.geopaparazzi.geopap4.*;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoBookmarks;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoLog;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoMetadata;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoNotes;
+import org.jgrasstools.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -57,33 +77,21 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
-import javax.imageio.ImageIO;
-
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.*;
-import java.util.*;
-import java.util.Date;
-import java.util.List;
-
-import static org.jgrasstools.gears.i18n.GearsMessages.*;
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description(OmsGeopaparazziProject3To4Converter.CONVERT_A_GEOPAPARAZZI_3_FOLDER_PROJECT_INTO_A_GEOPAPARAZZI_4_DATABASE)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
-@Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
+@Keywords(OmsGeopaparazziProject3To4Converter.OMSGEOPAPARAZZICONVERTER_TAGS)
 @Label(JGTConstants.MOBILE)
 @Name("_" + OmsGeopaparazziProject3To4Converter.GEOPAP3TO4)
 @Status(OMSHYDRO_DRAFT)
@@ -96,6 +104,7 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
     public String inGeopaparazzi = null;
 
     // VARS DOCS START
+    public static final String OMSGEOPAPARAZZICONVERTER_TAGS = "geopaparazzi, vector";
     public static final String CONVERT_A_GEOPAPARAZZI_3_FOLDER_PROJECT_INTO_A_GEOPAPARAZZI_4_DATABASE = "Convert a geopaparazzi 3 folder project into a geopaparazzi 4 database.";
     public static final String GEOPAPARAZZI_3_INPUT_FOLDER_TO_CONVERT = "Geopaparazzi 3 input folder to convert.";
     public static final String TABLE_GPSLOGS = "gpslogs";
