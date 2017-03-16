@@ -44,8 +44,12 @@ public class JGTImportExportUtils {
 
         JGTTransactionExecuter transactionExecuter = new JGTTransactionExecuter(db){
             @Override
-            public void executeInTransaction() throws Exception {
-                ImportExportUtils.executeQueries(db, tableName, shpPath, encoding, srid, geometryType);
+            public void executeInTransaction()  {
+                try {
+                    ImportExportUtils.executeQueries(db, tableName, shpPath, encoding, srid, geometryType);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         };
         transactionExecuter.execute();

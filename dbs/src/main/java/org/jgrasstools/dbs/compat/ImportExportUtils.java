@@ -29,6 +29,8 @@ import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
  */
 public class ImportExportUtils {
 
+    private static final String MULTI = "multi";
+
     /**
      * Import a shapefile into the database using a temporary virtual table.
      * 
@@ -43,7 +45,7 @@ public class ImportExportUtils {
     public static void executeQueries( final ASpatialDb db, String tableName, String shpPath, String encoding, int srid,
             ESpatialiteGeometryType geometryType ) throws Exception {
         SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMddHHmmss");
-        
+
         if (encoding == null || encoding.trim().length() == 0) {
             encoding = "UTF-8";
         }
@@ -55,25 +57,35 @@ public class ImportExportUtils {
         if (shpPath.endsWith(".shp")) {
             shpPath = shpPath.substring(0, shpPath.length() - 4);
         }
-        
+
         String tmptable = "virtualTmp" + dateFormatter.format(new Date()) + tableName;
-        
+
         final String sql1 = "CREATE VIRTUAL TABLE " + tmptable + " using virtualshape('" + shpPath + "','" + encoding + "',"
                 + srid + ");";
         final String sql2 = "select RegisterVirtualGeometry('" + tmptable + "');";
         final String sql3 = "create table " + tableName + " as select * from " + tmptable + ";";
-        final String sql4 = "select recovergeometrycolumn('" + tableName + "','Geometry'," + srid + ",'" + geomType + "');";
+        String sql4 = "select recovergeometrycolumn('" + tableName + "','Geometry'," + srid + ",'" + geomType + "');";
         final String sql5 = "select CreateSpatialIndex('" + tableName + "','Geometry');";
         final String sql6 = "drop table '" + tmptable + "';";
         final String sql7 = "select updateLayerStatistics('" + tableName + "');";
         db.executeInsertUpdateDeleteSql(sql1);
         db.executeInsertUpdateDeleteSql(sql2);
         db.executeInsertUpdateDeleteSql(sql3);
-        db.executeInsertUpdateDeleteSql(sql4);
+
+        int executeInsertUpdateDeleteSql = db.executeInsertUpdateDeleteSql(sql4);
+        if (executeInsertUpdateDeleteSql == 0) {
+            // try also the multi toggle, since the virtualtable might have choosen a different one than geotools
+            if (geomType.contains(MULTI)) {
+                geomType = geomType.replaceFirst(MULTI, "");
+            } else {
+                geomType = MULTI + geomType;
+            }
+            sql4 = "select recovergeometrycolumn('" + tableName + "','Geometry'," + srid + ",'" + geomType + "');";
+            db.executeInsertUpdateDeleteSql(sql4);
+        }
         db.executeInsertUpdateDeleteSql(sql5);
         db.executeInsertUpdateDeleteSql(sql6);
         db.executeInsertUpdateDeleteSql(sql7);
     }
-    
 
 }
