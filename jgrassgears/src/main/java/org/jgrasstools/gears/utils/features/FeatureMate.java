@@ -239,7 +239,7 @@ public class FeatureMate {
      * @throws IllegalArgumentException in the case the geometry is a point.
      */
     public void convertToLine() throws IllegalArgumentException {
-        EGeometryType geometryType = EGeometryType.getGeometryType(getGeometry());
+        EGeometryType geometryType = EGeometryType.forGeometry(getGeometry());
         switch( geometryType ) {
         case MULTIPOLYGON:
         case POLYGON:
@@ -266,7 +266,7 @@ public class FeatureMate {
      * <p>To get the original geometry one can simply call {@link #resetGeometry()}. 
      */
     public void convertToPoint() {
-        EGeometryType geometryType = EGeometryType.getGeometryType(getGeometry());
+        EGeometryType geometryType = EGeometryType.forGeometry(getGeometry());
         switch( geometryType ) {
         case MULTIPOLYGON:
         case POLYGON:

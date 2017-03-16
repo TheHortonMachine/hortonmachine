@@ -23,6 +23,7 @@ org.jgrasstools.modules.EnergyIndexCalculator
 org.jgrasstools.modules.ExtractBasin
 org.jgrasstools.modules.ExtractNetwork
 org.jgrasstools.modules.FileIterator
+org.jgrasstools.modules.FilesInFolderOrganizer
 org.jgrasstools.modules.FlowDirections
 org.jgrasstools.modules.Gc
 org.jgrasstools.modules.Geomorphon
@@ -30,6 +31,7 @@ org.jgrasstools.modules.Geopaparazzi3Converter
 org.jgrasstools.modules.Geopaparazzi4Converter
 org.jgrasstools.modules.GeopaparazziMapsCreator
 org.jgrasstools.modules.GeopaparazziProject3To4Converter
+org.jgrasstools.modules.GeopaparazziSpatialiteCreator
 org.jgrasstools.modules.Gradient
 org.jgrasstools.modules.GridGeometryReader
 org.jgrasstools.modules.GridsGenerator
@@ -53,10 +55,12 @@ org.jgrasstools.modules.LW03_NetworkHierarchyToPointsSplitter
 org.jgrasstools.modules.LW04_BankfullWidthAnalyzer
 org.jgrasstools.modules.LW05_BridgesDamsWidthAdder
 org.jgrasstools.modules.LW06_SlopeToNetworkAdder
-org.jgrasstools.modules.LW07_NetworkBufferWidthCalculator
-org.jgrasstools.modules.LW08_NetworBufferMergerHolesRemover
-org.jgrasstools.modules.LW09_AreaToNetpointAssociator
-org.jgrasstools.modules.LW10_NetworkPropagator
+org.jgrasstools.modules.LW07_HydraulicParamsToSectionsAdder
+org.jgrasstools.modules.LW08_NetworkBufferWidthCalculator
+org.jgrasstools.modules.LW09_NetworBufferMergerHolesRemover
+org.jgrasstools.modules.LW10_CHM_AreaToNetpointAssociator
+org.jgrasstools.modules.LW10_SingleTree_AreaToNetpointAssociator
+org.jgrasstools.modules.LW11_NetworkPropagator
 org.jgrasstools.modules.Labeler
 org.jgrasstools.modules.LasConverter
 org.jgrasstools.modules.LasNativeChecker
@@ -100,6 +104,7 @@ org.jgrasstools.modules.RasterValueRounder
 org.jgrasstools.modules.RasterVectorIntersector
 org.jgrasstools.modules.RasterWriter
 org.jgrasstools.modules.RescaledDistance
+org.jgrasstools.modules.SaintGeo
 org.jgrasstools.modules.ScanLineRasterizer
 org.jgrasstools.modules.Shalstab
 org.jgrasstools.modules.Shp2DxfConverter

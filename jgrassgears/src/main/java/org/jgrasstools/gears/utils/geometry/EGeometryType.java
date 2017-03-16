@@ -18,6 +18,7 @@
 
 package org.jgrasstools.gears.utils.geometry;
 
+import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.opengis.feature.type.GeometryDescriptor;
 
 import com.vividsolutions.jts.geom.*;
@@ -107,7 +108,7 @@ public enum EGeometryType {
      * @param geometry the geometry to check.
      * @return the type.
      */
-    public static EGeometryType getGeometryType( Geometry geometry ) {
+    public static EGeometryType forGeometry( Geometry geometry ) {
         if (geometry instanceof LineString) {
             return EGeometryType.LINE;
         } else if (geometry instanceof MultiLineString) {
@@ -133,7 +134,7 @@ public enum EGeometryType {
      * @param geometryType the geometry type to check.
      * @return the type.
      */
-    public static EGeometryType getGeometryType( org.opengis.feature.type.GeometryType geometryType ) {
+    public static EGeometryType forGeometryType( org.opengis.feature.type.GeometryType geometryType ) {
         Class< ? > binding = geometryType.getBinding();
 
         if (binding == LineString.class) {
@@ -159,8 +160,8 @@ public enum EGeometryType {
      * @param geometryDescriptor the geometry descriptor to check.
      * @return the type.
      */
-    public static EGeometryType getGeometryType( GeometryDescriptor geometryDescriptor ) {
-        return getGeometryType(geometryDescriptor.getType());
+    public static EGeometryType forGeometryDescriptor( GeometryDescriptor geometryDescriptor ) {
+        return forGeometryType(geometryDescriptor.getType());
     }
 
     /**
@@ -245,5 +246,26 @@ public enum EGeometryType {
             return true;
         }
         return false;
+    }
+    
+    public ESpatialiteGeometryType toSpatialiteGeometryType(){
+        switch( this ) {
+        case LINE:
+            return ESpatialiteGeometryType.LINESTRING_XY;
+        case MULTILINE:
+            return ESpatialiteGeometryType.MULTILINESTRING_XY;
+        case POINT:
+            return ESpatialiteGeometryType.POINT_XY;
+        case MULTIPOINT:
+            return ESpatialiteGeometryType.MULTIPOINT_XY;
+        case POLYGON:
+            return ESpatialiteGeometryType.POLYGON_XY;
+        case MULTIPOLYGON:
+            return ESpatialiteGeometryType.MULTIPOLYGON_XY;
+        case GEOMETRYCOLLECTION:
+            return ESpatialiteGeometryType.GEOMETRYCOLLECTION_XY;
+        default:
+            return null;
+        }
     }
 }

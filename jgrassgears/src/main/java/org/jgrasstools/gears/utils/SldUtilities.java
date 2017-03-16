@@ -19,7 +19,6 @@ package org.jgrasstools.gears.utils;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -92,10 +91,11 @@ public class SldUtilities {
             SLDParser stylereader = new SLDParser(sf, file);
             StyledLayerDescriptor sld = stylereader.parseSLD();
             style = getDefaultStyle(sld);
+            return style;
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return style;
     }
 
     /**

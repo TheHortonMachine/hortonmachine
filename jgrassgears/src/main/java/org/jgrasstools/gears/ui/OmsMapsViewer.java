@@ -207,7 +207,7 @@ public class OmsMapsViewer extends JGTModel {
         for( String path : inVectors ) {
             SimpleFeatureCollection fc = OmsVectorReader.readVector(path);
             GeometryDescriptor geometryDescriptor = fc.getSchema().getGeometryDescriptor();
-            EGeometryType type = EGeometryType.getGeometryType(geometryDescriptor);
+            EGeometryType type = EGeometryType.forGeometryDescriptor(geometryDescriptor);
 
             File file = new File(path);
             Style style = SldUtilities.getStyleFromFile(file);

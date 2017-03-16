@@ -534,7 +534,7 @@ public class FeatureUtilities {
 
         DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
 
-        EGeometryType geometryType = EGeometryType.getGeometryType(geometries[0]);
+        EGeometryType geometryType = EGeometryType.forGeometry(geometries[0]);
         b.add("the_geom", geometryType.getClazz());
 
         Object userData = geometries[0].getUserData();

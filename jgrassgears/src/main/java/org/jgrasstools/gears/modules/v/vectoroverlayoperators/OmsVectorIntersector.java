@@ -126,7 +126,7 @@ public class OmsVectorIntersector extends JGTModel {
             throw new ModelsIllegalargumentException("No features found in the layer.", this);
         }
 
-        EGeometryType geometryType = EGeometryType.getGeometryType((Geometry) mainFeatures.get(0).getDefaultGeometry());
+        EGeometryType geometryType = EGeometryType.forGeometry((Geometry) mainFeatures.get(0).getDefaultGeometry());
         Class< ? > multiClazz = geometryType.getMultiClazz();
         EGeometryType newGeometryType = EGeometryType.forClass(multiClazz);
         FeatureGeometrySubstitutor sub = new FeatureGeometrySubstitutor(inMap1.getSchema(), multiClazz);
@@ -137,7 +137,7 @@ public class OmsVectorIntersector extends JGTModel {
             if (preparedIntersectionGeometry.intersects(geometry)) {
                 Geometry intersection = geometry.intersection(intersectionGeometry);
 
-                EGeometryType intersectionGeometryType = EGeometryType.getGeometryType(intersection);
+                EGeometryType intersectionGeometryType = EGeometryType.forGeometry(intersection);
                 if (intersectionGeometryType.isCompatibleWith(newGeometryType)) {
                     SimpleFeature newFeature = sub.substituteGeometry(feature, intersection);
                     ((DefaultFeatureCollection) outMap).add(newFeature);
