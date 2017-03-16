@@ -37,7 +37,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_ROWS
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_SOUTH_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_WEST_DESCRIPTION;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionValues;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
 import java.awt.image.WritableRaster;
 import java.util.List;
@@ -71,6 +70,7 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -150,8 +150,7 @@ public class OmsLinesRasterizer extends JGTModel {
         CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
         GridGeometry2D inGrid = gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, crs);
 
-        GeometryType type = schema.getGeometryDescriptor().getType();
-        if (getGeometryType(type) != org.jgrasstools.gears.utils.geometry.EGeometryType.LINE && getGeometryType(type) != org.jgrasstools.gears.utils.geometry.EGeometryType.MULTILINE) {
+        if (!EGeometryType.isLine(schema.getGeometryDescriptor())) {
             throw new ModelsRuntimeException("The module works only with line vectors.", this);
         }
 

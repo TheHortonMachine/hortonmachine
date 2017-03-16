@@ -35,6 +35,7 @@
  */
 package org.jgrasstools.modules;
 
+import static org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazzi4Converter.*;
 import oms3.annotations.*;
 
 import org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazzi4Converter;
@@ -43,7 +44,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 
 import static org.jgrasstools.gears.i18n.GearsMessages.*;
 
-@Description(OmsGeopaparazzi4Converter.DESCRIPTION)
+@Description(DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
 @Label(JGTConstants.MOBILE)

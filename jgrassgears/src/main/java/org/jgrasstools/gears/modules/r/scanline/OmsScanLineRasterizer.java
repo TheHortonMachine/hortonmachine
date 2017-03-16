@@ -21,13 +21,12 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_AUT
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_COLS_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_EAST_DESCRIPTION;
@@ -36,10 +35,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_R
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_SOUTH_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_WEST_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_STATUS;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometry2RegionParamsMap;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionValues;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
 import java.awt.image.WritableRaster;
 import java.text.MessageFormat;
@@ -48,19 +47,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.media.jai.iterator.RandomIter;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Documentation;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -76,10 +62,11 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.GeometryType;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
@@ -87,6 +74,19 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Documentation;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description(OMSSCANLINERASTERIZER_DESCRIPTION)
 @Documentation(OMSSCANLINERASTERIZER_DOCUMENTATION)
@@ -205,12 +205,12 @@ public class OmsScanLineRasterizer extends JGTModel {
             outWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, doubleNovalue);
         }
 
-        GeometryType type = schema.getGeometryDescriptor().getType();
-        if (getGeometryType(type) == org.jgrasstools.gears.utils.geometry.EGeometryType.POINT || getGeometryType(type) == org.jgrasstools.gears.utils.geometry.EGeometryType.MULTIPOINT) {
+        GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();
+        if (EGeometryType.isPoint(geometryDescriptor)) {
             throw new ModelsRuntimeException("Not implemented yet for points", this.getClass().getSimpleName());
-        } else if (getGeometryType(type) == org.jgrasstools.gears.utils.geometry.EGeometryType.LINE || getGeometryType(type) == org.jgrasstools.gears.utils.geometry.EGeometryType.MULTILINE) {
+        } else if (EGeometryType.isLine(geometryDescriptor)) {
             throw new ModelsRuntimeException("Not implemented yet for lines", this.getClass().getSimpleName());
-        } else if (getGeometryType(type) == org.jgrasstools.gears.utils.geometry.EGeometryType.POLYGON || getGeometryType(type) == org.jgrasstools.gears.utils.geometry.EGeometryType.MULTIPOLYGON) {
+        } else if (EGeometryType.isPolygon(geometryDescriptor)) {
             rasterizepolygon(pGrid);
         } else {
             throw new ModelsIllegalargumentException("Couldn't recognize the geometry type of the file.", this.getClass()

@@ -21,21 +21,35 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_AUTHORCONTACTS
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_DOCUMENTATION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_F_LINE_ID_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_IN_COORDINATES_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_IN_RASTER_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_OUT_FOLDER_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_OUT_PROFILE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_STATUS;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.coverage.ProfilePoint;
+import org.jgrasstools.gears.utils.features.FeatureMate;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -48,20 +62,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.coverage.ProfilePoint;
-import org.jgrasstools.gears.utils.features.FeatureMate;
-import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 
 @Description(OMSPROFILE_DESCRIPTION)
 @Documentation(OMSPROFILE_DOCUMENTATION)
@@ -123,7 +123,7 @@ public class OmsProfile extends JGTModel {
         for( FeatureMate lineFeature : linesList ) {
             Geometry geom = lineFeature.getGeometry();
             List<Coordinate> profileNodesList = new ArrayList<Coordinate>();
-            if (GeometryUtilities.isLine(geom)) {
+            if (EGeometryType.isLine(geom)) {
                 Coordinate[] coordinates = geom.getCoordinates();
                 for( Coordinate coordinate : coordinates ) {
                     profileNodesList.add(coordinate);

@@ -76,9 +76,6 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.MultiLineString;
-import com.vividsolutions.jts.geom.MultiPoint;
-import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
@@ -345,8 +342,8 @@ public class FeatureUtilities {
      * @param fet the featurecollection
      * @throws IOException 
      */
-    public static boolean collectionToShapeFile( String shapeFilePath, CoordinateReferenceSystem crs, SimpleFeatureCollection fet )
-            throws IOException {
+    public static boolean collectionToShapeFile( String shapeFilePath, CoordinateReferenceSystem crs,
+            SimpleFeatureCollection fet ) throws IOException {
 
         // Create the file you want to write to
         File file = null;
@@ -537,29 +534,8 @@ public class FeatureUtilities {
 
         DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
 
-        EGeometryType geometryType = GeometryUtilities.getGeometryType(geometries[0]);
-        switch( geometryType ) {
-        case LINE:
-            b.add("the_geom", LineString.class);
-            break;
-        case MULTILINE:
-            b.add("the_geom", MultiLineString.class);
-            break;
-        case POINT:
-            b.add("the_geom", Point.class);
-            break;
-        case MULTIPOINT:
-            b.add("the_geom", MultiPoint.class);
-            break;
-        case POLYGON:
-            b.add("the_geom", Polygon.class);
-            break;
-        case MULTIPOLYGON:
-            b.add("the_geom", MultiPolygon.class);
-            break;
-        default:
-            break;
-        }
+        EGeometryType geometryType = EGeometryType.getGeometryType(geometries[0]);
+        b.add("the_geom", geometryType.getClazz());
 
         Object userData = geometries[0].getUserData();
         int userDataSize = 1;
@@ -869,8 +845,8 @@ public class FeatureUtilities {
                                     MessageFormat.format("Found a cusp in: {0}/{1}", coords[0].x, coords[0].y),
                                     "FeatureUtilities");
                         } else {
-                            throw new ModelsIOException(MessageFormat.format(
-                                    "Found intersection with more than 2 points in: {0}/{1}", coords[0].x, coords[0].y),
+                            throw new ModelsIOException(MessageFormat
+                                    .format("Found intersection with more than 2 points in: {0}/{1}", coords[0].x, coords[0].y),
                                     "FeatureUtilities");
                         }
                     }

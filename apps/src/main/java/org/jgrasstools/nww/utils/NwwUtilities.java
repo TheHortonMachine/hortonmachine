@@ -16,6 +16,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
 import org.jgrasstools.nww.layers.objects.BasicMarkerWithInfo;
@@ -113,11 +114,11 @@ public class NwwUtilities {
      */
     public static GEOMTYPE getGeometryType( SimpleFeatureCollection featureCollection ) {
         GeometryDescriptor geometryDescriptor = featureCollection.getSchema().getGeometryDescriptor();
-        if (GeometryUtilities.isPolygon(geometryDescriptor)) {
+        if (EGeometryType.isPolygon(geometryDescriptor)) {
             return GEOMTYPE.POLYGON;
-        } else if (GeometryUtilities.isLine(geometryDescriptor)) {
+        } else if (EGeometryType.isLine(geometryDescriptor)) {
             return GEOMTYPE.LINE;
-        } else if (GeometryUtilities.isPoint(geometryDescriptor)) {
+        } else if (EGeometryType.isPoint(geometryDescriptor)) {
             return GEOMTYPE.POINT;
         } else {
             return GEOMTYPE.UNKNOWN;

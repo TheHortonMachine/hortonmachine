@@ -18,7 +18,6 @@
 package org.jgrasstools.server.jetty.providers.data;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
 
@@ -33,7 +32,6 @@ import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.features.FilterUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.EGeometryType;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.style.SimpleStyle;
 import org.jgrasstools.gears.utils.style.SimpleStyleUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -96,17 +94,17 @@ public class ShapeFileDataProvider implements NwwDataProvider {
 
     @Override
     public boolean isPoints() {
-        return GeometryUtilities.isPoint(geometryDescriptor);
+        return EGeometryType.isPoint(geometryDescriptor);
     }
 
     @Override
     public boolean isLines() {
-        return GeometryUtilities.isLine(geometryDescriptor);
+        return EGeometryType.isLine(geometryDescriptor);
     }
 
     @Override
     public boolean isPolygon() {
-        return GeometryUtilities.isPolygon(geometryDescriptor);
+        return EGeometryType.isPolygon(geometryDescriptor);
     }
 
     @Override

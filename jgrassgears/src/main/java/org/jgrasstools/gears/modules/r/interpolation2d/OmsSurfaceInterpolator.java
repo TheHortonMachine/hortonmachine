@@ -21,19 +21,19 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_AU
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_DOCUMENTATION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_F_CAT_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_IN_GRID_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_IN_MASK_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_IN_VECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_OUT_RASTER_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_P_BUFFER_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_P_MAX_THREADS_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_P_MODE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_STATUS;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.Variables.IDW;
 import static org.jgrasstools.gears.libs.modules.Variables.TPS;
@@ -48,20 +48,6 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Documentation;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-import oms3.annotations.Unit;
-
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -75,7 +61,7 @@ import org.jgrasstools.gears.modules.r.interpolation2d.core.ISurfaceInterpolator
 import org.jgrasstools.gears.modules.r.interpolation2d.core.TPSInterpolator;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.geometry.DirectPosition;
@@ -84,8 +70,21 @@ import org.opengis.referencing.operation.TransformException;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.index.strtree.STRtree;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Documentation;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSSURFACEINTERPOLATOR_DESCRIPTION)
 @Documentation(OMSSURFACEINTERPOLATOR_DOCUMENTATION)
@@ -150,7 +149,7 @@ public class OmsSurfaceInterpolator extends JGTModel {
         if (inVector != null) {
             checkNull(fCat);
             GeometryDescriptor geometryDescriptor = inVector.getSchema().getGeometryDescriptor();
-            if (!GeometryUtilities.isPoint(geometryDescriptor)) {
+            if (!EGeometryType.isPoint(geometryDescriptor)) {
                 throw new ModelsIllegalargumentException("The geometry has to be a point geometry.", this, pm);
             }
             SimpleFeatureIterator featureIterator = inVector.features();

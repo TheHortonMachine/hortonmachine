@@ -21,34 +21,21 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_AUTHO
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_F_CAT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_IN_GRID_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_IN_VECTOR_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_F_CAT_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_IN_GRID_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_IN_VECTOR_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_OUT_RASTER_DESCRIPTION;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_STATUS;
 
 import java.awt.image.WritableRaster;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Documentation;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -62,12 +49,24 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.GeometryType;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Documentation;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 @Description(OMSPOINTSRASTERIZER_DESCRIPTION)
 @Documentation(OMSPOINTSRASTERIZER_DOCUMENTATION)
@@ -100,8 +99,7 @@ public class OmsPointsRasterizer extends JGTModel {
         checkNull(inGrid, inVector);
 
         SimpleFeatureType schema = inVector.getSchema();
-        GeometryType type = schema.getGeometryDescriptor().getType();
-        if (getGeometryType(type) != org.jgrasstools.gears.utils.geometry.EGeometryType.POINT && getGeometryType(type) != org.jgrasstools.gears.utils.geometry.EGeometryType.POINT) {
+        if (!EGeometryType.isPoint(schema.getGeometryDescriptor())) {
             throw new ModelsRuntimeException("The module works only with point vectors.", this);
         }
 

@@ -32,7 +32,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTR
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_OUT_VECTOR_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_P_POS_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
 import java.awt.image.RenderedImage;
 
@@ -152,7 +151,7 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
             double value = -1;
             Coordinate c;
             Coordinate[] coordinates = geometry.getCoordinates();
-            if (getGeometryType(geometry) == EGeometryType.POINT || getGeometryType(geometry) == EGeometryType.MULTIPOINT) {
+            if (EGeometryType.isPoint(geometry)) {
                 c = coordinates[0];
                 if (!inCoverageEnvelope.contains(c.x, c.y)) {
                     continue;
@@ -166,7 +165,7 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
 
                 SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value});
                 ((DefaultFeatureCollection) outVector).add(extendedFeature);
-            } else if (getGeometryType(geometry) == EGeometryType.LINE || getGeometryType(geometry) == EGeometryType.MULTILINE) {
+            } else if (EGeometryType.isLine(geometry)) {
                 if (pPos.trim().equalsIgnoreCase(START)) {
                     c = coordinates[0];
                 } else if (pPos.trim().equalsIgnoreCase(END)) {
@@ -184,8 +183,7 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
                             new Class< ? >[]{Double.class});
                 SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value});
                 ((DefaultFeatureCollection) outVector).add(extendedFeature);
-            } else if (getGeometryType(geometry) == EGeometryType.POLYGON
-                    || getGeometryType(geometry) == EGeometryType.MULTIPOLYGON) {
+            } else if (EGeometryType.isPolygon(geometry)) {
                 if (fExt == null) {
                     String max = fNew + "_max";
                     String min = fNew + "_min";

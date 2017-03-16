@@ -21,16 +21,27 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTO
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_DO_INVERSE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_IN_VECTOR_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_DO_INVERSE_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_IN_RASTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_IN_VECTOR_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_OUT_RASTER_DESCRIPTION;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_STATUS;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
+import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
+import org.opengis.feature.simple.SimpleFeatureType;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -42,17 +53,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
-import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.GeometryType;
 
 @Description(OMSRASTERVECTORINTERSECTOR_DESCRIPTION)
 @Documentation(OMSRASTERVECTORINTERSECTOR_DOCUMENTATION)
@@ -85,8 +85,7 @@ public class OmsRasterVectorIntersector extends JGTModel {
         checkNull(inRaster, inVector);
 
         SimpleFeatureType schema = inVector.getSchema();
-        GeometryType type = schema.getGeometryDescriptor().getType();
-        if (getGeometryType(type) != org.jgrasstools.gears.utils.geometry.EGeometryType.POLYGON && getGeometryType(type) != org.jgrasstools.gears.utils.geometry.EGeometryType.MULTIPOLYGON) {
+        if (!EGeometryType.isPolygon(schema.getGeometryDescriptor())) {
             throw new ModelsRuntimeException("The module works only with polygon vectors.", this);
         }
 

@@ -100,7 +100,7 @@ public class OmsLinesPolygonizer extends JGTModel {
 
         outMap = new DefaultFeatureCollection();
 
-        EGeometryType geometryType = GeometryUtilities.getGeometryType(inMap.getSchema().getGeometryDescriptor().getType());
+        EGeometryType geometryType = EGeometryType.getGeometryType(inMap.getSchema().getGeometryDescriptor());
         switch( geometryType ) {
         case LINE:
         case MULTILINE:

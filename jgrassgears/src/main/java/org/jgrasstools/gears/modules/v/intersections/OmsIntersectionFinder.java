@@ -92,7 +92,7 @@ public class OmsIntersectionFinder extends JGTModel {
         outPointsMap = new DefaultFeatureCollection();
         outLinesMap = new DefaultFeatureCollection();
 
-        EGeometryType geometryType = GeometryUtilities.getGeometryType(inMap.getSchema().getGeometryDescriptor().getType());
+        EGeometryType geometryType = EGeometryType.getGeometryType(inMap.getSchema().getGeometryDescriptor().getType());
         switch( geometryType ) {
         case LINE:
         case MULTILINE:

@@ -25,6 +25,19 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.triangulate.VoronoiDiagramBuilder;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -35,19 +48,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.triangulate.VoronoiDiagramBuilder;
 
 @Description(OmsVoronoiDiagram.DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
@@ -83,7 +83,7 @@ public class OmsVoronoiDiagram extends JGTModel {
     public void process() throws Exception {
         checkNull(inMap);
 
-        if (!GeometryUtilities.isPoint(inMap.getSchema().getGeometryDescriptor())) {
+        if (!EGeometryType.isPoint(inMap.getSchema().getGeometryDescriptor())) {
             throw new ModelsIllegalargumentException("The input geometry needs to be points.", this, pm);
         }
 

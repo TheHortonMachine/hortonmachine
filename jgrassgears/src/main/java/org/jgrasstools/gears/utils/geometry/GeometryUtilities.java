@@ -40,14 +40,12 @@ import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
-import org.opengis.feature.type.GeometryDescriptor;
 
 import com.vividsolutions.jts.algorithm.PointLocator;
 import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
@@ -267,141 +265,7 @@ public class GeometryUtilities {
         return Double.NaN;
     }
 
-    /**
-     * Returns the {@link EGeometryType} for a given {@link Geometry}.
-     * 
-     * @param geometry the geometry to check.
-     * @return the type.
-     */
-    public static EGeometryType getGeometryType( Geometry geometry ) {
-        if (geometry instanceof LineString) {
-            return EGeometryType.LINE;
-        } else if (geometry instanceof MultiLineString) {
-            return EGeometryType.MULTILINE;
-        } else if (geometry instanceof Point) {
-            return EGeometryType.POINT;
-        } else if (geometry instanceof MultiPoint) {
-            return EGeometryType.MULTIPOINT;
-        } else if (geometry instanceof Polygon) {
-            return EGeometryType.POLYGON;
-        } else if (geometry instanceof MultiPolygon) {
-            return EGeometryType.MULTIPOLYGON;
-        } else if (geometry instanceof GeometryCollection) {
-            return EGeometryType.GEOMETRYCOLLECTION;
-        } else {
-            return null;
-        }
-    }
 
-    /**
-     * Returns the {@link EGeometryType} for a given {@link org.opengis.feature.type.GeometryType}.
-     * 
-     * @param geometryType the geometry type to check.
-     * @return the type.
-     */
-    public static EGeometryType getGeometryType( org.opengis.feature.type.GeometryType geometryType ) {
-        Class< ? > binding = geometryType.getBinding();
-
-        if (binding == LineString.class) {
-            return EGeometryType.LINE;
-        } else if (binding == MultiLineString.class) {
-            return EGeometryType.MULTILINE;
-        } else if (binding == Point.class) {
-            return EGeometryType.POINT;
-        } else if (binding == MultiPoint.class) {
-            return EGeometryType.MULTIPOINT;
-        } else if (binding == Polygon.class) {
-            return EGeometryType.POLYGON;
-        } else if (binding == MultiPolygon.class) {
-            return EGeometryType.MULTIPOLYGON;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Checks if the given geometry is a {@link LineString} (or {@link MultiLineString}) geometry.
-     * 
-     * @param geometry the geometry to check.
-     * @return <code>true</code> if there are lines in there.
-     */
-    public static boolean isLine( Geometry geometry ) {
-        if (geometry instanceof LineString || geometry instanceof MultiLineString) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the given {@link GeometryDescriptor} is for {@link LineString} (or {@link MultiLineString}) geometry.
-     * 
-     * @param geometryDescriptor the descriptor.
-     * @return <code>true</code> if there are points in there.
-     */
-    public static boolean isLine( GeometryDescriptor geometryDescriptor ) {
-        org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
-        Class< ? > binding = type.getBinding();
-        if (binding == MultiLineString.class || binding == LineString.class) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the given geometry is a {@link Polygon} (or {@link MultiPolygon}) geometry.
-     * 
-     * @param geometry the geometry to check.
-     * @return <code>true</code> if there are polygons in there.
-     */
-    public static boolean isPolygon( Geometry geometry ) {
-        if (geometry instanceof Polygon || geometry instanceof MultiPolygon) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the given {@link GeometryDescriptor} is for {@link Polygon} (or {@link MultiPolygon}) geometry.
-     * 
-     * @param geometryDescriptor the descriptor.
-     * @return <code>true</code> if there are polygons in there.
-     */
-    public static boolean isPolygon( GeometryDescriptor geometryDescriptor ) {
-        org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
-        Class< ? > binding = type.getBinding();
-        if (binding == MultiPolygon.class || binding == Polygon.class) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the given geometry is a {@link Point} (or {@link MultiPoint}) geometry.
-     * 
-     * @param geometry the geometry to check.
-     * @return <code>true</code> if there are points in there.
-     */
-    public static boolean isPoint( Geometry geometry ) {
-        if (geometry instanceof Point || geometry instanceof MultiPoint) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the given {@link GeometryDescriptor} is for {@link Point} (or {@link MultiPoint}) geometry.
-     * 
-     * @param geometryDescriptor the descriptor.
-     * @return <code>true</code> if there are points in there.
-     */
-    public static boolean isPoint( GeometryDescriptor geometryDescriptor ) {
-        org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
-        Class< ? > binding = type.getBinding();
-        if (binding == MultiPoint.class || binding == Point.class) {
-            return true;
-        }
-        return false;
-    }
 
     /**
      * Calculates the area of a polygon from its vertices.

@@ -53,13 +53,16 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_TAGS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
 import java.io.IOException;
+
+import org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazziProject3To4Converter;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -72,13 +75,9 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazziProject3To4Converter;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-
 @Description(OmsGeopaparazziProject3To4Converter.CONVERT_A_GEOPAPARAZZI_3_FOLDER_PROJECT_INTO_A_GEOPAPARAZZI_4_DATABASE)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
-@Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
+@Keywords(OmsGeopaparazziProject3To4Converter.OMSGEOPAPARAZZICONVERTER_TAGS)
 @Label(JGTConstants.MOBILE)
 @Name("_" + OmsGeopaparazziProject3To4Converter.GEOPAP3TO4)
 @Status(OMSHYDRO_DRAFT)

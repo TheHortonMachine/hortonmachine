@@ -23,8 +23,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,19 +183,5 @@ public class GeopaparazziMapsCreator extends JGTModel {
         gen.process();
 
     }
-    
-    public static void main( String[] args ) throws Exception {
-        
-        org.jgrasstools.modules.GeopaparazziMapsCreator _geopaparazzimapscreator = new org.jgrasstools.modules.GeopaparazziMapsCreator();
-        _geopaparazzimapscreator.pMaxZoom = 19;
-//        _geopaparazzimapscreator.inRaster1 = "/home/hydrologis/data/terremoto/terremoto.shp";
-        _geopaparazzimapscreator.inRaster1 = "/home/hydrologis/Dropbox/hydrologis/lavori/2016_11_gvsigconf/2016_12_geopap_workshop/data/ETSIGCT25830big.tif";
-        _geopaparazzimapscreator.pName = "valencia";
-        _geopaparazzimapscreator.outFolder = "/home/hydrologis/Desktop/gvsigreview/";
-        _geopaparazzimapscreator.pImageType = "jpg";
-        _geopaparazzimapscreator.inROI = "/home/hydrologis/Desktop/gvsigreview/roi.shp";
-        _geopaparazzimapscreator.pMinZoom = 13;
-//        _geopaparazzimapscreator.pZoomLimit = 19;
-        _geopaparazzimapscreator.process();
-    }
+
 }

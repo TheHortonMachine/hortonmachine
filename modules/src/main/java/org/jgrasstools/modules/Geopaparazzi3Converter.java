@@ -25,8 +25,9 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import java.io.IOException;
 
 import static org.jgrasstools.gears.i18n.GearsMessages.*;
+import static org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazzi3Converter.*;
 
-@Description(OmsGeopaparazzi3Converter.DESCRIPTION)
+@Description(DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
 @Label(JGTConstants.MOBILE)

@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.media.jai.Interpolation;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -41,15 +40,14 @@ import org.geotools.gce.imagemosaic.ImageMosaicFormat;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.RasterCoverage;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
-import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.EGeometryType;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.style.SimpleStyle;
 import org.jgrasstools.gears.utils.style.SimpleStyleUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities;
@@ -446,7 +444,7 @@ public class ToolsPanelController extends ToolsPanelView {
                         multiThread.setValue(true);
                         final ParameterValue<Boolean> usejai = ImageMosaicFormat.USE_JAI_IMAGEREAD.createValue();
                         usejai.setValue(true);
-                        GeneralParameterValue[] gp = new GeneralParameterValue[]{ inTransp,usejai, multiThread};
+                        GeneralParameterValue[] gp = new GeneralParameterValue[]{inTransp, usejai, multiThread};
 
                         ImageMosaicNwwLayer imageMosaicNwwLayer = new ImageMosaicNwwLayer(selectedFile, null, gp, true);
                         wwjPanel.getWwd().getModel().getLayers().add(imageMosaicNwwLayer);
@@ -585,7 +583,7 @@ public class ToolsPanelController extends ToolsPanelView {
             String absolutePath = null;
             if (selectedFile != null)
                 absolutePath = selectedFile.getAbsolutePath();
-            if (GeometryUtilities.isPolygon(geometryDescriptor)) {
+            if (EGeometryType.isPolygon(geometryDescriptor)) {
                 FeatureCollectionPolygonLayer featureCollectionPolygonLayer = new FeatureCollectionPolygonLayer(name, readFC,
                         featureStore, field2ValuesMap);
 
@@ -598,7 +596,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPolygonLayer);
                 layerEventsListener.onLayerAdded(featureCollectionPolygonLayer);
-            } else if (GeometryUtilities.isLine(geometryDescriptor)) {
+            } else if (EGeometryType.isLine(geometryDescriptor)) {
                 FeatureCollectionLinesLayer featureCollectionLinesLayer = new FeatureCollectionLinesLayer(name, readFC,
                         featureStore, field2ValuesMap);
                 featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
@@ -610,7 +608,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 wwjPanel.getWwd().getModel().getLayers().add(featureCollectionLinesLayer);
                 layerEventsListener.onLayerAdded(featureCollectionLinesLayer);
-            } else if (GeometryUtilities.isPoint(geometryDescriptor)) {
+            } else if (EGeometryType.isPoint(geometryDescriptor)) {
                 String imagePath = null;
                 if (selectedFile != null) {
                     // check if there is an image

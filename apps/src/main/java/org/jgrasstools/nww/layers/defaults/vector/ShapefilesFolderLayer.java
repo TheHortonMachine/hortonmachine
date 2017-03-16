@@ -104,7 +104,7 @@ public class ShapefilesFolderLayer extends RenderableLayer implements NwwLayer {
                         bounds.expandToInclude(tmpBounds);
                     }
                     GeometryDescriptor geometryDescriptor = readFC.getSchema().getGeometryDescriptor();
-                    if (GeometryUtilities.isPolygon(geometryDescriptor)) {
+                    if (EGeometryType.isPolygon(geometryDescriptor)) {
                         Material fillMaterial = Material.BLACK;
                         Material strokeMaterial = Material.BLACK;
                         double fillOpacity = 0.7;
@@ -131,7 +131,7 @@ public class ShapefilesFolderLayer extends RenderableLayer implements NwwLayer {
                         } finally {
                             featureIterator.close();
                         }
-                    } else if (GeometryUtilities.isLine(geometryDescriptor)) {
+                    } else if (EGeometryType.isLine(geometryDescriptor)) {
                         Material strokeMaterial = Material.BLACK;
                         double strokeWidth = 2;
                         BasicShapeAttributes shapeAttributes = new BasicShapeAttributes();
@@ -152,7 +152,7 @@ public class ShapefilesFolderLayer extends RenderableLayer implements NwwLayer {
                         } finally {
                             featureIterator.close();
                         }
-                    } else if (GeometryUtilities.isPoint(geometryDescriptor)) {
+                    } else if (EGeometryType.isPoint(geometryDescriptor)) {
                         Material fillMaterial = Material.GREEN;
                         double markerSize = 5d;
                         SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), EGeometryType.POINT);

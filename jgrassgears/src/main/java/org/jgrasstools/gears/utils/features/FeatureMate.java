@@ -17,20 +17,21 @@
  */
 package org.jgrasstools.gears.utils.features;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.prep.PreparedGeometry;
-import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
 /**
  * A wrapper for features that helps out with lots of stuff.
@@ -238,7 +239,7 @@ public class FeatureMate {
      * @throws IllegalArgumentException in the case the geometry is a point.
      */
     public void convertToLine() throws IllegalArgumentException {
-        EGeometryType geometryType = GeometryUtilities.getGeometryType(getGeometry());
+        EGeometryType geometryType = EGeometryType.getGeometryType(getGeometry());
         switch( geometryType ) {
         case MULTIPOLYGON:
         case POLYGON:
@@ -265,7 +266,7 @@ public class FeatureMate {
      * <p>To get the original geometry one can simply call {@link #resetGeometry()}. 
      */
     public void convertToPoint() {
-        EGeometryType geometryType = GeometryUtilities.getGeometryType(getGeometry());
+        EGeometryType geometryType = EGeometryType.getGeometryType(getGeometry());
         switch( geometryType ) {
         case MULTIPOLYGON:
         case POLYGON:

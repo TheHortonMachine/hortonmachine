@@ -13,6 +13,7 @@ import java.util.List;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.utils.HMTestCase;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -213,40 +214,40 @@ public class TestGeometryUtilities extends HMTestCase {
     public void testGeomChecks() {
 
         Polygon dummyPolygon = GeometryUtilities.createDummyPolygon();
-        assertTrue(GeometryUtilities.isPolygon(dummyPolygon));
+        assertTrue(EGeometryType.isPolygon(dummyPolygon));
 
         LineString dummyLine = GeometryUtilities.createDummyLine();
-        assertTrue(GeometryUtilities.isLine(dummyLine));
-        assertFalse(GeometryUtilities.isLine(dummyPolygon));
+        assertTrue(EGeometryType.isLine(dummyLine));
+        assertFalse(EGeometryType.isLine(dummyPolygon));
 
         Point dummyPoint = GeometryUtilities.createDummyPoint();
-        assertTrue(GeometryUtilities.isPoint(dummyPoint));
-        assertFalse(GeometryUtilities.isLine(dummyPoint));
-        assertFalse(GeometryUtilities.isPolygon(dummyPoint));
+        assertTrue(EGeometryType.isPoint(dummyPoint));
+        assertFalse(EGeometryType.isLine(dummyPoint));
+        assertFalse(EGeometryType.isPolygon(dummyPoint));
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("dummy");
         b.setCRS(DefaultGeographicCRS.WGS84);
         b.add("the_geom", Polygon.class);
         SimpleFeatureType polygonType = b.buildFeatureType();
-        assertTrue(GeometryUtilities.isPolygon(polygonType.getGeometryDescriptor()));
+        assertTrue(EGeometryType.isPolygon(polygonType.getGeometryDescriptor()));
 
         b = new SimpleFeatureTypeBuilder();
         b.setName("dummy");
         b.setCRS(DefaultGeographicCRS.WGS84);
         b.add("the_geom", LineString.class);
         SimpleFeatureType lineType = b.buildFeatureType();
-        assertTrue(GeometryUtilities.isLine(lineType.getGeometryDescriptor()));
-        assertFalse(GeometryUtilities.isPolygon(lineType.getGeometryDescriptor()));
+        assertTrue(EGeometryType.isLine(lineType.getGeometryDescriptor()));
+        assertFalse(EGeometryType.isPolygon(lineType.getGeometryDescriptor()));
 
         b = new SimpleFeatureTypeBuilder();
         b.setName("dummy");
         b.setCRS(DefaultGeographicCRS.WGS84);
         b.add("the_geom", Point.class);
         SimpleFeatureType pointType = b.buildFeatureType();
-        assertTrue(GeometryUtilities.isPoint(pointType.getGeometryDescriptor()));
-        assertFalse(GeometryUtilities.isLine(pointType.getGeometryDescriptor()));
-        assertFalse(GeometryUtilities.isPolygon(pointType.getGeometryDescriptor()));
+        assertTrue(EGeometryType.isPoint(pointType.getGeometryDescriptor()));
+        assertFalse(EGeometryType.isLine(pointType.getGeometryDescriptor()));
+        assertFalse(EGeometryType.isPolygon(pointType.getGeometryDescriptor()));
     }
 
     public void testRectangleAdaptor() {

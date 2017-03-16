@@ -21,15 +21,15 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_AUTHORCO
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_IN_CLIPPER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_IN_MAP_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_IN_CLIPPER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_IN_MAP_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_OUT_MAP_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_P_MAX_THREADS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_STATUS;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -37,6 +37,21 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
+import org.opengis.feature.simple.SimpleFeature;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
+import com.vividsolutions.jts.index.strtree.STRtree;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -49,21 +64,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.prep.PreparedGeometry;
-import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
-import com.vividsolutions.jts.index.strtree.STRtree;
 
 @Description(OMSVECTORCLIPPER_DESCRIPTION)
 @Documentation(OMSVECTORCLIPPER_DOCUMENTATION)
@@ -95,7 +95,7 @@ public class OmsVectorClipper extends JGTModel {
     public void process() throws Exception {
         checkNull(inMap, inClipper);
 
-        if (!GeometryUtilities.isPolygon(inClipper.getSchema().getGeometryDescriptor())) {
+        if (!EGeometryType.isPolygon(inClipper.getSchema().getGeometryDescriptor())) {
             throw new ModelsIllegalargumentException("The clipping geometry needs to be polygon.", this, pm);
         }
 
