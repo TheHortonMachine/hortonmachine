@@ -16,16 +16,25 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.libs.modules;
+package org.jgrasstools.gears.libs.modules.multiprocessing;
+
+import org.jgrasstools.gears.libs.modules.JGTModel;
 
 /**
  * 
  *
  * @author Falko Bräutigam
  */
-@FunctionalInterface
-public interface MultiProcessingTask<E extends Exception> {
+public abstract class MultiProcessing
+        extends JGTModel {
 
-    public void calculate() throws E;
+    /**
+     * By default this method returns
+     * {@link ExecutionPlanner#createDefaultPlanner()}. Override if an algorithm
+     * needs a perticular planner.
+     */
+    protected ExecutionPlanner createDefaultPlanner() {
+        return ExecutionPlanner.createDefaultPlanner();
+    }
     
 }

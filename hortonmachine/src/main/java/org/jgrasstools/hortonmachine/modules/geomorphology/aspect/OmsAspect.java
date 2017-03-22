@@ -44,9 +44,16 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_outAsp
 
 import java.awt.image.WritableRaster;
 
-import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.GridNode;
+import org.jgrasstools.gears.libs.modules.multiprocessing.GridNodeMultiProcessing;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -60,14 +67,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.GridNode;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.math.NumericsUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-
 @Description(OMSASPECT_DESCRIPTION)
 @Documentation(OMSASPECT_DOCUMENTATION)
 @Author(name = OMSASPECT_AUTHORNAMES, contact = OMSASPECT_AUTHORCONTACTS)
@@ -76,7 +75,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Name(OMSASPECT_NAME)
 @Status(OMSASPECT_STATUS)
 @License(OMSASPECT_LICENSE)
-public class OmsAspect extends JGTModel {
+public class OmsAspect extends GridNodeMultiProcessing {
     @Description(OMSASPECT_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
@@ -95,13 +94,14 @@ public class OmsAspect extends JGTModel {
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
+    private double radtodeg = NumericsUtilities.RADTODEG;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outAspect == null, doReset)) {
             return;
         }
         checkNull(inElev);
-        double radtodeg = NumericsUtilities.RADTODEG;
         if (doRadiants) {
             radtodeg = 1.0;
         }
@@ -109,25 +109,16 @@ public class OmsAspect extends JGTModel {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
-        double xRes = regionMap.getXres();
-        double yRes = regionMap.getYres();
-
-        RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
 
         WritableRaster aspectWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
         WritableRandomIter aspectIter = RandomIterFactory.createWritable(aspectWR, null);
 
         pm.beginTask(msg.message("aspect.calculating"), rows);
-
-        // Cycling into the valid region.
-        for( int r = 1; r < rows - 1; r++ ) {
-            for( int c = 1; c < cols - 1; c++ ) {
-                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r);
-                double aspect = calculateAspect(node, radtodeg, doRound);
-                aspectIter.setSample(c, r, 0, aspect);
-            }
+        processGridNodes(inElev, gridNode -> {
+            double aspect = calculateAspect(gridNode, radtodeg, doRound);
+            aspectIter.setSample(gridNode.col, gridNode.row, 0, aspect);
             pm.worked(1);
-        }
+        });
         pm.done();
 
         CoverageUtilities.setNovalueBorder(aspectWR);

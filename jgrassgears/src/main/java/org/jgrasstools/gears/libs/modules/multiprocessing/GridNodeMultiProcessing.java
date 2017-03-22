@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  */
-package org.jgrasstools.gears.libs.modules;
+package org.jgrasstools.gears.libs.modules.multiprocessing;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +20,7 @@ import java.util.Map;
 import javax.media.jai.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 

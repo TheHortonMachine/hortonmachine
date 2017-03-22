@@ -16,37 +16,16 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.libs.modules;
+package org.jgrasstools.gears.libs.modules.multiprocessing;
 
 /**
  * 
  *
  * @author Falko Bräutigam
  */
-public class InThreadExecutionPlanner
-        extends ExecutionPlanner {
-    
-    private Exception       exc;
-    
+@FunctionalInterface
+public interface MultiProcessingTask<E extends Exception> {
 
-    @Override
-    public void submit( MultiProcessingTask task ) {
-        try {
-            if (exc == null) {
-                task.calculate();
-            }
-        }
-        catch (Exception e) {
-            exc = exc == null ? e : exc;
-        }
-    }
-
-
-    @Override
-    public void join() throws Exception {
-        if (exc != null) {
-            throw exc;
-        }
-    }
+    public void calculate() throws E;
     
 }

@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  */
-package org.jgrasstools.gears.libs.modules;
+package org.jgrasstools.gears.libs.modules.multiprocessing;
 
 import java.util.Collection;
 import java.util.List;
