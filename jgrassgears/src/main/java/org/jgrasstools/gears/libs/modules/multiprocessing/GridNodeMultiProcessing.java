@@ -29,12 +29,10 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
  *
  * @author Falko Bräutigam
  */
-public abstract class GridNodeMultiProcessing
-        extends MultiProcessing {
+public abstract class GridNodeMultiProcessing extends MultiProcessing {
 
     /** The cache of {@link #regionMap()} */
-    private Map<Integer,RegionMap> regionMaps = new HashMap();
-    
+    private Map<Integer, RegionMap> regionMaps = new HashMap();
 
     /**
      * Calculates the {@link RegionMap} for teh given grid by calling
@@ -42,50 +40,46 @@ public abstract class GridNodeMultiProcessing
      * result is cached and re-used.
      */
     public RegionMap regionMap( GridCoverage2D grid ) {
-        return regionMaps.computeIfAbsent( grid.hashCode(), key -> {
-            return CoverageUtilities.getRegionParamsFromGridCoverage( grid );
+        return regionMaps.computeIfAbsent(grid.hashCode(), key -> {
+            return CoverageUtilities.getRegionParamsFromGridCoverage(grid);
         });
     }
-    
-    
+
     /**
      * Loops through all rows and cols of the given grid and calls the given
      * calculator for each {@link GridNode}.
      */
     protected void processGridNodes( GridCoverage2D inElev, Calculator<GridNode> calculator ) throws Exception {
-        RegionMap regionMap = regionMap( inElev );
+        RegionMap regionMap = regionMap(inElev);
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
         double xRes = regionMap.getXres();
         double yRes = regionMap.getYres();
 
-        RandomIter elevationIter = CoverageUtilities.getRandomIterator( inElev );
+        RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
 
         ExecutionPlanner planner = createDefaultPlanner();
-        planner.setNumberOfTasks( rows*cols );
+        planner.setNumberOfTasks(rows * cols);
 
         // Cycling into the valid region.
-        for (int r = 1; r < rows - 1; r++) {
-            for (int c = 1; c < cols - 1; c++) {
+        for( int r = 1; r < rows - 1; r++ ) {
+            for( int c = 1; c < cols - 1; c++ ) {
                 int _c = c, _r = r;
-                planner.submit( () -> { 
-                    if (true /*!pm.isCanceled()*/) {
+                planner.submit(() -> {
+                    if (!pm.isCanceled()) {
                         // GridNode ctor does a lot of calculating -> must be inside the loop
-                        GridNode node = new GridNode( elevationIter, cols, rows, xRes, yRes, _c, _r );
-                        calculator.calculate( node );
-                       // pm.worked( 1 );
+                        GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, _c, _r);
+                        calculator.calculate(node);
                     }
                 });
             }
         }
         planner.join();
-        pm.done();    
     }
-
 
     @FunctionalInterface
     protected interface Calculator<T> {
         void calculate( T input ) throws Exception;
     }
-    
+
 }

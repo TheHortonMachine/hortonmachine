@@ -210,8 +210,8 @@ public class CoverageUtilities {
      *                  used, which is 0.
      * @return a {@link WritableRaster writable raster}.
      */
-    public static WritableRaster createDoubleWritableRaster( int width, int height, Class< ? > dataClass,
-            SampleModel sampleModel, Double value ) {
+    public static WritableRaster createDoubleWritableRaster( int width, int height, Class< ? > dataClass, SampleModel sampleModel,
+            Double value ) {
         int dataType = DataBuffer.TYPE_DOUBLE;
         if (dataClass != null) {
             if (dataClass.isAssignableFrom(Integer.class)) {
@@ -288,8 +288,8 @@ public class CoverageUtilities {
             writableRasterHolder[0] = raster;
         }
 
-        Envelope2D writeEnvelope = new Envelope2D(template.getCoordinateReferenceSystem(), west, south, east - west, north
-                - south);
+        Envelope2D writeEnvelope = new Envelope2D(template.getCoordinateReferenceSystem(), west, south, east - west,
+                north - south);
         GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
         GridCoverage2D coverage2D = factory.create("newraster", raster, writeEnvelope);
         return coverage2D;
@@ -334,8 +334,8 @@ public class CoverageUtilities {
         }
         if (writableRasterHolder != null)
             writableRasterHolder[0] = writableRaster;
-        Envelope2D writeEnvelope = new Envelope2D(template.getCoordinateReferenceSystem(), west, south, east - west, north
-                - south);
+        Envelope2D writeEnvelope = new Envelope2D(template.getCoordinateReferenceSystem(), west, south, east - west,
+                north - south);
         GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
         GridCoverage2D coverage2D = factory.create("newraster", writableRaster, writeEnvelope);
         return coverage2D;
@@ -613,7 +613,8 @@ public class CoverageUtilities {
      * @param crs the {@link CoordinateReferenceSystem}. Can be null, even if it should not.
      * @return the {@link GeneralParameterValue array of parameters}.
      */
-    public static GeneralParameterValue[] createGridGeometryGeneralParameter( RegionMap regionMap, CoordinateReferenceSystem crs ) {
+    public static GeneralParameterValue[] createGridGeometryGeneralParameter( RegionMap regionMap,
+            CoordinateReferenceSystem crs ) {
         GeneralParameterValue[] readParams = new GeneralParameterValue[1];
         Parameter<GridGeometry2D> readGG = new Parameter<GridGeometry2D>(AbstractGridFormat.READ_GRIDGEOMETRY2D);
         GridEnvelope2D gridEnvelope = new GridEnvelope2D(0, 0, regionMap.getCols(), regionMap.getRows());
@@ -677,15 +678,17 @@ public class CoverageUtilities {
             height = width;
             width = tmp;
         }
-        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
+        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, JGTConstants.doubleNovalue);
 
         WritableRandomIter rasterIter = RandomIterFactory.createWritable(writableRaster, null);
         for( int x = 0; x < width; x++ ) {
             for( int y = 0; y < height; y++ ) {
                 if (matrixIsRowCol) {
-                    rasterIter.setSample(x, y, 0, matrix[y][x]);
+                    if (!JGTConstants.isNovalue(matrix[y][x]))
+                        rasterIter.setSample(x, y, 0, matrix[y][x]);
                 } else {
-                    rasterIter.setSample(x, y, 0, matrix[x][y]);
+                    if (!JGTConstants.isNovalue(matrix[x][y]))
+                        rasterIter.setSample(x, y, 0, matrix[x][y]);
                 }
             }
         }
@@ -711,17 +714,17 @@ public class CoverageUtilities {
         }
         WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
 
-        WritableRandomIter disckRandomIter = RandomIterFactory.createWritable(writableRaster, null);
+        WritableRandomIter randomIter = RandomIterFactory.createWritable(writableRaster, null);
         for( int x = 0; x < width; x++ ) {
             for( int y = 0; y < height; y++ ) {
                 if (matrixIsRowCol) {
-                    disckRandomIter.setSample(x, y, 0, matrix[y][x]);
+                    randomIter.setSample(x, y, 0, matrix[y][x]);
                 } else {
-                    disckRandomIter.setSample(x, y, 0, matrix[x][y]);
+                    randomIter.setSample(x, y, 0, matrix[x][y]);
                 }
             }
         }
-        disckRandomIter.done();
+        randomIter.done();
 
         return writableRaster;
     }
@@ -736,17 +739,17 @@ public class CoverageUtilities {
         }
         WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
 
-        WritableRandomIter disckRandomIter = RandomIterFactory.createWritable(writableRaster, null);
+        WritableRandomIter randomIter = RandomIterFactory.createWritable(writableRaster, null);
         for( int x = 0; x < width; x++ ) {
             for( int y = 0; y < height; y++ ) {
                 if (matrixIsRowCol) {
-                    disckRandomIter.setSample(x, y, 0, matrix[y][x]);
+                    randomIter.setSample(x, y, 0, matrix[y][x]);
                 } else {
-                    disckRandomIter.setSample(x, y, 0, matrix[x][y]);
+                    randomIter.setSample(x, y, 0, matrix[x][y]);
                 }
             }
         }
-        disckRandomIter.done();
+        randomIter.done();
 
         return writableRaster;
     }
@@ -1142,8 +1145,8 @@ public class CoverageUtilities {
      * @throws InvalidGridGeometryException
      * @throws TransformException
      */
-    public static Point2D gridToWorld( GridGeometry2D gridGeometry, int x, int y ) throws InvalidGridGeometryException,
-            TransformException {
+    public static Point2D gridToWorld( GridGeometry2D gridGeometry, int x, int y )
+            throws InvalidGridGeometryException, TransformException {
         final Point2D worldPosition = new Point2D.Double(x, y);
         gridGeometry.getGridToCRS2D().transform(worldPosition, worldPosition);
         return worldPosition;
@@ -1294,8 +1297,8 @@ public class CoverageUtilities {
             }
         }
 
-        GridCoverage2D outCoverage = buildCoverage(
-                "mapped", writableRaster, maskRegionMap, valuesMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
+        GridCoverage2D outCoverage = buildCoverage("mapped", writableRaster, maskRegionMap, //$NON-NLS-1$
+                valuesMap.getCoordinateReferenceSystem());
         return outCoverage;
     }
 
