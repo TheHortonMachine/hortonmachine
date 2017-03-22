@@ -54,6 +54,7 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.coverage.grid.io.GridCoverage2DReader;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
@@ -188,7 +189,7 @@ public class CoverageUtilities {
      * @return the read coverage.
      * @throws Exception
      */
-    public static GridCoverage2D getGridCoverage( AbstractGridCoverage2DReader reader, double north, double south, double east,
+    public static GridCoverage2D getGridCoverage( GridCoverage2DReader reader, double north, double south, double east,
             double west, double xRes, double yRes, CoordinateReferenceSystem crs ) throws Exception {
         GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities.createGridGeometryGeneralParameter(xRes, yRes,
                 north, south, east, west, crs);
@@ -598,7 +599,8 @@ public class CoverageUtilities {
             DirectPosition2D maxDp = new DirectPosition2D(east, north);
             env = new Envelope2D(minDp, maxDp);
         }
-        readGG.setValue(new GridGeometry2D(gridEnvelope, env));
+        GridGeometry2D gridGeometry = new GridGeometry2D(gridEnvelope, env);
+        readGG.setValue(gridGeometry);
         readParams[0] = readGG;
 
         return readParams;
