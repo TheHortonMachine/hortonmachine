@@ -15,7 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gears.modules.r;
+package org.jgrasstools.gears.modules.r.aoi;
+
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
@@ -30,17 +32,27 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
 import oms3.annotations.Label;
+import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Range;
+import oms3.annotations.Status;
 
 @Description("Module that extracts a gridcoverage for a given area of interest, resampling it if necessary.")
 @Label("Area of interest")
 @Name("Area of interest")
+@Documentation("")
+@Author(name = "Andrea Antonello, Falko Braeutigam", contact = "www.hydrologis.com")
+@Keywords("raster, crop")
+@Status(Status.EXPERIMENTAL)
+@License(OMSHYDRO_LICENSE)
 public class OmsAreaOfInterestGridCoverage extends JGTModel {
 
     @In
