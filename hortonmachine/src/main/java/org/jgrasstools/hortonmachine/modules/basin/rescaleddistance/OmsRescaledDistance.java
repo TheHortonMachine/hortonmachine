@@ -55,6 +55,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.Direction;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -145,6 +146,10 @@ public class OmsRescaledDistance extends JGTModel {
         }
         pm.done();
 
+        if (exitsList.size() == 0) {
+            throw new ModelsIllegalargumentException("No exits found in the map of flowdirections.", this);
+        }
+        
         pm.beginTask("Calculate rescaled distance...", exitsList.size());
         for( FlowNode exitNode : exitsList ) {
             calculateRescaledDistance(exitNode, xRes);

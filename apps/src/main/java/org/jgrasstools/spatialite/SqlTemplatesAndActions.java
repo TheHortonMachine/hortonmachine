@@ -19,7 +19,6 @@ package org.jgrasstools.spatialite;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -46,25 +45,6 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class SqlTemplatesAndActions {
     private static final Logger logger = LoggerFactory.getLogger(SqlTemplatesAndActions.class);
-
-    public static final LinkedHashMap<String, String> templatesMap = new LinkedHashMap<String, String>();
-    static {
-        templatesMap.put("simple select", "select * from TABLENAME");
-        templatesMap.put("geometry select", "select ST_AsBinary(the_geom) as the_geom from TABLENAME");
-        templatesMap.put("where select", "select * from TABLENAME where FIELD > VALUE");
-        templatesMap.put("limited select", "select * from TABLENAME limit 10");
-        templatesMap.put("sorted select", "select * from TABLENAME order by FIELD asc");
-        templatesMap.put("unix epoch timestamp select", "strftime('%Y-%m-%d %H:%M:%S', timestampcolumn / 1000, 'unixepoch')");
-        templatesMap.put("unix epoch timestamp where select",
-                "select * from TABLENAME where longtimestamp >= cast(strftime('%s','YYYY-MM-YY HH:mm:ss') as long)*1000");
-        templatesMap.put("spatial index geom intersection part",
-                "AND table1.ROWID IN (\nSELECT ROWID FROM SpatialIndex\nWHERE f_table_name='table2' AND search_frame=table2Geom)");
-        templatesMap.put("create intersection of table1 with buffer of table2",
-                "SELECT ST_AsBinary(intersection(t1.the_geom, buffer(t2.the_geom, 100))) as the_geom FROM table1 t1, table2 t2\n"
-                        + "where (\nintersects (t1.the_geom, buffer(t2.the_geom, 100))=1\n"
-                        + "AND t1.ROWID IN (\nSELECT ROWID FROM SpatialIndex\nWHERE f_table_name='table1' AND search_frame=buffer(t2.the_geom, 100)\n))");
-
-    }
 
     public static Action getSelectOnColumnAction( ColumnLevel column, SpatialiteViewer spatialiteViewer ) {
         return new AbstractAction("Select on column"){

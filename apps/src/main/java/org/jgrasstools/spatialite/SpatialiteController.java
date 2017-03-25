@@ -68,16 +68,17 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import org.geotools.feature.DefaultFeatureCollection;
+import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.ForeignKey;
 import org.jgrasstools.dbs.spatialite.QueryResult;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
-import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
 import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.dbs.spatialite.objects.ColumnLevel;
 import org.jgrasstools.dbs.spatialite.objects.DbLevel;
 import org.jgrasstools.dbs.spatialite.objects.TableLevel;
 import org.jgrasstools.dbs.spatialite.objects.TypeLevel;
+import org.jgrasstools.dbs.utils.CommonQueries;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -229,10 +230,10 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         _templatesButton.setIcon(ImageCache.getInstance().getImage(ImageCache.TEMPLATE));
         _templatesButton.addActionListener(e -> {
             try {
-                String[] sqlHistory = SqlTemplatesAndActions.templatesMap.keySet().toArray(new String[0]);
+                String[] sqlHistory = CommonQueries.templatesMap.keySet().toArray(new String[0]);
                 String selected = GuiUtilities.showComboDialog(this, "HISTORY", "", sqlHistory);
                 if (selected != null) {
-                    String sql = SqlTemplatesAndActions.templatesMap.get(selected);
+                    String sql = CommonQueries.templatesMap.get(selected);
                     addTextToQueryEditor(sql);
                 }
             } catch (Exception e1) {

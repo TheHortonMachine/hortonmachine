@@ -22,6 +22,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.List;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.gce.grassraster.JGrassConstants;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
@@ -118,14 +120,9 @@ public class OmsPointCloudMaximaFinderStream extends JGTModel {
         int rows = (int) Math.round((north - south) / pBaseGridResolution);
         GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(north, south, east, west, cols, rows, crs);
 
-        pm.beginTask("Distribute maximum values on grid...", inLas.size());
-        double[][] maxValues = new double[cols][rows];
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                maxValues[c][r] = JGTConstants.doubleNovalue;
-            }
-        }
+        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
 
+        pm.beginTask("Distribute maximum values on grid...", inLas.size());
         for( LasRecord dot : inLas ) {
             DirectPosition wPoint = new DirectPosition2D(dot.x, dot.y);
             if (!aoi.contains(wPoint)) {
@@ -136,7 +133,14 @@ public class OmsPointCloudMaximaFinderStream extends JGTModel {
             int x = gridCoord.x;
             int y = gridCoord.y;
 
-            maxValues[x][y] = Math.max(dot.z, maxValues[x][y]);
+            double value = outWR.getSampleDouble(x, y, 0);
+            if (JGTConstants.isNovalue(value)) {
+                value = dot.z;
+            } else {
+                value = Math.max(dot.z, value);
+            }
+
+            outWR.setSample(x, y, 0, value);
 
             pm.worked(1);
         }
@@ -145,29 +149,31 @@ public class OmsPointCloudMaximaFinderStream extends JGTModel {
         int rowPerRadius = (int) Math.ceil(pMaxRadius / pBaseGridResolution);
 
         pm.beginTask("Grow maxima regions...", rows);
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                double centerValue = maxValues[c][r];
+        for( int c = 0; c < cols; c++ ) {
+            for( int r = 0; r < rows; r++ ) {
+                double centerValue = outWR.getSampleDouble(c, r, 0);
                 if (JGTConstants.isNovalue(centerValue)) {
                     continue;
                 }
                 // moving window
-                for( int wr = r - rowPerRadius; wr <= r + rowPerRadius; wr++ ) {
-                    for( int wc = c - rowPerRadius; wc <= c + rowPerRadius; wc++ ) {
-                        if (wr < 0 || wr >= rows || wr == r) {
+                for( int wc = c - rowPerRadius; wc <= c + rowPerRadius; wc++ ) {
+                    for( int wr = r - rowPerRadius; wr <= r + rowPerRadius; wr++ ) {
+                        if (wr == r && wc == c) {
                             continue;
                         }
-                        if (wc < 0 || wc >= cols || wc == c) {
+                        if (wr < 0 || wr >= rows) {
                             continue;
                         }
-                        double wValue = maxValues[wc][wr];
+                        if (wc < 0 || wc >= cols) {
+                            continue;
+                        }
+                        double wValue = outWR.getSampleDouble(wc, wr, 0);
                         if (JGTConstants.isNovalue(wValue)) {
                             continue;
                         }
-                        maxValues[wc][wr] = Math.max(centerValue, wValue);
-                        if (JGTConstants.isNovalue(maxValues[wc][wr])) {
-                            System.out.println();
-                        }
+
+                        double newValue = Math.max(centerValue, wValue);
+                        outWR.setSample(wc, wr, 0, newValue);
                     }
                 }
             }
@@ -176,7 +182,7 @@ public class OmsPointCloudMaximaFinderStream extends JGTModel {
         pm.done();
 
         RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometry);
-        outCoverage = CoverageUtilities.buildCoverage("tops", maxValues, regionMap, crs, false);
+        outCoverage = CoverageUtilities.buildCoverage("tops", outWR, regionMap, crs);
 
     }
 
