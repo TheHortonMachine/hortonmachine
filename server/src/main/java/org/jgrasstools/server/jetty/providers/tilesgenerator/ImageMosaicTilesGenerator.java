@@ -52,18 +52,13 @@ public class ImageMosaicTilesGenerator implements ITilesGenerator {
     private static final int TILESIZE = 256;
     private File cacheFolder;
     private String title;
-    private boolean isVisible;
-    private boolean isDefault;
     private String url;
 
     private int tileSize = TILESIZE;
     private GTRenderer renderer;
 
-    public ImageMosaicTilesGenerator( String title, File imsf, Integer tileSize, boolean isVisible, boolean isDefault )
-            throws Exception {
+    public ImageMosaicTilesGenerator( String title, File imsf, Integer tileSize ) throws Exception {
         this.title = title;
-        this.isVisible = isVisible;
-        this.isDefault = isDefault;
         if (tileSize != null && tileSize >= TILESIZE) {
             this.tileSize = tileSize;
         }
@@ -98,11 +93,6 @@ public class ImageMosaicTilesGenerator implements ITilesGenerator {
     @Override
     public String getName() {
         return title;
-    }
-
-    @Override
-    public boolean isVisible() {
-        return isVisible;
     }
 
     @Override
@@ -142,11 +132,6 @@ public class ImageMosaicTilesGenerator implements ITilesGenerator {
     @Override
     public String getUrl() {
         return url;
-    }
-
-    @Override
-    public boolean isDefault() {
-        return isDefault;
     }
 
     private static double tile2lon( int x, int z ) {

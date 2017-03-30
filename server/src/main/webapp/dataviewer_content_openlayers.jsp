@@ -2,12 +2,12 @@
 <%@page
 	import="org.jgrasstools.server.jetty.providers.tiles.BingProvider"%>
 <%@page
-	import="org.jgrasstools.server.jetty.providers.tiles.OsmProvider"%>
+	import="org.jgrasstools.server.jetty.providers.tiles.OsmOLProvider"%>
 <%@page
 	import="org.jgrasstools.server.jetty.providers.tiles.WmsProvider"%>
 <%@page import="org.jgrasstools.server.jetty.providers.IProvider"%>
 <%@page
-	import="org.jgrasstools.server.jetty.providers.tiles.ITilesProvider"%>
+	import="org.jgrasstools.server.jetty.providers.tiles.ATilesProvider"%>
 <%@page import="org.joda.time.DateTime"%>
 <%@page import="org.jgrasstools.gears.libs.modules.JGTConstants"%>
 <%@page import="org.joda.time.format.DateTimeFormatter"%>

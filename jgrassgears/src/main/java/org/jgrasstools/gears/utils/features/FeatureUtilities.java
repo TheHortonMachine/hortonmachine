@@ -57,6 +57,7 @@ import org.geotools.gce.grassraster.JGrassConstants;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
+import org.jgrasstools.dbs.spatialite.QueryResult;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -66,6 +67,7 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -939,6 +941,70 @@ public class FeatureUtilities {
         }
 
         return histogram;
+    }
+
+    public static LinkedHashMap<String, String> feature2AlphanumericToHashmap( SimpleFeature feature ) {
+        LinkedHashMap<String, String> attributes = new LinkedHashMap<>();
+        List<AttributeDescriptor> attributeDescriptors = feature.getFeatureType().getAttributeDescriptors();
+        int index = 0;
+        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+            if (!(attributeDescriptor instanceof GeometryDescriptor)) {
+                String fieldName = attributeDescriptor.getLocalName();
+                Object attribute = feature.getAttribute(index);
+                if (attribute == null) {
+                    attribute = "";
+                }
+                String value = attribute.toString();
+                attributes.put(fieldName, value);
+            }
+            index++;
+        }
+        return attributes;
+    }
+
+    /**
+     * Utility to convert a featurecollection to a queryresult format.
+     * 
+     * @param featureCollection the collection to convert.
+     * @return the queryresult object.
+     */
+    public static QueryResult featureCollection2QueryResult( SimpleFeatureCollection featureCollection ) {
+        List<AttributeDescriptor> attributeDescriptors = featureCollection.getSchema().getAttributeDescriptors();
+        QueryResult queryResult = new QueryResult();
+        int count = 0;
+        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+            if (!(attributeDescriptor instanceof GeometryDescriptor)) {
+                String fieldName = attributeDescriptor.getLocalName();
+                String type = attributeDescriptor.getType().getBinding().toString();
+                queryResult.names.add(fieldName);
+                queryResult.types.add(type);
+                count++;
+            }
+        }
+
+        SimpleFeatureIterator featureIterator = featureCollection.features();
+        while( featureIterator.hasNext() ) {
+            SimpleFeature f = featureIterator.next();
+
+            Geometry geometry = (Geometry) f.getDefaultGeometry();
+            queryResult.geometries.add(geometry);
+
+            Object[] dataRow = new Object[count];
+            int index = 0;
+            for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+                if (!(attributeDescriptor instanceof GeometryDescriptor)) {
+                    String fieldName = attributeDescriptor.getLocalName();
+                    Object attribute = f.getAttribute(fieldName);
+                    if (attribute == null) {
+                        attribute = "";
+                    }
+                    dataRow[index++] = attribute;
+                }
+            }
+            queryResult.data.add(dataRow);
+        }
+
+        return queryResult;
     }
 
 }

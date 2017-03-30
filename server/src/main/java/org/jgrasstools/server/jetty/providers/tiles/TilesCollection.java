@@ -25,7 +25,7 @@ package org.jgrasstools.server.jetty.providers.tiles;
  */
 public class TilesCollection {
 
-    private OsmProvider osmProvider;
+    private OsmOLProvider osmProvider;
     private WmsProvider aerialAltoAdigeProvider;
     private WmsProvider ctpTrentinoProvider;
     private WmsProvider aerialEmiliaProvider;
@@ -34,27 +34,27 @@ public class TilesCollection {
     private BingProvider aerialWithLabelsProvider;
 
     public TilesCollection() {
-        osmProvider = new OsmProvider("OpenStreetMap", false, true);
+        osmProvider = new OsmOLProvider("OpenStreetMap");
 
-        aerialAltoAdigeProvider = new WmsProvider("Aerial Alto Adige", null, false, "http://sdi.provincia.bz.it/geoserver/wms",
-                "{'LAYERS': 'inspire:OI.ORTHOIMAGECOVERAGE.2011', 'TILED': true}", "geoserver", false);
-        ctpTrentinoProvider = new WmsProvider("CTP Trentino", null, false,
-                "http://geoservices.provincia.tn.it/siat/services/OGC/CTP2013/ImageServer/WMSServer",
-                "{'LAYERS': '0', 'TILED': true}", "geoserver", false);
-        aerialEmiliaProvider = new WmsProvider("Aerial Emilia 2011", null, false,
-                "http://servizigis.regione.emilia-romagna.it/wms/agea2011_rgb",
-                "{'LAYERS': 'public/Agea2011_RGB', 'TILED': true}", "geoserver", false);
-        ctrEmiliaProvider = new WmsProvider("CTR Emilia 2013", null, false,
-                "http://servizigis.regione.emilia-romagna.it/wms/dbtr2013_ctr5",
-                "{'LAYERS': 'public/DBTR2013_Ctr5', 'TILED': true}", "geoserver", false);
+        aerialAltoAdigeProvider = new WmsProvider("Aerial Alto Adige", "http://sdi.provincia.bz.it/geoserver/wms",
+                "'inspire:OI.ORTHOIMAGECOVERAGE.2011'", "Copyright Alto Adige",
+                "{'LAYERS': 'inspire:OI.ORTHOIMAGECOVERAGE.2011', 'TILED': true}", "geoserver");
+        ctpTrentinoProvider = new WmsProvider("CTP Trentino",
+                "http://geoservices.provincia.tn.it/siat/services/OGC/CTP2013/ImageServer/WMSServer", "'0'", "Copyright Trentino",
+                "{'LAYERS': '0', 'TILED': true}", "geoserver");
+        aerialEmiliaProvider = new WmsProvider("Aerial Emilia 2011",
+                "http://servizigis.regione.emilia-romagna.it/wms/agea2011_rgb", "'public/Agea2011_RGB'",
+                "Copyright Emilia Romagna", "{'LAYERS': 'public/Agea2011_RGB', 'TILED': true}", "geoserver");
+        ctrEmiliaProvider = new WmsProvider("CTR Emilia 2013", "http://servizigis.regione.emilia-romagna.it/wms/dbtr2013_ctr5",
+                "'public/DBTR2013_Ctr5'", "Copyright Emilia Romagna", "{'LAYERS': 'public/DBTR2013_Ctr5', 'TILED': true}",
+                "geoserver");
 
-        roadsProvider = new BingProvider("Bing roads", null, "Road",
-                "Your Bing Maps Key from http://www.bingmapsportal.com/ here", false);
-        aerialWithLabelsProvider = new BingProvider("Bing Aerial", null, "AerialWithLabels",
-                "Your Bing Maps Key from http://www.bingmapsportal.com/ here", false);
+        roadsProvider = new BingProvider("Bing roads", "Road", "Your Bing Maps Key from http://www.bingmapsportal.com/ here");
+        aerialWithLabelsProvider = new BingProvider("Bing Aerial", "AerialWithLabels",
+                "Your Bing Maps Key from http://www.bingmapsportal.com/ here");
     }
 
-    public OsmProvider getOsmProvider() {
+    public OsmOLProvider getOsmProvider() {
         return osmProvider;
     }
 

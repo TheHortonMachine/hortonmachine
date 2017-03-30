@@ -7,8 +7,8 @@ import org.jgrasstools.server.jetty.EmbeddedJspServer;
 import org.jgrasstools.server.jetty.providers.IProvider;
 import org.jgrasstools.server.jetty.providers.data.NwwDataProvider;
 import org.jgrasstools.server.jetty.providers.data.ShapeFileDataProvider;
-import org.jgrasstools.server.jetty.providers.tiles.ITilesProvider;
-import org.jgrasstools.server.jetty.providers.tiles.OsmProvider;
+import org.jgrasstools.server.jetty.providers.tiles.ATilesProvider;
+import org.jgrasstools.server.jetty.providers.tiles.OsmOLProvider;
 import org.jgrasstools.server.jetty.providers.tiles.TilesCollection;
 import org.jgrasstools.server.jetty.utils.DisabledLogging;
 
@@ -48,8 +48,8 @@ public class ShapefilesServer extends EmbeddedJspServer {
             servletContext.setAttribute(IProvider.DATAPROVIDERS, providers);
             
             TilesCollection tc = new TilesCollection();
-            ITilesProvider[] tilesProviders = new ITilesProvider[]{
-                    new OsmProvider("OpenStreetMap", true, true),
+            ATilesProvider[] tilesProviders = new ATilesProvider[]{
+                    new OsmOLProvider("OpenStreetMap"),
                     tc.getAerialAltoAdigeProvider(),
                     tc.getCtpTrentinoProvider(),
                     tc.getRoadsProvider(),

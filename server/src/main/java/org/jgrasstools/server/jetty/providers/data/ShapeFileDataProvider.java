@@ -25,6 +25,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.collection.SubFeatureCollection;
 import org.geotools.geojson.feature.FeatureJSON;
+import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
@@ -85,7 +86,7 @@ public class ShapeFileDataProvider implements NwwDataProvider {
         if (!CRS.equalsIgnoreMetadata(geojsonCRS, crs)) {
             fc = new ReprojectingFeatureCollection(readVector, geojsonCRS);
         }
-        FeatureJSON fjson = new FeatureJSON();
+        FeatureJSON fjson = new FeatureJSON(new GeometryJSON(7));
         StringWriter writer = new StringWriter();
         fjson.writeFeatureCollection(fc, writer);
         String geojson = writer.toString();
@@ -124,7 +125,7 @@ public class ShapeFileDataProvider implements NwwDataProvider {
 
     @Override
     public SimpleStyle getStyle() throws Exception {
-        SimpleStyle style = null;
+        SimpleStyle style = new SimpleStyle();
         if (isPoints()) {
             style = SimpleStyleUtilities.getStyle(shapefile, EGeometryType.POINT);
         } else if (isLines()) {
@@ -150,10 +151,13 @@ public class ShapeFileDataProvider implements NwwDataProvider {
 
     @Override
     public SimpleFeatureCollection subCollection( String cqlFilterString ) throws Exception {
-        readVector = OmsVectorReader.readVector(shapefile);
-        Filter filter = FilterUtilities.getCQLFilter(cqlFilterString);
-        SubFeatureCollection subCollection = new SubFeatureCollection(readVector, filter);
-        return subCollection;
+        if (cqlFilterString == null || cqlFilterString.trim().length() == 0) {
+            return readVector;
+        } else {
+            Filter filter = FilterUtilities.getCQLFilter(cqlFilterString);
+            SubFeatureCollection subCollection = new SubFeatureCollection(readVector, filter);
+            return subCollection;
+        }
     }
 
 }

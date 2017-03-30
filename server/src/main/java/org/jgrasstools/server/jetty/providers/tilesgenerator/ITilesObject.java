@@ -9,8 +9,4 @@ public interface ITilesObject {
 
     String getName();
 
-    boolean isVisible();
-
-    boolean isDefault();
-
 }

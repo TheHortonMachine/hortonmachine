@@ -20,6 +20,8 @@ package org.jgrasstools.dbs.spatialite;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 /**
  * A simple table info.
  * 
@@ -29,7 +31,24 @@ import java.util.List;
  */
 public class QueryResult {
     public int geometryIndex = -1;
+    
+    /**
+     * The names of the columns of the result.
+     */
     public List<String> names = new ArrayList<>();
+    
+    /**
+     * The types of the columns of the result.
+     */
     public List<String> types = new ArrayList<>();
+    
+    /**
+     * The records of data of each column.
+     */
     public List<Object[]> data = new ArrayList<>();
+    
+    /**
+     * The optional geometries for each record.
+     */
+    public List<Geometry> geometries = new ArrayList<>();
 }
