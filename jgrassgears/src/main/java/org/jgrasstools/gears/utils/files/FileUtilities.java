@@ -19,9 +19,11 @@
 package org.jgrasstools.gears.utils.files;
 
 import java.io.*;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -43,7 +45,7 @@ public class FileUtilities {
         copyFile(in.getAbsolutePath(), out.getAbsolutePath());
     }
 
-    public static long getCreationTimestamp(String path) throws IOException{
+    public static long getCreationTimestamp( String path ) throws IOException {
         Path pathObj = Paths.get(path);
         BasicFileAttributes attr = Files.readAttributes(pathObj, BasicFileAttributes.class);
 
@@ -57,49 +59,37 @@ public class FileUtilities {
      * @param filehandle the file or folder to remove.
      *
      * @return true if all deletions were successful
+     * @throws IOException 
      */
-    public static boolean deleteFileOrDir( File filehandle ) {
+    public static boolean deleteFileOrDir( File filehandle ) throws IOException {
 
         if (filehandle.isDirectory()) {
-            String[] children = filehandle.list();
-            for( String aChildren : children ) {
-                boolean success = deleteFileOrDir(new File(filehandle, aChildren));
-                if (!success) {
-                    return false;
+            Files.walkFileTree(Paths.get(filehandle.getAbsolutePath()), new SimpleFileVisitor<Path>(){
+                @Override
+                public FileVisitResult visitFile( Path file, BasicFileAttributes attrs ) throws IOException {
+                    Files.delete(file);
+                    return FileVisitResult.CONTINUE;
                 }
-            }
+
+                @Override
+                public FileVisitResult postVisitDirectory( Path dir, IOException exc ) throws IOException {
+                    if (exc != null) {
+                        throw exc;
+                    }
+                    Files.delete(dir);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         }
 
-        // The directory is now empty so delete it
         boolean isdel = filehandle.delete();
         if (!isdel) {
-            // if it didn't work, which often happens on windows systems,
+            // if it didn't work, which somtimes happens on windows systems,
             // remove on exit
             filehandle.deleteOnExit();
         }
 
         return isdel;
-    }
-
-    /**
-     * Delete file or folder recursively on exit of the program
-     *
-     * @param filehandle the file or folder to remove.
-     *
-     * @return true if all went well
-     */
-    public static boolean deleteFileOrDirOnExit( File filehandle ) {
-        if (filehandle.isDirectory()) {
-            String[] children = filehandle.list();
-            for( String aChildren : children ) {
-                boolean success = deleteFileOrDir(new File(filehandle, aChildren));
-                if (!success) {
-                    return false;
-                }
-            }
-        }
-        filehandle.deleteOnExit();
-        return true;
     }
 
     /**
@@ -435,12 +425,12 @@ public class FileUtilities {
      * @return the list of files patching.
      */
     public static File[] getFilesListByExtention( String folderPath, final String ext ) {
-        File[] shpFiles = new File(folderPath).listFiles(new FilenameFilter(){
+        File[] files = new File(folderPath).listFiles(new FilenameFilter(){
             public boolean accept( File dir, String name ) {
                 return name.endsWith(ext);
             }
         });
-        return shpFiles;
+        return files;
     }
 
 }

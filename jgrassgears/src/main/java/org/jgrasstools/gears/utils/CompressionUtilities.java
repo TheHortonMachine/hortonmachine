@@ -44,25 +44,14 @@ public class CompressionUtilities {
      * 
      * @param srcFolder path to the folder to be compressed.
      * @param destZipFile path to the final output zip file.
-     * @param addBaseFolder flag to decide whether to add also the provided base folder or not.
+     * @param addBaseFolder flag to decide whether to add also the provided base (srcFolder) folder or not.
      * @throws IOException 
      */
     static public void zipFolder( String srcFolder, String destZipFile, boolean addBaseFolder ) throws IOException {
         if (new File(srcFolder).isDirectory()) {
-
-            ZipOutputStream zip = null;
-            FileOutputStream fileWriter = null;
-            try {
-                fileWriter = new FileOutputStream(destZipFile);
-                zip = new ZipOutputStream(fileWriter);
+            try (FileOutputStream fileWriter = new FileOutputStream(destZipFile);
+                    ZipOutputStream zip = new ZipOutputStream(fileWriter)) {
                 addFolderToZip("", srcFolder, zip, addBaseFolder); //$NON-NLS-1$
-            } finally {
-                if (zip != null) {
-                    zip.flush();
-                    zip.close();
-                }
-                if (fileWriter != null)
-                    fileWriter.close();
             }
         } else {
             throw new IOException(srcFolder + " is not a folder.");
@@ -86,19 +75,21 @@ public class CompressionUtilities {
      * @throws IOException 
      */
     public static String unzipFolder( String zipFile, String destFolder, boolean addTimeStamp ) throws IOException {
-        ZipFile zf = new ZipFile(zipFile);
-        Enumeration< ? extends ZipEntry> zipEnum = zf.entries();
-
-        String firstName = null;
         String newFirstName = null;
+        try (ZipFile zf = new ZipFile(zipFile)) {
+            Enumeration< ? extends ZipEntry> zipEnum = zf.entries();
 
-        while( zipEnum.hasMoreElements() ) {
-            ZipEntry item = (ZipEntry) zipEnum.nextElement();
+            String firstName = null;
 
-            String itemName = item.getName();
-            if (firstName == null) {
-                int firstSlash = itemName.indexOf('/');
-                if (firstSlash != -1) {
+            while( zipEnum.hasMoreElements() ) {
+                ZipEntry item = (ZipEntry) zipEnum.nextElement();
+
+                String itemName = item.getName();
+                if (firstName == null) {
+                    int firstSlash = itemName.indexOf('/');
+                    if (firstSlash == -1) {
+                        firstSlash = itemName.length();
+                    }
                     firstName = itemName.substring(0, firstSlash);
                     newFirstName = firstName;
                     File baseFile = new File(destFolder + File.separator + firstName);
@@ -111,19 +102,50 @@ public class CompressionUtilities {
                         }
                     }
                 }
-            }
-            if (firstName == null) {
-                throw new IOException();
-            }
-            itemName = itemName.replaceFirst(firstName, newFirstName);
-
-            if (item.isDirectory()) {
-                File newdir = new File(destFolder + File.separator + itemName);
-                if (!newdir.mkdir())
+                if (firstName == null) {
                     throw new IOException();
-            } else {
+                }
+                itemName = itemName.replaceFirst(firstName, newFirstName);
+
+                if (item.isDirectory()) {
+                    File newdir = new File(destFolder + File.separator + itemName);
+                    if (!newdir.mkdir())
+                        throw new IOException();
+                } else {
+                    String newfilePath = destFolder + File.separator + itemName;
+                    File newFile = new File(newfilePath);
+                    File parentFile = newFile.getParentFile();
+                    if (!parentFile.exists()) {
+                        if (!parentFile.mkdirs())
+                            throw new IOException();
+                    }
+                    InputStream is = zf.getInputStream(item);
+                    FileOutputStream fos = new FileOutputStream(newfilePath);
+                    byte[] buffer = new byte[512];
+                    int readchars = 0;
+                    while( (readchars = is.read(buffer)) != -1 ) {
+                        fos.write(buffer, 0, readchars);
+                    }
+                    is.close();
+                    fos.close();
+                }
+            }
+        }
+
+        return newFirstName;
+    }
+
+    public static File unzipSingleFile( String zipFile, String destFolder, boolean addTimeStamp ) throws IOException {
+        File newFile = null;
+        try (ZipFile zf = new ZipFile(zipFile)) {
+            Enumeration< ? extends ZipEntry> zipEnum = zf.entries();
+
+            while( zipEnum.hasMoreElements() ) {
+                ZipEntry item = (ZipEntry) zipEnum.nextElement();
+
+                String itemName = item.getName();
                 String newfilePath = destFolder + File.separator + itemName;
-                File newFile = new File(newfilePath);
+                newFile = new File(newfilePath);
                 File parentFile = newFile.getParentFile();
                 if (!parentFile.exists()) {
                     if (!parentFile.mkdirs())
@@ -140,9 +162,8 @@ public class CompressionUtilities {
                 fos.close();
             }
         }
-        zf.close();
 
-        return newFirstName;
+        return newFile;
     }
 
     static private void addToZip( String path, String srcFile, ZipOutputStream zip ) throws IOException {
@@ -155,7 +176,10 @@ public class CompressionUtilities {
             FileInputStream in = null;
             try {
                 in = new FileInputStream(srcFile);
-                zip.putNextEntry(new ZipEntry(path + File.separator + folder.getName()));
+                String relPath = path + File.separator;
+                if (path.length() == 0)
+                    relPath = "";
+                zip.putNextEntry(new ZipEntry(relPath + folder.getName()));
                 while( (len = in.read(buf)) > 0 ) {
                     zip.write(buf, 0, len);
                 }
@@ -177,7 +201,10 @@ public class CompressionUtilities {
         for( int i = 0; i < listOfFiles.length; i++ ) {
             String folderPath = null;
             if (path.length() < 1) {
-                folderPath = folder.getName();
+                if (addFolder)
+                    folderPath = folder.getName();
+                else
+                    folderPath = "";
             } else {
                 folderPath = path + File.separator + folder.getName();
             }
@@ -185,14 +212,5 @@ public class CompressionUtilities {
             addToZip(folderPath, srcFile, zip);
         }
     }
-
-    // public static void main( String[] args ) throws IOException {
-    // String zipPath = "C:\\Users\\moovida\\Desktop\\plugins\\geonotes_2.zip";
-    // File zipFile = new File(zipPath);
-    // File rootFolder = zipFile.getParentFile();
-    //
-    // unzipFolder(zipPath, rootFolder.getAbsolutePath());
-    //
-    // }
 
 }

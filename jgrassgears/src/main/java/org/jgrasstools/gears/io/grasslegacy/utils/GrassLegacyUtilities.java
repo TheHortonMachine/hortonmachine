@@ -28,6 +28,7 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.IOException;
 
 import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.geometry.jts.JTS;
@@ -652,8 +653,9 @@ public class GrassLegacyUtilities {
      * 
      * @param mapsetPath
      * @param mapName
+     * @throws IOException 
      */
-    public static boolean removeGrassRasterMap( String mapsetPath, String mapName ) {
+    public static boolean removeGrassRasterMap( String mapsetPath, String mapName ) throws IOException {
 
         // list of files to remove
         String mappaths[] = filesOfRasterMap(mapsetPath, mapName);
