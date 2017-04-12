@@ -1,7 +1,7 @@
 package org.jgrasstools.dbs.log;
 
 public enum EMessageType {
-    ALL(0), INFO(1), WARNING(2), ERROR(3);
+    ALL(0), INFO(1), WARNING(2), ERROR(3), ACCESS(4), DEBUG(5);
 
     private int code;
 
@@ -23,6 +23,10 @@ public enum EMessageType {
             return WARNING;
         case 3:
             return ERROR;
+        case 4:
+            return ACCESS;
+        case 5:
+            return DEBUG;
         default:
             return ALL;
         }
