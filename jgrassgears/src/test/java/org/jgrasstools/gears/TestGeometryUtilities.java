@@ -97,6 +97,40 @@ public class TestGeometryUtilities extends HMTestCase {
         assertEquals(315.0, angleBetween, DELTA);
     }
 
+    public void testDistanceAzimuth() throws Exception {
+        double sq2 = 2 * Math.sqrt(2);
+        double sq5 = Math.sqrt(5);
+        double[] distances = {2, sq5, sq2, 2, sq5, sq2, 2, sq2, 2, sq2, 2};
+        double d = 26.5650511771;
+        double[] angles = {0, d, 45, 90, 90 + d, 135, 180, 225, 270, 315, 360};
+        Coordinate[] expectedCoords = {//
+                new Coordinate(1, 3), //
+                new Coordinate(2, 3), //
+                new Coordinate(3, 3), //
+                new Coordinate(3, 1), //
+                new Coordinate(3, 0), //
+                new Coordinate(3, -1), //
+                new Coordinate(1, -1), //
+                new Coordinate(-1, -1), //
+                new Coordinate(-1, 1), //
+                new Coordinate(-1, 3), //
+                new Coordinate(1, 3), //
+        };
+        Coordinate start = new Coordinate(1, 1);
+        for( int i = 0; i < distances.length; i++ ) {
+
+            double angle = angles[i];
+            double distance = distances[i];
+
+            Coordinate end = GeometryUtilities.getCoordinateAtAzimuthDistance(start, angle, distance);
+
+            Coordinate expectedC = expectedCoords[i];
+            assertEquals(expectedC.x, end.x, 0.000001);
+            assertEquals(expectedC.y, end.y, 0.000001);
+
+        }
+    }
+
     public void testLineMerger() throws Exception {
         String l1 = "LINESTRING (0 300, 200 300, 200 200)";
         String l2 = "LINESTRING (200 0, 200 200)";
@@ -504,11 +538,11 @@ public class TestGeometryUtilities extends HMTestCase {
         // horizontal
         lineStart = new Coordinate(0, 0);
         lineEnd = new Coordinate(200, 0);
-        
+
         p1 = new Coordinate(50, 150);
         p2 = new Coordinate(10, 0);
         p3 = new Coordinate(50, -50);
-        
+
         position = GeometryUtilities.getPointPositionAgainstLine(p1, lineStart, lineEnd);
         assertEquals(1, position);
         position = GeometryUtilities.getPointPositionAgainstLine(p2, lineStart, lineEnd);
@@ -519,11 +553,11 @@ public class TestGeometryUtilities extends HMTestCase {
         // vertical
         lineStart = new Coordinate(0, 200);
         lineEnd = new Coordinate(0, 0);
-        
+
         p1 = new Coordinate(50, 150);
         p2 = new Coordinate(0, 100);
         p3 = new Coordinate(-50, 50);
-        
+
         position = GeometryUtilities.getPointPositionAgainstLine(p1, lineStart, lineEnd);
         assertEquals(1, position);
         position = GeometryUtilities.getPointPositionAgainstLine(p2, lineStart, lineEnd);

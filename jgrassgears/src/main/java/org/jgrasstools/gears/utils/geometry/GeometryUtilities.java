@@ -265,7 +265,13 @@ public class GeometryUtilities {
         return Double.NaN;
     }
 
+    public static Coordinate getCoordinateAtAzimuthDistance( Coordinate startPoint, double azimuthDeg, double distance ) {
+        
+        double x1 = startPoint.x + distance * Math.sin(Math.toRadians(azimuthDeg));
+        double y1 = startPoint.y + distance * Math.cos(Math.toRadians(azimuthDeg));
 
+        return new Coordinate(x1, y1);
+    }
 
     /**
      * Calculates the area of a polygon from its vertices.
