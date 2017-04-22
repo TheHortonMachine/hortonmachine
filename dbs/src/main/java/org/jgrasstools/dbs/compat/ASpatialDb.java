@@ -25,10 +25,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.QueryResult;
 import org.jgrasstools.dbs.spatialite.RasterCoverage;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
-import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
 
 import com.vividsolutions.jts.geom.Envelope;
@@ -544,6 +544,57 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
             }
             return geoms;
         }
+    }
+
+    /**
+     * Get the geojson of a table inside a given envelope.
+     * 
+     * @param tableName
+     *            the table name.
+     * @param wherePiece the where string (can be constructed for example with {@link #getSpatialindexBBoxWherePiece(String, String, double, double, double, double)}
+     * @return The resulting geojson.
+     * @throws Exception
+     */
+    public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
+        if (precision == 0) {
+            precision = 6;
+        }
+        SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
+
+        String sql;
+        if (fields == null || fields.length == 0) {
+            sql = "SELECT asGeoJSON(ST_Collect(" + gCol.f_geometry_column + "), " + precision + ",0) FROM " + tableName;
+            if (wherePiece != null) {
+                sql += " WHERE " + wherePiece;
+            }
+        } else {
+            sql = "SELECT \"{\"\"type\"\":\"\"FeatureCollection\"\",\"\"features\"\":[\" || group_concat(\"{\"\"type\"\":\"\"Feature\"\",\"\"geometry\"\":\" || asGeoJSON("
+                    + gCol.f_geometry_column + ", " + precision + ", 0) || \",\"\"properties\"\": {\" || ";
+            List<String> fieldsList = new ArrayList<>();
+            for( String field : fields ) {
+                String string = "\"\"\"" + field + "\"\":\"\"\" || " + field + " || \"\"\"\"";
+                fieldsList.add(string);
+            }
+            StringBuilder sb = new StringBuilder();
+            for( int i = 0; i < fieldsList.size(); i++ ) {
+                if (i > 0) {
+                    sb.append(" || \",\" ||");
+                }
+                sb.append("\n").append(fieldsList.get(i));
+            }
+            sql += sb.toString() + " || \"}}\") || \"]}\"";
+            sql += " FROM " + tableName;
+            if (wherePiece != null) {
+                sql += " WHERE " + wherePiece;
+            }
+        }
+        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                String geoJson = rs.getString(1);
+                return geoJson;
+            }
+        }
+        return "";
     }
 
     /**
