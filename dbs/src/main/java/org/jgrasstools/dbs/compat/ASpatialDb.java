@@ -563,7 +563,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
 
         String sql;
         if (fields == null || fields.length == 0) {
-            sql = "SELECT asGeoJSON(ST_Collect(" + gCol.f_geometry_column + "), " + precision + ",0) FROM " + tableName;
+            sql = "SELECT asGeoJSON(ST_Collect(ST_Transform(" + gCol.f_geometry_column + ",4326)), " + precision + ",0) FROM " + tableName;
             if (wherePiece != null) {
                 sql += " WHERE " + wherePiece;
             }
