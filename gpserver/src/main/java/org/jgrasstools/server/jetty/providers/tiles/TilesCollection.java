@@ -37,7 +37,7 @@ public class TilesCollection {
         osmProvider = new OsmOLProvider("OpenStreetMap");
 
         aerialAltoAdigeProvider = new WmsProvider("Aerial Alto Adige", "http://sdi.provincia.bz.it/geoserver/wms",
-                "'inspire:OI.ORTHOIMAGECOVERAGE.2011'", "Copyright Alto Adige",
+                "OI.ORTHOIMAGECOVERAGE.2011", "Copyright Alto Adige",
                 "{'LAYERS': 'inspire:OI.ORTHOIMAGECOVERAGE.2011', 'TILED': true}", "geoserver");
         ctpTrentinoProvider = new WmsProvider("CTP Trentino",
                 "http://geoservices.provincia.tn.it/siat/services/OGC/CTP2013/ImageServer/WMSServer", "'0'", "Copyright Trentino",

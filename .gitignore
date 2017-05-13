@@ -15,3 +15,4 @@ target
 *.so
 extras/export/libs
 dbs/copy_to_gp.sh
+install_into_stage.sh
