@@ -1,4 +1,4 @@
-package org.jgrasstools.server.jetty.utils;
+package org.jgrasstools.geopaparazzi.simpleserver;
 import org.eclipse.jetty.util.log.Logger;
 
 /**

@@ -1,4 +1,4 @@
-package org.jgrasstools.server.geopaparazzi.servlets;
+package org.jgrasstools.geopaparazzi.simpleserver.servlets;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;

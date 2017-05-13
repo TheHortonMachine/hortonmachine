@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.server.geopaparazzi;
+package org.jgrasstools.geopaparazzi.simpleserver;
 
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOGS;
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOG_DATA;
@@ -97,6 +97,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.v.smoothing.FeatureSlidingAverage;
 import org.jgrasstools.gears.utils.chart.Scatter;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.geopaparazzi.GeopaparazziServer;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;

@@ -15,21 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.server.geopaparazzi.servlets;
+package org.jgrasstools.geopaparazzi.simpleserver.servlets;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.jgrasstools.server.geopaparazzi.GeopaparazziServerUtilities;
+import org.jgrasstools.geopaparazzi.simpleserver.GeopaparazziServerUtilities;
 
 /**
  * A project download handler.

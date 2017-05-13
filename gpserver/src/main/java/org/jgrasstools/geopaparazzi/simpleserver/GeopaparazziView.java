@@ -1,4 +1,4 @@
-package org.jgrasstools.server.geopaparazzi;
+package org.jgrasstools.geopaparazzi.simpleserver;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;

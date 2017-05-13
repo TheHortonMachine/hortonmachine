@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.server.geopaparazzi;
+package org.jgrasstools.geopaparazzi;
 
 import java.awt.BorderLayout;
 import java.awt.Graphics2D;
@@ -39,6 +39,8 @@ import javax.swing.JLabel;
 import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.spatialite.jgt.SqliteDb;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
+import org.jgrasstools.geopaparazzi.simpleserver.GeopaparazziController;
+import org.jgrasstools.geopaparazzi.simpleserver.ProjectInfo;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Image;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.Note;

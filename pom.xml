@@ -28,7 +28,7 @@
         <module>modules</module>
         <module>gui</module>
 	<module>apps</module>
-	    <module>server</module>
+	    <module>gpserver</module>
 <!--        
         <module>grass</module>
  -->

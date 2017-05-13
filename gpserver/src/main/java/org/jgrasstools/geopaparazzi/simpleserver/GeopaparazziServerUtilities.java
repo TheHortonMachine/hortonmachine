@@ -1,4 +1,4 @@
-package org.jgrasstools.server.geopaparazzi;
+package org.jgrasstools.geopaparazzi.simpleserver;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,8 +18,8 @@ import org.jgrasstools.gears.io.geopaparazzi.GeopaparazziUtilities;
 
 public class GeopaparazziServerUtilities {
 
-    public static String handleProjectUpload( File gpapProjectsFolder, HttpServletResponse response,
-            HttpServletRequest request ) throws Exception {
+    public static String handleProjectUpload( File gpapProjectsFolder, HttpServletResponse response, HttpServletRequest request )
+            throws Exception {
         String projectFileName = "";
         String msg = "";
         PrintWriter outWriter = response.getWriter();
@@ -83,31 +83,6 @@ public class GeopaparazziServerUtilities {
         return projectFileName;
 
     }
-
-//    public static void handleProjectUpload( File gpapProjectsFolder, HttpServletRequest request, HttpServletResponse response )
-//            throws Exception {
-//        return getProjectFileFromDevice(gpapProjectsFolder, response, request);
-//
-//        // String projectFileName = "";
-//        // FileInputStream inputStream = null;
-//        // ServletOutputStream outputStream = null;
-//        // try {
-//        // Map<String, String[]> parms = request.getParameterMap();
-//        // String[] idParams = parms.get("id");
-//        // if (idParams != null && idParams.length == 1) {
-//        // projectFileName = idParams[0];
-//        // inputStream = new FileInputStream(new File(gpapProjectsFolder, projectFileName));
-//        // String mimeType = "application/octet-stream";
-//        // response.setContentType(mimeType);
-//        // response.setHeader("Content-disposition", "attachment; filename=" + projectFileName);
-//        // outputStream = response.getOutputStream();
-//        // IOUtils.copy(inputStream, outputStream);
-//        // }
-//        // } finally {
-//        // IOUtils.closeQuietly(inputStream);
-//        // IOUtils.closeQuietly(outputStream);
-//        // }
-//    }
 
     public static void handleProjectList( HttpServletResponse response, File gpapProjectsFolder ) throws IOException {
         response.setContentType("text/json");
