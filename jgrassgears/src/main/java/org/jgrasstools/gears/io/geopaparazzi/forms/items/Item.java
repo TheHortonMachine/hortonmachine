@@ -24,6 +24,40 @@ package org.jgrasstools.gears.io.geopaparazzi.forms.items;
  */
 public interface Item {
     String getKey();
-    void setValue(String value);
+    void setValue( String value );
     String getValue();
+
+    default String getRangeString( double[] range, boolean[] rangeInclusiveness ) {
+        double min = range[0];
+        double max = range[1];
+        boolean ri1 = rangeInclusiveness[0];
+        boolean ri2 = rangeInclusiveness[1];
+        return getRangeString(min, max, ri1, ri2);
+    }
+
+    default String getRangeString( int[] range, boolean[] rangeInclusiveness ) {
+        double min = range[0];
+        double max = range[1];
+        boolean ri1 = rangeInclusiveness[0];
+        boolean ri2 = rangeInclusiveness[1];
+        return getRangeString(min, max, ri1, ri2);
+    }
+    
+    default String getRangeString( double min, double max, boolean ri1, boolean ri2 ) {
+        StringBuilder rangeSb = new StringBuilder();
+        rangeSb.append("\"range\":\"");
+        if (ri1) {
+            rangeSb.append("[");
+        } else {
+            rangeSb.append("(");
+        }
+        rangeSb.append(min).append(",").append(max);
+        if (ri2) {
+            rangeSb.append("]\"");
+        } else {
+            rangeSb.append(")\"");
+        }
+        String rangeString = rangeSb.toString();
+        return rangeString;
+    }
 }

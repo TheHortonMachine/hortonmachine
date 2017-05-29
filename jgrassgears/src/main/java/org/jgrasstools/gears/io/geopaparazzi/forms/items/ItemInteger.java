@@ -29,10 +29,15 @@ public class ItemInteger implements Item {
     private String defaultValueStr;
     private boolean isLabel;
     private String key;
+    private int[] range;
+    private boolean[] rangeInclusiveness;
 
-    public ItemInteger( String key, String description, Integer defaultValue, boolean isMandatory, boolean isLabel ) {
+    public ItemInteger( String key, String description, Integer defaultValue, boolean isMandatory, boolean isLabel, int[] range,
+            boolean[] rangeInclusiveness ) {
         this.key = key;
         this.isLabel = isLabel;
+        this.range = range;
+        this.rangeInclusiveness = rangeInclusiveness;
         if (defaultValue == null) {
             defaultValueStr = "";
         } else {
@@ -48,13 +53,17 @@ public class ItemInteger implements Item {
         if (key != null && key.trim().length() > 0) {
             sb.append("             \"key\": \"").append(key).append("\",\n");
             sb.append("             \"label\": \"").append(description).append("\",\n");
-        }else{
+        } else {
             sb.append("             \"key\": \"").append(description).append("\",\n");
         }
         sb.append("             \"value\": \"").append(defaultValueStr).append("\",\n");
         if (isLabel)
             sb.append("             \"islabel\": \"").append("true").append("\",\n");
         sb.append("             \"type\": \"").append("integer").append("\",\n");
+        if (range != null && rangeInclusiveness != null) {
+            String rangeString = getRangeString(range, rangeInclusiveness);
+            sb.append("             " + rangeString + ",\n");
+        }
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();

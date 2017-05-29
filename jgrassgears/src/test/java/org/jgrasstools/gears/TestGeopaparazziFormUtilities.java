@@ -52,9 +52,9 @@ public class TestGeopaparazziFormUtilities extends HMTestCase {
 
         Form numericForm = new Form("numeric text");
         section.addForms(numericForm);
-        ItemDouble doubleText = new ItemDouble(null, "a number", null, false, false);
+        ItemDouble doubleText = new ItemDouble(null, "a number", null, false, false, null, null);
         numericForm.addItem(doubleText);
-        ItemInteger intText = new ItemInteger(null, "an integer number", null, false, false);
+        ItemInteger intText = new ItemInteger(null, "an integer number", null, false, false, null, null);
         numericForm.addItem(intText);
 
         Form dateForm = new Form("date");
