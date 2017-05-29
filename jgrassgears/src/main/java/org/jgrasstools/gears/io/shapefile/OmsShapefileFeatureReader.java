@@ -85,6 +85,7 @@ public class OmsShapefileFeatureReader extends JGTModel {
             FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
             SimpleFeatureSource featureSource = store.getFeatureSource();
             geodata = featureSource.getFeatures();
+            store.dispose();
         } finally {
             pm.done();
         }

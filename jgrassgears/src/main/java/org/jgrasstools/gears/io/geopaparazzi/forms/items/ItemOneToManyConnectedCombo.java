@@ -29,15 +29,15 @@ import org.jgrasstools.gears.utils.StringUtilities;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class ItemConnectedCombo implements Item {
+public class ItemOneToManyConnectedCombo implements Item {
 
     private String description;
     private boolean isMandatory;
     private String defaultValue;
-    private LinkedHashMap<String, List<String>> dataMap;
+    private LinkedHashMap<String, List<NamedList<String>>> dataMap;
     private String key;
 
-    public ItemConnectedCombo( String key, String description, LinkedHashMap<String, List<String>> dataMap,
+    public ItemOneToManyConnectedCombo( String key, String description, LinkedHashMap<String, List<NamedList<String>>> dataMap,
             String[] defaultValues, boolean isMandatory ) {
         this.key = key;
         this.dataMap = dataMap;
@@ -62,15 +62,26 @@ public class ItemConnectedCombo implements Item {
         sb.append("             \"values\": {\n");
 
         StringBuilder tmp = new StringBuilder();
-        Set<Entry<String, List<String>>> entrySet = dataMap.entrySet();
-        for( Entry<String, List<String>> entry : entrySet ) {
+        Set<Entry<String, List<NamedList<String>>>> entrySet = dataMap.entrySet();
+        for( Entry<String, List<NamedList<String>>> entry : entrySet ) {
             String itemName = entry.getKey();
-            List<String> items = entry.getValue();
+            List<NamedList<String>> namedLists = entry.getValue();
 
             tmp.append("                 \"" + itemName + "\": [\n");
             StringBuilder tmp2 = new StringBuilder();
-            for( String itemString : items ) {
-                tmp2.append("                     {\"item\": \"" + itemString + "\"},\n");
+            for( NamedList<String> namedList: namedLists ) {
+                tmp2.append("                 {\n");
+                tmp2.append("                   \"itemname\": \"" + namedList.name + "\",\n");
+                tmp2.append("                   \"items\":[\n");
+                
+                StringBuilder tmp3 = new StringBuilder();
+                for( String itemString: namedList.items ) {
+                    tmp3.append("                     {\"item\": \"" + itemString + "\"},\n");
+                }
+                String substring = removeLastComma(tmp3);
+                tmp3.append(substring);
+                tmp2.append("                   ]\n");
+                tmp2.append("                 },\n");
             }
             String substring = removeLastComma(tmp2);
             tmp.append(substring).append("\n");
