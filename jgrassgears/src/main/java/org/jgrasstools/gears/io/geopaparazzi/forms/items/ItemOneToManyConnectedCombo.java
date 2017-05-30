@@ -79,7 +79,7 @@ public class ItemOneToManyConnectedCombo implements Item {
                     tmp3.append("                     {\"item\": \"" + itemString + "\"},\n");
                 }
                 String substring = removeLastComma(tmp3);
-                tmp3.append(substring);
+                tmp2.append(substring);
                 tmp2.append("                   ]\n");
                 tmp2.append("                 },\n");
             }
