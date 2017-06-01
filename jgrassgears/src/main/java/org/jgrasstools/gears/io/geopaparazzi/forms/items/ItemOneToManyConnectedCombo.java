@@ -91,7 +91,7 @@ public class ItemOneToManyConnectedCombo implements Item {
         sb.append(substring).append("\n");
         sb.append("             },\n");
         sb.append("             \"value\": \"").append(defaultValue).append("\",\n");
-        sb.append("             \"type\": \"").append("connectedstringcombo").append("\",\n");
+        sb.append("             \"type\": \"").append("onetomanystringcombo").append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();
