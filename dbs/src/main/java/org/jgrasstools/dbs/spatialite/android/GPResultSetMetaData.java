@@ -48,9 +48,7 @@ public class GPResultSetMetaData implements IJGTResultSetMetaData {
 
     @Override
     public String getColumnTypeName(int index) throws Exception {
-        int type = stmt.column_type(index - 1);
-        // TODO
-        return "" + type;
+        throw new RuntimeException("Not supproted under Android");
     }
 
     @Override

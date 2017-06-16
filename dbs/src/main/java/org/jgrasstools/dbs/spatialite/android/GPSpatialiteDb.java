@@ -18,12 +18,21 @@
 package org.jgrasstools.dbs.spatialite.android;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
+import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
+import org.jgrasstools.dbs.spatialite.ESqliteDataType;
+import org.jgrasstools.dbs.spatialite.QueryResult;
+import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
 
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKBReader;
 
 import jsqlite.Database;
 
@@ -68,6 +77,126 @@ public class GPSpatialiteDb extends ASpatialDb {
         String sql = "SELECT InitSpatialMetadata(" + options + ")";
         try (IJGTStatement stmt = mConn.createStatement()) {
             stmt.execute(sql);
+        }
+    }
+
+    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
+            int reprojectSrid ) throws Exception {
+        QueryResult queryResult = new QueryResult();
+
+        SpatialiteGeometryColumns gCol = null;
+        try {
+            gCol = getGeometryColumnsForTable(tableName);
+        } catch (Exception e) {
+            // ignore
+        }
+        boolean hasGeom = gCol != null;
+
+        List<String[]> tableColumnsInfo = getTableColumns(tableName);
+        List<String> tableColumns = new ArrayList<>();
+        HashMap<String, String> name2TypeMap = new HashMap<>();
+        for( String[] info : tableColumnsInfo ) {
+            tableColumns.add(info[0]);
+            if (info[1].length() > 0)
+                name2TypeMap.put(info[0], info[1]);
+        }
+        if (hasGeom) {
+            if (!tableColumns.remove(gCol.f_geometry_column)) {
+                String gColLower = gCol.f_geometry_column.toLowerCase();
+                int index = -1;
+                for( int i = 0; i < tableColumns.size(); i++ ) {
+                    String tableColumn = tableColumns.get(i);
+                    if (tableColumn.toLowerCase().equals(gColLower)) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index != -1) {
+                    tableColumns.remove(index);
+                }
+            }
+        }
+        if (!alsoPK_UID) {
+            if (!tableColumns.remove(PK_UID)) {
+                tableColumns.remove(PKUID);
+            }
+        }
+
+        String sql = "SELECT ";
+        if (hasGeom) {
+            if (reprojectSrid == -1 || reprojectSrid == gCol.srid) {
+                sql += "ST_AsBinary(" + gCol.f_geometry_column + ") AS " + gCol.f_geometry_column;
+            } else {
+                sql += "ST_AsBinary(ST_Transform(" + gCol.f_geometry_column + "," + reprojectSrid + ")) AS "
+                        + gCol.f_geometry_column;
+            }
+        }
+        for( int i = 0; i < tableColumns.size(); i++ ) {
+            if (hasGeom || i != 0)
+                sql += ",";
+            sql += tableColumns.get(i);
+        }
+        sql += " FROM " + tableName;
+        if (envelope != null) {
+            double x1 = envelope.getMinX();
+            double y1 = envelope.getMinY();
+            double x2 = envelope.getMaxX();
+            double y2 = envelope.getMaxY();
+            sql += " WHERE "; //
+            sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
+        }
+        if (limit > 0) {
+            sql += " LIMIT " + limit;
+        }
+        WKBReader wkbReader = new WKBReader();
+        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
+            IJGTResultSetMetaData rsmd = rs.getMetaData();
+            int columnCount = rsmd.getColumnCount();
+
+            for( int i = 1; i <= columnCount; i++ ) {
+                String columnName = rsmd.getColumnName(i);
+                queryResult.names.add(columnName);
+                if (hasGeom && columnName.equals(gCol.f_geometry_column)) {
+                    queryResult.geometryIndex = i - 1;
+                }
+                String type = name2TypeMap.get(columnName);
+                String columnTypeName = "UNKNOWN";
+                if (type != null) {
+                    columnTypeName = type;
+                }
+                queryResult.types.add(columnTypeName);
+            }
+
+            String[] typesArray = new String[queryResult.types.size()];
+            for( int i = 0; i < queryResult.types.size(); i++ ) {
+                typesArray[i] = queryResult.types.get(i).toLowerCase();
+            }
+            while( rs.next() ) {
+                int i = 1;
+                Object[] rec = new Object[columnCount];
+                if (hasGeom) {
+                    byte[] geomBytes = rs.getBytes(i);
+                    Geometry geometry = wkbReader.read(geomBytes);
+                    rec[i - 1] = geometry;
+                    i++;
+                }
+                for( int j = i; j <= columnCount; j++ ) {
+                    Object object;
+                    String type = typesArray[j-1];
+                    if (type.equals(ESqliteDataType.TEXT.getLowercaseName())) {
+                        object = rs.getString(j);
+                    } else if (type.equals(ESqliteDataType.INT.getLowercaseName())) {
+                        object = rs.getInt(j);
+                    } else if (type.equals(ESqliteDataType.REAL.getLowercaseName())) {
+                        object = rs.getDouble(j);
+                    } else {
+                        object = rs.getObject(j);
+                    }
+                    rec[j - 1] = object;
+                }
+                queryResult.data.add(rec);
+            }
+            return queryResult;
         }
     }
 

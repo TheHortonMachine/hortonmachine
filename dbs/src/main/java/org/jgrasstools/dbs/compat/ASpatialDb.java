@@ -45,6 +45,7 @@ import com.vividsolutions.jts.io.WKBReader;
 public abstract class ASpatialDb extends ADb implements AutoCloseable {
 
     public static String PK_UID = "PK_UID";
+    public static String PKUID = "PKUID";
     public static String defaultGeomFieldName = "the_geom";
 
     /**
@@ -322,10 +323,26 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
             tableColumns.add(info[0]);
         }
         if (hasGeom) {
-            tableColumns.remove(gCol.f_geometry_column);
+            if (!tableColumns.remove(gCol.f_geometry_column)) {
+                String gColLower = gCol.f_geometry_column.toLowerCase();
+                int index = -1;
+                for( int i = 0; i < tableColumns.size(); i++ ) {
+                    String tableColumn = tableColumns.get(i);
+                    if (tableColumn.toLowerCase().equals(gColLower)) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index != -1) {
+                    tableColumns.remove(index);
+                }
+            }
         }
-        if (!alsoPK_UID)
-            tableColumns.remove(PK_UID);
+        if (!alsoPK_UID) {
+            if (!tableColumns.remove(PK_UID)) {
+                tableColumns.remove(PKUID);
+            }
+        }
 
         String sql = "SELECT ";
         if (hasGeom) {
@@ -563,7 +580,8 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
 
         String sql;
         if (fields == null || fields.length == 0) {
-            sql = "SELECT asGeoJSON(ST_Collect(ST_Transform(" + gCol.f_geometry_column + ",4326)), " + precision + ",0) FROM " + tableName;
+            sql = "SELECT asGeoJSON(ST_Collect(ST_Transform(" + gCol.f_geometry_column + ",4326)), " + precision + ",0) FROM "
+                    + tableName;
             if (wherePiece != null) {
                 sql += " WHERE " + wherePiece;
             }
