@@ -97,7 +97,7 @@ public class GeopaparazziSpatialiteCreator extends JGTModel {
     @In
     public String inGeopaparazzi = null;
 
-    @Description(THE_GEOPAPARAZZI_DATABASE_FILE)
+    @Description(OmsGeopaparazziSpatialiteCreator_encoding)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String pEncoding = "UTF-8";
@@ -121,7 +121,7 @@ public class GeopaparazziSpatialiteCreator extends JGTModel {
     public void process() throws Exception {
         checkNull(inGeopaparazzi, inShapefilesFolder);
 
-        if (pEncoding == null) {
+        if (pEncoding == null || pEncoding.trim().length() == 0) {
             pEncoding = "UTF-8";
         }
 
@@ -141,11 +141,10 @@ public class GeopaparazziSpatialiteCreator extends JGTModel {
             if (!db.open(inGeopaparazzi)) {
                 db.initSpatialMetadata(null);
             }
-            
 
             if (!db.hasTable(GeopaparazziDatabaseProperties.PROPERTIESTABLE)) {
                 GeopaparazziDatabaseProperties.createPropertiesTable(db);
-            }else{
+            } else {
                 QueryResult qres1 = db.getTableRecordsMapFromRawSql("select * from dataproperties", 10);
                 pm.message("Dataproperties already existing: ");
                 for( Object[] objs : qres1.data ) {
@@ -157,12 +156,12 @@ public class GeopaparazziSpatialiteCreator extends JGTModel {
             pm.beginTask("Importing shapefiles...", shpfiles.length);
             for( File shpFile : shpfiles ) {
                 String name = FileUtilities.getNameWithoutExtention(shpFile);
-                
+
                 if (db.hasTable(name)) {
                     pm.errorMessage("Table already existing: " + name);
                     continue;
                 }
-                
+
                 SimpleFeatureCollection fc = OmsVectorReader.readVector(shpFile.getAbsolutePath());
                 SimpleFeatureType schema = fc.getSchema();
                 CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
@@ -199,7 +198,7 @@ public class GeopaparazziSpatialiteCreator extends JGTModel {
 
                             org.jgrasstools.gears.io.geopaparazzi.styles.Style gpStyle = GeopaparazziDatabaseProperties
                                     .createDefaultPropertiesForTable(db, uniqueName, fieldLabel);
-                            
+
                             SymbolizerWrapper geometrySymbolizersWrapper = ruleWrapper.getGeometrySymbolizersWrapper();
                             if (geometrySymbolizersWrapper instanceof PointSymbolizerWrapper) {
                                 PointSymbolizerWrapper psw = (PointSymbolizerWrapper) geometrySymbolizersWrapper;
@@ -221,14 +220,14 @@ public class GeopaparazziSpatialiteCreator extends JGTModel {
                                 gpStyle.strokecolor = getString(lsw.getStrokeColor(), gpStyle.strokecolor);
                             } else if (geometrySymbolizersWrapper instanceof PolygonSymbolizerWrapper) {
                                 PolygonSymbolizerWrapper psw = (PolygonSymbolizerWrapper) geometrySymbolizersWrapper;
-                                
+
                                 gpStyle.width = getFloat(psw.getStrokeWidth(), gpStyle.width);
                                 gpStyle.strokealpha = getFloat(psw.getStrokeOpacity(), gpStyle.strokealpha);
                                 gpStyle.strokecolor = getString(psw.getStrokeColor(), gpStyle.strokecolor);
                                 gpStyle.fillalpha = getFloat(psw.getFillOpacity(), gpStyle.fillalpha);
                                 gpStyle.fillcolor = getString(psw.getFillColor(), gpStyle.fillcolor);
                             }
-                            
+
                             GeopaparazziDatabaseProperties.updateStyle(db, gpStyle);
                         }
                     }
@@ -236,15 +235,15 @@ public class GeopaparazziSpatialiteCreator extends JGTModel {
                 pm.worked(1);
             }
             pm.done();
-            
+
             QueryResult qres = db.getTableRecordsMapFromRawSql("select * from dataproperties", 10);
             pm.message("Dataproperties inserted: ");
             for( Object[] objs : qres.data ) {
                 pm.message(Arrays.toString(objs));
             }
-        
+
         }
-        
+
     }
 
     private float getFloat( String value, float defaultValue ) {
@@ -266,7 +265,7 @@ public class GeopaparazziSpatialiteCreator extends JGTModel {
     public static void main( String[] args ) throws Exception {
         GeopaparazziSpatialiteCreator c = new GeopaparazziSpatialiteCreator();
         c.inGeopaparazzi = "/home/hydrologis/TMP/GEOPAP/bassa_tensione.sqlite";
-         c.pEncoding = "CP1250";
+        c.pEncoding = "CP1250";
         c.inShapefilesFolder = "/home/hydrologis/Dropbox/hydrologis/lavori/2015_12_rilievo_elettrico_castello/elaborazioni/shp_rilievo_all_ll/bassa_tensione/";
         c.process();
     }
