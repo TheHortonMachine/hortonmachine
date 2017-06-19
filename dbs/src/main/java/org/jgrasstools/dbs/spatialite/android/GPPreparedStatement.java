@@ -51,12 +51,13 @@ public class GPPreparedStatement implements IJGTPreparedStatement {
     }
 
     @Override
-    public void executeUpdate() throws Exception {
+    public int executeUpdate() throws Exception {
         try {
             preparedStmt.step();
         } finally {
             preparedStmt.close();
         }
+        return -1;
     }
 
     @Override

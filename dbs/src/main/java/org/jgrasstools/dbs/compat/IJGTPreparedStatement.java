@@ -29,7 +29,7 @@ public interface IJGTPreparedStatement extends AutoCloseable {
 
     void setString( int index, String text ) throws Exception;
 
-    void executeUpdate() throws Exception;
+    int executeUpdate() throws Exception;
 
     void setDouble( int index, double value ) throws Exception;
 

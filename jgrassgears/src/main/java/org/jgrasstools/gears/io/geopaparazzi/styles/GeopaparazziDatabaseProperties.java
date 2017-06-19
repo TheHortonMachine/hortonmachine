@@ -56,6 +56,7 @@ public class GeopaparazziDatabaseProperties implements ISpatialiteTableAndFields
         fieldsList.add(MINZOOM);
         fieldsList.add(MAXZOOM);
         fieldsList.add(DECIMATION);
+        fieldsList.add(THEME);
         PROPERTIESTABLE_FIELDS_LIST = Collections.unmodifiableList(fieldsList);
     }
 
@@ -88,7 +89,8 @@ public class GeopaparazziDatabaseProperties implements ISpatialiteTableAndFields
         sb.append(DASH).append(" TEXT,");
         sb.append(MINZOOM).append(" INTEGER,");
         sb.append(MAXZOOM).append(" INTEGER,");
-        sb.append(DECIMATION).append(" REAL");
+        sb.append(DECIMATION).append(" REAL,");
+        sb.append(THEME).append(" TEXT");
         sb.append(" );");
         String query = sb.toString();
         database.executeInsertUpdateDeleteSql(query);
@@ -131,6 +133,9 @@ public class GeopaparazziDatabaseProperties implements ISpatialiteTableAndFields
         Style style = new Style();
         style.name = spatialTableUniqueName;
         style.labelfield = spatialTableLabelField;
+        if (spatialTableLabelField != null && spatialTableLabelField.trim().length() > 0) {
+            style.labelvisible = 1;
+        }
         sbIn.append(style.insertValuesString());
         sbIn.append(" );");
 
@@ -139,8 +144,7 @@ public class GeopaparazziDatabaseProperties implements ISpatialiteTableAndFields
 
         return style;
     }
-    
-    
+
     /**
      * Update a style definition.
      *
@@ -148,35 +152,40 @@ public class GeopaparazziDatabaseProperties implements ISpatialiteTableAndFields
      * @param style    the {@link Style} to set.
      * @throws Exception if something goes wrong.
      */
-    public static void updateStyle(ASpatialDb database, Style style) throws Exception {
+    public static void updateStyle( ASpatialDb database, Style style ) throws Exception {
         StringBuilder sbIn = new StringBuilder();
         sbIn.append("update ").append(PROPERTIESTABLE);
         sbIn.append(" set ");
         // sbIn.append(NAME).append("='").append(style.name).append("' , ");
-        sbIn.append(SIZE).append("=").append(style.size).append(" , ");
-        sbIn.append(FILLCOLOR).append("='").append(style.fillcolor).append("' , ");
-        sbIn.append(STROKECOLOR).append("='").append(style.strokecolor).append("' , ");
-        sbIn.append(FILLALPHA).append("=").append(style.fillalpha).append(" , ");
-        sbIn.append(STROKEALPHA).append("=").append(style.strokealpha).append(" , ");
-        sbIn.append(SHAPE).append("='").append(style.shape).append("' , ");
-        sbIn.append(WIDTH).append("=").append(style.width).append(" , ");
-        sbIn.append(LABELSIZE).append("=").append(style.labelsize).append(" , ");
-        sbIn.append(LABELFIELD).append("='").append(style.labelfield).append("' , ");
-        sbIn.append(LABELVISIBLE).append("=").append(style.labelvisible).append(" , ");
-        sbIn.append(ENABLED).append("=").append(style.enabled).append(" , ");
-        sbIn.append(ORDER).append("=").append(style.order).append(" , ");
-        sbIn.append(DASH).append("='").append(style.dashPattern).append("' , ");
-        sbIn.append(MINZOOM).append("=").append(style.minZoom).append(" , ");
-        sbIn.append(MAXZOOM).append("=").append(style.maxZoom).append(" , ");
-        sbIn.append(DECIMATION).append("=").append(style.decimationFactor);
+        sbIn.append(SIZE).append("=?,");
+        sbIn.append(FILLCOLOR).append("=?,");
+        sbIn.append(STROKECOLOR).append("=?,");
+        sbIn.append(FILLALPHA).append("=?,");
+        sbIn.append(STROKEALPHA).append("=?,");
+        sbIn.append(SHAPE).append("=?,");
+        sbIn.append(WIDTH).append("=?,");
+        sbIn.append(LABELSIZE).append("=?,");
+        sbIn.append(LABELFIELD).append("=?,");
+        sbIn.append(LABELVISIBLE).append("=?,");
+        sbIn.append(ENABLED).append("=?,");
+        sbIn.append(ORDER).append("=?,");
+        sbIn.append(DASH).append("=?,");
+        sbIn.append(MINZOOM).append("=?,");
+        sbIn.append(MAXZOOM).append("=?,");
+        sbIn.append(DECIMATION).append("=?,");
+        sbIn.append(THEME).append("=?");
         sbIn.append(" where ");
         sbIn.append(NAME);
         sbIn.append("='");
         sbIn.append(style.name);
         sbIn.append("';");
 
+        Object[] objects = {style.size, style.fillcolor, style.strokecolor, style.fillalpha, style.strokealpha, style.shape,
+                style.width, style.labelsize, style.labelfield, style.labelvisible, style.enabled, style.order, style.dashPattern,
+                style.minZoom, style.maxZoom, style.decimationFactor, style.getTheme()};
+
         String updateQuery = sbIn.toString();
-        database.executeInsertUpdateDeleteSql(updateQuery);
+        database.executeInsertUpdateDeletePreparedSql(updateQuery, objects);
     }
 
 }

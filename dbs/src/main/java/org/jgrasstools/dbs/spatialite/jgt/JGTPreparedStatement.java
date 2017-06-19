@@ -47,8 +47,8 @@ public class JGTPreparedStatement implements IJGTPreparedStatement {
     }
 
     @Override
-    public void executeUpdate() throws Exception {
-        preparedStatement.executeUpdate();
+    public int executeUpdate() throws Exception {
+        return preparedStatement.executeUpdate();
     }
 
     @Override

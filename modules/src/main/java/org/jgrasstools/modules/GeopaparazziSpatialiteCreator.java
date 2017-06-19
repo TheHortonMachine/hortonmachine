@@ -43,9 +43,13 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.filter.AttributeExpressionImpl;
+import org.geotools.filter.IsEqualsToImpl;
+import org.geotools.filter.LiteralExpressionImpl;
 import org.geotools.styling.Style;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
@@ -70,6 +74,8 @@ import org.jgrasstools.gears.utils.style.StyleWrapper;
 import org.jgrasstools.gears.utils.style.SymbolizerWrapper;
 import org.jgrasstools.gears.utils.style.TextSymbolizerWrapper;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.filter.Filter;
+import org.opengis.filter.expression.Expression;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
@@ -187,56 +193,52 @@ public class GeopaparazziSpatialiteCreator extends JGTModel {
                         FeatureTypeStyleWrapper featureTypeStyleWrapper = featureTypeStylesWrapperList.get(0);
 
                         List<RuleWrapper> rulesWrapperList = featureTypeStyleWrapper.getRulesWrapperList();
-                        if (rulesWrapperList.size() > 0) {
+
+                        if (rulesWrapperList.size() == 1) {
                             RuleWrapper ruleWrapper = rulesWrapperList.get(0);
 
-                            TextSymbolizerWrapper textSymbolizersWrapper = ruleWrapper.getTextSymbolizersWrapper();
-                            String fieldLabel = "";
-                            if (textSymbolizersWrapper != null) {
-                                fieldLabel = textSymbolizersWrapper.getLabelName();
-                            }
-
-                            org.jgrasstools.gears.io.geopaparazzi.styles.Style gpStyle = GeopaparazziDatabaseProperties
-                                    .createDefaultPropertiesForTable(db, uniqueName, fieldLabel);
+                            org.jgrasstools.gears.io.geopaparazzi.styles.Style gpStyle = createBaseStyle(db, uniqueName,
+                                    ruleWrapper);
 
                             SymbolizerWrapper geometrySymbolizersWrapper = ruleWrapper.getGeometrySymbolizersWrapper();
-                            if (geometrySymbolizersWrapper instanceof PointSymbolizerWrapper) {
-                                PointSymbolizerWrapper psw = (PointSymbolizerWrapper) geometrySymbolizersWrapper;
-
-                                gpStyle.shape = psw.getMarkName();
-                                gpStyle.size = getFloat(psw.getSize(), gpStyle.size);
-
-                                gpStyle.width = getFloat(psw.getStrokeWidth(), gpStyle.width);
-                                gpStyle.strokealpha = getFloat(psw.getStrokeOpacity(), gpStyle.strokealpha);
-                                gpStyle.strokecolor = getString(psw.getStrokeColor(), gpStyle.strokecolor);
-
-                                gpStyle.fillalpha = getFloat(psw.getFillOpacity(), gpStyle.fillalpha);
-                                gpStyle.fillcolor = getString(psw.getFillColor(), gpStyle.fillcolor);
-                            } else if (geometrySymbolizersWrapper instanceof LineSymbolizerWrapper) {
-                                LineSymbolizerWrapper lsw = (LineSymbolizerWrapper) geometrySymbolizersWrapper;
-
-                                gpStyle.width = getFloat(lsw.getStrokeWidth(), gpStyle.width);
-                                gpStyle.strokealpha = getFloat(lsw.getStrokeOpacity(), gpStyle.strokealpha);
-                                gpStyle.strokecolor = getString(lsw.getStrokeColor(), gpStyle.strokecolor);
-                            } else if (geometrySymbolizersWrapper instanceof PolygonSymbolizerWrapper) {
-                                PolygonSymbolizerWrapper psw = (PolygonSymbolizerWrapper) geometrySymbolizersWrapper;
-
-                                gpStyle.width = getFloat(psw.getStrokeWidth(), gpStyle.width);
-                                gpStyle.strokealpha = getFloat(psw.getStrokeOpacity(), gpStyle.strokealpha);
-                                gpStyle.strokecolor = getString(psw.getStrokeColor(), gpStyle.strokecolor);
-                                gpStyle.fillalpha = getFloat(psw.getFillOpacity(), gpStyle.fillalpha);
-                                gpStyle.fillcolor = getString(psw.getFillColor(), gpStyle.fillcolor);
-                            }
+                            setStyleObject(gpStyle, geometrySymbolizersWrapper);
 
                             GeopaparazziDatabaseProperties.updateStyle(db, gpStyle);
+                        } else if (rulesWrapperList.size() > 1) {
+                            org.jgrasstools.gears.io.geopaparazzi.styles.Style gpStyle = createBaseStyle(db, uniqueName, null);
+                            gpStyle.themeMap = new HashMap<>();
+                            for( RuleWrapper ruleWrapper : rulesWrapperList ) {
+                                SymbolizerWrapper geometrySymbolizersWrapper = ruleWrapper.getGeometrySymbolizersWrapper();
+
+                                org.jgrasstools.gears.io.geopaparazzi.styles.Style themeStyle = new org.jgrasstools.gears.io.geopaparazzi.styles.Style();
+                                setStyleObject(themeStyle, geometrySymbolizersWrapper);
+
+                                Filter filter = ruleWrapper.getRule().getFilter();
+                                if (filter instanceof IsEqualsToImpl) {
+                                    IsEqualsToImpl equalsFilter = (IsEqualsToImpl) filter;
+                                    Expression expression1 = equalsFilter.getExpression1();
+                                    Expression expression2 = equalsFilter.getExpression2();
+
+                                    setFilter(gpStyle, themeStyle, expression1);
+                                    setFilter(gpStyle, themeStyle, expression2);
+                                }
+                            }
+                            
+                            GeopaparazziDatabaseProperties.updateStyle(db, gpStyle);
+
+                        } else {
+                            pm.errorMessage("Unable to export SLD for: " + shpFile);
+                            continue;
                         }
+
                     }
+
                 }
                 pm.worked(1);
             }
             pm.done();
 
-            QueryResult qres = db.getTableRecordsMapFromRawSql("select * from dataproperties", 10);
+            QueryResult qres = db.getTableRecordsMapFromRawSql("select * from dataproperties", 100);
             pm.message("Dataproperties inserted: ");
             for( Object[] objs : qres.data ) {
                 pm.message(Arrays.toString(objs));
@@ -244,6 +246,73 @@ public class GeopaparazziSpatialiteCreator extends JGTModel {
 
         }
 
+    }
+
+    private void setFilter( org.jgrasstools.gears.io.geopaparazzi.styles.Style mainStyle,
+            org.jgrasstools.gears.io.geopaparazzi.styles.Style themeStyle, Expression expression ) {
+        if (expression instanceof AttributeExpressionImpl) {
+            AttributeExpressionImpl attr = (AttributeExpressionImpl) expression;
+            mainStyle.themeField = attr.getPropertyName();
+        } else if (expression instanceof LiteralExpressionImpl) {
+            LiteralExpressionImpl attr = (LiteralExpressionImpl) expression;
+            mainStyle.themeMap.put(attr.getValue().toString(), themeStyle);
+        }
+    }
+
+    private void setStyleObject( org.jgrasstools.gears.io.geopaparazzi.styles.Style gpStyle,
+            SymbolizerWrapper geometrySymbolizersWrapper ) {
+        if (geometrySymbolizersWrapper instanceof PointSymbolizerWrapper) {
+            PointSymbolizerWrapper psw = (PointSymbolizerWrapper) geometrySymbolizersWrapper;
+
+            gpStyle.shape = psw.getMarkName();
+            gpStyle.size = getFloat(psw.getSize(), gpStyle.size);
+
+            gpStyle.width = getFloat(psw.getStrokeWidth(), gpStyle.width);
+            gpStyle.strokealpha = getFloat(psw.getStrokeOpacity(), gpStyle.strokealpha);
+            gpStyle.strokecolor = getString(psw.getStrokeColor(), gpStyle.strokecolor);
+
+            gpStyle.fillalpha = getFloat(psw.getFillOpacity(), gpStyle.fillalpha);
+            gpStyle.fillcolor = getString(psw.getFillColor(), gpStyle.fillcolor);
+        } else if (geometrySymbolizersWrapper instanceof PolygonSymbolizerWrapper) {
+            PolygonSymbolizerWrapper psw = (PolygonSymbolizerWrapper) geometrySymbolizersWrapper;
+
+            gpStyle.width = getFloat(psw.getStrokeWidth(), gpStyle.width);
+            gpStyle.strokealpha = getFloat(psw.getStrokeOpacity(), gpStyle.strokealpha);
+            gpStyle.strokecolor = getString(psw.getStrokeColor(), gpStyle.strokecolor);
+            gpStyle.fillalpha = getFloat(psw.getFillOpacity(), gpStyle.fillalpha);
+            gpStyle.fillcolor = getString(psw.getFillColor(), gpStyle.fillcolor);
+        } else if (geometrySymbolizersWrapper instanceof LineSymbolizerWrapper) {
+            LineSymbolizerWrapper lsw = (LineSymbolizerWrapper) geometrySymbolizersWrapper;
+
+            gpStyle.width = getFloat(lsw.getStrokeWidth(), gpStyle.width);
+            gpStyle.strokealpha = getFloat(lsw.getStrokeOpacity(), gpStyle.strokealpha);
+            gpStyle.strokecolor = getString(lsw.getStrokeColor(), gpStyle.strokecolor);
+        }
+    }
+
+    private org.jgrasstools.gears.io.geopaparazzi.styles.Style createBaseStyle( ASpatialDb db, String uniqueName,
+            RuleWrapper ruleWrapper ) throws Exception {
+        String fieldLabel = "";
+        TextSymbolizerWrapper textSymbolizersWrapper = null;
+        if (ruleWrapper != null) {
+            textSymbolizersWrapper = ruleWrapper.getTextSymbolizersWrapper();
+            if (textSymbolizersWrapper != null) {
+                fieldLabel = textSymbolizersWrapper.getLabelName();
+            }
+        }
+
+        org.jgrasstools.gears.io.geopaparazzi.styles.Style gpStyle = GeopaparazziDatabaseProperties
+                .createDefaultPropertiesForTable(db, uniqueName, fieldLabel);
+        if (fieldLabel != null && fieldLabel.trim().length() > 0 && textSymbolizersWrapper != null) {
+            String fontSize = textSymbolizersWrapper.getFontSize();
+            try {
+                double fontSizeDouble = Double.parseDouble(fontSize);
+                gpStyle.labelsize = (float) fontSizeDouble;
+            } catch (Exception e) {
+                // ignore size
+            }
+        }
+        return gpStyle;
     }
 
     private float getFloat( String value, float defaultValue ) {
@@ -264,9 +333,9 @@ public class GeopaparazziSpatialiteCreator extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
         GeopaparazziSpatialiteCreator c = new GeopaparazziSpatialiteCreator();
-        c.inGeopaparazzi = "/home/hydrologis/TMP/GEOPAP/bassa_tensione.sqlite";
-        c.pEncoding = "CP1250";
-        c.inShapefilesFolder = "/home/hydrologis/Dropbox/hydrologis/lavori/2015_12_rilievo_elettrico_castello/elaborazioni/shp_rilievo_all_ll/bassa_tensione/";
+        c.inGeopaparazzi = "/home/hydrologis/data/naturalearth_italy_thematic.sqlite";
+        c.pEncoding = null;
+        c.inShapefilesFolder = "/home/hydrologis/data/naturalearth_italy_thematic/";
         c.process();
     }
 }

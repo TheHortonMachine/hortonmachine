@@ -17,7 +17,30 @@
  */
 package org.jgrasstools.gears.io.geopaparazzi.styles;
 
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.DASH;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.DECIMATION;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.ENABLED;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.FILLALPHA;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.FILLCOLOR;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.ID;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.LABELFIELD;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.LABELSIZE;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.LABELVISIBLE;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.MAXZOOM;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.MINZOOM;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.NAME;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.ORDER;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.SHAPE;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.SIZE;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.STROKEALPHA;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.STROKECOLOR;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.WIDTH;
+
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
+import org.json.JSONObject;
 
 /**
  * Simple style for shapes.
@@ -65,7 +88,7 @@ public class Style {
     /**
      * The text size.
      */
-    public float labelsize = 5f;
+    public float labelsize = 15f;
 
     /**
      * Field to use for labeling.
@@ -112,6 +135,14 @@ public class Style {
      * Decimation factor for geometries.
      */
     public float decimationFactor = 0.0f;
+
+    /**
+     * If a unique style is defined, the hashmap contains in key the unique value
+     * and in value the style to apply. 
+     */
+    public HashMap<String, Style> themeMap;
+
+    public String themeField;
 
     /**
      * @return a string that can be used in a sql insert statement with
@@ -208,5 +239,47 @@ public class Style {
 
     public static float getDashShift( float[] shiftAndDash ) {
         return shiftAndDash[0];
+    }
+
+    public String getTheme() {
+        if (themeMap != null && themeMap.size() > 0 && themeField != null && themeField.trim().length() > 0) {
+            JSONObject root = new JSONObject();
+            JSONObject sub = new JSONObject();
+            root.put(themeField, sub);
+            for( Entry<String, Style> entry : themeMap.entrySet() ) {
+                String key = entry.getKey();
+                Style value = entry.getValue();
+
+                sub.put(key, value.toJsonObject());
+            }
+            return root.toString(2);
+        }
+        return "";
+    }
+
+    private JSONObject toJsonObject() {
+        JSONObject jobj = new JSONObject();
+        jobj.put(strokecolor, name);
+
+        jobj.put(ID, id);
+        jobj.put(NAME, name);
+        jobj.put(SIZE, size);
+        jobj.put(FILLCOLOR, fillcolor);
+        jobj.put(STROKECOLOR, strokecolor);
+        jobj.put(FILLALPHA, fillalpha);
+        jobj.put(STROKEALPHA, strokealpha);
+        jobj.put(SHAPE, shape);
+        jobj.put(WIDTH, width);
+        jobj.put(LABELSIZE, labelsize);
+        jobj.put(LABELFIELD, labelfield);
+        jobj.put(LABELVISIBLE, labelvisible);
+        jobj.put(ENABLED, enabled);
+        jobj.put(ORDER, order);
+        jobj.put(DASH, dashPattern);
+        jobj.put(MINZOOM, minZoom);
+        jobj.put(MAXZOOM, maxZoom);
+        jobj.put(DECIMATION, decimationFactor);
+
+        return jobj;
     }
 }

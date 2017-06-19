@@ -438,6 +438,34 @@ public abstract class ADb implements AutoCloseable {
         }
     }
 
+    public int executeInsertUpdateDeletePreparedSql( String sql, Object[] objects ) throws Exception {
+        try (IJGTPreparedStatement stmt = mConn.prepareStatement(sql)) {
+            for( int i = 0; i < objects.length; i++ ) {
+                if (objects[i] instanceof Boolean) {
+                    stmt.setBoolean(i + 1, (boolean) objects[i]);
+                } else if (objects[i] instanceof byte[]) {
+                    stmt.setBytes(i + 1, (byte[]) objects[i]);
+                } else if (objects[i] instanceof Double) {
+                    stmt.setDouble(i + 1, (double) objects[i]);
+                } else if (objects[i] instanceof Float) {
+                    stmt.setFloat(i + 1, (float) objects[i]);
+                } else if (objects[i] instanceof Integer) {
+                    stmt.setInt(i + 1, (int) objects[i]);
+                } else if (objects[i] instanceof Long) {
+                    stmt.setLong(i + 1, (long) objects[i]);
+                } else if (objects[i] instanceof Short) {
+                    stmt.setShort(i + 1, (short) objects[i]);
+                } else if (objects[i] instanceof String) {
+                    stmt.setString(i + 1, (String) objects[i]);
+                } else {
+                    stmt.setString(i + 1, objects[i].toString());
+                }
+            }
+            int executeUpdate = stmt.executeUpdate();
+            return executeUpdate;
+        }
+    }
+
     /**
      * @return the connection to the database.
      */
