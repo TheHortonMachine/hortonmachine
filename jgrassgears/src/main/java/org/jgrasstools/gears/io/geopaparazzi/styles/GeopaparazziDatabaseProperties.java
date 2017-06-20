@@ -99,7 +99,7 @@ public class GeopaparazziDatabaseProperties implements ISpatialiteTableAndFields
     /**
      * Create a default properties table for a spatial table.
      *
-     * @param database               the db to use.
+     * @param database the db to use. If <code>null</code>, the style is not inserted in the db.
      * @param spatialTableUniqueName the spatial table's unique name to create the property record for.
      * @return 
      * @return the created style object.
@@ -139,9 +139,10 @@ public class GeopaparazziDatabaseProperties implements ISpatialiteTableAndFields
         sbIn.append(style.insertValuesString());
         sbIn.append(" );");
 
-        String insertQuery = sbIn.toString();
-        database.executeInsertUpdateDeleteSql(insertQuery);
-
+        if (database != null) {
+            String insertQuery = sbIn.toString();
+            database.executeInsertUpdateDeleteSql(insertQuery);
+        }
         return style;
     }
 

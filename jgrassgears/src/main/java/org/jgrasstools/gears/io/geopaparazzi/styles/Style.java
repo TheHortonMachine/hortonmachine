@@ -259,13 +259,13 @@ public class Style {
 
     private JSONObject toJsonObject() {
         JSONObject jobj = new JSONObject();
-        jobj.put(strokecolor, name);
-
         jobj.put(ID, id);
         jobj.put(NAME, name);
         jobj.put(SIZE, size);
-        jobj.put(FILLCOLOR, fillcolor);
-        jobj.put(STROKECOLOR, strokecolor);
+        if (fillcolor != null)
+            jobj.put(FILLCOLOR, fillcolor);
+        if (strokecolor != null)
+            jobj.put(STROKECOLOR, strokecolor);
         jobj.put(FILLALPHA, fillalpha);
         jobj.put(STROKEALPHA, strokealpha);
         jobj.put(SHAPE, shape);
