@@ -475,6 +475,8 @@ public abstract class ADb implements AutoCloseable {
 
     public void close() throws Exception {
         if (mConn != null) {
+            mConn.setAutoCommit(false);
+            mConn.commit();
             mConn.close();
         }
     }
