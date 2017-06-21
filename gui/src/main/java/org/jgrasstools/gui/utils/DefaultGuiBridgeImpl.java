@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.prefs.Preferences;
 
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -32,6 +33,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import org.jgrasstools.gears.libs.logging.JGTLogger;
+import org.jgrasstools.gui.spatialtoolbox.SpatialtoolboxController;
 
 /**
  * JGT implementation of the {@link GuiBridgeHandler}.
@@ -283,6 +285,10 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
     @Override
     public JFrame showWindow( JComponent component, String windowTitle ) {
         JFrame frame = new JFrame(windowTitle);
+        Class<SpatialtoolboxController> class1 = SpatialtoolboxController.class;
+        ImageIcon icon = new ImageIcon(class1.getResource("/org/jgrasstools/images/hm150.png"));
+        frame.setIconImage(icon.getImage());
+        
         frame.getContentPane().add(component, BorderLayout.CENTER);
         frame.pack();
         frame.setVisible(true);

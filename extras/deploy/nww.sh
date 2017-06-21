@@ -18,4 +18,4 @@
 
 MEM="-Xmx2g"
 
-java $MEM -Djava.library.path=./natives/ -cp "./libs/*" org.jgrasstools.nww.SimpleNwwViewer ./libs
+java $MEM -Djava.library.path=./natives/ -cp "./libs/*" org.jgrasstools.nww.SimpleNwwViewer

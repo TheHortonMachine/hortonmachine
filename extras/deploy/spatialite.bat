@@ -18,6 +18,6 @@
 setlocal
 
 set MEM="-Xmx2g"
-java %MEM% -Djava.library.path=.\natives\ -cp ".\libs\*" org.jgrasstools.spatialite.SpatialiteViewer .\libs
+java %MEM% -Djava.library.path=.\natives\ -cp ".\libs\*" org.jgrasstools.spatialite.SpatialiteViewer %1
 
 endlocal
