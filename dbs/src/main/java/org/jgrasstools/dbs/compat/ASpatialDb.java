@@ -312,6 +312,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         SpatialiteGeometryColumns gCol = null;
         try {
             gCol = getGeometryColumnsForTable(tableName);
+            // TODO check if it is a virtual table
         } catch (Exception e) {
             // ignore
         }

@@ -160,22 +160,27 @@ public class SpatialiteDb extends ASpatialDb {
     @Override
     public Envelope getTableBounds( String tableName ) throws Exception {
         SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
-        String geomFieldName = gCol.f_geometry_column;
+        String geomFieldName;
+        if (gCol != null) {
+            geomFieldName = gCol.f_geometry_column;
+            String trySql = "SELECT extent_min_x, extent_min_y, extent_max_x, extent_max_y FROM vector_layers_statistics WHERE table_name='"
+                    + tableName + "' AND geometry_column='" + geomFieldName + "'";
+            try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(trySql)) {
+                if (rs.next()) {
+                    double minX = rs.getDouble(1);
+                    double minY = rs.getDouble(2);
+                    double maxX = rs.getDouble(3);
+                    double maxY = rs.getDouble(4);
 
-        String trySql = "SELECT extent_min_x, extent_min_y, extent_max_x, extent_max_y FROM vector_layers_statistics WHERE table_name='"
-                + tableName + "' AND geometry_column='" + geomFieldName + "'";
-        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(trySql)) {
-            if (rs.next()) {
-                double minX = rs.getDouble(1);
-                double minY = rs.getDouble(2);
-                double maxX = rs.getDouble(3);
-                double maxY = rs.getDouble(4);
-
-                Envelope env = new Envelope(minX, maxX, minY, maxY);
-                if (env.getWidth() != 0.0 && env.getHeight() != 0.0) {
-                    return env;
+                    Envelope env = new Envelope(minX, maxX, minY, maxY);
+                    if (env.getWidth() != 0.0 && env.getHeight() != 0.0) {
+                        return env;
+                    }
                 }
             }
+        }else{
+            // try geometry if virtual table
+            geomFieldName = "geometry";
         }
 
         // OR DO FULL GEOMETRIES SCAN
