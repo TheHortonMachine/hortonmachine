@@ -18,6 +18,7 @@
 package org.jgrasstools.spatialite;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -202,6 +203,10 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
         frame.setIconImage(icon.getImage());
 
         GuiUtilities.addClosingListener(frame, controller);
+
+        if (args.length > 0 && new File(args[0]).exists()) {
+            controller.openDatabase(new File(args[0]));
+        }
     }
 
 }

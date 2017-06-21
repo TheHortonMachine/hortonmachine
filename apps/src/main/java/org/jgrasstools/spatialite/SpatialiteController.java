@@ -181,7 +181,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         _connectDbButton.setPreferredSize(preferredToolbarButtonSize);
         _connectDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.CONNECT));
         _connectDbButton.addActionListener(e -> {
-            openDatabase();
+            openDatabase(null);
         });
 
         _disconnectDbButton.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -289,7 +289,8 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                         } else if (columnLevel.references != null) {
                             setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_INDEX));
                         } else if (columnLevel.geomColumn != null) {
-                            ESpatialiteGeometryType gType = ESpatialiteGeometryType.forValue(columnLevel.geomColumn.geometry_type);
+                            ESpatialiteGeometryType gType = ESpatialiteGeometryType
+                                    .forValue(columnLevel.geomColumn.geometry_type);
                             switch( gType ) {
                             case POINT_XY:
                             case POINT_XYM:
@@ -909,26 +910,32 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         }
     }
 
-    protected void openDatabase() {
+    protected void openDatabase( File file ) {
         try {
             closeCurrentDb();
         } catch (Exception e1) {
             logger.error("Error closing the database...", e1);
         }
 
-        File[] openFiles = guiBridge.showOpenFileDialog("Open database", GuiUtilities.getLastFile());
-        if (openFiles != null && openFiles.length > 0) {
-            try {
-                GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
-            } catch (Exception e1) {
-                logger.error("ERROR", e1);
-            }
-        } else {
-            return;
-        }
+        final File[] selectedFile = new File[1];
+        if (file == null) {
 
-        final File selectedFile = openFiles[0];
-        if (selectedFile != null) {
+            File[] openFiles = guiBridge.showOpenFileDialog("Open database", GuiUtilities.getLastFile());
+            if (openFiles != null && openFiles.length > 0) {
+                try {
+                    GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
+                } catch (Exception e1) {
+                    logger.error("ERROR", e1);
+                }
+            } else {
+                return;
+            }
+
+            selectedFile[0] = openFiles[0];
+        } else {
+            selectedFile[0] = file;
+        }
+        if (selectedFile[0] != null) {
             final LogConsoleController logConsole = new LogConsoleController(pm);
             JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
 
@@ -937,7 +944,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
                 try {
                     currentConnectedDatabase = new GTSpatialiteThreadsafeDb();
-                    currentConnectedDatabase.open(selectedFile.getAbsolutePath());
+                    currentConnectedDatabase.open(selectedFile[0].getAbsolutePath());
 
                     DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
 

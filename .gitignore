@@ -11,8 +11,9 @@ target
 .directory
 .idea
 *.iml
-*.dll
-*.so
 extras/export/libs
 dbs/copy_to_gp.sh
 install_into_stage.sh
+*.tar.gz
+apps/*.so
+gpserver/*.so
