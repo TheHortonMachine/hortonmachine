@@ -24,6 +24,8 @@ import java.util.List;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.spatialite.QueryResult;
+import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
+import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.style.SimpleStyle;
@@ -66,19 +68,24 @@ public class SpatialitePolygonLayer extends RenderableLayer implements NwwVector
 
     private int mElevationMode = WorldWind.CLAMP_TO_GROUND;
     private String tableName;
-    private GTSpatialiteThreadsafeDb db;
+    private SpatialiteDb db;
     private ReferencedEnvelope tableBounds;
     private int featureLimit;
 
     public SpatialitePolygonLayer( ASpatialDb db, String tableName, int featureLimit ) {
-        this.db = (GTSpatialiteThreadsafeDb) db;
+        this.db = (SpatialiteDb) db;
         this.tableName = tableName;
         this.featureLimit = featureLimit;
 
         try {
-            tableBounds = this.db.getTableBounds(tableName);
+            if (db instanceof GTSpatialiteThreadsafeDb) {
+                GTSpatialiteThreadsafeDb gtDb = (GTSpatialiteThreadsafeDb) db;
+                tableBounds = gtDb.getTableBounds(tableName);
+            } else {
+                tableBounds = CrsUtilities.WORLD;
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            JGTLogger.logError(this, e);
             tableBounds = CrsUtilities.WORLD;
         }
 

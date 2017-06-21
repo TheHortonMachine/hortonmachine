@@ -62,7 +62,12 @@ public class SpatialitePointsLayer extends MarkerLayer implements NwwVectorLayer
         this.tableName = tableName;
 
         try {
-            tableBounds = ((GTSpatialiteThreadsafeDb) db).getTableBounds(tableName);
+            if (db instanceof GTSpatialiteThreadsafeDb) {
+                GTSpatialiteThreadsafeDb gtDb = (GTSpatialiteThreadsafeDb) db;
+                tableBounds = gtDb.getTableBounds(tableName);
+            } else {
+                tableBounds = CrsUtilities.WORLD;
+            }
         } catch (Exception e) {
             e.printStackTrace();
             tableBounds = CrsUtilities.WORLD;

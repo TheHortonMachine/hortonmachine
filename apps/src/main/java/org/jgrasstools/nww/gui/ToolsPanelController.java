@@ -44,6 +44,7 @@ import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.RasterCoverage;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
+import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -486,7 +487,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
                 layerEventsListener.onLayerAdded(mbTileLayer);
             } else if (selectedFile.getName().endsWith(".rl2")) {
-                ASpatialDb db = new SpatialiteDb();
+                ASpatialDb db = new GTSpatialiteThreadsafeDb();
                 db.open(selectedFile.getAbsolutePath());
                 List<RasterCoverage> rasterCoverages = db.getRasterCoverages(false);
                 if (rasterCoverages.size() > 0) {
@@ -497,7 +498,7 @@ public class ToolsPanelController extends ToolsPanelView {
                     layerEventsListener.onLayerAdded(rl2Layer);
                 }
             } else if (selectedFile.getName().endsWith(".sqlite")) {
-                SpatialiteDb db = new SpatialiteDb();
+                ASpatialDb db = new GTSpatialiteThreadsafeDb();
                 db.open(selectedFile.getAbsolutePath());
 
                 if (RasterizedSpatialiteLasLayer.isLasDb(db)) {
