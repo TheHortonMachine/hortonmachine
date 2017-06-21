@@ -42,8 +42,8 @@ public class ImportExportUtils {
      * @param geometryType the geometry type of the file.
      * @throws Exception
      */
-    public static void executeQueries( final ASpatialDb db, String tableName, String shpPath, String encoding, int srid,
-            ESpatialiteGeometryType geometryType ) throws Exception {
+    public static void executeShapefileImportQueries( final ASpatialDb db, String tableName, String shpPath, String encoding,
+            int srid, ESpatialiteGeometryType geometryType ) throws Exception {
         SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMddHHmmss");
 
         if (encoding == null || encoding.trim().length() == 0) {
@@ -74,7 +74,8 @@ public class ImportExportUtils {
 
         int executeInsertUpdateDeleteSql = db.executeInsertUpdateDeleteSql(sql4);
         if (executeInsertUpdateDeleteSql == 0) {
-            // try also the multi toggle, since the virtualtable might have choosen a different one than geotools
+            // try also the multi toggle, since the virtualtable might have choosen a different one
+            // than geotools
             if (geomType.contains(MULTI)) {
                 geomType = geomType.replaceFirst(MULTI, "");
             } else {
@@ -86,6 +87,33 @@ public class ImportExportUtils {
         db.executeInsertUpdateDeleteSql(sql5);
         db.executeInsertUpdateDeleteSql(sql6);
         db.executeInsertUpdateDeleteSql(sql7);
+    }
+
+    /**
+     * Attach a shapefile into the database using a temporary virtual table.
+     * 
+     * @param db the database.
+     * @param tableName the name for the new table.
+     * @param shpPath the shp to import.
+     * @param encoding the encoding. If <code>null</code>, UTF-8 is used.
+     * @param srid the epsg code for the file.
+     * @throws Exception
+     */
+    public static void executeShapefileAttachQueries( final ASpatialDb db, String tableName, String shpPath, String encoding,
+            int srid ) throws Exception {
+        if (encoding == null || encoding.trim().length() == 0) {
+            encoding = "UTF-8";
+        }
+
+        if (shpPath.endsWith(".shp")) {
+            shpPath = shpPath.substring(0, shpPath.length() - 4);
+        }
+
+        final String sql1 = "CREATE VIRTUAL TABLE " + tableName + " using virtualshape('" + shpPath + "','" + encoding + "',"
+                + srid + ");";
+        final String sql2 = "select RegisterVirtualGeometry('" + tableName + "');";
+        db.executeInsertUpdateDeleteSql(sql1);
+        db.executeInsertUpdateDeleteSql(sql2);
     }
 
 }

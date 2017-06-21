@@ -45,7 +45,29 @@ public class GPImportExportUtils {
         GPTransactionExecuter transactionExecuter = new GPTransactionExecuter(db){
             @Override
             public void executeInTransaction() throws Exception {
-                ImportExportUtils.executeQueries(db, tableName, shpPath, encoding, srid, geometryType);
+                ImportExportUtils.executeShapefileImportQueries(db, tableName, shpPath, encoding, srid, geometryType);
+            }
+        };
+        transactionExecuter.execute();
+    }
+
+    /**
+     * Attach a shapefile into the database using a temporary virtual table.
+     * 
+     * @param db the database.
+     * @param tableName the name for the new table.
+     * @param shpPath the shp to import.
+     * @param encoding the encoding. If <code>null</code>, UTF-8 is used.
+     * @param srid the epsg code for the file.
+     * @throws Exception
+     */
+    public static void attachShapefileThroughVirtualTable( final ASpatialDb db, final String tableName, final String shpPath,
+            final String encoding, final int srid ) throws Exception {
+
+        GPTransactionExecuter transactionExecuter = new GPTransactionExecuter(db){
+            @Override
+            public void executeInTransaction() throws Exception {
+                ImportExportUtils.executeShapefileAttachQueries(db, tableName, shpPath, encoding, srid);
             }
         };
         transactionExecuter.execute();

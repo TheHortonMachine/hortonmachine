@@ -20,6 +20,7 @@ package org.jgrasstools.dbs.spatialite.jgt;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.ImportExportUtils;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
+import org.jgrasstools.dbs.spatialite.android.GPTransactionExecuter;
 
 /**
  * Import and export utilities for JGrasstools.
@@ -44,9 +45,9 @@ public class JGTImportExportUtils {
 
         JGTTransactionExecuter transactionExecuter = new JGTTransactionExecuter(db){
             @Override
-            public void executeInTransaction()  {
+            public void executeInTransaction() {
                 try {
-                    ImportExportUtils.executeQueries(db, tableName, shpPath, encoding, srid, geometryType);
+                    ImportExportUtils.executeShapefileImportQueries(db, tableName, shpPath, encoding, srid, geometryType);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -55,8 +56,30 @@ public class JGTImportExportUtils {
         transactionExecuter.execute();
     }
 
+    /**
+     * Attach a shapefile into the database using a temporary virtual table.
+     * 
+     * @param db the database.
+     * @param tableName the name for the new table.
+     * @param shpPath the shp to import.
+     * @param encoding the encoding. If <code>null</code>, UTF-8 is used.
+     * @param srid the epsg code for the file.
+     * @throws Exception
+     */
+    public static void attachShapefileThroughVirtualTable( final ASpatialDb db, final String tableName, final String shpPath,
+            final String encoding, final int srid ) throws Exception {
+
+        JGTTransactionExecuter transactionExecuter = new JGTTransactionExecuter(db){
+            @Override
+            public void executeInTransaction() throws Exception {
+                ImportExportUtils.executeShapefileAttachQueries(db, tableName, shpPath, encoding, srid);
+            }
+        };
+        transactionExecuter.execute();
+    }
+
     public static void main( String[] args ) throws Exception {
-        String dbPath = "/home/hydrologis/data/naturalearth/ne_10m_admin_1_states_provinces/test.sqlite";
+        String dbPath = "/home/hydrologis/data/test.sqlite";
         String path = "/home/hydrologis/data/naturalearth/ne_10m_admin_1_states_provinces/ne_10m_admin_1_states_provinces.shp";
 
         try (SpatialiteDb db = new SpatialiteDb()) {
@@ -64,7 +87,7 @@ public class JGTImportExportUtils {
                 db.initSpatialMetadata(null);
             }
 
-            importShapefileThroughVirtualTable(db, "admiin_states", path, "UTF-8", 4326, ESpatialiteGeometryType.MULTIPOLYGON_XY);
+            attachShapefileThroughVirtualTable(db, "admiin_states", path, "UTF-8", 4326);
         }
 
     }
