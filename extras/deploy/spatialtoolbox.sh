@@ -15,8 +15,7 @@
  # You should have received a copy of the GNU General Public License
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
-set -x
 
-MEM="-Xmx2g"
-java $MEM -Dsun.java2d.noddraw=true -cp "./libs/*" org.jgrasstools.nww.SimpleNwwViewer
+MEM="-Xmx1g"
 
+java $MEM -cp "./libs/*" org.jgrasstools.gui.spatialtoolbox.SpatialtoolboxController ./libs

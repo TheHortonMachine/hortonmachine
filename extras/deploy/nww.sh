@@ -17,5 +17,7 @@
  #
 
 MEM="-Xmx2g"
-CURRENT=`pwd`
-java $MEM -cp "./libs/*" org.jgrasstools.spatialite.SpatialiteController $CURRENT/libs
+
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./natives/
+export LD_LIBRARY_PATH
+java $MEM -cp "./libs/*" org.jgrasstools.nww.SimpleNwwViewer ./libs

@@ -17,21 +17,7 @@
  #
 
 MEM="-Xmx2g"
-CURRENT=`pwd`
-CMDARGS=$1 $2 $3 $4
-if [ $# -eq 1 ]
-then
-	CMDARGS="-r $1"
-fi
 
-MODULESJARS=""
-for i in `ls modules/jgt*.jar`
-do
-    MODULESJARS=$MODULESJARS:$CURRENT/$i
-done
-MODULESJARS=${MODULESJARS:1}
-
-java $MEM \
--Doms.sim.resources="$MODULESJARS" \
--cp "./modules/*:./libs/*" \
-org.jgrasstools.hortonmachine.utils.oms.CLI $CMDARGS
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./natives/
+export LD_LIBRARY_PATH
+java $MEM -cp "./libs/*" org.jgrasstools.spatialite.SpatialiteViewer ./libs

@@ -19,6 +19,7 @@ package org.jgrasstools.gui.console;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -28,11 +29,11 @@ import java.util.stream.Stream;
  */
 public class ConsoleMessageFilter {
 
-    private static Stream<String> containsStream;
-    private static Stream<String> endsStream;
+    private static List<String> containsStrings;
+    private static List<String> endStrings;
     static {
 
-        List<String> containsStrings = new ArrayList<String>();
+        containsStrings = new ArrayList<String>();
         containsStrings.add("Kakadu");
         containsStrings.add("Error while parsing JAI registry");
         containsStrings.add("A descriptor is already registered");
@@ -48,9 +49,8 @@ public class ConsoleMessageFilter {
         containsStrings.add("Caused by: java.lang.ClassNotFoundException: com.sun.medialib.mlib.Image");
         // "\tat ", //
         // "\t... ", //
-        containsStream = containsStrings.parallelStream();
 
-        List<String> endStrings = new ArrayList<String>();
+        endStrings = new ArrayList<String>();
         endStrings.add("factory.epsg.ThreadedEpsgFactory <init>");
         endStrings.add("to a 1800000ms timeout");
         endStrings.add("Native library load failed.");
@@ -58,22 +58,25 @@ public class ConsoleMessageFilter {
         endStrings.add("org.gdal.gdal.gdalJNI.HasThreadSupport()I");
         endStrings.add("org.gdal.gdal.gdalJNI.VersionInfo__SWIG_0(Ljava/lang/String;)Ljava/lang/String;");
 
-        endsStream = endStrings.parallelStream();
     }
 
     public static boolean doRemove( final String line ) {
         try {
+            Stream<String> endsStream = endStrings.parallelStream();
             boolean isPresent = endsStream.filter(string -> line.endsWith(string)).findFirst().isPresent();
             if (isPresent) {
                 return true;
             }
-            isPresent = containsStream.filter(string -> line.contains(string)).findFirst().isPresent();
+            Stream<String> containsStream = containsStrings.parallelStream();
+            Optional<String> findFirst = containsStream.filter(string -> line.contains(string)).findFirst();
+            isPresent = findFirst.isPresent();
             if (isPresent) {
                 return true;
             }
         } catch (Exception e) {
-            // ignore
+            e.printStackTrace();
         }
+        System.out.println(line);
         return false;
     }
 

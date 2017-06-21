@@ -18,9 +18,9 @@
  */
 
 // THIS FILE HAS TO BE RUN FROM THE PROJECT ROOT LIKE:
-// groovy extras/deploy/deploylibs.groovy 
+// groovy extras/deploy/release.groovy 
 
-def VERSION = "0.8.1-SNAPSHOT";
+def VERSION = "0.8.2-SNAPSHOT";
 
 def javaHome = System.getProperty("java.home");
 def javaHomeFile = new File(javaHome);
@@ -52,7 +52,7 @@ if(!copyPathFile.exists()){
 
 // copy jgrasstools modules
 JGTMODULESCOPY: {
-    def modulesFolder = "./extras/deploy/modules/"
+    def modulesFolder = "./extras/deploy/libs/"
     def modulesFolderFile = new File(modulesFolder);
     if(!modulesFolderFile.exists()){
         modulesFolderFile.mkdir();
@@ -133,6 +133,17 @@ JGTMODULESCOPY: {
     def nwwJar = jarFiles[0];
     def nwwCopyToFile = new File(modulesFolderFile.absolutePath, nwwJar.name).absolutePath;
     (new AntBuilder()).copy( file : nwwJar , tofile : nwwCopyToFile )
+
+    // take latest gpserver jar
+    jarFiles = new File("./gpserver/target").listFiles(new FilenameFilter() {  
+        public boolean accept(File f, String filename) {  
+            return filename.startsWith("jgt-gpserver-") && filename.endsWith(".jar")  
+        }  
+    });
+    Arrays.sort(jarFiles, Collections.reverseOrder());
+    def gpJar = jarFiles[0];
+    def gpCopyToFile = new File(modulesFolderFile.absolutePath, gpJar.name).absolutePath;
+    (new AntBuilder()).copy( file : gpJar , tofile : gpCopyToFile )
 
     // tools.jar
     def newToolsJar = new File(copyPathFile, "tools.jar");
@@ -289,5 +300,11 @@ if(copyPath){
     def date = new java.text.SimpleDateFormat("yyyyMMddHHmm").format(new Date());
     def versionStr = date;
     if(VERSION) versionStr = VERSION;
-    ant.zip(destfile: "./extras/deploy/jgrasstools-${versionStr}.zip",  basedir: "./extras/deploy/",  includes: "**",  excludes: "*deploylibs.groovy*,jgrasstools*.zip")  
+    // ant.zip(destfile: "./extras/deploy/jgrasstools-${versionStr}.zip",  basedir: "./extras/deploy/",  includes: "**",  excludes: "*release.groovy*,*deploylibs.groovy*,jgrasstools*.zip,modules")  
+
+    def tarPath = "./extras/deploy/jgrasstools-${versionStr}.tar";
+    ant.tar(destfile: tarPath,  basedir: "./extras/deploy/",  includes: "**",  excludes: "*release.groovy*,*deploylibs.groovy*,jgrasstools*.zip,modules")  
+    ant.gzip(destfile: tarPath + ".gz", src: tarPath)
+    
+    new File(tarPath).delete()
 }
