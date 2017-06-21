@@ -365,9 +365,9 @@ public class GeopaparazziSpatialiteCreator extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
         GeopaparazziSpatialiteCreator c = new GeopaparazziSpatialiteCreator();
-        c.inGeopaparazzi = "/home/hydrologis/data/naturalearth_italy.sqlite";
+        c.inGeopaparazzi = "/home/hydrologis/data/naturalearth_italy_thematic.sqlite";
         c.pEncoding = null;
-        c.inShapefilesFolder = "/home/hydrologis/data/naturalearth_italy";
+        c.inShapefilesFolder = "/home/hydrologis/data/naturalearth_italy_thematic";
         c.process();
     }
 }

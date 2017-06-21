@@ -17,7 +17,7 @@
  */
 package org.jgrasstools.gears.io.geopaparazzi.styles;
 
-import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.DASH;
+import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.*;
 import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.DECIMATION;
 import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.ENABLED;
 import static org.jgrasstools.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.FILLALPHA;
@@ -244,8 +244,10 @@ public class Style {
     public String getTheme() {
         if (themeMap != null && themeMap.size() > 0 && themeField != null && themeField.trim().length() > 0) {
             JSONObject root = new JSONObject();
+            JSONObject unique = new JSONObject();
+            root.put(UNIQUEVALUES, unique);
             JSONObject sub = new JSONObject();
-            root.put(themeField, sub);
+            unique.put(themeField, sub);
             for( Entry<String, Style> entry : themeMap.entrySet() ) {
                 String key = entry.getKey();
                 Style value = entry.getValue();
