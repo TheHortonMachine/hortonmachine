@@ -18,4 +18,5 @@
 
 MEM="-Xmx2g"
 
-java $MEM -Djava.library.path=./natives/ -cp "./libs/*" org.jgrasstools.nww.SimpleNwwViewer
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+java $MEM -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.jgrasstools.geopaparazzi.GeopaparazziViewer

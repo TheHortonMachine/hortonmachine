@@ -16,6 +16,7 @@
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
 
-MEM="-Xmx1g"
+MEM="-Xmx2g"
 
-java $MEM -cp "./libs/*" org.jgrasstools.gui.spatialtoolbox.SpatialtoolboxController ./libs
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+java $MEM -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.jgrasstools.spatialite.SpatialiteViewer $1

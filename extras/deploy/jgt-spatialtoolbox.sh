@@ -16,6 +16,7 @@
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
 
-MEM="-Xmx2g"
+MEM="-Xmx1g"
 
-java $MEM -Djava.library.path=./natives/ -cp "./libs/*" org.jgrasstools.geopaparazzi.GeopaparazziViewer
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+java $MEM -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.jgrasstools.gui.spatialtoolbox.SpatialtoolboxController ./libs
