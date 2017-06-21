@@ -212,22 +212,22 @@ public class OmsRiverSectionsExtractor extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
 
-        String base = "D:/lavori_tmp/unibz/2016_06_gsoc/data01/";
-        String baseRaster = "D:/lavori_tmp/unibz/2016_06_gsoc/raster/";
+        String base = "/home/hydrologis/lavori_tmp/2016_09_idro_calvello/shape/";
+        String baseRaster = "/home/hydrologis/lavori_tmp/2016_09_idro_calvello/test/";
 
 
         OmsRiverSectionsExtractor ex = new OmsRiverSectionsExtractor();
-        ex.inElev = OmsRasterReader.readRaster(baseRaster + "dtmfel.asc");
-        ex.inRiver = OmsVectorReader.readVector(base + "extracted_net.shp");
-        ex.inRiverPoints = OmsVectorReader.readVector(base + "net_point_slope.shp");
+        ex.inElev = OmsRasterReader.readRaster(baseRaster + "dtm_chiusura_orig.asc");
+        ex.inRiver = OmsVectorReader.readVector(base + "calvello_net_idro_outlet.shp");
+//        ex.inRiverPoints = OmsVectorReader.readVector(base + "net_point_slope.shp");
         ex.process();
         SimpleFeatureCollection outSections2 = ex.outSections;
         SimpleFeatureCollection outSectionsPoints2 = ex.outSectionPoints;
         SimpleFeatureCollection outRiverPoints2 = ex.outRiverPoints;
 
-        OmsVectorWriter.writeVector(base + "rs_sections.shp", outSections2);
-        OmsVectorWriter.writeVector(base + "rs_sectionpoints.shp", outSectionsPoints2);
-        OmsVectorWriter.writeVector(base + "rs_riverpoints.shp", outRiverPoints2);
+        OmsVectorWriter.writeVector(base + "calvello_orig_sections.shp", outSections2);
+        OmsVectorWriter.writeVector(base + "calvello_orig_sectionpoints.shp", outSectionsPoints2);
+        OmsVectorWriter.writeVector(base + "calvello_orig_riverpoints.shp", outRiverPoints2);
 
         // OmsRiverSectionsExtractor ex = new OmsRiverSectionsExtractor();
         // ex.inElev = OmsRasterReader.readRaster(base + "dtm_04.asc");

@@ -11,6 +11,7 @@ target
 .directory
 .idea
 *.iml
+extras/export
 extras/export/libs
 dbs/copy_to_gp.sh
 install_into_stage.sh

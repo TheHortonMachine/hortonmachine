@@ -120,6 +120,8 @@ public class RiverPoint implements Comparable<RiverPoint> {
 
             if (sectionGauklerStrickler != null) {
                 this.sectionGauklerStrickler = sectionGauklerStrickler;
+            } else {
+            	this.sectionGauklerStrickler = 30.0;
             }
 
             hasSection = true;
