@@ -50,6 +50,7 @@ public class GridNode extends Node {
     private double wsElev;
     private double sElev;
     private double seElev;
+    private double surroundingMin;
 
     /**
      * The constructor.
@@ -80,7 +81,7 @@ public class GridNode extends Node {
             isValid = false;
         }
 
-        double tmpMin = Double.POSITIVE_INFINITY;
+        surroundingMin = Double.POSITIVE_INFINITY;
         int index = -1;
         for( int c = -1; c <= 1; c++ ) {
             for( int r = -1; r <= 1; r++ ) {
@@ -134,16 +135,24 @@ public class GridNode extends Node {
                 }
 
                 if (JGTConstants.isNovalue(tmp)) {
-                    touchesBound = true;
+                    touchesNovalue = true;
                 } else {
-                    if (tmp < tmpMin) {
-                        tmpMin = tmp;
+                    if (tmp < surroundingMin) {
+                        surroundingMin = tmp;
                     }
                 }
             }
         }
-        if (elevation < tmpMin) {
-            isPit = true;
+
+        /*
+         * we have a pit if:
+         * - novalue that is not on border
+         * - min elevation of surrounding
+         */
+        if (!touchesBound) {
+            if (elevation <= surroundingMin || !isValid) {
+                isPit = true;
+            }
         }
     }
 
@@ -169,6 +178,29 @@ public class GridNode extends Node {
      */
     public boolean isPit() {
         return isPit;
+    }
+
+    public boolean isPitFor( List<GridNode> existingConnectedNodes ) {
+        boolean isPitFor = false;
+        double min = Double.POSITIVE_INFINITY;
+        for( GridNode checkNode : existingConnectedNodes ) {
+            if (checkNode!=null && checkNode.isValid) {
+                if (min > checkNode.elevation) {
+                    min = checkNode.elevation;
+                }
+            }
+        }
+        if (elevation <= min) {
+            isPitFor = true;
+        }
+        return isPitFor;
+    }
+
+    /**
+     * @return the min value of the surrounding nodes.
+     */
+    public double getSurroundingMin() {
+        return surroundingMin;
     }
 
     /**

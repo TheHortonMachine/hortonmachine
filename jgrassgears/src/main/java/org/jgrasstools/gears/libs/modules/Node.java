@@ -25,7 +25,7 @@ import javax.media.jai.iterator.WritableRandomIter;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class Node {
+public abstract class Node {
 
     public final int row;
     public final int col;
@@ -33,6 +33,7 @@ public class Node {
     public final int rows;
     protected boolean isValid;
     protected boolean touchesBound = false;
+    protected boolean touchesNovalue = false;
     protected final RandomIter gridIter;
 
     public Node( RandomIter gridIter, int cols, int rows, int col, int row ) {

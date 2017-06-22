@@ -89,25 +89,36 @@ public class OmsPitfiller extends JGTModel {
      * i1, i2, n1, n2, are the minimum and maximum index for the activeRegion
      * matrix (from 0 to nColumns or nRows).
      */
-    private int i1;
-    private int i2;
-    private int n1;
-    private int n2;
+    private int firstCol;
+    private int firstRow;
+    private int lastCol;
+    private int lastRow;
     /**
      * The number of unresolved pixel in dir matrix (which haven't a drainage direction).
      */
-    private int nis;
+    private int currentPitsCount;
+    /**
+     * Vector where the program memorizes the index of the elevation matrix whose point doesn't drain
+     * in any D8 cells.
+     */
+    private int[] currentPitRows;
+    /**
+     * Vector where the program memorizes the index of the elevation matrix whose point doesn't drain
+     * in any D8 cells.
+     */
+    private int[] currentPitCols;
+
     /**
      * Dimension of the temporary vectors which allow to resolve the undrainage pixel.
      */
-    private int istack;
+    private int pitsStackSize;
     /**
      * Dimension of the temporary vectors which allow to resolve the undrainage pixel.
      */
     private int pstack;
+
     private int nf;
     private int pooln;
-    private int npool;
     /**
      * Used to memorise the index of the "pixel pool".
      */
@@ -116,16 +127,7 @@ public class OmsPitfiller extends JGTModel {
      * Used to memorise the index of the "pixel pool".
      */
     private int[] jpool;
-    /**
-     * Vector where the program memorizes the index of the elevation matrix whose point doesn't drain
-     * in any D8 cells.
-     */
-    private int[] is;
-    /**
-     * Vector where the program memorizes the index of the elevation matrix whose point doesn't drain
-     * in any D8 cells.
-     */
-    private int[] js;
+
     private int[] dn;
 
     private int[][] dir, apool;
@@ -156,7 +158,7 @@ public class OmsPitfiller extends JGTModel {
         pitIter = CoverageUtilities.getWritableRandomIterator(pitRaster);
 
         for( int i = 0; i < nRows; i++ ) {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return;
             }
             for( int j = 0; j < nCols; j++ ) {
@@ -170,12 +172,12 @@ public class OmsPitfiller extends JGTModel {
         }
 
         flood();
-        if (isCanceled(pm)) {
+        if (pm.isCanceled()) {
             return;
         }
 
         for( int i = 0; i < nRows; i++ ) {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return;
             }
             for( int j = 0; j < nCols; j++ ) {
@@ -205,17 +207,17 @@ public class OmsPitfiller extends JGTModel {
         // Initialise the vector to a supposed dimension, if the number of
         // unresolved pixel overload the vector there are a method which resized
         // the vectors.
-        istack = (int) (nCols * nRows * 0.1);
-        pstack = istack;
-        dn = new int[istack];
-        is = new int[istack];
-        js = new int[istack];
+        pitsStackSize = (int) (nCols * nRows * 0.1);
+        pstack = pitsStackSize;
+        dn = new int[pitsStackSize];
+        currentPitRows = new int[pitsStackSize];
+        currentPitCols = new int[pitsStackSize];
         ipool = new int[pstack];
         jpool = new int[pstack];
-        i1 = 0;
-        i2 = 0;
-        n1 = nCols;
-        n2 = nRows;
+        firstCol = 0;
+        firstRow = 0;
+        lastCol = nCols;
+        lastRow = nRows;
 
         setdf();
 
@@ -253,54 +255,32 @@ public class OmsPitfiller extends JGTModel {
      * </ol>
      * </li> </ol>
      * 
-     * @param d1 the vector which contains all the possible first components drainage direction.
-     * @param d2 the vector which contains all the possible second components drainage direction.
      * @throws Exception
      */
     private void setdf() throws Exception {
 
-        int nflat;
-        int ni;
-        int n;
-        int ip;
-        int imin;
-        int jn;
-        int in;
-        int np1;
-        int nt;
         float per = 1;
         // direction factor, where the components are 1/length
-        double[] fact = calculateDirectionFactor(xRes, yRes);
+        double[] directionFactor = calculateDirectionFactor(xRes, yRes);
 
         dir = new int[nCols][nRows];
         apool = new int[nCols][nRows];
-
-        pm.message(msg.message("pitfiller.initbound"));
-
-        /* Initialize boundaries */
-        for( int i = i1; i < n1; i++ ) {
-            dir[i][i2] = -1;
-            dir[i][n2 - 1] = -1;
-        }
-        for( int i = i2; i < n2; i++ ) {
-            dir[i1][i] = -1;
-            dir[n1 - 1][i] = -1;
-        }
-        pm.message(msg.message("pitfiller.initpointers"));
 
         /*
          * Initialise internal pointers, if the point is an invalid value then set the dir value to
          * -1 else to 0
          */
-        for( int i = (i2 + 1); i < (n2 - 1); i++ ) {
-            if (isCanceled(pm)) {
+        pm.message(msg.message("pitfiller.initpointers"));
+        for( int r = firstRow; r < lastRow; r++ ) {
+            if (pm.isCanceled()) {
                 return;
             }
-            for( int j = (i1 + 1); j < (n1 - 1); j++ ) {
-                if (isNovalue(pitIter.getSampleDouble(j, i, 0))) {
-                    dir[j][i] = -1;
+            for( int c = firstCol; c < lastCol; c++ ) {
+                if (r == firstRow || r == lastRow - 1 || c == firstCol || c == lastCol - 1
+                        || isNovalue(pitIter.getSampleDouble(c, r, 0))) {
+                    dir[c][r] = -1;
                 } else {
-                    dir[j][i] = 0;
+                    dir[c][r] = 0;
                 }
             }
         }
@@ -308,82 +288,88 @@ public class OmsPitfiller extends JGTModel {
         pm.message(msg.message("pitfiller.setpos"));
 
         /* Set positive slope directions - store unresolved on stack */
-        nis = 0;
-        for( int i = (i2 + 1); i < (n2 - 1); i++ ) {
-            if (isCanceled(pm)) {
+        currentPitsCount = 0;
+        for( int r = (firstRow + 1); r < (lastRow - 1); r++ ) {
+            if (pm.isCanceled()) {
                 return;
             }
-            for( int j = (i1 + 1); j < (n1 - 1); j++ ) {
-                if (!isNovalue(pitIter.getSampleDouble(j, i, 0))) {
+            for( int c = (firstCol + 1); c < (lastCol - 1); c++ ) {
+                double pitValue = pitIter.getSampleDouble(c, r, 0);
+                if (!isNovalue(pitValue)) {
                     // set the value in the dir matrix (D8 matrix)
-                    set(i, j, dir, fact);
+                    setDirection(pitValue, r, c, dir, directionFactor);
                 }
                 /*
                  * Put unresolved pixels (which have, in the dir matrix, 0 as value) on stack
                  * addstack method increased nis by one unit
                  */
-                if (dir[j][i] == 0) {
-                    addstack(i, j);
+                if (dir[c][r] == 0) {
+                    addPitToStack(r, c);
                 }
             }
         }
 
-        nflat = nis;
         /* routine to drain flats to neighbors */
-        imin = vdn(nflat);
-        n = nis;
+        int stillPitsCount = resolveFlats(currentPitsCount);
+        if (stillPitsCount == -1) {
+            return;
+        }
+
+        for( int i = 0; i < currentPitRows.length; i++ ) {
+            int r = currentPitRows[i];
+            int c = currentPitCols[i];
+            System.out.println("row/cols = " + r + "/" + c);
+        }
+
+        int n = currentPitsCount;
         pm.message(msg.message("pitfiller.numpit") + n);
-        np1 = n;
-        nt = (int) (np1 * 1 - per / 100);
+        int np1 = n;
+        int nt = (int) (np1 * 1 - per / 100);
 
         /* initialize apool to zero */
-        for( int i = i2; i < n2; i++ ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            for( int j = i1; j < n1; j++ ) {
-                apool[j][i] = 0;
-            }
-        }
+        // for( int i = firstRow; i < lastRow; i++ ) {
+        // if (pm.isCanceled()) {
+        // return;
+        // }
+        // for( int j = firstCol; j < lastCol; j++ ) {
+        // apool[j][i] = 0;
+        // }
+        // }
 
         pm.message(msg.message("pitfiller.main"));
         pm.message(msg.message("pitfiller.perc"));
         pm.message("0%");
         /* store unresolved stack location in apool for easy deletion */
-        int i = 0, j = 0;
-        while( nis > 0 ) {
-            if (isCanceled(pm)) {
+        while( currentPitsCount > 0 ) {
+            if (pm.isCanceled()) {
                 return;
             }
             // set the index to the lowest point in the map, during the
             // iteration, which filled the elevation map, the lowest point will
             // changed
-            i = is[imin];
-            j = js[imin];
+            int r = currentPitRows[stillPitsCount];
+            int c = currentPitCols[stillPitsCount];
             pooln = 1;
-            npool = 0;
             nf = 0;/* reset flag to that new min elev is found */
             // calculate recursively the pool
-            pool(i, j); /*
-                         * Recursive call on unresolved point with lowest elevation
-                         */
+            int npool = pool(r, c, 0);
 
             /*
              * Find the pour point of the pool: the lowest point on the edge of the pool
              */
-            for( ip = 1; ip <= npool; ip++ ) {
-                if (isCanceled(pm)) {
+            for( int ip = 1; ip <= npool; ip++ ) {
+                if (pm.isCanceled()) {
                     return;
                 }
-                i = ipool[ip];
-                j = jpool[ip];
+                r = ipool[ip];
+                c = jpool[ip];
                 for( int k = 1; k <= 8; k++ ) {
-                    jn = j + DIR_WITHFLOW_EXITING_INVERTED[k][0];
-                    in = i + DIR_WITHFLOW_EXITING_INVERTED[k][1];
+                    int jn = c + DIR_WITHFLOW_EXITING_INVERTED[k][0];
+                    int in = r + DIR_WITHFLOW_EXITING_INVERTED[k][1];
                     // if the point isn't in this pool but on the edge then
                     // check the minimun elevation edge
                     if (apool[jn][in] != pooln) {
-                        et = max2(pitIter.getSampleDouble(j, i, 0), pitIter.getSampleDouble(jn, in, 0));
+                        et = max2(pitIter.getSampleDouble(c, r, 0), pitIter.getSampleDouble(jn, in, 0));
                         if (nf == 0) {
                             emin = et;
                             nf = 1;
@@ -398,54 +384,58 @@ public class OmsPitfiller extends JGTModel {
 
             /* Fill the pool */
             for( int k = 1; k <= npool; k++ ) {
-                if (isCanceled(pm)) {
+                if (pm.isCanceled()) {
                     return;
                 }
-                i = ipool[k];
-                j = jpool[k];
-                if (pitIter.getSampleDouble(j, i, 0) <= emin) {
-                    if (dir[j][i] > 0) { /* Can be in pool, but not flat */
-                        dir[j][i] = 0;
-                        addstack(i, j);
+                r = ipool[k];
+                c = jpool[k];
+                if (pitIter.getSampleDouble(c, r, 0) <= emin) {
+                    if (dir[c][r] > 0) { /* Can be in pool, but not flat */
+                        dir[c][r] = 0;
+                        addPitToStack(r, c);
                     }
 
-                    for( ip = 1; ip <= 8; ip++ ) {
-                        jn = j + DIR_WITHFLOW_EXITING_INVERTED[ip][0];
-                        in = i + DIR_WITHFLOW_EXITING_INVERTED[ip][1];
-                        if ((pitIter.getSampleDouble(jn, in, 0) > pitIter.getSampleDouble(j, i, 0)) && (dir[jn][in] > 0)) {
+                    for( int ip = 1; ip <= 8; ip++ ) {
+                        int jn = c + DIR_WITHFLOW_EXITING_INVERTED[ip][0];
+                        int in = r + DIR_WITHFLOW_EXITING_INVERTED[ip][1];
+                        if ((pitIter.getSampleDouble(jn, in, 0) > pitIter.getSampleDouble(c, r, 0)) && (dir[jn][in] > 0)) {
                             /*
                              * Only zero direction of neighbors that are higher - because lower or
                              * equal may be a pour point in a pit that must not be disrupted
                              */
                             dir[jn][in] = 0;
-                            addstack(in, jn);
+                            addPitToStack(in, jn);
                         }
                     }
-                    pitIter.setSample(j, i, 0, emin);
+                    pitIter.setSample(c, r, 0, emin);
                 }
-                apool[j][i] = 0;
+                apool[c][r] = 0;
             }
 
             /* reset unresolved stack */
-            ni = 0;
-            for( ip = 1; ip <= nis; ip++ ) {
-                if (isCanceled(pm)) {
+            int ni = 0;
+            for( int ip = 1; ip <= currentPitsCount; ip++ ) {
+                if (pm.isCanceled()) {
                     return;
                 }
-                set(is[ip], js[ip], dir, fact);
+                setDirection(pitIter.getSampleDouble(currentPitCols[ip], currentPitRows[ip], 0), currentPitRows[ip],
+                        currentPitCols[ip], dir, directionFactor);
 
-                if (dir[js[ip]][is[ip]] == 0) {
+                if (dir[currentPitCols[ip]][currentPitRows[ip]] == 0) {
                     ni++;
-                    is[ni] = is[ip];
-                    js[ni] = js[ip];
+                    currentPitRows[ni] = currentPitRows[ip];
+                    currentPitCols[ni] = currentPitCols[ip];
                 }
             }
 
-            n = nis;
+            n = currentPitsCount;
 
-            imin = vdn(ni);
+            stillPitsCount = resolveFlats(ni);
+            if (stillPitsCount == -1) {
+                return;
+            }
             // System.out.println(nis);
-            if (nis < nt) {
+            if (currentPitsCount < nt) {
                 if (per % 10 == 0)
                     pm.message((int) per + "%");
                 per = per + 1;
@@ -456,35 +446,27 @@ public class OmsPitfiller extends JGTModel {
     }
 
     /**
-     * Routine to add entry to is, js stack, enlarging if necessary
-     * @param i
-     * @param j
+     * Adds a pit position to the stack.
+     * 
+     * @param row the row of the pit.
+     * @param col the col of the pit.
      */
-    private void addstack( int i, int j ) {
-        /* Routine to add entry to is, js stack, enlarging if necessary */
-        nis = nis + 1;
-        if (nis >= istack) {
-            /* Try enlarging */
-            istack = (int) (istack + nCols * nRows * .1) + 2;
-
-            is = realloc(is, istack);
-            js = realloc(js, istack);
-            dn = realloc(dn, istack);
-
+    private void addPitToStack( int row, int col ) {
+        currentPitsCount = currentPitsCount + 1;
+        if (currentPitsCount >= pitsStackSize) {
+            pitsStackSize = (int) (pitsStackSize + nCols * nRows * .1) + 2;
+            currentPitRows = realloc(currentPitRows, pitsStackSize);
+            currentPitCols = realloc(currentPitCols, pitsStackSize);
+            dn = realloc(dn, pitsStackSize);
         }
 
-        is[nis] = i;
-        js[nis] = j;
-        // out.println(" i = " + i + "nis = " + nis);
+        currentPitRows[currentPitsCount] = row;
+        currentPitCols[currentPitsCount] = col;
     }
 
-    private int[] realloc( int[] is2, int istack2 ) {
-
-        int[] resized = new int[istack2];
-        for( int i = 0; i < is2.length; i++ ) {
-            resized[i] = is2[i];
-        }
-
+    private int[] realloc( int[] arrayToExpand, int newSize ) {
+        int[] resized = new int[newSize];
+        System.arraycopy(arrayToExpand, 0, resized, 0, arrayToExpand.length);
         return resized;
     }
 
@@ -492,69 +474,71 @@ public class OmsPitfiller extends JGTModel {
      * Try to find a drainage direction for undefinite cell.
      * 
      * <p> If the drainage direction is found
-     * then put it in dir else kept its index in is and js. N.B. in the set method the drainage
-     * directions is set only if the slope between two pixel is positive. At this step the dir
-     * value is set also the slope is equal to zero.</p>
+     * then puts it in the dir matrix else keeps its index in is and js. 
+     * </p>
+     * <p>N.B. in the {@link #setDirection(double, int, int, int[][], double[])} method the drainage
+     * directions is set only if the slope between two pixel is positive.<b>At this step the dir
+     * value is set also if the slope is equal to zero.</b></p>
      * 
-     * @param n the number of indefinite cell in the dir matrix
-     * @return imin or the number of unresolved pixel after have run the method
+     * @param pitsCount the number of indefinite cell in the dir matrix.
+     * @return the number of unresolved pixel (still pits) after running the method or -1 if the process has been cancelled.
      */
-    private int vdn( int n ) {
-        int imin;
-        double ed;
-        nis = n;
+    private int resolveFlats( int pitsCount ) {
+        int stillPitsCount;
+        currentPitsCount = pitsCount;
 
         do {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return -1;
             }
-            n = nis;
-            nis = 0;
-            for( int ip = 1; ip <= n; ip++ ) {
+            pitsCount = currentPitsCount;
+            currentPitsCount = 0;
+            for( int ip = 1; ip <= pitsCount; ip++ ) {
                 dn[ip] = 0;
             }
 
             for( int k = 1; k <= 8; k++ ) {
-                for( int ip = 1; ip <= n; ip++ ) {
-
-                    ed = pitIter.getSampleDouble(js[ip], is[ip], 0)
-                            - pitIter.getSampleDouble(js[ip] + DIR_WITHFLOW_EXITING_INVERTED[k][0], is[ip]
-                                    + DIR_WITHFLOW_EXITING_INVERTED[k][1], 0);
-                    if ((ed >= 0.)
-                            && ((dir[js[ip] + DIR_WITHFLOW_EXITING_INVERTED[k][0]][is[ip] + DIR_WITHFLOW_EXITING_INVERTED[k][1]] != 0) && (dn[ip] == 0)))
-                        dn[ip] = k;
-
+                for( int pitIndex = 1; pitIndex <= pitsCount; pitIndex++ ) {
+                    double elevDelta = pitIter.getSampleDouble(currentPitCols[pitIndex], currentPitRows[pitIndex], 0)
+                            - pitIter.getSampleDouble(currentPitCols[pitIndex] + DIR_WITHFLOW_EXITING_INVERTED[k][0],
+                                    currentPitRows[pitIndex] + DIR_WITHFLOW_EXITING_INVERTED[k][1], 0);
+                    if ((elevDelta >= 0.)
+                            && ((dir[currentPitCols[pitIndex] + DIR_WITHFLOW_EXITING_INVERTED[k][0]][currentPitRows[pitIndex]
+                                    + DIR_WITHFLOW_EXITING_INVERTED[k][1]] != 0) && (dn[pitIndex] == 0)))
+                        dn[pitIndex] = k;
                 }
             }
-            imin = 1; /* location of point on stack with lowest elevation */
-            for( int ip = 1; ip <= n; ip++ ) {
-                if (dn[ip] > 0) {
-                    dir[js[ip]][is[ip]] = dn[ip];
+            stillPitsCount = 1; /* location of point on stack with lowest elevation */
+            for( int pitIndex = 1; pitIndex <= pitsCount; pitIndex++ ) {
+                if (dn[pitIndex] > 0) {
+                    dir[currentPitCols[pitIndex]][currentPitRows[pitIndex]] = dn[pitIndex];
                 } else {
-                    nis++;
-                    is[nis] = is[ip];
-                    js[nis] = js[ip];
-                    if (pitIter.getSampleDouble(js[nis], is[nis], 0) < pitIter.getSampleDouble(js[imin], is[imin], 0))
-                        imin = nis;
+                    currentPitsCount++;
+                    currentPitRows[currentPitsCount] = currentPitRows[pitIndex];
+                    currentPitCols[currentPitsCount] = currentPitCols[pitIndex];
+                    if (pitIter.getSampleDouble(currentPitCols[currentPitsCount], currentPitRows[currentPitsCount], 0) < pitIter
+                            .getSampleDouble(currentPitCols[stillPitsCount], currentPitRows[stillPitsCount], 0))
+                        stillPitsCount = currentPitsCount;
                 }
             }
             // out.println("vdn n = " + n + "nis = " + nis);
-        } while( nis < n );
+        } while( currentPitsCount < pitsCount );
 
-        return imin;
+        return stillPitsCount;
     }
 
     /**
      * function to compute pool recursively and at the same time determine the minimum elevation of
      * the edge.
      */
-    private void pool( int i, int j ) {
+    private int pool( int row, int col, int prevNPool ) {
         int in;
         int jn;
-        if (apool[j][i] <= 0) { /* not already part of a pool */
-            if (dir[j][i] != -1) {/* check only dir since dir was initialized */
+        int npool = prevNPool;
+        if (apool[col][row] <= 0) { /* not already part of a pool */
+            if (dir[col][row] != -1) {/* check only dir since dir was initialized */
                 /* not on boundary */
-                apool[j][i] = pooln;/* apool assigned pool number */
+                apool[col][row] = pooln;/* apool assigned pool number */
                 npool = npool + 1;// the number of pixel in the pool
                 if (npool >= pstack) {
                     if (pstack < nCols * nRows) {
@@ -569,23 +553,23 @@ public class OmsPitfiller extends JGTModel {
 
                 }
 
-                ipool[npool] = i;
-                jpool[npool] = j;
+                ipool[npool] = row;
+                jpool[npool] = col;
 
                 for( int k = 1; k <= 8; k++ ) {
-                    in = i + DIR_WITHFLOW_EXITING_INVERTED[k][1];
-                    jn = j + DIR_WITHFLOW_EXITING_INVERTED[k][0];
+                    in = row + DIR_WITHFLOW_EXITING_INVERTED[k][1];
+                    jn = col + DIR_WITHFLOW_EXITING_INVERTED[k][0];
                     /* test if neighbor drains towards cell excluding boundaries */
-                    if (((dir[jn][in] > 0) && ((dir[jn][in] - k == 4) || (dir[jn][in] - k == -4)))
-                            || ((dir[jn][in] == 0) && (pitIter.getSampleDouble(jn, in, 0) >= pitIter.getSampleDouble(j, i, 0)))) {
+                    if (((dir[jn][in] > 0) && ((dir[jn][in] - k == 4) || (dir[jn][in] - k == -4))) || ((dir[jn][in] == 0)
+                            && (pitIter.getSampleDouble(jn, in, 0) >= pitIter.getSampleDouble(col, row, 0)))) {
                         /* so that adjacent flats get included */
-                        pool(in, jn);
+                        npool = pool(in, jn, npool);
                     }
                 }
 
             }
         }
-
+        return npool;
     }
 
     private double max2( double e1, double e2 ) {
@@ -597,39 +581,38 @@ public class OmsPitfiller extends JGTModel {
     }
 
     /**
-     * Calculate the drainage direction with D8 method. Find the direction which have the maximum
-     * slope and set it as the drainage directionthe in the cell (i,j) in dir matrix. Is used in
-     * some horton like pitfiller, floe,...
+     * Calculate the drainage direction with the D8 method. 
      * 
-     * @param i <b>j</b> are the position index of the cell in the matrix.
-     * @param dir is the drainage direction matrix, a cell contains an int value in the range 0 to 8
+     * <p>Find the direction that has the maximum
+     * slope and set it as the drainage direction the in the cell (r,c) 
+     * in the dir matrix. 
+     * 
+     * @param pitValue the value of pit in row/col. 
+     * @param row row of the cell in the matrix.
+     * @param col col of the cell in the matrix.
+     * @param dir the drainage direction matrix to set the dircetion in. The cell contains an int value in the range 0 to 8
      *        (or 10 if it is an outlet point).
-     *@param elevation is the DEM.
-     *@param fact is the direction factor (1/lenght).
+     * @param fact is the direction factor (1/lenght).
      */
-    private void set( int i, int j, int[][] dir, double[] fact ) {
-        double slope = 0;
-        double smax;
-        int in;
-        int jn;
-        dir[j][i] = 0; /* This necessary for repeat passes after level raised */
-        smax = 0.0;
+    private void setDirection( double pitValue, int row, int col, int[][] dir, double[] fact ) {
+        dir[col][row] = 0; /* This necessary to repeat passes after level raised */
+        double smax = 0.0;
 
-        for( int k = 1; k <= 8; k++ ) // examine adjacent cells first
-        {
-            jn = j + DIR_WITHFLOW_EXITING_INVERTED[k][0];
-            in = i + DIR_WITHFLOW_EXITING_INVERTED[k][1];
-            if (isNovalue(pitIter.getSampleDouble(jn, in, 0))) {
-                dir[j][i] = -1;
+        // examine adjacent cells first
+        for( int k = 1; k <= 8; k++ ) {
+            int cn = col + DIR_WITHFLOW_EXITING_INVERTED[k][0];
+            int rn = row + DIR_WITHFLOW_EXITING_INVERTED[k][1];
+            double pitN = pitIter.getSampleDouble(cn, rn, 0);
+            if (isNovalue(pitN)) {
+                dir[col][row] = -1;
                 break;
             }
-
-            if (dir[j][i] != -1) {
-                slope = fact[k] * (pitIter.getSampleDouble(j, i, 0) - pitIter.getSampleDouble(jn, in, 0));
-
+            if (dir[col][row] != -1) {
+                double slope = fact[k] * (pitValue - pitN);
                 if (slope > smax) {
                     smax = slope;
-                    dir[j][i] = k;
+                    // maximum slope gives the drainage direction
+                    dir[col][row] = k;
                 }
             }
         }
@@ -637,13 +620,12 @@ public class OmsPitfiller extends JGTModel {
     }
 
     /**
-     * Calculate the drainage direction factor (is used in some horton machine like pitfiller,
-     * flow,...)
+     * Calculate the drainage direction factor.
      * 
-     * @param dx is the resolution of a raster map in the x direction.
+     * @param dx is the resolution of the raster map in the x direction.
      * @param dy is the resolution of the raster map in the y direction.
-     * @return <b>fact</b> the direction factor or 1/lenght where lenght is the distance of the
-     *         pixel from the central poxel.
+     * @return <b>fact</b> the direction factor (or 1/length) where length is the distance of the
+     *         pixel from the central pixel.
      */
     private double[] calculateDirectionFactor( double dx, double dy ) {
         // direction factor, where the components are 1/length
