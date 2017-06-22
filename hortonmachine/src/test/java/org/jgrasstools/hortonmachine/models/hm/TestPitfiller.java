@@ -27,6 +27,8 @@ import javax.media.jai.iterator.RectIterFactory;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
+import org.jgrasstools.gears.modules.r.rasterdiff.OmsRasterDiff;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller2;
@@ -40,11 +42,26 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestPitfiller extends HMTestCase {
-    public void testPitfiller() throws Exception {
-        double[][] elevationData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
-        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
-        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
+    // public void testPitfiller() throws Exception {
+    // double[][] elevationData = HMTestMaps.mapData;
+    // HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+    // CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+    // GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation",
+    // elevationData, envelopeParams, crs, true);
+    //
+    // OmsPitfiller2 pitfiller = new OmsPitfiller2();
+    // pitfiller.inElev = elevationCoverage;
+    // pitfiller.pm = pm;
+    // pitfiller.process();
+    //
+    // GridCoverage2D pitfillerCoverage = pitfiller.outPit;
+    // printImage(pitfillerCoverage.getRenderedImage());
+    // checkMatrixEqual(pitfillerCoverage.getRenderedImage(), HMTestMaps.outPitDataNaN, 0);
+    // }
+
+    public void testPitfillerReal() throws Exception {
+
+        GridCoverage2D elevationCoverage = OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec.asc");
 
         OmsPitfiller2 pitfiller = new OmsPitfiller2();
         pitfiller.inElev = elevationCoverage;
@@ -57,24 +74,18 @@ public class TestPitfiller extends HMTestCase {
         // pitfiller1.process();
 
         GridCoverage2D pitfillerCoverage = pitfiller.outPit;
-        printImage(pitfillerCoverage.getRenderedImage());
-        checkMatrixEqual(pitfillerCoverage.getRenderedImage(), HMTestMaps.outPitData, 0);
-    }
+        OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec_pitted.asc", pitfillerCoverage);
 
-    // public void testPitfillerReal() throws Exception {
-    //
-    // GridCoverage2D elevationCoverage =
-    // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec.asc");
-    //
-    // OmsPitfiller pitfiller = new OmsPitfiller();
-    // pitfiller.inElev = elevationCoverage;
-    // pitfiller.pm = pm;
-    // pitfiller.process();
-    //
-    // GridCoverage2D pitfillerCoverage = pitfiller.outPit;
-    //
-    // checkMatrixEqualLimit(pitfillerCoverage.getRenderedImage(), testMatrix, 0);
-    // }
+        OmsRasterDiff diff = new OmsRasterDiff();
+        diff.inRaster1 = OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/pit.asc");
+        diff.inRaster2 = pitfillerCoverage;
+        diff.pThreshold = 0.1;
+        diff.process();
+
+        OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec_pit_diffs.asc", diff.outRaster);
+
+        checkMatrixEqualLimit(pitfillerCoverage.getRenderedImage(), testMatrix, 0);
+    }
 
     protected void checkMatrixEqualLimit( RenderedImage image, double[][] matrix, double delta ) {
         RectIter rectIter = RectIterFactory.create(image, null);

@@ -107,8 +107,12 @@ public class OmsPitfiller2 extends JGTModel {
             for( int col = 0; col < nCols; col++ ) {
                 GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, col, row);
                 if (node.isPit()) {
+                    double surroundingMin = node.getSurroundingMin();
+                    if (Double.isInfinite(surroundingMin)) {
+                        continue;
+                    }
                     pitsList.add(node);
-                    System.out.println(row + "/" + col + " ->  " + node.elevation + "/" + node.getSurroundingMin());
+                    System.out.println(row + "/" + col + " ->  " + node.elevation + "/" + surroundingMin);
                 }
             }
         }
@@ -130,7 +134,7 @@ public class OmsPitfiller2 extends JGTModel {
             while( workingIndex < nodesInPit.size() ) {
                 List<GridNode> surroundingNodes = nodesInPit.get(workingIndex).getSurroundingNodes();
                 for( GridNode tmpNode : surroundingNodes ) {
-                    if (tmpNode.touchesBound() || nodesInPit.contains(tmpNode)) {
+                    if (tmpNode == null || tmpNode.touchesBound() || nodesInPit.contains(tmpNode)) {
                         continue;
                     }
                     List<GridNode> subSurroundingNodes = tmpNode.getSurroundingNodes();
@@ -141,7 +145,7 @@ public class OmsPitfiller2 extends JGTModel {
 
                         double surroundingMin = Double.POSITIVE_INFINITY;
                         for( GridNode gridNode : subSurroundingNodes ) {
-                            if (gridNode.isValid()) {
+                            if (gridNode != null && gridNode.isValid()) {
                                 if (surroundingMin > gridNode.elevation) {
                                     surroundingMin = gridNode.elevation;
                                 }

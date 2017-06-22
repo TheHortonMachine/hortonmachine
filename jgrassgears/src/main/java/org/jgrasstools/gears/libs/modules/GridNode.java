@@ -144,13 +144,8 @@ public class GridNode extends Node {
             }
         }
 
-        /*
-         * we have a pit if:
-         * - novalue that is not on border
-         * - min elevation of surrounding
-         */
-        if (!touchesBound) {
-            if (elevation <= surroundingMin || !isValid) {
+        if (!touchesBound && !touchesNovalue) {
+            if (elevation <= surroundingMin) {
                 isPit = true;
             }
         }
@@ -184,7 +179,7 @@ public class GridNode extends Node {
         boolean isPitFor = false;
         double min = Double.POSITIVE_INFINITY;
         for( GridNode checkNode : existingConnectedNodes ) {
-            if (checkNode!=null && checkNode.isValid) {
+            if (checkNode != null && checkNode.isValid) {
                 if (min > checkNode.elevation) {
                     min = checkNode.elevation;
                 }
