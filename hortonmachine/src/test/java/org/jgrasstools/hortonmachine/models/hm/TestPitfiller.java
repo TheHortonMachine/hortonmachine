@@ -20,14 +20,18 @@ package org.jgrasstools.hortonmachine.models.hm;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
+import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.modules.r.rasterdiff.OmsRasterDiff;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
@@ -62,6 +66,12 @@ public class TestPitfiller extends HMTestCase {
     public void testPitfillerReal() throws Exception {
 
         GridCoverage2D elevationCoverage = OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec.asc");
+        // GridCoverage2D elevationCoverage =
+        // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec_pitted.asc");
+        // GridCoverage2D elevationCoverage =
+        // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/DTM_calvello/pit_all.asc");
+        // GridCoverage2D elevationCoverage =
+        // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/DTM_calvello/dtm_all.asc");
 
         OmsPitfiller2 pitfiller = new OmsPitfiller2();
         pitfiller.inElev = elevationCoverage;
@@ -74,15 +84,19 @@ public class TestPitfiller extends HMTestCase {
         // pitfiller1.process();
 
         GridCoverage2D pitfillerCoverage = pitfiller.outPit;
+
         OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec_pitted.asc", pitfillerCoverage);
+        // OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/DTM_calvello/pit2_all.asc",
+        // pitfillerCoverage);
 
-        OmsRasterDiff diff = new OmsRasterDiff();
-        diff.inRaster1 = OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/pit.asc");
-        diff.inRaster2 = pitfillerCoverage;
-        diff.pThreshold = 0.1;
-        diff.process();
-
-        OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec_pit_diffs.asc", diff.outRaster);
+        // OmsRasterDiff diff = new OmsRasterDiff();
+        // diff.inRaster1 = OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/pit.asc");
+        // diff.inRaster2 = pitfillerCoverage;
+        // diff.pThreshold = 0.1;
+        // diff.process();
+        //
+        // OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec_pit_diffs.asc",
+        // diff.outRaster);
 
         checkMatrixEqualLimit(pitfillerCoverage.getRenderedImage(), testMatrix, 0);
     }

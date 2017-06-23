@@ -55,6 +55,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -74,106 +75,133 @@ public class OmsPitfiller2 extends JGTModel {
     @Out
     public GridCoverage2D outPit = null;
 
-    private WritableRandomIter pitIter;
-    private RandomIter elevationIter = null;
-
-    private int nCols;
-    private int nRows;
-    private double xRes;
-    private double yRes;
-
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute
     public void process() throws Exception {
         checkNull(inElev);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
-        nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        xRes = regionMap.get(CoverageUtilities.XRES);
-        yRes = regionMap.get(CoverageUtilities.YRES);
-
-        elevationIter = CoverageUtilities.getRandomIterator(inElev);
+        int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
+        int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
+        double xRes = regionMap.get(CoverageUtilities.XRES);
+        double yRes = regionMap.get(CoverageUtilities.YRES);
 
         // output raster
         WritableRaster pitRaster = CoverageUtilities.renderedImage2WritableRaster(inElev.getRenderedImage(), false);
-        pitIter = CoverageUtilities.getWritableRandomIterator(pitRaster);
+        WritableRandomIter pitIter = CoverageUtilities.getWritableRandomIterator(pitRaster);
+        try {
 
-        List<GridNode> pitsList = new ArrayList<>();
-        for( int row = 0; row < nRows; row++ ) {
-            if (pm.isCanceled()) {
-                return;
+            List<GridNode> pitsList = getPitsList(nCols, nRows, xRes, yRes, pitIter);
+            int iteration = 1;
+            while( pitsList.size() > 0 ) {
+                pm.message("Iteration number: " + iteration++);
+
+                pm.message(msg.message("pitfiller.numpit") + pitsList.size());
+
+                List<GridNode> allNodesInPit = new ArrayList<>();
+                List<PitInfo> pitInfoList = new ArrayList<>();
+                pm.beginTask("Processing pits...", pitsList.size());
+                int count = 0;
+                for( GridNode pitNode : pitsList ) {
+                    if (allNodesInPit.contains(pitNode)) {
+                        pm.worked(1);
+                        continue;
+                    }
+                    count++;
+
+                    List<GridNode> nodesInPit = new ArrayList<>();
+                    nodesInPit.add(pitNode);
+
+                    double maxValue = Double.NEGATIVE_INFINITY;
+                    int workingIndex = 0;
+                    while( workingIndex < nodesInPit.size() ) {
+                        List<GridNode> surroundingNodes = nodesInPit.get(workingIndex).getSurroundingNodes();
+                        for( GridNode tmpNode : surroundingNodes ) {
+                            if (tmpNode == null || tmpNode.touchesBound() || nodesInPit.contains(tmpNode)) {
+                                continue;
+                            }
+                            List<GridNode> subSurroundingNodes = tmpNode.getSurroundingNodes();
+                            subSurroundingNodes.removeAll(nodesInPit);
+
+                            if (tmpNode.isPitFor(subSurroundingNodes)) {
+                                nodesInPit.add(tmpNode);
+
+                                double surroundingMin = Double.POSITIVE_INFINITY;
+                                boolean touched = false;
+                                for( GridNode gridNode : subSurroundingNodes ) {
+                                    if (gridNode != null && gridNode.isValid()) {
+                                        if (surroundingMin > gridNode.elevation) {
+                                            surroundingMin = gridNode.elevation;
+                                            touched = true;
+                                        }
+                                    }
+                                }
+                                if (touched && surroundingMin > maxValue) {
+                                    maxValue = surroundingMin;
+                                }
+                            }
+                        }
+                        workingIndex++;
+                    }
+
+                    if (nodesInPit.size() == 1) {
+                        maxValue = nodesInPit.get(0).getSurroundingMin();
+                    }
+
+                    if (Double.isInfinite(maxValue) || Double.isNaN(maxValue)) {
+                        throw new RuntimeException("Found invalid value at: " + count);
+                    }
+
+                    PitInfo info = new PitInfo();
+                    info.pitFillValue = maxValue;
+                    info.nodes = nodesInPit;
+                    pitInfoList.add(info);
+                    allNodesInPit.addAll(nodesInPit);
+
+                    pm.worked(1);
+                }
+                pm.done();
+
+                for( PitInfo pitInfo : pitInfoList ) {
+                    double value = pitInfo.pitFillValue;
+                    List<GridNode> values = pitInfo.nodes;
+                    pm.message("Flooding with value: " + value + " cells num: " + values.size());
+                    for( GridNode gridNode : values ) {
+                        gridNode.setValueInMap(pitIter, value);
+                    }
+                }
+
+                pm.message("Calculating left pits...");
+                pitsList = getPitsList(nCols, nRows, xRes, yRes, pitIter);
             }
+            outPit = CoverageUtilities.buildCoverage("pitfiller", pitRaster, regionMap, inElev.getCoordinateReferenceSystem());
+        } finally {
+            pitIter.done();
+        }
+    }
+
+    private List<GridNode> getPitsList( int nCols, int nRows, double xRes, double yRes, WritableRandomIter pitIter ) {
+        List<GridNode> pitsList = new ArrayList<>();
+        pm.beginTask("Extract pits from DTM...", IJGTProgressMonitor.UNKNOWN);;
+        for( int row = 0; row < nRows; row++ ) {
             for( int col = 0; col < nCols; col++ ) {
-                GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, col, row);
+                GridNode node = new GridNode(pitIter, nCols, nRows, xRes, yRes, col, row);
                 if (node.isPit()) {
                     double surroundingMin = node.getSurroundingMin();
                     if (Double.isInfinite(surroundingMin)) {
                         continue;
                     }
                     pitsList.add(node);
-                    System.out.println(row + "/" + col + " ->  " + node.elevation + "/" + surroundingMin);
                 }
             }
         }
+        pm.done();
+        return pitsList;
+    }
 
-        pm.message(msg.message("pitfiller.numpit") + pitsList.size());
+    private static class PitInfo {
+        private double pitFillValue = doubleNovalue;
 
-        List<GridNode> allNodesInPit = new ArrayList<>();
-        HashMap<Double, List<GridNode>> pitValue2Nodes = new HashMap<>();
-        for( GridNode pitNode : pitsList ) {
-            if (allNodesInPit.contains(pitNode)) {
-                continue;
-            }
-
-            List<GridNode> nodesInPit = new ArrayList<>();
-            nodesInPit.add(pitNode);
-
-            double maxValue = Double.NEGATIVE_INFINITY;
-            int workingIndex = 0;
-            while( workingIndex < nodesInPit.size() ) {
-                List<GridNode> surroundingNodes = nodesInPit.get(workingIndex).getSurroundingNodes();
-                for( GridNode tmpNode : surroundingNodes ) {
-                    if (tmpNode == null || tmpNode.touchesBound() || nodesInPit.contains(tmpNode)) {
-                        continue;
-                    }
-                    List<GridNode> subSurroundingNodes = tmpNode.getSurroundingNodes();
-                    subSurroundingNodes.removeAll(nodesInPit);
-
-                    if (tmpNode.isPitFor(subSurroundingNodes)) {
-                        nodesInPit.add(tmpNode);
-
-                        double surroundingMin = Double.POSITIVE_INFINITY;
-                        for( GridNode gridNode : subSurroundingNodes ) {
-                            if (gridNode != null && gridNode.isValid()) {
-                                if (surroundingMin > gridNode.elevation) {
-                                    surroundingMin = gridNode.elevation;
-                                }
-                            }
-                        }
-                        if (surroundingMin > maxValue) {
-                            maxValue = surroundingMin;
-                        }
-                    }
-                }
-                workingIndex++;
-            }
-
-            if (nodesInPit.size() == 1) {
-                maxValue = nodesInPit.get(0).getSurroundingMin();
-            }
-            pitValue2Nodes.put(maxValue, nodesInPit);
-            allNodesInPit.addAll(nodesInPit);
-        }
-
-        for( Entry<Double, List<GridNode>> entry : pitValue2Nodes.entrySet() ) {
-            double value = entry.getKey();
-            List<GridNode> values = entry.getValue();
-            for( GridNode gridNode : values ) {
-                gridNode.setValueInMap(pitIter, value);
-            }
-        }
-
-        outPit = CoverageUtilities.buildCoverage("pitfiller", pitRaster, regionMap, inElev.getCoordinateReferenceSystem());
+        List<GridNode> nodes;
     }
 }

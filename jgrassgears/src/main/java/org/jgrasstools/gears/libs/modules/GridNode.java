@@ -137,7 +137,7 @@ public class GridNode extends Node {
                 if (JGTConstants.isNovalue(tmp)) {
                     touchesNovalue = true;
                 } else {
-                    if (tmp < surroundingMin) {
+                    if (tmp < surroundingMin && surroundingMin != elevation) {
                         surroundingMin = tmp;
                     }
                 }
@@ -145,7 +145,7 @@ public class GridNode extends Node {
         }
 
         if (!touchesBound && !touchesNovalue) {
-            if (elevation <= surroundingMin) {
+            if (elevation < surroundingMin) {
                 isPit = true;
             }
         }
