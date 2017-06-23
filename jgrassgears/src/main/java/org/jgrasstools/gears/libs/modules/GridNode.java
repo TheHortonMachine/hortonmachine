@@ -21,10 +21,12 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
+import javax.media.jai.iterator.WritableRandomIter;
 
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
@@ -35,9 +37,9 @@ import org.jgrasstools.gears.utils.math.NumericsUtilities;
  */
 public class GridNode extends Node {
 
-    public final double elevation;
-    public final double xRes;
-    public final double yRes;
+    public double elevation;
+    public double xRes;
+    public double yRes;
 
     private boolean isPit = false;
     private boolean isOutlet = false;
@@ -51,6 +53,8 @@ public class GridNode extends Node {
     private double sElev;
     private double seElev;
     private double surroundingMin;
+
+    private static DecimalFormat f = new DecimalFormat("0.000");
 
     /**
      * The constructor.
@@ -82,6 +86,7 @@ public class GridNode extends Node {
         }
 
         surroundingMin = Double.POSITIVE_INFINITY;
+
         int index = -1;
         for( int c = -1; c <= 1; c++ ) {
             for( int r = -1; r <= 1; r++ ) {
@@ -137,7 +142,7 @@ public class GridNode extends Node {
                 if (JGTConstants.isNovalue(tmp)) {
                     touchesNovalue = true;
                 } else {
-                    if (tmp < surroundingMin && surroundingMin != elevation) {
+                    if (tmp < surroundingMin && tmp != elevation) {
                         surroundingMin = tmp;
                     }
                 }
@@ -158,7 +163,26 @@ public class GridNode extends Node {
                 ", \n\televation=" + elevation + //
                 ", \n\tisValid=" + isValid() + //
                 ", \n\ttouchesBounds=" + touchesBound + //
-                "\n]";
+                "\n" + "-----------------------------------\n" + //
+                "| " + f.format(nwElev) + " | " + f.format(nElev) + " | " + f.format(enElev) + " |\n" + //
+                "-----------------------------------\n" + //
+                "| " + f.format(wElev) + " | " + f.format(elevation) + " | " + f.format(eElev) + " |\n" + //
+                "-----------------------------------\n" + //
+                "| " + f.format(wsElev) + " | " + f.format(sElev) + " | " + f.format(seElev) + " |\n" + //
+                "-----------------------------------\n" + //
+                "]";
+    }
+
+    public void setValueInMap( WritableRandomIter map, double value ) {
+        if (map == null) {
+            return;
+        }
+        try {
+            elevation = value;
+            map.setSample(col, row, 0, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -197,7 +221,7 @@ public class GridNode extends Node {
     public double getSurroundingMin() {
         return surroundingMin;
     }
-
+    
     /**
      * Get a window of values surrounding the current node.
      * 

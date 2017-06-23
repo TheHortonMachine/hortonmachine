@@ -17,8 +17,6 @@
  */
 package org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_AUTHORNAMES;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_DESCRIPTION;
@@ -33,12 +31,17 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_out
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.TreeSet;
 
-import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.GridNode;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -50,14 +53,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.GridNode;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description(OMSPITFILLER_DESCRIPTION)
 @Author(name = OMSPITFILLER_AUTHORNAMES, contact = OMSPITFILLER_AUTHORCONTACTS)
@@ -102,22 +97,48 @@ public class OmsPitfiller2 extends JGTModel {
                 List<PitInfo> pitInfoList = new ArrayList<>();
                 pm.beginTask("Processing pits...", pitsList.size());
                 int count = 0;
-                for( GridNode pitNode : pitsList ) {
-                    if (allNodesInPit.contains(pitNode)) {
+                for( GridNode originalPitNode : pitsList ) {
+                    if (allNodesInPit.contains(originalPitNode)) {
                         pm.worked(1);
                         continue;
                     }
                     count++;
 
+                    if (originalPitNode.row == 248 && originalPitNode.col == 29) {
+                        System.out.println();
+                    }
+
                     List<GridNode> nodesInPit = new ArrayList<>();
-                    nodesInPit.add(pitNode);
+                    nodesInPit.add(originalPitNode);
 
                     double maxValue = Double.NEGATIVE_INFINITY;
+                    GridNode maxValueNode = null;
                     int workingIndex = 0;
                     while( workingIndex < nodesInPit.size() ) {
-                        List<GridNode> surroundingNodes = nodesInPit.get(workingIndex).getSurroundingNodes();
+                        GridNode currentPitNode = nodesInPit.get(workingIndex);
+
+                        List<GridNode> surroundingNodes = currentPitNode.getValidSurroundingNodes();
+                        surroundingNodes.removeAll(nodesInPit);
+                        double minElev = Double.POSITIVE_INFINITY;
+                        GridNode minElevNode = null;
+                        for( GridNode gridNode : surroundingNodes ) {
+                            if (gridNode.elevation < minElev) {
+                                minElev = gridNode.elevation;
+                                minElevNode = gridNode;
+                            }
+                        }
+                        if (minElevNode == null) {
+                            workingIndex++;
+                            continue;
+                        }
+                        List<GridNode> minElevSurroundingNodes = minElevNode.getValidSurroundingNodes();
+                        minElevSurroundingNodes.removeAll(nodesInPit);
+                        if (!minElevNode.isPitFor(minElevSurroundingNodes)) {
+                            break;
+                        }
+
                         for( GridNode tmpNode : surroundingNodes ) {
-                            if (tmpNode == null || tmpNode.touchesBound() || nodesInPit.contains(tmpNode)) {
+                            if (tmpNode.touchesBound()) {
                                 continue;
                             }
                             List<GridNode> subSurroundingNodes = tmpNode.getSurroundingNodes();
@@ -127,17 +148,20 @@ public class OmsPitfiller2 extends JGTModel {
                                 nodesInPit.add(tmpNode);
 
                                 double surroundingMin = Double.POSITIVE_INFINITY;
+                                GridNode surroundingMinNode = null;
                                 boolean touched = false;
                                 for( GridNode gridNode : subSurroundingNodes ) {
                                     if (gridNode != null && gridNode.isValid()) {
                                         if (surroundingMin > gridNode.elevation) {
                                             surroundingMin = gridNode.elevation;
+                                            surroundingMinNode = gridNode;
                                             touched = true;
                                         }
                                     }
                                 }
                                 if (touched && surroundingMin > maxValue) {
                                     maxValue = surroundingMin;
+                                    maxValueNode = surroundingMinNode;
                                 }
                             }
                         }
@@ -145,7 +169,26 @@ public class OmsPitfiller2 extends JGTModel {
                     }
 
                     if (nodesInPit.size() == 1) {
-                        maxValue = nodesInPit.get(0).getSurroundingMin();
+                        GridNode gridNode = nodesInPit.get(0);
+                        List<GridNode> validSurroundingNodes = gridNode.getValidSurroundingNodes();
+                        double surroundingMin = Double.POSITIVE_INFINITY;
+                        GridNode surroundingMinNode = null;
+                        boolean touched = false;
+                        for( GridNode tmp : validSurroundingNodes ) {
+                            if (tmp != null && tmp.isValid()) {
+                                if (surroundingMin > tmp.elevation) {
+                                    surroundingMin = tmp.elevation;
+                                    surroundingMinNode = tmp;
+                                    touched = true;
+                                }
+                            }
+                        }
+                        if (touched && surroundingMin > maxValue) {
+                            maxValue = surroundingMin;
+                            maxValueNode = surroundingMinNode;
+                        } else {
+                            throw new RuntimeException();
+                        }
                     }
 
                     if (Double.isInfinite(maxValue) || Double.isNaN(maxValue)) {
@@ -153,7 +196,8 @@ public class OmsPitfiller2 extends JGTModel {
                     }
 
                     PitInfo info = new PitInfo();
-                    info.pitFillValue = maxValue;
+                    info.originalPitNode = originalPitNode;
+                    info.pitfillExitNode = maxValueNode;
                     info.nodes = nodesInPit;
                     pitInfoList.add(info);
                     allNodesInPit.addAll(nodesInPit);
@@ -162,22 +206,78 @@ public class OmsPitfiller2 extends JGTModel {
                 }
                 pm.done();
 
+                List<GridNode> nodesToCheckForLeftPits = new ArrayList<>();
                 for( PitInfo pitInfo : pitInfoList ) {
-                    double value = pitInfo.pitFillValue;
-                    List<GridNode> values = pitInfo.nodes;
-                    pm.message("Flooding with value: " + value + " cells num: " + values.size());
-                    for( GridNode gridNode : values ) {
-                        gridNode.setValueInMap(pitIter, value);
+                    GridNode pitfillExitNode = pitInfo.pitfillExitNode;
+                    double exitElevation = pitfillExitNode.elevation;
+                    List<GridNode> allPitsOfCurrent = pitInfo.nodes;
+                    // pm.message("****************************");
+                    // pm.message("Originalpit node: " + pitInfo.originalPitNode);
+                    // pm.message("Exit: " + pitfillExitNode);
+                    // pm.message("Flooding with value: " + value + " cells num: " +
+                    // allPitsOfCurrent.size());
+                    for( GridNode gridNode : allPitsOfCurrent ) {
+                        gridNode.setValueInMap(pitIter, exitElevation);
+                        //
+                        // List<GridNode> validSurroundingNodes =
+                        // gridNode.getValidSurroundingNodes();
+                        // for( GridNode tmp : validSurroundingNodes ) {
+                        // if (tmp.elevation != exitElevation) {
+                        // if (!nodesToCheckForLeftPits.contains(tmp)) {
+                        // nodesToCheckForLeftPits.add(tmp);
+                        // }
+                        // }
+                        // }
                     }
+
+                    HashSet<String> rowColsSet = new HashSet<>();
+                    for( GridNode tmp : allPitsOfCurrent ) {
+                        rowColsSet.add(tmp.row + "_" + tmp.col);
+                    }
+
+                    double delta = 2E-6;
+
+                    List<GridNode> toCheck = new ArrayList<>();
+                    toCheck.add(pitfillExitNode);
+                    handleChecks(1, pitfillExitNode, toCheck, rowColsSet, exitElevation, pitIter, delta);
+
                 }
 
-                pm.message("Calculating left pits...");
-                pitsList = getPitsList(nCols, nRows, xRes, yRes, pitIter);
+                // pitsList = getPitsList(nCols, nRows, xRes, yRes, pitIter);
+                pitsList = getPitsList(allNodesInPit, pitIter);
+                pm.message("Left pits: " + pitsList.size());
+                pm.message("---------------------------------------------------------------------");
+
             }
+
             outPit = CoverageUtilities.buildCoverage("pitfiller", pitRaster, regionMap, inElev.getCoordinateReferenceSystem());
         } finally {
             pitIter.done();
         }
+    }
+
+    private void handleChecks( int iteration, GridNode pitfillExitNode, List<GridNode> toCheck, HashSet<String> rowColsSet,
+            double existElevation, WritableRandomIter pitIter, double delta ) {
+        iteration++;
+
+        List<GridNode> connected = new ArrayList<>();
+        for( GridNode checkNode : toCheck ) {
+            List<GridNode> validSurroundingNodes = checkNode.getValidSurroundingNodes();
+            for( GridNode gridNode : validSurroundingNodes ) {
+                if (!pitfillExitNode.equals(gridNode) && rowColsSet.contains(gridNode.row + "_" + gridNode.col)
+                        && gridNode.elevation == existElevation) {
+                    if (!connected.contains(gridNode))
+                        connected.add(gridNode);
+                }
+            }
+        }
+        if (connected.size() == 0) {
+            return;
+        }
+        for( GridNode gridNode : connected ) {
+            gridNode.setValueInMap(pitIter, gridNode.elevation + delta * iteration);
+        }
+        handleChecks(iteration, pitfillExitNode, connected, rowColsSet, existElevation, pitIter, delta);
     }
 
     private List<GridNode> getPitsList( int nCols, int nRows, double xRes, double yRes, WritableRandomIter pitIter ) {
@@ -199,9 +299,30 @@ public class OmsPitfiller2 extends JGTModel {
         return pitsList;
     }
 
-    private static class PitInfo {
-        private double pitFillValue = doubleNovalue;
+    private List<GridNode> getPitsList( List<GridNode> nodesToCheckForLeftPits, WritableRandomIter pitIter ) {
+        List<GridNode> pitsList = new ArrayList<>();
+        pm.beginTask("Extract pits from DTM...", nodesToCheckForLeftPits.size());
+        for( GridNode tmp : nodesToCheckForLeftPits ) {
+            pm.worked(1);
+            List<GridNode> validSurroundingNodes = tmp.getValidSurroundingNodes();
+            for( GridNode gridNode : validSurroundingNodes ) {
+                if (gridNode.isPit()) {
+                    double surroundingMin = gridNode.getSurroundingMin();
+                    if (Double.isInfinite(surroundingMin)) {
+                        continue;
+                    }
+                    if (!pitsList.contains(gridNode))
+                        pitsList.add(gridNode);
+                }
+            }
+        }
+        pm.done();
+        return pitsList;
+    }
 
+    private static class PitInfo {
+        GridNode originalPitNode;
+        GridNode pitfillExitNode;
         List<GridNode> nodes;
     }
 }
