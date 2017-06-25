@@ -65,6 +65,7 @@ import org.geotools.process.ProcessException;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
+import org.geotools.xml.xsi.XSISimpleTypes.Int;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyRandomIter;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWritableRaster;
@@ -211,7 +212,7 @@ public class CoverageUtilities {
      * @return a {@link WritableRaster writable raster}.
      */
     public static WritableRaster createDoubleWritableRaster( int width, int height, Class< ? > dataClass, SampleModel sampleModel,
-            Double value ) {
+            Object value ) {
         int dataType = DataBuffer.TYPE_DOUBLE;
         if (dataClass != null) {
             if (dataClass.isAssignableFrom(Integer.class)) {
@@ -233,18 +234,55 @@ public class CoverageUtilities {
             WritableRaster raster = RasterFactory.createWritableRaster(sampleModel, null);
             if (value != null) {
                 // autobox only once
-                double v = value;
-
-                double[] dArray = new double[sampleModel.getNumBands()];
-                for( int i = 0; i < dArray.length; i++ ) {
-                    dArray[i] = v;
-                }
-
-                for( int y = 0; y < height; y++ ) {
-                    for( int x = 0; x < width; x++ ) {
-                        raster.setPixel(x, y, dArray);
+                if (value instanceof Double) {
+                    Double valueObj = (Double) value;
+                    double v = valueObj;
+                    double[] dArray = new double[sampleModel.getNumBands()];
+                    for( int i = 0; i < dArray.length; i++ ) {
+                        dArray[i] = v;
+                    }
+                    for( int y = 0; y < height; y++ ) {
+                        for( int x = 0; x < width; x++ ) {
+                            raster.setPixel(x, y, dArray);
+                        }
+                    }
+                } else if (value instanceof Integer) {
+                    Integer valueObj = (Integer) value;
+                    int v = valueObj;
+                    int[] dArray = new int[sampleModel.getNumBands()];
+                    for( int i = 0; i < dArray.length; i++ ) {
+                        dArray[i] = v;
+                    }
+                    for( int y = 0; y < height; y++ ) {
+                        for( int x = 0; x < width; x++ ) {
+                            raster.setPixel(x, y, dArray);
+                        }
+                    }
+                } else if (value instanceof Float) {
+                    Float valueObj = (Float) value;
+                    float v = valueObj;
+                    float[] dArray = new float[sampleModel.getNumBands()];
+                    for( int i = 0; i < dArray.length; i++ ) {
+                        dArray[i] = v;
+                    }
+                    for( int y = 0; y < height; y++ ) {
+                        for( int x = 0; x < width; x++ ) {
+                            raster.setPixel(x, y, dArray);
+                        }
+                    }
+                } else {
+                    double v = ((Number) value).doubleValue();
+                    double[] dArray = new double[sampleModel.getNumBands()];
+                    for( int i = 0; i < dArray.length; i++ ) {
+                        dArray[i] = v;
+                    }
+                    for( int y = 0; y < height; y++ ) {
+                        for( int x = 0; x < width; x++ ) {
+                            raster.setPixel(x, y, dArray);
+                        }
                     }
                 }
+
             }
             return raster;
         } else {

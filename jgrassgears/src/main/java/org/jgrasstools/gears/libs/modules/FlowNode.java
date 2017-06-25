@@ -61,7 +61,7 @@ public class FlowNode extends Node {
     /**
      * The constructor.
      * 
-     * @param flowIter the elevation model raster iter.
+     * @param flowIter the flow raster iterator.
      * @param cols the cols of the raster.
      * @param rows the rows of the raster.
      * @param col the col of the current {@link FlowNode node}.
@@ -194,7 +194,7 @@ public class FlowNode extends Node {
      * Get the value of the flow in one of the surrounding direction.
      * 
      * @param direction the {@link Direction}.
-     * @return the elevation value.
+     * @return the flow value.
      */
     public double getFlowAt( Direction direction ) {
         switch( direction ) {

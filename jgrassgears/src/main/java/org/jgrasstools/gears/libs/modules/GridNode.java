@@ -332,6 +332,21 @@ public class GridNode extends Node {
         return nextNode;
     }
 
+    /**
+     * Get the flow value of this node based in the steepest path.
+     * 
+     * @return the value of flow.
+     */
+    public int getFlow() {
+        GridNode nextDown = goDownstreamSP();
+
+        int dcol = nextDown.col - col;
+        int drow = nextDown.row - row;
+
+        Direction dir = Direction.getDir(dcol, drow);
+        return dir.getFlow();
+    }
+
     // /**
     // * Get next upstream {@link GridNode node}, based on least cost.
     // *

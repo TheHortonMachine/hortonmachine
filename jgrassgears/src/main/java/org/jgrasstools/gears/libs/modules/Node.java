@@ -96,10 +96,17 @@ public abstract class Node {
     }
 
     /**
-     * @return <code>true</code> if this node touches a boundary, i.e. any novalue or raster limit.
+     * @return <code>true</code> if this node touches a boundary.
      */
     public boolean touchesBound() {
         return touchesBound;
+    }
+
+    /**
+     * @return <code>true</code> if this node touches a novalue.
+     */
+    public boolean touchesNovalue() {
+        return touchesNovalue;
     }
 
 }

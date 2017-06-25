@@ -93,7 +93,7 @@ public class JGTConstants {
     /**
      * The default int novalue. 
      */
-    public static final int intNovalue = Integer.MAX_VALUE;
+    public static final int intNovalue = -9999;
 
     /**
      * Checker for default int novalue.
@@ -107,7 +107,7 @@ public class JGTConstants {
      * @return true if the passed value is a novalue.
      */
     public static boolean isNovalue( int value ) {
-        return Integer.MAX_VALUE == value;
+        return intNovalue == value;
     }
 
     /**

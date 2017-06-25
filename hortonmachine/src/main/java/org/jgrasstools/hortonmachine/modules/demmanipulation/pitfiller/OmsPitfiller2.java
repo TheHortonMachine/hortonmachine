@@ -74,6 +74,8 @@ public class OmsPitfiller2 extends JGTModel {
 
     private final double delta = 2E-6;
 
+    public GridCoverage2D outFlow;
+
     @Execute
     public void process() throws Exception {
         checkNull(inElev);
@@ -202,6 +204,33 @@ public class OmsPitfiller2 extends JGTModel {
             }
 
             outPit = CoverageUtilities.buildCoverage("pitfiller", pitRaster, regionMap, inElev.getCoordinateReferenceSystem());
+
+            WritableRaster flowRaster = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, Integer.class, null, null);
+            WritableRandomIter flowIter = CoverageUtilities.getWritableRandomIterator(flowRaster);
+            try {
+                pm.beginTask("Calculating flowdirections...", nRows);
+                for( int r = 0; r < nRows; r++ ) {
+                    if (pm.isCanceled()) {
+                        return;
+                    }
+                    for( int c = 0; c < nCols; c++ ) {
+                        GridNode node = new GridNode(pitIter, nCols, nRows, xRes, yRes, c, r);
+                        if (node.isValid() && !node.touchesBound() && !node.touchesNovalue()) {
+                            int flow = node.getFlow();
+                            flowIter.setSample(c, r, 0, flow);
+                        } else {
+                            flowIter.setSample(c, r, 0, -9999);
+                        }
+                    }
+                    pm.worked(1);
+                }
+                pm.done();
+
+                outFlow = CoverageUtilities.buildCoverage("flow", flowRaster, regionMap, inElev.getCoordinateReferenceSystem());
+            } finally {
+                flowIter.done();
+            }
+
         } finally {
             pitIter.done();
         }
@@ -276,7 +305,7 @@ public class OmsPitfiller2 extends JGTModel {
 
     private List<GridNode> getPitsList( List<GridNode> nodesToCheckForLeftPits, WritableRandomIter pitIter ) {
         List<GridNode> pitsList = new ArrayList<>();
-        pm.beginTask("Extract pits from DTM...", nodesToCheckForLeftPits.size());
+        pm.beginTask("Extract pits from the cells surrounding the pit pool...", nodesToCheckForLeftPits.size());
         for( GridNode tmp : nodesToCheckForLeftPits ) {
             pm.worked(1);
             List<GridNode> validSurroundingNodes = tmp.getValidSurroundingNodes();

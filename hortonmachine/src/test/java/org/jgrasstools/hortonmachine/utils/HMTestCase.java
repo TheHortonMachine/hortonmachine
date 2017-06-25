@@ -92,6 +92,26 @@ public class HMTestCase extends TestCase {
         } while( !rectIter.nextLineDone() );
     }
 
+    protected void checkMatrixEqual( RenderedImage image, int[][] matrix ) {
+        RectIter rectIter = RectIterFactory.create(image, null);
+        int y = 0;
+        do {
+            int x = 0;
+            do {
+                int value = rectIter.getSample();
+                int expectedResult = matrix[y][x];
+                if (isNovalue(value)) {
+                    assertTrue(x + " " + y, isNovalue(expectedResult));
+                } else {
+                    assertEquals(x + " " + y, expectedResult, value);
+                }
+                x++;
+            } while( !rectIter.nextPixelDone() );
+            rectIter.startPixels();
+            y++;
+        } while( !rectIter.nextLineDone() );
+    }
+
     protected void checkEqualsSinlgeValue( RenderedImage image, double expectedResult, double delta ) {
         RectIter rectIter = RectIterFactory.create(image, null);
         int y = 0;
