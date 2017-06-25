@@ -6,6 +6,14 @@ org.jgrasstools.modules.Buffer
 org.jgrasstools.modules.CannyEdgeDetector
 org.jgrasstools.modules.Carver
 org.jgrasstools.modules.Cb
+org.jgrasstools.modules.Cislam
+org.jgrasstools.modules.CislamPsiInitAtBedrock
+org.jgrasstools.modules.CislamSafetyFactorGeomechanic
+org.jgrasstools.modules.CislamSlopeForCislam
+org.jgrasstools.modules.CislamSoilThickness
+org.jgrasstools.modules.CislamV0
+org.jgrasstools.modules.CislamVanGenuchtenMapsGenerator
+org.jgrasstools.modules.CislamVwt
 org.jgrasstools.modules.ContourExtractor
 org.jgrasstools.modules.Curvatures
 org.jgrasstools.modules.CurvaturesBivariate
