@@ -72,6 +72,8 @@ public class OmsPitfiller2 extends JGTModel {
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
+    private final double delta = 2E-6;
+
     @Execute
     public void process() throws Exception {
         checkNull(inElev);
@@ -104,10 +106,6 @@ public class OmsPitfiller2 extends JGTModel {
                     }
                     count++;
 
-                    if (originalPitNode.row == 248 && originalPitNode.col == 29) {
-                        System.out.println();
-                    }
-
                     List<GridNode> nodesInPit = new ArrayList<>();
                     nodesInPit.add(originalPitNode);
 
@@ -119,21 +117,14 @@ public class OmsPitfiller2 extends JGTModel {
 
                         List<GridNode> surroundingNodes = currentPitNode.getValidSurroundingNodes();
                         surroundingNodes.removeAll(nodesInPit);
-                        double minElev = Double.POSITIVE_INFINITY;
-                        GridNode minElevNode = null;
-                        for( GridNode gridNode : surroundingNodes ) {
-                            if (gridNode.elevation < minElev) {
-                                minElev = gridNode.elevation;
-                                minElevNode = gridNode;
-                            }
-                        }
-                        if (minElevNode == null) {
+                        GridNode minNode = getMinElevNode(surroundingNodes);
+                        if (minNode == null) {
                             workingIndex++;
                             continue;
                         }
-                        List<GridNode> minElevSurroundingNodes = minElevNode.getValidSurroundingNodes();
+                        List<GridNode> minElevSurroundingNodes = minNode.getValidSurroundingNodes();
                         minElevSurroundingNodes.removeAll(nodesInPit);
-                        if (!minElevNode.isPitFor(minElevSurroundingNodes)) {
+                        if (!minNode.isPitFor(minElevSurroundingNodes)) {
                             break;
                         }
 
@@ -141,27 +132,16 @@ public class OmsPitfiller2 extends JGTModel {
                             if (tmpNode.touchesBound()) {
                                 continue;
                             }
-                            List<GridNode> subSurroundingNodes = tmpNode.getSurroundingNodes();
+                            List<GridNode> subSurroundingNodes = tmpNode.getValidSurroundingNodes();
                             subSurroundingNodes.removeAll(nodesInPit);
 
                             if (tmpNode.isPitFor(subSurroundingNodes)) {
                                 nodesInPit.add(tmpNode);
 
-                                double surroundingMin = Double.POSITIVE_INFINITY;
-                                GridNode surroundingMinNode = null;
-                                boolean touched = false;
-                                for( GridNode gridNode : subSurroundingNodes ) {
-                                    if (gridNode != null && gridNode.isValid()) {
-                                        if (surroundingMin > gridNode.elevation) {
-                                            surroundingMin = gridNode.elevation;
-                                            surroundingMinNode = gridNode;
-                                            touched = true;
-                                        }
-                                    }
-                                }
-                                if (touched && surroundingMin > maxValue) {
-                                    maxValue = surroundingMin;
-                                    maxValueNode = surroundingMinNode;
+                                GridNode subMinNode = getMinElevNode(subSurroundingNodes);
+                                if (subMinNode != null && subMinNode.elevation > maxValue) {
+                                    maxValue = subMinNode.elevation;
+                                    maxValueNode = subMinNode;
                                 }
                             }
                         }
@@ -171,21 +151,10 @@ public class OmsPitfiller2 extends JGTModel {
                     if (nodesInPit.size() == 1) {
                         GridNode gridNode = nodesInPit.get(0);
                         List<GridNode> validSurroundingNodes = gridNode.getValidSurroundingNodes();
-                        double surroundingMin = Double.POSITIVE_INFINITY;
-                        GridNode surroundingMinNode = null;
-                        boolean touched = false;
-                        for( GridNode tmp : validSurroundingNodes ) {
-                            if (tmp != null && tmp.isValid()) {
-                                if (surroundingMin > tmp.elevation) {
-                                    surroundingMin = tmp.elevation;
-                                    surroundingMinNode = tmp;
-                                    touched = true;
-                                }
-                            }
-                        }
-                        if (touched && surroundingMin > maxValue) {
-                            maxValue = surroundingMin;
-                            maxValueNode = surroundingMinNode;
+                        GridNode minNode = getMinElevNode(validSurroundingNodes);
+                        if (minNode != null && minNode.elevation > maxValue) {
+                            maxValue = minNode.elevation;
+                            maxValueNode = minNode;
                         } else {
                             throw new RuntimeException();
                         }
@@ -206,28 +175,12 @@ public class OmsPitfiller2 extends JGTModel {
                 }
                 pm.done();
 
-                List<GridNode> nodesToCheckForLeftPits = new ArrayList<>();
                 for( PitInfo pitInfo : pitInfoList ) {
                     GridNode pitfillExitNode = pitInfo.pitfillExitNode;
                     double exitElevation = pitfillExitNode.elevation;
                     List<GridNode> allPitsOfCurrent = pitInfo.nodes;
-                    // pm.message("****************************");
-                    // pm.message("Originalpit node: " + pitInfo.originalPitNode);
-                    // pm.message("Exit: " + pitfillExitNode);
-                    // pm.message("Flooding with value: " + value + " cells num: " +
-                    // allPitsOfCurrent.size());
                     for( GridNode gridNode : allPitsOfCurrent ) {
                         gridNode.setValueInMap(pitIter, exitElevation);
-                        //
-                        // List<GridNode> validSurroundingNodes =
-                        // gridNode.getValidSurroundingNodes();
-                        // for( GridNode tmp : validSurroundingNodes ) {
-                        // if (tmp.elevation != exitElevation) {
-                        // if (!nodesToCheckForLeftPits.contains(tmp)) {
-                        // nodesToCheckForLeftPits.add(tmp);
-                        // }
-                        // }
-                        // }
                     }
 
                     HashSet<String> rowColsSet = new HashSet<>();
@@ -235,15 +188,13 @@ public class OmsPitfiller2 extends JGTModel {
                         rowColsSet.add(tmp.row + "_" + tmp.col);
                     }
 
-                    double delta = 2E-6;
-
-                    List<GridNode> toCheck = new ArrayList<>();
-                    toCheck.add(pitfillExitNode);
-                    handleChecks(1, pitfillExitNode, toCheck, rowColsSet, exitElevation, pitIter, delta);
+                    List<GridNode> cellsToMakeFlowReady = new ArrayList<>();
+                    cellsToMakeFlowReady.add(pitfillExitNode);
+                    makeCellsFlowReady(0, pitfillExitNode, cellsToMakeFlowReady, rowColsSet, pitIter, delta);
 
                 }
 
-                // pitsList = getPitsList(nCols, nRows, xRes, yRes, pitIter);
+                // only re-check the cells that are adiacent to what has been modified
                 pitsList = getPitsList(allNodesInPit, pitIter);
                 pm.message("Left pits: " + pitsList.size());
                 pm.message("---------------------------------------------------------------------");
@@ -256,16 +207,40 @@ public class OmsPitfiller2 extends JGTModel {
         }
     }
 
-    private void handleChecks( int iteration, GridNode pitfillExitNode, List<GridNode> toCheck, HashSet<String> rowColsSet,
-            double existElevation, WritableRandomIter pitIter, double delta ) {
+    private GridNode getMinElevNode( List<GridNode> surroundingNodes ) {
+        double minElev = Double.POSITIVE_INFINITY;
+        GridNode minNode = null;
+        for( GridNode gridNode : surroundingNodes ) {
+            if (gridNode.elevation < minElev) {
+                minElev = gridNode.elevation;
+                minNode = gridNode;
+            }
+        }
+        return minNode;
+    }
+
+    /**
+     * Make cells flow ready by creating a slope starting from the output cell.
+     * 
+     * @param iteration the iteration.
+     * @param pitfillExitNode the exit node.
+     * @param cellsToMakeFlowReady the cells to check and change at each iteration.
+     * @param rowColsSet the ids of all existing pits. Necessary to pick only those that 
+     *              really are part of the pit pool.
+     * @param pitIter elevation data.
+     * @param delta the elevation delta to addto the cells to create the slope.
+     */
+    private void makeCellsFlowReady( int iteration, GridNode pitfillExitNode, List<GridNode> cellsToMakeFlowReady,
+            HashSet<String> rowColsSet, WritableRandomIter pitIter, double delta ) {
         iteration++;
 
+        double exitElevation = pitfillExitNode.elevation;
         List<GridNode> connected = new ArrayList<>();
-        for( GridNode checkNode : toCheck ) {
+        for( GridNode checkNode : cellsToMakeFlowReady ) {
             List<GridNode> validSurroundingNodes = checkNode.getValidSurroundingNodes();
             for( GridNode gridNode : validSurroundingNodes ) {
                 if (!pitfillExitNode.equals(gridNode) && rowColsSet.contains(gridNode.row + "_" + gridNode.col)
-                        && gridNode.elevation == existElevation) {
+                        && gridNode.elevation == exitElevation) {
                     if (!connected.contains(gridNode))
                         connected.add(gridNode);
                 }
@@ -277,7 +252,7 @@ public class OmsPitfiller2 extends JGTModel {
         for( GridNode gridNode : connected ) {
             gridNode.setValueInMap(pitIter, gridNode.elevation + delta * iteration);
         }
-        handleChecks(iteration, pitfillExitNode, connected, rowColsSet, existElevation, pitIter, delta);
+        makeCellsFlowReady(iteration, pitfillExitNode, connected, rowColsSet, pitIter, delta);
     }
 
     private List<GridNode> getPitsList( int nCols, int nRows, double xRes, double yRes, WritableRandomIter pitIter ) {
@@ -325,4 +300,5 @@ public class OmsPitfiller2 extends JGTModel {
         GridNode pitfillExitNode;
         List<GridNode> nodes;
     }
+
 }

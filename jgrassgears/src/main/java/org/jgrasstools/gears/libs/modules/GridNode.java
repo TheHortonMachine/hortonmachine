@@ -221,7 +221,7 @@ public class GridNode extends Node {
     public double getSurroundingMin() {
         return surroundingMin;
     }
-    
+
     /**
      * Get a window of values surrounding the current node.
      * 
