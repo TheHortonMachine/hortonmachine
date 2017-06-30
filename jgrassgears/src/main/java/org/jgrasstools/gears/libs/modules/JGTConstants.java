@@ -37,7 +37,7 @@ public class JGTConstants {
      * <p>Note: if this changes, also the checker methods like 
      * {@link #isNovalue(double)} have to be changed.
      */
-    public static final double doubleNovalue = Double.NaN;
+    public static final double doubleNovalue = -9999.0;
 
     /**
      * Checker for default double novalue.
@@ -51,7 +51,7 @@ public class JGTConstants {
      * @return true if the passed value is a novalue.
      */
     public static boolean isNovalue( double value ) {
-        return Double.isNaN(value);
+        return value == doubleNovalue;
     }
 
     /**
@@ -64,7 +64,7 @@ public class JGTConstants {
      */
     public static boolean isOneNovalue( double... values ) {
         for( double value : values ) {
-            if (Double.isNaN(value))
+            if (value == doubleNovalue)
                 return true;
         }
         return false;
@@ -73,7 +73,7 @@ public class JGTConstants {
     /**
      * The default float novalue. 
      */
-    public static final float floatNovalue = Float.NaN;
+    public static final float floatNovalue = -9999f;
 
     /**
      * Checker for default float novalue.
@@ -87,7 +87,7 @@ public class JGTConstants {
      * @return true if the passed value is a novalue.
      */
     public static boolean isNovalue( float value ) {
-        return Float.isNaN(value);
+        return value == floatNovalue;
     }
 
     /**

@@ -37,7 +37,9 @@ import java.util.List;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.GridNode;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -215,11 +217,13 @@ public class OmsPitfiller2 extends JGTModel {
                     }
                     for( int c = 0; c < nCols; c++ ) {
                         GridNode node = new GridNode(pitIter, nCols, nRows, xRes, yRes, c, r);
-                        if (node.isValid() && !node.touchesBound() && !node.touchesNovalue()) {
+                        if (node.isOutlet()) {
+                            flowIter.setSample(c, r, 0, FlowNode.OUTLET);
+                        } else if (node.isValid() && !node.touchesBound() && !node.touchesNovalue()) {
                             int flow = node.getFlow();
                             flowIter.setSample(c, r, 0, flow);
                         } else {
-                            flowIter.setSample(c, r, 0, -9999);
+                            flowIter.setSample(c, r, 0, JGTConstants.intNovalue);
                         }
                     }
                     pm.worked(1);

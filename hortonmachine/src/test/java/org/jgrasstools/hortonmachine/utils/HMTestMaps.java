@@ -18,8 +18,6 @@
  */
 package org.jgrasstools.hortonmachine.utils;
 
-import static java.lang.Double.NaN;
-
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -35,7 +33,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class HMTestMaps {
-    private static final double N = NaN;
+    private static final double N = -9999.0;
     private static final int NI = -9999;
 
     private static RegionMap envelopeParams = null;

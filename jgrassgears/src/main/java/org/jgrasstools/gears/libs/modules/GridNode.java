@@ -149,7 +149,7 @@ public class GridNode extends Node {
             }
         }
 
-        if (!touchesBound && !touchesNovalue) {
+        if (!touchesBound && !touchesNovalue && isValid) {
             if (elevation < surroundingMin) {
                 isPit = true;
             }
@@ -311,8 +311,7 @@ public class GridNode extends Node {
         Direction[] orderedDirs = Direction.getOrderedDirs();
         double maxSlope = Double.NEGATIVE_INFINITY;
         GridNode nextNode = null;
-        for( int i = 0; i < orderedDirs.length; i++ ) {
-            Direction direction = orderedDirs[i];
+        for( Direction direction : orderedDirs ) {
             int newCol = col + direction.col;
             int newRow = row + direction.row;
             if (isInRaster(newCol, newRow)) {
@@ -339,6 +338,9 @@ public class GridNode extends Node {
      */
     public int getFlow() {
         GridNode nextDown = goDownstreamSP();
+        if (nextDown==null) {
+            return JGTConstants.intNovalue;
+        }
 
         int dcol = nextDown.col - col;
         int drow = nextDown.row - row;

@@ -60,60 +60,60 @@ public class TestPitfiller extends HMTestCase {
         pitfiller.process();
 
         GridCoverage2D pitfillerCoverage = pitfiller.outPit;
-        // printImage(pitfillerCoverage.getRenderedImage());
+         printImage(pitfillerCoverage.getRenderedImage());
         checkMatrixEqual(pitfillerCoverage.getRenderedImage(), HMTestMaps.outNewPitData, 0);
 
         GridCoverage2D flowCoverage = pitfiller.outFlow;
-        // printImage(flowCoverage.getRenderedImage());
+         printImage(flowCoverage.getRenderedImage());
         checkMatrixEqual(flowCoverage.getRenderedImage(), HMTestMaps.newIntFlowData);
     }
 
-    public void testPitfillerReal() throws Exception {
-        EggClock egg = new EggClock("pitflow", "");
-        egg.startAndPrint(System.out);
-
-        // GridCoverage2D elevationCoverage =
-        // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec.asc");
-        // GridCoverage2D elevationCoverage =
-        // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec_pitted.asc");
-        // GridCoverage2D elevationCoverage =
-        // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/DTM_calvello/pit_all.asc");
-        GridCoverage2D elevationCoverage = OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/DTM_calvello/dtm_all.asc");
-        // GridCoverage2D elevationCoverage =
-        // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/CALVSMALL/dtm_small_01_pitted.asc");
-        // GridCoverage2D elevationCoverage =
-        // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/CALVSMALL/dtm_small_01.tif");
-
-        OmsPitfiller2 pitfiller = new OmsPitfiller2();
-        pitfiller.inElev = elevationCoverage;
-        pitfiller.pm = pm;
-        pitfiller.process();
-
-        GridCoverage2D pitfillerCoverage = pitfiller.outPit;
-        GridCoverage2D outFlow = pitfiller.outFlow;
-        
-        egg.printSubTimePassedInSeconds(System.out);
-        
-        //
-        // OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/flow.asc", outFlow);
-        // OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec_pitted2.asc",
-        // pitfillerCoverage);
-        // OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/CALVSMALL/dtm_small_01_pitted2.asc",
-        // pitfillerCoverage);
-        OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/DTM_calvello/pit_all.asc", pitfillerCoverage);
-        OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/DTM_calvello/flow_all.asc", outFlow);
-
-        // OmsRasterDiff diff = new OmsRasterDiff();
-        // diff.inRaster1 = OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/pit.asc");
-        // diff.inRaster2 = pitfillerCoverage;
-        // diff.pThreshold = 0.1;
-        // diff.process();
-        //
-        // OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec_pit_diffs.asc",
-        // diff.outRaster);
-
-        // checkMatrixEqualLimit(pitfillerCoverage.getRenderedImage(), testMatrix, 0.01);
-    }
+//    public void testPitfillerReal() throws Exception {
+//        EggClock egg = new EggClock("pitflow", "");
+//        egg.startAndPrint(System.out);
+//
+//        // GridCoverage2D elevationCoverage =
+//        // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec.asc");
+//        // GridCoverage2D elevationCoverage =
+//        // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec_pitted.asc");
+//        // GridCoverage2D elevationCoverage =
+//        // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/DTM_calvello/pit_all.asc");
+//        GridCoverage2D elevationCoverage = OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/DTM_calvello/dtm_all.asc");
+//        // GridCoverage2D elevationCoverage =
+//        // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/CALVSMALL/dtm_small_01_pitted.asc");
+//        // GridCoverage2D elevationCoverage =
+//        // OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/CALVSMALL/dtm_small_01.tif");
+//
+//        OmsPitfiller2 pitfiller = new OmsPitfiller2();
+//        pitfiller.inElev = elevationCoverage;
+//        pitfiller.pm = pm;
+//        pitfiller.process();
+//
+//        GridCoverage2D pitfillerCoverage = pitfiller.outPit;
+//        GridCoverage2D outFlow = pitfiller.outFlow;
+//        
+//        egg.printSubTimePassedInSeconds(System.out);
+//        
+//        //
+//        // OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/flow.asc", outFlow);
+//        // OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec_pitted2.asc",
+//        // pitfillerCoverage);
+//        // OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/CALVSMALL/dtm_small_01_pitted2.asc",
+//        // pitfillerCoverage);
+//        OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/DTM_calvello/pit_all.asc", pitfillerCoverage);
+//        OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/DTM_calvello/flow_all.asc", outFlow);
+//
+//        // OmsRasterDiff diff = new OmsRasterDiff();
+//        // diff.inRaster1 = OmsRasterReader.readRaster("/home/hydrologis/TMP/PITFILLE/pit.asc");
+//        // diff.inRaster2 = pitfillerCoverage;
+//        // diff.pThreshold = 0.1;
+//        // diff.process();
+//        //
+//        // OmsRasterWriter.writeRaster("/home/hydrologis/TMP/PITFILLE/dtm_flanginec_pit_diffs.asc",
+//        // diff.outRaster);
+//
+//        // checkMatrixEqualLimit(pitfillerCoverage.getRenderedImage(), testMatrix, 0.01);
+//    }
 
     protected void checkMatrixEqualLimit( RenderedImage image, double[][] matrix, double delta ) {
         RectIter rectIter = RectIterFactory.create(image, null);
