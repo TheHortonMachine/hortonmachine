@@ -1,6 +1,5 @@
 package org.jgrasstools.gears;
 
-import static java.lang.Double.NaN;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +26,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 @SuppressWarnings("nls")
 public class TestFlowUtils extends HMTestCase {
+    private static final double NaN = -9999.0;
 
     private int nCols;
     private int nRows;
@@ -87,15 +87,6 @@ public class TestFlowUtils extends HMTestCase {
         };
         checkMatrixEqual(expected, window, DELTA);
 
-        for( int c = 0; c < nCols; c++ ) {
-            for( int r = 0; r < nRows; r++ ) {
-                n = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
-                if (n.isPit()) {
-                    assertEquals(0, c);
-                    assertEquals(3, r);
-                }
-            }
-        }
     }
 
     public void testSlopeTo() throws Exception {
@@ -169,12 +160,12 @@ public class TestFlowUtils extends HMTestCase {
 
     public void testTouchesBound() throws Exception {
         GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
-        boolean touchesBound = node1.touchesBound();
-        assertTrue(touchesBound);
+        boolean touchesNovalue = node1.touchesNovalue();
+        assertTrue(touchesNovalue);
 
         node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 1, 5);
-        touchesBound = node1.touchesBound();
-        assertFalse(touchesBound);
+        touchesNovalue = node1.touchesNovalue();
+        assertFalse(touchesNovalue);
     }
 
     public void testElevationSort() throws Exception {

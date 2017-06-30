@@ -17,15 +17,14 @@
  */
 package org.jgrasstools.gears.modules;
 
-import static java.lang.Double.NaN;
 
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.modules.r.connectivity.OmsDownSlopeConnectivity;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
-import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -35,7 +34,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestDownSlopeConnectivity extends HMTestCase {
-
+    private double NaN = JGTConstants.doubleNovalue;
     private GridCoverage2D flowGC;
     private GridCoverage2D netGC;
     private GridCoverage2D slopeGC;

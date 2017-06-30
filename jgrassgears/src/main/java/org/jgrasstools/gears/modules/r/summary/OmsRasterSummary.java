@@ -38,6 +38,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_SUM_
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_P_BINS_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.jai.JAI;
@@ -60,10 +61,12 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jaitools.media.jai.zonalstats.Result;
 import org.jaitools.media.jai.zonalstats.ZonalStats;
 import org.jaitools.media.jai.zonalstats.ZonalStatsDescriptor;
+import org.jaitools.numeric.Range;
 import org.jaitools.numeric.Statistic;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
+
 
 @Description(OMSRASTERSUMMARY_DESCRIPTION)
 @Documentation(OMSRASTERSUMMARY_DOCUMENTATION)
@@ -135,6 +138,12 @@ public class OmsRasterSummary extends JGTModel {
             stats = new Statistic[]{Statistic.MIN, Statistic.MAX, Statistic.MEAN, Statistic.SDEV, Statistic.RANGE, Statistic.SUM};
         }
         pb.setParameter("stats", stats);
+        
+        // add novalue
+        List<Range<Double>> nodata= new ArrayList<>();
+        Range<Double> novalueRange = new Range<>(JGTConstants.doubleNovalue);
+        nodata.add(novalueRange);
+        pb.setParameter("noDataRanges", nodata);
 
         RenderedOp op = JAI.create("ZonalStats", pb);
 

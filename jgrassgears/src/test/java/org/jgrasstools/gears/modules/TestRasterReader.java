@@ -17,13 +17,12 @@
  */
 package org.jgrasstools.gears.modules;
 
-import static java.lang.Double.NaN;
-
 import java.io.File;
 import java.net.URL;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 /**
@@ -32,6 +31,7 @@ import org.jgrasstools.gears.utils.HMTestMaps;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestRasterReader extends HMTestCase {
+    private double NaN = JGTConstants.doubleNovalue;
 
     private String arcPath;
     private String grassPath;
@@ -47,19 +47,30 @@ public class TestRasterReader extends HMTestCase {
 
         OmsRasterReader reader = new OmsRasterReader();
         reader.file = arcPath;
-        reader.fileNovalue = -9999.0;
-        reader.geodataNovalue = Double.NaN;
+        reader.fileNovalue = NaN;
+        reader.geodataNovalue = NaN;
         reader.process();
         GridCoverage2D readCoverage = reader.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
 
         reader = new OmsRasterReader();
         reader.file = grassPath;
-        reader.fileNovalue = -9999.0;
-        reader.geodataNovalue = Double.NaN;
+        reader.fileNovalue = NaN;
+        reader.geodataNovalue = NaN;
         reader.process();
         readCoverage = reader.outRaster;
-        checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
+        
+        // grass rasters have Double.NaN novalues
+        double[][] mapData = new double[][]{//
+            {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
+                    {600, Double.NaN, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
+                    {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
+                    {400, 410, 650, 700, 750, 800, 850, 490, 450, 1500}, //
+                    {450, 550, 430, 500, 600, 700, 800, 500, 450, 1500}, //
+                    {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
+                    {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
+                    {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
+        checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
     }
 
     public void testRasterReaderBoundsOnly() throws Exception {

@@ -90,7 +90,7 @@ public class OmsRasterNormalizer extends JGTModel {
 
         pm.beginTask("Normalizing...", nRows);
         for( int r = 0; r < nRows; r++ ) {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return;
             }
             for( int c = 0; c < nCols; c++ ) {

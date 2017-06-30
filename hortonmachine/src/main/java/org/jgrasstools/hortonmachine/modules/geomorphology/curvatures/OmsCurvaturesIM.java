@@ -47,6 +47,7 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
+import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTModelIM;
 import org.jgrasstools.gears.utils.colors.EColorTables;
 
@@ -77,8 +78,6 @@ public class OmsCurvaturesIM extends JGTModelIM {
     public String outProf = null;
 
     private double[] planTangProf = new double[3];
-    private double disXX;
-    private double disYY;
 
     @Execute
     public void process() throws Exception {
@@ -91,14 +90,12 @@ public class OmsCurvaturesIM extends JGTModelIM {
             addDestination(new File(outProf), 2);
 
         cellBuffer = 1;
-        disXX = Math.pow(xRes, 2.0);
-        disYY = Math.pow(yRes, 2.0);
 
         processByTileCells();
 
         makeMosaic();
         makeStyle(EColorTables.extrainbow, 0, 1);
-        
+
         dispose();
     }
 
@@ -107,7 +104,9 @@ public class OmsCurvaturesIM extends JGTModelIM {
             int writeRows ) {
 
         RandomIter elevIter = inRasterIterators.get(0);
-        OmsCurvatures.calculateCurvatures(elevIter, planTangProf, readCol, readRow, xRes, yRes, disXX, disYY);
+
+        GridNode node = new GridNode(elevIter, readCols, readRows, xRes, yRes, readCol, readRow);
+        OmsCurvatures.calculateCurvatures2(node, planTangProf);
         if (outPlan != null)
             outRasters.get(0).setSample(writeCol, writeRow, 0, planTangProf[0]);
         if (outTang != null)

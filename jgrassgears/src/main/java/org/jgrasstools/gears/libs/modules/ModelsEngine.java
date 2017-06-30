@@ -414,8 +414,8 @@ public class ModelsEngine {
             // channel of the network)
             // adds the new geometry to the vector of geometry
             // if (!coordlist.isEmpty()) {
-            newGeometryVectorLine.add(newfactory.createMultiLineString(new LineString[]{newfactory.createLineString(coordlist
-                    .toCoordinateArray())}));
+            newGeometryVectorLine.add(newfactory
+                    .createMultiLineString(new LineString[]{newfactory.createLineString(coordlist.toCoordinateArray())}));
             // } else {
             // if (out != null)
             // out.println("Found an empty geometry at " + num);
@@ -520,7 +520,8 @@ public class ModelsEngine {
                 previousCount = count;
                 count++;
                 if (head > num_max)
-                    throw new ModelsIllegalargumentException("The number of bin exceeds the maximum number allowed.", "MODEL", pm);
+                    throw new ModelsIllegalargumentException("The number of bin exceeds the maximum number allowed.", "MODEL",
+                            pm);
             }
 
         } else if (binNum > 1) {
@@ -641,7 +642,8 @@ public class ModelsEngine {
      * @param pm the monitor.
      * @return the nth moment value.
      */
-    public static double calculateNthMoment( double[] values, int validValues, double mean, double momentOrder, IJGTProgressMonitor pm ) {
+    public static double calculateNthMoment( double[] values, int validValues, double mean, double momentOrder,
+            IJGTProgressMonitor pm ) {
         double moment = 0.0;
         double n = 0.0;
 
@@ -731,8 +733,8 @@ public class ModelsEngine {
                 Coordinate pointCoordinate = ((Geometry) pointFeature.getDefaultGeometry()).getCoordinate();
                 if (envelope.contains(pointCoordinate)) {
 
-                    GridCoordinates2D gridCoordinate = gridGeometry.worldToGrid(new DirectPosition2D(pointCoordinate.x,
-                            pointCoordinate.y));
+                    GridCoordinates2D gridCoordinate = gridGeometry
+                            .worldToGrid(new DirectPosition2D(pointCoordinate.x, pointCoordinate.y));
 
                     GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, gridCoordinate.x, gridCoordinate.y);
                     FlowNode flowNode = new FlowNode(flowIter, cols, rows, gridCoordinate.x, gridCoordinate.y);
@@ -1138,8 +1140,7 @@ public class ModelsEngine {
                 ) {
                     point[0] = c;
                     point[1] = r;
-                    while( flowIter.getSampleDouble(point[0], point[1], 0) < 9
-                            && //
+                    while( flowIter.getSampleDouble(point[0], point[1], 0) < 9 && //
                             !isNovalue(flowIter.getSampleDouble(point[0], point[1], 0))
                             && (checkRange(mapToSumIter.getSampleDouble(point[0], point[1], 0), uThres, lThres)) ) {
 
@@ -1148,13 +1149,28 @@ public class ModelsEngine {
 
                         summedMapIter.setSample(point[0], point[1], 0, sumValue);
 
+                        // FlowNode flowNode = new FlowNode(flowIter, width, height, point[0],
+                        // point[1]);
+                        // FlowNode downStreamNode = flowNode.goDownstream();
+                        // if (downStreamNode != null) {
+                        // if (!downStreamNode.isMarkedAsOutlet()) {
+                        // point[0] = downStreamNode.col;
+                        // point[1] = downStreamNode.row;
+                        // }
+                        // } else {
+                        // return null;
+                        // }
                         if (!go_downstream(point, flowIter.getSampleDouble(point[0], point[1], 0)))
                             return null;
                     }
 
-                    double sumValue = summedMapIter.getSampleDouble(point[0], point[1], 0)
-                            + mapToSumIter.getSampleDouble(c, r, 0);
-                    summedMapIter.setSample(point[0], point[1], 0, sumValue);
+                    if (!isNovalue(flowIter.getSampleDouble(point[0], point[1], 0))) {
+                        double summedMapValue = summedMapIter.getSampleDouble(point[0], point[1], 0);
+                        if (!isNovalue(summedMapValue)) {
+                            double sumValue = summedMapValue + mapToSumIter.getSampleDouble(c, r, 0);
+                            summedMapIter.setSample(point[0], point[1], 0, sumValue);
+                        }
+                    }
                 } else {
                     summedMapIter.setSample(c, r, 0, doubleNovalue);
                 }

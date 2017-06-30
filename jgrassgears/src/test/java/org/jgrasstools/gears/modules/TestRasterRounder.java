@@ -17,11 +17,11 @@
  */
 package org.jgrasstools.gears.modules;
 
-import static java.lang.Double.NaN;
 
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.modules.r.rastervaluerounder.OmsRasterValueRounder;
 import org.jgrasstools.gears.modules.r.transformer.OmsRasterTransformer;
 import org.jgrasstools.gears.utils.HMTestCase;
@@ -34,6 +34,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestRasterRounder extends HMTestCase {
+    private double NaN = JGTConstants.doubleNovalue;
 
     public void testRasterRounder() throws Exception {
         double[][] flowData = new double[][]{//

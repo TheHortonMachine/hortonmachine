@@ -164,7 +164,7 @@ public class OmsVectorizer extends JGTModel {
             sb.append("],(");
             sb.append(pValue);
             sb.append(" null)");
-            classes = "NaN," + pValue + ",NaN";
+            classes = JGTConstants.doubleNovalue + "," + pValue + "," + JGTConstants.doubleNovalue;
 
             String ranges = sb.toString();
 

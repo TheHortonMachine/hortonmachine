@@ -50,6 +50,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -102,27 +103,29 @@ public class OmsCurvatures extends JGTModel {
         WritableRaster tangWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
         final double[] planTangProf = new double[3];
-        double disXX = Math.pow(xRes, 2.0);
-        double disYY = Math.pow(yRes, 2.0);
+
         /*
          * calculate curvatures
          */
         pm.beginTask(msg.message("curvatures.calculating"), nRows - 2);
         for( int r = 1; r < nRows - 1; r++ ) {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return;
             }
             for( int c = 1; c < nCols - 1; c++ ) {
-                calculateCurvatures(elevationIter, planTangProf, c, r, xRes, yRes, disXX, disYY);
-                planWR.setSample(c, r, 0, planTangProf[0]);
-                tangWR.setSample(c, r, 0, planTangProf[1]);
-                profWR.setSample(c, r, 0, planTangProf[2]);
+                GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
+                if (node.isValid() && !node.touchesNovalue() && !node.touchesBound()) {
+                    calculateCurvatures2(node, planTangProf);
+                    planWR.setSample(c, r, 0, planTangProf[0]);
+                    tangWR.setSample(c, r, 0, planTangProf[1]);
+                    profWR.setSample(c, r, 0, planTangProf[2]);
+                }
             }
             pm.worked(1);
         }
         pm.done();
 
-        if (isCanceled(pm)) {
+        if (pm.isCanceled()) {
             return;
         }
         outProf = CoverageUtilities.buildCoverage("prof_curvature", profWR, regionMap, inElev.getCoordinateReferenceSystem());
@@ -144,6 +147,7 @@ public class OmsCurvatures extends JGTModel {
      */
     public static void calculateCurvatures( RandomIter elevationIter, final double[] planTangProf, int c, int r, double xRes,
             double yRes, double disXX, double disYY ) {
+
         double elevation = elevationIter.getSampleDouble(c, r, 0);
         if (!isNovalue(elevation)) {
             double elevRplus = elevationIter.getSampleDouble(c, r + 1, 0);
@@ -169,22 +173,59 @@ public class OmsCurvatures extends JGTModel {
 
                 double sxxValue = (elevRplus - 2 * elevation + elevRminus) / disXX;
                 double syyValue = (elevCplus - 2 * elevation + elevCminus) / disYY;
-                double sxyValue = 0.25 * ((elevCplusRplus - elevCplusRminus - elevCminusRplus + elevCminusRminus) / (xRes * yRes));
+                double sxyValue = 0.25
+                        * ((elevCplusRplus - elevCplusRminus - elevCminusRplus + elevCminusRminus) / (xRes * yRes));
 
-                planTangProf[0] = (sxxValue * Math.pow(syValue, 2.0) - 2 * sxyValue * sxValue * syValue + syyValue
-                        * Math.pow(sxValue, 2.0))
-                        / (Math.pow(p, 1.5));
-                planTangProf[1] = (sxxValue * Math.pow(syValue, 2.0) - 2 * sxyValue * sxValue * syValue + syyValue
-                        * Math.pow(sxValue, 2.0))
-                        / (p * Math.pow(q, 0.5));
-                planTangProf[2] = (sxxValue * Math.pow(sxValue, 2.0) + 2 * sxyValue * sxValue * syValue + syyValue
-                        * Math.pow(syValue, 2.0))
-                        / (p * Math.pow(q, 1.5));
+                planTangProf[0] = (sxxValue * Math.pow(syValue, 2.0) - 2 * sxyValue * sxValue * syValue
+                        + syyValue * Math.pow(sxValue, 2.0)) / (Math.pow(p, 1.5));
+                planTangProf[1] = (sxxValue * Math.pow(syValue, 2.0) - 2 * sxyValue * sxValue * syValue
+                        + syyValue * Math.pow(sxValue, 2.0)) / (p * Math.pow(q, 0.5));
+                planTangProf[2] = (sxxValue * Math.pow(sxValue, 2.0) + 2 * sxyValue * sxValue * syValue
+                        + syyValue * Math.pow(syValue, 2.0)) / (p * Math.pow(q, 1.5));
             }
         } else {
             planTangProf[0] = doubleNovalue;
             planTangProf[1] = doubleNovalue;
             planTangProf[2] = doubleNovalue;
+        }
+    }
+
+    public static void calculateCurvatures2( GridNode node, final double[] planTangProf ) {
+        double disXX = Math.pow(node.xRes, 2.0);
+        double disYY = Math.pow(node.yRes, 2.0);
+        double elevation = node.elevation;
+        double elevRplus = node.getSouthElev();
+        double elevRminus = node.getNorthElev();
+        double elevCplus = node.getEastElev();
+        double elevCminus = node.getWestElev();
+        /*
+         * first derivate
+         */
+        double sxValue = 0.5 * (elevRplus - elevRminus) / node.xRes;
+        double syValue = 0.5 * (elevCplus - elevCminus) / node.yRes;
+        double p = Math.pow(sxValue, 2.0) + Math.pow(syValue, 2.0);
+        double q = p + 1;
+        if (p == 0.0) {
+            planTangProf[0] = 0.0;
+            planTangProf[1] = 0.0;
+            planTangProf[2] = 0.0;
+        } else {
+            double elevCplusRplus = node.getSEElev();
+            double elevCplusRminus = node.getENElev();
+            double elevCminusRplus = node.getWSElev();
+            double elevCminusRminus = node.getNWElev();
+
+            double sxxValue = (elevRplus - 2 * elevation + elevRminus) / disXX;
+            double syyValue = (elevCplus - 2 * elevation + elevCminus) / disYY;
+            double sxyValue = 0.25
+                    * ((elevCplusRplus - elevCplusRminus - elevCminusRplus + elevCminusRminus) / (node.xRes * node.yRes));
+
+            planTangProf[0] = (sxxValue * Math.pow(syValue, 2.0) - 2 * sxyValue * sxValue * syValue
+                    + syyValue * Math.pow(sxValue, 2.0)) / (Math.pow(p, 1.5));
+            planTangProf[1] = (sxxValue * Math.pow(syValue, 2.0) - 2 * sxyValue * sxValue * syValue
+                    + syyValue * Math.pow(sxValue, 2.0)) / (p * Math.pow(q, 0.5));
+            planTangProf[2] = (sxxValue * Math.pow(sxValue, 2.0) + 2 * sxyValue * sxValue * syValue
+                    + syyValue * Math.pow(syValue, 2.0)) / (p * Math.pow(q, 1.5));
         }
     }
 }

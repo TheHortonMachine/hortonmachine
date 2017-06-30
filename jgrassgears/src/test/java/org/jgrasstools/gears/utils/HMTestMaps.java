@@ -18,13 +18,13 @@
  */
 package org.jgrasstools.gears.utils;
 
-import static java.lang.Double.NaN;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -42,6 +42,7 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class HMTestMaps {
+    private static final double NaN = JGTConstants.doubleNovalue;
     private static RegionMap envelopeParams = null;
 
     private static CoordinateReferenceSystem crs = null;
