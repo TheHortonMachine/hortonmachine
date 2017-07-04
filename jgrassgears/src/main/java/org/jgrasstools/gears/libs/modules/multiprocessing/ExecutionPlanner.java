@@ -73,8 +73,8 @@ public abstract class ExecutionPlanner {
      * Set this to change the default planner for all modules.
      */
     public static Supplier<ExecutionPlanner> defaultPlannerFactory = () ->
-            new FixedChunkSizePlanner();
-            //new InThreadExecutionPlanner();
+//            new FixedChunkSizePlanner(); // use this for parallelization
+            new InThreadExecutionPlanner(); // use this for no parallelization
     
     /**
      * Creates a new general purpose, default {@link ExecutionPlanner}. This is

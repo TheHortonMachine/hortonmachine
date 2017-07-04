@@ -67,7 +67,6 @@ public abstract class GridNodeMultiProcessing extends MultiProcessing {
                 int _c = c, _r = r;
                 planner.submit(() -> {
                     if (!pm.isCanceled()) {
-                        // GridNode ctor does a lot of calculating -> must be inside the loop
                         GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, _c, _r);
                         calculator.calculate(node);
                     }

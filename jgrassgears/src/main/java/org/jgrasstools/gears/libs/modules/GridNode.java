@@ -338,7 +338,7 @@ public class GridNode extends Node {
      */
     public int getFlow() {
         GridNode nextDown = goDownstreamSP();
-        if (nextDown==null) {
+        if (nextDown == null) {
             return JGTConstants.intNovalue;
         }
 
