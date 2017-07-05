@@ -120,7 +120,7 @@ public class OmsPointCloudMaximaFinderStream extends JGTModel {
         int rows = (int) Math.round((north - south) / pBaseGridResolution);
         GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(north, south, east, west, cols, rows, crs);
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
 
         pm.beginTask("Distribute maximum values on grid...", inLas.size());
         for( LasRecord dot : inLas ) {

@@ -97,9 +97,9 @@ public class OmsAb extends JGTModel {
         RandomIter tcaIter = CoverageUtilities.getRandomIterator(inTca);
         RandomIter planIter = CoverageUtilities.getRandomIterator(inPlan);
 
-        WritableRaster alungWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, null);
+        WritableRaster alungWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, null);
         WritableRandomIter alungIter = RandomIterFactory.createWritable(alungWR, null);
-        WritableRaster bWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, null);
+        WritableRaster bWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, null);
         WritableRandomIter bIter = RandomIterFactory.createWritable(bWR, null);
 
         pm.beginTask(msg.message("ab.calculating"), nRows);

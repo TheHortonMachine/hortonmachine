@@ -171,7 +171,7 @@ public class OmsMosaic extends JGTModel {
 
         int endWidth = ep - wp;
         int endHeight = np - sp;
-        WritableRaster outputWR = CoverageUtilities.createDoubleWritableRaster(endWidth, endHeight, null, null,
+        WritableRaster outputWR = CoverageUtilities.createWritableRaster(endWidth, endHeight, null, null,
                 JGTConstants.doubleNovalue);
         WritableRandomIter outputIter = RandomIterFactory.createWritable(outputWR, null);
 

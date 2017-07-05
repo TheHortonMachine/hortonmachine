@@ -199,7 +199,7 @@ public class OmsEnergyIndexCalculator extends JGTModel {
 
         RenderedImage tmpImage = inCurvatures.getRenderedImage();
         curvatureImage = CoverageUtilities
-                .createDoubleWritableRaster(tmpImage.getWidth(), tmpImage.getHeight(), null, null, null);
+                .createWritableRaster(tmpImage.getWidth(), tmpImage.getHeight(), null, null, null);
         RandomIter tmpIterator = RandomIterFactory.create(tmpImage, null);
         // TODO check what this is for?!?!?
         for( int i = 0; i < tmpImage.getHeight(); i++ ) {

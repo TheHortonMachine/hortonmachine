@@ -109,7 +109,7 @@ public class OmsPointsRasterizer extends JGTModel {
         double e = regionMap.getEast();
         double w = regionMap.getWest();
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(regionMap.getCols(), regionMap.getRows(), null, null,
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(regionMap.getCols(), regionMap.getRows(), null, null,
                 JGTConstants.doubleNovalue);
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 

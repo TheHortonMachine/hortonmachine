@@ -161,7 +161,7 @@ public class OmsInsolation extends JGTModel {
         WritableRaster pitWR = CoverageUtilities.replaceNovalue(pitTmpRI, -9999.0);
         pitTmpRI = null;
 
-        WritableRaster insolationWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, pitWR.getSampleModel(),
+        WritableRaster insolationWR = CoverageUtilities.createWritableRaster(width, height, null, pitWR.getSampleModel(),
                 0.0);
         WritableRandomIter insolationIterator = RandomIterFactory.createWritable(insolationWR, null);
 
@@ -297,7 +297,7 @@ public class OmsInsolation extends JGTModel {
          * cells, which have 3 components so the Image have 3 bands..
          */
         SampleModel sm = RasterFactory.createBandedSampleModel(5, cols, rows, 3);
-        WritableRaster tmpNormalVectorWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, sm, 0.0);
+        WritableRaster tmpNormalVectorWR = CoverageUtilities.createWritableRaster(cols, rows, null, sm, 0.0);
         WritableRandomIter tmpNormalIter = RandomIterFactory.createWritable(tmpNormalVectorWR, null);
         /*
          * apply the corripio's formula (is the formula (3) in the article)

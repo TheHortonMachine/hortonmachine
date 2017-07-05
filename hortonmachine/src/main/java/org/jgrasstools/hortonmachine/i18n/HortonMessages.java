@@ -163,18 +163,6 @@ public class HortonMessages {
     public static final String OMSTC_outTc9_DESCRIPTION = "The map of 9 topographic classes.";
     public static final String OMSTC_outTc3_DESCRIPTION = "The map of 3 aggregated fundamental topographic classes.";
 
-    public static final String OMSPITFILLER_DESCRIPTION = "It fills the depression points present within a DEM.";
-    public static final String OMSPITFILLER_DOCUMENTATION = "OmsPitfiller.html";
-    public static final String OMSPITFILLER_KEYWORDS = "Dem manipulation, Geomorphology, OmsDrainDir";
-    public static final String OMSPITFILLER_LABEL = DEMMANIPULATION;
-    public static final String OMSPITFILLER_NAME = "pit";
-    public static final int OMSPITFILLER_STATUS = 40;
-    public static final String OMSPITFILLER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSPITFILLER_AUTHORNAMES = "David Tarboton, Andrea Antonello";
-    public static final String OMSPITFILLER_AUTHORCONTACTS = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com";
-    public static final String OMSPITFILLER_inElev_DESCRIPTION = "The map of digital elevation model (DEM).";
-    public static final String OMSPITFILLER_outPit_DESCRIPTION = "The depitted elevation map.";
-
     public static final String OMSSKYVIEW_DESCRIPTION = "Calculates the skyview factor.";
     public static final String OMSSKYVIEW_DOCUMENTATION = "OmsSkyview.html";
     public static final String OMSSKYVIEW_KEYWORDS = "Hydrology, Radiation, OmsInsolation, OmsHillshade";

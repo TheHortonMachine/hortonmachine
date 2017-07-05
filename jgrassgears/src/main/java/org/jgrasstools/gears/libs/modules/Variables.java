@@ -26,6 +26,10 @@ public interface Variables {
     public String DEFAULT = "default";
 
     public String PROGRESS_MONITOR_EN = "The progress monitor.";
+    
+    public String TYPE_INT = "INTEGER";
+    public String TYPE_FLOAT = "FLOAT";
+    public String TYPE_DOUBLE = "DOUBLE";
 
     public String TPS = "TPS";
     public String IDW = "IDW";

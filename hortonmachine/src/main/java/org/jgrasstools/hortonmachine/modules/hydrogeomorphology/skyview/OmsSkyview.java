@@ -137,7 +137,7 @@ public class OmsSkyview extends JGTModel {
          * cells, which have 3 components so the Image have 3 bands..
          */
         SampleModel sm = RasterFactory.createBandedSampleModel(5, cols, rows, 3);
-        WritableRaster tmpNormalVectorWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, sm, 0.0);
+        WritableRaster tmpNormalVectorWR = CoverageUtilities.createWritableRaster(cols, rows, null, sm, 0.0);
         /*
          * apply the corripio's formula (is the formula (3) in the article)
          */
@@ -161,7 +161,7 @@ public class OmsSkyview extends JGTModel {
          * Evaluate the value of the normal vector at the node as the mean of
          * the four value around, and normalize it.
          */
-        WritableRaster normalVectorWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, sm, 0.0);
+        WritableRaster normalVectorWR = CoverageUtilities.createWritableRaster(cols, rows, null, sm, 0.0);
         maxSlope = 3.13 / 2.0;
         for( int y = minY; y < maxY; y++ ) {
             for( int x = minX; x < maxX; x++ ) {
@@ -234,12 +234,12 @@ public class OmsSkyview extends JGTModel {
 
         normalVectorWR = normalVector(pitWR, res);
 
-        WritableRaster skyviewFactorWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, pitWR.getSampleModel(),
+        WritableRaster skyviewFactorWR = CoverageUtilities.createWritableRaster(cols, rows, null, pitWR.getSampleModel(),
                 0.0);
         pm.beginTask(msg.message("skyview.calculating"), 35);
         for( int i = 0; i < 360 - 10; i = i + 10 ) {
             azimuth = Math.toRadians(i * 1.0);
-            WritableRaster skyViewWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, pitWR.getSampleModel(),
+            WritableRaster skyViewWR = CoverageUtilities.createWritableRaster(cols, rows, null, pitWR.getSampleModel(),
                     Math.toRadians(maxSlope));
             for( int j = (int) maxSlope; j >= 0; j-- ) {
 

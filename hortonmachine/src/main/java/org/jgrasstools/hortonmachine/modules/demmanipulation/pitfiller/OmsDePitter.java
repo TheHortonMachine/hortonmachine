@@ -17,20 +17,10 @@
  */
 package org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_inElev_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_outPit_DESCRIPTION;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.DEMMANIPULATION;
 
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -42,6 +32,7 @@ import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -56,36 +47,51 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-@Description(OMSPITFILLER_DESCRIPTION)
-@Author(name = OMSPITFILLER_AUTHORNAMES, contact = OMSPITFILLER_AUTHORCONTACTS)
-@Keywords(OMSPITFILLER_KEYWORDS)
-@Label(OMSPITFILLER_LABEL)
-@Name(OMSPITFILLER_NAME)
-@Status(OMSPITFILLER_STATUS)
-@License(OMSPITFILLER_LICENSE)
-public class OmsPitfiller2 extends JGTModel {
-    @Description(OMSPITFILLER_inElev_DESCRIPTION)
+@Description(OmsDePitter.OMSDEPITTER_DESCRIPTION)
+@Author(name = OmsDePitter.OMSDEPITTER_AUTHORNAMES, contact = OmsDePitter.OMSDEPITTER_AUTHORCONTACTS)
+@Keywords(OmsDePitter.OMSDEPITTER_KEYWORDS)
+@Label(OmsDePitter.OMSDEPITTER_LABEL)
+@Name(OmsDePitter.OMSDEPITTER_NAME)
+@Status(OmsDePitter.OMSDEPITTER_STATUS)
+@License(OmsDePitter.OMSDEPITTER_LICENSE)
+public class OmsDePitter extends JGTModel {
+    @Description(OMSDEPITTER_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev;
 
-    @Description(OMSPITFILLER_outPit_DESCRIPTION)
+    @Description(OMSDEPITTER_outPit_DESCRIPTION)
     @Out
     public GridCoverage2D outPit = null;
+
+    @Description(OMSDEPITTER_outFlow_DESCRIPTION)
+    @Out
+    public GridCoverage2D outFlow = null;
+
+    public static final String OMSDEPITTER_DESCRIPTION = "The module fills the depression points present within a DEM and generates a map of flowdirections that also handles flat areas.";
+    public static final String OMSDEPITTER_DOCUMENTATION = "";
+    public static final String OMSDEPITTER_KEYWORDS = "Dem manipulation, Geomorphology";
+    public static final String OMSDEPITTER_LABEL = DEMMANIPULATION;
+    public static final String OMSDEPITTER_NAME = "depit";
+    public static final int OMSDEPITTER_STATUS = Status.EXPERIMENTAL;
+    public static final String OMSDEPITTER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSDEPITTER_AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
+    public static final String OMSDEPITTER_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSDEPITTER_inElev_DESCRIPTION = "The map of digital elevation model (DEM).";
+    public static final String OMSDEPITTER_outPit_DESCRIPTION = "The depitted elevation map.";
+    public static final String OMSDEPITTER_outFlow_DESCRIPTION = "The map of D8 flowdirections.";
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     private final double delta = 2E-6;
 
-    public GridCoverage2D outFlow;
-
     @Execute
     public void process() throws Exception {
         checkNull(inElev);
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
-        int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        double xRes = regionMap.get(CoverageUtilities.XRES);
-        double yRes = regionMap.get(CoverageUtilities.YRES);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
+        int nCols = regionMap.getCols();
+        int nRows = regionMap.getRows();
+        double xRes = regionMap.getXres();
+        double yRes = regionMap.getYres();
 
         // output raster
         WritableRaster pitRaster = CoverageUtilities.renderedImage2WritableRaster(inElev.getRenderedImage(), false);
@@ -169,7 +175,7 @@ public class OmsPitfiller2 extends JGTModel {
                     }
 
                     PitInfo info = new PitInfo();
-                    info.originalPitNode = originalPitNode;
+                    // info.originalPitNode = originalPitNode;
                     info.pitfillExitNode = maxValueNode;
                     info.nodes = nodesInPit;
                     pitInfoList.add(info);
@@ -207,7 +213,7 @@ public class OmsPitfiller2 extends JGTModel {
 
             outPit = CoverageUtilities.buildCoverage("pitfiller", pitRaster, regionMap, inElev.getCoordinateReferenceSystem());
 
-            WritableRaster flowRaster = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, Integer.class, null, null);
+            WritableRaster flowRaster = CoverageUtilities.createWritableRaster(nCols, nRows, Integer.class, null, null);
             WritableRandomIter flowIter = CoverageUtilities.getWritableRandomIterator(flowRaster);
             try {
                 pm.beginTask("Calculating flowdirections...", nRows);
@@ -329,7 +335,7 @@ public class OmsPitfiller2 extends JGTModel {
     }
 
     private static class PitInfo {
-        GridNode originalPitNode;
+        // GridNode originalPitNode;
         GridNode pitfillExitNode;
         List<GridNode> nodes;
     }

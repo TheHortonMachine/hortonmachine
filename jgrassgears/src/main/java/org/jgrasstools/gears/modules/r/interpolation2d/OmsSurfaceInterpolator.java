@@ -200,7 +200,7 @@ public class OmsSurfaceInterpolator extends JGTModel {
             interpolator = new TPSInterpolator(pBuffer);
         }
 
-        WritableRaster interpolatedWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null,
+        WritableRaster interpolatedWR = CoverageUtilities.createWritableRaster(cols, rows, null, null,
                 JGTConstants.doubleNovalue);
         final WritableRandomIter interpolatedIter = RandomIterFactory.createWritable(interpolatedWR, null);
 

@@ -112,7 +112,7 @@ public class OmsTca3d extends JGTModel {
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
 
         // Initialize new RasterData and set value
-        WritableRaster tca3dWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRaster tca3dWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
 
         tca3dWR = area3d(pitWR, flowWR, tca3dWR);
         outTca = CoverageUtilities.buildCoverage("tca3d", tca3dWR, regionMap, //$NON-NLS-1$

@@ -117,11 +117,11 @@ public class RegionGrowing extends JGTModel {
             GridCoverage2D inDtmGC = getRaster(inDtm);
             dtmIter = CoverageUtilities.getRandomIterator(inDtmGC);
         } else {
-            WritableRaster dtmWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 0.0);
+            WritableRaster dtmWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, 0.0);
             dtmIter = RandomIterFactory.createWritable(dtmWR, null);
         }
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         outIter = RandomIterFactory.createWritable(outWR, null);
 
         SimpleFeatureCollection inMaximaFC = getVector(inMaxima);

@@ -1271,18 +1271,6 @@ public class GearsMessages {
     public static final String OMSVECTORWRITER_P_TYPE_DESCRIPTION = "The vector type to write (Supported is: shp).";
     public static final String OMSVECTORWRITER_FILE_DESCRIPTION = "The vector file to write.";
 
-    public static final String OMSRASTERCONVERTER_DESCRIPTION = "Raster conversion module.";
-    public static final String OMSRASTERCONVERTER_DOCUMENTATION = "OmsRasterConverter.html";
-    public static final String OMSRASTERCONVERTER_KEYWORDS = "IO, Coverage, Raster, Convert, OmsRasterReader";
-    public static final String OMSRASTERCONVERTER_LABEL = RASTERPROCESSING;
-    public static final String OMSRASTERCONVERTER_NAME = "oms_rconvert";
-    public static final int OMSRASTERCONVERTER_STATUS = 40;
-    public static final String OMSRASTERCONVERTER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERCONVERTER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERCONVERTER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERCONVERTER_IN_RASTER_DESCRIPTION = "The input raster.";
-    public static final String OMSRASTERCONVERTER_OUT_RASTER_DESCRIPTION = "The output raster.";
-
     public static final String OMSCOVERAGEVIEWER_DESCRIPTION = "Utility class for viewing coverages.";
     public static final String OMSCOVERAGEVIEWER_DOCUMENTATION = "";
     public static final String OMSCOVERAGEVIEWER_KEYWORDS = "Coverage, Raster, Viewer, UI";

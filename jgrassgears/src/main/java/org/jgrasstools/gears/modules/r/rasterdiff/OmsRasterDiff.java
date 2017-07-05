@@ -103,7 +103,7 @@ public class OmsRasterDiff extends JGTModel {
         RandomIter r1Iter = CoverageUtilities.getRandomIterator(inRaster1);
         RandomIter r2Iter = CoverageUtilities.getRandomIterator(inRaster2);
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         pm.beginTask("Subtracting raster...", cols);

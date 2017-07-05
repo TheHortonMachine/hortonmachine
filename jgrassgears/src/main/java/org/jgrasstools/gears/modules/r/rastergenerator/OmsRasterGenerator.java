@@ -155,7 +155,7 @@ public class OmsRasterGenerator extends JGTModel {
                 pWest, cols, rows, crs);
         RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometryFromRegionValues);
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
         WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
 
         Random random = new Random();

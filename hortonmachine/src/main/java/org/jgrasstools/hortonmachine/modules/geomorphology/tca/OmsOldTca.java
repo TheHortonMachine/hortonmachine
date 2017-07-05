@@ -129,7 +129,7 @@ public class OmsOldTca extends JGTModel {
         pm.message(msg.message("tca.initializematrix"));
 
         // Initialize new RasterData and set value
-        WritableRaster tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 1.0);
+        WritableRaster tcaWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, 1.0);
 
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
         WritableRandomIter tcaIter = RandomIterFactory.createWritable(tcaWR, null);

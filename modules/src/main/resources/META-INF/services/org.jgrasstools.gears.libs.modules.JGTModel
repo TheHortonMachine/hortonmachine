@@ -10,6 +10,7 @@ org.jgrasstools.modules.ContourExtractor
 org.jgrasstools.modules.Curvatures
 org.jgrasstools.modules.CurvaturesBivariate
 org.jgrasstools.modules.CutOut
+org.jgrasstools.modules.DePitter
 org.jgrasstools.modules.DebrisFlow
 org.jgrasstools.modules.DebrisTriggerCnr
 org.jgrasstools.modules.DebrisVandre

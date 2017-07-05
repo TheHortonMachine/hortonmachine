@@ -27,6 +27,7 @@ import javax.media.jai.iterator.RectIterFactory;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsDePitter;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
@@ -37,21 +38,25 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TestPitfiller extends HMTestCase {
+public class TestDePitter extends HMTestCase {
     public void testPitfiller() throws Exception {
         double[][] elevationData = HMTestMaps.mapData;
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
-        OmsPitfiller pitfiller = new OmsPitfiller();
+        OmsDePitter pitfiller = new OmsDePitter();
         pitfiller.inElev = elevationCoverage;
         pitfiller.pm = pm;
         pitfiller.process();
 
         GridCoverage2D pitfillerCoverage = pitfiller.outPit;
         // printImage(pitfillerCoverage.getRenderedImage());
-        checkMatrixEqual(pitfillerCoverage.getRenderedImage(), HMTestMaps.outPitData, 0);
+        checkMatrixEqual(pitfillerCoverage.getRenderedImage(), HMTestMaps.outNewPitData, 0);
+
+        GridCoverage2D flowCoverage = pitfiller.outFlow;
+        // printImage(flowCoverage.getRenderedImage());
+        checkMatrixEqual(flowCoverage.getRenderedImage(), HMTestMaps.newIntFlowData);
 
     }
 

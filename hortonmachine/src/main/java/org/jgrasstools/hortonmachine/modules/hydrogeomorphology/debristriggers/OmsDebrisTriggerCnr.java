@@ -141,7 +141,7 @@ public class OmsDebrisTriggerCnr extends JGTModel {
         RandomIter gradientTanIter = RandomIterFactory.create(gradientTanRI, null);
 
         WritableRaster outputWR = CoverageUtilities
-                .createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+                .createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         WritableRandomIter outputIter = RandomIterFactory.createWritable(outputWR, null);
 
         pm.beginTask("Extracting trigger points...", cols);

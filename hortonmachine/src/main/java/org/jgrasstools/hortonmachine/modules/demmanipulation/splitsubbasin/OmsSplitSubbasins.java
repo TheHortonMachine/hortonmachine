@@ -116,7 +116,7 @@ public class OmsSplitSubbasins extends JGTModel {
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
         WritableRandomIter hacksIter = RandomIterFactory.createWritable(hackWR, null);
 
-        WritableRaster netImage = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null,
+        WritableRaster netImage = CoverageUtilities.createWritableRaster(nCols, nRows, null, null,
                 JGTConstants.doubleNovalue);
         WritableRandomIter netIter = RandomIterFactory.createWritable(netImage, null);
         net(hacksIter, netIter);
@@ -162,7 +162,7 @@ public class OmsSplitSubbasins extends JGTModel {
         int drainingPixelNum = 0;
         int[] flowColRow = new int[2];
 
-        WritableRaster netNumberingImage = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, 0.0);
+        WritableRaster netNumberingImage = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, 0.0);
         WritableRandomIter netNumberRandomIter = RandomIterFactory.createWritable(netNumberingImage, null);
 
         int n = 0;

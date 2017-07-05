@@ -106,7 +106,7 @@ public class OmsH2cd extends JGTModel {
             elevIter = RandomIterFactory.create(elevRI, null);
         }
 
-        WritableRaster h2cdWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 0.0);
+        WritableRaster h2cdWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, 0.0);
         WritableRandomIter h2cdIter = RandomIterFactory.createWritable(h2cdWR, null);
 
         for( int c = 0; c < cols; c++ ) {

@@ -705,7 +705,7 @@ public class ModelsEngine {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(flowGC);
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
-        WritableRaster netnumWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRaster netnumWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
         WritableRandomIter netnumIter = RandomIterFactory.createWritable(netnumWR, null);
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(flowGC);
@@ -848,7 +848,7 @@ public class ModelsEngine {
             }
         }
 
-        WritableRaster subbasinWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRaster subbasinWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
         WritableRandomIter subbasinIter = RandomIterFactory.createWritable(subbasinWR, null);
 
         markHillSlopeWithLinkValue(flowIter, netNumberIter, subbasinIter, cols, rows, pm);
@@ -1118,7 +1118,7 @@ public class ModelsEngine {
     public static WritableRaster sumDownstream( RandomIter flowIter, RandomIter mapToSumIter, int width, int height,
             Double upperThreshold, Double lowerThreshold, IJGTProgressMonitor pm ) {
         final int[] point = new int[2];
-        WritableRaster summedMapWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, null);
+        WritableRaster summedMapWR = CoverageUtilities.createWritableRaster(width, height, null, null, null);
         WritableRandomIter summedMapIter = RandomIterFactory.createWritable(summedMapWR, null);
 
         double uThres = Double.POSITIVE_INFINITY;
@@ -1266,7 +1266,7 @@ public class ModelsEngine {
             f_j = h - 1;
         }
 
-        WritableRaster sOmbraWR = CoverageUtilities.createDoubleWritableRaster(w, h, null, null, 1.0);
+        WritableRaster sOmbraWR = CoverageUtilities.createWritableRaster(w, h, null, null, 1.0);
         int j = f_j;
         for( int i = 0; i < sOmbraWR.getWidth(); i++ ) {
             shadow(i, j, sOmbraWR, demWR, dx, normalSunVector, inverseSunVector);

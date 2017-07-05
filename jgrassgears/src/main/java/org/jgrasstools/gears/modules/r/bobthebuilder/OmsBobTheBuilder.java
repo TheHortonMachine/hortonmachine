@@ -207,7 +207,7 @@ public class OmsBobTheBuilder extends JGTModel {
         RandomIter elevIter = CoverageUtilities.getRandomIterator(inRaster);
 
         WritableRaster outputWR = CoverageUtilities
-                .createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+                .createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         WritableRandomIter outputIter = RandomIterFactory.createWritable(outputWR, null);
 
         DefaultFeatureCollection newCollection = new DefaultFeatureCollection();

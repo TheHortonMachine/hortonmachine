@@ -148,24 +148,24 @@ public class OmsLeastCostFlowDirections extends JGTModel {
 
         RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
 
-        WritableRaster flowWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRaster flowWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
         flowIter = CoverageUtilities.getWritableRandomIterator(flowWR);
 
         WritableRaster tcaWR = null;
         if (doTca) {
-            tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+            tcaWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
             tcaIter = CoverageUtilities.getWritableRandomIterator(tcaWR);
         }
 
         WritableRaster slopeWR = null;
         if (doSlope) {
-            slopeWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+            slopeWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
             slopeIter = CoverageUtilities.getWritableRandomIterator(slopeWR);
         }
 
         WritableRaster aspectWR = null;
         if (doAspect) {
-            aspectWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+            aspectWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
             aspectIter = CoverageUtilities.getWritableRandomIterator(aspectWR);
         }
 

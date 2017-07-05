@@ -17,16 +17,22 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_inElev_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_outPit_DESCRIPTION;
+
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller.OMSPITFILLER_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller.OMSPITFILLER_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller.OMSPITFILLER_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller.OMSPITFILLER_KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller.OMSPITFILLER_LABEL;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller.OMSPITFILLER_LICENSE;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller.OMSPITFILLER_NAME;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller.OMSPITFILLER_STATUS;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller.OMSPITFILLER_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller.OMSPITFILLER_outPit_DESCRIPTION;
+
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -37,10 +43,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 
 @Description(OMSPITFILLER_DESCRIPTION)
 @Author(name = OMSPITFILLER_AUTHORNAMES, contact = OMSPITFILLER_AUTHORCONTACTS)

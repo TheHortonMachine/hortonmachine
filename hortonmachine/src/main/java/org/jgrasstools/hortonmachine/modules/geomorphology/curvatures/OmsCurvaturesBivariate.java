@@ -115,10 +115,10 @@ public class OmsCurvaturesBivariate extends JGTModel {
 
         RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
 
-        WritableRaster profWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRaster planWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRaster slopeWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRaster aspectWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster profWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster planWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster slopeWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster aspectWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
         final double[] planProfSlopeAspect = new double[4];
         double disXX = Math.pow(xRes, 2.0);

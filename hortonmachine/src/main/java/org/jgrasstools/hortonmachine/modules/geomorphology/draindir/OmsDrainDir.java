@@ -151,7 +151,7 @@ public class OmsDrainDir extends JGTModel {
 
         nelev = 0;
         for( int j = 0; j < rows; j++ ) {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return;
             }
             for( int i = 0; i < cols; i++ ) {
@@ -169,11 +169,11 @@ public class OmsDrainDir extends JGTModel {
         pm.message(msg.message("draindir.initializematrix"));
 
         // Initialize new RasterData and set value
-        WritableRaster tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, Double.class, null, NaN);
-        WritableRaster dirWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, Double.class, null, NaN);
+        WritableRaster tcaWR = CoverageUtilities.createWritableRaster(cols, rows, Double.class, null, NaN);
+        WritableRaster dirWR = CoverageUtilities.createWritableRaster(cols, rows, Double.class, null, NaN);
 
         // it contains the analyzed cells
-        WritableRaster deviationsWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRaster deviationsWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
         BitMatrix analizedMatrix = new BitMatrix(cols, rows);
 
         if (doLad) {
@@ -619,7 +619,7 @@ public class OmsDrainDir extends JGTModel {
 
         WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirWR, null);
 
-        WritableRaster modflowImage = CoverageUtilities.createDoubleWritableRaster(pitWR.getWidth(), pitWR.getHeight(), null,
+        WritableRaster modflowImage = CoverageUtilities.createWritableRaster(pitWR.getWidth(), pitWR.getHeight(), null,
                 null, null);
         WritableRandomIter modflowRandomIter = RandomIterFactory.createWritable(modflowImage, null);
 

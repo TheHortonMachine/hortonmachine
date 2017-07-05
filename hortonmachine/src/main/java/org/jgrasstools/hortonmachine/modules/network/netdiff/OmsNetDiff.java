@@ -150,7 +150,7 @@ public class OmsNetDiff extends JGTModel {
             }
             pm.worked(1);
         }
-        WritableRaster diffImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, inFlow.getRenderedImage()
+        WritableRaster diffImage = CoverageUtilities.createWritableRaster(cols, rows, null, inFlow.getRenderedImage()
                 .getSampleModel(), null);
         WritableRandomIter diffIter = RandomIterFactory.createWritable(diffImage, null);
         // Second step: It calculate the difference among the first and the last

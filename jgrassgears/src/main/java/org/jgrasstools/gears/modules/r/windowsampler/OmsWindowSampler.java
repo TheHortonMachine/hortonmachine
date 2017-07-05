@@ -121,7 +121,7 @@ public class OmsWindowSampler extends JGTModel {
         // new rows and cols are all that have space rounding down
         int newRows = (int) ceil((double) rows / (double) ystep);
         int newCols = (int) ceil((double) cols / (double) xstep);
-        WritableRaster outputWR = CoverageUtilities.createDoubleWritableRaster(newCols, newRows, null, null,
+        WritableRaster outputWR = CoverageUtilities.createWritableRaster(newCols, newRows, null, null,
                 JGTConstants.doubleNovalue);
 
         WindowIterator iter = new WindowIterator(inGeodata.getRenderedImage(), null, new Dimension(pCols, pRows),

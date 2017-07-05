@@ -81,7 +81,7 @@ public class OmsBiasedSigmaFilter extends JGTModel {
         double yres = regionMap.getYres();
 
         RandomIter inIter = CoverageUtilities.getRandomIterator(inGeodata);
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
         WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
 
         int part = (pWindow - 1) / 2;

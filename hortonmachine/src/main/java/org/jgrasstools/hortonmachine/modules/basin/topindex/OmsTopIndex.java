@@ -90,7 +90,7 @@ public class OmsTopIndex extends JGTModel {
         RandomIter tcaIter = CoverageUtilities.getRandomIterator(inTca);
         RandomIter slopeIter = CoverageUtilities.getRandomIterator(inSlope);
 
-        WritableRaster topindexWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster topindexWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRandomIter topindexIter = RandomIterFactory.createWritable(topindexWR, null);
 
         pm.beginTask(msg.message("topindex.calculating"), nRows);

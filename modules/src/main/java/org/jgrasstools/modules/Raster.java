@@ -26,7 +26,7 @@ import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.WEST;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.YRES;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.buildCoverage;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.createDoubleWritableRaster;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.createWritableRaster;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
 
 import java.awt.image.WritableRaster;
@@ -104,7 +104,7 @@ public class Raster {
         yRes = (north - south) / rows;
 
         if (makeNew) {
-            newWR = createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+            newWR = createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
             iter = RandomIterFactory.createWritable(newWR, null);
         } else {
             iter = RandomIterFactory.create(raster.getRenderedImage(), null);
@@ -139,7 +139,7 @@ public class Raster {
         regionMap.put(ROWS, (double) rows);
         regionMap.put(COLS, (double) cols);
 
-        newWR = createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        newWR = createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         iter = RandomIterFactory.createWritable(newWR, null);
     }
 
@@ -182,7 +182,7 @@ public class Raster {
         regionMap.put(COLS, (double) cols);
 
         makeNew = true;
-        newWR = createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        newWR = createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         iter = RandomIterFactory.createWritable(newWR, null);
     }
 

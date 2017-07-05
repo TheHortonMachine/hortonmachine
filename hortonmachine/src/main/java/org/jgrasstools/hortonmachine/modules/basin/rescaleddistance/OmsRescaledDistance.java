@@ -125,7 +125,7 @@ public class OmsRescaledDistance extends JGTModel {
             elevIter = RandomIterFactory.create(elevRI, null);
         }
 
-        WritableRaster rescaledWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRaster rescaledWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
         rescaledIter = RandomIterFactory.createWritable(rescaledWR, null);
 
         pm.beginTask("Find outlets...", rows); //$NON-NLS-1$

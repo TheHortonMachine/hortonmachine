@@ -85,7 +85,7 @@ public class OmsRasterNormalizer extends JGTModel {
 
         RandomIter rasterIter = CoverageUtilities.getRandomIterator(inRaster);
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         pm.beginTask("Normalizing...", nRows);

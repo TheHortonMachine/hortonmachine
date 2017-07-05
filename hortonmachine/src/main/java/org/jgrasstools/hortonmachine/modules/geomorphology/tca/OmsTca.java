@@ -91,7 +91,7 @@ public class OmsTca extends JGTModel {
         int rows = regionMap.getRows();
 
         RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRaster tcaWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
 
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
         WritableRandomIter tcaIter = RandomIterFactory.createWritable(tcaWR, null);

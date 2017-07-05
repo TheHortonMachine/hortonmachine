@@ -17,24 +17,21 @@
  */
 package org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.DEMMANIPULATION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_inElev_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_outPit_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.ModelsSupporter;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -47,19 +44,13 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-
-@Description(OMSPITFILLER_DESCRIPTION)
-@Author(name = OMSPITFILLER_AUTHORNAMES, contact = OMSPITFILLER_AUTHORCONTACTS)
-@Keywords(OMSPITFILLER_KEYWORDS)
-@Label(OMSPITFILLER_LABEL)
-@Name(OMSPITFILLER_NAME)
-@Status(OMSPITFILLER_STATUS)
-@License(OMSPITFILLER_LICENSE)
+@Description(OmsPitfiller.OMSPITFILLER_DESCRIPTION)
+@Author(name = OmsPitfiller.OMSPITFILLER_AUTHORNAMES, contact = OmsPitfiller.OMSPITFILLER_AUTHORCONTACTS)
+@Keywords(OmsPitfiller.OMSPITFILLER_KEYWORDS)
+@Label(OmsPitfiller.OMSPITFILLER_LABEL)
+@Name(OmsPitfiller.OMSPITFILLER_NAME)
+@Status(OmsPitfiller.OMSPITFILLER_STATUS)
+@License(OmsPitfiller.OMSPITFILLER_LICENSE)
 public class OmsPitfiller extends JGTModel {
     @Description(OMSPITFILLER_inElev_DESCRIPTION)
     @In
@@ -68,6 +59,18 @@ public class OmsPitfiller extends JGTModel {
     @Description(OMSPITFILLER_outPit_DESCRIPTION)
     @Out
     public GridCoverage2D outPit = null;
+    
+    public static final String OMSPITFILLER_DESCRIPTION = "It fills the depression points present within a DEM.";
+    public static final String OMSPITFILLER_DOCUMENTATION = "OmsPitfiller.html";
+    public static final String OMSPITFILLER_KEYWORDS = "Dem manipulation, Geomorphology, OmsDrainDir";
+    public static final String OMSPITFILLER_LABEL = DEMMANIPULATION;
+    public static final String OMSPITFILLER_NAME = "pit";
+    public static final int OMSPITFILLER_STATUS = 40;
+    public static final String OMSPITFILLER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSPITFILLER_AUTHORNAMES = "David Tarboton, Andrea Antonello";
+    public static final String OMSPITFILLER_AUTHORCONTACTS = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com";
+    public static final String OMSPITFILLER_inElev_DESCRIPTION = "The map of digital elevation model (DEM).";
+    public static final String OMSPITFILLER_outPit_DESCRIPTION = "The depitted elevation map.";
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
@@ -154,7 +157,7 @@ public class OmsPitfiller extends JGTModel {
         elevationIter = CoverageUtilities.getRandomIterator(inElev);
 
         // output raster
-        WritableRaster pitRaster = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, null);
+        WritableRaster pitRaster = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, null);
         pitIter = CoverageUtilities.getWritableRandomIterator(pitRaster);
 
         for( int i = 0; i < nRows; i++ ) {
@@ -315,11 +318,11 @@ public class OmsPitfiller extends JGTModel {
             return;
         }
 
-        for( int i = 0; i < currentPitRows.length; i++ ) {
-            int r = currentPitRows[i];
-            int c = currentPitCols[i];
-            System.out.println("row/cols = " + r + "/" + c);
-        }
+        // for( int i = 0; i < currentPitRows.length; i++ ) {
+        // int r = currentPitRows[i];
+        // int c = currentPitCols[i];
+        // System.out.println("row/cols = " + r + "/" + c);
+        // }
 
         int n = currentPitsCount;
         pm.message(msg.message("pitfiller.numpit") + n);

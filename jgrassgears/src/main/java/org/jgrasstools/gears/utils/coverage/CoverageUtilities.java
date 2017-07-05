@@ -149,7 +149,7 @@ public class CoverageUtilities {
             GrassLegacyRandomIter iter = new GrassLegacyRandomIter(new double[height][width]);
             return iter;
         }
-        WritableRaster pitRaster = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, null);
+        WritableRaster pitRaster = CoverageUtilities.createWritableRaster(width, height, null, null, null);
         WritableRandomIter iter = RandomIterFactory.createWritable(pitRaster, null);
         return iter;
     }
@@ -211,7 +211,7 @@ public class CoverageUtilities {
      *                  used, which is 0.
      * @return a {@link WritableRaster writable raster}.
      */
-    public static WritableRaster createDoubleWritableRaster( int width, int height, Class< ? > dataClass, SampleModel sampleModel,
+    public static WritableRaster createWritableRaster( int width, int height, Class< ? > dataClass, SampleModel sampleModel,
             Object value ) {
         int dataType = DataBuffer.TYPE_DOUBLE;
         if (dataClass != null) {
@@ -716,7 +716,7 @@ public class CoverageUtilities {
             height = width;
             width = tmp;
         }
-        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, JGTConstants.doubleNovalue);
+        WritableRaster writableRaster = createWritableRaster(width, height, null, null, JGTConstants.doubleNovalue);
 
         WritableRandomIter rasterIter = RandomIterFactory.createWritable(writableRaster, null);
         for( int x = 0; x < width; x++ ) {
@@ -750,7 +750,7 @@ public class CoverageUtilities {
             height = width;
             width = tmp;
         }
-        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
+        WritableRaster writableRaster = createWritableRaster(width, height, null, null, null);
 
         WritableRandomIter randomIter = RandomIterFactory.createWritable(writableRaster, null);
         for( int x = 0; x < width; x++ ) {
@@ -775,7 +775,7 @@ public class CoverageUtilities {
             height = width;
             width = tmp;
         }
-        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
+        WritableRaster writableRaster = createWritableRaster(width, height, null, null, null);
 
         WritableRandomIter randomIter = RandomIterFactory.createWritable(writableRaster, null);
         for( int x = 0; x < width; x++ ) {
@@ -801,7 +801,7 @@ public class CoverageUtilities {
      * @return the produced raster.
      */
     public static WritableRaster createWritableRasterFromArray( int width, int height, int[] pixels ) {
-        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
+        WritableRaster writableRaster = createWritableRaster(width, height, null, null, null);
         int index = 0;
         for( int y = 0; y < height; y++ ) {
             for( int x = 0; x < width; x++ ) {
@@ -1054,7 +1054,7 @@ public class CoverageUtilities {
      * @return the raster.
      */
     public static WritableRaster integerArray2WritableRaster( int[] array, double divide, int width, int height ) {
-        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
+        WritableRaster writableRaster = createWritableRaster(width, height, null, null, null);
         int index = 0;;
         for( int x = 0; x < width; x++ ) {
             for( int y = 0; y < height; y++ ) {
@@ -1075,7 +1075,7 @@ public class CoverageUtilities {
      * @return the raster.
      */
     public static WritableRaster doubleArray2WritableRaster( double[] array, int width, int height ) {
-        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
+        WritableRaster writableRaster = createWritableRaster(width, height, null, null, null);
         int index = 0;;
         for( int x = 0; x < width; x++ ) {
             for( int y = 0; y < height; y++ ) {
@@ -1321,7 +1321,7 @@ public class CoverageUtilities {
 
         RandomIter valuesIter = RandomIterFactory.create(valuesMap.getRenderedImage(), null);
         RandomIter maskIter = RandomIterFactory.create(maskMap.getRenderedImage(), null);
-        WritableRaster writableRaster = createDoubleWritableRaster(cs, rs, null, null, JGTConstants.doubleNovalue);
+        WritableRaster writableRaster = createWritableRaster(cs, rs, null, null, JGTConstants.doubleNovalue);
         WritableRandomIter outIter = RandomIterFactory.createWritable(writableRaster, null);
 
         for( int c = 0; c < cs; c++ ) {
@@ -1498,7 +1498,7 @@ public class CoverageUtilities {
 
         RandomIter rasterIter = CoverageUtilities.getRandomIterator(raster);
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
         for( int r = 0; r < nRows; r++ ) {
             for( int c = 0; c < nCols; c++ ) {

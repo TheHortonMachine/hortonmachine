@@ -44,13 +44,10 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_outAsp
 
 import java.awt.image.WritableRaster;
 
-import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
-import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.multiprocessing.GridNodeMultiProcessing;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -113,10 +110,10 @@ public class OmsAspect extends GridNodeMultiProcessing {
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
 
-        WritableRaster aspectWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRaster aspectWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
         WritableRandomIter aspectIter = RandomIterFactory.createWritable(aspectWR, null);
 
-        pm.beginTask(msg.message("aspect.calculating"), rows*cols);
+        pm.beginTask(msg.message("aspect.calculating"), rows * cols);
         processGridNodes(inElev, gridNode -> {
             double aspect = calculateAspect(gridNode, radtodeg, doRound);
             aspectIter.setSample(gridNode.col, gridNode.row, 0, aspect);

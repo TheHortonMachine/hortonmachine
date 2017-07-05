@@ -101,7 +101,7 @@ public class OmsRasterNull extends JGTModel {
         int rows = regionMap.getRows();
         int cols = regionMap.getCols();
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
         RandomIter inRasterIter = CoverageUtilities.getRandomIterator(inRaster);
         WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
 

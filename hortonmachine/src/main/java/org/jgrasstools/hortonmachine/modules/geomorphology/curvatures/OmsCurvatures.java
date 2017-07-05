@@ -98,9 +98,9 @@ public class OmsCurvatures extends JGTModel {
 
         RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
 
-        WritableRaster profWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRaster planWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRaster tangWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster profWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster planWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster tangWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
         final double[] planTangProf = new double[3];
 

@@ -241,9 +241,9 @@ public class OmsShalstab extends JGTModel {
         RandomIter slopeRI = RandomIterFactory.create(slope, null);
         RandomIter abRI = RandomIterFactory.create(ab, null);
 
-        WritableRaster qcritWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRaster qcritWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
         WritableRandomIter qcritIter = RandomIterFactory.createWritable(qcritWR, null);
-        WritableRaster classiWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRaster classiWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
         WritableRandomIter classiIter = RandomIterFactory.createWritable(classiWR, null);
 
         pm.beginTask("Creating qcrit map...", rows);

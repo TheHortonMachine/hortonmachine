@@ -157,7 +157,7 @@ public class OmsExtractNetwork extends JGTModel {
      */
     private WritableRaster extractNetTcaThreshold( RenderedImage tcaRI ) {
         RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
-        WritableRaster netWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster netWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         WritableRandomIter netIter = RandomIterFactory.createWritable(netWR, null);
 
         pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
@@ -191,7 +191,7 @@ public class OmsExtractNetwork extends JGTModel {
         RandomIter slopeRandomIter = RandomIterFactory.create(slopeRI, null);
 
         // create new RasterData for the network matrix
-        WritableRaster networkWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null,
+        WritableRaster networkWR = CoverageUtilities.createWritableRaster(cols, rows, null, null,
                 JGTConstants.doubleNovalue);
         WritableRandomIter netRandomIter = RandomIterFactory.createWritable(networkWR, null);
 
@@ -250,7 +250,7 @@ public class OmsExtractNetwork extends JGTModel {
         RandomIter tcaRandomIter = RandomIterFactory.create(tcaRI, null);
         RandomIter classRandomIter = RandomIterFactory.create(classRI, null);
         RandomIter slopeRandomIter = RandomIterFactory.create(slopeRI, null);
-        WritableRaster netImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRaster netImage = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
 
         // try the operation!!
 

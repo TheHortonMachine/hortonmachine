@@ -239,7 +239,7 @@ public abstract class JGTModelIM extends JGTModel {
         for( File outRasterFile : outRasterFiles ) {
             File parentFile = outRasterFile.getParentFile();
             if (parentFile != null && parentFile.exists()) {
-                WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(writeCols, writeRows, null, null,
+                WritableRaster outWR = CoverageUtilities.createWritableRaster(writeCols, writeRows, null, null,
                         JGTConstants.doubleNovalue);
                 RegionMap writeParams = CoverageUtilities.gridGeometry2RegionParamsMap(writeGridGeometry);
                 GridCoverage2D writeGC = CoverageUtilities.buildCoverage(outRasterFile.getName(), outWR, writeParams, crs);

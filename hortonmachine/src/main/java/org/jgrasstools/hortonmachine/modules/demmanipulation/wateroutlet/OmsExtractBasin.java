@@ -211,7 +211,7 @@ public class OmsExtractBasin extends JGTModel {
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, false);
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
 
-        WritableRaster basinWR = CoverageUtilities.createDoubleWritableRaster(ncols, nrows, null, null, doubleNovalue);
+        WritableRaster basinWR = CoverageUtilities.createWritableRaster(ncols, nrows, null, null, doubleNovalue);
         WritableRandomIter basinIter = RandomIterFactory.createWritable(basinWR, null);
 
         Coordinate outlet = new Coordinate(pEast, pNorth);

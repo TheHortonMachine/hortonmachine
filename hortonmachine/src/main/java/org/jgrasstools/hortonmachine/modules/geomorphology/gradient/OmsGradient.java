@@ -150,7 +150,7 @@ public class OmsGradient extends JGTModel {
     */
     private WritableRaster gradientHorn( RandomIter elevationIter ) {
 
-        WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster gradientWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
         pm.beginTask(msg.message("gradient.working"), nRows);
         for( int y = 1; y < nRows - 1; y++ ) {
@@ -219,7 +219,7 @@ public class OmsGradient extends JGTModel {
      * 
     */
     private WritableRaster gradientDiff( RandomIter elevationIter ) {
-        WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster gradientWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
         pm.beginTask(msg.message("gradient.working"), nRows);
         for( int y = 1; y < nRows - 1; y++ ) {
             for( int x = 1; x < nCols - 1; x++ ) {
@@ -279,7 +279,7 @@ public class OmsGradient extends JGTModel {
      *
      */
     private WritableRaster gradientEvans( RandomIter elevationIter ) {
-        WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster gradientWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
         pm.beginTask(msg.message("gradient.working"), nRows);
         for( int y = 1; y < nRows - 1; y++ ) {
             for( int x = 1; x < nCols - 1; x++ ) {
