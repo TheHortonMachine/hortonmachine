@@ -40,6 +40,7 @@ import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.WEST;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 
@@ -171,6 +172,8 @@ public class OmsMosaic extends JGTModel {
 
         int endWidth = ep - wp;
         int endHeight = np - sp;
+
+        pm.message(MessageFormat.format("Output raster will have {0} cols and {1} rows.", endWidth, endHeight));
         WritableRaster outputWR = CoverageUtilities.createWritableRaster(endWidth, endHeight, null, null,
                 JGTConstants.doubleNovalue);
         WritableRandomIter outputIter = RandomIterFactory.createWritable(outputWR, null);
@@ -195,9 +198,10 @@ public class OmsMosaic extends JGTModel {
             int startY = (int) (repEnv.getMinY() + offestY);
 
             double tmpW = tmpEnv.getWidth();
+            double tmpH = tmpEnv.getHeight();
             pm.beginTask("Patch map " + index++, (int) tmpW); //$NON-NLS-1$
             for( int x = 0; x < tmpW; x++ ) {
-                for( int y = 0; y < tmpEnv.getHeight(); y++ ) {
+                for( int y = 0; y < tmpH; y++ ) {
                     double value = randomIter.getSampleDouble(x, y, 0);
                     outputIter.setSample(x + startX, y + startY, 0, value);
                 }
