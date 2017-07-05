@@ -17,7 +17,6 @@
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.draindir;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_AUTHORNAMES;
@@ -38,11 +37,21 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_pLam
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.FlowNode;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.ModelsSupporter;
+import org.jgrasstools.gears.utils.BitMatrix;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -55,16 +64,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.utils.BitMatrix;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description(OMSDRAINDIR_DESCRIPTION)
 @Documentation(OMSDRAINDIR_DOCUMENTATION)
@@ -108,8 +107,6 @@ public class OmsDrainDir extends JGTModel {
 
     private static final double PI = Math.PI;
 
-    private static final float NaN = JGTConstants.floatNovalue;
-
     /*
      * indicates the position of the triangle's vertexes
      */
@@ -133,8 +130,9 @@ public class OmsDrainDir extends JGTModel {
 
     private int cols;
     private int rows;
-    private double xRes;
-    private double yRes;
+    private float xRes;
+    private float yRes;
+    private float dxySqrt;
 
     /**
      * Calculates new drainage directions
@@ -151,8 +149,9 @@ public class OmsDrainDir extends JGTModel {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inPit);
         cols = regionMap.getCols();
         rows = regionMap.getRows();
-        xRes = regionMap.getXres();
-        yRes = regionMap.getYres();
+        xRes = (float) regionMap.getXres();
+        yRes = (float) regionMap.getYres();
+        dxySqrt = (float) Math.sqrt(xRes * xRes + yRes * yRes);
 
         RenderedImage pitfillerRI = inPit.getRenderedImage();
         WritableRaster pitfillerWR = CoverageUtilities.renderedImage2WritableRaster(pitfillerRI, true);
@@ -210,8 +209,6 @@ public class OmsDrainDir extends JGTModel {
 
     private void orlandiniD8LAD( float[] indexes, WritableRaster deviationsImage, BitMatrix analizedMatrix,
             WritableRaster pitImage, WritableRaster flowImage, WritableRaster tcaImage, WritableRaster dirImage, int nelev ) {
-        float[] dati = new float[10];
-        float[] u = {(float) xRes, (float) yRes};
         // get rows and cols from the active region
 
         int ncelle = 0;
@@ -231,61 +228,55 @@ public class OmsDrainDir extends JGTModel {
                 float count = indexes[i] - 1;
                 int row = (int) Math.floor(count / cols);
                 int col = (int) (count % cols);
-                if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0))
-                        && !isNovalue(flowRandomIter.getSampleDouble(col, row, 0))) {
+                if (!isNovalue(pitRandomIter.getSampleFloat(col, row, 0)) && !isNovalue(flowRandomIter.getSample(col, row, 0))) {
                     ncelle = ncelle + 1;
-                    calculateMaximumSlope(analizedMatrix, pitRandomIter, tcaRandomIter, dati, u, col, row);
+                    float[] maxSlopeData = calculateMaximumSlope(analizedMatrix, pitRandomIter, tcaRandomIter, col, row);
 
-                    if (dati[1] > 0) {
-                        float dev1 = dati[2];
-                        float dev2 = (float) ((PI / 4) - dati[2]);
+                    if (maxSlopeData[1] > 0) {
+                        float dev1 = maxSlopeData[2];
+                        float dev2 = (float) ((PI / 4) - maxSlopeData[2]);
 
-                        if (dati[9] == 1) {
+                        if (maxSlopeData[9] == 1) {
                             dev2 = -dev2;
                         } else {
                             dev1 = -dev1;
                         }
-                        calculateDrainadeArea(row, col, dati, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter,
-                                dirRandomIter, i, i);
+                        calculateDrainadeArea(row, col, maxSlopeData, analizedMatrix, deviationRandomIter, pitRandomIter,
+                                tcaRandomIter, dirRandomIter, i, i);
 
-                        float sumdev = dati[6];
+                        float sumdev = maxSlopeData[6];
                         float sumdev1 = dev1 + (pLambda * sumdev);
                         float sumdev2 = dev2 + (pLambda * sumdev);
-                        if ((Math.abs(sumdev1) <= Math.abs(sumdev2)) && ((dati[3] - dati[4]) > 0.0)) {
-                            dirRandomIter.setSample(col, row, 0, dati[7]);
+                        if ((Math.abs(sumdev1) <= Math.abs(sumdev2)) && ((maxSlopeData[3] - maxSlopeData[4]) > 0.0)) {
+                            dirRandomIter.setSample(col, row, 0, maxSlopeData[7]);
                             deviationRandomIter.setSample(col, row, 0, sumdev1);
-                        } else if (Math.abs(sumdev1) > Math.abs(sumdev2) || (dati[3] - dati[5]) > 0.0) {
-                            dirRandomIter.setSample(col, row, 0, dati[8]);
+                        } else if (Math.abs(sumdev1) > Math.abs(sumdev2) || (maxSlopeData[3] - maxSlopeData[5]) > 0.0) {
+                            dirRandomIter.setSample(col, row, 0, maxSlopeData[8]);
                             deviationRandomIter.setSample(col, row, 0, sumdev2);
                         } else {
                             break;
                         }
-                    } else if (dati[1] == 0) {
+                    } else if (maxSlopeData[1] == 0) {
                         if (ncelle == nelev) {
                             /* sono all'uscita */
-                            calculateDrainadeArea(row, col, dati, analizedMatrix, deviationRandomIter, pitRandomIter,
+                            calculateDrainadeArea(row, col, maxSlopeData, analizedMatrix, deviationRandomIter, pitRandomIter,
                                     tcaRandomIter, dirRandomIter, cols, rows);
-                            dirRandomIter.setSample(col, row, 0, 10);
-                            deviationRandomIter.setSample(col, row, 0, pLambda * dati[6]);
+                            dirRandomIter.setSample(col, row, 0, FlowNode.OUTLET);
+                            deviationRandomIter.setSample(col, row, 0, pLambda * maxSlopeData[6]);
 
-                            if (tcaRandomIter.getSampleDouble(col, row, 0) != ncelle) {
-                                pm.done();
-                                return;
-                            } else {
-                                pm.done();
-                                return;
-                            }
+                            pm.done();
+                            return;
                         } else {
-                            calculateDrainadeArea(row, col, dati, analizedMatrix, deviationRandomIter, pitRandomIter,
+                            calculateDrainadeArea(row, col, maxSlopeData, analizedMatrix, deviationRandomIter, pitRandomIter,
                                     tcaRandomIter, dirRandomIter, cols, rows);
-                            float sumdev = pLambda * dati[6];
-                            dirRandomIter.setSample(col, row, 0, flowRandomIter.getSampleDouble(col, row, 0));
+                            float sumdev = pLambda * maxSlopeData[6];
+                            dirRandomIter.setSample(col, row, 0, flowRandomIter.getSample(col, row, 0));
                             int flow = dirRandomIter.getSample(col, row, 0);
                             int nr = row + order[flow][0];
                             int nc = col + order[flow][1];
                             while( analizedMatrix.isMarked(nc, nr) ) {
                                 tcaRandomIter.setSample(nc, nr, 0,
-                                        tcaRandomIter.getSampleDouble(nc, nr, 0) + tcaRandomIter.getSampleDouble(col, row, 0));
+                                        tcaRandomIter.getSample(nc, nr, 0) + tcaRandomIter.getSample(col, row, 0));
                                 flow = dirRandomIter.getSample(nc, nr, 0);
                                 nr = nr + order[(int) flow][0];
                                 nc = nc + order[(int) flow][1];
@@ -311,12 +302,6 @@ public class OmsDrainDir extends JGTModel {
             WritableRaster pitImage, WritableRaster flowImage, WritableRaster tcaImage, WritableRaster dirImage, int nelev ) {
 
         /*
-         * it contains:
-         * pend,dir,e0,e1,e2,sumdev,
-         * didren1,dirdren2,sigma
-         */
-        float[] dati = new float[10];
-        /*
          * it indicates the position of the triangle's vertexes
          */
         // ncelle = 0;
@@ -327,11 +312,6 @@ public class OmsDrainDir extends JGTModel {
         WritableRandomIter deviationRandomIter = RandomIterFactory.createWritable(deviationsImage, null);
         WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirImage, null);
         try {
-            float[] u = {(float) xRes, (float) yRes};
-            // get rows and cols from the active region
-            rows = pitImage.getHeight();
-            cols = pitImage.getWidth();
-
             int ncelle = 0;
             pm.beginTask(msg.message("draindir.orlandiniltd"), rows * cols);
             for( int i = rows * cols - 1; i >= 0; i-- ) {
@@ -345,49 +325,44 @@ public class OmsDrainDir extends JGTModel {
                 if (!isNovalue(pitRandomIter.getSampleFloat(col, row, 0)) && !isNovalue(flowRandomIter.getSample(col, row, 0))) {
                     ncelle = ncelle + 1;
 
-                    calculateMaximumSlope(analizedMatrix, pitRandomIter, tcaRandomIter, dati, u, col, row);
+                    float[] maxSlopeData = calculateMaximumSlope(analizedMatrix, pitRandomIter, tcaRandomIter, col, row);
 
-                    if (dati[1] > 0) {
-                        float dev1 = (float) (xRes * Math.sin(dati[2]));
-                        float dev2 = (float) (xRes * Math.sqrt(2.0) * Math.sin(PI / 4 - dati[2]));
-                        if (dati[9] == 1) {
+                    if (maxSlopeData[1] > 0) {
+                        float dev1 = (float) (xRes * Math.sin(maxSlopeData[2]));
+                        float dev2 = (float) (xRes * Math.sqrt(2.0) * Math.sin(PI / 4 - maxSlopeData[2]));
+                        if (maxSlopeData[9] == 1) {
                             dev2 = -dev2;
                         } else {
                             dev1 = -dev1;
                         }
-                        calculateDrainadeArea(row, col, dati, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter,
-                                dirRandomIter, cols, rows);
-                        float sumdev = dati[6];
+                        calculateDrainadeArea(row, col, maxSlopeData, analizedMatrix, deviationRandomIter, pitRandomIter,
+                                tcaRandomIter, dirRandomIter, cols, rows);
+                        float sumdev = maxSlopeData[6];
                         float sumdev1 = dev1 + pLambda * sumdev;
                         float sumdev2 = dev2 + pLambda * sumdev;
-                        if (Math.abs(sumdev1) <= Math.abs(sumdev2) && (dati[3] - dati[4]) > 0.0) {
-                            dirRandomIter.setSample(col, row, 0, (int) dati[7]);
+                        if (Math.abs(sumdev1) <= Math.abs(sumdev2) && (maxSlopeData[3] - maxSlopeData[4]) > 0.0) {
+                            dirRandomIter.setSample(col, row, 0, (int) maxSlopeData[7]);
                             deviationRandomIter.setSample(col, row, 0, sumdev1);
-                        } else if (Math.abs(sumdev1) > Math.abs(sumdev2) || (dati[3] - dati[5]) > 0.0) {
-                            dirRandomIter.setSample(col, row, 0, (int) dati[8]);
+                        } else if (Math.abs(sumdev1) > Math.abs(sumdev2) || (maxSlopeData[3] - maxSlopeData[5]) > 0.0) {
+                            dirRandomIter.setSample(col, row, 0, (int) maxSlopeData[8]);
                             deviationRandomIter.setSample(col, row, 0, sumdev2);
                         } else {
                             break;
                         }
-                    } else if (dati[1] == 0) {
+                    } else if (maxSlopeData[1] == 0) {
                         if (ncelle == nelev) {
                             /* sono all'uscita */
-                            calculateDrainadeArea(row, col, dati, analizedMatrix, deviationRandomIter, pitRandomIter,
+                            calculateDrainadeArea(row, col, maxSlopeData, analizedMatrix, deviationRandomIter, pitRandomIter,
                                     tcaRandomIter, dirRandomIter, cols, rows);
-                            dirRandomIter.setSample(col, row, 0, 10);
-                            deviationRandomIter.setSample(col, row, 0, pLambda * dati[6]);
+                            dirRandomIter.setSample(col, row, 0, FlowNode.OUTLET);
+                            deviationRandomIter.setSample(col, row, 0, pLambda * maxSlopeData[6]);
 
-                            if (tcaRandomIter.getSample(col, row, 0) != ncelle) {
-                                pm.done();
-                                return;
-                            } else {
-                                pm.done();
-                                return;
-                            }
+                            pm.done();
+                            return;
                         } else {
-                            calculateDrainadeArea(row, col, dati, analizedMatrix, deviationRandomIter, pitRandomIter,
+                            calculateDrainadeArea(row, col, maxSlopeData, analizedMatrix, deviationRandomIter, pitRandomIter,
                                     tcaRandomIter, dirRandomIter, cols, rows);
-                            float sumdev = pLambda * dati[6];
+                            float sumdev = pLambda * maxSlopeData[6];
                             dirRandomIter.setSample(col, row, 0, flowRandomIter.getSample(col, row, 0));
                             int flow = dirRandomIter.getSample(col, row, 0);
                             int nr = row + order[flow][0];
@@ -452,8 +427,12 @@ public class OmsDrainDir extends JGTModel {
 
     }
 
-    private void calculateMaximumSlope( BitMatrix analizedMatrix, RandomIter pitRandomIter, WritableRandomIter tcaRandomIter,
-            float[] dati, float[] u, int col, int row ) {
+    /**
+     * Calculates the max slope data as an array: [maxslope,maxdir,elevation,e1,e2,sumdev, dirdren1,dirdren2,sigma]
+     */
+    private float[] calculateMaximumSlope( BitMatrix analizedMatrix, RandomIter pitRandomIter, WritableRandomIter tcaRandomIter,
+            int col, int row ) {
+        float[] maxSlopeData = new float[10];
         int n = 1, m = 1;
 
         float dirmax = 0f, e1min = -9999f, e2min = -9999f;
@@ -461,7 +440,7 @@ public class OmsDrainDir extends JGTModel {
         analizedMatrix.mark(col, row);
         tcaRandomIter.setSample(col, row, 0, 1);
         float pendmax = 0f;
-        dati[3] = pitRandomIter.getSampleFloat(col, row, 0);
+        maxSlopeData[3] = pitRandomIter.getSampleFloat(col, row, 0);
         /*
          * per ogni triangolo calcolo la pendenza massima e la direzione di
          * deflusso reale.
@@ -470,50 +449,49 @@ public class OmsDrainDir extends JGTModel {
             n = tri[j][0];
             m = tri[j][1];
 
-            dati[4] = pitRandomIter.getSampleFloat(col + order[n][1], row + order[n][0], 0);
-            dati[5] = pitRandomIter.getSampleFloat(col + order[m][1], row + order[m][0], 0);
+            maxSlopeData[4] = pitRandomIter.getSampleFloat(col + order[n][1], row + order[n][0], 0);
+            maxSlopeData[5] = pitRandomIter.getSampleFloat(col + order[m][1], row + order[m][0], 0);
             /*
              * verifico che i punti attorno al pixel considerato non siano
              * novalue. In questo caso trascuro il triangolo.
              */
-            if (!isNovalue(dati[4]) && !isNovalue(dati[5])) {
-                calculateMaxSlopeAndDirection4Triangles(u, dati);
-                if (dati[1] > pendmax) {
-                    dirmax = dati[2];
-                    pendmax = dati[1];
+            if (!isNovalue(maxSlopeData[4]) && !isNovalue(maxSlopeData[5])) {
+                calculateMaxSlopeAndDirection4Triangles(maxSlopeData);
+                if (maxSlopeData[1] > pendmax) {
+                    dirmax = maxSlopeData[2];
+                    pendmax = maxSlopeData[1];
                     /* - direzione cardinale */
-                    dati[7] = tri[j][0];
+                    maxSlopeData[7] = tri[j][0];
                     /* - direzione diagonale */
-                    dati[8] = tri[j][1];
+                    maxSlopeData[8] = tri[j][1];
                     /* - segno del triangolo */
-                    dati[9] = tri[j][2];
+                    maxSlopeData[9] = tri[j][2];
                     /*
                      * - quote del triangolo avente pendenza
                      * maggiore
                      */
-                    e1min = dati[4];
+                    e1min = maxSlopeData[4];
                     /*
                      * non necessariamente sono le quote
                      * minime.
                      */
-                    e2min = dati[5];
+                    e2min = maxSlopeData[5];
                 }
             }
         }
-        dati[1] = pendmax;
-        dati[2] = dirmax;
-        dati[4] = e1min;
-        dati[5] = e2min;
+        maxSlopeData[1] = pendmax;
+        maxSlopeData[2] = dirmax;
+        maxSlopeData[4] = e1min;
+        maxSlopeData[5] = e2min;
 
+        return maxSlopeData;
     }
 
-    private void calculateMaxSlopeAndDirection4Triangles( float[] u, float[] dati ) {
+    private void calculateMaxSlopeAndDirection4Triangles( float[] dati ) {
         /* definsco le dim. del pixel */
-        float dx = u[0];
-        float dy = u[1];
 
-        float pend1 = (dati[3] - dati[4]) / dy;
-        float pend2 = (dati[4] - dati[5]) / dx;
+        float pend1 = (dati[3] - dati[4]) / yRes;
+        float pend2 = (dati[4] - dati[5]) / xRes;
         if (pend1 == 0.0) {
             if (pend2 >= 0.0) {
                 dati[2] = (float) (+PI / 2);
@@ -524,7 +502,7 @@ public class OmsDrainDir extends JGTModel {
             dati[2] = (float) Math.atan(pend2 / pend1);
         }
         float sp = (float) Math.sqrt(pend1 * pend1 + pend2 * pend2);
-        float sd = (float) ((dati[3] - dati[5]) / Math.sqrt(dx * dx + dy * dy));
+        float sd = (float) ((dati[3] - dati[5]) / dxySqrt);
 
         if (dati[2] >= 0 && dati[2] <= PI / 4 && pend1 >= 0) {
             dati[1] = sp;
