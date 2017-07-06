@@ -18,41 +18,30 @@
 package org.jgrasstools.gears.utils;
 
 /**
- * A point that can checked by comparison.
+ * A point with a fast hash.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class CheckPoint implements Comparable<CheckPoint> {
-    public int col;
-    public int row;
-    public int index;
-
-    public CheckPoint( int col, int row, int index ) {
-        this.col = col;
-        this.row = row;
-        this.index = index;
+public class CheckPoint {
+    public final int x;
+    public final int y;
+    
+    public CheckPoint( int col, int row ) {
+        this.x = col;
+        this.y = row;
     }
 
-    public int compareTo( CheckPoint o ) {
-        /*
-         * if row and col are equal, return 0, which will 
-         * anyways trigger and exception
-         */
-        if (col == o.col && row == o.row) {
-            return 0;
+    public boolean equals( Object obj ) {
+        if (obj instanceof CheckPoint) {
+            CheckPoint d = (CheckPoint) obj;
+            return (x == d.x) && (y == d.y);
         }
+        return false;
+    }
 
-        /*
-         * in the case of non equal row/col, we need to make the normal sort
-         */
-        if (index < o.index) {
-            return -1;
-        } else if (index > o.index) {
-            return 1;
-        } else {
-            return 0;
-        }
-
+    public int hashCode() {
+        int sum = x + y;
+        return sum * (sum + 1) / 2 + y;
     }
 
 }

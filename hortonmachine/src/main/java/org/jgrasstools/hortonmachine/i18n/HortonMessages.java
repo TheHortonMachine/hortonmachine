@@ -876,19 +876,6 @@ public class HortonMessages {
     public static final String OMSSTRAHLERRATIOS_outArea_DESCRIPTION = "The area ratio.";
     public static final String OMSSTRAHLERRATIOS_outLength_DESCRIPTION = "The length ratio.";
 
-    public static final String OMSOLDTCA_DESCRIPTION = "Calculates the contributing areas that represent the areas (in number of pixels) afferent to each point.";
-    public static final String OMSOLDTCA_DOCUMENTATION = "OmsTca.html";
-    public static final String OMSOLDTCA_KEYWORDS = "Geomorphology, OmsDrainDir, Tca3D, OmsAb, Multitca";
-    public static final String OMSOLDTCA_LABEL = GEOMORPHOLOGY;
-    public static final String OMSOLDTCA_NAME = "oldtca";
-    public static final int OMSOLDTCA_STATUS = 40;
-    public static final String OMSOLDTCA_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSOLDTCA_AUTHORNAMES = "Antonello Andrea, Rigon Riccardo";
-    public static final String OMSOLDTCA_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSOLDTCA_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSOLDTCA_outTca_DESCRIPTION = "The map of total contributing areas.";
-    public static final String OMSOLDTCA_outLoop_DESCRIPTION = "The vector containing loops, if there are any.";
-
     public static final String OMSFLOWDIRECTIONS_DESCRIPTION = "Calculates the drainage directions with the D8 method.";
     public static final String OMSFLOWDIRECTIONS_DOCUMENTATION = "OmsFlowDirections.html";
     public static final String OMSFLOWDIRECTIONS_KEYWORDS = "Geomorphology, OmsAspect";

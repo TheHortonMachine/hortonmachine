@@ -73,7 +73,7 @@ public class DrainDir extends JGTModel {
 
     @Description(OMSDRAINDIR_pLambda_DESCRIPTION)
     @In
-    public double pLambda = 1.0;
+    public float pLambda = 1f;
 
     @Description(OMSDRAINDIR_doLad_DESCRIPTION)
     @In
