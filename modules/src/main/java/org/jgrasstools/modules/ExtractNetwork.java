@@ -20,22 +20,12 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.libs.modules.Variables.TCA;
 import static org.jgrasstools.gears.libs.modules.Variables.TCA_CONVERGENT;
 import static org.jgrasstools.gears.libs.modules.Variables.TCA_SLOPE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_inFlow_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_inSlope_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_inTc3_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_inTca_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_outNet_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_pExp_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_pMode_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_pThres_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.network.extractnetwork.OmsExtractNetwork.*;
+
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.hortonmachine.modules.network.extractnetwork.OmsExtractNetwork;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -46,10 +36,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.network.extractnetwork.OmsExtractNetwork;
 
 @Description(OMSEXTRACTNETWORK_DESCRIPTION)
 @Author(name = OMSEXTRACTNETWORK_AUTHORNAMES, contact = OMSEXTRACTNETWORK_AUTHORCONTACTS)
@@ -114,6 +100,5 @@ public class ExtractNetwork extends JGTModel {
         extractnetwork.process();
         dumpRaster(extractnetwork.outNet, outNet);
     }
-    
 
 }

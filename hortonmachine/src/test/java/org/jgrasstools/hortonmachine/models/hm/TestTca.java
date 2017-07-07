@@ -21,7 +21,6 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.tca.OmsOldTca;
 import org.jgrasstools.hortonmachine.modules.geomorphology.tca.OmsTca;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
@@ -35,21 +34,21 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestTca extends HMTestCase {
 
-    public void testTca() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
-        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
-
-        double[][] flowData = HMTestMaps.flowData;
-        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
-
-        OmsOldTca tca = new OmsOldTca();
-        tca.inFlow = flowCoverage;
-        tca.pm = pm;
-        tca.process();
-        GridCoverage2D tcaCoverage = tca.outTca;
-
-        checkMatrixEqual(tcaCoverage.getRenderedImage(), HMTestMaps.tcaData);
-    }
+//    public void testTca() throws Exception {
+//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+//
+//        double[][] flowData = HMTestMaps.flowData;
+//        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+//
+//        OmsOldTca tca = new OmsOldTca();
+//        tca.inFlow = flowCoverage;
+//        tca.pm = pm;
+//        tca.process();
+//        GridCoverage2D tcaCoverage = tca.outTca;
+//
+//        checkMatrixEqual(tcaCoverage.getRenderedImage(), HMTestMaps.tcaData);
+//    }
 
     public void testNewTca() throws Exception {
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();

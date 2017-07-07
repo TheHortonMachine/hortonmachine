@@ -55,6 +55,7 @@ public class GridNode extends Node {
     private double surroundingMin;
 
     private static DecimalFormat f = new DecimalFormat("0.000");
+    private List<GridNode> nodes;
 
     /**
      * The constructor.
@@ -437,16 +438,18 @@ public class GridNode extends Node {
      * @return the valid nodes surrounding the current node. 
      */
     public List<GridNode> getValidSurroundingNodes() {
-        List<GridNode> nodes = new ArrayList<GridNode>();
-        Direction[] orderedDirs = Direction.getOrderedDirs();
-        for( int i = 0; i < orderedDirs.length; i++ ) {
-            Direction direction = orderedDirs[i];
-            int newCol = col + direction.col;
-            int newRow = row + direction.row;
-            if (isInRaster(newCol, newRow)) {
-                GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow);
-                if (node.isValid()) {
-                    nodes.add(node);
+        if (nodes == null) {
+            nodes = new ArrayList<GridNode>();
+            Direction[] orderedDirs = Direction.getOrderedDirs();
+            for( int i = 0; i < orderedDirs.length; i++ ) {
+                Direction direction = orderedDirs[i];
+                int newCol = col + direction.col;
+                int newRow = row + direction.row;
+                if (isInRaster(newCol, newRow)) {
+                    GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow);
+                    if (node.isValid()) {
+                        nodes.add(node);
+                    }
                 }
             }
         }

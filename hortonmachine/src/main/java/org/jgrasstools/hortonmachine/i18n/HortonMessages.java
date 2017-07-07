@@ -888,24 +888,6 @@ public class HortonMessages {
     public static final String OMSFLOWDIRECTIONS_inPit_DESCRIPTION = "The depitted elevation map.";
     public static final String OMSFLOWDIRECTIONS_outFlow_DESCRIPTION = "The map of flowdirections.";
 
-    public static final String OMSEXTRACTNETWORK_DESCRIPTION = "Extracts the raster network from an elevation model.";
-    public static final String OMSEXTRACTNETWORK_DOCUMENTATION = "OmsExtractNetwork.html";
-    public static final String OMSEXTRACTNETWORK_KEYWORDS = "Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope";
-    public static final String OMSEXTRACTNETWORK_LABEL = NETWORK;
-    public static final String OMSEXTRACTNETWORK_NAME = "extractnet";
-    public static final int OMSEXTRACTNETWORK_STATUS = 40;
-    public static final String OMSEXTRACTNETWORK_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSEXTRACTNETWORK_AUTHORNAMES = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Andrea Cozzini, Silvano Pisoni";
-    public static final String OMSEXTRACTNETWORK_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSEXTRACTNETWORK_inTca_DESCRIPTION = "The map of total contributing areas.";
-    public static final String OMSEXTRACTNETWORK_inFlow_DESCRIPTION = "The optional map of flowdirections (needed for case with slope or topographic classes).";
-    public static final String OMSEXTRACTNETWORK_inSlope_DESCRIPTION = "The optional map of slope.";
-    public static final String OMSEXTRACTNETWORK_inTc3_DESCRIPTION = "The optional map of aggregated topographic classes.";
-    public static final String OMSEXTRACTNETWORK_pThres_DESCRIPTION = "The threshold on the map.";
-    public static final String OMSEXTRACTNETWORK_pMode_DESCRIPTION = "The thresholding mode (default is on tca).";
-    public static final String OMSEXTRACTNETWORK_pExp_DESCRIPTION = "OmsTca exponent for the mode with slope or topographic classes (default = 0.5).";
-    public static final String OMSEXTRACTNETWORK_outNet_DESCRIPTION = "The extracted network raster.";
-
     public static final String OMSVARIOGRAM_DESCRIPTION = "Experimental semivariogram algorithm.";
     public static final String OMSVARIOGRAM_DOCUMENTATION = "Experimental semivariogram";
     public static final String OMSVARIOGRAM_KEYWORDS = "Experimental semivariogram, OmsKriging, Hydrology";

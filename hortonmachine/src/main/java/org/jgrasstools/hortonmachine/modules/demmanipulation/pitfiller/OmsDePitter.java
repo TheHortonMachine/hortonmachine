@@ -38,6 +38,7 @@ import org.jgrasstools.gears.utils.BitMatrix;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
+import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -138,14 +139,14 @@ public class OmsDePitter extends JGTModel {
                         }
                         GridNode currentPitNode = nodesInPit.get(workingIndex);
 
-                        List<GridNode> surroundingNodes = currentPitNode.getValidSurroundingNodes();
+                        List<GridNode> surroundingNodes = new ArrayList<>(currentPitNode.getValidSurroundingNodes());
                         surroundingNodes.removeAll(nodesInPit);
                         GridNode minNode = getMinElevNode(surroundingNodes);
                         if (minNode == null) {
                             workingIndex++;
                             continue;
                         }
-                        List<GridNode> minElevSurroundingNodes = minNode.getValidSurroundingNodes();
+                        List<GridNode> minElevSurroundingNodes = new ArrayList<>(minNode.getValidSurroundingNodes());
                         minElevSurroundingNodes.removeAll(nodesInPit);
                         if (!minNode.isPitFor(minElevSurroundingNodes)) {
                             break;
@@ -155,7 +156,7 @@ public class OmsDePitter extends JGTModel {
                             if (tmpNode.touchesBound()) {
                                 continue;
                             }
-                            List<GridNode> subSurroundingNodes = tmpNode.getValidSurroundingNodes();
+                            List<GridNode> subSurroundingNodes = new ArrayList<>(tmpNode.getValidSurroundingNodes());
                             subSurroundingNodes.removeAll(nodesInPit);
 
                             if (tmpNode.isPitFor(subSurroundingNodes)) {
@@ -213,22 +214,16 @@ public class OmsDePitter extends JGTModel {
                     }
 
                     List<GridNode> cellsToMakeFlowReady = new ArrayList<>();
-                    cellsToMakeFlowReady.add(pitfillExitNode);
-                    makeCellsFlowReady(0, pitfillExitNode, cellsToMakeFlowReady, markedPositions, pitIter, delta);
+                    GridNode startNode = new GridNode(pitIter, nCols, nRows, xRes, yRes, pitfillExitNode.col,
+                            pitfillExitNode.row);
+                    cellsToMakeFlowReady.add(startNode);
+                    makeCellsFlowReady(0, startNode, cellsToMakeFlowReady, markedPositions, pitIter, delta);
                     pm.worked(1);
                 });
                 pm.done();
 
-                long t1 = System.currentTimeMillis();
                 // only re-check the cells that are adiacent to what has been modified
                 pitsList = getPitsList(allNodesInPit);
-                long t2 = System.currentTimeMillis();
-
-                ConcurrentLinkedQueue<GridNode> pitsList2 = getPitsList(nCols, nRows, xRes, yRes, pitIter);
-                long t3 = System.currentTimeMillis();
-
-                System.out.println("1 = " + (t2 - t1) / 1000);
-                System.out.println("2 = " + (t3 - t2) / 1000);
 
                 pm.message("Left pits: " + pitsList.size());
                 pm.message("---------------------------------------------------------------------");
@@ -376,16 +371,28 @@ public class OmsDePitter extends JGTModel {
         String dtm = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/dtm_toblino.tiff";
         String pit = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/pit.tiff";
         String flow = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/flow.tiff";
+        String drain = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/drain.tiff";
+        String tca = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/tca.tiff";
+
         // String dtm =
         // "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/dtm_all_float.tiff";
         // String pit = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/pit.tiff";
         // String flow = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/flow.tiff";
 
-        OmsDePitter pitfiller = new OmsDePitter();
-        pitfiller.inElev = OmsRasterReader.readRaster(dtm);
-        pitfiller.process();
-        OmsRasterWriter.writeRaster(pit, pitfiller.outPit);
-        OmsRasterWriter.writeRaster(flow, pitfiller.outFlow);
+//        OmsDePitter pitfiller = new OmsDePitter();
+//        pitfiller.inElev = OmsRasterReader.readRaster(dtm);
+//        pitfiller.process();
+//        OmsRasterWriter.writeRaster(pit, pitfiller.outPit);
+//        OmsRasterWriter.writeRaster(flow, pitfiller.outFlow);
+
+        OmsDrainDir draindir = new OmsDrainDir();
+        draindir.inPit = OmsRasterReader.readRaster(pit);
+        draindir.inFlow = OmsRasterReader.readRaster(flow);
+        // draindir.inFlownet = OmsRasterReader.readRaster(inFlownet);
+        draindir.pLambda = 1f;
+        draindir.process();
+        OmsRasterWriter.writeRaster(drain, draindir.outFlow);
+        OmsRasterWriter.writeRaster(tca, draindir.outTca);
     }
 
 }

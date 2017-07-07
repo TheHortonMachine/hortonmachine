@@ -121,7 +121,7 @@ public class OmsAspect extends GridNodeMultiProcessing {
         });
         pm.done();
 
-        CoverageUtilities.setNovalueBorder(aspectWR);
+        CoverageUtilities.setNovalueBorder(aspectWR); // FIXME do in main cycle
         outAspect = CoverageUtilities.buildCoverage("aspect", aspectWR, regionMap, inElev.getCoordinateReferenceSystem());
     }
 

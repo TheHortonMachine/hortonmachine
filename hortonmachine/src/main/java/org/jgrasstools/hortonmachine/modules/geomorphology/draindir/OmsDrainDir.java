@@ -165,14 +165,15 @@ public class OmsDrainDir extends JGTModel {
         float[] indexes = new float[cols * rows];
 
         int nelev = 0;
-        for( int j = 0; j < rows; j++ ) {
+        for( int r = 0; r < rows; r++ ) {
             if (pm.isCanceled()) {
                 return;
             }
-            for( int i = 0; i < cols; i++ ) {
-                float pitValue = pitRandomIter.getSampleFloat(i, j, 0);
-                orderedelev[((j) * cols) + i] = pitValue;
-                indexes[((j) * cols) + i] = ((j) * cols) + i + 1;
+            for( int c = 0; c < cols; c++ ) {
+                float pitValue = pitRandomIter.getSampleFloat(c, r, 0);
+                int pos = (r * cols) + c;
+                orderedelev[pos] = pitValue;
+                indexes[pos] = pos + 1;
                 if (!isNovalue(pitValue)) {
                     nelev = nelev + 1;
                 }
@@ -196,6 +197,9 @@ public class OmsDrainDir extends JGTModel {
             orlandiniD8LAD(indexes, deviationsWR, analizedMatrix, pitfillerWR, flowWR, tcaWR, dirWR, nelev);
         } else {
             orlandiniD8LTD(indexes, deviationsWR, analizedMatrix, pitfillerWR, flowWR, tcaWR, dirWR, nelev);
+            if (pm.isCanceled()) {
+                return;
+            }
             // only if required executes this method
             if (inFlownet != null) {
                 newDirections(pitfillerWR, dirWR);
