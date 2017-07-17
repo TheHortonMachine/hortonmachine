@@ -167,10 +167,10 @@ public class HMTestMaps {
         /*    */{NI, NI, NI, NI, NI, NI, NI, NI, NI, NI}, //
         {NI, NI, NI, 6, 6, 6, 6, 6, 6, NI}, //
         {NI, NI, NI, 6, 6, 6, 6, 7, 7, NI}, //
-        {NI, 5, 5, 7, 6, 6, 6, 6, 5, NI}, //
+        {NI, 10, 5, 7, 6, 6, 6, 6, 5, NI}, //
         {NI, 3, 4, 5, 5, 5, 5, 5, 5, NI}, //
         {NI, 2, 3, 3, 4, 4, 4, 3, 3, NI}, //
-        {NI, 4, 4, 4, 4, 4, 5, 4, 4, NI}, //
+        {NI, 10, 4, 4, 4, 4, 5, 4, 4, NI}, //
         {NI, NI, NI, NI, NI, NI, NI, NI, NI, NI} //
     };
 

@@ -46,7 +46,7 @@ public class TestRescaledDistance extends HMTestCase {
         OmsRescaledDistance rescaledDistance = new OmsRescaledDistance();
         rescaledDistance.inFlow = flowCoverage;
         rescaledDistance.inNet = netCoverage;
-        rescaledDistance.pRatio = 0.3;
+        rescaledDistance.pRatio = 0.3f;
         rescaledDistance.pm = pm;
 
         rescaledDistance.process();
@@ -70,7 +70,7 @@ public class TestRescaledDistance extends HMTestCase {
         rescaledDistance.inFlow = flowCoverage;
         rescaledDistance.inNet = netCoverage;
         rescaledDistance.inElev = elevCoverage;
-        rescaledDistance.pRatio = 0.3;
+        rescaledDistance.pRatio = 0.3f;
         rescaledDistance.pm = pm;
 
         rescaledDistance.process();

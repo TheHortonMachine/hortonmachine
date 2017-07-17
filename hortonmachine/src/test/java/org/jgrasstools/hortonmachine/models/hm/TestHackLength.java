@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.hortonmachine.models.hm;
 
+import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -74,7 +75,8 @@ public class TestHackLength extends HMTestCase {
         hackLength.process();
 
         GridCoverage2D hackLengthCoverage = hackLength.outHacklength;
-        checkMatrixEqual(hackLengthCoverage.getRenderedImage(), HMTestMaps.hacklength3DData, 2);
+        RenderedImage renderedImage = hackLengthCoverage.getRenderedImage();
+        checkMatrixEqual(renderedImage, HMTestMaps.hacklength3DData, 2);
     }
 
 }
