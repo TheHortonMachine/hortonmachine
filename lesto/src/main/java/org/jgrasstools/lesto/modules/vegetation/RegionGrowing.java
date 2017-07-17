@@ -158,7 +158,7 @@ public class RegionGrowing extends JGTModel {
 
             // do region growing
             if (doElev) {
-                dsmNode.setValueInMap(outIter, topDsmElevation);
+                dsmNode.setDoubleValueInMap(outIter, topDsmElevation);
             } else {
                 dsmNode.setValueInMap(outIter, index);
             }
@@ -205,7 +205,7 @@ public class RegionGrowing extends JGTModel {
 
                     // mark it
                     if (doElev) {
-                        surroundingDsmNode.setValueInMap(outIter, topDsmElevation);
+                        surroundingDsmNode.setDoubleValueInMap(outIter, topDsmElevation);
                     } else {
                         surroundingDsmNode.setValueInMap(outIter, index);
                     }
