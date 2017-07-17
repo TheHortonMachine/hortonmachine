@@ -189,13 +189,13 @@ public class OmsMorpher extends JGTModel {
                         }
                     }
                     if (set) {
-                        node.setValueInMap(outIter, max);
+                        node.setDoubleValueInMap(outIter, max);
                     } else {
-                        node.setValueInMap(outIter, JGTConstants.doubleNovalue);
+                        node.setDoubleValueInMap(outIter, JGTConstants.doubleNovalue);
                     }
                     continue;
                 } else {
-                    node.setValueInMap(outIter, node.elevation);
+                    node.setDoubleValueInMap(outIter, node.elevation);
                 }
             }
             pm.worked(1);
@@ -252,9 +252,9 @@ public class OmsMorpher extends JGTModel {
                         }
                     }
                     if (set) {
-                        node.setValueInMap(outIter, min);
+                        node.setDoubleValueInMap(outIter, min);
                     } else {
-                        node.setValueInMap(outIter, node.elevation);
+                        node.setDoubleValueInMap(outIter, node.elevation);
                     }
                     continue;
                 }
