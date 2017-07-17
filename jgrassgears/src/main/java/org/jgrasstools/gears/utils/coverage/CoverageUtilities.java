@@ -999,6 +999,26 @@ public class CoverageUtilities {
         return writableRaster;
     }
 
+    public static WritableRaster renderedImage2ShortWritableRaster( RenderedImage renderedImage, boolean nullBorders ) {
+        int width = renderedImage.getWidth();
+        int height = renderedImage.getHeight();
+
+        Raster data = renderedImage.getData();
+        WritableRaster writableRaster = createWritableRaster(width, height, Short.class, null, null);
+        writableRaster.setRect(data);
+        if (nullBorders) {
+            for( int c = 0; c < width; c++ ) {
+                writableRaster.setSample(c, 0, 0, shortNovalue);
+                writableRaster.setSample(c, height - 1, 0, shortNovalue);
+            }
+            for( int r = 0; r < height; r++ ) {
+                writableRaster.setSample(0, r, 0, shortNovalue);
+                writableRaster.setSample(width - 1, r, 0, shortNovalue);
+            }
+        }
+        return writableRaster;
+    }
+
     /**
      * Transform a rendered image in its array representation.
      * 

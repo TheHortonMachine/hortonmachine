@@ -156,7 +156,7 @@ public class OmsDrainDir extends JGTModel {
         RenderedImage pitfillerRI = inPit.getRenderedImage();
         WritableRaster pitfillerWR = CoverageUtilities.renderedImage2DoubleWritableRaster(pitfillerRI, true);
         RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
+        WritableRaster flowWR = CoverageUtilities.renderedImage2ShortWritableRaster(flowRI, true);
 
         RandomIter pitRandomIter = RandomIterFactory.create(pitfillerWR, null);
 
@@ -187,7 +187,7 @@ public class OmsDrainDir extends JGTModel {
 
         // Initialize new RasterData and set value
         WritableRaster tcaWR = CoverageUtilities.createWritableRaster(cols, rows, Integer.class, null, JGTConstants.intNovalue);
-        WritableRaster dirWR = CoverageUtilities.createWritableRaster(cols, rows, Integer.class, null, JGTConstants.intNovalue);
+        WritableRaster dirWR = CoverageUtilities.createWritableRaster(cols, rows, Short.class, null, JGTConstants.shortNovalue);
 
         // it contains the analyzed cells
         WritableRaster deviationsWR = CoverageUtilities.createWritableRaster(cols, rows, Double.class, null, null);

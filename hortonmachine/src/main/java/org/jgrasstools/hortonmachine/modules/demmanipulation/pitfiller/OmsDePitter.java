@@ -89,8 +89,6 @@ public class OmsDePitter extends JGTModel {
     public static final String OMSDEPITTER_outPitPoints_DESCRIPTION = "The shapefile of handled pits.";
     public static final String OMSDEPITTER_outFlow_DESCRIPTION = "The map of D8 flowdirections.";
 
-    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-
     private final float delta = 2E-6f;
     private boolean verbose = true;
 
@@ -369,7 +367,7 @@ public class OmsDePitter extends JGTModel {
             // }
             // }
 
-            WritableRaster flowRaster = CoverageUtilities.createWritableRaster(nCols, nRows, Integer.class, null, null);
+            WritableRaster flowRaster = CoverageUtilities.createWritableRaster(nCols, nRows, Short.class, null, null);
             WritableRandomIter flowIter = CoverageUtilities.getWritableRandomIterator(flowRaster);
             try {
                 pm.beginTask("Calculating flowdirections...", nRows);
@@ -742,17 +740,17 @@ public class OmsDePitter extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
 
-//        String dtm = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/dtm_flanginec.tiff";
-//        String pit = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/pit_flanginec.tiff";
-//        String flow = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/flow_flanginec.tiff";
-//        String drain = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/drain_flanginec.tiff";
-//        String tca = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/tca_flanginec.tiff";
+        String dtm = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/dtm_flanginec.tiff";
+        String pit = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/pit2_flanginec.tiff";
+        String flow = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/flow2_flanginec.tiff";
+        String drain = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/drain2_flanginec.tiff";
+        String tca = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/tca2_flanginec.tiff";
 
-         String dtm = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/dtm_toblino.tiff";
-         String pit = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/pit.tiff";
-         String flow = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/flow.tiff";
-         String drain = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/drain.tiff";
-         String tca = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/tca.tiff";
+//         String dtm = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/dtm_toblino.tiff";
+//         String pit = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/pit.tiff";
+//         String flow = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/flow.tiff";
+//         String drain = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/drain.tiff";
+//         String tca = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/tca.tiff";
 
         // String dtm =
         // "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/dtm_all_float.tiff";

@@ -96,6 +96,11 @@ public class JGTConstants {
     public static final int intNovalue = -9999;
 
     /**
+     * The default short novalue. 
+     */
+    public static final short shortNovalue = -9999;
+
+    /**
      * Checker for default int novalue.
      * 
      * <p>
