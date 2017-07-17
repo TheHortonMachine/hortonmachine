@@ -19,7 +19,7 @@ package org.jgrasstools.gears.libs.modules;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -43,6 +43,7 @@ public class GridNode extends Node {
 
     private boolean isPit = false;
     private boolean isOutlet = false;
+    private boolean isFlat = false;
 
     private double eElev;
     private double enElev;
@@ -54,7 +55,7 @@ public class GridNode extends Node {
     private double seElev;
     private double surroundingMin;
 
-    private static DecimalFormat f = new DecimalFormat("0.000");
+    private static DecimalFormat f = new DecimalFormat("0.0000000");
     private List<GridNode> nodes;
 
     /**
@@ -146,6 +147,9 @@ public class GridNode extends Node {
                     if (tmp < surroundingMin && tmp != elevation) {
                         surroundingMin = tmp;
                     }
+                    if (tmp == elevation) {
+                        isFlat = true;
+                    }
                 }
             }
         }
@@ -162,7 +166,10 @@ public class GridNode extends Node {
         return "GridNode [\n\tcol=" + col + //
                 ", \n\trow=" + row + //
                 ", \n\televation=" + elevation + //
-                ", \n\tisValid=" + isValid() + //
+                ", \n\tisValid=" + isValid + //
+                ", \n\tisPit=" + isPit + //
+                ", \n\tisFlat=" + isFlat + //
+                ", \n\ttouchesNovalue=" + touchesNovalue + //
                 ", \n\ttouchesBounds=" + touchesBound + //
                 "\n" + "-----------------------------------\n" + //
                 "| " + f.format(nwElev) + " | " + f.format(nElev) + " | " + f.format(enElev) + " |\n" + //
@@ -173,8 +180,21 @@ public class GridNode extends Node {
                 "-----------------------------------\n" + //
                 "]";
     }
-
-    public void setValueInMap( WritableRandomIter map, double value ) {
+    
+    
+    public void setFloatValueInMap( WritableRandomIter map, float value ) {
+        if (map == null) {
+            return;
+        }
+        try {
+            elevation = value;
+            map.setSample(col, row, 0, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void setDoubleValueInMap( WritableRandomIter map, double value ) {
         if (map == null) {
             return;
         }
@@ -201,6 +221,9 @@ public class GridNode extends Node {
     }
 
     public boolean isPitFor( List<GridNode> existingConnectedNodes ) {
+        if (!isValid || touchesBound || touchesNovalue) {
+            return false;
+        }
         boolean isPitFor = false;
         double min = Double.POSITIVE_INFINITY;
         for( GridNode checkNode : existingConnectedNodes ) {
@@ -266,7 +289,7 @@ public class GridNode extends Node {
                         GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
                         window[r + delta][c + delta] = n.elevation;
                     } else {
-                        window[r + delta][c + delta] = doubleNovalue;
+                        window[r + delta][c + delta] = floatNovalue;
                     }
                 }
             }
@@ -326,7 +349,7 @@ public class GridNode extends Node {
                 }
             }
         }
-        if (nextNode == null) {
+        if (nextNode == null && !isPit) {
             isOutlet = true;
         }
         return nextNode;
@@ -349,16 +372,6 @@ public class GridNode extends Node {
         Direction dir = Direction.getDir(dcol, drow);
         return dir.getFlow();
     }
-
-    // /**
-    // * Get next upstream {@link GridNode node}, based on least cost.
-    // *
-    // * @return the next least cost, upstream node.
-    // */
-    // public GridNode goLeastCostUpstream() {
-    //
-    // return null;
-    // }
 
     /**
      * Gets all surrounding {@link GridNode nodes}, starting from the most eastern.
@@ -553,8 +566,7 @@ public class GridNode extends Node {
         final int prime = 31;
         int result = 1;
         result = prime * result + col;
-        long temp;
-        temp = Double.doubleToLongBits(elevation);
+        long temp = Double.doubleToLongBits(elevation);
         result = prime * result + (int) (temp ^ (temp >>> 32));
         result = prime * result + row;
         return result;
@@ -574,6 +586,10 @@ public class GridNode extends Node {
         if (Double.doubleToLongBits(elevation) != Double.doubleToLongBits(other.elevation))
             return false;
         return true;
+    }
+
+    public boolean isFlat() {
+        return isFlat;
     }
 
 }
