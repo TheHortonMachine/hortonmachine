@@ -34,7 +34,7 @@ import junit.framework.TestCase;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 
 public class HMTestCase extends TestCase {
-    protected static final double DELTA = 0.0000001;
+    protected static final float DELTA = 0.0000001f;
 
     static {
         Locale.setDefault(Locale.ENGLISH);
@@ -78,6 +78,26 @@ public class HMTestCase extends TestCase {
             do {
                 double value = rectIter.getSampleDouble();
                 double expectedResult = matrix[y][x];
+                if (isNovalue(value)) {
+                    assertTrue(x + " " + y, isNovalue(expectedResult));
+                } else {
+                    assertEquals(x + " " + y, expectedResult, value, delta);
+                }
+                x++;
+            } while( !rectIter.nextPixelDone() );
+            rectIter.startPixels();
+            y++;
+        } while( !rectIter.nextLineDone() );
+    }
+
+    protected void checkMatrixEqual( RenderedImage image, float[][] matrix, float delta ) {
+        RectIter rectIter = RectIterFactory.create(image, null);
+        int y = 0;
+        do {
+            int x = 0;
+            do {
+                float value = rectIter.getSampleFloat();
+                float expectedResult = matrix[y][x];
                 if (isNovalue(value)) {
                     assertTrue(x + " " + y, isNovalue(expectedResult));
                 } else {
@@ -188,5 +208,20 @@ public class HMTestCase extends TestCase {
             }
         }
 
+    }
+
+    protected void checkMatrixEqual( float[][] matrix, float[][] expectedMatrix, float tolerance ) {
+        for( int j = 0; j < matrix.length; j++ ) {
+            for( int i = 0; i < matrix[0].length; i++ ) {
+                float expectedResult = expectedMatrix[j][i];
+                float value = matrix[j][i];
+                if (isNovalue(value)) {
+                    assertTrue("Difference at position: " + i + " " + j, isNovalue(expectedResult));
+                } else {
+                    assertEquals("Difference at position: " + i + " " + j, expectedResult, value, tolerance);
+                }
+            }
+        }
+        
     }
 }
