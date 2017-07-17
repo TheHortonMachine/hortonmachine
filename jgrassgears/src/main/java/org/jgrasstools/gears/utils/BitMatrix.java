@@ -28,9 +28,11 @@ public class BitMatrix {
 
     private BitSet bitSet;
     private int cols;
+    private int rows;
 
     public BitMatrix( int cols, int rows ) {
         this.cols = cols;
+        this.rows = rows;
         bitSet = new BitSet(cols * rows);
     }
 
@@ -64,4 +66,21 @@ public class BitMatrix {
     public void unMark( int col, int row ) {
         bitSet.set(row * cols + col, false);
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                if (isMarked(c, r)) {
+                    sb.append("1 ");
+                }else {
+                    sb.append("0 ");
+                }
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
 }
+
