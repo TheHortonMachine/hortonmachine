@@ -899,8 +899,8 @@ public class ModelsEngine {
                 }
 
                 if (flowNode.isMarkedAsOutlet()) {
-                    int attributeValue = flowNode.getIntValueFromMap(attributeIter);
-                    flowNode.setIntValueInMap(markedIter, attributeValue);
+                    double attributeValue = flowNode.getDoubleValueFromMap(attributeIter);
+                    flowNode.setDoubleValueInMap(markedIter, attributeValue);
                     continue;
                 }
                 if (flowNode.isValid() && flowNode.isSource()) {
@@ -908,7 +908,7 @@ public class ModelsEngine {
                      * run down to the net to find the
                      * attribute map content on the net 
                      */
-                    int attributeValue = intNovalue;
+                    double attributeValue = doubleNovalue;
                     FlowNode runningNode = flowNode.goDownstream();
                     int runningRow = -1;
                     int runningCol = -1;
@@ -916,7 +916,7 @@ public class ModelsEngine {
                         runningRow = runningNode.row;
                         runningCol = runningNode.col;
                         if (runningNode.isMarkedAsOutlet()) {
-                            attributeValue = runningNode.getIntValueFromMap(attributeIter);
+                            attributeValue = runningNode.getDoubleValueFromMap(attributeIter);
                             break;
                         }
                         runningNode = runningNode.goDownstream();
@@ -925,7 +925,7 @@ public class ModelsEngine {
                         // run down marking the hills
                         runningNode = flowNode;
                         while( runningNode != null && runningNode.isValid() ) {
-                            runningNode.setIntValueInMap(markedIter, attributeValue);
+                            runningNode.setDoubleValueInMap(markedIter, attributeValue);
                             if (runningNode.isMarkedAsOutlet()) {
                                 break;
                             }

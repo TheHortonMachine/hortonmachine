@@ -125,10 +125,16 @@ public class OmsAspect extends GridNodeMultiProcessing {
             pm.beginTask(msg.message("aspect.calculating"), rows * cols);
             processGridNodes(inElev, gridNode -> {
                 double aspect = calculateAspect(gridNode, radtodeg, doRound);
-                if (doRound) {
-                    aspectIter.setSample(gridNode.col, gridNode.row, 0, (short) aspect);
+                int col = gridNode.col;
+                int row = gridNode.row;
+                if (col == 0 || row == 0 || col == cols - 1 || row == rows - 1) {
+                    aspectIter.setSample(col, row, 0, (short) -9999);
                 } else {
-                    aspectIter.setSample(gridNode.col, gridNode.row, 0, aspect);
+                    if (doRound) {
+                        aspectIter.setSample(col, row, 0, (short) aspect);
+                    } else {
+                        aspectIter.setSample(col, row, 0, aspect);
+                    }
                 }
                 pm.worked(1);
             });

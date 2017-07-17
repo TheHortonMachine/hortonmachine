@@ -46,7 +46,6 @@ public class TestAspect extends HMTestCase {
         aspect.process();
 
         GridCoverage2D aspectCoverage = aspect.outAspect;
-
         checkMatrixEqual(aspectCoverage.getRenderedImage(), HMTestMaps.aspectDataDegrees, 0.01);
     }
 
