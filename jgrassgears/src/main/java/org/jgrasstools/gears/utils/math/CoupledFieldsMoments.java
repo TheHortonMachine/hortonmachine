@@ -90,7 +90,7 @@ public class CoupledFieldsMoments {
         QuickSortAlgorithm t = new QuickSortAlgorithm(pm);
         if (map2RI == null) {
             T = U;
-            t.sort(U, null);
+            t.sort(U, (double[]) null);
         } else {
             T = vectorizeDoubleMatrix(map2RI);
             t.sort(U, T);
@@ -120,8 +120,8 @@ public class CoupledFieldsMoments {
                 if (pFirst == 1)
                     pFirst++;
                 for( int k = pFirst; k <= pLast; k++ ) {
-                    outCb[h][k - pFirst + 3] = calculateNthMoment(theSplit.splitValues2[h], (int) theSplit.splitIndex[h], outCb[h][1],
-                            (double) k, pm);
+                    outCb[h][k - pFirst + 3] = calculateNthMoment(theSplit.splitValues2[h], (int) theSplit.splitIndex[h],
+                            outCb[h][1], (double) k, pm);
                 }
             }
         }

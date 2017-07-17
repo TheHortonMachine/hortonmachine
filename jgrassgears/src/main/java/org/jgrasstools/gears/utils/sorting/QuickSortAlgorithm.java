@@ -28,6 +28,7 @@ public class QuickSortAlgorithm {
     private int number;
     private double[] valuesToFollowDouble;
     private float[] valuesToFollowFloat;
+    private int[] valuesToFollowInt;
     private IJGTProgressMonitor monitor = new LogProgressMonitor();
 
     public QuickSortAlgorithm( IJGTProgressMonitor monitor ) {
@@ -73,6 +74,20 @@ public class QuickSortAlgorithm {
         
         monitor.worked(1);
         quicksortFloat(0, number - 1);
+        
+        monitor.done();
+    }
+
+    public void sort( double[] values, int[] valuesToFollow ) {
+        this.valuesToSortDouble = values;
+        this.valuesToFollowInt = valuesToFollow;
+        
+        number = values.length;
+        
+        monitor.beginTask("Sorting...", -1);
+        
+        monitor.worked(1);
+        quicksortInt(0, number - 1);
         
         monitor.done();
     }
@@ -151,6 +166,43 @@ public class QuickSortAlgorithm {
             quicksortFloat(i, high);
     }
 
+    private void quicksortInt( int low, int high ) {
+        int i = low, j = high;
+        // Get the pivot element from the middle of the list
+        double pivot = valuesToSortDouble[(low + high) >>> 1];
+        
+        // Divide into two lists
+        while( i <= j ) {
+            // If the current value from the left list is smaller then the pivot
+            // element then get the next element from the left list
+            while( valuesToSortDouble[i] < pivot || (isNovalue(valuesToSortDouble[i]) && !isNovalue(pivot)) ) {
+                
+                i++;
+            }
+            // If the current value from the right list is larger then the pivot
+            // element then get the next element from the right list
+            while( valuesToSortDouble[j] > pivot || (!isNovalue(valuesToSortDouble[j]) && isNovalue(pivot)) ) {
+                j--;
+            }
+            
+            // If we have found a values in the left list which is larger then
+            // the pivot element and if we have found a value in the right list
+            // which is smaller then the pivot element then we exchange the
+            // values.
+            // As we are done we can increase i and j
+            if (i <= j) {
+                exchangeDoubleInt(i, j);
+                i++;
+                j--;
+            }
+        }
+        // Recursion
+        if (low < j)
+            quicksortInt(low, j);
+        if (i < high)
+            quicksortInt(i, high);
+    }
+
     private void exchange( int i, int j ) {
         double temp = valuesToSortDouble[i];
         valuesToSortDouble[i] = valuesToSortDouble[j];
@@ -173,4 +225,16 @@ public class QuickSortAlgorithm {
         }
     }
 
+    private void exchangeDoubleInt( int i, int j ) {
+        double temp = valuesToSortDouble[i];
+        valuesToSortDouble[i] = valuesToSortDouble[j];
+        valuesToSortDouble[j] = temp;
+        if (valuesToFollowInt != null) {
+            int tempFollow = valuesToFollowInt[i];
+            valuesToFollowInt[i] = valuesToFollowInt[j];
+            valuesToFollowInt[j] = tempFollow;
+        }
+    }
+
 }
+
