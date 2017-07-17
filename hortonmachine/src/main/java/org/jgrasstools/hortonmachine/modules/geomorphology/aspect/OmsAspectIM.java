@@ -17,24 +17,29 @@
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.aspect;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_DOCUMENTATION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_doRadiants_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_doRound_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_inElev_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_outAspect_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.OMSASPECT_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.OMSASPECT_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.OMSASPECT_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.OMSASPECT_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.OMSASPECT_KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.OMSASPECT_LABEL;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.OMSASPECT_LICENSE;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.OMSASPECT_NAME;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.OMSASPECT_STATUS;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.OMSASPECT_doRadiants_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.OMSASPECT_doRound_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.OMSASPECT_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.OMSASPECT_outAspect_DESCRIPTION;
 
 import java.io.File;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.jgrasstools.gears.libs.modules.GridNode;
+import org.jgrasstools.gears.libs.modules.JGTModelIM;
+import org.jgrasstools.gears.utils.colors.EColorTables;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -47,11 +52,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.jgrasstools.gears.libs.modules.GridNode;
-import org.jgrasstools.gears.libs.modules.JGTModelIM;
-import org.jgrasstools.gears.utils.colors.EColorTables;
-import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
 @Description(OMSASPECT_DESCRIPTION)
 @Documentation(OMSASPECT_DOCUMENTATION)
@@ -96,7 +96,7 @@ public class OmsAspectIM extends JGTModelIM {
 
         makeMosaic();
         makeStyle(EColorTables.aspect, 0, 360);
-        
+
         dispose();
     }
 

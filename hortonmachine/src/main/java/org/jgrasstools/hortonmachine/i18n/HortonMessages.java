@@ -387,20 +387,6 @@ public class HortonMessages {
     public static final String OMSEPANETPROJECTFILESGENERATOR_inFolder_DESCRIPTION = "The folder into which to create the base files.";
     public static final String OMSEPANETPROJECTFILESGENERATOR_pCode_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).";
 
-    public static final String OMSASPECT_DESCRIPTION = "Calculates the aspect considering the zero toward the north and the rotation angle counterclockwise.";
-    public static final String OMSASPECT_DOCUMENTATION = "OmsAspect.html";
-    public static final String OMSASPECT_KEYWORDS = "Geomorphology, OmsDrainDir, OmsFlowDirections";
-    public static final String OMSASPECT_LABEL = GEOMORPHOLOGY;
-    public static final String OMSASPECT_NAME = "aspect";
-    public static final int OMSASPECT_STATUS = 40;
-    public static final String OMSASPECT_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSASPECT_AUTHORNAMES = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Pisoni Silvano, Andrea Cozzini";
-    public static final String OMSASPECT_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSASPECT_inElev_DESCRIPTION = "The map of the digital elevation model (DEM).";
-    public static final String OMSASPECT_doRadiants_DESCRIPTION = "Switch to define whether create the output map in degrees (default) or radiants.";
-    public static final String OMSASPECT_doRound_DESCRIPTION = "Switch to define whether the output map values should be rounded (might make sense in the case of degree maps).";
-    public static final String OMSASPECT_outAspect_DESCRIPTION = "The map of aspect.";
-
     public static final String OMSSUMDOWNSTREAM_DESCRIPTION = "Sums the values of a map downstream following the flowdirections.";
     public static final String OMSSUMDOWNSTREAM_DOCUMENTATION = "OmsSumDownStream.html";
     public static final String OMSSUMDOWNSTREAM_KEYWORDS = "Sumdownstream, Statistic, OmsExtractNetwork";
