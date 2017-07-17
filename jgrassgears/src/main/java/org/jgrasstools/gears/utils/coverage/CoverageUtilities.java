@@ -20,7 +20,7 @@ package org.jgrasstools.gears.utils.coverage;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doesOverFlow;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.Point;
@@ -52,7 +52,6 @@ import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
-import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridCoverage2DReader;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
@@ -65,7 +64,6 @@ import org.geotools.process.ProcessException;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
-import org.geotools.xml.xsi.XSISimpleTypes.Int;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyRandomIter;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWritableRaster;
@@ -958,6 +956,46 @@ public class CoverageUtilities {
             }
         }
 
+        return writableRaster;
+    }
+
+    public static WritableRaster renderedImage2DoubleWritableRaster( RenderedImage renderedImage, boolean nullBorders ) {
+        int width = renderedImage.getWidth();
+        int height = renderedImage.getHeight();
+
+        Raster data = renderedImage.getData();
+        WritableRaster writableRaster = createWritableRaster(width, height, Double.class, null, null);
+        writableRaster.setRect(data);
+        if (nullBorders) {
+            for( int c = 0; c < width; c++ ) {
+                writableRaster.setSample(c, 0, 0, doubleNovalue);
+                writableRaster.setSample(c, height - 1, 0, doubleNovalue);
+            }
+            for( int r = 0; r < height; r++ ) {
+                writableRaster.setSample(0, r, 0, doubleNovalue);
+                writableRaster.setSample(width - 1, r, 0, doubleNovalue);
+            }
+        }
+        return writableRaster;
+    }
+
+    public static WritableRaster renderedImage2IntWritableRaster( RenderedImage renderedImage, boolean nullBorders ) {
+        int width = renderedImage.getWidth();
+        int height = renderedImage.getHeight();
+
+        Raster data = renderedImage.getData();
+        WritableRaster writableRaster = createWritableRaster(width, height, Integer.class, null, null);
+        writableRaster.setRect(data);
+        if (nullBorders) {
+            for( int c = 0; c < width; c++ ) {
+                writableRaster.setSample(c, 0, 0, intNovalue);
+                writableRaster.setSample(c, height - 1, 0, intNovalue);
+            }
+            for( int r = 0; r < height; r++ ) {
+                writableRaster.setSample(0, r, 0, intNovalue);
+                writableRaster.setSample(width - 1, r, 0, intNovalue);
+            }
+        }
         return writableRaster;
     }
 
