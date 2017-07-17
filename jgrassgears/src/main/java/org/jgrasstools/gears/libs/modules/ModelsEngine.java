@@ -23,7 +23,7 @@ import static java.lang.Math.exp;
 import static java.lang.Math.log;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.dEq;
 
@@ -701,11 +701,11 @@ public class ModelsEngine {
      * @throws Exception
      */
     public static WritableRaster netNumbering( GridCoverage2D flowGC, GridCoverage2D netGC, GridCoverage2D tcaGC,
-            double tcaThreshold, SimpleFeatureCollection pointsFC, IJGTProgressMonitor pm ) throws Exception {
+            int tcaThreshold, SimpleFeatureCollection pointsFC, IJGTProgressMonitor pm ) throws Exception {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(flowGC);
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
-        WritableRaster netnumWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
+        WritableRaster netnumWR = CoverageUtilities.createWritableRaster(cols, rows, Integer.class, null, null);
         WritableRandomIter netnumIter = RandomIterFactory.createWritable(netnumWR, null);
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(flowGC);
@@ -792,28 +792,28 @@ public class ModelsEngine {
             boolean isNetStart = splitNodesIsNetStart.get(i);
 
             // we simply go down to the next split with one number
-            splitNode.setValueInMap(netnumIter, channel);
+            splitNode.setIntValueInMap(netnumIter, channel);
 
             // if it is a net start, check the tca if it exists
             if (isNetStart) {
-                double netStartTca = splitNode.getValueFromMap(tcaIter);
+                int netStartTca = splitNode.getIntValueFromMap(tcaIter);
                 if (!isNovalue(netStartTca) && netStartTca > tcaThreshold) {
                     channel++;
                 }
             }
 
             FlowNode nextNode = splitNode.goDownstream();
-            double startTca = doubleNovalue;
+            int startTca = intNovalue;
             if (nextNode != null)
-                startTca = nextNode.getValueFromMap(tcaIter);
+                startTca = nextNode.getIntValueFromMap(tcaIter);
             while( nextNode != null && !splitNodes.contains(nextNode) ) {
-                nextNode.setValueInMap(netnumIter, channel);
+                nextNode.setIntValueInMap(netnumIter, channel);
                 nextNode = nextNode.goDownstream();
-                double endTca = doubleNovalue;
+                int endTca = intNovalue;
                 if (nextNode != null)
-                    endTca = nextNode.getValueFromMap(tcaIter);
+                    endTca = nextNode.getIntValueFromMap(tcaIter);
                 if (!isNovalue(startTca) && !isNovalue(endTca)) {
-                    double diffTca = endTca - startTca;
+                    int diffTca = endTca - startTca;
                     if (diffTca > tcaThreshold) {
                         startTca = endTca;
                         channel++;
@@ -831,42 +831,46 @@ public class ModelsEngine {
      * Extract the subbasins of a raster map.
      *
      * @param flowIter the map of flowdirections.
-     * @param netRandomIter the network map.
+     * @param netIter the network map.
      * @param netNumberIter the netnumber map.
      * @param rows rows of the region.
      * @param cols columns of the region.
      * @param pm
      * @return the map of extracted subbasins.
      */
-    public static WritableRaster extractSubbasins( WritableRandomIter flowIter, RandomIter netRandomIter,
+    public static WritableRaster extractSubbasins( WritableRandomIter flowIter, RandomIter netIter,
             WritableRandomIter netNumberIter, int rows, int cols, IJGTProgressMonitor pm ) {
 
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
-                if (!isNovalue(netRandomIter.getSampleDouble(c, r, 0)))
-                    flowIter.setSample(c, r, 0, 10);
+                if (!isNovalue(netIter.getSampleDouble(c, r, 0)))
+                    flowIter.setSample(c, r, 0, FlowNode.OUTLET);
             }
         }
 
-        WritableRaster subbasinWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
+        WritableRaster subbasinWR = CoverageUtilities.createWritableRaster(cols, rows, Integer.class, null, null);
         WritableRandomIter subbasinIter = RandomIterFactory.createWritable(subbasinWR, null);
 
         markHillSlopeWithLinkValue(flowIter, netNumberIter, subbasinIter, cols, rows, pm);
 
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                double netValue = netRandomIter.getSampleDouble(c, r, 0);
-                double netNumberValue = netNumberIter.getSampleDouble(c, r, 0);
-                if (!isNovalue(netValue)) {
-                    subbasinIter.setSample(c, r, 0, netNumberValue);
+        try {
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
+                    int netValue = netIter.getSample(c, r, 0);
+                    int netNumberValue = netNumberIter.getSample(c, r, 0);
+                    if (!isNovalue(netValue)) {
+                        subbasinIter.setSample(c, r, 0, netNumberValue);
+                    }
+                    if (NumericsUtilities.dEq(netNumberValue, 0)) {
+                        netNumberIter.setSample(c, r, 0, JGTConstants.intNovalue);
+                    }
+                    int subbValue = subbasinIter.getSample(c, r, 0);
+                    if (NumericsUtilities.dEq(subbValue, 0))
+                        subbasinIter.setSample(c, r, 0, JGTConstants.intNovalue);
                 }
-                if (NumericsUtilities.dEq(netNumberValue, 0)) {
-                    netNumberIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
-                }
-                double subbValue = subbasinIter.getSampleDouble(c, r, 0);
-                if (NumericsUtilities.dEq(subbValue, 0))
-                    subbasinIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
             }
+        } finally {
+            subbasinIter.done();
         }
 
         return subbasinWR;
@@ -895,8 +899,8 @@ public class ModelsEngine {
                 }
 
                 if (flowNode.isMarkedAsOutlet()) {
-                    double attributeValue = flowNode.getValueFromMap(attributeIter);
-                    flowNode.setValueInMap(markedIter, attributeValue);
+                    int attributeValue = flowNode.getIntValueFromMap(attributeIter);
+                    flowNode.setIntValueInMap(markedIter, attributeValue);
                     continue;
                 }
                 if (flowNode.isValid() && flowNode.isSource()) {
@@ -904,7 +908,7 @@ public class ModelsEngine {
                      * run down to the net to find the
                      * attribute map content on the net 
                      */
-                    double attributeValue = doubleNovalue;
+                    int attributeValue = intNovalue;
                     FlowNode runningNode = flowNode.goDownstream();
                     int runningRow = -1;
                     int runningCol = -1;
@@ -912,7 +916,7 @@ public class ModelsEngine {
                         runningRow = runningNode.row;
                         runningCol = runningNode.col;
                         if (runningNode.isMarkedAsOutlet()) {
-                            attributeValue = runningNode.getValueFromMap(attributeIter);
+                            attributeValue = runningNode.getIntValueFromMap(attributeIter);
                             break;
                         }
                         runningNode = runningNode.goDownstream();
@@ -921,7 +925,7 @@ public class ModelsEngine {
                         // run down marking the hills
                         runningNode = flowNode;
                         while( runningNode != null && runningNode.isValid() ) {
-                            runningNode.setValueInMap(markedIter, attributeValue);
+                            runningNode.setIntValueInMap(markedIter, attributeValue);
                             if (runningNode.isMarkedAsOutlet()) {
                                 break;
                             }

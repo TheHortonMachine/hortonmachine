@@ -74,6 +74,25 @@ public abstract class Node {
     }
 
     /**
+     * Get the int value of another map in the current node position.
+     * 
+     * @param map the map from which to get the value. 
+     * @return the int value or a novalue.
+     */
+    public int getIntValueFromMap( RandomIter map ) {
+        try {
+            if (map == null) {
+                return JGTConstants.intNovalue;
+            }
+            int value = map.getSample(col, row, 0);
+            return value;
+        } catch (Exception e) {
+            // ignore and return novalue
+            return JGTConstants.intNovalue;
+        }
+    }
+
+    /**
      * Get the double value of another map in the current node position.
      * 
      * @param map the map from which to get the value. 
