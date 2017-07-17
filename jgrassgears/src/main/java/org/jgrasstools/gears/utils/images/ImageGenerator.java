@@ -61,6 +61,7 @@ import org.geotools.map.GridReaderLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.map.WMSLayer;
+import org.geotools.map.WMSMapLayer;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.ColorMap;
 import org.geotools.styling.ColorMapEntry;
@@ -129,7 +130,7 @@ public class ImageGenerator {
 
     private CoordinateReferenceSystem forceCrs;
 
-    public ImageGenerator( IJGTProgressMonitor monitor , CoordinateReferenceSystem forceCrs) {
+    public ImageGenerator( IJGTProgressMonitor monitor, CoordinateReferenceSystem forceCrs ) {
         this.forceCrs = forceCrs;
         if (monitor != null)
             this.monitor = monitor;
@@ -244,15 +245,12 @@ public class ImageGenerator {
         // wms first
         if (wmsURL != null) {
             String[] split = wmsURL.split("#");
-            // setup the reader
             WebMapServer server = new WebMapServer(new URL(split[0]));
-            AbstractGridCoverage2DReader reader = new WMSLayer(server, getWMSLayer(server, split[1])).getReader();
-            RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
-            Style style = SLD.wrapSymbolizers(sym);
-            GridReaderLayer layer = new GridReaderLayer(reader, style);
+            org.geotools.data.ows.Layer wmsLayer = getWMSLayer(server, split[1]);
+            WMSLayer layer = new WMSLayer(server, wmsLayer);
             layers.add(layer);
 
-            GeneralEnvelope originalEnvelope = reader.getOriginalEnvelope();
+            ReferencedEnvelope originalEnvelope = layer.getBounds();
             if (originalEnvelope != null) {
                 if (maxExtent == null) {
                     maxExtent = new ReferencedEnvelope(originalEnvelope.getCoordinateReferenceSystem());
@@ -521,8 +519,9 @@ public class ImageGenerator {
         MapContent content = new MapContent();
         content.setTitle("dump");
 
-        if (forceCrs!=null) {
+        if (forceCrs != null) {
             content.getViewport().setCoordinateReferenceSystem(forceCrs);
+             content.getViewport().setBounds(ref);
         }
 
         synchronized (synchronizedLayers) {
@@ -530,7 +529,6 @@ public class ImageGenerator {
                 content.addLayer(layer);
             }
         }
-        
 
         StreamingRenderer renderer = new StreamingRenderer();
         renderer.setMapContent(content);
