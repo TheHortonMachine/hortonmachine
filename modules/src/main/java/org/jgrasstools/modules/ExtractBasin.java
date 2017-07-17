@@ -36,7 +36,6 @@ import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.
 import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_pEast_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_pNorth_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_pSnapbuffer_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_pValue_DESCRIPTION;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -71,10 +70,6 @@ public class ExtractBasin extends JGTModel {
     @UI(JGTConstants.EASTING_UI_HINT)
     @In
     public double pEast = -1.0;
-
-    @Description(OMSEXTRACTBASIN_pValue_DESCRIPTION)
-    @In
-    public float pValue = 1f;
 
     @Description(OMSEXTRACTBASIN_inFlow_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -122,7 +117,6 @@ public class ExtractBasin extends JGTModel {
         OmsExtractBasin extractbasin = new OmsExtractBasin();
         extractbasin.pNorth = pNorth;
         extractbasin.pEast = pEast;
-        extractbasin.pValue = pValue;
         extractbasin.inFlow = getRaster(inFlow);
         extractbasin.inNetwork = getVector(inNetwork);
         extractbasin.pSnapbuffer = pSnapbuffer;

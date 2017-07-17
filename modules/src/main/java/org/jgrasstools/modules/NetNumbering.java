@@ -79,7 +79,7 @@ public class NetNumbering extends JGTModel {
 
     @Description(OMSNETNUMBERING_pThres_DESCRIPTION)
     @In
-    public double pThres = 0;
+    public int pThres = 0;
 
     @Description(OMSNETNUMBERING_fPointId_DESCRIPTION)
     @In

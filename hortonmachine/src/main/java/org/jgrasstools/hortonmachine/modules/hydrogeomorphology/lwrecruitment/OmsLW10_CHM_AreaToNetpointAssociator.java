@@ -171,7 +171,7 @@ public class OmsLW10_CHM_AreaToNetpointAssociator extends JGTModel {
         omsnetnumbering.inNet = inNet;
         omsnetnumbering.inTca = inTca;
         omsnetnumbering.inPoints = inNetPoints;
-        omsnetnumbering.pThres = 0.0;
+        omsnetnumbering.pThres = 0;
         omsnetnumbering.pm = pm;
         omsnetnumbering.process();
         outNetnum = omsnetnumbering.outNetnum;
