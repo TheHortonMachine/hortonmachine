@@ -33,6 +33,7 @@ import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.BitMatrix;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -91,6 +92,7 @@ public class OmsDePitter extends JGTModel {
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     private final float delta = 2E-6f;
+    private boolean verbose = true;
 
     @Execute
     public void process() throws Exception {
@@ -124,10 +126,16 @@ public class OmsDePitter extends JGTModel {
 
                 List<GridNode> allNodesInPit = new ArrayList<>();
                 List<PitInfo> pitInfoList = new ArrayList<>();
-                pm.beginTask("Processing " + pitCount + " pits (iteration N." + iteration++ + ")... ", pitCount);
+
+                int shownCount = pitCount;
+                if (!verbose) {
+                    shownCount = IJGTProgressMonitor.UNKNOWN;
+                }
+                pm.beginTask("Processing " + pitCount + " pits (iteration N." + iteration++ + ")... ", shownCount);
                 for( GridNode originalPitNode : pitsList ) {
                     if (allNodesInPit.contains(originalPitNode)) {
-                        pm.worked(1);
+                        if (verbose)
+                            pm.worked(1);
                         continue;
                     }
                     count++;
@@ -228,12 +236,14 @@ public class OmsDePitter extends JGTModel {
                     pitInfoList.add(info);
                     allNodesInPit.addAll(nodesInPit);
 
-                    pm.worked(1);
+                    if (verbose)
+                        pm.worked(1);
                 }
                 pm.done();
 
                 // BitMatrix markedPositions = new BitMatrix(nCols, nRows);
-                pm.beginTask("Flood pits...", pitInfoList.size());
+                if (verbose)
+                    pm.beginTask("Flood pits...", pitInfoList.size());
                 pitInfoList.stream().forEach(pitInfo -> {
                     if (pm.isCanceled()) {
                         return;
@@ -253,9 +263,11 @@ public class OmsDePitter extends JGTModel {
                     cellsToMakeFlowReady.add(startNode);
                     allPitsPositions.mark(startNode.col, startNode.row);
                     makeCellsFlowReady(0, startNode, cellsToMakeFlowReady, allPitsPositions, pitIter, delta);
-                    pm.worked(1);
+                    if (verbose)
+                        pm.worked(1);
                 });
-                pm.done();
+                if (verbose)
+                    pm.done();
 
                 // for( int row = 0; row < nRows; row++ ) {
                 // for( int col = 0; col < nCols; col++ ) {
@@ -303,8 +315,12 @@ public class OmsDePitter extends JGTModel {
                 // // only re-check the cells that are adiacent to what has been modified
                 // pitsList = getPitsList(updatedPitsPositions, allPitsPositions);
 
-                pm.message("Left pits: " + pitsList.size());
+                int size = pitsList.size();
+                pm.message("Left pits: " + size);
                 pm.message("---------------------------------------------------------------------");
+                if (size < 10000) {
+                    verbose = false;
+                }
 
             }
 
@@ -494,7 +510,8 @@ public class OmsDePitter extends JGTModel {
     private ConcurrentLinkedQueue<GridNode> getPitsList( int nCols, int nRows, double xRes, double yRes,
             WritableRandomIter pitIter ) {
         ConcurrentLinkedQueue<GridNode> pitsList = new ConcurrentLinkedQueue<>();
-        pm.beginTask("Extract pits from DTM...", nRows);
+        if (verbose)
+            pm.beginTask("Extract pits from DTM...", nRows);
         for( int row = 0; row < nRows; row++ ) {
             for( int col = 0; col < nCols; col++ ) {
                 GridNode node = new GridNode(pitIter, nCols, nRows, xRes, yRes, col, row);
@@ -506,9 +523,11 @@ public class OmsDePitter extends JGTModel {
                     pitsList.add(node);
                 }
             }
-            pm.worked(1);
+            if (verbose)
+                pm.worked(1);
         }
-        pm.done();
+        if (verbose)
+            pm.done();
         return pitsList;
     }
 
@@ -517,7 +536,8 @@ public class OmsDePitter extends JGTModel {
         ConcurrentLinkedQueue<GridNode> pitsList = new ConcurrentLinkedQueue<>();
 
         BitMatrix currentMarked = new BitMatrix(nCols, nRows);
-        pm.beginTask("Extract pits from DTM...", nRows);
+        if (verbose)
+            pm.beginTask("Extract pits from DTM...", nRows);
         for( int row = 0; row < nRows; row++ ) {
             for( int col = 0; col < nCols; col++ ) {
                 if (!allPitsPositions.isMarked(col, row)) {
@@ -552,89 +572,93 @@ public class OmsDePitter extends JGTModel {
                 }
 
             }
-            pm.worked(1);
+            if (verbose)
+                pm.worked(1);
         }
-        pm.done();
+        if (verbose)
+            pm.done();
         return pitsList;
     }
 
-    private ConcurrentLinkedQueue<PitInfo> getFlatsList( int nCols, int nRows, double xRes, double yRes,
-            WritableRandomIter pitIter, BitMatrix allPitsPositions, BitMatrix allFlatsPositions ) {
-        ConcurrentLinkedQueue<PitInfo> flatsList = new ConcurrentLinkedQueue<>();
-        pm.beginTask("Extract flats from DTM...", nRows);
-        for( int row = 0; row < nRows; row++ ) {
-            for( int col = 0; col < nCols; col++ ) {
-                if (allFlatsPositions.isMarked(col, row)) {
-                    continue;
-                }
-                GridNode node = new GridNode(pitIter, nCols, nRows, xRes, yRes, col, row);
-                if (node.isFlat() && !allPitsPositions.isMarked(col, row)) {
-                    PitInfo lowestOfFlat = findLowest(node, allPitsPositions, allFlatsPositions);
-                    if (lowestOfFlat != null) {
-                        flatsList.add(lowestOfFlat);
-                    }
-                }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-        return flatsList;
-    }
+    // private ConcurrentLinkedQueue<PitInfo> getFlatsList( int nCols, int nRows, double xRes,
+    // double yRes,
+    // WritableRandomIter pitIter, BitMatrix allPitsPositions, BitMatrix allFlatsPositions ) {
+    // ConcurrentLinkedQueue<PitInfo> flatsList = new ConcurrentLinkedQueue<>();
+    // pm.beginTask("Extract flats from DTM...", nRows);
+    // for( int row = 0; row < nRows; row++ ) {
+    // for( int col = 0; col < nCols; col++ ) {
+    // if (allFlatsPositions.isMarked(col, row)) {
+    // continue;
+    // }
+    // GridNode node = new GridNode(pitIter, nCols, nRows, xRes, yRes, col, row);
+    // if (node.isFlat() && !allPitsPositions.isMarked(col, row)) {
+    // PitInfo lowestOfFlat = findLowest(node, allPitsPositions, allFlatsPositions);
+    // if (lowestOfFlat != null) {
+    // flatsList.add(lowestOfFlat);
+    // }
+    // }
+    // }
+    // pm.worked(1);
+    // }
+    // pm.done();
+    // return flatsList;
+    // }
 
-    private PitInfo findLowest( GridNode node, BitMatrix allPitsPositions, BitMatrix allFlatsPositions ) {
-        if (allFlatsPositions.isMarked(node.col, node.row)) {
-            return null;
-        }
-        allFlatsPositions.mark(node.col, node.row);
-        double lowest = node.getSurroundingMin();
-        double elev = node.elevation;
-        GridNode nodeWithLowestsurrounding = node;
-
-        List<GridNode> checkNodes = new ArrayList<>();
-        checkNodes.add(node);
-        boolean oneAdded = true;
-        int startIndex = 0;
-        while( oneAdded ) {
-            oneAdded = false;
-            int currentSize = checkNodes.size();
-            for( int i = startIndex; i < currentSize; i++ ) {
-                GridNode checkNode = checkNodes.get(i);
-                List<GridNode> tmpNodes = checkNode.getValidSurroundingNodes();
-                for( GridNode gridNode : tmpNodes ) {
-                    if (allPitsPositions.isMarked(gridNode.col, gridNode.row)
-                            || allFlatsPositions.isMarked(gridNode.col, gridNode.row)) {
-                        continue;
-                    }
-
-                    if (gridNode.elevation == elev) {
-                        if (!checkNodes.contains(gridNode) && !gridNode.isPit()) {
-                            checkNodes.add(gridNode);
-                            allFlatsPositions.mark(gridNode.col, gridNode.row);
-                            oneAdded = true;
-                            // get the surrounding min that is not a pit
-                            List<GridNode> validSurroundingNodes = gridNode.getValidSurroundingNodes();
-                            double surroundingMin = Double.POSITIVE_INFINITY;// gridNode.getSurroundingMin();
-                            for( GridNode tmpNode : validSurroundingNodes ) {
-                                if (tmpNode.isValid() && !tmpNode.isPit() && tmpNode.elevation < surroundingMin) {
-                                    surroundingMin = tmpNode.elevation;
-                                }
-                            }
-                            if (surroundingMin < lowest) {
-                                nodeWithLowestsurrounding = gridNode;
-                                lowest = surroundingMin;
-                            }
-                        }
-                    }
-                }
-            }
-            startIndex = currentSize;
-        }
-
-        PitInfo info = new PitInfo();
-        info.pitfillExitNode = nodeWithLowestsurrounding;
-        info.nodes = checkNodes;
-        return info;
-    }
+    // private PitInfo findLowest( GridNode node, BitMatrix allPitsPositions, BitMatrix
+    // allFlatsPositions ) {
+    // if (allFlatsPositions.isMarked(node.col, node.row)) {
+    // return null;
+    // }
+    // allFlatsPositions.mark(node.col, node.row);
+    // double lowest = node.getSurroundingMin();
+    // double elev = node.elevation;
+    // GridNode nodeWithLowestsurrounding = node;
+    //
+    // List<GridNode> checkNodes = new ArrayList<>();
+    // checkNodes.add(node);
+    // boolean oneAdded = true;
+    // int startIndex = 0;
+    // while( oneAdded ) {
+    // oneAdded = false;
+    // int currentSize = checkNodes.size();
+    // for( int i = startIndex; i < currentSize; i++ ) {
+    // GridNode checkNode = checkNodes.get(i);
+    // List<GridNode> tmpNodes = checkNode.getValidSurroundingNodes();
+    // for( GridNode gridNode : tmpNodes ) {
+    // if (allPitsPositions.isMarked(gridNode.col, gridNode.row)
+    // || allFlatsPositions.isMarked(gridNode.col, gridNode.row)) {
+    // continue;
+    // }
+    //
+    // if (gridNode.elevation == elev) {
+    // if (!checkNodes.contains(gridNode) && !gridNode.isPit()) {
+    // checkNodes.add(gridNode);
+    // allFlatsPositions.mark(gridNode.col, gridNode.row);
+    // oneAdded = true;
+    // // get the surrounding min that is not a pit
+    // List<GridNode> validSurroundingNodes = gridNode.getValidSurroundingNodes();
+    // double surroundingMin = Double.POSITIVE_INFINITY;// gridNode.getSurroundingMin();
+    // for( GridNode tmpNode : validSurroundingNodes ) {
+    // if (tmpNode.isValid() && !tmpNode.isPit() && tmpNode.elevation < surroundingMin) {
+    // surroundingMin = tmpNode.elevation;
+    // }
+    // }
+    // if (surroundingMin < lowest) {
+    // nodeWithLowestsurrounding = gridNode;
+    // lowest = surroundingMin;
+    // }
+    // }
+    // }
+    // }
+    // }
+    // startIndex = currentSize;
+    // }
+    //
+    // PitInfo info = new PitInfo();
+    // info.pitfillExitNode = nodeWithLowestsurrounding;
+    // info.nodes = checkNodes;
+    // return info;
+    // }
 
     private void findConnectedOfSameHeight( GridNode node, BitMatrix allPitsPositions, List<GridNode> nodesInPit ) {
         double elev = node.elevation;
@@ -666,36 +690,38 @@ public class OmsDePitter extends JGTModel {
 
     }
 
-    private ConcurrentLinkedQueue<GridNode> getPitsList( List<GridNode> nodesToCheckForLeftPits, BitMatrix allPitsPositions ) {
-        ConcurrentLinkedQueue<GridNode> pitsList = new ConcurrentLinkedQueue<>();
-        if (nodesToCheckForLeftPits.size() > 0) {
-            GridNode tmp = nodesToCheckForLeftPits.get(0);
-            BitMatrix existing = new BitMatrix(tmp.cols, tmp.rows);
-            pm.beginTask("Extract pits from the cells surrounding the pit pool...", nodesToCheckForLeftPits.size());
-            nodesToCheckForLeftPits.stream().forEach(node -> {
-                List<GridNode> validSurroundingNodes = node.getValidSurroundingNodes();
-                for( GridNode gridNode : validSurroundingNodes ) {
-                    if (allPitsPositions.isMarked(gridNode.col, gridNode.row)) {
-                        // previously flattened pits
-                        continue;
-                    }
-                    if (gridNode.isPit()) {
-                        double surroundingMin = gridNode.getSurroundingMin();
-                        if (Double.isInfinite(surroundingMin)) {
-                            continue;
-                        }
-                        if (!existing.isMarked(gridNode.col, gridNode.row)) {
-                            pitsList.add(gridNode);
-                            existing.mark(gridNode.col, gridNode.row);
-                        }
-                    }
-                }
-                pm.worked(1);
-            });
-            pm.done();
-        }
-        return pitsList;
-    }
+    // private ConcurrentLinkedQueue<GridNode> getPitsList( List<GridNode> nodesToCheckForLeftPits,
+    // BitMatrix allPitsPositions ) {
+    // ConcurrentLinkedQueue<GridNode> pitsList = new ConcurrentLinkedQueue<>();
+    // if (nodesToCheckForLeftPits.size() > 0) {
+    // GridNode tmp = nodesToCheckForLeftPits.get(0);
+    // BitMatrix existing = new BitMatrix(tmp.cols, tmp.rows);
+    // pm.beginTask("Extract pits from the cells surrounding the pit pool...",
+    // nodesToCheckForLeftPits.size());
+    // nodesToCheckForLeftPits.stream().forEach(node -> {
+    // List<GridNode> validSurroundingNodes = node.getValidSurroundingNodes();
+    // for( GridNode gridNode : validSurroundingNodes ) {
+    // if (allPitsPositions.isMarked(gridNode.col, gridNode.row)) {
+    // // previously flattened pits
+    // continue;
+    // }
+    // if (gridNode.isPit()) {
+    // double surroundingMin = gridNode.getSurroundingMin();
+    // if (Double.isInfinite(surroundingMin)) {
+    // continue;
+    // }
+    // if (!existing.isMarked(gridNode.col, gridNode.row)) {
+    // pitsList.add(gridNode);
+    // existing.mark(gridNode.col, gridNode.row);
+    // }
+    // }
+    // }
+    // pm.worked(1);
+    // });
+    // pm.done();
+    // }
+    // return pitsList;
+    // }
 
     private static class PitInfo {
         // GridNode originalPitNode;
@@ -716,23 +742,24 @@ public class OmsDePitter extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
 
-        // String dtm = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/dtm_flanginec.tiff";
-        // String pit = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/pit_flanginec.tiff";
-        // String flow = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/flow_flanginec.tiff";
-        // String drain = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/drain_flanginec.tiff";
-        // String tca = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/tca_flanginec.tiff";
+//        String dtm = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/dtm_flanginec.tiff";
+//        String pit = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/pit_flanginec.tiff";
+//        String flow = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/flow_flanginec.tiff";
+//        String drain = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/drain_flanginec.tiff";
+//        String tca = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/tca_flanginec.tiff";
 
-        // String dtm = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/dtm_toblino.tiff";
-        // String pit = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/pit.tiff";
-        // String flow = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/flow.tiff";
-        // String drain = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/drain.tiff";
-        // String tca = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/tca.tiff";
+         String dtm = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/dtm_toblino.tiff";
+         String pit = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/pit.tiff";
+         String flow = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/flow.tiff";
+         String drain = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/drain.tiff";
+         String tca = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/tca.tiff";
 
-        String dtm = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/dtm_all_float.tiff";
-        String pit = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/pit.tiff";
-        String flow = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/flow.tiff";
-        String drain = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/drain.tiff";
-        String tca = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/tca.tiff";
+        // String dtm =
+        // "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/dtm_all_float.tiff";
+        // String pit = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/pit.tiff";
+        // String flow = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/flow.tiff";
+        // String drain = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/drain.tiff";
+        // String tca = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/tca.tiff";
 
         OmsDePitter pitfiller = new OmsDePitter();
         pitfiller.inElev = OmsRasterReader.readRaster(dtm);
