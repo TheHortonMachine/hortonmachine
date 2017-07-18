@@ -68,7 +68,7 @@ public class ExtractNetwork extends JGTModel {
 
     @Description(OMSEXTRACTNETWORK_pThres_DESCRIPTION)
     @In
-    public double pThres = 0;
+    public int pThres = 0;
 
     @Description(OMSEXTRACTNETWORK_pMode_DESCRIPTION)
     @UI("combo:" + TCA + "," + TCA_SLOPE + "," + TCA_CONVERGENT)

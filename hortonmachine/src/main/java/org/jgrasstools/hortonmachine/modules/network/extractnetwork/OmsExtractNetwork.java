@@ -20,8 +20,8 @@ package org.jgrasstools.hortonmachine.modules.network.extractnetwork;
 import static java.lang.Math.pow;
 import static org.jgrasstools.gears.libs.modules.FlowNode.NETVALUE;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.NETWORK;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.intNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.shortNovalue;
 import static org.jgrasstools.gears.libs.modules.Variables.TCA;
 import static org.jgrasstools.gears.libs.modules.Variables.TCA_CONVERGENT;
 import static org.jgrasstools.gears.libs.modules.Variables.TCA_SLOPE;
@@ -37,7 +37,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.Node;
 import org.jgrasstools.gears.libs.modules.multiprocessing.GridNodeMultiProcessing;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -83,7 +82,7 @@ public class OmsExtractNetwork extends GridNodeMultiProcessing {
 
     @Description(OMSEXTRACTNETWORK_pThres_DESCRIPTION)
     @In
-    public double pThres = 0;
+    public int pThres = 0;
 
     @Description(OMSEXTRACTNETWORK_pMode_DESCRIPTION)
     @UI("combo:" + TCA + "," + TCA_SLOPE + "," + TCA_CONVERGENT)
@@ -164,7 +163,7 @@ public class OmsExtractNetwork extends GridNodeMultiProcessing {
      */
     private WritableRaster extractNetTcaThreshold( RenderedImage tcaRI ) {
         RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
-        WritableRaster netWR = CoverageUtilities.createWritableRaster(cols, rows, Integer.class, null, JGTConstants.intNovalue);
+        WritableRaster netWR = CoverageUtilities.createWritableRaster(cols, rows, Short.class, null, shortNovalue);
         WritableRandomIter netIter = RandomIterFactory.createWritable(netWR, null);
 
         try {
@@ -174,7 +173,7 @@ public class OmsExtractNetwork extends GridNodeMultiProcessing {
                     return null;
                 }
                 for( int c = 0; c < cols; c++ ) {
-                    double tcaValue = tcaIter.getSample(c, r, 0);
+                    int tcaValue = tcaIter.getSample(c, r, 0);
                     if (!isNovalue(tcaValue)) {
                         if (tcaValue >= pThres) { // FIXME needs power here?
                             netIter.setSample(c, r, 0, NETVALUE);
@@ -187,6 +186,7 @@ public class OmsExtractNetwork extends GridNodeMultiProcessing {
             return netWR;
         } finally {
             netIter.done();
+            tcaIter.done();
         }
     }
 
@@ -202,53 +202,58 @@ public class OmsExtractNetwork extends GridNodeMultiProcessing {
         RandomIter slopeRandomIter = RandomIterFactory.create(slopeRI, null);
 
         // create new RasterData for the network matrix
-        WritableRaster networkWR = CoverageUtilities.createWritableRaster(cols, rows, Integer.class, null,
-                JGTConstants.intNovalue);
+        WritableRaster networkWR = CoverageUtilities.createWritableRaster(cols, rows, Short.class, null, shortNovalue);
         WritableRandomIter netRandomIter = RandomIterFactory.createWritable(networkWR, null);
+        try {
+            pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
+                    if (pm.isCanceled()) {
+                        return null;
+                    }
+                    double tcaValue = tcaRandomIter.getSample(c, r, 0);
+                    double slopeValue = slopeRandomIter.getSampleDouble(c, r, 0);
+                    if (!isNovalue(tcaValue) && !isNovalue(slopeValue)) {
+                        tcaValue = pow(tcaValue, pExp);
 
-        pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
-        for( int r = 0; r < rows; r++ ) {
-            if (pm.isCanceled()) {
-                return null;
-            }
-            for( int c = 0; c < cols; c++ ) {
-                double tcaValue = tcaRandomIter.getSample(c, r, 0);
-                float slopeValue = slopeRandomIter.getSampleFloat(c, r, 0);
-                if (!isNovalue(tcaValue) && !isNovalue(slopeValue)) {
-                    tcaValue = pow(tcaValue, pExp);
-
-                    if (tcaValue * slopeValue >= pThres) {
-                        netRandomIter.setSample(c, r, 0, NETVALUE);
-                        FlowNode flowNode = new FlowNode(flowRandomIter, cols, rows, c, r);
-                        FlowNode runningNode = flowNode;
-                        while( (runningNode = runningNode.goDownstream()) != null ) {
-                            int rCol = runningNode.col;
-                            int rRow = runningNode.row;
-                            int tmpNetValue = netRandomIter.getSample(rCol, rRow, 0);
-                            if (!isNovalue(tmpNetValue)) {
-                                break;
-                            }
-                            if (runningNode.isMarkedAsOutlet()) {
-                                netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
-                                break;
-                            } else if (runningNode.touchesBound()) {
-                                Node goDownstream = runningNode.goDownstream();
-                                if (goDownstream == null || !goDownstream.isValid()) {
-                                    netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
+                        if (tcaValue * slopeValue >= pThres) {
+                            netRandomIter.setSample(c, r, 0, NETVALUE);
+                            FlowNode flowNode = new FlowNode(flowRandomIter, cols, rows, c, r);
+                            FlowNode runningNode = flowNode;
+                            while( (runningNode = runningNode.goDownstream()) != null ) {
+                                int rCol = runningNode.col;
+                                int rRow = runningNode.row;
+                                int tmpNetValue = netRandomIter.getSample(rCol, rRow, 0);
+                                if (!isNovalue(tmpNetValue)) {
                                     break;
                                 }
+                                if (runningNode.isMarkedAsOutlet()) {
+                                    netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
+                                    break;
+                                } else if (runningNode.touchesBound()) {
+                                    Node goDownstream = runningNode.goDownstream();
+                                    if (goDownstream == null || !goDownstream.isValid()) {
+                                        netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
+                                        break;
+                                    }
+                                }
+                                netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
                             }
-                            netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
                         }
+                    } else {
+                        netRandomIter.setSample(c, r, 0, shortNovalue);
                     }
-                } else {
-                    netRandomIter.setSample(c, r, 0, intNovalue);
                 }
+                pm.worked(1);
             }
-            pm.worked(1);
+            pm.done();
+            return networkWR;
+        } finally {
+            flowRandomIter.done();
+            tcaRandomIter.done();
+            slopeRandomIter.done();
+            netRandomIter.done();
         }
-        pm.done();
-        return networkWR;
     }
 
     /**
@@ -261,52 +266,60 @@ public class OmsExtractNetwork extends GridNodeMultiProcessing {
         RandomIter tcaRandomIter = RandomIterFactory.create(tcaRI, null);
         RandomIter classRandomIter = RandomIterFactory.create(classRI, null);
         RandomIter slopeRandomIter = RandomIterFactory.create(slopeRI, null);
-        WritableRaster netImage = CoverageUtilities.createWritableRaster(cols, rows, Integer.class, null, intNovalue);
+        WritableRaster netImage = CoverageUtilities.createWritableRaster(cols, rows, Short.class, null, shortNovalue);
 
         // try the operation!!
 
         WritableRandomIter netRandomIter = RandomIterFactory.createWritable(netImage, null);
 
-        pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
-        for( int r = 0; r < rows; r++ ) {
-            if (pm.isCanceled()) {
-                return null;
-            }
-            for( int c = 0; c < cols; c++ ) {
-                double tcaValue = tcaRandomIter.getSample(c, r, 0);
-                float slopeValue = slopeRandomIter.getSampleFloat(c, r, 0);
-                if (!isNovalue(tcaValue) && !isNovalue(slopeValue)) {
-                    tcaValue = pow(tcaValue, pExp) * slopeValue;
-                    if (tcaValue >= pThres && classRandomIter.getSample(c, r, 0) == 15.0) {
-                        netRandomIter.setSample(c, r, 0, NETVALUE);
-                        FlowNode flowNode = new FlowNode(flowRandomIter, cols, rows, c, r);
-                        FlowNode runningNode = flowNode;
-                        while( (runningNode = runningNode.goDownstream()) != null ) {
-                            int rCol = runningNode.col;
-                            int rRow = runningNode.row;
-                            double tmpNetValue = netRandomIter.getSample(rCol, rRow, 0);
-                            if (!isNovalue(tmpNetValue)) {
-                                break;
-                            }
-                            if (runningNode.isMarkedAsOutlet()) {
-                                netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
-                                break;
-                            } else if (runningNode.touchesBound()) {
-                                Node goDownstream = runningNode.goDownstream();
-                                if (goDownstream == null || !goDownstream.isValid()) {
-                                    netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
+        try {
+            pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
+            for( int r = 0; r < rows; r++ ) {
+                if (pm.isCanceled()) {
+                    return null;
+                }
+                for( int c = 0; c < cols; c++ ) {
+                    double tcaValue = tcaRandomIter.getSample(c, r, 0);
+                    double slopeValue = slopeRandomIter.getSampleDouble(c, r, 0);
+                    if (!isNovalue(tcaValue) && !isNovalue(slopeValue)) {
+                        tcaValue = (pow(tcaValue, pExp) * slopeValue);
+                        if (tcaValue >= pThres && classRandomIter.getSample(c, r, 0) == 15.0) {
+                            netRandomIter.setSample(c, r, 0, NETVALUE);
+                            FlowNode flowNode = new FlowNode(flowRandomIter, cols, rows, c, r);
+                            FlowNode runningNode = flowNode;
+                            while( (runningNode = runningNode.goDownstream()) != null ) {
+                                int rCol = runningNode.col;
+                                int rRow = runningNode.row;
+                                short tmpNetValue = (short) netRandomIter.getSample(rCol, rRow, 0);
+                                if (!isNovalue(tmpNetValue)) {
                                     break;
                                 }
+                                if (runningNode.isMarkedAsOutlet()) {
+                                    netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
+                                    break;
+                                } else if (runningNode.touchesBound()) {
+                                    Node goDownstream = runningNode.goDownstream();
+                                    if (goDownstream == null || !goDownstream.isValid()) {
+                                        netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
+                                        break;
+                                    }
+                                }
+                                netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
                             }
-                            netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
                         }
                     }
                 }
+                pm.worked(1);
             }
-            pm.worked(1);
+            pm.done();
+            return netImage;
+        } finally {
+            flowRandomIter.done();
+            tcaRandomIter.done();
+            classRandomIter.done();
+            slopeRandomIter.done();
+            netRandomIter.done();
         }
-        pm.done();
-        return netImage;
     }
 
 }

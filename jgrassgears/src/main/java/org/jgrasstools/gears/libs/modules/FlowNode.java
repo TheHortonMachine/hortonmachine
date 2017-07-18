@@ -41,7 +41,7 @@ public class FlowNode extends Node {
     /**
      * The defaut value used for marking a network. 
      */
-    public static int NETVALUE = 2;
+    public static final int NETVALUE = 2;
 
     public final int flow;
 

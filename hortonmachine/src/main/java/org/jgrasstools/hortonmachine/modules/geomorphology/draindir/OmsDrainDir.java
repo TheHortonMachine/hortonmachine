@@ -216,9 +216,6 @@ public class OmsDrainDir extends JGTModel {
 
     private void orlandiniD8LAD( int[] indexes, WritableRaster deviationsWR, BitMatrix analizedMatrix, WritableRaster pitWR,
             WritableRaster flowWR, WritableRaster tcaWR, WritableRaster dirWR, int nelev ) {
-        // get rows and cols from the active region
-
-        int ncelle = 0;
         RandomIter pitRandomIter = RandomIterFactory.create(pitWR, null);
         RandomIter flowRandomIter = RandomIterFactory.create(flowWR, null);
 
@@ -227,6 +224,7 @@ public class OmsDrainDir extends JGTModel {
         WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirWR, null);
 
         try {
+            int ncelle = 0;
             pm.beginTask(msg.message("draindir.orlandinilad"), rows * cols);
             for( int i = rows * cols - 1; i >= 0; i-- ) {
                 if (pm.isCanceled()) {
