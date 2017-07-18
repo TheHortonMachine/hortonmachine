@@ -540,12 +540,8 @@ public class OmsDrainDir extends JGTModel {
         int[] flow = new int[2], nflow = new int[2];
         RandomIter pitRandomIter = RandomIterFactory.create(pitWR, null);
 
-        RenderedImage flowFixedRI = inFlownet.getRenderedImage();
-        WritableRaster flowFixedWR = CoverageUtilities.renderedImage2WritableRaster(flowFixedRI, true);
-        RandomIter flowFixedIter = RandomIterFactory.create(flowFixedWR, null);
-
+        RandomIter flowFixedIter = CoverageUtilities.getRandomIterator(inFlownet);
         WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirWR, null);
-
         WritableRaster modifiedFlowWR = CoverageUtilities.createWritableRaster(pitWR.getWidth(), pitWR.getHeight(), Integer.class,
                 null, null);
         WritableRandomIter modflowRandomIter = RandomIterFactory.createWritable(modifiedFlowWR, null);
