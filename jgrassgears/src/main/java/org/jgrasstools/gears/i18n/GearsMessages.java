@@ -664,22 +664,6 @@ public class GearsMessages {
     public static final String OMSCARVER_P_DEPTH_POLYGONS_DESCRIPTION = "The carve depth to use for vector polygons if no field is supplied.";
     public static final String OMSCARVER_OUT_RASTER_DESCRIPTION = "The carved raster map.";
 
-    public static final String OMSCUTOUT_DESCRIPTION = "Module for raster thresholding and masking.";
-    public static final String OMSCUTOUT_DOCUMENTATION = "OmsCutOut.html";
-    public static final String OMSCUTOUT_KEYWORDS = "Raster, Threshold, OmsMapcalc";
-    public static final String OMSCUTOUT_LABEL = RASTERPROCESSING;
-    public static final String OMSCUTOUT_NAME = "cutout";
-    public static final int OMSCUTOUT_STATUS = 40;
-    public static final String OMSCUTOUT_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSCUTOUT_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
-    public static final String OMSCUTOUT_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSCUTOUT_IN_RASTER_DESCRIPTION = "The map that has to be processed.";
-    public static final String OMSCUTOUT_IN_MASK_DESCRIPTION = "The map to use as mask.";
-    public static final String OMSCUTOUT_P_MAX_DESCRIPTION = "The upper threshold value.";
-    public static final String OMSCUTOUT_P_MIN_DESCRIPTION = "The lower threshold value.";
-    public static final String OMSCUTOUT_DO_INVERSE_DESCRIPTION = "Switch for doing extraction of the mask area or the inverse (negative). Default is false and extract the mask area.";
-    public static final String OMSCUTOUT_OUT_RASTER_DESCRIPTION = "The processed map.";
-
     public static final String OMSSHAPEFILEFEATUREWRITER_DESCRIPTION = "Utility class for writing geotools featurecollections to shapefile.";
     public static final String OMSSHAPEFILEFEATUREWRITER_DOCUMENTATION = "";
     public static final String OMSSHAPEFILEFEATUREWRITER_KEYWORDS = "IO, Shapefile, Feature, Vector, Writing";

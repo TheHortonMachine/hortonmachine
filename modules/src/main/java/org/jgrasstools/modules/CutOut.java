@@ -17,20 +17,25 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_DO_INVERSE_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_IN_MASK_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_IN_RASTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_OUT_RASTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_P_MAX_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_P_MIN_DESCRIPTION;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_AUTHORCONTACTS;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_AUTHORNAMES;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_DESCRIPTION;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_DO_INVERSE_DESCRIPTION;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_IN_MASK_DESCRIPTION;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_IN_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_KEYWORDS;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_LABEL;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_LICENSE;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_NAME;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_P_MAX_DESCRIPTION;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_P_MIN_DESCRIPTION;
+import static org.jgrasstools.gears.modules.r.cutout.OmsCutOut.OMSCUTOUT_STATUS;
+
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -41,10 +46,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
 
 @Description(OMSCUTOUT_DESCRIPTION)
 @Author(name = OMSCUTOUT_AUTHORNAMES, contact = OMSCUTOUT_AUTHORCONTACTS)
