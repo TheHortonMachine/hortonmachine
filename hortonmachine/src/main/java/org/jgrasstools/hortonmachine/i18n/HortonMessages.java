@@ -780,23 +780,6 @@ public class HortonMessages {
     public static final String OMSPEAKFLOW_inRainfall_DESCRIPTION = "The sorted hasmap of rainfall data per timestep.";
     public static final String OMSPEAKFLOW_outDischarge_DESCRIPTION = "The sorted hashmap of peakflow output per timestep.";
 
-    public static final String OMSDRAINDIR_DESCRIPTION = "It calculates the drainage directions minimizing the deviation from the real flow";
-    public static final String OMSDRAINDIR_DOCUMENTATION = "OmsDrainDir.html";
-    public static final String OMSDRAINDIR_KEYWORDS = "Geomorphology, Pitfiller, OmsFlowDirections";
-    public static final String OMSDRAINDIR_LABEL = GEOMORPHOLOGY;
-    public static final String OMSDRAINDIR_NAME = "draindir";
-    public static final int OMSDRAINDIR_STATUS = 40;
-    public static final String OMSDRAINDIR_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSDRAINDIR_AUTHORNAMES = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo";
-    public static final String OMSDRAINDIR_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSDRAINDIR_inPit_DESCRIPTION = "The depitted elevation model.";
-    public static final String OMSDRAINDIR_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSDRAINDIR_inFlownet_DESCRIPTION = "The map of flowdirections on the network pixels (considered only in case of LTD method). Remember that in the case of fixed flow calculation the tca has to be recalculated afterwards; the tca output in this case is not corrected.";
-    public static final String OMSDRAINDIR_pLambda_DESCRIPTION = "The direction correction factor.";
-    public static final String OMSDRAINDIR_doLad_DESCRIPTION = "Switch for the mode to use: true = LAD (default), false = LTD)).";
-    public static final String OMSDRAINDIR_outFlow_DESCRIPTION = "The map of drainage directions.";
-    public static final String OMSDRAINDIR_outTca_DESCRIPTION = "The map of total contributing areas.";
-
     public static final String OMSADIGE_DESCRIPTION = "The OmsAdige model.";
     public static final String OMSADIGE_DOCUMENTATION = "";
     public static final String OMSADIGE_KEYWORDS = "Hydrology";

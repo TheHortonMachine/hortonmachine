@@ -36,9 +36,8 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
-import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.libs.modules.GridNode;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.multiprocessing.GridNodeMultiProcessing;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -82,7 +81,7 @@ public class OmsAspect extends GridNodeMultiProcessing {
     @Out
     public GridCoverage2D outAspect = null;
 
-    public static final String OMSASPECT_DESCRIPTION = "Calculates the aspect considering the zero toward the north and the rotation angle counterclockwise.";
+    public static final String OMSASPECT_DESCRIPTION = "Calculates the aspect considering zero towards the north and counterclockwise rotation.";
     public static final String OMSASPECT_DOCUMENTATION = "OmsAspect.html";
     public static final String OMSASPECT_KEYWORDS = "Geomorphology, OmsDrainDir, OmsFlowDirections";
     public static final String OMSASPECT_LABEL = GEOMORPHOLOGY;
@@ -124,11 +123,14 @@ public class OmsAspect extends GridNodeMultiProcessing {
         try {
             pm.beginTask(msg.message("aspect.calculating"), rows * cols);
             processGridNodes(inElev, gridNode -> {
+                if (pm.isCanceled()) {
+                    return;
+                }
                 double aspect = calculateAspect(gridNode, radtodeg, doRound);
                 int col = gridNode.col;
                 int row = gridNode.row;
                 if (col == 0 || row == 0 || col == cols - 1 || row == rows - 1) {
-                    aspectIter.setSample(col, row, 0, (short) -9999);
+                    aspectIter.setSample(col, row, 0, JGTConstants.shortNovalue);
                 } else {
                     if (doRound) {
                         aspectIter.setSample(col, row, 0, (short) aspect);
@@ -142,7 +144,6 @@ public class OmsAspect extends GridNodeMultiProcessing {
         } finally {
             aspectIter.done();
         }
-        CoverageUtilities.setNovalueBorder(aspectWR);
         outAspect = CoverageUtilities.buildCoverage("aspect", aspectWR, regionMap, inElev.getCoordinateReferenceSystem());
     }
 
@@ -236,13 +237,4 @@ public class OmsAspect extends GridNodeMultiProcessing {
         return aspect;
     }
 
-    public static void main( String[] args ) throws Exception {
-        OmsAspect aspect = new OmsAspect();
-        aspect.inElev = OmsRasterReader.readRaster("/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/dtm_toblino.tiff");
-        // aspect.doRadiants = ;
-        aspect.doRound = true;
-        aspect.process();
-        OmsRasterWriter.writeRaster("/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/aspect_round_toblino.tiff",
-                aspect.outAspect);
-    }
 }

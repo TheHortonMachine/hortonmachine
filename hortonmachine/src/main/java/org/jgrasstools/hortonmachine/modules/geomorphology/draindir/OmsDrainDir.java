@@ -17,23 +17,8 @@
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.draindir;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOMORPHOLOGY;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_DOCUMENTATION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_doLad_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_inFlow_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_inFlownet_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_inPit_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_outFlow_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_outTca_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_pLambda_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -65,14 +50,14 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-@Description(OMSDRAINDIR_DESCRIPTION)
-@Documentation(OMSDRAINDIR_DOCUMENTATION)
-@Author(name = OMSDRAINDIR_AUTHORNAMES, contact = OMSDRAINDIR_AUTHORCONTACTS)
-@Keywords(OMSDRAINDIR_KEYWORDS)
-@Label(OMSDRAINDIR_LABEL)
-@Name(OMSDRAINDIR_NAME)
-@Status(OMSDRAINDIR_STATUS)
-@License(OMSDRAINDIR_LICENSE)
+@Description(OmsDrainDir.OMSDRAINDIR_DESCRIPTION)
+@Documentation(OmsDrainDir.OMSDRAINDIR_DOCUMENTATION)
+@Author(name = OmsDrainDir.OMSDRAINDIR_AUTHORNAMES, contact = OmsDrainDir.OMSDRAINDIR_AUTHORCONTACTS)
+@Keywords(OmsDrainDir.OMSDRAINDIR_KEYWORDS)
+@Label(OmsDrainDir.OMSDRAINDIR_LABEL)
+@Name(OmsDrainDir.OMSDRAINDIR_NAME)
+@Status(OmsDrainDir.OMSDRAINDIR_STATUS)
+@License(OmsDrainDir.OMSDRAINDIR_LICENSE)
 public class OmsDrainDir extends JGTModel {
 
     @Description(OMSDRAINDIR_inPit_DESCRIPTION)
@@ -102,6 +87,23 @@ public class OmsDrainDir extends JGTModel {
     @Description(OMSDRAINDIR_outTca_DESCRIPTION)
     @Out
     public GridCoverage2D outTca = null;
+
+    public static final String OMSDRAINDIR_DESCRIPTION = "It calculates the drainage directions minimizing the deviation from the real flow";
+    public static final String OMSDRAINDIR_DOCUMENTATION = "OmsDrainDir.html";
+    public static final String OMSDRAINDIR_KEYWORDS = "Geomorphology, Pitfiller, OmsFlowDirections";
+    public static final String OMSDRAINDIR_LABEL = GEOMORPHOLOGY;
+    public static final String OMSDRAINDIR_NAME = "draindir";
+    public static final int OMSDRAINDIR_STATUS = 40;
+    public static final String OMSDRAINDIR_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSDRAINDIR_AUTHORNAMES = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo";
+    public static final String OMSDRAINDIR_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
+    public static final String OMSDRAINDIR_inPit_DESCRIPTION = "The depitted elevation model.";
+    public static final String OMSDRAINDIR_inFlow_DESCRIPTION = "The map of flowdirections.";
+    public static final String OMSDRAINDIR_inFlownet_DESCRIPTION = "The map of flowdirections on the network pixels (considered only in case of LTD method). Remember that in the case of fixed flow calculation the tca has to be recalculated afterwards; the tca output in this case is not corrected.";
+    public static final String OMSDRAINDIR_pLambda_DESCRIPTION = "The direction correction factor.";
+    public static final String OMSDRAINDIR_doLad_DESCRIPTION = "Switch for the mode to use: true = LAD (default), false = LTD)).";
+    public static final String OMSDRAINDIR_outFlow_DESCRIPTION = "The map of drainage directions.";
+    public static final String OMSDRAINDIR_outTca_DESCRIPTION = "The map of total contributing areas.";
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 

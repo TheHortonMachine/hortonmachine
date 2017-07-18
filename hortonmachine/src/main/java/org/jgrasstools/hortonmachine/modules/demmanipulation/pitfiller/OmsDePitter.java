@@ -37,7 +37,6 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.BitMatrix;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir;
 
 import oms3.annotations.Author;
