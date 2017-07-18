@@ -75,7 +75,10 @@ public class FlowNode extends Node {
             isValid = false;
             flow = intNovalue;
         } else {
-            flow = gridIter.getSample(col, row, 0);
+            // TODO remove the two sync blocks if possible
+            synchronized (gridIter) {
+                flow = gridIter.getSample(col, row, 0);
+            }
             if (JGTConstants.isNovalue(flow)) {
                 isValid = false;
             } else {
@@ -100,7 +103,9 @@ public class FlowNode extends Node {
                 if (!isInRaster(newC, newR)) {
                     touchesBound = true;
                 } else {
-                    tmp = gridIter.getSample(newC, newR, 0);
+                    synchronized (gridIter) {
+                        tmp = gridIter.getSample(newC, newR, 0);
+                    }
                 }
 
                 switch( index ) {

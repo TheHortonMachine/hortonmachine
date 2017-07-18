@@ -18,16 +18,20 @@
 package org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.DEMMANIPULATION;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.shortNovalue;
 
-import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -39,10 +43,6 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.util.NullProgressListener;
-import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
-import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -173,6 +173,8 @@ public class OmsExtractBasin extends JGTModel {
 
     private GeometryFactory gf = GeometryUtilities.gf();
 
+    private boolean alreadyWarned = false;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outBasin == null, doReset)) {
@@ -207,8 +209,7 @@ public class OmsExtractBasin extends JGTModel {
         }
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlow);
-
-        WritableRaster basinWR = CoverageUtilities.createWritableRaster(ncols, nrows, Integer.class, null, intNovalue);
+        WritableRaster basinWR = CoverageUtilities.createWritableRaster(ncols, nrows, Short.class, null, shortNovalue);
         WritableRandomIter basinIter = RandomIterFactory.createWritable(basinWR, null);
 
         try {
@@ -224,16 +225,21 @@ public class OmsExtractBasin extends JGTModel {
             FlowNode runningNode = new FlowNode(flowIter, ncols, nrows, outletColRow[0], outletColRow[1]);
             runningNode.setIntValueInMap(basinIter, 1);
             outArea++;
-            List<FlowNode> enteringNodes = runningNode.getEnteringNodes();
 
-            boolean alreadyWarned = false;
+            ConcurrentLinkedQueue<FlowNode> enteringNodes = new ConcurrentLinkedQueue<>(runningNode.getEnteringNodes());
             pm.beginTask(msg.message("wateroutlet.extracting"), -1);
             while( enteringNodes.size() > 0 ) {
                 if (pm.isCanceled()) {
                     return;
                 }
-                List<FlowNode> newEnteringNodes = new ArrayList<FlowNode>();
-                for( FlowNode flowNode : enteringNodes ) {
+
+                ConcurrentLinkedQueue<FlowNode> newEnteringNodes = new ConcurrentLinkedQueue<>();
+                AtomicInteger count = new AtomicInteger(0);
+                enteringNodes.parallelStream().forEach(flowNode -> {
+                    if (pm.isCanceled()) {
+                        return;
+                    }
+                    // System.out.println(count.getAndIncrement());
                     if (!alreadyWarned && flowNode.touchesBound()) {
                         pm.errorMessage(MessageFormat.format(
                                 "WARNING: touched boundaries in col/row = {0}/{1}. You might consider to review your processing region.",
@@ -244,9 +250,8 @@ public class OmsExtractBasin extends JGTModel {
                     outArea++;
 
                     List<FlowNode> newEntering = flowNode.getEnteringNodes();
-                    if (newEntering.size() > 0)
-                        newEnteringNodes.addAll(newEntering);
-                }
+                    newEnteringNodes.addAll(newEntering);
+                });
                 enteringNodes = newEnteringNodes;
             }
             pm.done();
@@ -266,7 +271,9 @@ public class OmsExtractBasin extends JGTModel {
             return;
         }
 
-        Collection<Polygon> polygons = FeatureUtilities.doVectorize(outBasin, null);
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("outsideValues", Arrays.asList(JGTConstants.doubleNovalue));
+        Collection<Polygon> polygons = FeatureUtilities.doVectorize(outBasin, params);
 
         Polygon rightPolygon = null;
         double maxArea = Double.NEGATIVE_INFINITY;

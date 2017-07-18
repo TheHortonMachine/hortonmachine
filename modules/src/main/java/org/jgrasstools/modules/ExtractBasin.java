@@ -85,10 +85,6 @@ public class ExtractBasin extends JGTModel {
     @In
     public double pSnapbuffer = 200;
 
-    @Description(OMSEXTRACTBASIN_doVector_DESCRIPTION)
-    @In
-    public boolean doVector = true;
-
     @Description(OMSEXTRACTBASIN_doSmoothing_DESCRIPTION)
     @In
     public boolean doSmoothing = false;
@@ -120,6 +116,10 @@ public class ExtractBasin extends JGTModel {
         extractbasin.inFlow = getRaster(inFlow);
         extractbasin.inNetwork = getVector(inNetwork);
         extractbasin.pSnapbuffer = pSnapbuffer;
+        boolean doVector = false;
+        if (outVectorBasin != null) {
+            doVector = true;
+        }
         extractbasin.doVector = doVector;
         extractbasin.doSmoothing = doSmoothing;
         extractbasin.pm = pm;

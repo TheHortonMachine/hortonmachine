@@ -28,8 +28,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
-import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.multiprocessing.GridMultiProcessing;
@@ -37,7 +35,6 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.BitMatrix;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -369,12 +366,12 @@ public class OmsDePitter extends GridMultiProcessing {
             WritableRaster flowRaster = CoverageUtilities.createWritableRaster(nCols, nRows, Short.class, null, null);
             WritableRandomIter flowIter = CoverageUtilities.getWritableRandomIterator(flowRaster);
             try {
-                pm.beginTask("Calculating flowdirections...", nRows);
+                pm.beginTask("Calculating flowdirections...", nRows * nCols);
                 processGrid(nCols, nRows, ( c, r ) -> {
                     if (pm.isCanceled()) {
                         return;
                     }
-                    
+
                     GridNode node = new GridNode(pitIter, nCols, nRows, xRes, yRes, c, r);
                     boolean isValid = node.isValid();
                     if (!isValid || node.touchesBound() || node.touchesNovalue()) {
@@ -734,44 +731,6 @@ public class OmsDePitter extends GridMultiProcessing {
             }
             return sb.toString();
         }
-    }
-
-    public static void main( String[] args ) throws Exception {
-
-        String dtm = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/dtm_flanginec.tiff";
-        String pit = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/pit2_flanginec.tiff";
-        String flow = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/flow2_flanginec.tiff";
-        String drain = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/drain2_flanginec.tiff";
-        String tca = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/tca2_flanginec.tiff";
-
-//         String dtm = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/dtm_toblino.tiff";
-//         String pit = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/pit.tiff";
-//         String flow = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/flow.tiff";
-//         String drain = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/drain.tiff";
-//         String tca = "/media/hydrologis/Samsung_T3/MAZONE/DTM/dtm_toblino/tca.tiff";
-
-        // String dtm =
-        // "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/dtm_all_float.tiff";
-        // String pit = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/pit.tiff";
-        // String flow = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/flow.tiff";
-        // String drain = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/drain.tiff";
-        // String tca = "/media/hydrologis/Samsung_T3/MAZONE/PITFILLE/DTM_calvello/tca.tiff";
-
-        OmsDePitter pitfiller = new OmsDePitter();
-        pitfiller.inElev = OmsRasterReader.readRaster(dtm);
-        pitfiller.process();
-        OmsRasterWriter.writeRaster(pit, pitfiller.outPit);
-        OmsRasterWriter.writeRaster(flow, pitfiller.outFlow);
-        // OmsVectorWriter.writeVector(pitPoints, pitfiller.outPitPoints);
-
-        OmsDrainDir draindir = new OmsDrainDir();
-        draindir.inPit = OmsRasterReader.readRaster(pit);
-        draindir.inFlow = OmsRasterReader.readRaster(flow);
-        // draindir.inFlownet = OmsRasterReader.readRaster(inFlownet);
-        draindir.pLambda = 1f;
-        draindir.process();
-        OmsRasterWriter.writeRaster(drain, draindir.outFlow);
-        OmsRasterWriter.writeRaster(tca, draindir.outTca);
     }
 
 }
