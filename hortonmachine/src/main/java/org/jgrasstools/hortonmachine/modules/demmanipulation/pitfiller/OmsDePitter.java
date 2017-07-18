@@ -32,7 +32,7 @@ import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.multiprocessing.GridMultiProcessing;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.BitMatrix;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -57,7 +57,7 @@ import oms3.annotations.Status;
 @Name(OmsDePitter.OMSDEPITTER_NAME)
 @Status(OmsDePitter.OMSDEPITTER_STATUS)
 @License(OmsDePitter.OMSDEPITTER_LICENSE)
-public class OmsDePitter extends JGTModel {
+public class OmsDePitter extends GridMultiProcessing {
     @Description(OMSDEPITTER_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev;
@@ -370,29 +370,28 @@ public class OmsDePitter extends JGTModel {
             WritableRandomIter flowIter = CoverageUtilities.getWritableRandomIterator(flowRaster);
             try {
                 pm.beginTask("Calculating flowdirections...", nRows);
-                for( int r = 0; r < nRows; r++ ) {
+                processGrid(nCols, nRows, ( c, r ) -> {
                     if (pm.isCanceled()) {
                         return;
                     }
-                    for( int c = 0; c < nCols; c++ ) {
-                        GridNode node = new GridNode(pitIter, nCols, nRows, xRes, yRes, c, r);
-                        boolean isValid = node.isValid();
-                        if (!isValid || node.touchesBound() || node.touchesNovalue()) {
+                    
+                    GridNode node = new GridNode(pitIter, nCols, nRows, xRes, yRes, c, r);
+                    boolean isValid = node.isValid();
+                    if (!isValid || node.touchesBound() || node.touchesNovalue()) {
+                        flowIter.setSample(c, r, 0, JGTConstants.intNovalue);
+                    } else {
+                        GridNode nextDown = node.goDownstreamSP();
+                        if (nextDown == null) {// || nextDown.touchesNovalue() ||
+                                               // nextDown.touchesBound()) {
                             flowIter.setSample(c, r, 0, JGTConstants.intNovalue);
+                            // flowIter.setSample(c, r, 0, FlowNode.OUTLET);
                         } else {
-                            GridNode nextDown = node.goDownstreamSP();
-                            if (nextDown == null) {// || nextDown.touchesNovalue() ||
-                                                   // nextDown.touchesBound()) {
-                                flowIter.setSample(c, r, 0, JGTConstants.intNovalue);
-                                // flowIter.setSample(c, r, 0, FlowNode.OUTLET);
-                            } else {
-                                int newFlow = node.getFlow();
-                                flowIter.setSample(c, r, 0, newFlow);
-                            }
+                            int newFlow = node.getFlow();
+                            flowIter.setSample(c, r, 0, newFlow);
                         }
                     }
                     pm.worked(1);
-                }
+                });
                 pm.done();
 
                 outFlow = CoverageUtilities.buildCoverage("flow", flowRaster, regionMap, inElev.getCoordinateReferenceSystem());
