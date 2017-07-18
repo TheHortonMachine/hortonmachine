@@ -24,14 +24,12 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.shortNovalue;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -166,13 +164,10 @@ public class OmsExtractBasin extends JGTModel {
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     private int ncols;
-
     private int nrows;
 
     private CoordinateReferenceSystem crs;
-
     private GeometryFactory gf = GeometryUtilities.gf();
-
     private boolean alreadyWarned = false;
 
     @Execute
@@ -234,12 +229,10 @@ public class OmsExtractBasin extends JGTModel {
                 }
 
                 ConcurrentLinkedQueue<FlowNode> newEnteringNodes = new ConcurrentLinkedQueue<>();
-                AtomicInteger count = new AtomicInteger(0);
                 enteringNodes.parallelStream().forEach(flowNode -> {
                     if (pm.isCanceled()) {
                         return;
                     }
-                    // System.out.println(count.getAndIncrement());
                     if (!alreadyWarned && flowNode.touchesBound()) {
                         pm.errorMessage(MessageFormat.format(
                                 "WARNING: touched boundaries in col/row = {0}/{1}. You might consider to review your processing region.",

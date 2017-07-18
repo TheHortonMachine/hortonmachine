@@ -236,7 +236,6 @@ public class FeatureUtilities {
      * @return the created {@link FeatureCollection}
      * @throws Exception
      */
-    @SuppressWarnings("nls")
     public static SimpleFeatureCollection csvFileToFeatureCollection( File csvFile, CoordinateReferenceSystem crs,
             LinkedHashMap<String, Integer> fieldsAndTypesIndex, String separator, IJGTProgressMonitor pm ) throws Exception {
         GeometryFactory gf = new GeometryFactory();
@@ -388,7 +387,6 @@ public class FeatureUtilities {
      * @return
      * @throws Exception 
      */
-    @SuppressWarnings("nls")
     public static ShapefileDataStore createShapeFileDatastore( String name, String fieldsSpec, CoordinateReferenceSystem crs )
             throws Exception {
         // Create the file you want to write to

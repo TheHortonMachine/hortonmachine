@@ -26,7 +26,6 @@ import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.
 import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_NAME;
 import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_STATUS;
 import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_doSmoothing_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_doVector_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_inFlow_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_inNetwork_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_outArea_DESCRIPTION;
