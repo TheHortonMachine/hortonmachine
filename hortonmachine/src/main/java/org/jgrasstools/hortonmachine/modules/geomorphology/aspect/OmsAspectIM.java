@@ -107,7 +107,7 @@ public class OmsAspectIM extends JGTModelIM {
         RandomIter elevIter = inRasterIterators.get(0);
         GridNode node = new GridNode(elevIter, readCols, readRows, xRes, yRes, readCol, readRow);
         double aspect = OmsAspect.calculateAspect(node, radtodeg, doRound);
-        WritableRandomIter outDataIter = outRasters.get(0);
+        WritableRandomIter outDataIter = outRasterIterators.get(0);
         outDataIter.setSample(writeCol, writeRow, 0, aspect);
     }
 

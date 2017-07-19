@@ -933,20 +933,6 @@ public class HortonMessages {
     public static final String OMSENERGYBALANCE_outNetradiation_DESCRIPTION = "Net radiation for each basin.";
     public static final String OMSENERGYBALANCE_outNetshortradiation_DESCRIPTION = "Net shortwave radiation for each basin.";
 
-    public static final String OMSAB_DESCRIPTION = "Calculates the draining area per length unit.";
-    public static final String OMSAB_DOCUMENTATION = "OmsAb.html";
-    public static final String OMSAB_KEYWORDS = "Geomorphology, OmsTca, OmsCurvatures, OmsDrainDir, OmsFlowDirections";
-    public static final String OMSAB_LABEL = GEOMORPHOLOGY;
-    public static final String OMSAB_NAME = "ab";
-    public static final int OMSAB_STATUS = 40;
-    public static final String OMSAB_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSAB_AUTHORNAMES = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Andrea Cozzini, Silvano Pisoni";
-    public static final String OMSAB_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSAB_inTca_DESCRIPTION = "The map of the total contributing area.";
-    public static final String OMSAB_inPlan_DESCRIPTION = "The map of the planar curvatures.";
-    public static final String OMSAB_outAb_DESCRIPTION = "The map of area per length.";
-    public static final String OMSAB_outB_DESCRIPTION = "The map of contour line.";
-
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_DESCRIPTION = "Generates the input shapefiles for a OmsTrentoP simulation.";
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_DOCUMENTATION = "OmsTrentoPProjectFilesGenerator.html";
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_KEYWORDS = "OmsTrentoP";

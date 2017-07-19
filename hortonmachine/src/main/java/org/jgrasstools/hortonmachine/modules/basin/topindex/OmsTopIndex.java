@@ -104,22 +104,29 @@ public class OmsTopIndex extends GridMultiProcessing {
         WritableRaster topindexWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRandomIter topindexIter = RandomIterFactory.createWritable(topindexWR, null);
 
-        pm.beginTask(msg.message("topindex.calculating"), nRows * nCols);
-        processGrid(nCols, nRows, ( c, r ) -> {
-            if (pm.isCanceled()) {
-                return;
-            }
-
-            int tcaValue = tcaIter.getSample(c, r, 0);
-            if (!isNovalue(tcaValue)) {
-                if (slopeIter.getSampleDouble(c, r, 0) != 0) {
-                    topindexIter.setSample(c, r, 0, Math.log(tcaValue / slopeIter.getSampleDouble(c, r, 0)));
+        try {
+            pm.beginTask(msg.message("topindex.calculating"), nRows * nCols);
+            processGrid(nCols, nRows, ( c, r ) -> {
+                if (pm.isCanceled()) {
+                    return;
                 }
-            }
-            pm.worked(1);
-        });
-        pm.done();
 
-        outTopindex = CoverageUtilities.buildCoverage("topindex", topindexWR, regionMap, inTca.getCoordinateReferenceSystem());
+                int tcaValue = tcaIter.getSample(c, r, 0);
+                if (!isNovalue(tcaValue)) {
+                    if (slopeIter.getSampleDouble(c, r, 0) != 0) {
+                        topindexIter.setSample(c, r, 0, Math.log(tcaValue / slopeIter.getSampleDouble(c, r, 0)));
+                    }
+                }
+                pm.worked(1);
+            });
+            pm.done();
+            outTopindex = CoverageUtilities.buildCoverage("topindex", topindexWR, regionMap,
+                    inTca.getCoordinateReferenceSystem());
+        } finally {
+            tcaIter.done();
+            slopeIter.done();
+            topindexIter.done();
+        }
+
     }
 }

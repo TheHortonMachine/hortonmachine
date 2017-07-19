@@ -96,11 +96,11 @@ public class OmsCurvaturesIM extends JGTModelIM {
         GridNode node = new GridNode(elevIter, readCols, readRows, xRes, yRes, readCol, readRow);
         OmsCurvatures.calculateCurvatures2(node, planTangProf);
         if (outPlan != null)
-            outRasters.get(0).setSample(writeCol, writeRow, 0, planTangProf[0]);
+            outRasterIterators.get(0).setSample(writeCol, writeRow, 0, planTangProf[0]);
         if (outTang != null)
-            outRasters.get(1).setSample(writeCol, writeRow, 0, planTangProf[1]);
+            outRasterIterators.get(1).setSample(writeCol, writeRow, 0, planTangProf[1]);
         if (outProf != null)
-            outRasters.get(2).setSample(writeCol, writeRow, 0, planTangProf[2]);
+            outRasterIterators.get(2).setSample(writeCol, writeRow, 0, planTangProf[2]);
 
     }
 }

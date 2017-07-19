@@ -114,7 +114,7 @@ public class OmsGradientIM extends JGTModelIM {
             gradient = OmsGradient.doGradientDiffOnCell(elevIter, readCol, readRow, xRes, yRes, doDegrees);
             break;
         }
-        WritableRandomIter outDataIter = outRasters.get(0);
+        WritableRandomIter outDataIter = outRasterIterators.get(0);
         outDataIter.setSample(writeCol, writeRow, 0, gradient);
     }
 

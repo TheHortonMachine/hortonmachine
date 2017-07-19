@@ -119,15 +119,21 @@ public class OmsGradient extends GridMultiProcessing {
 
         RenderedImage elevationRI = inElev.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
-        WritableRaster gradientWR = null;
-        if (pMode.equals(HORN)) {
-            gradientWR = gradientHorn(elevationIter);
-        } else if (pMode.equals(EVANS)) {
-            gradientWR = gradientEvans(elevationIter);
-        } else {
-            gradientWR = gradientDiff(elevationIter);
+
+        WritableRaster gradientWR;
+        try {
+            gradientWR = null;
+            if (pMode.equals(HORN)) {
+                gradientWR = gradientHorn(elevationIter);
+            } else if (pMode.equals(EVANS)) {
+                gradientWR = gradientEvans(elevationIter);
+            } else {
+                gradientWR = gradientDiff(elevationIter);
+            }
+            outSlope = CoverageUtilities.buildCoverage("gradient", gradientWR, regionMap, inElev.getCoordinateReferenceSystem());
+        } finally {
+            elevationIter.done();
         }
-        outSlope = CoverageUtilities.buildCoverage("gradient", gradientWR, regionMap, inElev.getCoordinateReferenceSystem());
     }
 
     /**

@@ -115,25 +115,28 @@ public class OmsCurvatures extends GridMultiProcessing {
 
         final double[] planTangProf = new double[3];
 
-        /*
-         * calculate curvatures
-         */
-        pm.beginTask(msg.message("curvatures.calculating"), (nRows - 2) * (nCols - 2));
-        processGrid(nCols, nRows, true, ( c, r ) -> {
-            if (pm.isCanceled()) {
-                return;
-            }
-            GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
-            if (node.isValid() && !node.touchesNovalue() && !node.touchesBound()) {
-                calculateCurvatures2(node, planTangProf);
-                planWR.setSample(c, r, 0, planTangProf[0]);
-                tangWR.setSample(c, r, 0, planTangProf[1]);
-                profWR.setSample(c, r, 0, planTangProf[2]);
-            }
-            pm.worked(1);
-        });
-        pm.done();
-
+        try {
+            /*
+                 * calculate curvatures
+                 */
+            pm.beginTask(msg.message("curvatures.calculating"), (nRows - 2) * (nCols - 2));
+            processGrid(nCols, nRows, true, ( c, r ) -> {
+                if (pm.isCanceled()) {
+                    return;
+                }
+                GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
+                if (node.isValid() && !node.touchesNovalue() && !node.touchesBound()) {
+                    calculateCurvatures2(node, planTangProf);
+                    planWR.setSample(c, r, 0, planTangProf[0]);
+                    tangWR.setSample(c, r, 0, planTangProf[1]);
+                    profWR.setSample(c, r, 0, planTangProf[2]);
+                }
+                pm.worked(1);
+            });
+            pm.done();
+        } finally {
+            elevationIter.done();
+        }
         if (pm.isCanceled()) {
             return;
         }

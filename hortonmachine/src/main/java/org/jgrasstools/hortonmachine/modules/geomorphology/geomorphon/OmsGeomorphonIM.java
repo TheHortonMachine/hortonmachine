@@ -100,7 +100,7 @@ public class OmsGeomorphonIM extends JGTModelIM {
             RandomIter elevIter = inRasterIterators.get(0);
             double classification = OmsGeomorphon.calculateGeomorphon(elevIter, readGridGeometry, pRadius, pThreshold,
                     diagonalDelta, readCol, readRow);
-            WritableRandomIter outDataIter = outRasters.get(0);
+            WritableRandomIter outDataIter = outRasterIterators.get(0);
             outDataIter.setSample(writeCol, writeRow, 0, classification);
         } catch (TransformException e) {
             e.printStackTrace();

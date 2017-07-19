@@ -132,36 +132,44 @@ public class OmsCutOut extends GridMultiProcessing {
         WritableRaster outWR = CoverageUtilities.renderedImage2WritableRaster(geodataRI, false);
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
-        pm.beginTask("Processing map...", nRows * nCols);
-        processGrid(nCols, nRows, false, ( c, r ) -> {
-            if (pm.isCanceled()) {
-                return;
-            }
-            pm.worked(1);
-            if (maskIter != null) {
-                double maskValue = maskIter.getSampleDouble(c, r, 0);
-                if (!doInverse) {
-                    if (isNovalue(maskValue)) {
-                        outIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
-                        return;
-                    }
-                } else {
-                    if (!isNovalue(maskValue)) {
-                        outIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
-                        return;
+        try {
+            pm.beginTask("Processing map...", nRows * nCols);
+            processGrid(nCols, nRows, false, ( c, r ) -> {
+                if (pm.isCanceled()) {
+                    return;
+                }
+                pm.worked(1);
+                if (maskIter != null) {
+                    double maskValue = maskIter.getSampleDouble(c, r, 0);
+                    if (!doInverse) {
+                        if (isNovalue(maskValue)) {
+                            outIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
+                            return;
+                        }
+                    } else {
+                        if (!isNovalue(maskValue)) {
+                            outIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
+                            return;
+                        }
                     }
                 }
+                double value = geodataIter.getSampleDouble(c, r, 0);
+                if (doMax && value > max) {
+                    outIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
+                    return;
+                }
+                if (doMin && value < min) {
+                    outIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
+                }
+            });
+            pm.done();
+        } finally {
+            geodataIter.done();
+            outIter.done();
+            if (maskIter != null) {
+                maskIter.done();
             }
-            double value = geodataIter.getSampleDouble(c, r, 0);
-            if (doMax && value > max) {
-                outIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
-                return;
-            }
-            if (doMin && value < min) {
-                outIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
-            }
-        });
-        pm.done();
+        }
 
         outRaster = CoverageUtilities.buildCoverage("cutout", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
 

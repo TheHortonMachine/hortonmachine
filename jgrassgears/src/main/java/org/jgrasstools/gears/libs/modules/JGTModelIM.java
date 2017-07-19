@@ -17,9 +17,6 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
-import static java.lang.Math.round;
-
-import java.awt.geom.Point2D;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.File;
@@ -43,9 +40,7 @@ import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.DirectPosition2D;
-import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.GeneralEnvelope;
-import org.geotools.geometry.jts.JTS;
 import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
@@ -56,16 +51,11 @@ import org.jgrasstools.gears.utils.colors.RasterStyleUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -75,7 +65,7 @@ public abstract class JGTModelIM extends JGTModel {
 
     protected List<RandomIter> inRasterIterators = new ArrayList<RandomIter>();
     protected List<GridCoverage2D> inRasters = new ArrayList<GridCoverage2D>();
-    protected List<WritableRandomIter> outRasters = new ArrayList<WritableRandomIter>();
+    protected List<WritableRandomIter> outRasterIterators = new ArrayList<WritableRandomIter>();
     protected List<GridCoverage2D> outGridCoverages = new ArrayList<GridCoverage2D>();
     private List<File> outRasterFiles = new ArrayList<File>();
 
@@ -231,7 +221,7 @@ public abstract class JGTModelIM extends JGTModel {
         outGridCoverages.clear();
         inRasterIterators.clear();
         inRasters.clear();
-        outRasters.clear();
+        outRasterIterators.clear();
 
         GridGeometry2D writeGridGeometry = CoverageUtilities.gridGeometryFromRegionValues(writeNorth, writeSouth, writeEast,
                 writeWest, writeCols, writeRows, crs);
@@ -245,10 +235,10 @@ public abstract class JGTModelIM extends JGTModel {
                 GridCoverage2D writeGC = CoverageUtilities.buildCoverage(outRasterFile.getName(), outWR, writeParams, crs);
                 outGridCoverages.add(writeGC);
                 WritableRandomIter outDataIter = CoverageUtilities.getWritableRandomIterator(outWR);
-                outRasters.add(outDataIter);
+                outRasterIterators.add(outDataIter);
             } else {
                 outGridCoverages.add(null);
-                outRasters.add(null);
+                outRasterIterators.add(null);
             }
         }
 
@@ -365,7 +355,7 @@ public abstract class JGTModelIM extends JGTModel {
             if (inRasterIterator != null)
                 inRasterIterator.done();
         }
-        for( RandomIter outRasterIterator : outRasters ) {
+        for( RandomIter outRasterIterator : outRasterIterators ) {
             if (outRasterIterator != null)
                 outRasterIterator.done();
         }
