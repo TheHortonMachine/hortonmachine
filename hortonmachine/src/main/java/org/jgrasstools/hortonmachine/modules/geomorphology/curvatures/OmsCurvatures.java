@@ -17,25 +17,29 @@
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.curvatures;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOMORPHOLOGY;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_DOCUMENTATION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_inElev_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_outPlan_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_outProf_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_outTang_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_LABEL;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_LICENSE;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_NAME;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_STATUS;
 
 import java.awt.image.WritableRaster;
 
 import javax.media.jai.iterator.RandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.GridNode;
+import org.jgrasstools.gears.libs.modules.multiprocessing.GridMultiProcessing;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -49,13 +53,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.GridNode;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-
 @Description(OMSCURVATURES_DESCRIPTION)
 @Documentation(OMSCURVATURES_DOCUMENTATION)
 @Author(name = OMSCURVATURES_AUTHORNAMES, contact = OMSCURVATURES_AUTHORCONTACTS)
@@ -64,7 +61,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Name(OMSCURVATURES_NAME)
 @Status(OMSCURVATURES_STATUS)
 @License(OMSCURVATURES_LICENSE)
-public class OmsCurvatures extends JGTModel {
+public class OmsCurvatures extends GridMultiProcessing {
     @Description(OMSCURVATURES_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
@@ -82,10 +79,24 @@ public class OmsCurvatures extends JGTModel {
     @Out
     public GridCoverage2D outTang = null;
 
+    public static final String OMSCURVATURES_DESCRIPTION = "It estimates the longitudinal, normal and planar curvatures.";
+    public static final String OMSCURVATURES_DOCUMENTATION = "OmsCurvatures.html";
+    public static final String OMSCURVATURES_KEYWORDS = "Geomorphology";
+    public static final String OMSCURVATURES_LABEL = GEOMORPHOLOGY;
+    public static final String OMSCURVATURES_NAME = "curvatures";
+    public static final int OMSCURVATURES_STATUS = 40;
+    public static final String OMSCURVATURES_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSCURVATURES_AUTHORNAMES = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
+    public static final String OMSCURVATURES_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
+    public static final String OMSCURVATURES_inElev_DESCRIPTION = "The map of the digital elevation model (DEM or pit).";
+    public static final String OMSCURVATURES_outProf_DESCRIPTION = "The map of profile curvatures.";
+    public static final String OMSCURVATURES_outPlan_DESCRIPTION = "The map of planar curvatures.";
+    public static final String OMSCURVATURES_outTang_DESCRIPTION = "The map of tangential curvatures.";
+
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute
-    public void process() {
+    public void process() throws Exception {
         if (!concatOr(outProf == null, doReset)) {
             return;
         }
@@ -107,22 +118,20 @@ public class OmsCurvatures extends JGTModel {
         /*
          * calculate curvatures
          */
-        pm.beginTask(msg.message("curvatures.calculating"), nRows - 2);
-        for( int r = 1; r < nRows - 1; r++ ) {
+        pm.beginTask(msg.message("curvatures.calculating"), (nRows - 2) * (nCols - 2));
+        processGrid(nCols, nRows, true, ( c, r ) -> {
             if (pm.isCanceled()) {
                 return;
             }
-            for( int c = 1; c < nCols - 1; c++ ) {
-                GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
-                if (node.isValid() && !node.touchesNovalue() && !node.touchesBound()) {
-                    calculateCurvatures2(node, planTangProf);
-                    planWR.setSample(c, r, 0, planTangProf[0]);
-                    tangWR.setSample(c, r, 0, planTangProf[1]);
-                    profWR.setSample(c, r, 0, planTangProf[2]);
-                }
+            GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
+            if (node.isValid() && !node.touchesNovalue() && !node.touchesBound()) {
+                calculateCurvatures2(node, planTangProf);
+                planWR.setSample(c, r, 0, planTangProf[0]);
+                tangWR.setSample(c, r, 0, planTangProf[1]);
+                profWR.setSample(c, r, 0, planTangProf[2]);
             }
             pm.worked(1);
-        }
+        });
         pm.done();
 
         if (pm.isCanceled()) {
@@ -136,7 +145,7 @@ public class OmsCurvatures extends JGTModel {
     /**
      * Calculate curvatures for a single cell.
      * 
-     * @param elevationIter teh elevation map.
+     * @param elevationIter the elevation map.
      * @param planTangProf the array into which to insert the resulting [plan, tang, prof] curvatures.
      * @param c the column the process.
      * @param r the row the process.

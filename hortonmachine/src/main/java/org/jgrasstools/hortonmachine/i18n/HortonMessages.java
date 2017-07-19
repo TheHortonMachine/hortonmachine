@@ -607,20 +607,6 @@ public class HortonMessages {
     public static final String OMSFAOETPDAILY_defaultPressure_DESCRIPTION = "The pressure default value in case of missing data.";
     public static final String OMSFAOETPDAILY_outFaoEtp_DESCRIPTION = "The reference evapotranspiration.";
 
-    public static final String OMSCURVATURES_DESCRIPTION = "It estimates the longitudinal, normal and planar curvatures.";
-    public static final String OMSCURVATURES_DOCUMENTATION = "OmsCurvatures.html";
-    public static final String OMSCURVATURES_KEYWORDS = "Geomorphology";
-    public static final String OMSCURVATURES_LABEL = GEOMORPHOLOGY;
-    public static final String OMSCURVATURES_NAME = "curvatures";
-    public static final int OMSCURVATURES_STATUS = 40;
-    public static final String OMSCURVATURES_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSCURVATURES_AUTHORNAMES = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
-    public static final String OMSCURVATURES_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSCURVATURES_inElev_DESCRIPTION = "The map of the digital elevation model (DEM or pit).";
-    public static final String OMSCURVATURES_outProf_DESCRIPTION = "The map of profile curvatures.";
-    public static final String OMSCURVATURES_outPlan_DESCRIPTION = "The map of planar curvatures.";
-    public static final String OMSCURVATURES_outTang_DESCRIPTION = "The map of tangential curvatures.";
-
     public static final String OMSRESCALEDDISTANCE_DESCRIPTION = "Calculates the rescaled distance of each pixel from the outlet.";
     public static final String OMSRESCALEDDISTANCE_DOCUMENTATION = "OmsRescaledDistance.html";
     public static final String OMSRESCALEDDISTANCE_KEYWORDS = "Basin, Geomorphology, D2O";

@@ -33,7 +33,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestCurvatures extends HMTestCase {
 
-    public void testCurvatures() throws IOException {
+    public void testCurvatures() throws Exception {
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 

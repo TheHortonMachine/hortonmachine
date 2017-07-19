@@ -17,8 +17,7 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_outPlan_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_outProf_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures.*;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
