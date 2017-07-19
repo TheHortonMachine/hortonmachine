@@ -17,19 +17,7 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_inElev_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_inFlow_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_inNet_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_outRescaled_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_pRatio_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.OmsRescaledDistance.*;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;

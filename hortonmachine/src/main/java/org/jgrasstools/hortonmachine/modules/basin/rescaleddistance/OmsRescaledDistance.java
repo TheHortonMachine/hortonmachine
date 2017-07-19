@@ -18,30 +18,35 @@
 package org.jgrasstools.hortonmachine.modules.basin.rescaleddistance;
 
 import static java.lang.Math.abs;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.BASIN;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_inElev_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_inFlow_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_inNet_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_outRescaled_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_pRatio_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.OmsRescaledDistance.OMSRESCALEDDISTANCE_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.OmsRescaledDistance.OMSRESCALEDDISTANCE_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.OmsRescaledDistance.OMSRESCALEDDISTANCE_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.OmsRescaledDistance.OMSRESCALEDDISTANCE_KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.OmsRescaledDistance.OMSRESCALEDDISTANCE_LABEL;
+import static org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.OmsRescaledDistance.OMSRESCALEDDISTANCE_LICENSE;
+import static org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.OmsRescaledDistance.OMSRESCALEDDISTANCE_NAME;
+import static org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.OmsRescaledDistance.OMSRESCALEDDISTANCE_STATUS;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.Direction;
+import org.jgrasstools.gears.libs.modules.FlowNode;
+import org.jgrasstools.gears.libs.modules.multiprocessing.GridMultiProcessing;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -54,15 +59,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.Direction;
-import org.jgrasstools.gears.libs.modules.FlowNode;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.math.NumericsUtilities;
-
 @Description(OMSRESCALEDDISTANCE_DESCRIPTION)
 @Author(name = OMSRESCALEDDISTANCE_AUTHORNAMES, contact = OMSRESCALEDDISTANCE_AUTHORCONTACTS)
 @Keywords(OMSRESCALEDDISTANCE_KEYWORDS)
@@ -70,7 +66,7 @@ import org.jgrasstools.gears.utils.math.NumericsUtilities;
 @Name(OMSRESCALEDDISTANCE_NAME)
 @Status(OMSRESCALEDDISTANCE_STATUS)
 @License(OMSRESCALEDDISTANCE_LICENSE)
-public class OmsRescaledDistance extends JGTModel {
+public class OmsRescaledDistance extends GridMultiProcessing {
 
     @Description(OMSRESCALEDDISTANCE_inFlow_DESCRIPTION)
     @In
@@ -92,18 +88,27 @@ public class OmsRescaledDistance extends JGTModel {
     @Out
     public GridCoverage2D outRescaled = null;
 
-    private WritableRandomIter rescaledIter;
+    public static final String OMSRESCALEDDISTANCE_DESCRIPTION = "Calculates the rescaled distance of each pixel from the outlet.";
+    public static final String OMSRESCALEDDISTANCE_DOCUMENTATION = "OmsRescaledDistance.html";
+    public static final String OMSRESCALEDDISTANCE_KEYWORDS = "Basin, Geomorphology, D2O";
+    public static final String OMSRESCALEDDISTANCE_LABEL = BASIN;
+    public static final String OMSRESCALEDDISTANCE_NAME = "rescdist";
+    public static final int OMSRESCALEDDISTANCE_STATUS = 40;
+    public static final String OMSRESCALEDDISTANCE_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSRESCALEDDISTANCE_AUTHORNAMES = "Antonello Andrea, Franceschi Silvia, Daniele Andreis,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo";
+    public static final String OMSRESCALEDDISTANCE_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
+    public static final String OMSRESCALEDDISTANCE_inFlow_DESCRIPTION = "The map of flowdirections.";
+    public static final String OMSRESCALEDDISTANCE_inNet_DESCRIPTION = "The map of the network.";
+    public static final String OMSRESCALEDDISTANCE_inElev_DESCRIPTION = "The optional map of elevation for 3D.";
+    public static final String OMSRESCALEDDISTANCE_pRatio_DESCRIPTION = "Ratio between the velocity in the channel and in the hillslope.";
+    public static final String OMSRESCALEDDISTANCE_outRescaled_DESCRIPTION = "The map of the rescaled distances.";
 
     private double xRes;
-
     private double yRes;
-
-    private RandomIter netIter;
-
-    private RandomIter elevIter;
+    private RandomIter elevIter = null;
 
     @Execute
-    public void process() {
+    public void process() throws Exception {
         if (!concatOr(outRescaled == null, doReset)) {
             return;
         }
@@ -118,51 +123,61 @@ public class OmsRescaledDistance extends JGTModel {
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
 
         RenderedImage netRI = inNet.getRenderedImage();
-        netIter = RandomIterFactory.create(netRI, null);
+        RandomIter netIter = RandomIterFactory.create(netRI, null);
 
         if (inElev != null) {
             RenderedImage elevRI = inElev.getRenderedImage();
             elevIter = RandomIterFactory.create(elevRI, null);
         }
 
-        WritableRaster rescaledWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
-        rescaledIter = RandomIterFactory.createWritable(rescaledWR, null);
+        WritableRaster rescaledWR = CoverageUtilities.createWritableRaster(cols, rows, Float.class, null, floatNovalue);
+        WritableRandomIter rescaledIter = RandomIterFactory.createWritable(rescaledWR, null);
 
-        pm.beginTask("Find outlets...", rows); //$NON-NLS-1$
-        List<FlowNode> exitsList = new ArrayList<FlowNode>();
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                double netValue = netIter.getSampleDouble(c, r, 0);
+        try {
+            pm.beginTask("Find outlets...", rows * cols); //$NON-NLS-1$
+            ConcurrentLinkedQueue<FlowNode> exitsList = new ConcurrentLinkedQueue<>();
+            processGrid(cols, rows, ( c, r ) -> {
+                if (pm.isCanceled())
+                    return;
+                int netValue = netIter.getSample(c, r, 0);
                 if (isNovalue(netValue)) {
                     // we make sure that we pick only outlets that are on the net
-                    continue;
+                    return;
                 }
                 FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
                 if (flowNode.isHeadingOutside()) {
                     exitsList.add(flowNode);
                 }
-            }
-            pm.worked(1);
-        }
-        pm.done();
+                pm.worked(1);
+            });
+            pm.done();
 
-        if (exitsList.size() == 0) {
-            throw new ModelsIllegalargumentException("No exits found in the map of flowdirections.", this);
+            if (exitsList.size() == 0) {
+                throw new ModelsIllegalargumentException("No exits found in the map of flowdirections.", this);
+            }
+
+            pm.beginTask("Calculate rescaled distance...", exitsList.size());
+            exitsList.parallelStream().forEach(exitNode -> {
+                if (pm.isCanceled())
+                    return;
+                calculateRescaledDistance(exitNode, (float) xRes, rescaledIter, elevIter, netIter);
+                pm.worked(1);
+            });
+            pm.done();
+        } finally {
+            rescaledIter.done();
+            netIter.done();
+            if (elevIter != null)
+                elevIter.done();
         }
-        
-        pm.beginTask("Calculate rescaled distance...", exitsList.size());
-        for( FlowNode exitNode : exitsList ) {
-            calculateRescaledDistance(exitNode, xRes);
-            pm.worked(1);
-        }
-        pm.done();
 
         outRescaled = CoverageUtilities.buildCoverage("OmsRescaledDistance", rescaledWR, regionMap,
                 inFlow.getCoordinateReferenceSystem());
     }
 
-    private void calculateRescaledDistance( FlowNode runningNode, double distance ) {
-        runningNode.setValueInMap(rescaledIter, distance);
+    private void calculateRescaledDistance( FlowNode runningNode, float distance, WritableRandomIter rescaledIter,
+            RandomIter elevIter, RandomIter netIter ) {
+        runningNode.setFloatValueInMap(rescaledIter, distance);
         if (runningNode.getEnteringNodes().size() > 0) {
             List<FlowNode> enteringNodes = runningNode.getEnteringNodes();
             for( FlowNode enteringNode : enteringNodes ) {
@@ -173,14 +188,14 @@ public class OmsRescaledDistance extends JGTModel {
                     tmpDistance = NumericsUtilities.pythagoras(tmpDistance, abs(toElev - fromElev));
                 }
 
-                double netValue = enteringNode.getValueFromMap(netIter);
+                int netValue = enteringNode.getIntValueFromMap(netIter);
                 double newDistance = 0.0;
                 if (isNovalue(netValue)) {
                     newDistance = distance + tmpDistance * pRatio;
                 } else {
                     newDistance = distance + tmpDistance;
                 }
-                calculateRescaledDistance(enteringNode, newDistance);
+                calculateRescaledDistance(enteringNode, (float) newDistance, rescaledIter, elevIter, netIter);
             }
         }
 

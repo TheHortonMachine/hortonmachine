@@ -607,21 +607,6 @@ public class HortonMessages {
     public static final String OMSFAOETPDAILY_defaultPressure_DESCRIPTION = "The pressure default value in case of missing data.";
     public static final String OMSFAOETPDAILY_outFaoEtp_DESCRIPTION = "The reference evapotranspiration.";
 
-    public static final String OMSRESCALEDDISTANCE_DESCRIPTION = "Calculates the rescaled distance of each pixel from the outlet.";
-    public static final String OMSRESCALEDDISTANCE_DOCUMENTATION = "OmsRescaledDistance.html";
-    public static final String OMSRESCALEDDISTANCE_KEYWORDS = "Basin, Geomorphology, D2O";
-    public static final String OMSRESCALEDDISTANCE_LABEL = BASIN;
-    public static final String OMSRESCALEDDISTANCE_NAME = "rescdist";
-    public static final int OMSRESCALEDDISTANCE_STATUS = 40;
-    public static final String OMSRESCALEDDISTANCE_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRESCALEDDISTANCE_AUTHORNAMES = "Antonello Andrea, Franceschi Silvia, Daniele Andreis,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo";
-    public static final String OMSRESCALEDDISTANCE_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSRESCALEDDISTANCE_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSRESCALEDDISTANCE_inNet_DESCRIPTION = "The map of the network.";
-    public static final String OMSRESCALEDDISTANCE_inElev_DESCRIPTION = "The optional map of elevation for 3D.";
-    public static final String OMSRESCALEDDISTANCE_pRatio_DESCRIPTION = "Ratio between the velocity in the channel and in the hillslope.";
-    public static final String OMSRESCALEDDISTANCE_outRescaled_DESCRIPTION = "The map of the rescaled distances.";
-
     public static final String OMSNETWORKATTRIBUTESBUILDER_DESCRIPTION = "Extracts network attributes and the vector network based on a raster network.";
     public static final String OMSNETWORKATTRIBUTESBUILDER_DOCUMENTATION = "";
     public static final String OMSNETWORKATTRIBUTESBUILDER_KEYWORDS = "Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope";

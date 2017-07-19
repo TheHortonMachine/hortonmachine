@@ -174,4 +174,20 @@ public class OmsCutOut extends GridMultiProcessing {
         outRaster = CoverageUtilities.buildCoverage("cutout", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
 
     }
+
+    /**
+     * Cut a raster on a mask using the default parameters.
+     * 
+     * @param raster the raster to cut.
+     * @param mask the mask to apply.
+     * @return the cut map.
+     * @throws Exception
+     */
+    public static GridCoverage2D cut( GridCoverage2D raster, GridCoverage2D mask ) throws Exception {
+        OmsCutOut cutDrain = new OmsCutOut();
+        cutDrain.inRaster = raster;
+        cutDrain.inMask = mask;
+        cutDrain.process();
+        return cutDrain.outRaster;
+    }
 }
