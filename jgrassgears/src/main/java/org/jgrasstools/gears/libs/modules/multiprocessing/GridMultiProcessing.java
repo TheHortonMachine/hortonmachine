@@ -24,6 +24,9 @@ package org.jgrasstools.gears.libs.modules.multiprocessing;
  */
 public abstract class GridMultiProcessing extends MultiProcessing {
 
+    protected void processGrid( int cols, int rows, Calculator calculator ) throws Exception {
+        processGrid(cols, rows, false, calculator);
+    }
     /**
      * Loops through all rows and cols of the given grid.
      */

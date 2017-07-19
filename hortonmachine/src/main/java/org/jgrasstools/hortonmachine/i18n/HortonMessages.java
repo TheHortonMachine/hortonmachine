@@ -893,19 +893,6 @@ public class HortonMessages {
     public static final String OMSEPANETFEATURESSYNCHRONIZER_inPipes_DESCRIPTION = "The pipes features.";
     public static final String OMSEPANETFEATURESSYNCHRONIZER_outWarning_DESCRIPTION = "Warning messages if something odd happened but is no error.";
 
-    public static final String OMSTOPINDEX_DESCRIPTION = "Topographic index calculator.";
-    public static final String OMSTOPINDEX_DOCUMENTATION = "OmsTopIndex.html";
-    public static final String OMSTOPINDEX_KEYWORDS = "Hydrology";
-    public static final String OMSTOPINDEX_LABEL = BASIN;
-    public static final String OMSTOPINDEX_NAME = "topindex";
-    public static final int OMSTOPINDEX_STATUS = 40;
-    public static final String OMSTOPINDEX_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSTOPINDEX_AUTHORNAMES = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
-    public static final String OMSTOPINDEX_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSTOPINDEX_inTca_DESCRIPTION = "The map of the contributing area.";
-    public static final String OMSTOPINDEX_inSlope_DESCRIPTION = "The map of slope.";
-    public static final String OMSTOPINDEX_outTopindex_DESCRIPTION = "The map of the topographic index.";
-
     public static final String OMSTCA_DESCRIPTION = "Calculates the contributing areas that represent the areas (in number of pixels) afferent to each point.";
     public static final String OMSTCA_DOCUMENTATION = "";
     public static final String OMSTCA_KEYWORDS = "Geomorphology, OmsDrainDir, Tca3D, OmsAb, Multitca";
