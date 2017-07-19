@@ -121,13 +121,10 @@ public class OmsGradient extends GridMultiProcessing {
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
         WritableRaster gradientWR = null;
         if (pMode.equals(HORN)) {
-            pm.message("Using Horn formula");
             gradientWR = gradientHorn(elevationIter);
         } else if (pMode.equals(EVANS)) {
-            pm.message("Using Evans formula");
             gradientWR = gradientEvans(elevationIter);
         } else {
-            pm.message("Using finite differences");
             gradientWR = gradientDiff(elevationIter);
         }
         outSlope = CoverageUtilities.buildCoverage("gradient", gradientWR, regionMap, inElev.getCoordinateReferenceSystem());
@@ -159,7 +156,7 @@ public class OmsGradient extends GridMultiProcessing {
     */
     private WritableRaster gradientHorn( RandomIter elevationIter ) throws Exception {
         WritableRaster gradientWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        pm.beginTask(msg.message("gradient.working"), nRows * nCols);
+        pm.beginTask(msg.message("gradient.working") + " (" + HORN + ")", nRows * nCols);
         processGrid(nCols, nRows, true, ( c, r ) -> {
             if (pm.isCanceled()) {
                 return;
@@ -186,7 +183,7 @@ public class OmsGradient extends GridMultiProcessing {
     */
     private WritableRaster gradientDiff( RandomIter elevationIter ) throws Exception {
         WritableRaster gradientWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        pm.beginTask(msg.message("gradient.working"), nRows * nCols);
+        pm.beginTask(msg.message("gradient.working") + " (" + FINITE_DIFFERENCES + ")", nRows * nCols);
         processGrid(nCols, nRows, true, ( c, r ) -> {
             if (pm.isCanceled()) {
                 return;
@@ -220,11 +217,10 @@ public class OmsGradient extends GridMultiProcessing {
      * 
      * </p>
      * @throws Exception 
-     *
      */
     private WritableRaster gradientEvans( RandomIter elevationIter ) throws Exception {
         WritableRaster gradientWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        pm.beginTask(msg.message("gradient.working"), nRows * nCols);
+        pm.beginTask(msg.message("gradient.working") + " (" + EVANS + ")", nRows * nCols);
         processGrid(nCols, nRows, true, ( c, r ) -> {
             if (pm.isCanceled()) {
                 return;

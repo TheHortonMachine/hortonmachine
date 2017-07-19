@@ -47,9 +47,9 @@ public interface Variables {
     public String TCA_SLOPE = "tca and slope";
     public String TCA_CONVERGENT = "tca in convergent sites";
 
-    public String FINITE_DIFFERENCES = "finite differences";
-    public String HORN = "horn";
-    public String EVANS = "evans";
+    public String FINITE_DIFFERENCES = "Finite Differences";
+    public String HORN = "Horn";
+    public String EVANS = "Evans";
 
     public String FIXED_NETWORK = "with fixed network";
 
