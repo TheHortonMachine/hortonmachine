@@ -1,9 +1,9 @@
 package org.jgrasstools.hortonmachine.models.hm;
 
-import java.io.IOException;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.Variables;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -16,7 +16,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestGradient extends HMTestCase {
 
-    public void testGradient() throws IOException {
+    public void testGradient() throws Exception {
 
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
@@ -33,7 +33,7 @@ public class TestGradient extends HMTestCase {
         checkMatrixEqual(gradientCoverage.getRenderedImage(), HMTestMaps.gradientData, 0.01);
     }
 
-    public void testGradientHorn() throws IOException {
+    public void testGradientHorn() throws Exception {
 
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
@@ -43,7 +43,7 @@ public class TestGradient extends HMTestCase {
         OmsGradient gradient = new OmsGradient();
         gradient.inElev = pitfillerCoverage;
         gradient.pm = pm;
-        gradient.pMode = 1;
+        gradient.pMode = Variables.HORN;
 
         gradient.process();
 
@@ -51,7 +51,7 @@ public class TestGradient extends HMTestCase {
         checkMatrixEqual(gradientCoverage.getRenderedImage(), HMTestMaps.gradientHornData, 0.01);
     }
 
-    public void testGradientEvans() throws IOException {
+    public void testGradientEvans() throws Exception {
 
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
@@ -61,7 +61,7 @@ public class TestGradient extends HMTestCase {
         OmsGradient gradient = new OmsGradient();
         gradient.inElev = pitfillerCoverage;
         gradient.pm = pm;
-        gradient.pMode = 2;
+        gradient.pMode = Variables.EVANS;
 
         gradient.process();
 

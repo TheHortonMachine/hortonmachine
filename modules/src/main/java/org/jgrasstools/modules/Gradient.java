@@ -17,18 +17,26 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_doDegrees_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_inElev_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_outSlope_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_pMode_DESCRIPTION;
+import static org.jgrasstools.gears.libs.modules.Variables.EVANS;
+import static org.jgrasstools.gears.libs.modules.Variables.FINITE_DIFFERENCES;
+import static org.jgrasstools.gears.libs.modules.Variables.HORN;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient.OMSGRADIENT_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient.OMSGRADIENT_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient.OMSGRADIENT_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient.OMSGRADIENT_KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient.OMSGRADIENT_LABEL;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient.OMSGRADIENT_LICENSE;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient.OMSGRADIENT_NAME;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient.OMSGRADIENT_STATUS;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient.OMSGRADIENT_doDegrees_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient.OMSGRADIENT_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient.OMSGRADIENT_outSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient.OMSGRADIENT_pMode_DESCRIPTION;
+
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -39,10 +47,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient;
 
 @Description(OMSGRADIENT_DESCRIPTION)
 @Author(name = OMSGRADIENT_AUTHORNAMES, contact = OMSGRADIENT_AUTHORCONTACTS)
@@ -58,8 +62,9 @@ public class Gradient extends JGTModel {
     public String inElev = null;
 
     @Description(OMSGRADIENT_pMode_DESCRIPTION)
+    @UI("combo:" + FINITE_DIFFERENCES + "," + HORN + "," + EVANS)
     @In
-    public int pMode = 0;
+    public String pMode = FINITE_DIFFERENCES;
 
     @Description(OMSGRADIENT_doDegrees_DESCRIPTION)
     @In

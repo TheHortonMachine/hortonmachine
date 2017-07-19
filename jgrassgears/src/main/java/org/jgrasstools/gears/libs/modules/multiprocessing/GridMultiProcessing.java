@@ -27,12 +27,22 @@ public abstract class GridMultiProcessing extends MultiProcessing {
     /**
      * Loops through all rows and cols of the given grid.
      */
-    protected void processGrid( int cols, int rows, Calculator calculator ) throws Exception {
+    protected void processGrid( int cols, int rows, boolean ignoreBorder, Calculator calculator ) throws Exception {
         ExecutionPlanner planner = createDefaultPlanner();
         planner.setNumberOfTasks(rows * cols);
 
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
+        int startC = 0;
+        int startR = 0;
+        int endC = cols;
+        int endR = rows;
+        if (ignoreBorder) {
+            startC = 1;
+            startR = 1;
+            endC = cols - 1;
+            endR = rows - 1;
+        }
+        for( int c = startC; c < endC; c++ ) {
+            for( int r = startR; r < endR; r++ ) {
                 int _c = c, _r = r;
                 planner.submit(() -> {
                     if (!pm.isCanceled()) {

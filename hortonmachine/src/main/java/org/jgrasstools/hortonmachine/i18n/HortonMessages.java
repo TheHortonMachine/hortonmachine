@@ -483,20 +483,6 @@ public class HortonMessages {
     public static final String OMSTCA3D_inFlow_DESCRIPTION = "The map of flowdirections.";
     public static final String OMSTCA3D_outTca_DESCRIPTION = "The map of total contributing areas 3d.";
 
-    public static final String OMSGRADIENT_DESCRIPTION = "Calculates the gradient in each point of the map.";
-    public static final String OMSGRADIENT_DOCUMENTATION = "OmsGradient.html";
-    public static final String OMSGRADIENT_KEYWORDS = "Geomorphology, OmsDrainDir, OmsFlowDirections, OmsSlope, OmsCurvatures";
-    public static final String OMSGRADIENT_LABEL = GEOMORPHOLOGY;
-    public static final String OMSGRADIENT_NAME = "gradient";
-    public static final int OMSGRADIENT_STATUS = 40;
-    public static final String OMSGRADIENT_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSGRADIENT_AUTHORNAMES = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
-    public static final String OMSGRADIENT_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSGRADIENT_inElev_DESCRIPTION = "The map of the digital elevation model (DEM or pit).";
-    public static final String OMSGRADIENT_pMode_DESCRIPTION = "The gradient formula mode (0 = finite differences, 1 = horn, 2 = evans).";
-    public static final String OMSGRADIENT_doDegrees_DESCRIPTION = "The output type, if false = tan of the angle (default), if true = degrees";
-    public static final String OMSGRADIENT_outSlope_DESCRIPTION = "The map of gradient.";
-
     public static final String OMSNABLA_DESCRIPTION = "Calculates the nabla in each point of the map.";
     public static final String OMSNABLA_DOCUMENTATION = "";
     public static final String OMSNABLA_KEYWORDS = "Geomorphology, Nabla, Gradient";

@@ -133,7 +133,7 @@ public class OmsCutOut extends GridMultiProcessing {
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         pm.beginTask("Processing map...", nRows * nCols);
-        processGrid(nCols, nRows, ( c, r ) -> {
+        processGrid(nCols, nRows, false, ( c, r ) -> {
             if (pm.isCanceled()) {
                 return;
             }

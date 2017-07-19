@@ -168,7 +168,7 @@ public class OmsExtractNetwork extends GridMultiProcessing {
 
         try {
             pm.beginTask(msg.message("extractnetwork.extracting"), rows * cols); //$NON-NLS-1$
-            processGrid(cols, rows, ( c, r ) -> {
+            processGrid(cols, rows, false, ( c, r ) -> {
                 if (pm.isCanceled()) {
                     return;
                 }
@@ -205,7 +205,7 @@ public class OmsExtractNetwork extends GridMultiProcessing {
         WritableRandomIter netRandomIter = RandomIterFactory.createWritable(networkWR, null);
         try {
             pm.beginTask(msg.message("extractnetwork.extracting"), rows * cols); //$NON-NLS-1$
-            processGrid(cols, rows, ( c, r ) -> {
+            processGrid(cols, rows, false, ( c, r ) -> {
                 if (pm.isCanceled()) {
                     return;
                 }
@@ -272,7 +272,7 @@ public class OmsExtractNetwork extends GridMultiProcessing {
 
         try {
             pm.beginTask(msg.message("extractnetwork.extracting"), rows * cols); //$NON-NLS-1$
-            processGrid(cols, rows, ( c, r ) -> {
+            processGrid(cols, rows, false, ( c, r ) -> {
                 if (pm.isCanceled()) {
                     return;
                 }

@@ -367,7 +367,7 @@ public class OmsDePitter extends GridMultiProcessing {
             WritableRandomIter flowIter = CoverageUtilities.getWritableRandomIterator(flowRaster);
             try {
                 pm.beginTask("Calculating flowdirections...", nRows * nCols);
-                processGrid(nCols, nRows, ( c, r ) -> {
+                processGrid(nCols, nRows, false, ( c, r ) -> {
                     if (pm.isCanceled()) {
                         return;
                     }
