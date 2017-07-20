@@ -16,23 +16,47 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.modules;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Name;
-import oms3.annotations.UI;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOMORPHOLOGY;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.hortonmachine.modules.geomorphology.geomorphon.OmsGeomorphon;
 
-@Name("geomorphonraster")
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
+import oms3.annotations.Unit;
+
+@Description(OmsGeomorphon.DESCRIPTION)
+@Author(name = OmsGeomorphon.AUTHORS, contact = OmsGeomorphon.CONTACT)
+@Keywords(OmsGeomorphon.KEYWORDS)
+@Label(GEOMORPHOLOGY)
+@Name(OmsGeomorphon.NAME)
+@Status(OmsGeomorphon.STATUS)
+@License(OmsGeomorphon.LICENSE)
 public class Geomorphon extends OmsGeomorphon {
-    @Description("An elevation raster.")
+    @Description(inELEV_DESCR)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inElev;
 
-    @Description("Output categories raster.")
+    @Description(pRadius_DESCR)
+    @Unit(pRadius_UNIT)
+    @In
+    public double pRadius;
+
+    @Description(pThreshold_DESCR)
+    @Unit(pThreshold_UNIT)
+    @In
+    public double pThreshold = 1;
+
+    @Description(outRaster_DESCR)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster;

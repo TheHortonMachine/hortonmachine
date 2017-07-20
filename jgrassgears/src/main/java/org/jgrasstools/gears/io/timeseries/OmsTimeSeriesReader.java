@@ -17,24 +17,26 @@
  */
 package org.jgrasstools.gears.io.timeseries;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_DOCUMENTATION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_FILE_NOVALUE_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_FILE_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_NOVALUE_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_OUT_DATA_DESCRIPTION;
+import static org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader.OMSTIMESERIESREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader.OMSTIMESERIESREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader.OMSTIMESERIESREADER_DESCRIPTION;
+import static org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader.OMSTIMESERIESREADER_DOCUMENTATION;
+import static org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader.OMSTIMESERIESREADER_KEYWORDS;
+import static org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader.OMSTIMESERIESREADER_LABEL;
+import static org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader.OMSTIMESERIESREADER_LICENSE;
+import static org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader.OMSTIMESERIESREADER_NAME;
+import static org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader.OMSTIMESERIESREADER_STATUS;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.HASHMAP_READER;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -52,11 +54,6 @@ import oms3.annotations.UI;
 import oms3.io.CSTable;
 import oms3.io.DataIO;
 import oms3.io.TableIterator;
-
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
 
 @Description(OMSTIMESERIESREADER_DESCRIPTION)
 @Documentation(OMSTIMESERIESREADER_DOCUMENTATION)
@@ -84,6 +81,20 @@ public class OmsTimeSeriesReader extends JGTModel {
     @Description(OMSTIMESERIESREADER_OUT_DATA_DESCRIPTION)
     @Out
     public HashMap<DateTime, double[]> outData;
+
+    public static final String OMSTIMESERIESREADER_DESCRIPTION = "Utility class for reading data from a OMS formatted csv file. The data is assumed to be first col a date and then al numbers.";
+    public static final String OMSTIMESERIESREADER_DOCUMENTATION = "OmsTimeSeriesReader.html";
+    public static final String OMSTIMESERIESREADER_KEYWORDS = "IO, Reading";
+    public static final String OMSTIMESERIESREADER_LABEL = HASHMAP_READER;
+    public static final String OMSTIMESERIESREADER_NAME = "tsreader";
+    public static final int OMSTIMESERIESREADER_STATUS = 40;
+    public static final String OMSTIMESERIESREADER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSTIMESERIESREADER_AUTHORNAMES = "Andrea Antonello and Silvia Franceschi";
+    public static final String OMSTIMESERIESREADER_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSTIMESERIESREADER_FILE_DESCRIPTION = "The csv file to read from.";
+    public static final String OMSTIMESERIESREADER_FILE_NOVALUE_DESCRIPTION = "The file novalue to be translated into the internal novalue (defaults to -9999.0). Can be also a string.";
+    public static final String OMSTIMESERIESREADER_NOVALUE_DESCRIPTION = "The internal novalue to use (defaults to NaN).";
+    public static final String OMSTIMESERIESREADER_OUT_DATA_DESCRIPTION = "The sorted hashmap of read data.";
 
     private TableIterator<String[]> rowsIterator;
 

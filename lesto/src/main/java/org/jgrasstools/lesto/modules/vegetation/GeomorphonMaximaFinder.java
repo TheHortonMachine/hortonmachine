@@ -19,9 +19,12 @@ package org.jgrasstools.lesto.modules.vegetation;
 import static org.jgrasstools.lesto.modules.vegetation.OmsGeomorphonMaximaFinder.inDSM_DESC;
 import static org.jgrasstools.lesto.modules.vegetation.OmsGeomorphonMaximaFinder.inDTM_DESC;
 import static org.jgrasstools.lesto.modules.vegetation.OmsGeomorphonMaximaFinder.outMaxima_DESC;
+import static org.jgrasstools.lesto.modules.vegetation.OmsGeomorphonMaximaFinder.pElevDiffThres_UNIT;
 import static org.jgrasstools.lesto.modules.vegetation.OmsGeomorphonMaximaFinder.pElevDiff_DESC;
 import static org.jgrasstools.lesto.modules.vegetation.OmsGeomorphonMaximaFinder.pRadius_DESC;
+import static org.jgrasstools.lesto.modules.vegetation.OmsGeomorphonMaximaFinder.pRadius_UNIT;
 import static org.jgrasstools.lesto.modules.vegetation.OmsGeomorphonMaximaFinder.pThreshold_DESC;
+import static org.jgrasstools.lesto.modules.vegetation.OmsGeomorphonMaximaFinder.pThreshold_UNIT;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -41,10 +44,10 @@ import oms3.annotations.Unit;
 @Description(OmsGeomorphonMaximaFinder.DESCRIPTION)
 @Author(name = OmsGeomorphonMaximaFinder.AUTHORS, contact = OmsGeomorphonMaximaFinder.CONTACTS)
 @Keywords(OmsGeomorphonMaximaFinder.KEYWORDS)
-@Label(JGTConstants.RASTERPROCESSING)
+@Label(OmsGeomorphonMaximaFinder.LABEL)
 @Name(OmsGeomorphonMaximaFinder.NAME)
-@Status(Status.EXPERIMENTAL)
-@License(JGTConstants.GPL3_LICENSE)
+@Status(OmsGeomorphonMaximaFinder.STATUS)
+@License(OmsGeomorphonMaximaFinder.LICENSE)
 public class GeomorphonMaximaFinder extends JGTModel {
     @Description(inDTM_DESC)
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -57,17 +60,17 @@ public class GeomorphonMaximaFinder extends JGTModel {
     public String inDSM;
 
     @Description(pRadius_DESC)
-    @Unit("m")
+    @Unit(pRadius_UNIT)
     @In
     public double pRadius;
 
     @Description(pThreshold_DESC)
-    @Unit("degree")
+    @Unit(pThreshold_UNIT)
     @In
     public double pThreshold = 1;
 
     @Description(pElevDiff_DESC)
-    @Unit("m")
+    @Unit(pElevDiffThres_UNIT)
     @In
     public double pElevDiffThres = 1;
 

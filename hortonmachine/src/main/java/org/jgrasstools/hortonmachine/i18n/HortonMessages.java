@@ -716,27 +716,6 @@ public class HortonMessages {
     public static final String OMSFAOETP_defaultPressure_DESCRIPTION = "The pressure default value in case of missing data.";
     public static final String OMSFAOETP_outFaoEtp_DESCRIPTION = "The reference evapotranspiration.";
 
-    public static final String OMSPEAKFLOW_DESCRIPTION = "The OmsPeakflow semidistributed hydrologic model.";
-    public static final String OMSPEAKFLOW_DOCUMENTATION = "OmsPeakflow.html";
-    public static final String OMSPEAKFLOW_KEYWORDS = "OmsPeakflow, Discharge, Hydrologic, OmsCb, RescaledDistance";
-    public static final String OMSPEAKFLOW_LABEL = HYDROGEOMORPHOLOGY;
-    public static final String OMSPEAKFLOW_NAME = "peakflow";
-    public static final int OMSPEAKFLOW_STATUS = 40;
-    public static final String OMSPEAKFLOW_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSPEAKFLOW_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello, Riccardo Rigon";
-    public static final String OMSPEAKFLOW_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSPEAKFLOW_pA_DESCRIPTION = "The a parameter for statistic rain calculations.";
-    public static final String OMSPEAKFLOW_pN_DESCRIPTION = "The n parameter for statistic rain calculations.";
-    public static final String OMSPEAKFLOW_pCelerity_DESCRIPTION = "The channel celerity parameter.";
-    public static final String OMSPEAKFLOW_pDiffusion_DESCRIPTION = "The diffusion parameter.";
-    public static final String OMSPEAKFLOW_pSat_DESCRIPTION = "The saturation percentage.";
-    public static final String OMSPEAKFLOW_inTopindex_DESCRIPTION = "The map of Topindex.";
-    public static final String OMSPEAKFLOW_inSat_DESCRIPTION = "Optional map of saturation.";
-    public static final String OMSPEAKFLOW_inRescaledsup_DESCRIPTION = "The map of superficial rescaled distance.";
-    public static final String OMSPEAKFLOW_inRescaledsub_DESCRIPTION = "The map of sub-superficial rescaled distance.";
-    public static final String OMSPEAKFLOW_inRainfall_DESCRIPTION = "The sorted hasmap of rainfall data per timestep.";
-    public static final String OMSPEAKFLOW_outDischarge_DESCRIPTION = "The sorted hashmap of peakflow output per timestep.";
-
     public static final String OMSADIGE_DESCRIPTION = "The OmsAdige model.";
     public static final String OMSADIGE_DOCUMENTATION = "";
     public static final String OMSADIGE_KEYWORDS = "Hydrology";

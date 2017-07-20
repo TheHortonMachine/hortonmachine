@@ -58,11 +58,12 @@ import oms3.annotations.Unit;
 @Description(OmsGeomorphonMaximaFinder.DESCRIPTION)
 @Author(name = OmsGeomorphonMaximaFinder.AUTHORS, contact = OmsGeomorphonMaximaFinder.CONTACTS)
 @Keywords(OmsGeomorphonMaximaFinder.KEYWORDS)
-@Label(JGTConstants.RASTERPROCESSING)
-@Name(OmsGeomorphonMaximaFinder.NAME)
-@Status(Status.EXPERIMENTAL)
-@License(JGTConstants.GPL3_LICENSE)
+@Label(OmsGeomorphonMaximaFinder.LABEL)
+@Name("_" + OmsGeomorphonMaximaFinder.NAME)
+@Status(OmsGeomorphonMaximaFinder.STATUS)
+@License(OmsGeomorphonMaximaFinder.LICENSE)
 public class OmsGeomorphonMaximaFinder extends JGTModel {
+
     @Description(inDTM_DESC)
     @In
     public GridCoverage2D inDTM;
@@ -72,17 +73,17 @@ public class OmsGeomorphonMaximaFinder extends JGTModel {
     public GridCoverage2D inDSM;
 
     @Description(pRadius_DESC)
-    @Unit("m")
+    @Unit(pRadius_UNIT)
     @In
     public double pRadius;
 
     @Description(pThreshold_DESC)
-    @Unit("degree")
+    @Unit(pThreshold_UNIT)
     @In
     public double pThreshold = 1;
 
     @Description(pElevDiff_DESC)
-    @Unit("m")
+    @Unit(pElevDiffThres_UNIT)
     @In
     public double pElevDiffThres = 1;
 
@@ -90,7 +91,10 @@ public class OmsGeomorphonMaximaFinder extends JGTModel {
     @Out
     public SimpleFeatureCollection outMaxima;
 
-    public static final String NAME = "oms_geomorphonmaximafinder";
+    public static final String LABEL = JGTConstants.LESTO + "/vegetation";
+    public static final String LICENSE = JGTConstants.GPL3_LICENSE;
+    public static final int STATUS = Status.EXPERIMENTAL;
+    public static final String NAME = "geomorphonmaximafinder";
     public static final String KEYWORDS = "raster, maxima, geomorphon";
     public static final String CONTACTS = "www.hydrologis.com";
     public static final String AUTHORS = "Andrea Antonello, Silvia Franceschi";
@@ -101,6 +105,9 @@ public class OmsGeomorphonMaximaFinder extends JGTModel {
     public static final String pRadius_DESC = "Maximum search radius";
     public static final String inDSM_DESC = "The DSM.";
     public static final String inDTM_DESC = "The DTM.";
+    public static final String pThreshold_UNIT = "degree";
+    public static final String pRadius_UNIT = "m";
+    public static final String pElevDiffThres_UNIT = "m";
 
     private int peakCode;
 

@@ -1365,20 +1365,6 @@ public class GearsMessages {
     public static final String OMSPOINTSRASTERIZER_F_CAT_DESCRIPTION = "The field of the vector to take the category from.";
     public static final String OMSPOINTSRASTERIZER_OUT_RASTER_DESCRIPTION = "The output raster.";
 
-    public static final String OMSTIMESERIESREADER_DESCRIPTION = "Utility class for reading data from a OMS formatted csv file. The data is assumed to be first col a date and then al numbers.";
-    public static final String OMSTIMESERIESREADER_DOCUMENTATION = "OmsTimeSeriesReader.html";
-    public static final String OMSTIMESERIESREADER_KEYWORDS = "IO, Reading";
-    public static final String OMSTIMESERIESREADER_LABEL = HASHMAP_READER;
-    public static final String OMSTIMESERIESREADER_NAME = "tsreader";
-    public static final int OMSTIMESERIESREADER_STATUS = 40;
-    public static final String OMSTIMESERIESREADER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSTIMESERIESREADER_AUTHORNAMES = "Andrea Antonello and Silvia Franceschi";
-    public static final String OMSTIMESERIESREADER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSTIMESERIESREADER_FILE_DESCRIPTION = "The csv file to read from.";
-    public static final String OMSTIMESERIESREADER_FILE_NOVALUE_DESCRIPTION = "The file novalue to be translated into the internal novalue (defaults to -9999.0). Can be also a string.";
-    public static final String OMSTIMESERIESREADER_NOVALUE_DESCRIPTION = "The internal novalue to use (defaults to NaN).";
-    public static final String OMSTIMESERIESREADER_OUT_DATA_DESCRIPTION = "The sorted hashmap of read data.";
-
     public static final String OMSTIMESERIESITERATORREADER_DESCRIPTION = "Utility class for reading data from a OMS formatted csv file. The file needs a metadata line containing the id of the station. The table is supposed to have a first column of timestamp and all olther columns of data related to the ids defined.";
     public static final String OMSTIMESERIESITERATORREADER_DOCUMENTATION = "OmsTimeSeriesIteratorReader.html";
     public static final String OMSTIMESERIESITERATORREADER_KEYWORDS = "IO, Reading";

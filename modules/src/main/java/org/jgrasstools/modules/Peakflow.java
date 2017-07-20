@@ -17,26 +17,33 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inRescaledsub_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inRescaledsup_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inSat_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inTopindex_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pA_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pCelerity_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pDiffusion_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pN_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pSat_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_LABEL;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_LICENSE;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_NAME;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_STATUS;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_inRescaledsub_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_inRescaledsup_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_inSat_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_inTopindex_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pA_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pCelerity_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pDiffusion_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pN_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pSat_DESCRIPTION;
 
 import java.io.File;
 import java.util.HashMap;
+
+import org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader;
+import org.jgrasstools.gears.io.timeseries.OmsTimeSeriesWriter;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow;
+import org.joda.time.DateTime;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -49,13 +56,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
-
-import org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader;
-import org.jgrasstools.gears.io.timeseries.OmsTimeSeriesWriter;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow;
-import org.joda.time.DateTime;
 
 @Description(OMSPEAKFLOW_DESCRIPTION)
 @Author(name = OMSPEAKFLOW_AUTHORNAMES, contact = OMSPEAKFLOW_AUTHORCONTACTS)

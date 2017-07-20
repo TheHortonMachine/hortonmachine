@@ -18,24 +18,13 @@
 package org.jgrasstools.hortonmachine.modules.geomorphology.geomorphon;
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOMORPHOLOGY;
 
 import java.awt.image.WritableRaster;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
-import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -52,31 +41,58 @@ import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
-@Description("The Geomorphon method for rasters")
-@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("raster, geomorphon")
-@Label(JGTConstants.RASTERPROCESSING)
-@Name("oms_geomorphonraster")
-@Status(Status.EXPERIMENTAL)
-@License(JGTConstants.GPL3_LICENSE)
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+import oms3.annotations.Unit;
+
+@Description(OmsGeomorphon.DESCRIPTION)
+@Author(name = OmsGeomorphon.AUTHORS, contact = OmsGeomorphon.CONTACT)
+@Keywords(OmsGeomorphon.KEYWORDS)
+@Label(GEOMORPHOLOGY)
+@Name("_" + OmsGeomorphon.NAME)
+@Status(OmsGeomorphon.STATUS)
+@License(OmsGeomorphon.LICENSE)
 public class OmsGeomorphon extends JGTModel {
-    @Description("An elevation raster.")
+
+    @Description(inELEV_DESCR)
     @In
     public GridCoverage2D inElev;
 
-    @Description("Maximum search radius")
-    @Unit("m")
+    @Description(pRadius_DESCR)
+    @Unit(pRadius_UNIT)
     @In
     public double pRadius;
 
-    @Description("Vertical angle threshold.")
-    @Unit("degree")
+    @Description(pThreshold_DESCR)
+    @Unit(pThreshold_UNIT)
     @In
     public double pThreshold = 1;
 
-    @Description("Output categories raster.")
+    @Description(outRaster_DESCR)
     @Out
     public GridCoverage2D outRaster;
+
+    public static final String LICENSE = JGTConstants.GPL3_LICENSE;
+    public static final int STATUS = Status.EXPERIMENTAL;
+    public static final String NAME = "geomorphonraster";
+    public static final String KEYWORDS = "raster, geomorphon";
+    public static final String CONTACT = "www.hydrologis.com";
+    public static final String AUTHORS = "Andrea Antonello, Silvia Franceschi";
+    public static final String DESCRIPTION = "The Geomorphon method for rasters";
+    public static final String outRaster_DESCR = "Output categories raster.";
+    public static final String pThreshold_DESCR = "Vertical angle threshold.";
+    public static final String pRadius_DESCR = "Maximum search radius";
+    public static final String inELEV_DESCR = "An elevation raster.";
+    public static final String pThreshold_UNIT = "degree";
+    public static final String pRadius_UNIT = "m";
 
     @Execute
     public void process() throws Exception {
