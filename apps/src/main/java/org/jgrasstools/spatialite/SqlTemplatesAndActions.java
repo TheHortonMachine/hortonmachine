@@ -397,7 +397,7 @@ public class SqlTemplatesAndActions {
                 try {
                     String query = SpatialiteGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false,
                             true);
-                    spatialiteViewer.viewSpatialQueryResult(query, spatialiteViewer.pm);
+                    spatialiteViewer.viewSpatialQueryResult(table.tableName, query, spatialiteViewer.pm);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }

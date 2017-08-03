@@ -157,6 +157,8 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
         _limitCountTextfield.setText("1000");
         _limitCountTextfield.setToolTipText("1000 is default and used when no valid number is supplied. -1 means no limit.");
+        
+        _recordCountTextfield.setEditable(false);
 
         _dataViewerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         addDataTableContextMenu();
@@ -704,8 +706,8 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         String title;
         if (dbLevel != null) {
             _databaseTree.setVisible(true);
-//            title = dbLevel.dbName;
-            
+            // title = dbLevel.dbName;
+
             title = currentConnectedDatabase.getDatabasePath();
         } else {
             dbLevel = new DbLevel();
@@ -976,7 +978,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         currentDbLevel = new DbLevel();
         String databasePath = db.getDatabasePath();
         File dbFile = new File(databasePath);
-        
+
         String dbName = FileUtilities.getNameWithoutExtention(dbFile);
         currentDbLevel.dbName = dbName;
 
@@ -1101,6 +1103,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                         msg += " (table output limited to " + limit + " records)";
                     }
                     pm.message(msg);
+                    _recordCountTextfield.setText(queryResult.data.size() + "");
                 } else {
                     int resultCode = currentConnectedDatabase.executeInsertUpdateDeleteSql(sqlText);
                     QueryResult dummyQueryResult = new QueryResult();

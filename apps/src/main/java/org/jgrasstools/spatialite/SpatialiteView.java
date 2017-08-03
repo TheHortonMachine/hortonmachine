@@ -1,15 +1,17 @@
 package org.jgrasstools.spatialite;
 
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
-
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -18,9 +20,6 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.border.TitledBorder;
-
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 
 public class SpatialiteView extends JPanel
@@ -42,6 +41,8 @@ public class SpatialiteView extends JPanel
    JCheckBox _refreshTreeAfterQueryCheckbox = new JCheckBox();
    JLabel _limitCountLabel = new JLabel();
    JTextField _limitCountTextfield = new JTextField();
+   JLabel _recordCountLabel = new JLabel();
+   JTextField _recordCountTextfield = new JTextField();
 
    /**
     * Default constructor
@@ -133,16 +134,17 @@ public class SpatialiteView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:250PX:GROW(0.3),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.7),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(0.1),CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:250PX:GROW(0.3),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.7),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(0.1),CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(1.0),CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      jpanel1.add(createdatabaseTreeView(),new CellConstraints(2,4,1,5,CellConstraints.FILL,CellConstraints.FILL));
+      jpanel1.add(createdatabaseTreeView(),new CellConstraints(2,4,1,7,CellConstraints.FILL,CellConstraints.FILL));
       jpanel1.add(createPanel1(),cc.xy(4,4));
       jpanel1.add(createPanel3(),cc.xy(4,8));
       jpanel1.add(createPanel4(),cc.xywh(2,2,3,1));
       jpanel1.add(createPanel5(),cc.xy(4,6));
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6,7,8,9 });
+      jpanel1.add(createPanel6(),cc.xy(4,10));
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11 });
       return jpanel1;
    }
 
@@ -289,13 +291,30 @@ public class SpatialiteView extends JPanel
 
       _limitCountLabel.setName("limitCountLabel");
       _limitCountLabel.setText("Limit result to");
-      _limitCountLabel.setToolTipText("");
       jpanel1.add(_limitCountLabel,cc.xy(1,3));
 
       _limitCountTextfield.setName("limitCountTextfield");
       jpanel1.add(_limitCountTextfield,cc.xy(3,3));
 
       addFillComponents(jpanel1,new int[]{ 2,3,4,5 },new int[]{ 2 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel6()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.4),FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.5)","CENTER:2DLU:NONE,CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      _recordCountLabel.setName("recordCountLabel");
+      _recordCountLabel.setText("Resulting records");
+      jpanel1.add(_recordCountLabel,cc.xy(1,2));
+
+      _recordCountTextfield.setName("recordCountTextfield");
+      jpanel1.add(_recordCountTextfield,cc.xy(3,2));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1 });
       return jpanel1;
    }
 

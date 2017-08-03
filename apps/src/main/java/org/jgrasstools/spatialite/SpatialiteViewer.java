@@ -17,7 +17,13 @@
  */
 package org.jgrasstools.spatialite;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.WindowAdapter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +33,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTextPane;
 
 import org.geotools.data.store.ReprojectingFeatureCollection;
@@ -42,10 +49,17 @@ import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
 import org.jgrasstools.gui.utils.ImageCache;
 import org.jgrasstools.nww.SimpleNwwViewer;
+import org.jgrasstools.nww.gui.LayersPanelController;
+import org.jgrasstools.nww.gui.NwwPanel;
 import org.jgrasstools.nww.gui.ToolsPanelController;
+import org.jgrasstools.nww.gui.ViewControlsLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.WWUtil;
 
 /**
  * The spatialtoolbox view controller.
@@ -84,7 +98,7 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
                 boolean hadErrors = false;
                 try {
                     logConsole.beginProcess("Run query");
-                    hadErrors = viewSpatialQueryResult(sqlText, pm);
+                    hadErrors = viewSpatialQueryResult(null, sqlText, pm);
                 } catch (Exception ex) {
                     pm.errorMessage(ex.getLocalizedMessage());
                     hadErrors = true;
@@ -100,18 +114,29 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
         });
     }
 
-    boolean viewSpatialQueryResult( String sqlText, IJGTProgressMonitor pm ) {
+    boolean viewSpatialQueryResult( String title, String sqlText, IJGTProgressMonitor pm ) {
         boolean hasError = false;
         if (currentConnectedDatabase != null && sqlText.length() > 0) {
             try {
                 pm.beginTask("Run query: " + sqlText, IJGTProgressMonitor.UNKNOWN);
                 DefaultFeatureCollection fc = currentConnectedDatabase.runRawSqlToFeatureCollection(sqlText);
                 ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
-                if (toolsPanelController == null)
-                    toolsPanelController = SimpleNwwViewer.openNww(null, JFrame.DO_NOTHING_ON_CLOSE);
+                if (toolsPanelController == null) {
+                    openNww();
+                    toolsPanelController.addComponentListener(new ComponentAdapter(){
+                        public void componentHidden( ComponentEvent e ) {
+                            // NWW window closed
+                            toolsPanelController = null;
+                        }
+                    });
+
+                }
 
                 if (toolsPanelController != null) {
-                    toolsPanelController.loadFeatureCollection(null, "QueryLayer", null, rfc, null);
+                    if (title == null) {
+                        title = "QueryLayer";
+                    }
+                    toolsPanelController.loadFeatureCollection(null, title, null, rfc, null);
                     addQueryToHistoryCombo(sqlText);
                 }
 
@@ -124,6 +149,86 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
             }
         }
         return hasError;
+    }
+
+    private void openNww() {
+        String appName = "JGrasstools Quick Viewer";
+        try {
+            Class<SimpleNwwViewer> class1 = SimpleNwwViewer.class;
+            ImageIcon icon = new ImageIcon(class1.getResource("/org/jgrasstools/images/hm150.png"));
+
+            Component nwwComponent = NwwPanel.createNwwPanel(true);
+            NwwPanel wwjPanel = null;
+            LayersPanelController layerPanel = null;
+
+            if (nwwComponent instanceof NwwPanel) {
+                wwjPanel = (NwwPanel) nwwComponent;
+                wwjPanel.addOsmLayer();
+                ViewControlsLayer viewControls = wwjPanel.addViewControls();
+                viewControls.setScale(1.5);
+
+                layerPanel = new LayersPanelController(wwjPanel);
+                toolsPanelController = new ToolsPanelController(wwjPanel, layerPanel);
+            }
+
+            final JFrame nwwFrame = new JFrame();
+            nwwFrame.setTitle(appName + ": map view");
+            nwwFrame.setIconImage(icon.getImage());
+            nwwFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            java.awt.EventQueue.invokeLater(() -> nwwFrame.setVisible(true));
+            JPanel mapPanel = new JPanel(new BorderLayout());
+            mapPanel.add(nwwComponent, BorderLayout.CENTER);
+            nwwFrame.getContentPane().add(mapPanel, BorderLayout.CENTER);
+            nwwFrame.setResizable(true);
+            nwwFrame.setPreferredSize(new Dimension(800, 800));
+            nwwFrame.pack();
+            WWUtil.alignComponent(null, nwwFrame, AVKey.CENTER);
+
+            JFrame layersFrame = null;
+            JFrame toolsFrame = null;
+            if (wwjPanel != null) {
+                layersFrame = new JFrame();
+                layersFrame.setTitle(appName + ": layers view");
+                layersFrame.setIconImage(icon.getImage());
+                layersFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                JFrame _layersFrame = layersFrame;
+                java.awt.EventQueue.invokeLater(() -> _layersFrame.setVisible(true));
+                layersFrame.getContentPane().add(layerPanel, BorderLayout.CENTER);
+                layersFrame.setResizable(true);
+                layersFrame.setPreferredSize(new Dimension(400, 500));
+                layersFrame.setLocation(0, 0);
+                layersFrame.pack();
+                toolsFrame = new JFrame();
+                toolsFrame.setTitle(appName + ": tools view");
+                toolsFrame.setIconImage(icon.getImage());
+                toolsFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                JFrame _toolsFrame = toolsFrame;
+                java.awt.EventQueue.invokeLater(() -> _toolsFrame.setVisible(true));
+                toolsFrame.getContentPane().add(toolsPanelController, BorderLayout.CENTER);
+                toolsFrame.setResizable(true);
+                toolsFrame.setPreferredSize(new Dimension(400, 400));
+                toolsFrame.setLocation(0, 510);
+                toolsFrame.pack();
+            }
+            JFrame _toolsFrame = toolsFrame;
+            JFrame _layersFrame = layersFrame;
+            nwwFrame.addWindowListener(new WindowAdapter(){
+                public void windowClosed(java.awt.event.WindowEvent e) {
+                    toolsPanelController = null;
+                    if (_toolsFrame != null) {
+                        _toolsFrame.setVisible(false);
+                        _toolsFrame.dispose();
+                    }
+                    if (_layersFrame != null) {
+                        _layersFrame.setVisible(false);
+                        _layersFrame.dispose();
+                    }
+                
+                };
+            });
+        } catch (Exception e) {
+            Logging.logger().log(java.util.logging.Level.SEVERE, "Exception at application start", e);
+        }
     }
 
     protected List<Action> makeColumnActions( final ColumnLevel selectedColumn ) {
