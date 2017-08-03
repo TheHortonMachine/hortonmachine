@@ -676,6 +676,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         }
 
         _dataViewerTable.setModel(new DefaultTableModel(values, names));
+        _dataViewerTable.setCellSelectionEnabled(true);
 
         for( int column = 0; column < _dataViewerTable.getColumnCount(); column++ ) {
             TableColumn tableColumn = _dataViewerTable.getColumnModel().getColumn(column);
@@ -698,6 +699,8 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
             }
             tableColumn.setPreferredWidth(preferredWidth);
         }
+        
+        _recordCountTextfield.setText(values.length + "");
     }
 
     private void layoutTree( DbLevel dbLevel, boolean expandNodes ) {
@@ -1103,7 +1106,6 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                         msg += " (table output limited to " + limit + " records)";
                     }
                     pm.message(msg);
-                    _recordCountTextfield.setText(queryResult.data.size() + "");
                 } else {
                     int resultCode = currentConnectedDatabase.executeInsertUpdateDeleteSql(sqlText);
                     QueryResult dummyQueryResult = new QueryResult();
