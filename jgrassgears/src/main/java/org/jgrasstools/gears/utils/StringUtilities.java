@@ -44,7 +44,6 @@ public class StringUtilities {
      * @param string the proposed new string, to be changed if colliding.
      * @return the new non-colliding name for the string.
      */
-    @SuppressWarnings("nls")
     public static String checkSameName( List<String> strings, String string ) {
         int index = 1;
         for( int i = 0; i < strings.size(); i++ ) {
@@ -123,7 +122,24 @@ public class StringUtilities {
         return list;
     }
 
-    public static Scanner streamToString( InputStream stream, String delimiter ) {
+    public static String trimToCount( String string, int count ) {
+        if (string.length() <= count) {
+            return string;
+        }
+        return string.substring(0, count);
+    }
+
+    /**
+     * Get scanner from input stream.
+     * 
+     * <b>Note: the scanner needs to be closed after use.</b>
+     * 
+     * @param stream the stream to read.
+     * @param delimiter the delimiter to use.
+     * @return the scanner.
+     */
+    @SuppressWarnings("resource")
+    public static Scanner streamToScanner( InputStream stream, String delimiter ) {
         java.util.Scanner s = new java.util.Scanner(stream).useDelimiter(delimiter);
         return s;
     }

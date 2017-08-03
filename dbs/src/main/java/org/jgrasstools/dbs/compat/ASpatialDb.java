@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.QueryResult;
@@ -346,19 +347,20 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         }
 
         String sql = "SELECT ";
+        List<String> items = new ArrayList<>();
+        for( int i = 0; i < tableColumns.size(); i++ ) {
+            items.add(tableColumns.get(i));
+        }
         if (hasGeom) {
             if (reprojectSrid == -1 || reprojectSrid == gCol.srid) {
-                sql += "ST_AsBinary(" + gCol.f_geometry_column + ") AS " + gCol.f_geometry_column;
+                items.add("ST_AsBinary(" + gCol.f_geometry_column + ") AS " + gCol.f_geometry_column);
             } else {
-                sql += "ST_AsBinary(ST_Transform(" + gCol.f_geometry_column + "," + reprojectSrid + ")) AS "
-                        + gCol.f_geometry_column;
+                items.add("ST_AsBinary(ST_Transform(" + gCol.f_geometry_column + "," + reprojectSrid + ")) AS "
+                        + gCol.f_geometry_column);
             }
         }
-        for( int i = 0; i < tableColumns.size(); i++ ) {
-            if (hasGeom || i != 0)
-                sql += ",";
-            sql += tableColumns.get(i);
-        }
+        String itemsWithComma = items.stream().collect(Collectors.joining(","));
+        sql += itemsWithComma;
         sql += " FROM " + tableName;
         if (envelope != null) {
             double x1 = envelope.getMinX();
@@ -387,17 +389,16 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
             }
 
             while( rs.next() ) {
-                int i = 1;
                 Object[] rec = new Object[columnCount];
-                if (hasGeom) {
-                    byte[] geomBytes = rs.getBytes(i);
-                    Geometry geometry = wkbReader.read(geomBytes);
-                    rec[i - 1] = geometry;
-                    i++;
-                }
-                for( int j = i; j <= columnCount; j++ ) {
-                    Object object = rs.getObject(j);
-                    rec[j - 1] = object;
+                for( int j = 1; j <= columnCount; j++ ) {
+                    if (hasGeom && queryResult.geometryIndex == j - 1) {
+                        byte[] geomBytes = rs.getBytes(j);
+                        Geometry geometry = wkbReader.read(geomBytes);
+                        rec[j - 1] = geometry;
+                    } else {
+                        Object object = rs.getObject(j);
+                        rec[j - 1] = object;
+                    }
                 }
                 queryResult.data.add(rec);
             }

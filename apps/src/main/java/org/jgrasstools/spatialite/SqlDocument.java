@@ -63,20 +63,22 @@ public class SqlDocument extends DefaultStyledDocument {
         StyleConstants.setBold(quote, true);
 
         InputStream keywordsStream = getClass().getResourceAsStream("/jgt_sql_keywords.txt");
-        Scanner keywordsScanner = StringUtilities.streamToString(keywordsStream, "\n");
+        Scanner keywordsScanner = StringUtilities.streamToScanner(keywordsStream, "\n");
         keywordsMap = new HashSet<>();
         while( keywordsScanner.hasNext() ) {
             String keyword = keywordsScanner.next();
             keywordsMap.add(keyword.toUpperCase().trim());
         }
+        keywordsScanner.close();
 
         keywordsStream = getClass().getResourceAsStream("/spl_sql_keywords.txt");
-        keywordsScanner = StringUtilities.streamToString(keywordsStream, "\n");
+        keywordsScanner = StringUtilities.streamToScanner(keywordsStream, "\n");
         splKeywordsMap = new HashSet<>();
         while( keywordsScanner.hasNext() ) {
             String keyword = keywordsScanner.next();
             splKeywordsMap.add(keyword.toUpperCase().trim());
         }
+        keywordsScanner.close();
     }
 
     /*
