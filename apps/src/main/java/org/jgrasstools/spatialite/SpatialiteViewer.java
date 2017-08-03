@@ -204,8 +204,21 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
 
         GuiUtilities.addClosingListener(frame, controller);
 
+        File openFile = null;
         if (args.length > 0 && new File(args[0]).exists()) {
-            controller.openDatabase(new File(args[0]));
+            openFile = new File(args[0]);
+        } else {
+            String lastPath = GuiUtilities.getPreference(SpatialiteGuiUtils.JGT_SPATIALITE_LAST_FILE, (String) null);
+            if (lastPath != null) {
+                File tmp = new File(lastPath);
+                if (tmp.exists()) {
+                    openFile = tmp;
+                }
+            }
+        }
+
+        if (openFile != null) {
+            controller.openDatabase(openFile);
         }
     }
 

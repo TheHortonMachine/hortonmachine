@@ -845,7 +845,9 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
     }
 
     public void onClose() {
-
+        if (currentConnectedDatabase != null) {
+            GuiUtilities.setPreference(SpatialiteGuiUtils.JGT_SPATIALITE_LAST_FILE, currentConnectedDatabase.getDatabasePath());
+        }
         try {
             closeCurrentDb();
         } catch (Exception e) {

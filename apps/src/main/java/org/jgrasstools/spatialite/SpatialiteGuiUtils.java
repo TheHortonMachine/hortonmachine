@@ -9,6 +9,8 @@ import org.jgrasstools.dbs.spatialite.objects.TableLevel;
 
 
 public class SpatialiteGuiUtils {
+    
+    public static final String JGT_SPATIALITE_LAST_FILE = "jgt-spatialite-last-file";
 
     public static String getSelectQuery( SpatialiteDb db, final TableLevel selectedTable, boolean geomFirst,
             boolean binarizeGeoms ) throws Exception {
