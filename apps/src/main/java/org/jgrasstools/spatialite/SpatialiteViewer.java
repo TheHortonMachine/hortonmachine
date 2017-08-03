@@ -123,13 +123,6 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
                 ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
                 if (toolsPanelController == null) {
                     openNww();
-                    toolsPanelController.addComponentListener(new ComponentAdapter(){
-                        public void componentHidden( ComponentEvent e ) {
-                            // NWW window closed
-                            toolsPanelController = null;
-                        }
-                    });
-
                 }
 
                 if (toolsPanelController != null) {
