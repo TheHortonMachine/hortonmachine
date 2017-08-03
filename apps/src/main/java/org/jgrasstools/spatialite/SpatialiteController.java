@@ -84,6 +84,7 @@ import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
+import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gui.console.LogConsoleController;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
@@ -125,6 +126,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
     private static final String NEW_TOOLTIP = "create a new spatialite database";
     private static final String CONNECT = "connect";
     private static final String CONNECT_TOOLTIP = "connect to an existing spatialite database";
+    private static final String DB_TREE_TITLE = "Database Connection";
 
     protected GuiBridgeHandler guiBridge;
     protected IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -702,7 +704,9 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         String title;
         if (dbLevel != null) {
             _databaseTree.setVisible(true);
-            title = dbLevel.dbName;
+//            title = dbLevel.dbName;
+            
+            title = currentConnectedDatabase.getDatabasePath();
         } else {
             dbLevel = new DbLevel();
             _databaseTree.setVisible(false);
@@ -909,6 +913,8 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         if (databaseTreeViewBorder instanceof TitledBorder) {
             TitledBorder tBorder = (TitledBorder) databaseTreeViewBorder;
             tBorder.setTitle(title);
+            _databaseTreeView.repaint();
+            _databaseTreeView.invalidate();
         }
     }
 
@@ -951,7 +957,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                     DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
 
                     layoutTree(dbLevel, true);
-                    setDbTreeTitle(dbLevel.dbName);
+                    setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
                 } catch (Exception e) {
                     currentConnectedDatabase = null;
                     logger.error("Error connecting to the database...", e);
@@ -970,7 +976,9 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         currentDbLevel = new DbLevel();
         String databasePath = db.getDatabasePath();
         File dbFile = new File(databasePath);
-        currentDbLevel.dbName = dbFile.getName();
+        
+        String dbName = FileUtilities.getNameWithoutExtention(dbFile);
+        currentDbLevel.dbName = dbName;
 
         HashMap<String, List<String>> currentDatabaseTablesMap = db.getTablesMap(true);
         for( String typeName : SpatialiteTableNames.ALL_TYPES_LIST ) {
@@ -1028,9 +1036,10 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
     }
 
     protected void closeCurrentDb() throws Exception {
-        layoutTree(null, false);
-        loadDataViewer(null);
         if (currentConnectedDatabase != null) {
+            setDbTreeTitle(DB_TREE_TITLE);
+            layoutTree(null, false);
+            loadDataViewer(null);
             currentConnectedDatabase.close();
             currentConnectedDatabase = null;
         }
@@ -1204,7 +1213,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
     protected void refreshDatabaseTree() throws Exception {
         DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-        setDbTreeTitle(dbLevel.dbName);
+        setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
         layoutTree(dbLevel, true);
     }
 
