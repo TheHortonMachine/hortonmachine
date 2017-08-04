@@ -136,7 +136,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
     protected TableLevel currentSelectedTable;
     protected ColumnLevel currentSelectedColumn;
 
-    private Dimension preferredToolbarButtonSize = new Dimension(80, 50);
+    private Dimension preferredToolbarButtonSize = new Dimension(120, 65);
     private Dimension preferredSqleditorButtonSize = new Dimension(30, 30);
 
     private List<String> oldSqlCommands = new ArrayList<String>();
