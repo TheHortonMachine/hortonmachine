@@ -24,7 +24,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.QueryResult;
@@ -359,7 +358,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
                         + gCol.f_geometry_column);
             }
         }
-        String itemsWithComma = items.stream().collect(Collectors.joining(","));
+        String itemsWithComma = join(items);
         sql += itemsWithComma;
         sql += " FROM " + tableName;
         if (envelope != null) {
@@ -404,6 +403,14 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
             }
             return queryResult;
         }
+    }
+
+    private String join( List<String> items ) {
+        StringBuilder sb = new StringBuilder();
+        for( String item : items ) {
+            sb.append(",").append(item);
+        }
+        return sb.substring(1);
     }
 
     /**
