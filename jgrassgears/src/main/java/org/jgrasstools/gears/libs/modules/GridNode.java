@@ -289,7 +289,7 @@ public class GridNode extends Node {
                         GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
                         window[r + delta][c + delta] = n.elevation;
                     } else {
-                        window[r + delta][c + delta] = floatNovalue;
+                        window[r + delta][c + delta] = doubleNovalue;
                     }
                 }
             }
