@@ -27,6 +27,7 @@ import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
+import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
@@ -51,7 +52,7 @@ public class LasSourcesTable {
     public static final String COLUMN_MININTENSITY = "minintens";
     public static final String COLUMN_MAXINTENSITY = "maxintens";
 
-    public static void createTable( ASpatialDb db, int srid, boolean avoidIndex ) throws Exception {
+    public static void createTable( SpatialiteDb db, int srid, boolean avoidIndex ) throws Exception {
         if (!db.hasTable(TABLENAME)) {
             String[] creates = {//
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT", //

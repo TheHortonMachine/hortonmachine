@@ -15,23 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.dbs.spatialite;
+package org.jgrasstools.dbs.compat.objects;
 
-import org.jgrasstools.dbs.compat.GeometryColumn;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Class representing a geometry_columns record.
+ * Class representing a db level.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class SpatialiteGeometryColumns extends GeometryColumn{
-    // COLUMN NAMES
-    public static final String TABLENAME = "geometry_columns";
-    public static final String F_TABLE_NAME = "f_table_name";
-    public static final String F_GEOMETRY_COLUMN = "f_geometry_column";
-    public static final String GEOMETRY_TYPE = "geometry_type";
-    public static final String COORD_DIMENSION = "coord_dimension";
-    public static final String SRID = "srid";
-    public static final String SPATIAL_INDEX_ENABLED = "spatial_index_enabled";
+public class DbLevel {
+    public String dbName;
 
+    public List<TypeLevel> typesList = new ArrayList<TypeLevel>();
+    
+    
+    @Override
+    public String toString() {
+        return dbName;
+    }
 }

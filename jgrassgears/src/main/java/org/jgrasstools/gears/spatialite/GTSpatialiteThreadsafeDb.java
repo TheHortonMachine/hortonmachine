@@ -31,10 +31,10 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
-import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.jgt.SpatialiteThreadsafeDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
@@ -80,11 +80,11 @@ public class GTSpatialiteThreadsafeDb extends SpatialiteThreadsafeDb {
             throw new RuntimeException("The geometry table name needs to be the first after the FROM keyword.");
         }
 
-        SpatialiteGeometryColumns geometryColumns = getGeometryColumnsForTable(tableName);
+        GeometryColumn geometryColumns = getGeometryColumnsForTable(tableName);
         if (geometryColumns == null) {
             throw new IllegalArgumentException("The supplied table name doesn't seem to be spatial: " + tableName);
         }
-        String geomColumnName = geometryColumns.f_geometry_column;
+        String geomColumnName = geometryColumns.geometryColumnName;
 
         DefaultFeatureCollection fc = new DefaultFeatureCollection();
         WKBReader wkbReader = new WKBReader();
@@ -94,7 +94,7 @@ public class GTSpatialiteThreadsafeDb extends SpatialiteThreadsafeDb {
             int geometryIndex = -1;
 
             CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumns.srid);
-            ESpatialiteGeometryType geomType = ESpatialiteGeometryType.forValue(geometryColumns.geometry_type);
+            ESpatialiteGeometryType geomType = ESpatialiteGeometryType.forValue(geometryColumns.geometryType);
 
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
             b.setName("sql");
@@ -169,8 +169,8 @@ public class GTSpatialiteThreadsafeDb extends SpatialiteThreadsafeDb {
 
     @Override
     public ReferencedEnvelope getTableBounds( String tableName ) throws Exception {
-        SpatialiteGeometryColumns gCol = getGeometryColumnsForTable(tableName);
-        String geomFieldName = gCol.f_geometry_column;
+        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
+        String geomFieldName = gCol.geometryColumnName;
 
         int srid = gCol.srid;
         CoordinateReferenceSystem crs = CrsUtilities.getCrsFromSrid(srid);

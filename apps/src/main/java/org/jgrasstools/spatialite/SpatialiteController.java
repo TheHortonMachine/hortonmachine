@@ -68,16 +68,17 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import org.geotools.feature.DefaultFeatureCollection;
+import org.jgrasstools.dbs.compat.GeometryColumn;
+import org.jgrasstools.dbs.compat.objects.ColumnLevel;
+import org.jgrasstools.dbs.compat.objects.DbLevel;
+import org.jgrasstools.dbs.compat.objects.ForeignKey;
+import org.jgrasstools.dbs.compat.objects.QueryResult;
+import org.jgrasstools.dbs.compat.objects.TableLevel;
+import org.jgrasstools.dbs.compat.objects.TypeLevel;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
-import org.jgrasstools.dbs.spatialite.ForeignKey;
-import org.jgrasstools.dbs.spatialite.QueryResult;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
 import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
-import org.jgrasstools.dbs.spatialite.objects.ColumnLevel;
-import org.jgrasstools.dbs.spatialite.objects.DbLevel;
-import org.jgrasstools.dbs.spatialite.objects.TableLevel;
-import org.jgrasstools.dbs.spatialite.objects.TypeLevel;
 import org.jgrasstools.dbs.utils.CommonQueries;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
@@ -294,7 +295,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                             setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_INDEX));
                         } else if (columnLevel.geomColumn != null) {
                             ESpatialiteGeometryType gType = ESpatialiteGeometryType
-                                    .forValue(columnLevel.geomColumn.geometry_type);
+                                    .forValue(columnLevel.geomColumn.geometryType);
                             switch( gType ) {
                             case POINT_XY:
                             case POINT_XYM:
@@ -995,7 +996,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                 tableLevel.parent = currentDbLevel;
                 tableLevel.tableName = tableName;
 
-                SpatialiteGeometryColumns geometryColumns = null;
+                GeometryColumn geometryColumns = null;
                 try {
                     geometryColumns = db.getGeometryColumnsForTable(tableName);
                 } catch (Exception e1) {
@@ -1023,7 +1024,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                     columnLevel.columnName = columnName;
                     columnLevel.columnType = columnType;
                     columnLevel.isPK = columnPk.equals("1") ? true : false;
-                    if (geometryColumns != null && columnName.equalsIgnoreCase(geometryColumns.f_geometry_column)) {
+                    if (geometryColumns != null && columnName.equalsIgnoreCase(geometryColumns.geometryColumnName)) {
                         columnLevel.geomColumn = geometryColumns;
                     }
                     for( ForeignKey fKey : foreignKeys ) {

@@ -26,9 +26,9 @@ import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import org.jgrasstools.dbs.spatialite.QueryResult;
-import org.jgrasstools.dbs.spatialite.objects.ColumnLevel;
-import org.jgrasstools.dbs.spatialite.objects.TableLevel;
+import org.jgrasstools.dbs.compat.objects.ColumnLevel;
+import org.jgrasstools.dbs.compat.objects.QueryResult;
+import org.jgrasstools.dbs.compat.objects.TableLevel;
 import org.jgrasstools.gears.spatialite.SpatialiteImportUtils;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gui.console.LogConsoleController;
@@ -109,7 +109,7 @@ public class SqlTemplatesAndActions {
             @Override
             public void actionPerformed( ActionEvent e ) {
                 String query = "SELECT DiscardGeometryColumn('" + column.parent.tableName + "', '"
-                        + column.geomColumn.f_geometry_column + "');";
+                        + column.geomColumn.geometryColumnName + "');";
                 spatialiteViewer.addTextToQueryEditor(query);
             }
         };
@@ -283,12 +283,12 @@ public class SqlTemplatesAndActions {
                     for( ColumnLevel columnLevel : columnsList ) {
                         if (columnLevel.geomColumn != null) {
                             String query = "SELECT DiscardGeometryColumn('" + table.tableName + "', '"
-                                    + columnLevel.geomColumn.f_geometry_column + "');";
+                                    + columnLevel.geomColumn.geometryColumnName + "');";
                             spatialiteViewer.addTextToQueryEditor(query);
                             query = "SELECT DisableSpatialIndex('" + table.tableName + "', '"
-                                    + columnLevel.geomColumn.f_geometry_column + "');";
+                                    + columnLevel.geomColumn.geometryColumnName + "');";
                             spatialiteViewer.addTextToQueryEditor(query);
-                            query = "DROP TABLE idx_" + table.tableName + "_" + columnLevel.geomColumn.f_geometry_column + ";";
+                            query = "DROP TABLE idx_" + table.tableName + "_" + columnLevel.geomColumn.geometryColumnName + ";";
                             spatialiteViewer.addTextToQueryEditor(query);
                         }
                     }
@@ -380,7 +380,7 @@ public class SqlTemplatesAndActions {
                     query = query.replaceFirst(columnName, "TRANSFORM(" + columnName + ", " + result[1] + ")");
                     query = "create table " + result[0] + " as " + query + ";\n";
                     query += "SELECT RecoverGeometryColumn('" + result[0] + "', '" + geometryColumn.columnName + "'," + result[1]
-                            + ",'" + geometryColumn.columnType + "'," + geometryColumn.geomColumn.coord_dimension + ");";
+                            + ",'" + geometryColumn.columnType + "'," + geometryColumn.geomColumn.coordinatesDimension + ");";
 
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception ex) {

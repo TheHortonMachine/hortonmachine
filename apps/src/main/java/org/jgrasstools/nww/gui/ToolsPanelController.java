@@ -40,9 +40,9 @@ import org.geotools.gce.imagemosaic.ImageMosaicFormat;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.RasterCoverage;
-import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.jgrasstools.gears.spatialite.RL2CoverageHandler;
 import org.jgrasstools.gears.utils.SldUtilities;
@@ -101,6 +101,8 @@ import gov.nasa.worldwind.layers.LayerList;
  */
 public class ToolsPanelController extends ToolsPanelView {
 
+    private static final long serialVersionUID = 1L;
+
     private GenericSelectListener genericSelectListener;
 
     private WhiteNwwLayer whiteLayer = new WhiteNwwLayer();
@@ -109,6 +111,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
     private LayerEventsListener layerEventsListener;
 
+    @SuppressWarnings("unchecked")
     public ToolsPanelController( final NwwPanel wwjPanel, LayerEventsListener layerEventsListener ) {
         this.wwjPanel = wwjPanel;
         this.layerEventsListener = layerEventsListener;
@@ -167,10 +170,7 @@ public class ToolsPanelController extends ToolsPanelView {
         });
 
         _loadFileButton.addActionListener(e -> {
-            
-            
-            
-            
+
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             fileChooser.setMultiSelectionEnabled(true);
@@ -490,7 +490,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
                 layerEventsListener.onLayerAdded(mbTileLayer);
             } else if (selectedFile.getName().endsWith(".rl2")) {
-                ASpatialDb db = new GTSpatialiteThreadsafeDb();
+                GTSpatialiteThreadsafeDb db = new GTSpatialiteThreadsafeDb();
                 db.open(selectedFile.getAbsolutePath());
                 List<RasterCoverage> rasterCoverages = db.getRasterCoverages(false);
                 if (rasterCoverages.size() > 0) {
@@ -529,9 +529,9 @@ public class ToolsPanelController extends ToolsPanelView {
                         wwjPanel.getWwd().getModel().getLayers().add(rasterizedSpatialiteLayer);
                         layerEventsListener.onLayerAdded(rasterizedSpatialiteLayer);
                     } else {
-                        SpatialiteGeometryColumns geometryColumn = db.getGeometryColumnsForTable(tableName);
+                        GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
                         if (geometryColumn != null) {
-                            ESpatialiteGeometryType geomType = ESpatialiteGeometryType.forValue(geometryColumn.geometry_type);
+                            ESpatialiteGeometryType geomType = ESpatialiteGeometryType.forValue(geometryColumn.geometryType);
                             if (geomType.isPolygon()) {
                                 SpatialitePolygonLayer layer = new SpatialitePolygonLayer(db, tableName, 10000);
                                 wwjPanel.getWwd().getModel().getLayers().add(layer);

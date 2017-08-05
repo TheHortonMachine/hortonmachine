@@ -15,10 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.dbs.spatialite.objects;
+package org.jgrasstools.dbs.compat.objects;
 
-import org.jgrasstools.dbs.spatialite.ForeignKey;
-import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
+import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 
 /**
@@ -32,7 +31,7 @@ public class ColumnLevel {
     public String columnName;
     public String columnType;
     public boolean isPK = false;
-    public SpatialiteGeometryColumns geomColumn;
+    public GeometryColumn geomColumn;
 
     /**
      * if not null, it describes the table(colname) it references as foreign key.
@@ -48,7 +47,7 @@ public class ColumnLevel {
     }
 
     public void setFkReferences( ForeignKey fKey ) {
-        references = " -> " + fKey.table + "(" + fKey.to + ")";
+        references = " -> " + fKey.toTable + "(" + fKey.to + ")";
     }
 
     @Override
@@ -60,8 +59,8 @@ public class ColumnLevel {
             }
             return col;
         } else {
-            String gType = ESpatialiteGeometryType.forValue(geomColumn.geometry_type).getDescription();
-            boolean indexEnabled = geomColumn.spatial_index_enabled == 1 ? true : false;
+            String gType = ESpatialiteGeometryType.forValue(geomColumn.geometryType).getDescription();
+            boolean indexEnabled = geomColumn.isSpatialIndexEnabled == 1 ? true : false;
             return columnName + " [" + gType + ",EPSG:" + geomColumn.srid + ",idx:" + indexEnabled + "]";
         }
     }

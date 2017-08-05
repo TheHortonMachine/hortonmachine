@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.dbs.spatialite;
+package org.jgrasstools.dbs.compat.objects;
 
 /**
  * Class representing a foreign key.
@@ -26,6 +26,10 @@ package org.jgrasstools.dbs.spatialite;
 public class ForeignKey {
 
     /**
+     * The current table.
+     */
+    public String fromTable;
+    /**
      * field of the current table
      */
     public String from;
@@ -33,9 +37,14 @@ public class ForeignKey {
     /**
      * The referenced table.
      */
-    public String table;
+    public String toTable;
     /**
      * References field in the connected table.
      */
     public String to;
+
+    @Override
+    public String toString() {
+        return fromTable + " (" + from + ") --> " + toTable + " (" + to + ")";
+    }
 }

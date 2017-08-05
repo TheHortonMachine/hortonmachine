@@ -25,6 +25,7 @@ import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
+import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -64,7 +65,7 @@ public class LasLevelsTable {
         return db.hasTable(tablename);
     }
 
-    public static void createTable( ASpatialDb db, int srid, int levelNum, boolean avoidIndex ) throws Exception {
+    public static void createTable( SpatialiteDb db, int srid, int levelNum, boolean avoidIndex ) throws Exception {
         String tablename = TABLENAME + levelNum;
         if (!db.hasTable(tablename)) {
             String[] creates = {//

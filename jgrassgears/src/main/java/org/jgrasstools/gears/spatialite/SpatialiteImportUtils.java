@@ -32,12 +32,13 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
 import org.jgrasstools.dbs.compat.IJGTStatement;
-import org.jgrasstools.dbs.spatialite.QueryResult;
-import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
+import org.jgrasstools.dbs.compat.objects.QueryResult;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
+import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -124,7 +125,7 @@ public class SpatialiteImportUtils {
                 codeFromCrs = "4326"; // fallback on 4326
             }
             codeFromCrs = codeFromCrs.replaceFirst("EPSG:", "");
-            db.addGeometryXYColumnAndIndex(shpName, null, typeString, codeFromCrs, false);
+            ((SpatialiteDb) db).addGeometryXYColumnAndIndex(shpName, null, typeString, codeFromCrs, false);
         }
 
         return shpName;
@@ -157,8 +158,8 @@ public class SpatialiteImportUtils {
         for( String[] item : tableInfo ) {
             tableColumns.add(item[0]);
         }
-        SpatialiteGeometryColumns geometryColumns = db.getGeometryColumnsForTable(tableName);
-        String gCol = geometryColumns.f_geometry_column;
+        GeometryColumn geometryColumns = db.getGeometryColumnsForTable(tableName);
+        String gCol = geometryColumns.geometryColumnName;
 
         int epsg = geometryColumns.srid;
         CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg("EPSG:" + epsg);
@@ -241,8 +242,7 @@ public class SpatialiteImportUtils {
             }
 
         }
-        
-        
+
         try (IJGTStatement pStmt = conn.createStatement()) {
             pStmt.executeQuery("Select updateLayerStatistics");
         }
@@ -264,7 +264,7 @@ public class SpatialiteImportUtils {
             int forceSrid ) throws SQLException, Exception {
         DefaultFeatureCollection fc = new DefaultFeatureCollection();
 
-        SpatialiteGeometryColumns geometryColumn = db.getGeometryColumnsForTable(tableName);
+        GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
         CoordinateReferenceSystem crs;
         if (forceSrid == -1) {
             forceSrid = geometryColumn.srid;
@@ -284,9 +284,9 @@ public class SpatialiteImportUtils {
 
         for( int i = 0; i < names.size(); i++ ) {
             if (i == geometryIndex) {
-                ESpatialiteGeometryType geomType = ESpatialiteGeometryType.forValue(geometryColumn.geometry_type);
+                ESpatialiteGeometryType geomType = ESpatialiteGeometryType.forValue(geometryColumn.geometryType);
                 Class< ? > geometryClass = geomType.getGeometryClass();
-                b.add(geometryColumn.f_geometry_column, geometryClass);
+                b.add(geometryColumn.geometryColumnName, geometryClass);
                 continue;
             }
             Class< ? > fieldClass = null;

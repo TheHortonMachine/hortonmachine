@@ -39,6 +39,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.gears.io.las.spatialite.LasCell;
 import org.jgrasstools.gears.io.las.spatialite.LasCellsTable;
@@ -104,7 +105,7 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
 
         try {
             Envelope tableBounds = db.getTableBounds(LasSourcesTable.TABLENAME);
-            SpatialiteGeometryColumns spatialiteGeometryColumns = db.getGeometryColumnsForTable(LasCellsTable.TABLENAME);
+            GeometryColumn spatialiteGeometryColumns = db.getGeometryColumnsForTable(LasCellsTable.TABLENAME);
             CoordinateReferenceSystem dataCrs = CRS.decode("EPSG:" + spatialiteGeometryColumns.srid);
             CoordinateReferenceSystem targetCRS = DefaultGeographicCRS.WGS84;
             ReferencedEnvelope env = new ReferencedEnvelope(tableBounds, dataCrs);
@@ -140,7 +141,7 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
 
         int finalTileSize = tileSize;
 
-        SpatialiteGeometryColumns spatialiteGeometryColumns = db.getGeometryColumnsForTable(LasCellsTable.TABLENAME);
+        GeometryColumn spatialiteGeometryColumns = db.getGeometryColumnsForTable(LasCellsTable.TABLENAME);
         CoordinateReferenceSystem dataCrs = CRS.decode("EPSG:" + spatialiteGeometryColumns.srid);
         CoordinateReferenceSystem nwwCRS = DefaultGeographicCRS.WGS84;
 

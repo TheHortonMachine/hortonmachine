@@ -45,6 +45,7 @@ import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
@@ -178,7 +179,7 @@ public class SpatialiteLasWriter extends JGTModel {
             }
         }
 
-        try (ASpatialDb spatialiteDb = new GTSpatialiteThreadsafeDb()) {
+        try (GTSpatialiteThreadsafeDb spatialiteDb = new GTSpatialiteThreadsafeDb()) {
             boolean existed = spatialiteDb.open(inSpatialite);
             if (!existed) {
                 pm.beginTask("Create new spatialite database...", IJGTProgressMonitor.UNKNOWN);
@@ -287,7 +288,7 @@ public class SpatialiteLasWriter extends JGTModel {
     }
 
     @SuppressWarnings("unchecked")
-    private void processFile( final ASpatialDb spatialiteDb, File file, long sourceID, GridCoverage2D ortoGC ) throws Exception {
+    private void processFile( final SpatialiteDb spatialiteDb, File file, long sourceID, GridCoverage2D ortoGC ) throws Exception {
         String name = file.getName();
         pm.message("Processing file: " + name);
 

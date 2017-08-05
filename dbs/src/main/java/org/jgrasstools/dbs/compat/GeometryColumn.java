@@ -15,36 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.dbs.spatialite.objects;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.jgrasstools.dbs.compat;
 
 /**
- * Class representing a db table level.
+ * Class representing a geometry_columns record.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TableLevel {
-    public DbLevel parent;
+public class GeometryColumn {
+    // VARIABLES
     public String tableName;
-    public boolean isGeo = false;
-
-    public List<ColumnLevel> columnsList = new ArrayList<ColumnLevel>();
-
-    public ColumnLevel getFirstGeometryColumn() {
-        if (isGeo) {
-            for( ColumnLevel columnLevel : columnsList ) {
-                if (columnLevel.geomColumn != null) {
-                    return columnLevel;
-                }
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public String toString() {
-        return tableName;
-    }
+    public String geometryColumnName;
+    public int geometryType;
+    public int coordinatesDimension;
+    public int srid;
+    public int isSpatialIndexEnabled;
 }

@@ -26,6 +26,7 @@ import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
+import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -64,7 +65,7 @@ public class LasCellsTable {
 
     public static final String COLUMN_COLORS_BLOB = "colors_blob";
 
-    public static void createTable( ASpatialDb db, int srid, boolean avoidIndex  ) throws Exception {
+    public static void createTable( SpatialiteDb db, int srid, boolean avoidIndex  ) throws Exception {
         if (!db.hasTable(TABLENAME)) {
             String[] creates = {//
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT", //

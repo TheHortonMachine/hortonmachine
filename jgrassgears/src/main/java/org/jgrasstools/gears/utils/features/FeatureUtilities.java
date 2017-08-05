@@ -57,7 +57,7 @@ import org.geotools.gce.grassraster.JGrassConstants;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
-import org.jgrasstools.dbs.spatialite.QueryResult;
+import org.jgrasstools.dbs.compat.objects.QueryResult;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
