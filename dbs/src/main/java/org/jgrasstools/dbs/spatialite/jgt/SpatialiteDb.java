@@ -35,6 +35,7 @@ import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.RasterCoverage;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
+import org.jgrasstools.dbs.spatialite.SpatialiteWKBReader;
 import org.jgrasstools.dbs.utils.OsCheck;
 import org.jgrasstools.dbs.utils.OsCheck.OSType;
 import org.slf4j.Logger;
@@ -302,8 +303,8 @@ public class SpatialiteDb extends ASpatialDb {
                 + SpatialiteGeometryColumns.COORD_DIMENSION + ", " //
                 + SpatialiteGeometryColumns.SRID + ", " //
                 + SpatialiteGeometryColumns.SPATIAL_INDEX_ENABLED + " from " //
-                + attachedStr + SpatialiteGeometryColumns.TABLENAME + " where Lower(" + SpatialiteGeometryColumns.F_TABLE_NAME + ")=Lower('"
-                + tableName + "')";
+                + attachedStr + SpatialiteGeometryColumns.TABLENAME + " where Lower(" + SpatialiteGeometryColumns.F_TABLE_NAME
+                + ")=Lower('" + tableName + "')";
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
                 SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();
@@ -458,19 +459,8 @@ public class SpatialiteDb extends ASpatialDb {
         return sql;
     }
 
-    /**
-     * Execute a query from raw sql.
-     * 
-     * @param sql
-     *            the sql to run.
-     * @param limit
-     *            a limit, ignored if < 1
-     * @return the resulting records.
-     * @throws Exception
-     */
     public QueryResult getTableRecordsMapFromRawSql( String sql, int limit ) throws Exception {
         QueryResult queryResult = new QueryResult();
-        WKBReader wkbReader = new WKBReader();
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             IJGTResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
@@ -488,6 +478,7 @@ public class SpatialiteDb extends ASpatialDb {
                 }
             }
             int count = 0;
+            SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
             while( rs.next() ) {
                 Object[] rec = new Object[columnCount];
                 for( int j = 1; j <= columnCount; j++ ) {
@@ -512,6 +503,11 @@ public class SpatialiteDb extends ASpatialDb {
             }
             return queryResult;
         }
+    }
+
+    public static Geometry toGeometry( WKBReader wkbReader, byte[] geomBytes ) {
+
+        return null;
     }
 
     /**

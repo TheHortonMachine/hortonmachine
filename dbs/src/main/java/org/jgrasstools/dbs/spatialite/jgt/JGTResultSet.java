@@ -36,6 +36,10 @@ public class JGTResultSet implements IJGTResultSet {
         this.resultSet = resultSet;
     }
 
+    public ResultSet getResultSet() {
+        return resultSet;
+    }
+    
     @Override
     public void close() throws Exception {
         resultSet.close();
@@ -121,5 +125,11 @@ public class JGTResultSet implements IJGTResultSet {
     public long getLong( String name ) throws Exception {
         return resultSet.getLong(name);
     }
-
+    
+    @Override
+    public <T> T unwrap( Class<T> iface ) throws Exception {
+        return resultSet.unwrap(iface);
+    }
+    
+    
 }

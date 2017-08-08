@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.dbs.spatialite;
+package org.jgrasstools.dbs.h2gis;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,55 +31,22 @@ import org.jgrasstools.dbs.compat.ISpatialTableNames;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class SpatialiteTableNames implements ISpatialTableNames{
+public class H2GisTableNames implements ISpatialTableNames {
     public static final String startsWithIndexTables = "idx_";
-    public static final List<String> spatialindexTables = Arrays.asList("spatialindex", //SpatialIndex
-            "knn" //KNN
+    public static final List<String> spatialindexTables = Arrays.asList("spatialindex" // SpatialIndex
     );
 
     // STYLE
     public static final String startsWithStyleTables = "SE_";
 
     // METADATA
-    public static final List<String> metadataTables = Arrays.asList("geom_cols_ref_sys", //
-            "geometry_columns", //
-            "geometry_columns_time", //
-            "raster_coverages", //
-            "raster_coverages_keyword", //
-            "raster_coverages_ref_sys", //
-            "raster_coverages_srid", //
-            "spatial_ref_sys", //
-            "spatial_ref_sys_all", //
-            "spatial_ref_sys_aux", //
-            "spatialite_history", //
-            "vector_coverages", //
-            "vector_coverages_keyword", //
-            "vector_coverages_ref_sys", //
-            "vector_coverages_srid", //
-            "vector_layers", //
-            "views_geometry_columns", //
-            "virts_geometry_columns"//
+    public static final List<String> metadataTables = Arrays.asList("geometry_columns", //
+            "spatial_ref_sys" //
     );
 
     // INTERNAL DATA
     public static final List<String> internalDataTables = Arrays.asList(//
-            "sqlite_stat1", //
-            "sqlite_stat3", //
-            "elementarygeometries", //ElementaryGeometries
-            "geometry_columns_auth", //
-            "geometry_columns_field_infos", //
-            "geometry_columns_statistics", //
-            "sql_statements_log", //
-            "sqlite_sequence", //
-            "vector_layers_auth", //
-            "vector_layers_field_infos", //
-            "vector_layers_statistics", //
-            "views_geometry_columns_auth", //
-            "views_geometry_columns_field_infos", //
-            "views_geometry_columns_statistics", //
-            "virts_geometry_columns_auth", //
-            "virts_geometry_columns_field_infos", //
-            "virts_geometry_columns_statistics");
+    );
 
     /**
      * Sorts all supplied table names by type.
@@ -92,6 +59,9 @@ public class SpatialiteTableNames implements ISpatialTableNames{
      * <li>{@value ISpatialTableNames#SPATIALINDEX} </li>
      * <li>{@value ISpatialTableNames#STYLE} </li>
      * <li>{@value ISpatialTableNames#USERDATA} </li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
      * </ul>
      * 
      * @param allTableNames list of all tables.

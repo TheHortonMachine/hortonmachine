@@ -22,11 +22,15 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.h2gis.ext.H2GISExtension;
+import org.h2gis.functions.factory.H2GISFunctions;
+import org.h2gis.utilities.SFSUtilities;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
+import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.compat.objects.ForeignKey;
+import org.jgrasstools.dbs.compat.objects.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +48,10 @@ public class H2GisDb extends ASpatialDb {
     private String password = "";
     private Connection jdbcConn;
     private H2Db h2Db;
-    
+    private boolean wasInitialized = false;
+
     public H2GisDb() {
-     h2Db = new H2Db();
+        h2Db = new H2Db();
     }
 
     public void setCredentials( String user, String password ) {
@@ -57,7 +62,11 @@ public class H2GisDb extends ASpatialDb {
     public boolean open( String dbPath ) throws Exception {
         h2Db.setCredentials(user, password);
         boolean dbExists = h2Db.open(dbPath);
-        
+
+        jdbcConn = SFSUtilities.wrapConnection(h2Db.getJdbcConnection());
+        if (!dbExists)
+            initSpatialMetadata(null);
+
         this.mDbPath = h2Db.getDatabasePath();
         mConn = h2Db.getConnection();
         if (mPrintInfos) {
@@ -70,7 +79,10 @@ public class H2GisDb extends ASpatialDb {
 
     @Override
     public void initSpatialMetadata( String options ) throws Exception {
-        H2GISExtension.load(jdbcConn);
+        if (!wasInitialized) {
+            H2GISExtension.load(jdbcConn);
+            wasInitialized = true;
+        }
     }
 
     @Override
@@ -106,8 +118,8 @@ public class H2GisDb extends ASpatialDb {
 
         // OR DO FULL GEOMETRIES SCAN
 
-        String sql = "SELECT ST_XMin(" + geomFieldName + ") , ST_YMin(" + geomFieldName + ")," + "ST_XMax(" + geomFieldName
-                + "), ST_YMax(" + geomFieldName + ") " + "FROM " + tableName;
+        String sql = "SELECT ST_XMin(ST_collect(" + geomFieldName + ")) , ST_YMin(ST_collect(" + geomFieldName + ")),"
+                + "ST_XMax(ST_collect(" + geomFieldName + ")), ST_YMax(ST_collect(" + geomFieldName + ")) " + "FROM " + tableName;
 
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
@@ -134,6 +146,73 @@ public class H2GisDb extends ASpatialDb {
                 info[1] = rs.getString(2);
             }
             return info;
+        }
+    }
+
+    @Override
+    public List<String> getTables( boolean doOrder ) throws Exception {
+        return h2Db.getTables(doOrder);
+    }
+
+    @Override
+    public boolean hasTable( String tableName ) throws Exception {
+        return h2Db.hasTable(tableName);
+    }
+
+    @Override
+    public List<String[]> getTableColumns( String tableName ) throws Exception {
+        return h2Db.getTableColumns(tableName);
+    }
+
+    @Override
+    public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
+        return h2Db.getForeignKeys(tableName);
+    }
+
+    @Override
+    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
+        List<String> tableNames = getTables(doOrder);
+        HashMap<String, List<String>> tablesMap = H2GisTableNames.getTablesSorted(tableNames, doOrder);
+        return tablesMap;
+    }
+
+    public QueryResult getTableRecordsMapFromRawSql( String sql, int limit ) throws Exception {
+        QueryResult queryResult = new QueryResult();
+
+        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql);) {
+
+            int geomIndex = -1;
+            IJGTResultSetMetaData rsmd = rs.getMetaData();
+            int columnCount = rsmd.getColumnCount();
+            for( int i = 1; i <= columnCount; i++ ) {
+                String columnName = rsmd.getColumnName(i);
+                queryResult.names.add(columnName);
+                String columnTypeName = rsmd.getColumnTypeName(i);
+                queryResult.types.add(columnTypeName);
+                if (columnTypeName.equalsIgnoreCase(H2GISFunctions.GEOMETRY_BASE_TYPE)) {
+                    geomIndex = i;
+                    queryResult.geometryIndex = i - 1;
+                }
+            }
+
+            int count = 0;
+            while( rs.next() ) {
+                Object[] rec = new Object[columnCount];
+                for( int j = 1; j <= columnCount; j++ ) {
+                    if (j == geomIndex) {
+                        Geometry geometry = (Geometry) rs.getObject(j);
+                        rec[j - 1] = geometry;
+                    } else {
+                        Object object = rs.getObject(j);
+                        rec[j - 1] = object;
+                    }
+                }
+                queryResult.data.add(rec);
+                if (limit > 0 && ++count > (limit - 1)) {
+                    break;
+                }
+            }
+            return queryResult;
         }
     }
 
@@ -168,8 +247,39 @@ public class H2GisDb extends ASpatialDb {
 
     @Override
     public GeometryColumn getGeometryColumnsForTable( String tableName ) throws Exception {
-        // TODO Auto-generated method stub
-        return null;
+        String attachedStr = "";
+        if (tableName.indexOf('.') != -1) {
+            // if the tablename contains a dot, then it comes from an attached
+            // database
+
+            // get the database name
+            String[] split = tableName.split("\\.");
+            attachedStr = split[0] + ".";
+            tableName = split[1];
+            // logger.debug(MessageFormat.format("Considering attached database:
+            // {0}", attachedStr));
+        }
+
+        String sql = "select " + H2GisGeometryColumns.F_TABLE_NAME + ", " //
+                + H2GisGeometryColumns.F_GEOMETRY_COLUMN + ", " //
+                + H2GisGeometryColumns.GEOMETRY_TYPE + "," //
+                + H2GisGeometryColumns.COORD_DIMENSION + ", " //
+                + H2GisGeometryColumns.SRID + " from " //
+                + attachedStr + H2GisGeometryColumns.TABLENAME + " where Lower(" + H2GisGeometryColumns.F_TABLE_NAME + ")=Lower('"
+                + tableName + "')";
+        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                H2GisGeometryColumns gc = new H2GisGeometryColumns();
+                gc.tableName = rs.getString(1);
+                gc.geometryColumnName = rs.getString(2);
+                gc.geometryType = rs.getInt(3);
+                gc.coordinatesDimension = rs.getInt(4);
+                gc.srid = rs.getInt(5);
+                // gc.isSpatialIndexEnabled = rs.getInt(6);
+                return gc;
+            }
+            return null;
+        }
     }
 
     @Override
@@ -194,38 +304,7 @@ public class H2GisDb extends ASpatialDb {
 
             db.createTable("ROADS", "the_geom MULTILINESTRING", "speed_limit INT");
             db.createIndex(PK_UID, PKUID, existed);
-            
+
         }
     }
-
-    @Override
-    public List<String> getTables( boolean doOrder ) throws Exception {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public boolean hasTable( String tableName ) throws Exception {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public List<String[]> getTableColumns( String tableName ) throws Exception {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

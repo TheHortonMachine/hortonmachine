@@ -21,7 +21,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jgrasstools.dbs.compat.objects.ForeignKey;

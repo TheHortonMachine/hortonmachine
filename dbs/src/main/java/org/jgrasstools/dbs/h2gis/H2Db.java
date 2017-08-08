@@ -40,6 +40,7 @@ public class H2Db extends ADb {
     private static final Logger logger = LoggerFactory.getLogger(H2Db.class);
     private String user = "sa";
     private String password = "";
+    private Connection jdbcConn;
 
     static {
         try {
@@ -69,14 +70,17 @@ public class H2Db extends ADb {
             dbPath = "mem:syntax";
             dbExists = true;
         }
-        // create a database connection
-        Connection tmpConn = DriverManager.getConnection("jdbc:h2:" + dbPath, user, password);
-        mConn = new JGTConnection(tmpConn);
+        jdbcConn = DriverManager.getConnection("jdbc:h2:" + dbPath, user, password);
+        mConn = new JGTConnection(jdbcConn);
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
             logger.debug("H2 Version: " + dbInfo[0]);
         }
         return dbExists;
+    }
+    
+    public Connection getJdbcConnection() {
+        return jdbcConn;
     }
 
     @Override
