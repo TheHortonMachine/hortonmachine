@@ -23,27 +23,24 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.jgrasstools.dbs.compat.ISpatialTableNames;
+
 /**
  * Spatialite table namse and groups.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class SpatialiteTableNames {
-    public static final String USERDATA = "User Data";
-
-    public static final String SPATIALINDEX = "Spatial Index";
+public class SpatialiteTableNames implements ISpatialTableNames{
     public static final String startsWithIndexTables = "idx_";
     public static final List<String> spatialindexTables = Arrays.asList("SpatialIndex", //
             "KNN" //
     );
 
     // STYLE
-    public static final String STYLE = "Styling (SLD/SE)";
     public static final String startsWithStyleTables = "SE_";
 
     // METADATA
-    public static final String METADATA = "Metadata";
     public static final List<String> metadataTables = Arrays.asList("geom_cols_ref_sys", //
             "geometry_columns", //
             "geometry_columns_time", //
@@ -65,7 +62,6 @@ public class SpatialiteTableNames {
     );
 
     // INTERNAL DATA
-    public static final String INTERNALDATA = "Internal Data";
     public static final List<String> internalDataTables = Arrays.asList(//
             "sqlite_stat1", //
             "sqlite_stat3", //
@@ -85,20 +81,17 @@ public class SpatialiteTableNames {
             "virts_geometry_columns_field_infos", //
             "virts_geometry_columns_statistics");
 
-    public static final List<String> ALL_TYPES_LIST = Arrays.asList(//
-            USERDATA, SPATIALINDEX, STYLE, METADATA, INTERNALDATA);
-
     /**
      * Sorts all supplied table names by type.
      * 
      * <p>
      * Supported types are:
      * <ul>
-     * <li>{@value SpatialiteTableNames#INTERNALDATA} </li>
-     * <li>{@value SpatialiteTableNames#METADATA} </li>
-     * <li>{@value SpatialiteTableNames#SPATIALINDEX} </li>
-     * <li>{@value SpatialiteTableNames#STYLE} </li>
-     * <li>{@value SpatialiteTableNames#USERDATA} </li>
+     * <li>{@value ISpatialTableNames#INTERNALDATA} </li>
+     * <li>{@value ISpatialTableNames#METADATA} </li>
+     * <li>{@value ISpatialTableNames#SPATIALINDEX} </li>
+     * <li>{@value ISpatialTableNames#STYLE} </li>
+     * <li>{@value ISpatialTableNames#USERDATA} </li>
      * <li></li>
      * <li></li>
      * <li></li>

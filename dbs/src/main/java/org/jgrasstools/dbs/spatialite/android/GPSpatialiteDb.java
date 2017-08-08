@@ -31,6 +31,7 @@ import org.jgrasstools.dbs.compat.objects.ForeignKey;
 import org.jgrasstools.dbs.compat.objects.QueryResult;
 import org.jgrasstools.dbs.spatialite.ESqliteDataType;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
+import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -450,5 +451,12 @@ public class GPSpatialiteDb extends ASpatialDb {
             }
             return fKeys;
         }
+    }
+
+    @Override
+    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
+        List<String> tableNames = getTables(doOrder);
+        HashMap<String, List<String>> tablesMap = SpatialiteTableNames.getTablesSorted(tableNames, doOrder);
+        return tablesMap;
     }
 }

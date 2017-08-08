@@ -24,7 +24,7 @@ public class TestDbsMain {
     /**
      * The db type to test (set to h2 for online tests).
      */
-    public static final EDb DB_TYPE = EDb.SQLITE;
+    public static final EDb DB_TYPE = EDb.H2;
     private static ADb db;
 
     @BeforeClass
@@ -103,7 +103,7 @@ public class TestDbsMain {
         assertEquals(3, result.data.size());
 
         assertEquals(-1, result.geometryIndex);
-        double temperature = (double) result.data.get(0)[2];
+        double temperature = ((Number) result.data.get(0)[2]).doubleValue();
         assertEquals(34.0, temperature, 0.00001);
     }
 

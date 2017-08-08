@@ -61,11 +61,6 @@ public class SpatialiteDb extends ASpatialDb {
         boolean dbExists = sqliteDb.open(dbPath);
         this.mDbPath = sqliteDb.getDatabasePath();
         mConn = sqliteDb.getConnection();
-        if (mPrintInfos) {
-            String[] dbInfo = getDbInfo();
-            logger.info("Spatialite Version: " + dbInfo[0]);
-            logger.info("Spatialite Target CPU: " + dbInfo[1]);
-        }
         try (IJGTStatement stmt = mConn.createStatement()) {
             // set timeout to 30 sec.
             stmt.setQueryTimeout(30);
@@ -127,6 +122,11 @@ public class SpatialiteDb extends ASpatialDb {
                 // }
             }
         }
+        if (mPrintInfos) {
+            String[] dbInfo = getDbInfo();
+            logger.info("Spatialite Version: " + dbInfo[0]);
+            logger.info("Spatialite Target CPU: " + dbInfo[1]);
+        }
         return dbExists;
     }
 
@@ -163,8 +163,8 @@ public class SpatialiteDb extends ASpatialDb {
         String geomFieldName;
         if (gCol != null) {
             geomFieldName = gCol.geometryColumnName;
-            String trySql = "SELECT extent_min_x, extent_min_y, extent_max_x, extent_max_y FROM vector_layers_statistics WHERE table_name='"
-                    + tableName + "' AND geometry_column='" + geomFieldName + "'";
+            String trySql = "SELECT extent_min_x, extent_min_y, extent_max_x, extent_max_y FROM vector_layers_statistics WHERE Lower(table_name)=Lower('"
+                    + tableName + "') AND Lower(geometry_column)=Lower('" + geomFieldName + "')";
             try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(trySql)) {
                 if (rs.next()) {
                     double minX = rs.getDouble(1);
@@ -268,26 +268,6 @@ public class SpatialiteDb extends ASpatialDb {
         }
     }
 
-    /**
-     * Get the list of available tables, mapped by type.
-     * 
-     * <p>
-     * Supported types are:
-     * <ul>
-     * <li>{@value SpatialiteTableNames#INTERNALDATA}</li>
-     * <li>{@value SpatialiteTableNames#METADATA}</li>
-     * <li>{@value SpatialiteTableNames#SPATIALINDEX}</li>
-     * <li>{@value SpatialiteTableNames#STYLE}</li>
-     * <li>{@value SpatialiteTableNames#USERDATA}</li>
-     * <li></li>
-     * <li></li>
-     * <li></li>
-     * </ul>
-     * 
-     * @param doOrder
-     * @return the map of tables sorted by aggregated type:
-     * @throws Exception
-     */
     public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
         List<String> tableNames = getTables(doOrder);
         HashMap<String, List<String>> tablesMap = SpatialiteTableNames.getTablesSorted(tableNames, doOrder);
@@ -322,8 +302,8 @@ public class SpatialiteDb extends ASpatialDb {
                 + SpatialiteGeometryColumns.COORD_DIMENSION + ", " //
                 + SpatialiteGeometryColumns.SRID + ", " //
                 + SpatialiteGeometryColumns.SPATIAL_INDEX_ENABLED + " from " //
-                + attachedStr + SpatialiteGeometryColumns.TABLENAME + " where " + SpatialiteGeometryColumns.F_TABLE_NAME + "='"
-                + tableName + "'";
+                + attachedStr + SpatialiteGeometryColumns.TABLENAME + " where Lower(" + SpatialiteGeometryColumns.F_TABLE_NAME + ")=Lower('"
+                + tableName + "')";
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
                 SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();
@@ -433,7 +413,7 @@ public class SpatialiteDb extends ASpatialDb {
 
         String sql = "ST_Intersects(" + alias + gCol.geometryColumnName + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2
                 + ")) = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
-                + "f_table_name = '" + tableName + "' AND " //
+                + "Lower(f_table_name) = Lower('" + tableName + "') AND " //
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
     }
@@ -473,7 +453,7 @@ public class SpatialiteDb extends ASpatialDb {
         }
         String sql = "ST_Intersects(" + alias + gCol.geometryColumnName + ", " + "GeomFromText('" + geometry.toText() + "')"
                 + ") = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
-                + "f_table_name = '" + tableName + "' AND " //
+                + "Lower(f_table_name) = Lower('" + tableName + "') AND " //
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
     }
@@ -501,7 +481,8 @@ public class SpatialiteDb extends ASpatialDb {
                 queryResult.names.add(columnName);
                 String columnTypeName = rsmd.getColumnTypeName(i);
                 queryResult.types.add(columnTypeName);
-                if (columnTypeName.equals("BLOB") && ESpatialiteGeometryType.forValue(columnType) != null) {
+                if (ESpatialiteGeometryType.forName(columnTypeName) != null
+                        || (columnTypeName.equals("BLOB") && ESpatialiteGeometryType.forValue(columnType) != null)) {
                     geometryIndex = i;
                     queryResult.geometryIndex = i - 1;
                 }

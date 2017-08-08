@@ -19,6 +19,7 @@ package org.jgrasstools.dbs.compat;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.jgrasstools.dbs.compat.objects.QueryResult;
@@ -76,7 +77,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @throws Exception
      */
     public abstract void initSpatialMetadata( String options ) throws Exception;
-    
+
     /**
      * Get the geometry column for the given table.
      * 
@@ -98,8 +99,9 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return the query piece.
      * @throws Exception
      */
-    public abstract String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry ) throws Exception;
-    
+    public abstract String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry )
+            throws Exception;
+
     /**
      * Get the where cause of a Spatialindex based BBOX query.
      * 
@@ -116,8 +118,8 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return the sql piece.
      * @throws Exception
      */
-    public abstract String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 )
-            throws Exception;
+    public abstract String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2,
+            double y2 ) throws Exception;
 
     /**
      * Insert a geometry into a table.
@@ -144,7 +146,6 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         }
     }
 
-
     /**
      * Checks if a table is spatial.
      * 
@@ -157,6 +158,28 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         GeometryColumn geometryColumns = getGeometryColumnsForTable(tableName);
         return geometryColumns != null;
     }
+
+    /**
+     * Get the list of available tables, mapped by type.
+     * 
+     * <p>
+     * Supported types are:
+     * <ul>
+     * <li>{@value ISpatialTableNames#INTERNALDATA}</li>
+     * <li>{@value ISpatialTableNames#METADATA}</li>
+     * <li>{@value ISpatialTableNames#SPATIALINDEX}</li>
+     * <li>{@value ISpatialTableNames#STYLE}</li>
+     * <li>{@value ISpatialTableNames#USERDATA}</li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
+     * </ul>
+     * 
+     * @param doOrder
+     * @return the map of tables sorted by aggregated type:
+     * @throws Exception
+     */
+    public abstract HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception;
 
     /**
      * Get the table records map with geometry in the given envelope.
@@ -283,9 +306,6 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         }
         return sb.substring(1);
     }
-
-   
-
 
     /**
      * Get the geometries of a table inside a given envelope.

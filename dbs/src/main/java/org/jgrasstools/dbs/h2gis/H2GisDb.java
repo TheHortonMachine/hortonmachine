@@ -17,16 +17,16 @@
  */
 package org.jgrasstools.dbs.h2gis;
 
-import java.io.File;
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.util.HashMap;
+import java.util.List;
 
 import org.h2gis.ext.H2GISExtension;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
-import org.jgrasstools.dbs.spatialite.jgt.JGTConnection;
+import org.jgrasstools.dbs.compat.objects.ForeignKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,13 +43,10 @@ public class H2GisDb extends ASpatialDb {
     private String user = "sa";
     private String password = "";
     private Connection jdbcConn;
-
-    static {
-        try {
-            Class.forName("org.h2.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+    private H2Db h2Db;
+    
+    public H2GisDb() {
+     h2Db = new H2Db();
     }
 
     public void setCredentials( String user, String password ) {
@@ -58,26 +55,15 @@ public class H2GisDb extends ASpatialDb {
     }
 
     public boolean open( String dbPath ) throws Exception {
-        this.mDbPath = dbPath;
-
-        boolean dbExists = false;
-        if (dbPath != null) {
-            File dbFile = new File(dbPath);
-            if (dbFile.exists()) {
-                if (mPrintInfos)
-                    logger.info("Database exists");
-                dbExists = true;
-            }
-        } else {
-            dbPath = "mem:syntax";
-            dbExists = true;
-        }
-        jdbcConn = DriverManager.getConnection("jdbc:h2:" + dbPath, user, password);
-        mConn = new JGTConnection(jdbcConn);
+        h2Db.setCredentials(user, password);
+        boolean dbExists = h2Db.open(dbPath);
+        
+        this.mDbPath = h2Db.getDatabasePath();
+        mConn = h2Db.getConnection();
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
-            logger.debug("H2 Version: " + dbInfo[0]);
-            logger.debug("H2GIS Version: " + dbInfo[1]);
+            logger.info("H2 Version: " + dbInfo[0]);
+            logger.info("H2GIS Version: " + dbInfo[1]);
         }
         return dbExists;
     }
@@ -210,6 +196,36 @@ public class H2GisDb extends ASpatialDb {
             db.createIndex(PK_UID, PKUID, existed);
             
         }
+    }
+
+    @Override
+    public List<String> getTables( boolean doOrder ) throws Exception {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public boolean hasTable( String tableName ) throws Exception {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public List<String[]> getTableColumns( String tableName ) throws Exception {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
