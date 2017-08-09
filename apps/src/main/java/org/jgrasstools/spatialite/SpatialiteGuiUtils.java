@@ -3,6 +3,7 @@ package org.jgrasstools.spatialite;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.objects.TableLevel;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
@@ -12,7 +13,7 @@ public class SpatialiteGuiUtils {
 
     public static final String JGT_SPATIALITE_LAST_FILE = "jgt-spatialite-last-file";
 
-    public static String getSelectQuery( SpatialiteDb db, final TableLevel selectedTable, boolean geomFirst ) throws Exception {
+    public static String getSelectQuery( ASpatialDb db, final TableLevel selectedTable, boolean geomFirst ) throws Exception {
         String tableName = selectedTable.tableName;
         String letter = tableName.substring(0, 1);
         List<String[]> tableColumns = db.getTableColumns(tableName);

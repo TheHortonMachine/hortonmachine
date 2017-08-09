@@ -68,6 +68,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import org.geotools.feature.DefaultFeatureCollection;
+import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.objects.ColumnLevel;
 import org.jgrasstools.dbs.compat.objects.DbLevel;
@@ -76,9 +77,7 @@ import org.jgrasstools.dbs.compat.objects.QueryResult;
 import org.jgrasstools.dbs.compat.objects.TableLevel;
 import org.jgrasstools.dbs.compat.objects.TypeLevel;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
-import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
-import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.dbs.utils.CommonQueries;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
@@ -104,24 +103,25 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
     private static final Logger logger = LoggerFactory.getLogger(SpatialiteView.class);
     private static final long serialVersionUID = 1L;
 
-    private static final String SHAPEFILE_IMPORT = "import shapefile in selected table";
-    private static final String SHAPEFILE_CCREATE_FROM_SCHEMA = "create table from shapefile schema";
-    private static final String SHAPEFILE_TOOLTIP = "tools to deal with shapefiles";
-    private static final String SHAPEFILE = "shapefile";
+    // private static final String SHAPEFILE_IMPORT = "import shapefile in selected table";
+    // private static final String SHAPEFILE_CCREATE_FROM_SCHEMA = "create table from shapefile
+    // schema";
+    // private static final String SHAPEFILE_TOOLTIP = "tools to deal with shapefiles";
+    // private static final String SHAPEFILE = "shapefile";
     private static final String SQL_TEMPLATES_TOOLTIP = "create a query based on a template";
     private static final String SQL_TEMPLATES = "sql templates";
     private static final String SQL_HISTORY_TOOLTIP = "select queries from the history";
     private static final String SQL_HISTORY = "sql history";
     private static final String DISCONNECT_TOOLTIP = "disconnect from current database";
     private static final String DISCONNECT = "disconnect";
-    private static final String RUN_QUERY = "run query";
+    // private static final String RUN_QUERY = "run query";
     private static final String RUN_QUERY_TOOLTIP = "run the query in the SQL Editor";
     private static final String RUN_QUERY_TO_FILE_TOOLTIP = "run the query in the SQL Editor and store result in file";
     private static final String RUN_QUERY_TO_SHAPEFILE_TOOLTIP = "run the query in the SQL Editor and store result in a shapefile";
     protected static final String VIEW_QUERY_TOOLTIP = "run spatial query and view the result in the 3D viewer";
-    private static final String SQL_EDITOR = "SQL Editor";
+    // private static final String SQL_EDITOR = "SQL Editor";
     private static final String CLEAR_SQL_EDITOR = "clear SQL editor";
-    private static final String DATA_VIEWER = "Data viewer";
+    // private static final String DATA_VIEWER = "Data viewer";
     private static final String DATABASE_CONNECTIONS = "Database connection";
     private static final String NEW = "new";
     private static final String NEW_TOOLTIP = "create a new spatialite database";
@@ -131,7 +131,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
     protected GuiBridgeHandler guiBridge;
     protected IJGTProgressMonitor pm = new LogProgressMonitor();
-    protected GTSpatialiteThreadsafeDb currentConnectedDatabase;
+    protected ASpatialDb currentConnectedDatabase;
     private DbLevel currentDbLevel;
     protected DbLevel currentSelectedDb;
     protected TableLevel currentSelectedTable;
@@ -158,7 +158,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
         _limitCountTextfield.setText("1000");
         _limitCountTextfield.setToolTipText("1000 is default and used when no valid number is supplied. -1 means no limit.");
-        
+
         _recordCountTextfield.setEditable(false);
 
         _dataViewerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -235,8 +235,8 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         _templatesButton.setIcon(ImageCache.getInstance().getImage(ImageCache.TEMPLATE));
         _templatesButton.addActionListener(e -> {
             try {
-                String[] sqlHistory = CommonQueries.templatesMap.keySet().toArray(new String[0]);
-                String selected = GuiUtilities.showComboDialog(this, "HISTORY", "", sqlHistory);
+                String[] sqlTemplates = CommonQueries.templatesMap.keySet().toArray(new String[0]);
+                String selected = GuiUtilities.showComboDialog(this, "TEMPLATES", "", sqlTemplates);
                 if (selected != null) {
                     String sql = CommonQueries.templatesMap.get(selected);
                     addTextToQueryEditor(sql);
@@ -294,8 +294,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                         } else if (columnLevel.references != null) {
                             setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_INDEX));
                         } else if (columnLevel.geomColumn != null) {
-                            ESpatialiteGeometryType gType = ESpatialiteGeometryType
-                                    .forValue(columnLevel.geomColumn.geometryType);
+                            ESpatialiteGeometryType gType = ESpatialiteGeometryType.forValue(columnLevel.geomColumn.geometryType);
                             switch( gType ) {
                             case POINT_XY:
                             case POINT_XYM:
@@ -536,6 +535,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
     protected abstract void setViewQueryButton( JButton _viewQueryButton, Dimension preferredButtonSize,
             JTextPane sqlEditorArea );
 
+    @SuppressWarnings("serial")
     private void addJtreeDragNDrop() {
         _databaseTree.setDragEnabled(true);
         _databaseTree.setTransferHandler(new TransferHandler(null){
@@ -630,6 +630,8 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
             @Override
             public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
                 JMenuItem item = new JMenuItem(new AbstractAction("Copy cells content"){
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -700,7 +702,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
             }
             tableColumn.setPreferredWidth(preferredWidth);
         }
-        
+
         _recordCountTextfield.setText(values.length + "");
     }
 
@@ -744,15 +746,15 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         _sqlEditorArea.setEditable(enable);
     }
 
-    private void expandAllNodes( JTree tree, int startingIndex, int rowCount ) {
-        for( int i = startingIndex; i < rowCount; ++i ) {
-            tree.expandRow(i);
-        }
-
-        if (tree.getRowCount() != rowCount) {
-            expandAllNodes(tree, rowCount, tree.getRowCount());
-        }
-    }
+    // private void expandAllNodes( JTree tree, int startingIndex, int rowCount ) {
+    // for( int i = startingIndex; i < rowCount; ++i ) {
+    // tree.expandRow(i);
+    // }
+    //
+    // if (tree.getRowCount() != rowCount) {
+    // expandAllNodes(tree, rowCount, tree.getRowCount());
+    // }
+    // }
 
     class ObjectTreeModel implements TreeModel {
 
@@ -978,7 +980,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
     }
 
-    protected DbLevel gatherDatabaseLevels( SpatialiteDb db ) throws Exception {
+    protected DbLevel gatherDatabaseLevels( ASpatialDb db ) throws Exception {
         currentDbLevel = new DbLevel();
         String databasePath = db.getDatabasePath();
         File dbFile = new File(databasePath);
@@ -1173,10 +1175,11 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
     protected boolean runQueryToShapefile( String sqlText, File selectedFile, IJGTProgressMonitor pm ) {
         boolean hasError = false;
-        if (currentConnectedDatabase != null && sqlText.length() > 0) {
+        if (currentConnectedDatabase instanceof GTSpatialiteThreadsafeDb && sqlText.length() > 0) {
             try {
                 pm.beginTask("Run query: " + sqlText + "\ninto shapefile: " + selectedFile, IJGTProgressMonitor.UNKNOWN);
-                DefaultFeatureCollection fc = currentConnectedDatabase.runRawSqlToFeatureCollection(sqlText);
+                DefaultFeatureCollection fc = ((GTSpatialiteThreadsafeDb) currentConnectedDatabase)
+                        .runRawSqlToFeatureCollection(sqlText);
                 OmsVectorWriter.writeVector(selectedFile.getAbsolutePath(), fc);
                 addQueryToHistoryCombo(sqlText);
             } catch (Exception e1) {
@@ -1186,6 +1189,9 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
             } finally {
                 pm.done();
             }
+        } else {
+            guiBridge.messageDialog("WARNING", "This operation is not yet supported for this database type.",
+                    JOptionPane.WARNING_MESSAGE);
         }
         return hasError;
     }

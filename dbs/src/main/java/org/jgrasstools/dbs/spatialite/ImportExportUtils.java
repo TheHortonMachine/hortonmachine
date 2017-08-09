@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.dbs.compat;
+package org.jgrasstools.dbs.spatialite;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
+import org.jgrasstools.dbs.compat.ASpatialDb;
 
 /**
  * Common import and export utilities.

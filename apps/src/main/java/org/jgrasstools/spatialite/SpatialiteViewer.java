@@ -42,6 +42,7 @@ import org.jgrasstools.dbs.compat.objects.ColumnLevel;
 import org.jgrasstools.dbs.compat.objects.DbLevel;
 import org.jgrasstools.dbs.compat.objects.TableLevel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.jgrasstools.gui.console.LogConsoleController;
 import org.jgrasstools.gui.utils.DefaultGuiBridgeImpl;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
@@ -116,10 +117,11 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
 
     boolean viewSpatialQueryResult( String title, String sqlText, IJGTProgressMonitor pm ) {
         boolean hasError = false;
-        if (currentConnectedDatabase != null && sqlText.length() > 0) {
+        if (currentConnectedDatabase instanceof GTSpatialiteThreadsafeDb && sqlText.length() > 0) {
             try {
                 pm.beginTask("Run query: " + sqlText, IJGTProgressMonitor.UNKNOWN);
-                DefaultFeatureCollection fc = currentConnectedDatabase.runRawSqlToFeatureCollection(sqlText);
+                DefaultFeatureCollection fc = ((GTSpatialiteThreadsafeDb) currentConnectedDatabase)
+                        .runRawSqlToFeatureCollection(sqlText);
                 ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
                 if (toolsPanelController == null) {
                     openNww();
@@ -140,6 +142,9 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
             } finally {
                 pm.done();
             }
+        } else {
+            guiBridge.messageDialog("WARNING", "This operation is not yet supported for this database type.",
+                    JOptionPane.WARNING_MESSAGE);
         }
         return hasError;
     }
@@ -206,7 +211,7 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
             JFrame _toolsFrame = toolsFrame;
             JFrame _layersFrame = layersFrame;
             nwwFrame.addWindowListener(new WindowAdapter(){
-                public void windowClosed(java.awt.event.WindowEvent e) {
+                public void windowClosed( java.awt.event.WindowEvent e ) {
                     toolsPanelController = null;
                     if (_toolsFrame != null) {
                         _toolsFrame.setVisible(false);
@@ -216,7 +221,7 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
                         _layersFrame.setVisible(false);
                         _layersFrame.dispose();
                     }
-                
+
                 };
             });
         } catch (Exception e) {
