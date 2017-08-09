@@ -1175,7 +1175,10 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
     protected boolean runQueryToShapefile( String sqlText, File selectedFile, IJGTProgressMonitor pm ) {
         boolean hasError = false;
-        if (currentConnectedDatabase instanceof GTSpatialiteThreadsafeDb && sqlText.length() > 0) {
+        if (sqlText.trim().length() == 0) {
+            return false;
+        }
+        if (currentConnectedDatabase instanceof GTSpatialiteThreadsafeDb) {
             try {
                 pm.beginTask("Run query: " + sqlText + "\ninto shapefile: " + selectedFile, IJGTProgressMonitor.UNKNOWN);
                 DefaultFeatureCollection fc = ((GTSpatialiteThreadsafeDb) currentConnectedDatabase)

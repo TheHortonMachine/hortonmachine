@@ -117,7 +117,10 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
 
     boolean viewSpatialQueryResult( String title, String sqlText, IJGTProgressMonitor pm ) {
         boolean hasError = false;
-        if (currentConnectedDatabase instanceof GTSpatialiteThreadsafeDb && sqlText.length() > 0) {
+        if (sqlText.trim().length() == 0) {
+            return false;
+        }
+        if (currentConnectedDatabase instanceof GTSpatialiteThreadsafeDb) {
             try {
                 pm.beginTask("Run query: " + sqlText, IJGTProgressMonitor.UNKNOWN);
                 DefaultFeatureCollection fc = ((GTSpatialiteThreadsafeDb) currentConnectedDatabase)
