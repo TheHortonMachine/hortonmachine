@@ -46,7 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKBReader;
 
 /**
  * A spatialite database threadsafe on writing (see package javadoc for more info).
@@ -95,19 +94,14 @@ public class GTSpatialiteThreadsafeDb extends SpatialiteThreadsafeDb {
             int geometryIndex = -1;
 
             CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumns.srid);
-            ESpatialiteGeometryType geomType = ESpatialiteGeometryType.forValue(geometryColumns.geometryType);
-
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
             b.setName("sql");
             b.setCRS(crs);
 
             for( int i = 1; i <= columnCount; i++ ) {
-                int columnType = rsmd.getColumnType(i);
                 String columnTypeName = rsmd.getColumnTypeName(i);
                 String columnName = rsmd.getColumnName(i);
-
-                if (geomColumnName.equalsIgnoreCase(columnName)
-                        || (geomType != null && columnType > 999 && columnTypeName.toLowerCase().equals("blob"))) {
+                if (geomColumnName.equalsIgnoreCase(columnName) || ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
                     geometryIndex = i;
 
                     if (rs.next()) {

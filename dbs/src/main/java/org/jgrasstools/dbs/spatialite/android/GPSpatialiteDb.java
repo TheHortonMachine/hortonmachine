@@ -36,7 +36,6 @@ import org.jgrasstools.dbs.spatialite.SpatialiteWKBReader;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKBReader;
 
 import jsqlite.Database;
 
