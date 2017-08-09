@@ -11,8 +11,6 @@ import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.spatialite.jgt.SqliteDb;
 import org.joda.time.DateTime;
 
-import com.vividsolutions.jts.io.WKBReader;
-
 public class LogDb extends SqliteDb {
     public static final String TABLE_MESSAGES = "logmessages";
 
@@ -156,7 +154,7 @@ public class LogDb extends SqliteDb {
         List<Message> messages = new ArrayList<Message>();
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql);) {
             while( rs.next() ) {
-                Message event = resultSetToItem(rs, null);
+                Message event = resultSetToItem(rs);
                 messages.add(event);
             }
             return messages;
@@ -200,14 +198,14 @@ public class LogDb extends SqliteDb {
         List<Message> messages = new ArrayList<Message>();
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql);) {
             while( rs.next() ) {
-                Message event = resultSetToItem(rs, null);
+                Message event = resultSetToItem(rs);
                 messages.add(event);
             }
             return messages;
         }
     }
 
-    public Message resultSetToItem( IJGTResultSet rs, WKBReader wkbReader ) throws Exception {
+    public Message resultSetToItem( IJGTResultSet rs ) throws Exception {
         int i = 1;
         Message message = new Message();
         message.id = rs.getLong(i++);

@@ -36,6 +36,7 @@ import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
+import org.jgrasstools.dbs.spatialite.SpatialiteWKBReader;
 import org.jgrasstools.dbs.spatialite.jgt.SpatialiteThreadsafeDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -87,7 +88,7 @@ public class GTSpatialiteThreadsafeDb extends SpatialiteThreadsafeDb {
         String geomColumnName = geometryColumns.geometryColumnName;
 
         DefaultFeatureCollection fc = new DefaultFeatureCollection();
-        WKBReader wkbReader = new WKBReader();
+        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(simpleSql)) {
             IJGTResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();

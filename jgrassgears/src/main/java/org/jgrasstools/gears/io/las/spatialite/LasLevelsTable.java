@@ -176,7 +176,7 @@ public class LasLevelsTable {
     public static List<LasLevel> getLasLevels( ASpatialDb db, int levelNum, Envelope envelope ) throws Exception {
         String tableName = TABLENAME + levelNum;
         List<LasLevel> lasLevels = new ArrayList<>();
-        String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + //
+        String sql = "SELECT AS " + COLUMN_GEOM + "," + //
                 COLUMN_ID + "," + COLUMN_SOURCE_ID + "," + COLUMN_AVG_ELEV + "," + //
                 COLUMN_MIN_ELEV + "," + //
                 COLUMN_MAX_ELEV + "," + //
@@ -233,7 +233,7 @@ public class LasLevelsTable {
     public static List<LasLevel> getLasLevels( ASpatialDb db, int levelNum, Geometry geometry ) throws Exception {
         String tableName = TABLENAME + levelNum;
         List<LasLevel> lasLevels = new ArrayList<>();
-        String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + //
+        String sql = "SELECT " + COLUMN_GEOM + "," + //
                 COLUMN_ID + "," + COLUMN_SOURCE_ID + "," + COLUMN_AVG_ELEV + "," + //
                 COLUMN_MIN_ELEV + "," + //
                 COLUMN_MAX_ELEV + "," + //

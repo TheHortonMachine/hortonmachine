@@ -32,6 +32,7 @@ import org.jgrasstools.dbs.compat.objects.QueryResult;
 import org.jgrasstools.dbs.spatialite.ESqliteDataType;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
 import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
+import org.jgrasstools.dbs.spatialite.SpatialiteWKBReader;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -143,9 +144,9 @@ public class GPSpatialiteDb extends ASpatialDb {
         String sql = "SELECT ";
         if (hasGeom) {
             if (reprojectSrid == -1 || reprojectSrid == gCol.srid) {
-                sql += "ST_AsBinary(" + gCol.geometryColumnName + ") AS " + gCol.geometryColumnName;
+                sql += gCol.geometryColumnName;
             } else {
-                sql += "ST_AsBinary(ST_Transform(" + gCol.geometryColumnName + "," + reprojectSrid + ")) AS "
+                sql += "ST_Transform(" + gCol.geometryColumnName + "," + reprojectSrid + ") AS "
                         + gCol.geometryColumnName;
             }
         }
@@ -166,7 +167,7 @@ public class GPSpatialiteDb extends ASpatialDb {
         if (limit > 0) {
             sql += " LIMIT " + limit;
         }
-        WKBReader wkbReader = new WKBReader();
+        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             IJGTResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
@@ -328,7 +329,7 @@ public class GPSpatialiteDb extends ASpatialDb {
             // database
             tableName = "DB=" + tableName;
         }
-        String sql = "ST_Intersects(" + alias + gCol.geometryColumnName + ", " + "GeomFromText('" + geometry.toText() + "')"
+        String sql = "ST_Intersects(" + alias + gCol.geometryColumnName + ", " + "ST_GeomFromText('" + geometry.toText() + "')"
                 + ") = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
                 + "f_table_name = '" + tableName + "' AND " //
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";

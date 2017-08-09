@@ -23,11 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.jgrasstools.dbs.compat.objects.QueryResult;
+import org.jgrasstools.dbs.spatialite.SpatialiteWKBReader;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKBReader;
 
 /**
  * Abstract spatial db class.
@@ -246,10 +246,9 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         }
         if (hasGeom) {
             if (reprojectSrid == -1 || reprojectSrid == gCol.srid) {
-                items.add("ST_AsBinary(" + gCol.geometryColumnName + ") AS " + gCol.geometryColumnName);
+                items.add(gCol.geometryColumnName);
             } else {
-                items.add("ST_AsBinary(ST_Transform(" + gCol.geometryColumnName + "," + reprojectSrid + ")) AS "
-                        + gCol.geometryColumnName);
+                items.add("ST_Transform(" + gCol.geometryColumnName + "," + reprojectSrid + ") AS " + gCol.geometryColumnName);
             }
         }
         String itemsWithComma = join(items);
@@ -266,7 +265,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         if (limit > 0) {
             sql += " LIMIT " + limit;
         }
-        WKBReader wkbReader = new WKBReader();
+        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             IJGTResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
@@ -321,7 +320,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         List<Geometry> geoms = new ArrayList<Geometry>();
 
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-        String sql = "SELECT ST_AsBinary(" + gCol.geometryColumnName + ") FROM " + tableName;
+        String sql = "SELECT " + gCol.geometryColumnName + " FROM " + tableName;
 
         if (envelope != null) {
             double x1 = envelope.getMinX();
@@ -330,7 +329,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
             double y2 = envelope.getMaxY();
             sql += " WHERE " + getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
         }
-        WKBReader wkbReader = new WKBReader();
+        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 byte[] geomBytes = rs.getBytes(1);

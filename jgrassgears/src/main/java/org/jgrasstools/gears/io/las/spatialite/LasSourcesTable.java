@@ -143,7 +143,7 @@ public class LasSourcesTable {
      */
     public static List<LasSource> getLasSources( ASpatialDb db ) throws Exception {
         List<LasSource> sources = new ArrayList<>();
-        String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_NAME + ","
+        String sql = "SELECT " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_NAME + ","
                 + COLUMN_RESOLUTION + "," + COLUMN_FACTOR + "," + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + ","
                 + COLUMN_MININTENSITY + "," + COLUMN_MAXINTENSITY + " FROM " + TABLENAME;
 

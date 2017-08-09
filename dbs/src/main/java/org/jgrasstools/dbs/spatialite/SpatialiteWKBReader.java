@@ -54,27 +54,16 @@ import com.vividsolutions.jts.io.ByteOrderValues;
 import com.vividsolutions.jts.io.InStream;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBConstants;
-import com.vividsolutions.jts.io.WKBWriter;
+import com.vividsolutions.jts.io.WKBReader;
 
 /**
- * Reads a {@link Geometry}from a byte stream in Well-Known Binary format.
- * Supports use of an {@link InStream}, which allows easy use
- * with arbitrary byte stream sources.
- * <p>
- * This class reads the format describe in {@link WKBWriter}.  
- * It also partially handles
- * the <b>Extended WKB</b> format used by PostGIS, 
- * by parsing and storing SRID values.
- * The reader repairs structurally-invalid input
- * (specifically, LineStrings and LinearRings which contain
- * too few points have vertices added,
- * and non-closed rings are closed).
- * <p>
- * This class is designed to support reuse of a single instance to read multiple
- * geometries. This class is not thread-safe; each thread should create its own
- * instance.
- *
- * @see WKBWriter for a formal format specification
+ * A modified version of the JTS {@link WKBReader} that supports spatialite geometry blobs.
+ * 
+ *  <p>Specifications can be found here: https://www.gaia-gis.it/gaia-sins/BLOB-Geometry.html
+ * 
+ *  @author JTS developers
+ *  @author Andrea Antonello (www.hydrologis.com)
+ *  @see WKBReader
  */
 public class SpatialiteWKBReader {
     /**
@@ -115,8 +104,6 @@ public class SpatialiteWKBReader {
     private PrecisionModel precisionModel;
     // default dimension - will be set on read
     private int inputDimension = 2;
-    private boolean hasSRID = true;
-    private int SRID = 0;
     /**
      * true if structurally invalid input should be reported rather than repaired.
      * At some point this could be made client-controllable.
@@ -185,10 +172,14 @@ public class SpatialiteWKBReader {
         // 14 - 21 MBR_MIN_Y a double value corresponding to the MBR minimum Y coordinate
         // 22 - 29 MBR_MAX_X a double value corresponding to the MBR maximum X coordinate
         // 30 - 37 MBR_MAX_Y a double value corresponding to the MBR maximum Y coordinate
-        double mbrMinX = dis.readDouble();
-        double mbrMinY = dis.readDouble();
-        double mbrMaxX = dis.readDouble();
-        double mbrMaxY = dis.readDouble();
+        // double mbrMinX =
+        dis.readDouble();
+        // double mbrMinY =
+        dis.readDouble();
+        // double mbrMaxX =
+        dis.readDouble();
+        // double mbrMaxY =
+        dis.readDouble();
 
         // // 38 MBR_END [hex 7C] a GEOMETRY encoded BLOB value must always have an 0x7C byte in
         // this

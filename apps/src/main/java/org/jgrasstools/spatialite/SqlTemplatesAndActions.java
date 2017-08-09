@@ -50,12 +50,7 @@ public class SqlTemplatesAndActions {
         return new AbstractAction("Select on column"){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                String query;
-                if (column.geomColumn != null) {
-                    query = "SELECT AsBinary(" + column.columnName + ") FROM " + column.parent.tableName;
-                } else {
-                    query = "SELECT " + column.columnName + " FROM " + column.parent.tableName;
-                }
+                String query = "SELECT " + column.columnName + " FROM " + column.parent.tableName;
                 spatialiteViewer.addTextToQueryEditor(query);
             }
         };
@@ -264,8 +259,7 @@ public class SqlTemplatesAndActions {
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
-                    String query = SpatialiteGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false,
-                            true);
+                    String query = SpatialiteGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception e1) {
                     logger.error("Error", e1);
@@ -371,8 +365,7 @@ public class SqlTemplatesAndActions {
                     String[] result = GuiUtilities.showMultiInputDialog(spatialiteViewer, "Reprojection parameters", labels,
                             values, null);
 
-                    String query = SpatialiteGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false,
-                            false);
+                    String query = SpatialiteGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
                     String tableName = table.tableName;
                     String letter = tableName.substring(0, 1);
                     String columnName = letter + "." + geometryColumn.columnName;
@@ -395,8 +388,7 @@ public class SqlTemplatesAndActions {
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
-                    String query = SpatialiteGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false,
-                            true);
+                    String query = SpatialiteGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
                     spatialiteViewer.viewSpatialQueryResult(table.tableName, query, spatialiteViewer.pm);
                 } catch (Exception ex) {
                     ex.printStackTrace();

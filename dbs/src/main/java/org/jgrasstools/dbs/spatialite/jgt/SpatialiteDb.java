@@ -466,13 +466,11 @@ public class SpatialiteDb extends ASpatialDb {
             int columnCount = rsmd.getColumnCount();
             int geometryIndex = -1;
             for( int i = 1; i <= columnCount; i++ ) {
-                int columnType = rsmd.getColumnType(i);
                 String columnName = rsmd.getColumnName(i);
                 queryResult.names.add(columnName);
                 String columnTypeName = rsmd.getColumnTypeName(i);
                 queryResult.types.add(columnTypeName);
-                if (ESpatialiteGeometryType.forName(columnTypeName) != null
-                        || (columnTypeName.equals("BLOB") && ESpatialiteGeometryType.forValue(columnType) != null)) {
+                if (ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
                     geometryIndex = i;
                     queryResult.geometryIndex = i - 1;
                 }
@@ -484,13 +482,8 @@ public class SpatialiteDb extends ASpatialDb {
                 for( int j = 1; j <= columnCount; j++ ) {
                     if (j == geometryIndex) {
                         byte[] geomBytes = rs.getBytes(j);
-                        try {
-                            Geometry geometry = wkbReader.read(geomBytes);
-                            rec[j - 1] = geometry;
-                        } catch (Exception e) {
-                            // ignore this, it could be missing ST_AsBinary() in
-                            // the sql
-                        }
+                        Geometry geometry = wkbReader.read(geomBytes);
+                        rec[j - 1] = geometry;
                     } else {
                         Object object = rs.getObject(j);
                         rec[j - 1] = object;
@@ -503,11 +496,6 @@ public class SpatialiteDb extends ASpatialDb {
             }
             return queryResult;
         }
-    }
-
-    public static Geometry toGeometry( WKBReader wkbReader, byte[] geomBytes ) {
-
-        return null;
     }
 
     /**
@@ -525,7 +513,7 @@ public class SpatialiteDb extends ASpatialDb {
      */
     public void runRawSqlToCsv( String sql, File csvFile, boolean doHeader, String separator ) throws Exception {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {
-            WKBReader wkbReader = new WKBReader();
+            SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
             try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
                 IJGTResultSetMetaData rsmd = rs.getMetaData();
                 int columnCount = rsmd.getColumnCount();
@@ -534,11 +522,10 @@ public class SpatialiteDb extends ASpatialDb {
                     if (i > 1) {
                         bw.write(separator);
                     }
-                    int columnType = rsmd.getColumnType(i);
                     String columnTypeName = rsmd.getColumnTypeName(i);
                     String columnName = rsmd.getColumnName(i);
                     bw.write(columnName);
-                    if (columnTypeName.equals("BLOB") && ESpatialiteGeometryType.forValue(columnType) != null) {
+                    if (ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
                         geometryIndex = i;
                     }
                 }

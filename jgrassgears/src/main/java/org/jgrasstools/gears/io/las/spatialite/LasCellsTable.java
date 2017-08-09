@@ -225,7 +225,7 @@ public class LasCellsTable {
     public static List<LasCell> getLasCells( ASpatialDb db, Envelope envelope, Geometry exactGeometry, boolean doPosition,
             boolean doIntensity, boolean doReturns, boolean doTime, boolean doColor, int limitTo ) throws Exception {
         List<LasCell> lasCells = new ArrayList<>();
-        String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
+        String sql = "SELECT " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
                 + COLUMN_POINTS_COUNT;
 
         if (doPosition)
@@ -293,7 +293,7 @@ public class LasCellsTable {
     public static List<LasCell> getLasCells( ASpatialDb db, Geometry geometry, boolean doPosition, boolean doIntensity,
             boolean doReturns, boolean doTime, boolean doColor ) throws Exception {
         List<LasCell> lasCells = new ArrayList<>();
-        String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
+        String sql = "SELECT " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
                 + COLUMN_POINTS_COUNT;
 
         if (doPosition)
@@ -351,7 +351,7 @@ public class LasCellsTable {
     public static List<LasCell> getLasCellsBySource( ASpatialDb db, long sourceId, boolean doPosition, boolean doIntensity,
             boolean doReturns, boolean doTime, boolean doColor ) throws Exception {
         List<LasCell> lasCells = new ArrayList<>();
-        String sql = "SELECT ST_AsBinary(" + COLUMN_GEOM + ") AS " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
+        String sql = "SELECT " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
                 + COLUMN_POINTS_COUNT;
 
         if (doPosition)
