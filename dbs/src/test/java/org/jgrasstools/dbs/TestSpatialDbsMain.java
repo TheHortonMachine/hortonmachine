@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 
 /**
  * Main tests for normal dbs
@@ -32,14 +33,14 @@ public class TestSpatialDbsMain {
     /**
      * The db type to test (set to h2 for online tests).
      */
-    public static final EDb DB_TYPE = EDb.SPATIALITE;
+    public static final EDb DB_TYPE = EDb.H2GIS;
     private static ASpatialDb db;
 
     @BeforeClass
     public static void createDb() throws Exception {
         String tempDir = System.getProperty("java.io.tmpdir");
-        String dbPath = tempDir + File.separator + "jgt-dbs-testdbsmain" + DB_TYPE.getExtensionOnCreation();
-        String dbPathDelete = tempDir + File.separator + "jgt-dbs-testdbsmain." + DB_TYPE.getExtension();
+        String dbPath = tempDir + File.separator + "jgt-dbs-testspatialdbsmain" + DB_TYPE.getExtensionOnCreation();
+        String dbPathDelete = tempDir + File.separator + "jgt-dbs-testspatialdbsmain." + DB_TYPE.getExtension();
         File file = new File(dbPathDelete);
         file.delete();
 
@@ -185,11 +186,19 @@ public class TestSpatialDbsMain {
         assertEquals(3, geomsList.size());
     }
 
-    // @Test
-    // public void testIntersects() throws Exception {
-    // // Envelope bounds = new Envelope(5, 80, 5, 80);
-    // List<Geometry> intersecting = db.getGeometriesIn(TABLE1, null);
-    // assertEquals(3, intersecting.size());
-    // }
+    @Test
+    public void testIntersectsEnvelope() throws Exception {
+        Envelope bounds = new Envelope(5, 80, 5, 80);
+        List<Geometry> intersecting = db.getGeometriesIn(TABLE1, bounds);
+        assertEquals(3, intersecting.size());
+    }
+
+    @Test
+    public void testIntersectsPolygon() throws Exception {
+        String polygonStr = "POLYGON ((71 70, 40 70, 40 40, 5 40, 5 15, 15 15, 15 4, 50 4, 71 70))";
+        Geometry geom = new WKTReader().read(polygonStr);
+        List<Geometry> intersecting = db.getGeometriesIn(TABLE1, geom);
+        assertEquals(2, intersecting.size());
+    }
 
 }

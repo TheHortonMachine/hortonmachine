@@ -18,6 +18,7 @@
 package org.jgrasstools.dbs.h2gis;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -31,11 +32,13 @@ import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.compat.objects.ForeignKey;
 import org.jgrasstools.dbs.compat.objects.QueryResult;
+import org.jgrasstools.dbs.utils.DbsUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * A spatialite database.
@@ -284,15 +287,171 @@ public class H2GisDb extends ASpatialDb {
 
     @Override
     public String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry ) throws Exception {
-        // TODO Auto-generated method stub
-        return null;
+        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
+        if (alias == null) {
+            alias = "";
+        } else {
+            alias = alias + ".";
+        }
+
+        Envelope envelopeInternal = geometry.getEnvelopeInternal();
+        Polygon bounds = DbsUtilities.createPolygonFromEnvelope(envelopeInternal);
+        String sql = alias + gCol.geometryColumnName + " && ST_GeomFromText('" + bounds.toText() + "') AND ST_Intersects(" + alias
+                + gCol.geometryColumnName + ",ST_GeomFromText('" + geometry.toText() + "'))";
+        return sql;
     }
 
     @Override
     public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 )
             throws Exception {
-        // TODO Auto-generated method stub
-        return null;
+        Polygon bounds = DbsUtilities.createPolygonFromBounds(x1, y1, x2, y2);
+        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
+        if (alias == null) {
+            alias = "";
+        } else {
+            alias = alias + ".";
+        }
+        String sql = alias + gCol.geometryColumnName + " && ST_GeomFromText('" + bounds.toText() + "') AND ST_Intersects(" + alias
+                + gCol.geometryColumnName + ",ST_GeomFromText('" + bounds.toText() + "'))";
+        return sql;
+
+    }
+
+    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
+            int reprojectSrid ) throws Exception {
+        QueryResult queryResult = new QueryResult();
+
+        GeometryColumn gCol = null;
+        try {
+            gCol = getGeometryColumnsForTable(tableName);
+            // TODO check if it is a virtual table
+        } catch (Exception e) {
+            // ignore
+        }
+        boolean hasGeom = gCol != null;
+
+        List<String[]> tableColumnsInfo = getTableColumns(tableName);
+        List<String> tableColumns = new ArrayList<>();
+        for( String[] info : tableColumnsInfo ) {
+            tableColumns.add(info[0]);
+        }
+        if (hasGeom) {
+            if (!tableColumns.remove(gCol.geometryColumnName)) {
+                String gColLower = gCol.geometryColumnName.toLowerCase();
+                int index = -1;
+                for( int i = 0; i < tableColumns.size(); i++ ) {
+                    String tableColumn = tableColumns.get(i);
+                    if (tableColumn.toLowerCase().equals(gColLower)) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index != -1) {
+                    tableColumns.remove(index);
+                }
+            }
+        }
+        if (!alsoPK_UID) {
+            if (!tableColumns.remove(PK_UID)) {
+                tableColumns.remove(PKUID);
+            }
+        }
+
+        String sql = "SELECT ";
+        List<String> items = new ArrayList<>();
+        for( int i = 0; i < tableColumns.size(); i++ ) {
+            items.add(tableColumns.get(i));
+        }
+        if (hasGeom) {
+            if (reprojectSrid == -1 || reprojectSrid == gCol.srid) {
+                items.add(gCol.geometryColumnName);
+            } else {
+                items.add("ST_Transform(" + gCol.geometryColumnName + "," + reprojectSrid + ") AS " + gCol.geometryColumnName);
+            }
+        }
+        String itemsWithComma = DbsUtilities.joinByComma(items);
+        sql += itemsWithComma;
+        sql += " FROM " + tableName;
+        if (envelope != null) {
+            double x1 = envelope.getMinX();
+            double y1 = envelope.getMinY();
+            double x2 = envelope.getMaxX();
+            double y2 = envelope.getMaxY();
+            sql += " WHERE "; //
+            sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
+        }
+        if (limit > 0) {
+            sql += " LIMIT " + limit;
+        }
+        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
+            IJGTResultSetMetaData rsmd = rs.getMetaData();
+            int columnCount = rsmd.getColumnCount();
+
+            for( int i = 1; i <= columnCount; i++ ) {
+                String columnName = rsmd.getColumnName(i);
+                queryResult.names.add(columnName);
+                String columnTypeName = rsmd.getColumnTypeName(i);
+                queryResult.types.add(columnTypeName);
+                if (hasGeom && columnName.equals(gCol.geometryColumnName)) {
+                    queryResult.geometryIndex = i - 1;
+                }
+            }
+
+            while( rs.next() ) {
+                Object[] rec = new Object[columnCount];
+                for( int j = 1; j <= columnCount; j++ ) {
+                    if (hasGeom && queryResult.geometryIndex == j - 1) {
+                        Geometry geometry = (Geometry) rs.getObject(j);
+                        rec[j - 1] = geometry;
+                    } else {
+                        Object object = rs.getObject(j);
+                        rec[j - 1] = object;
+                    }
+                }
+                queryResult.data.add(rec);
+            }
+            return queryResult;
+        }
+    }
+
+    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws Exception {
+        List<Geometry> geoms = new ArrayList<Geometry>();
+
+        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
+        String sql = "SELECT " + gCol.geometryColumnName + " FROM " + tableName;
+
+        if (envelope != null) {
+            double x1 = envelope.getMinX();
+            double y1 = envelope.getMinY();
+            double x2 = envelope.getMaxX();
+            double y2 = envelope.getMaxY();
+            sql += " WHERE " + getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
+        }
+        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
+            while( rs.next() ) {
+                Geometry geometry = (Geometry) rs.getObject(1);
+                geoms.add(geometry);
+            }
+            return geoms;
+        }
+    }
+
+    public List<Geometry> getGeometriesIn( String tableName, Geometry intersectionGeometry ) throws Exception {
+        List<Geometry> geoms = new ArrayList<Geometry>();
+
+        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
+        String sql = "SELECT " + gCol.geometryColumnName + " FROM " + tableName;
+
+        if (intersectionGeometry != null) {
+            sql += " WHERE " + getSpatialindexGeometryWherePiece(tableName, null, intersectionGeometry);
+        }
+        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
+            while( rs.next() ) {
+                Geometry geometry = (Geometry) rs.getObject(1);
+                geoms.add(geometry);
+            }
+            return geoms;
+        }
     }
 
     public static void main( String[] args ) throws Exception {

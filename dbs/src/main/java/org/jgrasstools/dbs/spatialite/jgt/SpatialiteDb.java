@@ -33,7 +33,7 @@ import org.jgrasstools.dbs.compat.objects.ForeignKey;
 import org.jgrasstools.dbs.compat.objects.QueryResult;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.RasterCoverage;
-import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
+import org.jgrasstools.dbs.spatialite.SpatialiteCommonMethods;
 import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
 import org.jgrasstools.dbs.spatialite.SpatialiteWKBReader;
 import org.jgrasstools.dbs.utils.OsCheck;
@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKBReader;
 
 /**
  * A spatialite database.
@@ -133,15 +132,7 @@ public class SpatialiteDb extends ASpatialDb {
 
     @Override
     public void initSpatialMetadata( String options ) throws Exception {
-        if (options == null) {
-            options = "";
-        }
-        enableAutocommit(false);
-        String sql = "SELECT InitSpatialMetadata(" + options + ")";
-        try (IJGTStatement stmt = mConn.createStatement()) {
-            stmt.execute(sql);
-        }
-        enableAutocommit(true);
+        SpatialiteCommonMethods.initSpatialMetadata(this, options);
     }
 
     public String[] getDbInfo() throws Exception {
@@ -160,62 +151,12 @@ public class SpatialiteDb extends ASpatialDb {
 
     @Override
     public Envelope getTableBounds( String tableName ) throws Exception {
-        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-        String geomFieldName;
-        if (gCol != null) {
-            geomFieldName = gCol.geometryColumnName;
-            String trySql = "SELECT extent_min_x, extent_min_y, extent_max_x, extent_max_y FROM vector_layers_statistics WHERE Lower(table_name)=Lower('"
-                    + tableName + "') AND Lower(geometry_column)=Lower('" + geomFieldName + "')";
-            try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(trySql)) {
-                if (rs.next()) {
-                    double minX = rs.getDouble(1);
-                    double minY = rs.getDouble(2);
-                    double maxX = rs.getDouble(3);
-                    double maxY = rs.getDouble(4);
-
-                    Envelope env = new Envelope(minX, maxX, minY, maxY);
-                    if (env.getWidth() != 0.0 && env.getHeight() != 0.0) {
-                        return env;
-                    }
-                }
-            }
-        } else {
-            // try geometry if virtual table
-            geomFieldName = "geometry";
-        }
-
-        // OR DO FULL GEOMETRIES SCAN
-
-        String sql = "SELECT Min(MbrMinX(" + geomFieldName + ")) AS min_x, Min(MbrMinY(" + geomFieldName + ")) AS min_y,"
-                + "Max(MbrMaxX(" + geomFieldName + ")) AS max_x, Max(MbrMaxY(" + geomFieldName + ")) AS max_y " + "FROM "
-                + tableName;
-
-        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                double minX = rs.getDouble(1);
-                double minY = rs.getDouble(2);
-                double maxX = rs.getDouble(3);
-                double maxY = rs.getDouble(4);
-
-                Envelope env = new Envelope(minX, maxX, minY, maxY);
-                return env;
-            }
-            return null;
-        }
+        return SpatialiteCommonMethods.getTableBounds(this, tableName);
     }
 
-    /**
-     * Delete a geo-table with all attached indexes and stuff.
-     * 
-     * @param tableName
-     * @throws Exception
-     */
-    public void deleteGeoTable( String tableName ) throws Exception {
-        String sql = "SELECT DropGeoTable('" + tableName + "');";
-
-        try (IJGTStatement stmt = mConn.createStatement()) {
-            stmt.execute(sql);
-        }
+    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
+            int reprojectSrid ) throws Exception {
+        return SpatialiteCommonMethods.getTableRecordsMapIn(this, tableName, envelope, alsoPK_UID, limit, reprojectSrid);
     }
 
     @Override
@@ -231,6 +172,53 @@ public class SpatialiteDb extends ASpatialDb {
     @Override
     protected void logDebug( String message ) {
         logger.debug(message);
+    }
+
+    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
+        List<String> tableNames = getTables(doOrder);
+        HashMap<String, List<String>> tablesMap = SpatialiteTableNames.getTablesSorted(tableNames, doOrder);
+        return tablesMap;
+    }
+
+    public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 )
+            throws Exception {
+        return SpatialiteCommonMethods.getSpatialindexBBoxWherePiece(this, tableName, alias, x1, y1, x2, y2);
+    }
+
+    public String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry ) throws Exception {
+        return SpatialiteCommonMethods.getSpatialindexGeometryWherePiece(this, tableName, alias, geometry);
+    }
+
+    public GeometryColumn getGeometryColumnsForTable( String tableName ) throws Exception {
+        return SpatialiteCommonMethods.getGeometryColumnsForTable(mConn, tableName);
+    }
+
+    @Override
+    public List<String> getTables( boolean doOrder ) throws Exception {
+        return sqliteDb.getTables(doOrder);
+    }
+
+    @Override
+    public boolean hasTable( String tableName ) throws Exception {
+        return sqliteDb.hasTable(tableName);
+    }
+
+    @Override
+    public List<String[]> getTableColumns( String tableName ) throws Exception {
+        return sqliteDb.getTableColumns(tableName);
+    }
+
+    @Override
+    public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
+        return sqliteDb.getForeignKeys(tableName);
+    }
+
+    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws Exception {
+        return SpatialiteCommonMethods.getGeometriesIn(this, tableName, envelope);
+    }
+
+    public List<Geometry> getGeometriesIn( String tableName, Geometry intersectionGeometry ) throws Exception {
+        return SpatialiteCommonMethods.getGeometriesIn(this, tableName, intersectionGeometry);
     }
 
     /**
@@ -269,54 +257,17 @@ public class SpatialiteDb extends ASpatialDb {
         }
     }
 
-    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
-        List<String> tableNames = getTables(doOrder);
-        HashMap<String, List<String>> tablesMap = SpatialiteTableNames.getTablesSorted(tableNames, doOrder);
-        return tablesMap;
-    }
-
     /**
-     * Get the geometry column definition for a given table.
+     * Delete a geo-table with all attached indexes and stuff.
      * 
      * @param tableName
-     *            the table to check.
-     * @return the {@link SpatialiteGeometryColumns column info}.
      * @throws Exception
      */
-    public GeometryColumn getGeometryColumnsForTable( String tableName ) throws Exception {
-        String attachedStr = "";
-        if (tableName.indexOf('.') != -1) {
-            // if the tablename contains a dot, then it comes from an attached
-            // database
+    public void deleteGeoTable( String tableName ) throws Exception {
+        String sql = "SELECT DropGeoTable('" + tableName + "');";
 
-            // get the database name
-            String[] split = tableName.split("\\.");
-            attachedStr = split[0] + ".";
-            tableName = split[1];
-            // logger.debug(MessageFormat.format("Considering attached database:
-            // {0}", attachedStr));
-        }
-
-        String sql = "select " + SpatialiteGeometryColumns.F_TABLE_NAME + ", " //
-                + SpatialiteGeometryColumns.F_GEOMETRY_COLUMN + ", " //
-                + SpatialiteGeometryColumns.GEOMETRY_TYPE + "," //
-                + SpatialiteGeometryColumns.COORD_DIMENSION + ", " //
-                + SpatialiteGeometryColumns.SRID + ", " //
-                + SpatialiteGeometryColumns.SPATIAL_INDEX_ENABLED + " from " //
-                + attachedStr + SpatialiteGeometryColumns.TABLENAME + " where Lower(" + SpatialiteGeometryColumns.F_TABLE_NAME
-                + ")=Lower('" + tableName + "')";
-        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) {
-                SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();
-                gc.tableName = rs.getString(1);
-                gc.geometryColumnName = rs.getString(2);
-                gc.geometryType = rs.getInt(3);
-                gc.coordinatesDimension = rs.getInt(4);
-                gc.srid = rs.getInt(5);
-                gc.isSpatialIndexEnabled = rs.getInt(6);
-                return gc;
-            }
-            return null;
+        try (IJGTStatement stmt = mConn.createStatement()) {
+            stmt.execute(sql);
         }
     }
 
@@ -377,86 +328,6 @@ public class SpatialiteDb extends ASpatialDb {
     public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg )
             throws Exception {
         addGeometryXYColumnAndIndex(tableName, geomColName, geomType, epsg, false);
-    }
-
-    /**
-     * Get the where cause of a Spatialindex based BBOX query.
-     * 
-     * @param tableName
-     *            the name of the table.
-     * @param x1
-     *            west bound.
-     * @param y1
-     *            south bound.
-     * @param x2
-     *            east bound.
-     * @param y2
-     *            north bound.
-     * @return the sql piece.
-     * @throws Exception
-     */
-    public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 )
-            throws Exception {
-        String rowid = "";
-        if (alias == null) {
-            alias = "";
-            rowid = tableName + ".ROWID";
-        } else {
-            rowid = alias + ".ROWID";
-            alias = alias + ".";
-        }
-        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-        if (tableName.indexOf('.') != -1) {
-            // if the tablename contains a dot, then it comes from an attached
-            // database
-            tableName = "DB=" + tableName;
-        }
-
-        String sql = "ST_Intersects(" + alias + gCol.geometryColumnName + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2
-                + ")) = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
-                + "Lower(f_table_name) = Lower('" + tableName + "') AND " //
-                + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
-        return sql;
-    }
-
-    /**
-     * Get the where query piece based on a geometry intersection.
-     * 
-     * @param tableName
-     *            the table to query.
-     * @param alias
-     *            optinal alias.
-     * @param geometry
-     *            the geometry to intersect.
-     * @return the query piece.
-     * @throws Exception
-     */
-    public String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry ) throws Exception {
-        String rowid = "";
-        if (alias == null) {
-            alias = "";
-            rowid = tableName + ".ROWID";
-        } else {
-            rowid = alias + ".ROWID";
-            alias = alias + ".";
-        }
-
-        Envelope envelope = geometry.getEnvelopeInternal();
-        double x1 = envelope.getMinX();
-        double x2 = envelope.getMaxX();
-        double y1 = envelope.getMinY();
-        double y2 = envelope.getMaxY();
-        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-        if (tableName.indexOf('.') != -1) {
-            // if the tablename contains a dot, then it comes from an attached
-            // database
-            tableName = "DB=" + tableName;
-        }
-        String sql = "ST_Intersects(" + alias + gCol.geometryColumnName + ", " + "GeomFromText('" + geometry.toText() + "')"
-                + ") = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
-                + "Lower(f_table_name) = Lower('" + tableName + "') AND " //
-                + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
-        return sql;
     }
 
     public QueryResult getTableRecordsMapFromRawSql( String sql, int limit ) throws Exception {
@@ -565,26 +436,6 @@ public class SpatialiteDb extends ASpatialDb {
                 }
             }
         }
-    }
-
-    @Override
-    public List<String> getTables( boolean doOrder ) throws Exception {
-        return sqliteDb.getTables(doOrder);
-    }
-
-    @Override
-    public boolean hasTable( String tableName ) throws Exception {
-        return sqliteDb.hasTable(tableName);
-    }
-
-    @Override
-    public List<String[]> getTableColumns( String tableName ) throws Exception {
-        return sqliteDb.getTableColumns(tableName);
-    }
-
-    @Override
-    public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
-        return sqliteDb.getForeignKeys(tableName);
     }
 
 }

@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.jgrasstools.dbs.compat.objects.QueryResult;
-import org.jgrasstools.dbs.spatialite.SpatialiteWKBReader;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -199,112 +198,8 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @throws SQLException
      * @throws ParseException
      */
-    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
-            int reprojectSrid ) throws Exception {
-        QueryResult queryResult = new QueryResult();
-
-        GeometryColumn gCol = null;
-        try {
-            gCol = getGeometryColumnsForTable(tableName);
-            // TODO check if it is a virtual table
-        } catch (Exception e) {
-            // ignore
-        }
-        boolean hasGeom = gCol != null;
-
-        List<String[]> tableColumnsInfo = getTableColumns(tableName);
-        List<String> tableColumns = new ArrayList<>();
-        for( String[] info : tableColumnsInfo ) {
-            tableColumns.add(info[0]);
-        }
-        if (hasGeom) {
-            if (!tableColumns.remove(gCol.geometryColumnName)) {
-                String gColLower = gCol.geometryColumnName.toLowerCase();
-                int index = -1;
-                for( int i = 0; i < tableColumns.size(); i++ ) {
-                    String tableColumn = tableColumns.get(i);
-                    if (tableColumn.toLowerCase().equals(gColLower)) {
-                        index = i;
-                        break;
-                    }
-                }
-                if (index != -1) {
-                    tableColumns.remove(index);
-                }
-            }
-        }
-        if (!alsoPK_UID) {
-            if (!tableColumns.remove(PK_UID)) {
-                tableColumns.remove(PKUID);
-            }
-        }
-
-        String sql = "SELECT ";
-        List<String> items = new ArrayList<>();
-        for( int i = 0; i < tableColumns.size(); i++ ) {
-            items.add(tableColumns.get(i));
-        }
-        if (hasGeom) {
-            if (reprojectSrid == -1 || reprojectSrid == gCol.srid) {
-                items.add(gCol.geometryColumnName);
-            } else {
-                items.add("ST_Transform(" + gCol.geometryColumnName + "," + reprojectSrid + ") AS " + gCol.geometryColumnName);
-            }
-        }
-        String itemsWithComma = join(items);
-        sql += itemsWithComma;
-        sql += " FROM " + tableName;
-        if (envelope != null) {
-            double x1 = envelope.getMinX();
-            double y1 = envelope.getMinY();
-            double x2 = envelope.getMaxX();
-            double y2 = envelope.getMaxY();
-            sql += " WHERE "; //
-            sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
-        }
-        if (limit > 0) {
-            sql += " LIMIT " + limit;
-        }
-        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
-        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            IJGTResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
-
-            for( int i = 1; i <= columnCount; i++ ) {
-                String columnName = rsmd.getColumnName(i);
-                queryResult.names.add(columnName);
-                String columnTypeName = rsmd.getColumnTypeName(i);
-                queryResult.types.add(columnTypeName);
-                if (hasGeom && columnName.equals(gCol.geometryColumnName)) {
-                    queryResult.geometryIndex = i - 1;
-                }
-            }
-
-            while( rs.next() ) {
-                Object[] rec = new Object[columnCount];
-                for( int j = 1; j <= columnCount; j++ ) {
-                    if (hasGeom && queryResult.geometryIndex == j - 1) {
-                        byte[] geomBytes = rs.getBytes(j);
-                        Geometry geometry = wkbReader.read(geomBytes);
-                        rec[j - 1] = geometry;
-                    } else {
-                        Object object = rs.getObject(j);
-                        rec[j - 1] = object;
-                    }
-                }
-                queryResult.data.add(rec);
-            }
-            return queryResult;
-        }
-    }
-
-    private String join( List<String> items ) {
-        StringBuilder sb = new StringBuilder();
-        for( String item : items ) {
-            sb.append(",").append(item);
-        }
-        return sb.substring(1);
-    }
+    public abstract QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
+            int reprojectSrid ) throws Exception;
 
     /**
      * Get the geometries of a table inside a given envelope.
@@ -316,29 +211,19 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return The list of geometries intersecting the envelope.
      * @throws Exception
      */
-    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws Exception {
-        List<Geometry> geoms = new ArrayList<Geometry>();
+    public abstract List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws Exception;
 
-        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-        String sql = "SELECT " + gCol.geometryColumnName + " FROM " + tableName;
-
-        if (envelope != null) {
-            double x1 = envelope.getMinX();
-            double y1 = envelope.getMinY();
-            double x2 = envelope.getMaxX();
-            double y2 = envelope.getMaxY();
-            sql += " WHERE " + getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
-        }
-        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
-        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                byte[] geomBytes = rs.getBytes(1);
-                Geometry geometry = wkbReader.read(geomBytes);
-                geoms.add(geometry);
-            }
-            return geoms;
-        }
-    }
+    /**
+     * Get the geometries of a table intersecting a given geometry.
+     * 
+     * @param tableName
+     *            the table name.
+     * @param geometry
+     *            the geometry to check.
+     * @return The list of geometries intersecting the geometry.
+     * @throws Exception
+     */
+    public abstract List<Geometry> getGeometriesIn( String tableName, Geometry geometry ) throws Exception;
 
     /**
      * Get the geojson of a table inside a given envelope.
