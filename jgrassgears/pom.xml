@@ -151,17 +151,17 @@
 			<artifactId>gt-graph</artifactId>
 			<version>${gt.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.geotools.jdbc</groupId>
-			<artifactId>gt-jdbc-h2</artifactId>
-			<version>${gt.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>net.sourceforge.hatbox</groupId>
-					<artifactId>hatbox</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.geotools.jdbc</groupId> -->
+<!-- 			<artifactId>gt-jdbc-h2</artifactId> -->
+<!-- 			<version>${gt.version}</version> -->
+<!-- 			<exclusions> -->
+<!-- 				<exclusion> -->
+<!-- 					<groupId>net.sourceforge.hatbox</groupId> -->
+<!-- 					<artifactId>hatbox</artifactId> -->
+<!-- 				</exclusion> -->
+<!-- 			</exclusions> -->
+<!-- 		</dependency> -->
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
