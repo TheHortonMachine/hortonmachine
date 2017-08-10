@@ -14,13 +14,13 @@ import org.jgrasstools.dbs.compat.EDb;
 import org.jgrasstools.dbs.compat.ISpatialTableNames;
 import org.jgrasstools.dbs.compat.objects.ForeignKey;
 import org.jgrasstools.dbs.compat.objects.QueryResult;
-import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 
 /**
  * Main tests for normal dbs
@@ -37,7 +37,7 @@ public class TestSpatialDbsMain {
     /**
      * The db type to test (set to h2gis for online tests).
      */
-    public static final EDb DB_TYPE = EDb.H2GIS;
+    public static final EDb DB_TYPE = EDb.SPATIALITE;
     private static ASpatialDb db;
 
     @BeforeClass
@@ -241,25 +241,25 @@ public class TestSpatialDbsMain {
         assertEquals(3, geomsList.size());
     }
 
-    // @Test
-    // public void testGetGeometries() throws Exception {
-    // List<Geometry> intersecting = db.getGeometriesIn(TABLE1, (Envelope) null);
-    // assertEquals(3, intersecting.size());
-    // }
+    @Test
+    public void testGetGeometries() throws Exception {
+        List<Geometry> intersecting = db.getGeometriesIn(MPOLY_TABLE, (Envelope) null);
+        assertEquals(3, intersecting.size());
+    }
 
-    // @Test
-    // public void testIntersectsEnvelope() throws Exception {
-    // Envelope bounds = new Envelope(5, 80, 5, 80);
-    // List<Geometry> intersecting = db.getGeometriesIn(TABLE1, bounds);
-    // assertEquals(3, intersecting.size());
-    // }
-    //
-    // @Test
-    // public void testIntersectsPolygon() throws Exception {
-    // String polygonStr = "POLYGON ((71 70, 40 70, 40 40, 5 40, 5 15, 15 15, 15 4, 50 4, 71 70))";
-    // Geometry geom = new WKTReader().read(polygonStr);
-    // List<Geometry> intersecting = db.getGeometriesIn(TABLE1, geom);
-    // assertEquals(2, intersecting.size());
-    // }
+    @Test
+    public void testIntersectsEnvelope() throws Exception {
+        Envelope bounds = new Envelope(5, 80, 5, 80);
+        List<Geometry> intersecting = db.getGeometriesIn(MPOLY_TABLE, bounds);
+        assertEquals(3, intersecting.size());
+    }
+
+    @Test
+    public void testIntersectsPolygon() throws Exception {
+        String polygonStr = "POLYGON ((71 70, 40 70, 40 40, 5 40, 5 15, 15 15, 15 4, 50 4, 71 70))";
+        Geometry geom = new WKTReader().read(polygonStr);
+        List<Geometry> intersecting = db.getGeometriesIn(MPOLY_TABLE, geom);
+        assertEquals(2, intersecting.size());
+    }
 
 }

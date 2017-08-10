@@ -329,7 +329,7 @@ public class SpatialiteCommonMethods {
 
         String sql = "ST_Intersects(" + alias + gCol.geometryColumnName + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2
                 + ")) = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
-                + "Lower(f_table_name) = Lower('" + tableName + "') AND " //
+                + "f_table_name = '" + tableName + "' AND " //
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
     }
@@ -358,7 +358,7 @@ public class SpatialiteCommonMethods {
         }
         String sql = "ST_Intersects(" + alias + gCol.geometryColumnName + ", " + "GeomFromText('" + geometry.toText() + "')"
                 + ") = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
-                + "Lower(f_table_name) = Lower('" + tableName + "') AND " //
+                + "f_table_name = '" + tableName + "' AND " //
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
     }
