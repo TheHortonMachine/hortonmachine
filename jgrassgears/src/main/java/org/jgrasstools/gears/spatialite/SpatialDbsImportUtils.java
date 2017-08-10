@@ -18,6 +18,7 @@
 package org.jgrasstools.gears.spatialite;
 
 import java.io.File;
+import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,12 +32,15 @@ import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.h2gis.utilities.SFSUtilities;
+import org.h2gis.utilities.TableLocation;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.compat.objects.QueryResult;
+import org.jgrasstools.dbs.h2gis.H2GisDb;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -63,8 +67,8 @@ import com.vividsolutions.jts.geom.Polygon;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class SpatialiteImportUtils {
-    private static final Logger logger = LoggerFactory.getLogger(SpatialiteImportUtils.class);
+public class SpatialDbsImportUtils {
+    private static final Logger logger = LoggerFactory.getLogger(SpatialDbsImportUtils.class);
 
     /**
      * Create a spatial table using a shapefile as schema.
@@ -101,8 +105,6 @@ public class SpatialiteImportUtils {
             }
         }
 
-        db.createTable(shpName, attrSql.toArray(new String[0]));
-
         String typeString = null;
         org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
         Class< ? > binding = type.getBinding();
@@ -125,7 +127,23 @@ public class SpatialiteImportUtils {
                 codeFromCrs = "4326"; // fallback on 4326
             }
             codeFromCrs = codeFromCrs.replaceFirst("EPSG:", "");
-            ((SpatialiteDb) db).addGeometryXYColumnAndIndex(shpName, null, typeString, codeFromCrs, false);
+
+            if (db instanceof SpatialiteDb) {
+                SpatialiteDb spatialiteDb = (SpatialiteDb) db;
+                spatialiteDb.createTable(shpName, attrSql.toArray(new String[0]));
+                spatialiteDb.addGeometryXYColumnAndIndex(shpName, null, typeString, codeFromCrs, false);
+            } else if (db instanceof H2GisDb) {
+                H2GisDb spatialiteDb = (H2GisDb) db;
+                String typeStringExtra = typeString;
+                // String typeStringExtra = "GEOMETRY(" + typeString + "," + codeFromCrs + ")";
+                attrSql.add("the_geom " + typeStringExtra);
+                String[] array = attrSql.toArray(new String[0]);
+                spatialiteDb.createTable(shpName, array);
+                spatialiteDb.addSrid(shpName, codeFromCrs);
+                spatialiteDb.createSpatialIndex(shpName, null);
+            }
+        } else {
+            db.createTable(shpName, attrSql.toArray(new String[0]));
         }
 
         return shpName;
@@ -156,29 +174,40 @@ public class SpatialiteImportUtils {
         List<String[]> tableInfo = db.getTableColumns(tableName);
         List<String> tableColumns = new ArrayList<>();
         for( String[] item : tableInfo ) {
-            tableColumns.add(item[0]);
+            tableColumns.add(item[0].toUpperCase());
         }
         GeometryColumn geometryColumns = db.getGeometryColumnsForTable(tableName);
         String gCol = geometryColumns.geometryColumnName;
 
         int epsg = geometryColumns.srid;
-        CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg("EPSG:" + epsg);
-        ReprojectingFeatureCollection repFeatures = new ReprojectingFeatureCollection(features, crs);
-        SimpleFeatureIterator featureIterator = repFeatures.features();
+        CoordinateReferenceSystem crs = null;
+        try {
+            crs = CrsUtilities.getCrsFromEpsg("EPSG:" + epsg);
+        } catch (Exception e1) {
+            // ignore and try without
+        }
+        SimpleFeatureIterator featureIterator;
+        if (crs != null) {
+            ReprojectingFeatureCollection repFeatures = new ReprojectingFeatureCollection(features, crs);
+            featureIterator = repFeatures.features();
+        } else {
+            featureIterator = features.features();
+        }
 
         String valueNames = "";
         String qMarks = "";
         for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
-            String attrName = attributeDescriptor.getLocalName();
+            String attrName = attributeDescriptor.getLocalName().toUpperCase();
             if (attrName.equals(ASpatialDb.PK_UID)) {
                 continue;
             }
             if (attributeDescriptor instanceof GeometryDescriptor) {
                 valueNames += "," + gCol;
-                qMarks += ",GeomFromText(?, " + epsg + ")";
+                qMarks += ",ST_GeomFromText(?, " + epsg + ")";
             } else {
                 if (!tableColumns.contains(attrName)) {
-                    pm.errorMessage("The imported shapefile doesn't seem to match the table's schema.");
+                    pm.errorMessage(
+                            "The imported shapefile doesn't seem to match the table's schema. Doesn't exist: " + attrName);
                     return false;
                 }
                 valueNames += "," + attrName;
@@ -213,6 +242,9 @@ public class SpatialiteImportUtils {
                             pStmt.setString(iPlus, (String) object);
                         } else if (object instanceof Geometry) {
                             pStmt.setString(iPlus, ((Geometry) object).toText());
+                        } else if (object instanceof Clob) {
+                            String string = ((Clob) object).toString();
+                            pStmt.setString(iPlus, string);
                         } else {
                             pStmt.setString(iPlus, object.toString());
                         }
@@ -244,7 +276,11 @@ public class SpatialiteImportUtils {
         }
 
         try (IJGTStatement pStmt = conn.createStatement()) {
-            pStmt.executeQuery("Select updateLayerStatistics");
+            try {
+                pStmt.executeQuery("Select updateLayerStatistics();");
+            } catch (Exception e) {
+                // ignore
+            }
         }
         return noErrors;
     }
@@ -275,6 +311,8 @@ public class SpatialiteImportUtils {
         if (geometryIndex == -1) {
             throw new IllegalArgumentException("Not a geometric layer.");
         }
+        Geometry sampleGeom = (Geometry) tableRecords.data.get(0)[geometryIndex];
+
         List<String> names = tableRecords.names;
         List<String> types = tableRecords.types;
 
@@ -284,8 +322,7 @@ public class SpatialiteImportUtils {
 
         for( int i = 0; i < names.size(); i++ ) {
             if (i == geometryIndex) {
-                ESpatialiteGeometryType geomType = ESpatialiteGeometryType.forValue(geometryColumn.geometryType);
-                Class< ? > geometryClass = geomType.getGeometryClass();
+                Class< ? > geometryClass = sampleGeom.getClass();
                 b.add(geometryColumn.geometryColumnName, geometryClass);
                 continue;
             }

@@ -29,7 +29,7 @@ import javax.swing.JOptionPane;
 import org.jgrasstools.dbs.compat.objects.ColumnLevel;
 import org.jgrasstools.dbs.compat.objects.QueryResult;
 import org.jgrasstools.dbs.compat.objects.TableLevel;
-import org.jgrasstools.gears.spatialite.SpatialiteImportUtils;
+import org.jgrasstools.gears.spatialite.SpatialDbsImportUtils;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gui.console.LogConsoleController;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
@@ -244,7 +244,7 @@ public class SqlTemplatesAndActions {
                     return;
                 }
                 try {
-                    SpatialiteImportUtils.createTableFromShp(spatialiteViewer.currentConnectedDatabase, openFiles[0]);
+                    SpatialDbsImportUtils.createTableFromShp(spatialiteViewer.currentConnectedDatabase, openFiles[0]);
                     spatialiteViewer.refreshDatabaseTree();
                 } catch (Exception e1) {
                     logger.error("ERROR", e1);
@@ -333,7 +333,7 @@ public class SqlTemplatesAndActions {
                     boolean hasErrors = false;
                     logConsole.beginProcess("Importing data...");
                     try {
-                        hasErrors = !SpatialiteImportUtils.importShapefile(spatialiteViewer.currentConnectedDatabase,
+                        hasErrors = !SpatialDbsImportUtils.importShapefile(spatialiteViewer.currentConnectedDatabase,
                                 openFiles[0], spatialiteViewer.currentSelectedTable.tableName, -1, spatialiteViewer.pm);
                     } catch (Exception ex) {
                         logger.error("Error importing data from shapefile", ex);

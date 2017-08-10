@@ -112,6 +112,8 @@ public class SpatialiteWKBReader {
     private ByteOrderDataInStream dis = new ByteOrderDataInStream();
     private double[] ordValues;
 
+    private int SRID;
+
     public SpatialiteWKBReader() {
         this(new GeometryFactory());
     }
@@ -149,11 +151,11 @@ public class SpatialiteWKBReader {
      */
     public Geometry read( InStream is ) throws IOException, ParseException {
         dis.setInStream(is);
-        Geometry g = readGeometry();
+        Geometry g = readSpatialiteGeometry();
         return g;
     }
 
-    private Geometry readGeometry() throws IOException, ParseException {
+    private Geometry readSpatialiteGeometry() throws IOException, ParseException {
         int start = dis.readByte();
         if (start != 0x00) {
             throw new IllegalArgumentException("Not a geometry, start byte != 0x00");
@@ -164,7 +166,7 @@ public class SpatialiteWKBReader {
         int byteOrder = byteOrderWKB == WKBConstants.wkbNDR ? ByteOrderValues.LITTLE_ENDIAN : ByteOrderValues.BIG_ENDIAN;
         dis.setOrder(byteOrder);
 
-        int SRID = dis.readInt();
+        SRID = dis.readInt();
 
         // 6 - 13 MBR_MIN_X a double value [little- big-endian ordered, accordingly with the
         // precedent one]
@@ -172,14 +174,10 @@ public class SpatialiteWKBReader {
         // 14 - 21 MBR_MIN_Y a double value corresponding to the MBR minimum Y coordinate
         // 22 - 29 MBR_MAX_X a double value corresponding to the MBR maximum X coordinate
         // 30 - 37 MBR_MAX_Y a double value corresponding to the MBR maximum Y coordinate
-        // double mbrMinX =
-        dis.readDouble();
-        // double mbrMinY =
-        dis.readDouble();
-        // double mbrMaxX =
-        dis.readDouble();
-        // double mbrMaxY =
-        dis.readDouble();
+         double mbrMinX = dis.readDouble();
+         double mbrMinY = dis.readDouble();
+         double mbrMaxX = dis.readDouble();
+         double mbrMaxY = dis.readDouble();
 
         // // 38 MBR_END [hex 7C] a GEOMETRY encoded BLOB value must always have an 0x7C byte in
         // this
@@ -198,6 +196,67 @@ public class SpatialiteWKBReader {
         // only allocate ordValues buffer if necessary
         if (ordValues == null || ordValues.length < inputDimension)
             ordValues = new double[inputDimension];
+
+        Geometry geom = null;
+        switch( geometryType ) {
+        case WKBConstants.wkbPoint:
+            geom = readPoint();
+            break;
+        case WKBConstants.wkbLineString:
+            geom = readLineString();
+            break;
+        case WKBConstants.wkbPolygon:
+            geom = readPolygon();
+            break;
+        case WKBConstants.wkbMultiPoint:
+            geom = readMultiPoint();
+            break;
+        case WKBConstants.wkbMultiLineString:
+            geom = readMultiLineString();
+            break;
+        case WKBConstants.wkbMultiPolygon:
+            geom = readMultiPolygon();
+            break;
+        case WKBConstants.wkbGeometryCollection:
+            geom = readGeometryCollection();
+            break;
+        default:
+            throw new ParseException("Unknown WKB type " + geometryType);
+        }
+        setSRID(geom, SRID);
+        return geom;
+    }
+
+    private Geometry readGeometry() throws IOException, ParseException {
+//        // determine byte order
+//        byte byteOrderWKB = dis.readByte();
+//        // always set byte order, since it may change from geometry to geometry
+//        int byteOrder = byteOrderWKB == WKBConstants.wkbNDR ? ByteOrderValues.LITTLE_ENDIAN : ByteOrderValues.BIG_ENDIAN;
+//        dis.setOrder(byteOrder);
+//
+//        int typeInt = dis.readInt();
+//        int geometryType = typeInt & 0xff;
+//        // determine if Z values are present
+//        boolean hasZ = (typeInt & 0x80000000) != 0;
+//        inputDimension = hasZ ? 3 : 2;
+//        // determine if SRIDs are present
+//        boolean hasSRID = (typeInt & 0x20000000) != 0;
+//
+//        int SRID = 0;
+//        if (hasSRID) {
+//            SRID = dis.readInt();
+//        }
+//
+//        // only allocate ordValues buffer if necessary
+//        if (ordValues == null || ordValues.length < inputDimension)
+//            ordValues = new double[inputDimension];
+        
+        int entity = dis.readByte();
+        if (entity != 0x69) {
+            throw new IllegalArgumentException("Not a geometry, entity != 0x69");
+        }
+        int geometryType = dis.readInt();
+        
 
         Geometry geom = null;
         switch( geometryType ) {

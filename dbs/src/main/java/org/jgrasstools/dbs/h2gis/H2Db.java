@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jgrasstools.dbs.compat.ADb;
+import org.jgrasstools.dbs.compat.EDb;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.compat.objects.ForeignKey;
@@ -60,7 +61,7 @@ public class H2Db extends ADb {
 
         boolean dbExists = false;
         if (dbPath != null) {
-            File dbFile = new File(dbPath);
+            File dbFile = new File(dbPath + "." + EDb.H2.getExtension());
             if (dbFile.exists()) {
                 if (mPrintInfos)
                     logger.info("Database exists");
@@ -78,7 +79,7 @@ public class H2Db extends ADb {
         }
         return dbExists;
     }
-    
+
     public Connection getJdbcConnection() {
         return jdbcConn;
     }
@@ -114,7 +115,7 @@ public class H2Db extends ADb {
     @Override
     public List<String> getTables( boolean doOrder ) throws Exception {
         List<String> tableNames = new ArrayList<String>();
-        String orderBy = " ORDER BY name";
+        String orderBy = " ORDER BY TABLE_NAME";
         if (!doOrder) {
             orderBy = "";
         }

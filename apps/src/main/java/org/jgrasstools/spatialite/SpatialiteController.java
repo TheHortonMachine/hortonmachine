@@ -69,6 +69,7 @@ import javax.swing.tree.TreePath;
 
 import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.EDb;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.objects.ColumnLevel;
 import org.jgrasstools.dbs.compat.objects.DbLevel;
@@ -77,6 +78,7 @@ import org.jgrasstools.dbs.compat.objects.QueryResult;
 import org.jgrasstools.dbs.compat.objects.TableLevel;
 import org.jgrasstools.dbs.compat.objects.TypeLevel;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
+import org.jgrasstools.dbs.spatialite.SpatialiteCommonMethods;
 import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
 import org.jgrasstools.dbs.utils.CommonQueries;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
@@ -359,7 +361,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                                         .getTableRecordsMapIn(currentSelectedTable.tableName, null, true, 20, -1);
                                 loadDataViewer(queryResult);
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                logger.error("ERROR", e);
                             }
                         } else {
                             currentSelectedTable = null;
@@ -895,8 +897,13 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                 logConsole.beginProcess("Create new database");
 
                 try {
-                    currentConnectedDatabase = new GTSpatialiteThreadsafeDb();
-                    currentConnectedDatabase.open(selectedFile.getAbsolutePath());
+                    String dbfilePath = selectedFile.getAbsolutePath();
+                    if (dbfilePath.endsWith(EDb.H2GIS.getExtension())) {
+                        currentConnectedDatabase = EDb.H2GIS.getSpatialDb();
+                    } else {
+                        currentConnectedDatabase = new GTSpatialiteThreadsafeDb();
+                    }
+                    currentConnectedDatabase.open(dbfilePath);
                     currentConnectedDatabase.initSpatialMetadata(null);
 
                     DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
@@ -959,7 +966,11 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                 logConsole.beginProcess("Open database");
 
                 try {
-                    currentConnectedDatabase = new GTSpatialiteThreadsafeDb();
+                    if (SpatialiteCommonMethods.isSqliteFile(selectedFile[0])) {
+                        currentConnectedDatabase = new GTSpatialiteThreadsafeDb();
+                    } else {
+                        currentConnectedDatabase = EDb.H2GIS.getSpatialDb();
+                    }
                     currentConnectedDatabase.open(selectedFile[0].getAbsolutePath());
 
                     DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);

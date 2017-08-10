@@ -18,6 +18,7 @@
 package org.jgrasstools.dbs.spatialite.android;
 
 import java.io.File;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +72,11 @@ public class GPSpatialiteDb extends ASpatialDb {
     }
 
     @Override
+    public Connection getJdbcConnection() {
+        throw new IllegalArgumentException("Android drivers do not support this method.");
+    }
+
+    @Override
     public void initSpatialMetadata( String options ) throws Exception {
         SpatialiteCommonMethods.initSpatialMetadata(this, options);
     }
@@ -88,6 +94,11 @@ public class GPSpatialiteDb extends ASpatialDb {
             }
             return info;
         }
+    }
+
+    public void createSpatialTable( String tableName, int tableSrid, String geometryFieldData, String[] fieldData,
+            String[] foreignKeys ) throws Exception {
+        SpatialiteCommonMethods.createSpatialTable(this, tableName, tableSrid, geometryFieldData, fieldData, foreignKeys);
     }
 
     @Override
@@ -260,4 +271,15 @@ public class GPSpatialiteDb extends ASpatialDb {
     public List<Geometry> getGeometriesIn( String tableName, Geometry intersectionGeometry ) throws Exception {
         return SpatialiteCommonMethods.getGeometriesIn(this, tableName, intersectionGeometry);
     }
+
+    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg,
+            boolean avoidIndex ) throws Exception {
+        SpatialiteCommonMethods.addGeometryXYColumnAndIndex(this, tableName, geomColName, geomType, epsg, avoidIndex);
+    }
+
+    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg )
+            throws Exception {
+        addGeometryXYColumnAndIndex(tableName, geomColName, geomType, epsg, false);
+    }
+
 }

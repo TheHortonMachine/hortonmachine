@@ -20,6 +20,8 @@ package org.jgrasstools.dbs.spatialite.jgt;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.sql.Clob;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -130,6 +132,10 @@ public class SpatialiteDb extends ASpatialDb {
         return dbExists;
     }
 
+    public Connection getJdbcConnection() {
+        return sqliteDb.getJdbcConnection();
+    }
+
     @Override
     public void initSpatialMetadata( String options ) throws Exception {
         SpatialiteCommonMethods.initSpatialMetadata(this, options);
@@ -147,6 +153,11 @@ public class SpatialiteDb extends ASpatialDb {
             }
             return info;
         }
+    }
+
+    public void createSpatialTable( String tableName, int tableSrid, String geometryFieldData, String[] fieldData,
+            String[] foreignKeys ) throws Exception {
+        SpatialiteCommonMethods.createSpatialTable(this, tableName, tableSrid, geometryFieldData, fieldData, foreignKeys);
     }
 
     @Override
@@ -271,60 +282,11 @@ public class SpatialiteDb extends ASpatialDb {
         }
     }
 
-    /**
-     * Adds a geometry column to a table.
-     * 
-     * @param tableName
-     *            the table name.
-     * @param geomColName
-     *            the geometry column name.
-     * @param geomType
-     *            the geometry type (ex. LINESTRING);
-     * @param epsg
-     *            the optional epsg code (default is 4326);
-     * @param avoidIndex if <code>true</code>, the index is not created.
-     * @throws Exception
-     */
     public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg,
             boolean avoidIndex ) throws Exception {
-        String epsgStr = "4326";
-        if (epsg != null) {
-            epsgStr = epsg;
-        }
-        String geomTypeStr = "LINESTRING";
-        if (geomType != null) {
-            geomTypeStr = geomType;
-        }
-
-        if (geomColName == null) {
-            geomColName = defaultGeomFieldName;
-        }
-
-        try (IJGTStatement stmt = mConn.createStatement()) {
-            String sql = "SELECT AddGeometryColumn('" + tableName + "','" + geomColName + "', " + epsgStr + ", '" + geomTypeStr
-                    + "', 'XY')";
-            stmt.execute(sql);
-
-            if (!avoidIndex) {
-                sql = "SELECT CreateSpatialIndex('" + tableName + "', '" + geomColName + "');";
-                stmt.execute(sql);
-            }
-        }
+        SpatialiteCommonMethods.addGeometryXYColumnAndIndex(this, tableName, geomColName, geomType, epsg, avoidIndex);
     }
 
-    /**
-     * Adds a geometry column to a table.
-     * 
-     * @param tableName
-     *            the table name.
-     * @param geomColName
-     *            the geometry column name.
-     * @param geomType
-     *            the geometry type (ex. LINESTRING);
-     * @param epsg
-     *            the optional epsg code (default is 4326);
-     * @throws Exception
-     */
     public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg )
             throws Exception {
         addGeometryXYColumnAndIndex(tableName, geomColName, geomType, epsg, false);
@@ -357,6 +319,9 @@ public class SpatialiteDb extends ASpatialDb {
                         rec[j - 1] = geometry;
                     } else {
                         Object object = rs.getObject(j);
+                        if (object instanceof Clob) {
+                            object = rs.getString(j);
+                        }
                         rec[j - 1] = object;
                     }
                 }
@@ -417,6 +382,9 @@ public class SpatialiteDb extends ASpatialDb {
                             } catch (Exception e) {
                                 // write it as it comes
                                 Object object = rs.getObject(j);
+                                if (object instanceof Clob) {
+                                    object = rs.getString(j);
+                                }
                                 if (object != null) {
                                     bw.write(object.toString());
                                 } else {
@@ -425,6 +393,9 @@ public class SpatialiteDb extends ASpatialDb {
                             }
                         } else {
                             Object object = rs.getObject(j);
+                            if (object instanceof Clob) {
+                                object = rs.getString(j);
+                            }
                             if (object != null) {
                                 bw.write(object.toString());
                             } else {

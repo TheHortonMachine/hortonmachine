@@ -54,6 +54,23 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
     public abstract boolean open( String dbPath ) throws Exception;
 
     /**
+     * Create a new spatial table.
+     * 
+     * @param tableName
+     *            the table name.
+     * @param tableSrid the table's epsg code.
+     * @param geometryFieldData the data for the geometry column, ex. the_geom MULTIPOLYGON
+     * @param fieldData
+     *            the data for each the field (ex. id INTEGER NOT NULL PRIMARY
+     *            KEY).
+     * @param foreignKeys
+     *            foreign keys definitions, if available (ex. FOREIGN KEY (table1id) REFERENCES table1(id)).
+     * @throws SQLException
+     */
+    public abstract void createSpatialTable( String tableName, int tableSrid, String geometryFieldData, String[] fieldData,
+            String[] foreignKeys ) throws Exception;
+
+    /**
      * Create Spatial Metadata initialize SPATIAL_REF_SYS and GEOMETRY_COLUMNS.
      * 
      * <p>Possible options for spatialite are:

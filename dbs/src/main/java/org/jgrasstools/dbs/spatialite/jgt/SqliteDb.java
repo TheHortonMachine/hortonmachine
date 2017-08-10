@@ -40,6 +40,7 @@ import org.sqlite.SQLiteConfig;
  */
 public class SqliteDb extends ADb {
     private static final Logger logger = LoggerFactory.getLogger(SqliteDb.class);
+    private Connection jdbcConn;
 
     static {
         try {
@@ -68,14 +69,17 @@ public class SqliteDb extends ADb {
         // absolutely required by SpatiaLite
         SQLiteConfig config = new SQLiteConfig();
         config.enableLoadExtension(true);
-        // create a database connection
-        Connection tmpConn = DriverManager.getConnection("jdbc:sqlite:" + dbPath, config.toProperties());
-        mConn = new JGTConnection(tmpConn);
+        jdbcConn = DriverManager.getConnection("jdbc:sqlite:" + dbPath, config.toProperties());
+        mConn = new JGTConnection(jdbcConn);
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
             logger.info("SQLite Version: " + dbInfo[0]);
         }
         return dbExists;
+    }
+    
+    public Connection getJdbcConnection() {
+        return jdbcConn;
     }
 
     public String[] getDbInfo() throws Exception {

@@ -20,6 +20,7 @@ package org.jgrasstools.dbs.compat;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -59,6 +60,13 @@ public abstract class ADb implements AutoCloseable {
     public String getDatabasePath() {
         return mDbPath;
     }
+    
+    /**
+     * Get the original jdbc connection.
+     * 
+     * @return the jdbc connection.
+     */
+    public abstract Connection getJdbcConnection();
 
     /**
      * Toggle autocommit mode.
@@ -85,7 +93,7 @@ public abstract class ADb implements AutoCloseable {
      * @return the string array of database version information.
      * @throws SQLException
      */
-    public abstract String[] getDbInfo() throws Exception ;
+    public abstract String[] getDbInfo() throws Exception;
 
     /**
      * Create a new table.
@@ -111,6 +119,23 @@ public abstract class ADb implements AutoCloseable {
 
         try (IJGTStatement stmt = mConn.createStatement()) {
             stmt.execute(sb.toString());
+        }
+    }
+
+    /**
+     * Create a spatial index.
+     * 
+     * @param tableName the table name.
+     * @param geomColumnName the geometry column name.
+     * @throws Exception
+     */
+    public void createSpatialIndex( String tableName, String geomColumnName ) throws Exception {
+        if (geomColumnName == null) {
+            geomColumnName = "the_geom";
+        }
+        String sql = "CREATE SPATIAL INDEX ON " + tableName + "(" + geomColumnName + ");";
+        try (IJGTStatement stmt = mConn.createStatement()) {
+            stmt.execute(sql.toString());
         }
     }
 
@@ -190,7 +215,7 @@ public abstract class ADb implements AutoCloseable {
      * @return the list of column [name, type, pk].
      * @throws SQLException
      */
-    public abstract List<String[]> getTableColumns( String tableName ) throws Exception ;
+    public abstract List<String[]> getTableColumns( String tableName ) throws Exception;
 
     /**
      * Get the foreign keys from a table.

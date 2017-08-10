@@ -17,6 +17,9 @@
  */
 package org.jgrasstools.dbs.spatialite;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.sql.Clob;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +44,29 @@ import com.vividsolutions.jts.io.ParseException;
  */
 public class SpatialiteCommonMethods {
 
+    public static boolean isSqliteFile( File file ) throws Exception {
+        /*
+         * https://www.sqlite.org/fileformat.html
+         * 
+         * 53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00
+         */
+        String hexHeader = "53514c69746520666f726d6174203300";
+        byte[] headerBytes = DbsUtilities.hexStringToByteArray(hexHeader);
+        try (FileInputStream fis = new FileInputStream(file)) {
+            for( int i = 0; i < 16; i++ ) {
+                int read = fis.read();
+                if (headerBytes[i] != read) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static void main( String[] args ) throws Exception {
+        System.out.println(isSqliteFile(new File("/tmp/jgt-dbs-testdbsmain.sqlite")));
+    }
+
     public static QueryResult getTableRecordsMapIn( ASpatialDb db, String tableName, Envelope envelope, boolean alsoPK_UID,
             int limit, int reprojectSrid ) throws Exception, ParseException {
         QueryResult queryResult = new QueryResult();
@@ -57,11 +83,11 @@ public class SpatialiteCommonMethods {
         List<String[]> tableColumnsInfo = db.getTableColumns(tableName);
         List<String> tableColumns = new ArrayList<>();
         for( String[] info : tableColumnsInfo ) {
-            tableColumns.add(info[0]);
+            tableColumns.add(info[0].toLowerCase());
         }
         if (hasGeom) {
-            if (!tableColumns.remove(gCol.geometryColumnName)) {
-                String gColLower = gCol.geometryColumnName.toLowerCase();
+            String gColLower = gCol.geometryColumnName.toLowerCase();
+            if (!tableColumns.remove(gColLower)) {
                 int index = -1;
                 for( int i = 0; i < tableColumns.size(); i++ ) {
                     String tableColumn = tableColumns.get(i);
@@ -87,10 +113,11 @@ public class SpatialiteCommonMethods {
             items.add(tableColumns.get(i));
         }
         if (hasGeom) {
+            String gColLower = gCol.geometryColumnName.toLowerCase();
             if (reprojectSrid == -1 || reprojectSrid == gCol.srid) {
-                items.add(gCol.geometryColumnName);
+                items.add(gColLower);
             } else {
-                items.add("ST_Transform(" + gCol.geometryColumnName + "," + reprojectSrid + ") AS " + gCol.geometryColumnName);
+                items.add("ST_Transform(" + gColLower + "," + reprojectSrid + ") AS " + gColLower);
             }
         }
         String itemsWithComma = DbsUtilities.joinByComma(items);
@@ -117,7 +144,7 @@ public class SpatialiteCommonMethods {
                 queryResult.names.add(columnName);
                 String columnTypeName = rsmd.getColumnTypeName(i);
                 queryResult.types.add(columnTypeName);
-                if (hasGeom && columnName.equals(gCol.geometryColumnName)) {
+                if (hasGeom && columnName.toLowerCase().equals(gCol.geometryColumnName.toLowerCase())) {
                     queryResult.geometryIndex = i - 1;
                 }
             }
@@ -131,6 +158,9 @@ public class SpatialiteCommonMethods {
                         rec[j - 1] = geometry;
                     } else {
                         Object object = rs.getObject(j);
+                        if (object instanceof Clob) {
+                            object = rs.getString(j);
+                        }
                         rec[j - 1] = object;
                     }
                 }
@@ -331,5 +361,75 @@ public class SpatialiteCommonMethods {
                 + "Lower(f_table_name) = Lower('" + tableName + "') AND " //
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
+    }
+
+    /**
+     * Adds a geometry column to a table.
+     * 
+     * @param tableName
+     *            the table name.
+     * @param geomColName
+     *            the geometry column name.
+     * @param geomType
+     *            the geometry type (ex. LINESTRING);
+     * @param epsg
+     *            the optional epsg code (default is 4326);
+     * @param avoidIndex if <code>true</code>, the index is not created.
+     * @throws Exception
+     */
+    public static void addGeometryXYColumnAndIndex( ASpatialDb db, String tableName, String geomColName, String geomType,
+            String epsg, boolean avoidIndex ) throws Exception {
+        String epsgStr = "4326";
+        if (epsg != null) {
+            epsgStr = epsg;
+        }
+        String geomTypeStr = "LINESTRING";
+        if (geomType != null) {
+            geomTypeStr = geomType;
+        }
+
+        if (geomColName == null) {
+            geomColName = ASpatialDb.defaultGeomFieldName;
+        }
+
+        try (IJGTStatement stmt = db.getConnection().createStatement()) {
+            String sql = "SELECT AddGeometryColumn('" + tableName + "','" + geomColName + "', " + epsgStr + ", '" + geomTypeStr
+                    + "', 'XY')";
+            stmt.execute(sql);
+
+            if (!avoidIndex) {
+                sql = "SELECT CreateSpatialIndex('" + tableName + "', '" + geomColName + "');";
+                stmt.execute(sql);
+            }
+        }
+    }
+
+    public static void createSpatialTable( ASpatialDb db, String tableName, int tableSrid, String geometryFieldData,
+            String[] fieldData, String[] foreignKeys ) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE TABLE ");
+        sb.append(tableName).append("(");
+        for( int i = 0; i < fieldData.length; i++ ) {
+            if (i != 0) {
+                sb.append(",");
+            }
+            sb.append(fieldData[i]);
+        }
+        if (foreignKeys != null) {
+            for( int i = 0; i < foreignKeys.length; i++ ) {
+                sb.append(",");
+                sb.append(foreignKeys[i]);
+            }
+        }
+        sb.append(")");
+
+        try (IJGTStatement stmt = db.getConnection().createStatement()) {
+            stmt.execute(sb.toString());
+        }
+
+        String[] split = geometryFieldData.trim().split("\\s+");
+        String geomColName = split[0];
+        String type = split[1];
+        addGeometryXYColumnAndIndex(db, tableName, geomColName, type, String.valueOf(tableSrid), false);
     }
 }

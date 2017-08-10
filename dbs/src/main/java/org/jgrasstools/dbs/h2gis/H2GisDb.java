@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.dbs.h2gis;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +26,9 @@ import java.util.List;
 import org.h2gis.ext.H2GISExtension;
 import org.h2gis.functions.factory.H2GISFunctions;
 import org.h2gis.utilities.SFSUtilities;
+import org.h2gis.utilities.TableLocation;
 import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.EDb;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
@@ -42,6 +45,14 @@ import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * A spatialite database.
+ * 
+ * <p>Notes:</p>
+ * <p>To create a spatial table you need to do:
+ * <pre>
+ * {@link H2GisDb#createTable(String, String...)};
+ * {@link H2GisDb#addSrid(String, String)});
+ * {@link H2GisDb#createSpatialIndex(String, String)};
+ * </p>
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -64,7 +75,14 @@ public class H2GisDb extends ASpatialDb {
 
     public boolean open( String dbPath ) throws Exception {
         h2Db.setCredentials(user, password);
+
+        if (dbPath.endsWith(EDb.H2GIS.getExtension())) {
+            dbPath = dbPath.substring(0, dbPath.length() - (EDb.H2GIS.getExtension().length() + 1));
+        }
         boolean dbExists = h2Db.open(dbPath);
+        if (dbExists) {
+            wasInitialized = true;
+        }
 
         jdbcConn = SFSUtilities.wrapConnection(h2Db.getJdbcConnection());
         if (!dbExists)
@@ -78,6 +96,10 @@ public class H2GisDb extends ASpatialDb {
             logger.info("H2GIS Version: " + dbInfo[1]);
         }
         return dbExists;
+    }
+
+    public Connection getJdbcConnection() {
+        return jdbcConn;
     }
 
     @Override
@@ -152,6 +174,38 @@ public class H2GisDb extends ASpatialDb {
         }
     }
 
+    public void createSpatialTable( String tableName, int srid, String geometryFieldData, String[] fieldData,
+            String[] foreignKeys ) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE TABLE ");
+        sb.append(tableName).append("(");
+        for( int i = 0; i < fieldData.length; i++ ) {
+            if (i != 0)
+                sb.append(",");
+            sb.append(fieldData[i]);
+        }
+        sb.append(",").append(geometryFieldData);
+        if (foreignKeys != null) {
+            for( int i = 0; i < foreignKeys.length; i++ ) {
+                sb.append(",");
+                sb.append(foreignKeys[i]);
+            }
+        }
+        sb.append(")");
+
+        try (IJGTStatement stmt = mConn.createStatement()) {
+            stmt.execute(sb.toString());
+        }
+
+        addSrid(tableName, String.valueOf(srid));
+
+        String[] split = geometryFieldData.trim().split("\\s+");
+        String geomColName = split[0];
+
+        String indexSql = "CREATE SPATIAL INDEX ON " + tableName + "(" + geomColName + ")";
+        executeInsertUpdateDeleteSql(indexSql);
+    }
+
     @Override
     public List<String> getTables( boolean doOrder ) throws Exception {
         return h2Db.getTables(doOrder);
@@ -207,6 +261,9 @@ public class H2GisDb extends ASpatialDb {
                         rec[j - 1] = geometry;
                     } else {
                         Object object = rs.getObject(j);
+                        if (object instanceof Clob) {
+                            object = rs.getString(j);
+                        }
                         rec[j - 1] = object;
                     }
                 }
@@ -216,20 +273,6 @@ public class H2GisDb extends ASpatialDb {
                 }
             }
             return queryResult;
-        }
-    }
-
-    /**
-     * Delete a geo-table with all attached indexes and stuff.
-     * 
-     * @param tableName
-     * @throws Exception
-     */
-    public void deleteGeoTable( String tableName ) throws Exception {
-        String sql = "SELECT DropGeoTable('" + tableName + "');";
-
-        try (IJGTStatement stmt = mConn.createStatement()) {
-            stmt.execute(sql);
         }
     }
 
@@ -405,6 +448,9 @@ public class H2GisDb extends ASpatialDb {
                         rec[j - 1] = geometry;
                     } else {
                         Object object = rs.getObject(j);
+                        if (object instanceof Clob) {
+                            object = rs.getString(j);
+                        }
                         rec[j - 1] = object;
                     }
                 }
@@ -464,6 +510,17 @@ public class H2GisDb extends ASpatialDb {
             db.createTable("ROADS", "the_geom MULTILINESTRING", "speed_limit INT");
             db.createIndex(PK_UID, PKUID, existed);
 
+        }
+    }
+
+    public void addSrid( String tableName, String codeFromCrs ) throws Exception {
+        int srid = Integer.parseInt(codeFromCrs);
+        try {
+            TableLocation tableLocation = TableLocation.parse(tableName);
+            SFSUtilities.addTableSRIDConstraint(jdbcConn, tableLocation, srid);
+        } catch (Exception e) {
+            TableLocation tableLocation = TableLocation.parse(tableName.toUpperCase());
+            SFSUtilities.addTableSRIDConstraint(jdbcConn, tableLocation, srid);
         }
     }
 }
