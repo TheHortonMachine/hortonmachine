@@ -21,19 +21,12 @@ import org.junit.Test;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
+import static org.jgrasstools.dbs.TestUtilities.*;
 
 /**
- * Main tests for normal dbs
+ * Main tests for spatial dbs
  */
 public class TestSpatialDbsMain {
-
-    private static final String MPOLY_TABLE = "multipoly";
-    private static final String POLY_TABLE = "poly";
-    private static final String MPOINTS_TABLE = "mpoints";
-    private static final String POINTS_TABLE = "points";
-    private static final String MLINES_TABLE = "mlines";
-    private static final String LINES_TABLE = "lines";
-    private static final String GEOMCOLL_TABLE = "geomcoll";
 
     /**
      * The db type to test (set to h2gis for online tests).
@@ -55,98 +48,29 @@ public class TestSpatialDbsMain {
         db.open(dbPath);
         db.initSpatialMetadata("'WGS84'");
 
-        String[] multiPolygonInserts = {//
-                "INSERT INTO " + MPOLY_TABLE + " (id, name, temperature, the_geom) VALUES(1, 'Tscherms', 36.0, "
-                        + "ST_GeomFromText('MULTIPOLYGON (((0 10, 10 10, 10 0, 0 0, 0 10)))', 4326));", //
-                "INSERT INTO " + MPOLY_TABLE + " (id, name, temperature, the_geom) VALUES(2, 'Meran', 34.0, "
-                        + "ST_GeomFromText('MULTIPOLYGON (((0 20, 20 20, 20 0, 0 0, 0 20)),((21 11, 21 6, 25 6, 25 11, 21 11)), ((21 18, 21 16, 23 16, 23 18, 21 18)))', 4326));", //
-                "INSERT INTO " + MPOLY_TABLE + " (id, name, temperature, the_geom) VALUES(3, 'Bozen', 42.0, "
-                        + "ST_GeomFromText('MULTIPOLYGON (((50 80, 100 80, 100 50, 50 50, 50 80)))', 4326));", //
-        };
-        String[] polygonInserts = {//
-                "INSERT INTO " + POLY_TABLE + " (id, name, temperature, the_geom) VALUES(1, 'Tscherms', 36.0, "
-                        + "ST_GeomFromText('POLYGON ((0 10, 10 10, 10 0, 0 0, 0 10))', 4326));", //
-                "INSERT INTO " + POLY_TABLE + " (id, name, temperature, the_geom) VALUES(2, 'Meran', 34.0, "
-                        + "ST_GeomFromText('POLYGON ((0 20, 20 20, 20 0, 0 0, 0 20))', 4326));", //
-                "INSERT INTO " + POLY_TABLE + " (id, name, temperature, the_geom) VALUES(3, 'Bozen', 42.0, "
-                        + "ST_GeomFromText('POLYGON ((50 80, 100 80, 100 50, 50 50, 50 80))', 4326));", //
-        };
-        String[] multiPointsInserts = new String[]{//
-                "INSERT INTO " + MPOINTS_TABLE
-                        + " (id, table1id, the_geom) VALUES(1, 1, ST_GeomFromText('MULTIPOINT ((5 5), (7 7))', 4326));", //
-                "INSERT INTO " + MPOINTS_TABLE
-                        + " (id, table1id, the_geom) VALUES(2, 2, ST_GeomFromText('MULTIPOINT ((10 10))', 4326));", //
-        };
-        String[] pointsInserts = new String[]{//
-                "INSERT INTO " + POINTS_TABLE + " (id, table1id, the_geom) VALUES(1, 1, ST_GeomFromText('POINT (5 5)', 4326));", //
-                "INSERT INTO " + POINTS_TABLE + " (id, table1id, the_geom) VALUES(2, 2, ST_GeomFromText('POINT (10 10)', 4326));", //
-                "INSERT INTO " + POINTS_TABLE + " (id, table1id, the_geom) VALUES(3, 3, ST_GeomFromText('POINT (75 75)', 4326));", //
-        };
-        String[] multiLineInserts = new String[]{//
-                "INSERT INTO " + MLINES_TABLE
-                        + " (id, table1id, the_geom) VALUES(1, 1, ST_GeomFromText('MULTILINESTRING ((-1 2, 21 2), (-1 4, 23 4, 23 12))', 4326));", //
-        };
-        String[] linesInserts = new String[]{//
-                "INSERT INTO " + LINES_TABLE
-                        + " (id, table1id, the_geom) VALUES(1, 1, ST_GeomFromText('LINESTRING (-1 3, 12 3, 12 -0.8)', 4326));", //
-                "INSERT INTO " + LINES_TABLE
-                        + " (id, table1id, the_geom) VALUES(2, 2, ST_GeomFromText('LINESTRING (20.5 20, 20.5 5)', 4326));", //
-        };
-
-        String gCollWKT = "GEOMETRYCOLLECTION (" //
-                + " POLYGON ((10 42, 11.9 42, 11.9 40, 10 40, 10 42)), "
-                + " POLYGON ((11.1 43.2, 11.3 41.3, 13.9 41, 13.8 43.2, 11.1 43.2)), "
-                + " LINESTRING (11.3 44.3, 8.3 41.4, 11.4 38.1, 14.9 41.3), " //
-                + " POINT (12.7 44.2), " //
-                + " POINT (15.1 43.3), " //
-                + " POINT (15 40.4), " //
-                + " POINT (13.2 38.4), "
-                + " MULTIPOLYGON (((6.9 45.9, 8.4 45.9, 8.4 44.3, 6.9 44.3, 6.9 45.9)), ((9.1 46.3, 10.8 46.3, 10.8 44.6, 9.1 44.6, 9.1 46.3))), "
-                + " MULTILINESTRING ((7.4 42.6, 7.4 39, 8.6 38.5), (8 40.3, 9.5 38.6, 8.4 37.5)), "
-                + " MULTIPOINT ((6.8 42.5), (6.8 41.4), (6.6 40.2)))";
-        String[] geomCollectionInserts = new String[]{//
-                "INSERT INTO " + GEOMCOLL_TABLE
-                        + " (id, name, temperature, the_geom) VALUES(1, 'Tscherms', 36.0, ST_GeomFromText('" + gCollWKT
-                        + "', 4326));", //
-        };
-
-        db.createSpatialTable(MPOLY_TABLE, 4326, "the_geom MULTIPOLYGON",
-                arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"), null);
-        db.createSpatialTable(POLY_TABLE, 4326, "the_geom POLYGON",
-                arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"), null);
-
-        db.createSpatialTable(MPOINTS_TABLE, 4326, "the_geom MULTIPOINT",
-                arr("id INT PRIMARY KEY", "table1id INT", "FOREIGN KEY (table1id) REFERENCES " + MPOLY_TABLE + "(id)"), null);
-        db.createSpatialTable(POINTS_TABLE, 4326, "the_geom POINT",
-                arr("id INT PRIMARY KEY", "table1id INT", "FOREIGN KEY (table1id) REFERENCES " + POLY_TABLE + "(id)"), null);
-
-        db.createSpatialTable(MLINES_TABLE, 4326, "the_geom MULTILINESTRING",
-                arr("id INT PRIMARY KEY", "table1id INT", "FOREIGN KEY (table1id) REFERENCES " + MPOLY_TABLE + "(id)"), null);
-        db.createSpatialTable(LINES_TABLE, 4326, "the_geom LINESTRING",
-                arr("id INT PRIMARY KEY", "table1id INT", "FOREIGN KEY (table1id) REFERENCES " + POLY_TABLE + "(id)"), null);
-
-        for( String insert : multiPolygonInserts ) {
-            db.executeInsertUpdateDeleteSql(insert);
-        }
-        for( String insert : polygonInserts ) {
-            db.executeInsertUpdateDeleteSql(insert);
-        }
-        for( String insert : multiPointsInserts ) {
-            db.executeInsertUpdateDeleteSql(insert);
-        }
-        for( String insert : pointsInserts ) {
-            db.executeInsertUpdateDeleteSql(insert);
-        }
-        for( String insert : multiLineInserts ) {
-            db.executeInsertUpdateDeleteSql(insert);
-        }
-        for( String insert : linesInserts ) {
-            db.executeInsertUpdateDeleteSql(insert);
-        }
+        createGeomTables(db);
 
         tablesCount = 6;
         if (DB_TYPE == EDb.SPATIALITE) {
             tablesCount = 7;
+
+            String gCollWKT = "GEOMETRYCOLLECTION (" //
+                    + " POLYGON ((10 42, 11.9 42, 11.9 40, 10 40, 10 42)), "
+                    + " POLYGON ((11.1 43.2, 11.3 41.3, 13.9 41, 13.8 43.2, 11.1 43.2)), "
+                    + " LINESTRING (11.3 44.3, 8.3 41.4, 11.4 38.1, 14.9 41.3), " //
+                    + " POINT (12.7 44.2), " //
+                    + " POINT (15.1 43.3), " //
+                    + " POINT (15 40.4), " //
+                    + " POINT (13.2 38.4), "
+                    + " MULTIPOLYGON (((6.9 45.9, 8.4 45.9, 8.4 44.3, 6.9 44.3, 6.9 45.9)), ((9.1 46.3, 10.8 46.3, 10.8 44.6, 9.1 44.6, 9.1 46.3))), "
+                    + " MULTILINESTRING ((7.4 42.6, 7.4 39, 8.6 38.5), (8 40.3, 9.5 38.6, 8.4 37.5)), "
+                    + " MULTIPOINT ((6.8 42.5), (6.8 41.4), (6.6 40.2)))";
+            String[] geomCollectionInserts = new String[]{//
+                    "INSERT INTO " + GEOMCOLL_TABLE
+                            + " (id, name, temperature, the_geom) VALUES(1, 'Tscherms', 36.0, ST_GeomFromText('" + gCollWKT
+                            + "', 4326));", //
+            };
+
             db.createSpatialTable(GEOMCOLL_TABLE, 4326, "the_geom GEOMETRYCOLLECTION",
                     arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"), null);
             for( String insert : geomCollectionInserts ) {
@@ -156,9 +80,6 @@ public class TestSpatialDbsMain {
         }
     }
 
-    private static String[] arr( String... strings ) {
-        return strings;
-    }
 
     @AfterClass
     public static void closeDb() throws Exception {

@@ -58,6 +58,7 @@ public class ImageCache {
     public static final String REFRESH = "refresh.gif";
 
     public static final String CONNECT = "connect.gif";
+    public static final String CONNECT_REMOTE = "connect_remote.gif";
     public static final String DISCONNECT = "disconnect.gif";
     public static final String HISTORY_DB = "history_db.gif";
     public static final String NEW_DATABASE = "new_database.gif";

@@ -181,6 +181,11 @@ public class GuiUtilities {
         return f;
     }
 
+    public static String showInputDialog( Component parentComponent, String message, String defaultInput ) {
+        String answer = JOptionPane.showInputDialog(parentComponent, message, defaultInput);
+        return answer;
+    }
+
     /**
      * Create a simple multi input pane, that returns what the use inserts.
      * 

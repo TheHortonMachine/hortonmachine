@@ -38,6 +38,7 @@ public class SpatialiteView extends JPanel
    JButton _disconnectDbButton = new JButton();
    JButton _historyButton = new JButton();
    JButton _templatesButton = new JButton();
+   JButton _connectRemoteDbButton = new JButton();
    JCheckBox _refreshTreeAfterQueryCheckbox = new JCheckBox();
    JLabel _limitCountLabel = new JLabel();
    JTextField _limitCountTextfield = new JTextField();
@@ -244,7 +245,7 @@ public class SpatialiteView extends JPanel
    public JPanel createPanel4()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -261,19 +262,24 @@ public class SpatialiteView extends JPanel
       _disconnectDbButton.setActionCommand("Disconnect");
       _disconnectDbButton.setName("disconnectDbButton");
       _disconnectDbButton.setText("Disconnect");
-      jpanel1.add(_disconnectDbButton,cc.xy(5,1));
+      jpanel1.add(_disconnectDbButton,cc.xy(7,1));
 
       _historyButton.setActionCommand("History");
       _historyButton.setName("historyButton");
       _historyButton.setText("History");
-      jpanel1.add(_historyButton,cc.xy(7,1));
+      jpanel1.add(_historyButton,cc.xy(9,1));
 
       _templatesButton.setActionCommand("Templates");
       _templatesButton.setName("templatesButton");
       _templatesButton.setText("Templates");
-      jpanel1.add(_templatesButton,cc.xy(9,1));
+      jpanel1.add(_templatesButton,cc.xy(11,1));
 
-      addFillComponents(jpanel1,new int[]{ 2,4,6,8,10,11 },new int[0]);
+      _connectRemoteDbButton.setActionCommand("Connect");
+      _connectRemoteDbButton.setName("connectRemoteDbButton");
+      _connectRemoteDbButton.setText("Connect Remote");
+      jpanel1.add(_connectRemoteDbButton,cc.xy(5,1));
+
+      addFillComponents(jpanel1,new int[]{ 2,4,6,8,10,12,13 },new int[0]);
       return jpanel1;
    }
 

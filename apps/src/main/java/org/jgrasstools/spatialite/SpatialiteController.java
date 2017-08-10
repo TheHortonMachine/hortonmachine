@@ -96,7 +96,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The spatialtoolbox view controller.
+ * The spatialite/h2gis view controller.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  *
@@ -129,6 +129,8 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
     private static final String NEW_TOOLTIP = "create a new spatialite database";
     private static final String CONNECT = "connect";
     private static final String CONNECT_TOOLTIP = "connect to an existing spatialite database";
+    private static final String CONNECT_REMOTE = "remote";
+    private static final String CONNECT_REMOTE_TOOLTIP = "connect to a remote database";
     private static final String DB_TREE_TITLE = "Database Connection";
 
     protected GuiBridgeHandler guiBridge;
@@ -189,6 +191,16 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         _connectDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.CONNECT));
         _connectDbButton.addActionListener(e -> {
             openDatabase(null);
+        });
+
+        _connectRemoteDbButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        _connectRemoteDbButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        _connectRemoteDbButton.setText(CONNECT_REMOTE);
+        _connectRemoteDbButton.setToolTipText(CONNECT_REMOTE_TOOLTIP);
+        _connectRemoteDbButton.setPreferredSize(preferredToolbarButtonSize);
+        _connectRemoteDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.CONNECT_REMOTE));
+        _connectRemoteDbButton.addActionListener(e -> {
+            openRemoteDatabase();
         });
 
         _disconnectDbButton.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -988,6 +1000,56 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                 }
             }).start();
         }
+
+    }
+
+    protected void openRemoteDatabase() {
+        try {
+            closeCurrentDb();
+        } catch (Exception e1) {
+            logger.error("Error closing the database...", e1);
+        }
+
+        String lastPath = GuiUtilities.getPreference(SpatialiteGuiUtils.JGT_JDBC_LAST_URL,
+                "jdbc:h2:tcp://localhost:9092/absolute_dbpath");
+
+        String urlString = GuiUtilities.showInputDialog(this, "Insert the jdbc connection url", lastPath);
+        String prefix = "jdbc:h2:";
+        if (!urlString.trim().startsWith(prefix)) {
+            guiBridge.messageDialog("Only H2GIS databases are supported in remote connection.", "ERROR",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        GuiUtilities.setPreference(SpatialiteGuiUtils.JGT_JDBC_LAST_URL, urlString);
+
+        urlString = urlString.replaceFirst(prefix, "");
+
+        final LogConsoleController logConsole = new LogConsoleController(pm);
+        JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+
+        String _urlString = urlString;
+        new Thread(() -> {
+            logConsole.beginProcess("Open database");
+
+            try {
+                currentConnectedDatabase = EDb.H2GIS.getSpatialDb();
+                currentConnectedDatabase.open(_urlString);
+
+                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
+
+                layoutTree(dbLevel, true);
+                setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
+            } catch (Exception e) {
+                currentConnectedDatabase = null;
+                logger.error("Error connecting to the database...", e);
+            } finally {
+                logConsole.finishProcess();
+                logConsole.stopLogging();
+                logConsole.setVisible(false);
+                window.dispose();
+            }
+        }).start();
 
     }
 

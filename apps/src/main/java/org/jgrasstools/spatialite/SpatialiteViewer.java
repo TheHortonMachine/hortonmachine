@@ -52,21 +52,19 @@ import org.jgrasstools.nww.gui.NwwPanel;
 import org.jgrasstools.nww.gui.ToolsPanelController;
 import org.jgrasstools.nww.gui.ViewControlsLayer;
 import org.jgrasstools.nww.utils.NwwUtilities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.util.WWUtil;
 
 /**
- * The spatialtoolbox view controller.
+ * The spatialite/h2gis view controller.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
 public class SpatialiteViewer extends SpatialiteController implements IOnCloseListener {
-    private static final Logger logger = LoggerFactory.getLogger(SpatialiteViewer.class);
+//    private static final Logger logger = LoggerFactory.getLogger(SpatialiteViewer.class);
     private static final long serialVersionUID = 1L;
     private ToolsPanelController toolsPanelController;
 

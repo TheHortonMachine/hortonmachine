@@ -155,6 +155,7 @@ public class SpatialiteWKBReader {
         return g;
     }
 
+    @SuppressWarnings("unused")
     private Geometry readSpatialiteGeometry() throws IOException, ParseException {
         int start = dis.readByte();
         if (start != 0x00) {

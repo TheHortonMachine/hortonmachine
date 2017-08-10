@@ -19,10 +19,12 @@ package org.jgrasstools.dbs.h2gis;
 
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.h2.tools.Server;
 import org.h2gis.ext.H2GISExtension;
 import org.h2gis.functions.factory.H2GISFunctions;
 import org.h2gis.utilities.SFSUtilities;
@@ -71,6 +73,27 @@ public class H2GisDb extends ASpatialDb {
     public void setCredentials( String user, String password ) {
         this.user = user;
         this.password = password;
+    }
+
+    /**
+     * Start the server mode.
+     * 
+     *<pre>
+     * Server server = Server.createTcpServer(
+     *     "-tcpPort", "9123", "-tcpAllowOthers").start();
+     * </pre>
+     * Supported options are:
+     * -tcpPort, -tcpSSL, -tcpPassword, -tcpAllowOthers, -tcpDaemon,
+     * -trace, -ifExists, -baseDir, -key.
+     * See the main method for details.
+     * <p>
+     * 
+     * @return
+     * @throws SQLException
+     */
+    public static Server startServerMode(String... args) throws SQLException {
+        Server server = Server.createTcpServer(args).start();
+        return server;
     }
 
     public boolean open( String dbPath ) throws Exception {

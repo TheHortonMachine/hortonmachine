@@ -58,7 +58,7 @@ public class H2Db extends ADb {
 
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;
-
+        
         boolean dbExists = false;
         if (dbPath != null) {
             File dbFile = new File(dbPath + "." + EDb.H2.getExtension());
