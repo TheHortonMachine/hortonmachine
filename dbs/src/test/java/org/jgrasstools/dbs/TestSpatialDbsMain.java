@@ -33,12 +33,15 @@ public class TestSpatialDbsMain {
     private static final String POINTS_TABLE = "points";
     private static final String MLINES_TABLE = "mlines";
     private static final String LINES_TABLE = "lines";
+    private static final String GEOMCOLL_TABLE = "geomcoll";
 
     /**
      * The db type to test (set to h2gis for online tests).
      */
-    public static final EDb DB_TYPE = EDb.SPATIALITE;
+    public static final EDb DB_TYPE = EDb.H2GIS;
     private static ASpatialDb db;
+
+    private static int tablesCount = 0;
 
     @BeforeClass
     public static void createDb() throws Exception {
@@ -90,6 +93,23 @@ public class TestSpatialDbsMain {
                         + " (id, table1id, the_geom) VALUES(2, 2, ST_GeomFromText('LINESTRING (20.5 20, 20.5 5)', 4326));", //
         };
 
+        String gCollWKT = "GEOMETRYCOLLECTION (" //
+                + " POLYGON ((10 42, 11.9 42, 11.9 40, 10 40, 10 42)), "
+                + " POLYGON ((11.1 43.2, 11.3 41.3, 13.9 41, 13.8 43.2, 11.1 43.2)), "
+                + " LINESTRING (11.3 44.3, 8.3 41.4, 11.4 38.1, 14.9 41.3), " //
+                + " POINT (12.7 44.2), " //
+                + " POINT (15.1 43.3), " //
+                + " POINT (15 40.4), " //
+                + " POINT (13.2 38.4), "
+                + " MULTIPOLYGON (((6.9 45.9, 8.4 45.9, 8.4 44.3, 6.9 44.3, 6.9 45.9)), ((9.1 46.3, 10.8 46.3, 10.8 44.6, 9.1 44.6, 9.1 46.3))), "
+                + " MULTILINESTRING ((7.4 42.6, 7.4 39, 8.6 38.5), (8 40.3, 9.5 38.6, 8.4 37.5)), "
+                + " MULTIPOINT ((6.8 42.5), (6.8 41.4), (6.6 40.2)))";
+        String[] geomCollectionInserts = new String[]{//
+                "INSERT INTO " + GEOMCOLL_TABLE
+                        + " (id, name, temperature, the_geom) VALUES(1, 'Tscherms', 36.0, ST_GeomFromText('" + gCollWKT
+                        + "', 4326));", //
+        };
+
         db.createSpatialTable(MPOLY_TABLE, 4326, "the_geom MULTIPOLYGON",
                 arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"), null);
         db.createSpatialTable(POLY_TABLE, 4326, "the_geom POLYGON",
@@ -124,7 +144,14 @@ public class TestSpatialDbsMain {
             db.executeInsertUpdateDeleteSql(insert);
         }
 
+        tablesCount = 6;
         if (DB_TYPE == EDb.SPATIALITE) {
+            tablesCount = 7;
+            db.createSpatialTable(GEOMCOLL_TABLE, 4326, "the_geom GEOMETRYCOLLECTION",
+                    arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"), null);
+            for( String insert : geomCollectionInserts ) {
+                db.executeInsertUpdateDeleteSql(insert);
+            }
             db.executeInsertUpdateDeleteSql("SELECT UpdateLayerStatistics();");
         }
     }
@@ -154,7 +181,7 @@ public class TestSpatialDbsMain {
 
         HashMap<String, List<String>> tablesMap = db.getTablesMap(false);
         List<String> tables = tablesMap.get(ISpatialTableNames.USERDATA);
-        assertTrue(tables.size() == 6);
+        assertTrue(tables.size() == tablesCount);
 
         List<ForeignKey> foreignKeys = db.getForeignKeys(MPOLY_TABLE);
         assertEquals(0, foreignKeys.size());
@@ -215,6 +242,17 @@ public class TestSpatialDbsMain {
         result = db.getTableRecordsMapFromRawSql(sql, -1);
         assertEquals(2, result.data.size());
         assertTrue(result.geometryIndex != -1);
+
+        if (DB_TYPE == EDb.SPATIALITE) {
+            assertEquals(1, db.getCount(GEOMCOLL_TABLE));
+            sql = "select * from " + GEOMCOLL_TABLE;
+            result = db.getTableRecordsMapFromRawSql(sql, -1);
+            assertEquals(1, result.data.size());
+            assertTrue(result.geometryIndex != -1);
+
+            Geometry geom = (Geometry) result.data.get(0)[3];
+            assertEquals(14, geom.getNumGeometries());
+        }
     }
 
     @Test
