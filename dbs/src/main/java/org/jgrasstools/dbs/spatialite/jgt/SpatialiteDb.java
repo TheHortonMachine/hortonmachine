@@ -231,6 +231,10 @@ public class SpatialiteDb extends ASpatialDb {
     public List<Geometry> getGeometriesIn( String tableName, Geometry intersectionGeometry ) throws Exception {
         return SpatialiteCommonMethods.getGeometriesIn(this, tableName, intersectionGeometry);
     }
+    
+    public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
+        return SpatialiteCommonMethods.getGeojsonIn(this, tableName, fields, wherePiece, precision);
+    }
 
     /**
      * Get the list of available raster coverages.

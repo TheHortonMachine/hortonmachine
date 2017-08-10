@@ -271,6 +271,10 @@ public class GPSpatialiteDb extends ASpatialDb {
     public List<Geometry> getGeometriesIn( String tableName, Geometry intersectionGeometry ) throws Exception {
         return SpatialiteCommonMethods.getGeometriesIn(this, tableName, intersectionGeometry);
     }
+    
+    public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
+        return SpatialiteCommonMethods.getGeojsonIn(this, tableName, fields, wherePiece, precision);
+    }
 
     public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg,
             boolean avoidIndex ) throws Exception {

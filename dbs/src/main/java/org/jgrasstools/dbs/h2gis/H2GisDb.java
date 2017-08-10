@@ -522,6 +522,55 @@ public class H2GisDb extends ASpatialDb {
             return geoms;
         }
     }
+    
+    public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision )
+            throws Exception {
+        if (precision == 0) {
+            precision = 6;
+        }
+        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
+        
+        if (fields!=null) {
+            logger.warn("H2Gis does not support geojson export with fields.");
+        }
+
+        String sql;
+        if (fields == null || fields.length == 0) {
+            sql = "SELECT ST_AsGeoJson(ST_Collect(ST_Transform(" + gCol.geometryColumnName + ",4326))) FROM "
+                    + tableName;
+            if (wherePiece != null) {
+                sql += " WHERE " + wherePiece;
+            }
+        } else {
+            sql = "SELECT '{\"type\":\"FeatureCollection\",\"features\":['"
+                    + " || group_concat('{\"type\":\"Feature\",\"geometry\":' || ST_AsGeoJson("
+                    + gCol.geometryColumnName + ") || ',\"properties\": {' || ";
+            List<String> fieldsList = new ArrayList<>();
+            for( String field : fields ) {
+                String string = "'\"" + field + "\":\"' || " + field + " || '\"'";
+                fieldsList.add(string);
+            }
+            StringBuilder sb = new StringBuilder();
+            for( int i = 0; i < fieldsList.size(); i++ ) {
+                if (i > 0) {
+                    sb.append(" || ',' ||");
+                }
+                sb.append("\n").append(fieldsList.get(i));
+            }
+            sql += sb.toString() + " || '}}') || ']}'";
+            sql += " FROM " + tableName;
+            if (wherePiece != null) {
+                sql += " WHERE " + wherePiece;
+            }
+        }
+        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                String geoJson = rs.getString(1);
+                return geoJson;
+            }
+        }
+        return "";
+    }
 
     public static void main( String[] args ) throws Exception {
         try (H2GisDb db = new H2GisDb()) {

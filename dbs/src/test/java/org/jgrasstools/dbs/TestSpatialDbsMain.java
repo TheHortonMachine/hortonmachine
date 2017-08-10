@@ -80,7 +80,6 @@ public class TestSpatialDbsMain {
         }
     }
 
-
     @AfterClass
     public static void closeDb() throws Exception {
         if (db != null) {
@@ -219,6 +218,29 @@ public class TestSpatialDbsMain {
         Geometry geom = new WKTReader().read(polygonStr);
         List<Geometry> intersecting = db.getGeometriesIn(MPOLY_TABLE, geom);
         assertEquals(2, intersecting.size());
+    }
+
+    @Test
+    public void testGeoJson() throws Exception {
+        String geoJson = db.getGeojsonIn(POINTS_TABLE, null, "id=1", 6);
+        geoJson = geoJson.replaceAll("\\s+", "");
+
+        String expected;
+        if (DB_TYPE == EDb.SPATIALITE) {
+            expected = "{\"type\":\"Point\",\"coordinates\":[5,5]}";
+        } else {
+            expected = "{\"type\":\"MultiPoint\",\"coordinates\":[[5.0,5.0]]}";
+        }
+        assertEquals(expected, geoJson);
+
+        if (DB_TYPE == EDb.SPATIALITE) {
+            expected = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[5,5]},\"properties\":{\"id\":\"1\"}}]}";
+        } else {
+            expected = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[5.0,5.0]},\"properties\":{\"id\":\"1\"}}]}";
+        }
+        geoJson = db.getGeojsonIn(POINTS_TABLE, new String[]{"id"}, "id=1", 6);
+        geoJson = geoJson.replaceAll("\\s+", "");
+        assertEquals(expected, geoJson);
     }
 
 }

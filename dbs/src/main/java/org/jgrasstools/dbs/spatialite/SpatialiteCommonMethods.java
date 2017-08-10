@@ -432,4 +432,48 @@ public class SpatialiteCommonMethods {
         String type = split[1];
         addGeometryXYColumnAndIndex(db, tableName, geomColName, type, String.valueOf(tableSrid), false);
     }
+
+    public static String getGeojsonIn( ASpatialDb db, String tableName, String[] fields, String wherePiece, Integer precision )
+            throws Exception {
+        if (precision == 0) {
+            precision = 6;
+        }
+        GeometryColumn gCol = db.getGeometryColumnsForTable(tableName);
+
+        String sql;
+        if (fields == null || fields.length == 0) {
+            sql = "SELECT AsGeoJson(ST_Collect(ST_Transform(" + gCol.geometryColumnName + ",4326)), " + precision + ",0) FROM "
+                    + tableName;
+            if (wherePiece != null) {
+                sql += " WHERE " + wherePiece;
+            }
+        } else {
+            sql = "SELECT \"{\"\"type\"\":\"\"FeatureCollection\"\",\"\"features\"\":[\" || group_concat(\"{\"\"type\"\":\"\"Feature\"\",\"\"geometry\"\":\" || AsGeoJson("
+                    + gCol.geometryColumnName + ", " + precision + ", 0) || \",\"\"properties\"\": {\" || ";
+            List<String> fieldsList = new ArrayList<>();
+            for( String field : fields ) {
+                String string = "\"\"\"" + field + "\"\":\"\"\" || " + field + " || \"\"\"\"";
+                fieldsList.add(string);
+            }
+            StringBuilder sb = new StringBuilder();
+            for( int i = 0; i < fieldsList.size(); i++ ) {
+                if (i > 0) {
+                    sb.append(" || \",\" ||");
+                }
+                sb.append("\n").append(fieldsList.get(i));
+            }
+            sql += sb.toString() + " || \"}}\") || \"]}\"";
+            sql += " FROM " + tableName;
+            if (wherePiece != null) {
+                sql += " WHERE " + wherePiece;
+            }
+        }
+        try (IJGTStatement stmt = db.getConnection().createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                String geoJson = rs.getString(1);
+                return geoJson;
+            }
+        }
+        return "";
+    }
 }

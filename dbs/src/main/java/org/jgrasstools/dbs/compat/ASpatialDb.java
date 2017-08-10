@@ -18,7 +18,6 @@
 package org.jgrasstools.dbs.compat;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -251,48 +250,8 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return The resulting geojson.
      * @throws Exception
      */
-    public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
-        if (precision == 0) {
-            precision = 6;
-        }
-        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-
-        String sql;
-        if (fields == null || fields.length == 0) {
-            sql = "SELECT ST_asGeoJSON(ST_Collect(ST_Transform(" + gCol.geometryColumnName + ",4326)), " + precision + ",0) FROM "
-                    + tableName;
-            if (wherePiece != null) {
-                sql += " WHERE " + wherePiece;
-            }
-        } else {
-            sql = "SELECT \"{\"\"type\"\":\"\"FeatureCollection\"\",\"\"features\"\":[\" || group_concat(\"{\"\"type\"\":\"\"Feature\"\",\"\"geometry\"\":\" || ST_asGeoJSON("
-                    + gCol.geometryColumnName + ", " + precision + ", 0) || \",\"\"properties\"\": {\" || ";
-            List<String> fieldsList = new ArrayList<>();
-            for( String field : fields ) {
-                String string = "\"\"\"" + field + "\"\":\"\"\" || " + field + " || \"\"\"\"";
-                fieldsList.add(string);
-            }
-            StringBuilder sb = new StringBuilder();
-            for( int i = 0; i < fieldsList.size(); i++ ) {
-                if (i > 0) {
-                    sb.append(" || \",\" ||");
-                }
-                sb.append("\n").append(fieldsList.get(i));
-            }
-            sql += sb.toString() + " || \"}}\") || \"]}\"";
-            sql += " FROM " + tableName;
-            if (wherePiece != null) {
-                sql += " WHERE " + wherePiece;
-            }
-        }
-        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) {
-                String geoJson = rs.getString(1);
-                return geoJson;
-            }
-        }
-        return "";
-    }
+    public abstract String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision )
+            throws Exception;
 
     /**
      * Get the bounds of a table.
