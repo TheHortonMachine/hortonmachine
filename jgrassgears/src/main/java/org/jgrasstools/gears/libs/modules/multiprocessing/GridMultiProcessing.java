@@ -44,8 +44,8 @@ public abstract class GridMultiProcessing extends MultiProcessing {
             endC = cols - 1;
             endR = rows - 1;
         }
-        for( int c = startC; c < endC; c++ ) {
-            for( int r = startR; r < endR; r++ ) {
+        for( int r = startR; r < endR; r++ ) {
+            for( int c = startC; c < endC; c++ ) {
                 int _c = c, _r = r;
                 planner.submit(() -> {
                     if (!pm.isCanceled()) {
