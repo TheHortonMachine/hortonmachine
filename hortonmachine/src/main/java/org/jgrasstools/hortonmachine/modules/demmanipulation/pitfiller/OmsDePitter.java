@@ -21,8 +21,10 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.DEMMANIPULATION;
 
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.media.jai.iterator.WritableRandomIter;
@@ -113,16 +115,16 @@ public class OmsDePitter extends GridMultiProcessing {
         try {
 
             ConcurrentLinkedQueue<GridNode> pitsList = getPitsList(cols, rows, xRes, yRes, pitIter);
-            BitMatrix allPitsPositions = new BitMatrix(cols, rows);
 
             int count = 0;
             int iteration = 1;
-            while( pitsList.size() > 0 ) {// || flatsList.size() > 0 ) {
+            while( pitsList.size() > 0 ) {
                 if (pm.isCanceled()) {
                     return;
                 }
 
                 int pitCount = pitsList.size();
+                BitMatrix allPitsPositions = new BitMatrix(cols, rows);
 
                 List<GridNode> processedNodesInPit = new ArrayList<>();
 
@@ -147,7 +149,19 @@ public class OmsDePitter extends GridMultiProcessing {
                     allPitsPositions.mark(originalPitNode.col, originalPitNode.row);
                     int workingIndex = 0;
                     double minExitValue = Double.POSITIVE_INFINITY;
-                    GridNode minExitValueNode = null;
+                    TreeSet<GridNode> orderedExitNodes = new TreeSet<>(new Comparator<GridNode>(){
+                        @Override
+                        public int compare( GridNode o1, GridNode o2 ) {
+                            // Returns a negative integer, zero, or a positive integer as the first
+                            // argument is less than, equal to, or greater than the second.
+                            if (o1.elevation < o2.elevation) {
+                                return -1;
+                            } else if (o1.elevation > o2.elevation) {
+                                return 1;
+                            } else
+                                return 0;
+                        }
+                    });
 
                     processSinglePit: {
                         boolean surroundingAdded = true;
@@ -159,6 +173,10 @@ public class OmsDePitter extends GridMultiProcessing {
                                     return;
                                 }
                                 GridNode currentPitNode = nodesInPit.get(workingIndex);
+
+                                if (currentPitNode.col == 9 && currentPitNode.row == 8) {
+                                    System.out.println();
+                                }
 
                                 List<GridNode> surroundingNodes = new ArrayList<>(currentPitNode.getValidSurroundingNodes());
                                 removeExistingPits(allPitsPositions, surroundingNodes);
@@ -172,13 +190,14 @@ public class OmsDePitter extends GridMultiProcessing {
                                 removeExistingPits(allPitsPositions, minElevSurroundingNodes);
                                 if (!minEqualNode.isPitFor(minElevSurroundingNodes)) {
                                     /*
-                                     * case of a pit that is solved by the nearby cell
+                                     * case of a pit that is solved by the nearby exit cell
                                      */
                                     if (minEqualNode != null && minEqualNode.elevation < minExitValue) {
                                         minExitValue = minEqualNode.elevation;
-                                        minExitValueNode = minEqualNode;
+                                        orderedExitNodes.add(minEqualNode);
                                     }
-                                    break;
+                                    workingIndex++;
+                                    continue;
                                 }
 
                                 /*
@@ -197,6 +216,22 @@ public class OmsDePitter extends GridMultiProcessing {
                                         nodesInPit.add(tmpNode);
                                         allPitsPositions.mark(tmpNode.col, tmpNode.row);
 
+                                        /*
+                                         * if the added pit node is the current potential exit 
+                                         * node, we need to remove the node from the tree
+                                         */
+                                        if (orderedExitNodes.size() > 0) {
+                                            GridNode potentialExit = orderedExitNodes.first();
+                                            if (tmpNode.equals(potentialExit)) {
+                                                orderedExitNodes.remove(potentialExit);
+                                                if (orderedExitNodes.size() > 0) {
+                                                    minExitValue = orderedExitNodes.first().elevation;
+                                                } else {
+                                                    minExitValue = Double.POSITIVE_INFINITY;
+                                                }
+                                            }
+                                        }
+
                                         // GridNode subMinNode =
                                         // getMinEqualElevNode(subSurroundingNodes,
                                         // allPitsPositions);
@@ -213,9 +248,9 @@ public class OmsDePitter extends GridMultiProcessing {
 
                             if (Double.isInfinite(minExitValue)) {
                                 for( GridNode gridNode : nodesInPit ) {
-                                    if (gridNode.elevation > minExitValue) {
+                                    if (gridNode.elevation < minExitValue) {
                                         minExitValue = gridNode.elevation;
-                                        minExitValueNode = gridNode;
+                                        orderedExitNodes.add(gridNode);
                                     }
                                 }
                             }
@@ -226,7 +261,7 @@ public class OmsDePitter extends GridMultiProcessing {
 
                             PitInfo info = new PitInfo();
                             // info.originalPitNode = originalPitNode;
-                            info.pitfillExitNode = minExitValueNode;
+                            info.pitfillExitNode = orderedExitNodes.first();
                             info.nodes = nodesInPit;
                             processedNodesInPit.addAll(nodesInPit);
 
@@ -234,29 +269,33 @@ public class OmsDePitter extends GridMultiProcessing {
                             List<GridNode> allPitsOfCurrent = info.nodes;
 
                             BitMatrix floodedPositions = new BitMatrix(cols, rows);
-                            floodAndFlow(0, pitfillExitNode.col, pitfillExitNode.row, pitfillExitNode.elevation, allPitsOfCurrent,
-                                    floodedPositions, pitIter);
+                            List<GridNode> nodesToCheck = new ArrayList<>();
+                            nodesToCheck.add(pitfillExitNode);
+                            floodAndFlow(0, nodesToCheck, pitfillExitNode.elevation, allPitsOfCurrent, floodedPositions, pitIter);
 
-                            // update and check broders
-                            List<GridNode> updated = new ArrayList<>();
-                            for( GridNode gridNode : nodesInPit ) {
-                                GridNode updatedNode = new GridNode(pitIter, gridNode.cols, gridNode.rows, gridNode.xRes,
-                                        gridNode.yRes, gridNode.col, gridNode.row);
-                                updated.add(updatedNode);
-                            }
-                            nodesInPit = updated;
-
-                            ConcurrentLinkedQueue<GridNode> surroundingAddedPitNodes = getPitsList(nodesInPit, allPitsPositions);
-                            if (surroundingAddedPitNodes.size() > 0) {
-                                workingIndex = nodesInPit.size();
-                                nodesInPit.addAll(surroundingAddedPitNodes);
-                                surroundingAdded = true;
-                                for( GridNode gridNode : surroundingAddedPitNodes ) {
-                                    System.out.print(gridNode.col + "/" + gridNode.row + "/" + gridNode.elevation + " ");
-                                    allPitsPositions.mark(gridNode.col, gridNode.row);
-                                }
-                                System.out.println();
-                            }
+                            // // update and check broders
+                            // List<GridNode> updated = new ArrayList<>();
+                            // for( GridNode gridNode : nodesInPit ) {
+                            // GridNode updatedNode = new GridNode(pitIter, gridNode.cols,
+                            // gridNode.rows, gridNode.xRes,
+                            // gridNode.yRes, gridNode.col, gridNode.row);
+                            // updated.add(updatedNode);
+                            // }
+                            // nodesInPit = updated;
+                            //
+                            // ConcurrentLinkedQueue<GridNode> surroundingAddedPitNodes =
+                            // getPitsList(nodesInPit, allPitsPositions);
+                            // if (surroundingAddedPitNodes.size() > 0) {
+                            // workingIndex = nodesInPit.size();
+                            // nodesInPit.addAll(surroundingAddedPitNodes);
+                            // surroundingAdded = true;
+                            // for( GridNode gridNode : surroundingAddedPitNodes ) {
+                            // System.out.print(gridNode.col + "/" + gridNode.row + "/" +
+                            // gridNode.elevation + " ");
+                            // allPitsPositions.mark(gridNode.col, gridNode.row);
+                            // }
+                            // System.out.println();
+                            // }
                         } // while
                     } // processsinglepit
 
@@ -265,18 +304,20 @@ public class OmsDePitter extends GridMultiProcessing {
                 }
                 pm.done();
 
-                if (true) {
-                    outPit = CoverageUtilities.buildCoverage("pitfiller", pitRaster, regionMap,
-                            inElev.getCoordinateReferenceSystem());
-                    OmsRasterWriter.writeRaster(
-                            "/home/hydrologis/Dropbox/hydrologis/lavori/2017_06_mapzone/test/pit_" + iteration + ".tiff", outPit);
-                }
+                // if (true && iteration < 3) {
+                // outPit = CoverageUtilities.buildCoverage("pitfiller", pitRaster, regionMap,
+                // inElev.getCoordinateReferenceSystem());
+                // OmsRasterWriter.writeRaster("/home/hydrologis/Dropbox/hydrologis/lavori/2017_06_mapzone/test/dtm_test2_pit_"
+                // + iteration + ".tiff", outPit);
+                // }
 
                 pitsList = getPitsList(cols, rows, xRes, yRes, pitIter, allPitsPositions);
 
                 int size = pitsList.size();
-                pm.message("Left pits: " + size);
-                pm.message("---------------------------------------------------------------------");
+                if (verbose) {
+                    pm.message("Left pits: " + size);
+                    pm.message("---------------------------------------------------------------------");
+                }
                 if (size < 10000) {
                     verbose = false;
                 }
@@ -388,81 +429,120 @@ public class OmsDePitter extends GridMultiProcessing {
         return minNode;
     }
 
-    private void floodAndFlow( int iteration, int runningCol, int runnningRow, double runningFloodValueValue,
-            List<GridNode> allNodesOfPit, BitMatrix floodedPositions, WritableRandomIter pitIter ) {
+    private void floodAndFlow( int iteration, List<GridNode> nodesToCheck, double runningFloodValue, List<GridNode> allNodesOfPit,
+            BitMatrix floodedPositions, WritableRandomIter pitIter ) {
         iteration++;
 
-        GridNode currentNode = new GridNode(pitIter, cols, rows, xRes, yRes, runningCol, runnningRow);
+        double currentRunningFloodValue = runningFloodValue + delta;
 
-        // TODO make first surrounding and then recurse on sub-surrounding ordering the cells from
-        // the middle
+        List<GridNode> nodesForNextRound = new ArrayList<>();
+        for( GridNode currentNode : nodesToCheck ) {
+            // flood and grow the first surrounding
+            List<GridNode> currentSurroundingNodes = currentNode.getValidSurroundingNodes();
+            for( GridNode gridNode : currentSurroundingNodes ) {
+                if (!floodedPositions.isMarked(gridNode.col, gridNode.row) && allNodesOfPit.contains(gridNode)) {
+                    double newValue = 0;
+                    if (gridNode.elevation <= runningFloodValue) {
+                        newValue = currentRunningFloodValue;
+                    } else {
+                        newValue = gridNode.elevation + delta; // TODO check if it is enough or
+                                                               // better
+                                                               // add delta
+                    }
+                    gridNode.setValueInMap(pitIter, newValue);
+                    floodedPositions.mark(gridNode.col, gridNode.row);
 
-        // flood and grow the first surrounding
-        List<GridNode> validSurroundingNodes = currentNode.getValidSurroundingNodes();
-        List<GridNode> toUseNodes = new ArrayList<>();
-        for( GridNode gridNode : validSurroundingNodes ) {
-            if (!floodedPositions.isMarked(gridNode.col, gridNode.row) && allNodesOfPit.contains(gridNode)) {
-                double newValue = 0;
-                if (gridNode.elevation <= runningFloodValueValue) {
-                    newValue = runningFloodValueValue + delta;
-                } else {
-                    newValue = gridNode.elevation + delta; // TODO check if it is enough or better
-                                                           // add delta
+                    nodesForNextRound.add(gridNode);
                 }
-                gridNode.setValueInMap(pitIter, newValue);
-                floodedPositions.mark(gridNode.col, gridNode.row);
-                toUseNodes.add(gridNode);
             }
         }
 
-        int size = toUseNodes.size();
-        if (size > 1) {
-            int half = size / 2;
-            for( int i = half; i >= 0; i-- ) {
-                GridNode gridNode = toUseNodes.get(i);
-                floodAndFlow(iteration, gridNode.col, gridNode.row, gridNode.elevation, allNodesOfPit, floodedPositions, pitIter);
-            }
-            for( int i = half + 1; i < size; i++ ) {
-                GridNode gridNode = toUseNodes.get(i);
-                floodAndFlow(iteration, gridNode.col, gridNode.row, gridNode.elevation, allNodesOfPit, floodedPositions, pitIter);
-            }
-        } else if (size == 1) {
-            GridNode gridNode = toUseNodes.get(0);
-            floodAndFlow(iteration, gridNode.col, gridNode.row, gridNode.elevation, allNodesOfPit, floodedPositions, pitIter);
+        int size = nodesForNextRound.size();
+        if (size > 0) {
+            floodAndFlow(iteration, nodesForNextRound, currentRunningFloodValue, allNodesOfPit, floodedPositions, pitIter);
         }
-        // List<GridNode> collectedSubSurroundingNodes = new ArrayList<>();
-        // for( GridNode gridNode : validSurroundingNodes ) {
-        // List<GridNode> subSurroundingNodes = gridNode.getValidSurroundingNodes();
-        // for( GridNode subGridNode : subSurroundingNodes ) {
-        // if (!floodedPositions.isMarked(subGridNode.col, subGridNode.row) &&
-        // allNodesOfPit.contains(subGridNode)) {
-        // collectedSubSurroundingNodes.add(subGridNode);
-        // }
-        // }
-        // }
-        //
-        // int size = collectedSubSurroundingNodes.size();
-        // if (size > 1) {
-        // int half = size / 2;
-        // for( int i = half; i >= 0; i-- ) {
-        // GridNode subGridNode = collectedSubSurroundingNodes.get(i);
-        // floodAndFlow(iteration, subGridNode.col, subGridNode.row, subGridNode.elevation,
-        // allNodesOfPit, floodedPositions,
-        // pitIter);
-        // }
-        // for( int i = half + 1; i < size; i++ ) {
-        // GridNode subGridNode = collectedSubSurroundingNodes.get(i);
-        // floodAndFlow(iteration, subGridNode.col, subGridNode.row, subGridNode.elevation,
-        // allNodesOfPit, floodedPositions,
-        // pitIter);
-        // }
-        // } else if (size == 1) {
-        // GridNode gridNode = collectedSubSurroundingNodes.get(0);
-        // floodAndFlow(iteration, gridNode.col, gridNode.row, gridNode.elevation, allNodesOfPit,
-        // floodedPositions, pitIter);
-        // }
-
     }
+    // private void floodAndFlow( int iteration, int runningCol, int runnningRow, double
+    // runningFloodValueValue,
+    // List<GridNode> allNodesOfPit, BitMatrix floodedPositions, WritableRandomIter pitIter ) {
+    // iteration++;
+    //
+    // GridNode currentNode = new GridNode(pitIter, cols, rows, xRes, yRes, runningCol,
+    // runnningRow);
+    //
+    // // TODO make first surrounding and then recurse on sub-surrounding ordering the cells from
+    // // the middle
+    //
+    // // flood and grow the first surrounding
+    // List<GridNode> validSurroundingNodes = currentNode.getValidSurroundingNodes();
+    // List<GridNode> toUseNodes = new ArrayList<>();
+    // for( GridNode gridNode : validSurroundingNodes ) {
+    // if (!floodedPositions.isMarked(gridNode.col, gridNode.row) &&
+    // allNodesOfPit.contains(gridNode)) {
+    // double newValue = 0;
+    // if (gridNode.elevation <= runningFloodValueValue) {
+    // newValue = runningFloodValueValue + delta;
+    // } else {
+    // newValue = gridNode.elevation + delta; // TODO check if it is enough or better
+    // // add delta
+    // }
+    // gridNode.setValueInMap(pitIter, newValue);
+    // floodedPositions.mark(gridNode.col, gridNode.row);
+    // toUseNodes.add(gridNode);
+    // }
+    // }
+    //
+    // int size = toUseNodes.size();
+    // if (size > 1) {
+    // int half = size / 2;
+    // for( int i = half; i >= 0; i-- ) {
+    // GridNode gridNode = toUseNodes.get(i);
+    // floodAndFlow(iteration, gridNode.col, gridNode.row, gridNode.elevation, allNodesOfPit,
+    // floodedPositions, pitIter);
+    // }
+    // for( int i = half + 1; i < size; i++ ) {
+    // GridNode gridNode = toUseNodes.get(i);
+    // floodAndFlow(iteration, gridNode.col, gridNode.row, gridNode.elevation, allNodesOfPit,
+    // floodedPositions, pitIter);
+    // }
+    // } else if (size == 1) {
+    // GridNode gridNode = toUseNodes.get(0);
+    // floodAndFlow(iteration, gridNode.col, gridNode.row, gridNode.elevation, allNodesOfPit,
+    // floodedPositions, pitIter);
+    // }
+    // // List<GridNode> collectedSubSurroundingNodes = new ArrayList<>();
+    // // for( GridNode gridNode : validSurroundingNodes ) {
+    // // List<GridNode> subSurroundingNodes = gridNode.getValidSurroundingNodes();
+    // // for( GridNode subGridNode : subSurroundingNodes ) {
+    // // if (!floodedPositions.isMarked(subGridNode.col, subGridNode.row) &&
+    // // allNodesOfPit.contains(subGridNode)) {
+    // // collectedSubSurroundingNodes.add(subGridNode);
+    // // }
+    // // }
+    // // }
+    // //
+    // // int size = collectedSubSurroundingNodes.size();
+    // // if (size > 1) {
+    // // int half = size / 2;
+    // // for( int i = half; i >= 0; i-- ) {
+    // // GridNode subGridNode = collectedSubSurroundingNodes.get(i);
+    // // floodAndFlow(iteration, subGridNode.col, subGridNode.row, subGridNode.elevation,
+    // // allNodesOfPit, floodedPositions,
+    // // pitIter);
+    // // }
+    // // for( int i = half + 1; i < size; i++ ) {
+    // // GridNode subGridNode = collectedSubSurroundingNodes.get(i);
+    // // floodAndFlow(iteration, subGridNode.col, subGridNode.row, subGridNode.elevation,
+    // // allNodesOfPit, floodedPositions,
+    // // pitIter);
+    // // }
+    // // } else if (size == 1) {
+    // // GridNode gridNode = collectedSubSurroundingNodes.get(0);
+    // // floodAndFlow(iteration, gridNode.col, gridNode.row, gridNode.elevation, allNodesOfPit,
+    // // floodedPositions, pitIter);
+    // // }
+    //
+    // }
 
     /**
      * Make cells flow ready by creating a slope starting from the output cell.
