@@ -18,9 +18,21 @@
  */
 package org.jgrasstools.gears.i18n;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
-
-import org.jgrasstools.gears.libs.modules.JGTConstants;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.FEATUREREADER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.FEATUREWRITER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GENERICREADER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GENERICWRITER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GRIDGEOMETRYREADER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.HASHMAP_READER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.HASHMAP_WRITER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.LIST_READER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.LIST_WRITER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.MATRIXREADER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.OTHER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.RASTERPROCESSING;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.RASTERREADER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.RASTERWRITER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.VECTORPROCESSING;
 /**
  * Messages for the JGrassGears.
  * 
@@ -1151,20 +1163,6 @@ public class GearsMessages {
     public static final String OMSRASTERVALUEROUNDER_IN_RASTER_DESCRIPTION = "The raster of which to round the values.";
     public static final String OMSRASTERVALUEROUNDER_P_PATTERN_DESCRIPTION = "The rounding pattern.";
     public static final String OMSRASTERVALUEROUNDER_OUT_RASTER_DESCRIPTION = "The rounded raster.";
-
-    public static final String OMSRASTERNULL_DESCRIPTION = "Module that puts a certain value of the raster to null.";
-    public static final String OMSRASTERNULL_DOCUMENTATION = "";
-    public static final String OMSRASTERNULL_KEYWORDS = "Null, Raster";
-    public static final String OMSRASTERNULL_LABEL = RASTERPROCESSING;
-    public static final String OMSRASTERNULL_NAME = "rnull";
-    public static final int OMSRASTERNULL_STATUS = 40;
-    public static final String OMSRASTERNULL_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERNULL_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERNULL_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERNULL_IN_RASTER_DESCRIPTION = "The raster to modify.";
-    public static final String OMSRASTERNULL_P_VALUE_DESCRIPTION = "The value to set to null.";
-    public static final String OMSRASTERNULL_P_NULL_DESCRIPTION = "The the null value to set (else it is guessed).";
-    public static final String OMSRASTERNULL_OUT_RASTER_DESCRIPTION = "The new raster.";
 
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_DESCRIPTION = "Module for raster to vector conversion";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_DOCUMENTATION = "";

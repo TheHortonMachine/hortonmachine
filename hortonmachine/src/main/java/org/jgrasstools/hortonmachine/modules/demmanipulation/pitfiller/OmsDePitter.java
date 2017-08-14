@@ -26,11 +26,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.multiprocessing.GridMultiProcessing;
@@ -116,7 +116,8 @@ public class OmsDePitter extends GridMultiProcessing {
 
             ConcurrentLinkedQueue<GridNode> pitsList = getPitsList(cols, rows, xRes, yRes, pitIter);
 
-            int count = 0;
+            AtomicInteger count = new AtomicInteger();
+            // int count = 0;
             int iteration = 1;
             while( pitsList.size() > 0 ) {
                 if (pm.isCanceled()) {
@@ -126,182 +127,27 @@ public class OmsDePitter extends GridMultiProcessing {
                 int pitCount = pitsList.size();
                 BitMatrix allPitsPositions = new BitMatrix(cols, rows);
 
-                List<GridNode> processedNodesInPit = new ArrayList<>();
+                // List<GridNode> processedNodesInPit = new ArrayList<>();
 
                 int shownCount = pitCount;
                 if (!verbose) {
                     shownCount = IJGTProgressMonitor.UNKNOWN;
                 }
                 pm.beginTask("Processing " + pitCount + " pits (iteration N." + iteration++ + ")... ", shownCount);
-                for( GridNode originalPitNode : pitsList ) {
-                    if (allPitsPositions.isMarked(originalPitNode.col, originalPitNode.row)) {
-                        if (verbose)
-                            pm.worked(1);
-                        continue;
-                    }
-                    count++;
+                pitsList.parallelStream().forEach(originalPitNode -> {
+                    int _count = count.incrementAndGet();
                     if (pm.isCanceled()) {
                         return;
                     }
-
-                    List<GridNode> nodesInPit = new ArrayList<>();
-                    nodesInPit.add(originalPitNode);
-                    allPitsPositions.mark(originalPitNode.col, originalPitNode.row);
-                    int workingIndex = 0;
-                    double minExitValue = Double.POSITIVE_INFINITY;
-                    TreeSet<GridNode> orderedExitNodes = new TreeSet<>(new Comparator<GridNode>(){
-                        @Override
-                        public int compare( GridNode o1, GridNode o2 ) {
-                            // Returns a negative integer, zero, or a positive integer as the first
-                            // argument is less than, equal to, or greater than the second.
-                            if (o1.elevation < o2.elevation) {
-                                return -1;
-                            } else if (o1.elevation > o2.elevation) {
-                                return 1;
-                            } else
-                                return 0;
-                        }
-                    });
-
-                    processSinglePit: {
-                        boolean surroundingAdded = true;
-                        while( surroundingAdded ) {
-                            surroundingAdded = false;
-
-                            while( workingIndex < nodesInPit.size() ) {
-                                if (pm.isCanceled()) {
-                                    return;
-                                }
-                                GridNode currentPitNode = nodesInPit.get(workingIndex);
-
-                                if (currentPitNode.col == 9 && currentPitNode.row == 8) {
-                                    System.out.println();
-                                }
-
-                                List<GridNode> surroundingNodes = new ArrayList<>(currentPitNode.getValidSurroundingNodes());
-                                removeExistingPits(allPitsPositions, surroundingNodes);
-                                GridNode minEqualNode = getMinEqualElevNode(surroundingNodes, allPitsPositions);
-                                if (minEqualNode == null) {
-                                    workingIndex++;
-                                    continue;
-                                }
-
-                                List<GridNode> minElevSurroundingNodes = new ArrayList<>(minEqualNode.getValidSurroundingNodes());
-                                removeExistingPits(allPitsPositions, minElevSurroundingNodes);
-                                if (!minEqualNode.isPitFor(minElevSurroundingNodes)) {
-                                    /*
-                                     * case of a pit that is solved by the nearby exit cell
-                                     */
-                                    if (minEqualNode != null && minEqualNode.elevation < minExitValue) {
-                                        minExitValue = minEqualNode.elevation;
-                                        orderedExitNodes.add(minEqualNode);
-                                    }
-                                    workingIndex++;
-                                    continue;
-                                }
-
-                                /*
-                                 * can't find a non pit exit in the nearest surrounding, therefore 
-                                 * we need to have a look at all the surrounding and have a look 
-                                 * of any of those cells are able to flow out somewhere, i.e. are not pit 
-                                 */
-                                for( GridNode tmpNode : surroundingNodes ) {
-                                    if (tmpNode.touchesBound() || !tmpNode.isValid()) {
-                                        continue;
-                                    }
-                                    List<GridNode> subSurroundingNodes = new ArrayList<>(tmpNode.getValidSurroundingNodes());
-                                    removeExistingPits(allPitsPositions, subSurroundingNodes);
-
-                                    if (tmpNode.isPitFor(subSurroundingNodes)) {
-                                        nodesInPit.add(tmpNode);
-                                        allPitsPositions.mark(tmpNode.col, tmpNode.row);
-
-                                        /*
-                                         * if the added pit node is the current potential exit 
-                                         * node, we need to remove the node from the tree
-                                         */
-                                        if (orderedExitNodes.size() > 0) {
-                                            GridNode potentialExit = orderedExitNodes.first();
-                                            if (tmpNode.equals(potentialExit)) {
-                                                orderedExitNodes.remove(potentialExit);
-                                                if (orderedExitNodes.size() > 0) {
-                                                    minExitValue = orderedExitNodes.first().elevation;
-                                                } else {
-                                                    minExitValue = Double.POSITIVE_INFINITY;
-                                                }
-                                            }
-                                        }
-
-                                        // GridNode subMinNode =
-                                        // getMinEqualElevNode(subSurroundingNodes,
-                                        // allPitsPositions);
-                                        //
-                                        // if (subMinNode != null && subMinNode.elevation <
-                                        // minExitValue) {
-                                        // minExitValue = subMinNode.elevation;
-                                        // minExitValueNode = subMinNode;
-                                        // }
-                                    }
-                                }
-                                workingIndex++;
-                            }
-
-                            if (Double.isInfinite(minExitValue)) {
-                                for( GridNode gridNode : nodesInPit ) {
-                                    if (gridNode.elevation < minExitValue) {
-                                        minExitValue = gridNode.elevation;
-                                        orderedExitNodes.add(gridNode);
-                                    }
-                                }
-                            }
-
-                            if (Double.isInfinite(minExitValue) || Double.isNaN(minExitValue)) {
-                                throw new RuntimeException("Found invalid value at: " + count);
-                            }
-
-                            PitInfo info = new PitInfo();
-                            // info.originalPitNode = originalPitNode;
-                            info.pitfillExitNode = orderedExitNodes.first();
-                            info.nodes = nodesInPit;
-                            processedNodesInPit.addAll(nodesInPit);
-
-                            GridNode pitfillExitNode = info.pitfillExitNode;
-                            List<GridNode> allPitsOfCurrent = info.nodes;
-
-                            BitMatrix floodedPositions = new BitMatrix(cols, rows);
-                            List<GridNode> nodesToCheck = new ArrayList<>();
-                            nodesToCheck.add(pitfillExitNode);
-                            floodAndFlow(0, nodesToCheck, pitfillExitNode.elevation, allPitsOfCurrent, floodedPositions, pitIter);
-
-                            // // update and check broders
-                            // List<GridNode> updated = new ArrayList<>();
-                            // for( GridNode gridNode : nodesInPit ) {
-                            // GridNode updatedNode = new GridNode(pitIter, gridNode.cols,
-                            // gridNode.rows, gridNode.xRes,
-                            // gridNode.yRes, gridNode.col, gridNode.row);
-                            // updated.add(updatedNode);
-                            // }
-                            // nodesInPit = updated;
-                            //
-                            // ConcurrentLinkedQueue<GridNode> surroundingAddedPitNodes =
-                            // getPitsList(nodesInPit, allPitsPositions);
-                            // if (surroundingAddedPitNodes.size() > 0) {
-                            // workingIndex = nodesInPit.size();
-                            // nodesInPit.addAll(surroundingAddedPitNodes);
-                            // surroundingAdded = true;
-                            // for( GridNode gridNode : surroundingAddedPitNodes ) {
-                            // System.out.print(gridNode.col + "/" + gridNode.row + "/" +
-                            // gridNode.elevation + " ");
-                            // allPitsPositions.mark(gridNode.col, gridNode.row);
-                            // }
-                            // System.out.println();
-                            // }
-                        } // while
-                    } // processsinglepit
-
-                    if (verbose)
-                        pm.worked(1);
-                }
+                    processPitNode(originalPitNode, allPitsPositions, _count, pitIter);
+                });
+                // for( GridNode originalPitNode : pitsList ) {
+                // count++;
+                // if (pm.isCanceled()) {
+                // return;
+                // }
+                // processPitNode(originalPitNode, allPitsPositions, count, pitIter);
+                // }
                 pm.done();
 
                 // if (true && iteration < 3) {
@@ -377,17 +223,14 @@ public class OmsDePitter extends GridMultiProcessing {
                     if (pm.isCanceled()) {
                         return;
                     }
-
                     GridNode node = new GridNode(pitIter, cols, rows, xRes, yRes, c, r);
                     boolean isValid = node.isValid();
                     if (!isValid || node.touchesBound() || node.touchesNovalue()) {
                         flowIter.setSample(c, r, 0, JGTConstants.intNovalue);
                     } else {
                         GridNode nextDown = node.goDownstreamSP();
-                        if (nextDown == null) {// || nextDown.touchesNovalue() ||
-                                               // nextDown.touchesBound()) {
+                        if (nextDown == null) {
                             flowIter.setSample(c, r, 0, JGTConstants.intNovalue);
-                            // flowIter.setSample(c, r, 0, FlowNode.OUTLET);
                         } else {
                             int newFlow = node.getFlow();
                             flowIter.setSample(c, r, 0, newFlow);
@@ -405,6 +248,173 @@ public class OmsDePitter extends GridMultiProcessing {
         } finally {
             pitIter.done();
         }
+    }
+
+    private void processPitNode( GridNode originalPitNode, BitMatrix allPitsPositions, int count, WritableRandomIter pitIter ) {
+        if (allPitsPositions.isMarked(originalPitNode.col, originalPitNode.row)) {
+            if (verbose)
+                pm.worked(1);
+            return;
+        }
+
+        List<GridNode> nodesInPit = new ArrayList<>();
+        nodesInPit.add(originalPitNode);
+        allPitsPositions.mark(originalPitNode.col, originalPitNode.row);
+        int workingIndex = 0;
+        double minExitValue = Double.POSITIVE_INFINITY;
+        TreeSet<GridNode> orderedExitNodes = new TreeSet<>(new Comparator<GridNode>(){
+            @Override
+            public int compare( GridNode o1, GridNode o2 ) {
+                // Returns a negative integer, zero, or a positive integer as the first
+                // argument is less than, equal to, or greater than the second.
+                if (o1.elevation < o2.elevation) {
+                    return -1;
+                } else if (o1.elevation > o2.elevation) {
+                    return 1;
+                } else
+                    return 0;
+            }
+        });
+
+        processSinglePit: {
+            boolean surroundingAdded = true;
+            while( surroundingAdded ) {
+                surroundingAdded = false;
+
+                while( workingIndex < nodesInPit.size() ) {
+                    if (pm.isCanceled()) {
+                        return;
+                    }
+                    GridNode currentPitNode = nodesInPit.get(workingIndex);
+
+                    if (currentPitNode.col == 9 && currentPitNode.row == 8) {
+                        System.out.println();
+                    }
+
+                    List<GridNode> surroundingNodes = new ArrayList<>(currentPitNode.getValidSurroundingNodes());
+                    removeExistingPits(allPitsPositions, surroundingNodes);
+                    GridNode minEqualNode = getMinEqualElevNode(surroundingNodes, allPitsPositions);
+                    if (minEqualNode == null) {
+                        workingIndex++;
+                        continue;
+                    }
+
+                    List<GridNode> minElevSurroundingNodes = new ArrayList<>(minEqualNode.getValidSurroundingNodes());
+                    removeExistingPits(allPitsPositions, minElevSurroundingNodes);
+                    if (!minEqualNode.isPitFor(minElevSurroundingNodes)) {
+                        /*
+                         * case of a pit that is solved by the nearby exit cell
+                         */
+                        if (minEqualNode != null && minEqualNode.elevation < minExitValue) {
+                            minExitValue = minEqualNode.elevation;
+                            orderedExitNodes.add(minEqualNode);
+                        }
+                        workingIndex++;
+                        continue;
+                    }
+
+                    /*
+                     * can't find a non pit exit in the nearest surrounding, therefore 
+                     * we need to have a look at all the surrounding and have a look 
+                     * of any of those cells are able to flow out somewhere, i.e. are not pit 
+                     */
+                    for( GridNode tmpNode : surroundingNodes ) {
+                        if (tmpNode.touchesBound() || !tmpNode.isValid()) {
+                            continue;
+                        }
+                        List<GridNode> subSurroundingNodes = new ArrayList<>(tmpNode.getValidSurroundingNodes());
+                        removeExistingPits(allPitsPositions, subSurroundingNodes);
+
+                        if (tmpNode.isPitFor(subSurroundingNodes)) {
+                            nodesInPit.add(tmpNode);
+                            allPitsPositions.mark(tmpNode.col, tmpNode.row);
+
+                            /*
+                             * if the added pit node is the current potential exit 
+                             * node, we need to remove the node from the tree
+                             */
+                            if (orderedExitNodes.size() > 0) {
+                                GridNode potentialExit = orderedExitNodes.first();
+                                if (tmpNode.equals(potentialExit)) {
+                                    orderedExitNodes.remove(potentialExit);
+                                    if (orderedExitNodes.size() > 0) {
+                                        minExitValue = orderedExitNodes.first().elevation;
+                                    } else {
+                                        minExitValue = Double.POSITIVE_INFINITY;
+                                    }
+                                }
+                            }
+
+                            // GridNode subMinNode =
+                            // getMinEqualElevNode(subSurroundingNodes,
+                            // allPitsPositions);
+                            //
+                            // if (subMinNode != null && subMinNode.elevation <
+                            // minExitValue) {
+                            // minExitValue = subMinNode.elevation;
+                            // minExitValueNode = subMinNode;
+                            // }
+                        }
+                    }
+                    workingIndex++;
+                }
+
+                if (Double.isInfinite(minExitValue)) {
+                    for( GridNode gridNode : nodesInPit ) {
+                        if (gridNode.elevation < minExitValue) {
+                            minExitValue = gridNode.elevation;
+                            orderedExitNodes.add(gridNode);
+                        }
+                    }
+                }
+
+                if (Double.isInfinite(minExitValue) || Double.isNaN(minExitValue)) {
+                    throw new RuntimeException("Found invalid value at: " + count);
+                }
+
+                PitInfo info = new PitInfo();
+                // info.originalPitNode = originalPitNode;
+                info.pitfillExitNode = orderedExitNodes.first();
+                info.nodes = nodesInPit;
+                // processedNodesInPit.addAll(nodesInPit);
+
+                GridNode pitfillExitNode = info.pitfillExitNode;
+                List<GridNode> allPitsOfCurrent = info.nodes;
+
+                BitMatrix floodedPositions = new BitMatrix(cols, rows);
+                List<GridNode> nodesToCheck = new ArrayList<>();
+                nodesToCheck.add(pitfillExitNode);
+                floodAndFlow(0, nodesToCheck, pitfillExitNode.elevation, allPitsOfCurrent, floodedPositions, pitIter);
+
+                // // update and check broders
+                // List<GridNode> updated = new ArrayList<>();
+                // for( GridNode gridNode : nodesInPit ) {
+                // GridNode updatedNode = new GridNode(pitIter, gridNode.cols,
+                // gridNode.rows, gridNode.xRes,
+                // gridNode.yRes, gridNode.col, gridNode.row);
+                // updated.add(updatedNode);
+                // }
+                // nodesInPit = updated;
+                //
+                // ConcurrentLinkedQueue<GridNode> surroundingAddedPitNodes =
+                // getPitsList(nodesInPit, allPitsPositions);
+                // if (surroundingAddedPitNodes.size() > 0) {
+                // workingIndex = nodesInPit.size();
+                // nodesInPit.addAll(surroundingAddedPitNodes);
+                // surroundingAdded = true;
+                // for( GridNode gridNode : surroundingAddedPitNodes ) {
+                // System.out.print(gridNode.col + "/" + gridNode.row + "/" +
+                // gridNode.elevation + " ");
+                // allPitsPositions.mark(gridNode.col, gridNode.row);
+                // }
+                // System.out.println();
+                // }
+            } // while
+        } // processsinglepit
+
+        if (verbose)
+            pm.worked(1);
+
     }
 
     private void removeExistingPits( BitMatrix allPitsPositions, List<GridNode> surroundingNodes ) {

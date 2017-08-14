@@ -17,26 +17,29 @@
  */
 package org.jgrasstools.gears.modules.r.rasternull;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_DOCUMENTATION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_IN_RASTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_OUT_RASTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_P_NULL_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_P_VALUE_DESCRIPTION;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.RASTERPROCESSING;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_AUTHORCONTACTS;
+import static org.jgrasstools.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_AUTHORNAMES;
+import static org.jgrasstools.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_DESCRIPTION;
+import static org.jgrasstools.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_DOCUMENTATION;
+import static org.jgrasstools.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_KEYWORDS;
+import static org.jgrasstools.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_LABEL;
+import static org.jgrasstools.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_LICENSE;
+import static org.jgrasstools.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_NAME;
+import static org.jgrasstools.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_STATUS;
 
 import java.awt.image.WritableRaster;
 
-import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.multiprocessing.GridMultiProcessing;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -50,13 +53,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.math.NumericsUtilities;
-
 @Description(OMSRASTERNULL_DESCRIPTION)
 @Documentation(OMSRASTERNULL_DOCUMENTATION)
 @Author(name = OMSRASTERNULL_AUTHORNAMES, contact = OMSRASTERNULL_AUTHORCONTACTS)
@@ -65,7 +61,7 @@ import org.jgrasstools.gears.utils.math.NumericsUtilities;
 @Name(OMSRASTERNULL_NAME)
 @Status(OMSRASTERNULL_STATUS)
 @License(OMSRASTERNULL_LICENSE)
-public class OmsRasterNull extends JGTModel {
+public class OmsRasterNull extends GridMultiProcessing {
 
     @Description(OMSRASTERNULL_IN_RASTER_DESCRIPTION)
     @In
@@ -75,7 +71,7 @@ public class OmsRasterNull extends JGTModel {
     @In
     public Double pValue = null;
 
-    @Description("If true, sets everything else to null.")
+    @Description(OMSRASTERNULL_doInverse_DESCRIPTION)
     @In
     public boolean doInverse = false;
 
@@ -87,12 +83,29 @@ public class OmsRasterNull extends JGTModel {
     @Out
     public GridCoverage2D outRaster;
 
+    public static final String OMSRASTERNULL_DESCRIPTION = "Module that puts a certain value of the raster to null.";
+    public static final String OMSRASTERNULL_DOCUMENTATION = "";
+    public static final String OMSRASTERNULL_KEYWORDS = "Null, Raster";
+    public static final String OMSRASTERNULL_LABEL = RASTERPROCESSING;
+    public static final String OMSRASTERNULL_NAME = "rnull";
+    public static final int OMSRASTERNULL_STATUS = 40;
+    public static final String OMSRASTERNULL_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSRASTERNULL_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSRASTERNULL_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSRASTERNULL_IN_RASTER_DESCRIPTION = "The raster to modify.";
+    public static final String OMSRASTERNULL_P_VALUE_DESCRIPTION = "The value to set to null.";
+    public static final String OMSRASTERNULL_doInverse_DESCRIPTION = "If true, sets everything else to null.";
+    public static final String OMSRASTERNULL_P_NULL_DESCRIPTION = "The the null value to set (else it is guessed).";
+    public static final String OMSRASTERNULL_OUT_RASTER_DESCRIPTION = "The new raster.";
+
+    private double nullValue;
+
     @Execute
     public void process() throws Exception {
         checkNull(inRaster, pValue);
 
         double replaceValue = pValue;
-        double nullValue = JGTConstants.doubleNovalue;
+        nullValue = JGTConstants.doubleNovalue;
         if (pNull != null) {
             nullValue = pNull;
         }
@@ -101,37 +114,33 @@ public class OmsRasterNull extends JGTModel {
         int rows = regionMap.getRows();
         int cols = regionMap.getCols();
 
-        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
-        RandomIter inRasterIter = CoverageUtilities.getRandomIterator(inRaster);
+        WritableRaster outWR = CoverageUtilities.renderedImage2DoubleWritableRaster(inRaster.getRenderedImage(), false);
         WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
 
-        pm.beginTask("Nulling data...", cols);
-        for( int c = 0; c < cols; c++ ) {
-            if (isCanceled(pm)) {
+        pm.beginTask("Nulling data...", cols * rows);
+        processGrid(cols, rows, ( c, r ) -> {
+            if (pm.isCanceled()) {
                 return;
             }
-            for( int r = 0; r < rows; r++ ) {
-                double value = inRasterIter.getSampleDouble(c, r, 0);
-                if (!isNovalue(value)) {
-                    if (doInverse) {
-                        if (!NumericsUtilities.dEq(value, replaceValue)) {
-                            value = doubleNovalue;
-                        }
-                    } else {
-                        if (NumericsUtilities.dEq(value, replaceValue)) {
-                            value = nullValue;
-                        }
+            double value = outIter.getSampleDouble(c, r, 0);
+            if (!isNovalue(value)) {
+                if (doInverse) {
+                    if (!NumericsUtilities.dEq(value, replaceValue)) {
+                        value = doubleNovalue;
                     }
-                    outIter.setSample(c, r, 0, value);
                 } else {
-                    outIter.setSample(c, r, 0, doubleNovalue);
+                    if (NumericsUtilities.dEq(value, replaceValue)) {
+                        value = nullValue;
+                    }
                 }
+                outIter.setSample(c, r, 0, value);
+            } else {
+                outIter.setSample(c, r, 0, doubleNovalue);
             }
             pm.worked(1);
-        }
+        });
         pm.done();
 
-        inRasterIter.done();
         outIter.done();
 
         outRaster = CoverageUtilities.buildCoverage("nulled", outWR, regionMap, inRaster.getCoordinateReferenceSystem());

@@ -42,6 +42,7 @@ org.jgrasstools.modules.HackLength
 org.jgrasstools.modules.HazardClassifier
 org.jgrasstools.modules.HecrasInputBuilder
 org.jgrasstools.modules.Hillshade
+org.jgrasstools.modules.HoleFiller
 org.jgrasstools.modules.ImageMosaicCreator
 org.jgrasstools.modules.Insolation
 org.jgrasstools.modules.IntensityClassifierDebrisFlowTN
