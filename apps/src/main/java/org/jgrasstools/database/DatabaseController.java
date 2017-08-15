@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.spatialite;
+package org.jgrasstools.database;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -102,8 +102,8 @@ import org.slf4j.LoggerFactory;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public abstract class SpatialiteController extends SpatialiteView implements IOnCloseListener {
-    private static final Logger logger = LoggerFactory.getLogger(SpatialiteView.class);
+public abstract class DatabaseController extends DatabaseView implements IOnCloseListener {
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseView.class);
     private static final long serialVersionUID = 1L;
 
     // private static final String SHAPEFILE_IMPORT = "import shapefile in selected table";
@@ -147,7 +147,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
     private List<String> oldSqlCommands = new ArrayList<String>();
 
-    public SpatialiteController( GuiBridgeHandler guiBridge ) {
+    public DatabaseController( GuiBridgeHandler guiBridge ) {
         this.guiBridge = guiBridge;
         setPreferredSize(new Dimension(900, 600));
         init();
@@ -885,7 +885,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
 
     public void onClose() {
         if (currentConnectedDatabase != null) {
-            GuiUtilities.setPreference(SpatialiteGuiUtils.JGT_SPATIALITE_LAST_FILE, currentConnectedDatabase.getDatabasePath());
+            GuiUtilities.setPreference(DatabaseGuiUtils.JGT_SPATIALITE_LAST_FILE, currentConnectedDatabase.getDatabasePath());
         }
         try {
             closeCurrentDb();
@@ -1023,7 +1023,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
             logger.error("Error closing the database...", e1);
         }
 
-        String lastPath = GuiUtilities.getPreference(SpatialiteGuiUtils.JGT_JDBC_LAST_URL,
+        String lastPath = GuiUtilities.getPreference(DatabaseGuiUtils.JGT_JDBC_LAST_URL,
                 "jdbc:h2:tcp://localhost:9092/absolute_dbpath");
 
         String urlString = GuiUtilities.showInputDialog(this, "Insert the jdbc connection url", lastPath);
@@ -1034,7 +1034,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
             return;
         }
 
-        GuiUtilities.setPreference(SpatialiteGuiUtils.JGT_JDBC_LAST_URL, urlString);
+        GuiUtilities.setPreference(DatabaseGuiUtils.JGT_JDBC_LAST_URL, urlString);
 
         urlString = urlString.replaceFirst(prefix, "");
 

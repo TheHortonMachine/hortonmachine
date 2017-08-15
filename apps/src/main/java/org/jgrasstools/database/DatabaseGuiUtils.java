@@ -1,4 +1,4 @@
-package org.jgrasstools.spatialite;
+package org.jgrasstools.database;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.objects.TableLevel;
 
-public class SpatialiteGuiUtils {
+public class DatabaseGuiUtils {
 
     public static final String JGT_SPATIALITE_LAST_FILE = "jgt-spatialite-last-file";
     public static final String JGT_JDBC_LAST_URL = "jgt_jdbc_last_url";

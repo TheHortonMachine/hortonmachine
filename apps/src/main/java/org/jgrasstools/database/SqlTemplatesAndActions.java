@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.spatialite;
+package org.jgrasstools.database;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 public class SqlTemplatesAndActions {
     private static final Logger logger = LoggerFactory.getLogger(SqlTemplatesAndActions.class);
 
-    public static Action getSelectOnColumnAction( ColumnLevel column, SpatialiteViewer spatialiteViewer ) {
+    public static Action getSelectOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Select on column"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -56,7 +56,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getUpdateOnColumnAction( ColumnLevel column, SpatialiteViewer spatialiteViewer ) {
+    public static Action getUpdateOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Update on column"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -66,7 +66,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getAddGeometryAction( ColumnLevel column, SpatialiteViewer spatialiteViewer ) {
+    public static Action getAddGeometryAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         String title = "Add geometry column";
         return new AbstractAction(title){
             @Override
@@ -83,7 +83,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getRecoverGeometryAction( ColumnLevel column, SpatialiteViewer spatialiteViewer ) {
+    public static Action getRecoverGeometryAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         String title = "Recover geometry column";
         return new AbstractAction(title){
             @Override
@@ -99,7 +99,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getDiscardGeometryColumnAction( ColumnLevel column, SpatialiteViewer spatialiteViewer ) {
+    public static Action getDiscardGeometryColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Discard geometry column"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -110,7 +110,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getCreateSpatialIndexAction( ColumnLevel column, SpatialiteViewer spatialiteViewer ) {
+    public static Action getCreateSpatialIndexAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Create spatial index"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -120,7 +120,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getCheckSpatialIndexAction( ColumnLevel column, SpatialiteViewer spatialiteViewer ) {
+    public static Action getCheckSpatialIndexAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Check spatial index"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -130,7 +130,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getRecoverSpatialIndexAction( ColumnLevel column, SpatialiteViewer spatialiteViewer ) {
+    public static Action getRecoverSpatialIndexAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Recover spatial index"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -140,7 +140,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getDisableSpatialIndexAction( ColumnLevel column, SpatialiteViewer spatialiteViewer ) {
+    public static Action getDisableSpatialIndexAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Disable spatial index"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -150,7 +150,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getShowSpatialMetadataAction( ColumnLevel column, SpatialiteViewer spatialiteViewer ) {
+    public static Action getShowSpatialMetadataAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Show spatial metadata"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -161,7 +161,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getCombinedSelectAction( ColumnLevel column, SpatialiteViewer spatialiteViewer ) {
+    public static Action getCombinedSelectAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Create combined select statement"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -176,7 +176,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getQuickViewOtherTableAction( ColumnLevel column, SpatialiteViewer spatialiteViewer ) {
+    public static Action getQuickViewOtherTableAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Quick view other table"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -193,7 +193,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getRefreshDatabaseAction( GuiBridgeHandler guiBridge, SpatialiteViewer spatialiteViewer ) {
+    public static Action getRefreshDatabaseAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Refresh"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -218,7 +218,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getCopyDatabasePathAction( SpatialiteViewer spatialiteViewer ) {
+    public static Action getCopyDatabasePathAction( DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Copy path"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -229,7 +229,7 @@ public class SqlTemplatesAndActions {
     }
 
     public static Action getCreateTableFromShapefileSchemaAction( GuiBridgeHandler guiBridge,
-            SpatialiteViewer spatialiteViewer ) {
+            DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Create table from shapefile"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -254,12 +254,12 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getSelectAction( TableLevel table, SpatialiteViewer spatialiteViewer ) {
+    public static Action getSelectAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Select statement"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
-                    String query = SpatialiteGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
+                    String query = DatabaseGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception e1) {
                     logger.error("Error", e1);
@@ -268,7 +268,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getDropAction( TableLevel table, SpatialiteViewer spatialiteViewer ) {
+    public static Action getDropAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Drop table statement"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -295,7 +295,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getCountRowsAction( TableLevel table, SpatialiteViewer spatialiteViewer ) {
+    public static Action getCountRowsAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Count table records"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -311,7 +311,7 @@ public class SqlTemplatesAndActions {
     }
 
     public static Action getImportShapefileDataAction( GuiBridgeHandler guiBridge, TableLevel table,
-            SpatialiteViewer spatialiteViewer ) {
+            DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Import data from shapefile"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -350,7 +350,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getReprojectTableAction( TableLevel table, SpatialiteViewer spatialiteViewer ) {
+    public static Action getReprojectTableAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Reproject table"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -365,7 +365,7 @@ public class SqlTemplatesAndActions {
                     String[] result = GuiUtilities.showMultiInputDialog(spatialiteViewer, "Reprojection parameters", labels,
                             values, null);
 
-                    String query = SpatialiteGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
+                    String query = DatabaseGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
                     String tableName = table.tableName;
                     String letter = tableName.substring(0, 1);
                     String columnName = letter + "." + geometryColumn.columnName;
@@ -383,12 +383,12 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getQuickViewTableAction( TableLevel table, SpatialiteViewer spatialiteViewer ) {
+    public static Action getQuickViewTableAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Quick View Table"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
-                    String query = SpatialiteGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
+                    String query = DatabaseGuiUtils.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
                     spatialiteViewer.viewSpatialQueryResult(table.tableName, query, spatialiteViewer.pm);
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -397,7 +397,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getUpdateLayerStats( GuiBridgeHandler guiBridge, SpatialiteViewer spatialiteViewer ) {
+    public static Action getUpdateLayerStats( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Update Layer Statistics"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -407,7 +407,7 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public static Action getImportSqlFileAction( GuiBridgeHandler guiBridge, SpatialiteViewer spatialiteViewer ) {
+    public static Action getImportSqlFileAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Import sql file"){
             @Override
             public void actionPerformed( ActionEvent e ) {

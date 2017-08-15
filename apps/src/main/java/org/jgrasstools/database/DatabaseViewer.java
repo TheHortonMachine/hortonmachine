@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.spatialite;
+package org.jgrasstools.database;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -63,12 +63,12 @@ import gov.nasa.worldwind.util.WWUtil;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class SpatialiteViewer extends SpatialiteController implements IOnCloseListener {
+public class DatabaseViewer extends DatabaseController implements IOnCloseListener {
     // private static final Logger logger = LoggerFactory.getLogger(SpatialiteViewer.class);
     private static final long serialVersionUID = 1L;
     private ToolsPanelController toolsPanelController;
 
-    public SpatialiteViewer( GuiBridgeHandler guiBridge ) {
+    public DatabaseViewer( GuiBridgeHandler guiBridge ) {
         super(guiBridge);
     }
 
@@ -290,10 +290,10 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
         GuiUtilities.setDefaultLookAndFeel();
 
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
-        final SpatialiteViewer controller = new SpatialiteViewer(gBridge);
+        final DatabaseViewer controller = new DatabaseViewer(gBridge);
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "JGrasstools' Spatialite Viewer");
 
-        Class<SpatialiteViewer> class1 = SpatialiteViewer.class;
+        Class<DatabaseViewer> class1 = DatabaseViewer.class;
         ImageIcon icon = new ImageIcon(class1.getResource("/org/jgrasstools/images/hm150.png"));
         frame.setIconImage(icon.getImage());
 
@@ -303,7 +303,7 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
         if (args.length > 0 && new File(args[0]).exists()) {
             openFile = new File(args[0]);
         } else {
-            String lastPath = GuiUtilities.getPreference(SpatialiteGuiUtils.JGT_SPATIALITE_LAST_FILE, (String) null);
+            String lastPath = GuiUtilities.getPreference(DatabaseGuiUtils.JGT_SPATIALITE_LAST_FILE, (String) null);
             if (lastPath != null) {
                 File tmp = new File(lastPath);
                 if (tmp.exists()) {

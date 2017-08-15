@@ -1,4 +1,4 @@
-package org.jgrasstools.spatialite;
+package org.jgrasstools.database;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -22,7 +22,7 @@ import javax.swing.JTree;
 import javax.swing.border.TitledBorder;
 
 
-public class SpatialiteView extends JPanel
+public class DatabaseView extends JPanel
 {
    JPanel _databaseTreeView = new JPanel();
    JTree _databaseTree = new JTree();
@@ -48,7 +48,7 @@ public class SpatialiteView extends JPanel
    /**
     * Default constructor
     */
-   public SpatialiteView()
+   public DatabaseView()
    {
       initializePanel();
    }
