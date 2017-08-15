@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.EDb;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
@@ -59,6 +60,11 @@ public class SpatialiteDb extends ASpatialDb {
 
     public SpatialiteDb() {
         sqliteDb = new SqliteDb();
+    }
+    
+    @Override
+    public EDb getType() {
+        return EDb.SPATIALITE;
     }
 
     public boolean open( String dbPath ) throws Exception {

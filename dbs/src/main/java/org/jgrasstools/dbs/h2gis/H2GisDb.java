@@ -69,6 +69,11 @@ public class H2GisDb extends ASpatialDb {
     public H2GisDb() {
         h2Db = new H2Db();
     }
+    
+    @Override
+    public EDb getType() {
+        return EDb.H2GIS;
+    }
 
     public void setCredentials( String user, String password ) {
         this.user = user;

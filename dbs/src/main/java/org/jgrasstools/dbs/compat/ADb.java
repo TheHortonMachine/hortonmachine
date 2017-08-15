@@ -40,6 +40,13 @@ public abstract class ADb implements AutoCloseable {
     protected String mDbPath;
 
     public boolean mPrintInfos = true;
+    
+    /**
+     * Get the database type.
+     * 
+     * @return the database type.
+     */
+    public abstract EDb getType();
 
     /**
      * Open the connection to a database.

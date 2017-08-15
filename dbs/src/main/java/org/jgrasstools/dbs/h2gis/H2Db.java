@@ -50,6 +50,11 @@ public class H2Db extends ADb {
             e.printStackTrace();
         }
     }
+    
+    @Override
+    public EDb getType() {
+        return EDb.H2;
+    }
 
     public void setCredentials( String user, String password ) {
         this.user = user;

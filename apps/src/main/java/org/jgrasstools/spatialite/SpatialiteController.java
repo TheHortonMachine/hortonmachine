@@ -292,7 +292,19 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
                     super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 
                     if (value instanceof DbLevel) {
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.DATABASE));
+                        if (currentConnectedDatabase != null) {
+                            switch( currentConnectedDatabase.getType() ) {
+                            case H2GIS:
+                                setIcon(ImageCache.getInstance().getImage(ImageCache.H2GIS32));
+                                break;
+                            case SPATIALITE:
+                                setIcon(ImageCache.getInstance().getImage(ImageCache.SPATIALITE32));
+                                break;
+                            default:
+                                setIcon(ImageCache.getInstance().getImage(ImageCache.DATABASE));
+                                break;
+                            }
+                        }
                     } else if (value instanceof TypeLevel) {
                         setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_FOLDER));
                     } else if (value instanceof TableLevel) {

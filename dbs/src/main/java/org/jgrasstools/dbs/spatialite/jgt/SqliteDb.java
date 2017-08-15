@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jgrasstools.dbs.compat.ADb;
+import org.jgrasstools.dbs.compat.EDb;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
@@ -50,6 +51,12 @@ public class SqliteDb extends ADb {
             e.printStackTrace();
         }
     }
+    
+    @Override
+    public EDb getType() {
+        return EDb.SQLITE;
+    }
+
 
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;

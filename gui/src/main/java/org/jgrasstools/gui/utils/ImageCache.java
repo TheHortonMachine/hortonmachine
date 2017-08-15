@@ -95,6 +95,9 @@ public class ImageCache {
     public static final String TREE_OPEN = "tree_open.png";
     public static final String TREE_CLOSED = "tree_closed.png";
 
+    public static final String SPATIALITE32 = "spatialite32.png";
+    public static final String H2GIS32 = "h2gis32.png";
+    
     private static ImageCache imageCache;
 
     private HashMap<String, ImageIcon> imageMap = new HashMap<String, ImageIcon>();
