@@ -15,42 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gears.io.las.spatialite;
+package org.jgrasstools.gears.io.las.databases;
 
 import com.vividsolutions.jts.geom.Polygon;
 
 /**
- * {@link LasSourcesTable} object.
+ * A level of las average data.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
- *
  */
-public class LasSource {
+public class LasLevel {
     public long id;
-    
-    /**
-     * Number of levels produced for this source.
-     * 
-     * <p>tables are named like <b>laslevelN</b> with N starting with 1
-     * being the level that summarizes the {@link LasCell}s data.
-     *  
-     */
-    public int levels;
+    public long sourceId;
 
-    /**
-     * The cell resolution in the sources srid units.
-     */
-    public double resolution;
+    public int level;
 
-    /**
-     * The level multiplication factor.
-     */
-    public double levelFactor;
-    
     public Polygon polygon;
-    public String name;
+
+    public double avgElev;
     public double minElev;
     public double maxElev;
-    public double minIntens;
-    public double maxIntens;
+
+    public short avgIntensity;
+    public short minIntensity;
+    public short maxIntensity;
 }

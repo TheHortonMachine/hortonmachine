@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gears.io.las.spatialite;
+package org.jgrasstools.gears.io.las.databases;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -59,6 +59,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
+import org.jgrasstools.gears.utils.time.EggClock;
 import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.GeneralParameterValue;
@@ -87,7 +88,7 @@ import oms3.annotations.UI;
 @Name("spatialitelaswriter")
 @Status(5)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class SpatialiteLasWriter extends JGTModel {
+public class DatabaseLasWriter extends JGTModel {
 
     @Description("The folder containing the las files to index.")
     @UI(JGTConstants.FOLDERIN_UI_HINT)
@@ -735,13 +736,24 @@ public class SpatialiteLasWriter extends JGTModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        SpatialiteLasWriter w = new SpatialiteLasWriter();
+        EggClock egg = new EggClock("DATABASE**************** ", "");
+        egg.startAndPrint(System.out);
+        DatabaseLasWriter w = new DatabaseLasWriter();
         w.pDbType = EDb.H2GIS.name();
-        w.inFolder = "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/lasmini/";
-        w.inDatabasePath = "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/las_spatialite.mv.db";
-        // w.inSpatialite =
-        // "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/las_spatialite.mv.db";
+        w.inFolder = "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/las/";
+        w.inDatabasePath = "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/las_h2gis.mv.db";
         w.process();
+
+        egg.printTimePassedInSeconds(System.out);
+        
+        w = new DatabaseLasWriter();
+        w.pDbType = EDb.SPATIALITE.name();
+        w.inFolder = "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/las/";
+        w.inDatabasePath = "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/las_spatialite.sqlite";
+        w.process();
+
+        egg.printTimePassedInSeconds(System.out);
+
     }
 
 }
