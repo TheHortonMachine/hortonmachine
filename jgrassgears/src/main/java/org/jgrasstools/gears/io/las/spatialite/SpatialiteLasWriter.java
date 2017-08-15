@@ -45,7 +45,7 @@ import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.jgrasstools.dbs.compat.ASpatialDb;
-import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
+import org.jgrasstools.dbs.compat.EDb;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
@@ -54,7 +54,6 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator;
-import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -95,10 +94,15 @@ public class SpatialiteLasWriter extends JGTModel {
     @In
     public String inFolder;
 
-    @Description("The spatialite database.")
+    @Description("The output database path.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public String inSpatialite;
+    public String inDatabasePath;
+
+    @Description("The database to use")
+    @UI("combo:" + "SPATIALITE" + "," + "H2GIS")
+    @In
+    public String pDbType = EDb.SPATIALITE.name();
 
     @Description("The optional image mosaic of ortophoto to take the color from (has to be 3-band).")
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -130,11 +134,11 @@ public class SpatialiteLasWriter extends JGTModel {
     @In
     public boolean doAvoidIndex = false;
 
-    private CoordinateReferenceSystem crs;
-
     @Description("Optional las list names to process only those (inside las folder).")
     @In
     public List<String> inLasNames;
+
+    private CoordinateReferenceSystem crs;
 
     private int srid = -9999;
 
@@ -148,7 +152,7 @@ public class SpatialiteLasWriter extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inFolder, inSpatialite);
+        checkNull(inFolder, inDatabasePath);
 
         if (pCellsize <= 0) {
             throw new ModelsIllegalargumentException("The cell size parameter needs to be > 0.", this);
@@ -179,8 +183,13 @@ public class SpatialiteLasWriter extends JGTModel {
             }
         }
 
-        try (GTSpatialiteThreadsafeDb spatialiteDb = new GTSpatialiteThreadsafeDb()) {
-            boolean existed = spatialiteDb.open(inSpatialite);
+        EDb edb = EDb.SPATIALITE;
+        if (pDbType.equals(EDb.H2GIS.name())) {
+            edb = EDb.H2GIS;
+        }
+        // try (ASpatialDb spatialiteDb = new GTSpatialiteThreadsafeDb()) {
+        try (ASpatialDb spatialiteDb = edb.getSpatialDb()) {
+            boolean existed = spatialiteDb.open(inDatabasePath);
             if (!existed) {
                 pm.beginTask("Create new spatialite database...", IJGTProgressMonitor.UNKNOWN);
                 spatialiteDb.initSpatialMetadata(null);
@@ -288,7 +297,7 @@ public class SpatialiteLasWriter extends JGTModel {
     }
 
     @SuppressWarnings("unchecked")
-    private void processFile( final SpatialiteDb spatialiteDb, File file, long sourceID, GridCoverage2D ortoGC ) throws Exception {
+    private void processFile( final ASpatialDb spatialiteDb, File file, long sourceID, GridCoverage2D ortoGC ) throws Exception {
         String name = file.getName();
         pm.message("Processing file: " + name);
 
@@ -723,6 +732,16 @@ public class SpatialiteLasWriter extends JGTModel {
 
     @Finalize
     public void close() throws Exception {
+    }
+
+    public static void main( String[] args ) throws Exception {
+        SpatialiteLasWriter w = new SpatialiteLasWriter();
+        w.pDbType = EDb.H2GIS.name();
+        w.inFolder = "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/lasmini/";
+        w.inDatabasePath = "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/las_spatialite.mv.db";
+        // w.inSpatialite =
+        // "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/las_spatialite.mv.db";
+        w.process();
     }
 
 }

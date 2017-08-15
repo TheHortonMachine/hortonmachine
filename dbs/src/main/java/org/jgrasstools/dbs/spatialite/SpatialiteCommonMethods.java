@@ -66,6 +66,17 @@ public class SpatialiteCommonMethods {
     public static void main( String[] args ) throws Exception {
         System.out.println(isSqliteFile(new File("/tmp/jgt-dbs-testdbsmain.sqlite")));
     }
+    
+    /**
+     * Check for compatibility issues with other databases.
+     * 
+     * @param sql the original sql.
+     * @return the fixed sql.
+     */
+    public static String checkCompatibilityIssues(String sql) {
+        sql = sql.replaceAll("AUTO_INCREMENT", "AUTOINCREMENT");
+        return sql;
+    }
 
     public static QueryResult getTableRecordsMapIn( ASpatialDb db, String tableName, Envelope envelope, boolean alsoPK_UID,
             int limit, int reprojectSrid ) throws Exception, ParseException {
@@ -356,7 +367,7 @@ public class SpatialiteCommonMethods {
             // database
             tableName = "DB=" + tableName;
         }
-        String sql = "ST_Intersects(" + alias + gCol.geometryColumnName + ", " + "GeomFromText('" + geometry.toText() + "')"
+        String sql = "ST_Intersects(" + alias + gCol.geometryColumnName + ", " + "ST_GeomFromText('" + geometry.toText() + "')"
                 + ") = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
                 + "f_table_name = '" + tableName + "' AND " //
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
@@ -389,7 +400,7 @@ public class SpatialiteCommonMethods {
         }
 
         if (geomColName == null) {
-            geomColName = ASpatialDb.defaultGeomFieldName;
+            geomColName = ASpatialDb.DEFAULT_GEOM_FIELD_NAME;
         }
 
         try (IJGTStatement stmt = db.getConnection().createStatement()) {
@@ -405,7 +416,7 @@ public class SpatialiteCommonMethods {
     }
 
     public static void createSpatialTable( ASpatialDb db, String tableName, int tableSrid, String geometryFieldData,
-            String[] fieldData, String[] foreignKeys ) throws Exception {
+            String[] fieldData, String[] foreignKeys, boolean avoidIndex ) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TABLE ");
         sb.append(tableName).append("(");
@@ -423,14 +434,17 @@ public class SpatialiteCommonMethods {
         }
         sb.append(")");
 
+        String sql = sb.toString();
+        sql = checkCompatibilityIssues(sql);
+
         try (IJGTStatement stmt = db.getConnection().createStatement()) {
-            stmt.execute(sb.toString());
+            stmt.execute(sql);
         }
 
         String[] split = geometryFieldData.trim().split("\\s+");
         String geomColName = split[0];
         String type = split[1];
-        addGeometryXYColumnAndIndex(db, tableName, geomColName, type, String.valueOf(tableSrid), false);
+        addGeometryXYColumnAndIndex(db, tableName, geomColName, type, String.valueOf(tableSrid), avoidIndex);
     }
 
     public static String getGeojsonIn( ASpatialDb db, String tableName, String[] fields, String wherePiece, Integer precision )

@@ -91,7 +91,7 @@ public class H2GisDb extends ASpatialDb {
      * @return
      * @throws SQLException
      */
-    public static Server startServerMode(String... args) throws SQLException {
+    public static Server startServerMode( String... args ) throws SQLException {
         Server server = Server.createTcpServer(args).start();
         return server;
     }
@@ -196,9 +196,9 @@ public class H2GisDb extends ASpatialDb {
             return info;
         }
     }
-
+    
     public void createSpatialTable( String tableName, int srid, String geometryFieldData, String[] fieldData,
-            String[] foreignKeys ) throws Exception {
+            String[] foreignKeys, boolean avoidIndex ) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TABLE ");
         sb.append(tableName).append("(");
@@ -222,11 +222,13 @@ public class H2GisDb extends ASpatialDb {
 
         addSrid(tableName, String.valueOf(srid));
 
-        String[] split = geometryFieldData.trim().split("\\s+");
-        String geomColName = split[0];
+        if (!avoidIndex) {
+            String[] split = geometryFieldData.trim().split("\\s+");
+            String geomColName = split[0];
 
-        String indexSql = "CREATE SPATIAL INDEX ON " + tableName + "(" + geomColName + ")";
-        executeInsertUpdateDeleteSql(indexSql);
+            String indexSql = "CREATE SPATIAL INDEX ON " + tableName + "(" + geomColName + ")";
+            executeInsertUpdateDeleteSql(indexSql);
+        }
     }
 
     @Override
@@ -234,6 +236,10 @@ public class H2GisDb extends ASpatialDb {
         return h2Db.getTables(doOrder);
     }
 
+    public String checkSqlCompatibilityIssues( String sql ) {
+        return h2Db.checkSqlCompatibilityIssues(sql);
+    }
+    
     @Override
     public boolean hasTable( String tableName ) throws Exception {
         return h2Db.hasTable(tableName);
@@ -312,6 +318,14 @@ public class H2GisDb extends ASpatialDb {
     @Override
     protected void logDebug( String message ) {
         logger.debug(message);
+    }
+    
+    public Geometry getGeometryFromResultSet( IJGTResultSet resultSet, int position ) throws Exception {
+        Object object = resultSet.getObject(position);
+        if (object instanceof Geometry) {
+            return (Geometry) object;
+        }
+        return null;
     }
 
     @Override
@@ -522,29 +536,27 @@ public class H2GisDb extends ASpatialDb {
             return geoms;
         }
     }
-    
-    public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision )
-            throws Exception {
+
+    public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
         if (precision == 0) {
             precision = 6;
         }
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-        
-        if (fields!=null) {
+
+        if (fields != null) {
             logger.warn("H2Gis does not support geojson export with fields.");
         }
 
         String sql;
         if (fields == null || fields.length == 0) {
-            sql = "SELECT ST_AsGeoJson(ST_Collect(ST_Transform(" + gCol.geometryColumnName + ",4326))) FROM "
-                    + tableName;
+            sql = "SELECT ST_AsGeoJson(ST_Collect(ST_Transform(" + gCol.geometryColumnName + ",4326))) FROM " + tableName;
             if (wherePiece != null) {
                 sql += " WHERE " + wherePiece;
             }
         } else {
             sql = "SELECT '{\"type\":\"FeatureCollection\",\"features\":['"
-                    + " || group_concat('{\"type\":\"Feature\",\"geometry\":' || ST_AsGeoJson("
-                    + gCol.geometryColumnName + ") || ',\"properties\": {' || ";
+                    + " || group_concat('{\"type\":\"Feature\",\"geometry\":' || ST_AsGeoJson(" + gCol.geometryColumnName
+                    + ") || ',\"properties\": {' || ";
             List<String> fieldsList = new ArrayList<>();
             for( String field : fields ) {
                 String string = "'\"" + field + "\":\"' || " + field + " || '\"'";

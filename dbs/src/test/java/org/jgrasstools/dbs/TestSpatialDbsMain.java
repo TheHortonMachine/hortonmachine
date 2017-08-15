@@ -72,7 +72,7 @@ public class TestSpatialDbsMain {
             };
 
             db.createSpatialTable(GEOMCOLL_TABLE, 4326, "the_geom GEOMETRYCOLLECTION",
-                    arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"), null);
+                    arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"));
             for( String insert : geomCollectionInserts ) {
                 db.executeInsertUpdateDeleteSql(insert);
             }

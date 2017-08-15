@@ -32,6 +32,7 @@ import org.jgrasstools.dbs.compat.objects.ForeignKey;
 import org.jgrasstools.dbs.compat.objects.QueryResult;
 import org.jgrasstools.dbs.spatialite.SpatialiteCommonMethods;
 import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
+import org.jgrasstools.dbs.spatialite.SpatialiteWKBReader;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -44,6 +45,8 @@ import jsqlite.Database;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class GPSpatialiteDb extends ASpatialDb {
+    private SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;
 
@@ -97,8 +100,13 @@ public class GPSpatialiteDb extends ASpatialDb {
     }
 
     public void createSpatialTable( String tableName, int tableSrid, String geometryFieldData, String[] fieldData,
-            String[] foreignKeys ) throws Exception {
-        SpatialiteCommonMethods.createSpatialTable(this, tableName, tableSrid, geometryFieldData, fieldData, foreignKeys);
+            String[] foreignKeys, boolean avoidIndex ) throws Exception {
+        SpatialiteCommonMethods.createSpatialTable(this, tableName, tableSrid, geometryFieldData, fieldData, foreignKeys,
+                avoidIndex);
+    }
+    
+    public String checkSqlCompatibilityIssues( String sql ) {
+        return SpatialiteCommonMethods.checkCompatibilityIssues(sql);
     }
 
     @Override
@@ -124,6 +132,13 @@ public class GPSpatialiteDb extends ASpatialDb {
     @Override
     protected void logDebug( String message ) {
         // Log.d("SpatialiteDb", message);
+    }
+
+    @Override
+    public Geometry getGeometryFromResultSet( IJGTResultSet resultSet, int position ) throws Exception {
+        byte[] geomBytes = resultSet.getBytes(position);
+        Geometry geometry = wkbReader.read(geomBytes);
+        return geometry;
     }
 
     @Override
@@ -271,7 +286,7 @@ public class GPSpatialiteDb extends ASpatialDb {
     public List<Geometry> getGeometriesIn( String tableName, Geometry intersectionGeometry ) throws Exception {
         return SpatialiteCommonMethods.getGeometriesIn(this, tableName, intersectionGeometry);
     }
-    
+
     public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
         return SpatialiteCommonMethods.getGeojsonIn(this, tableName, fields, wherePiece, precision);
     }

@@ -29,6 +29,7 @@ import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.compat.objects.ForeignKey;
+import org.jgrasstools.dbs.spatialite.SpatialiteCommonMethods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteConfig;
@@ -108,6 +109,10 @@ public class SqliteDb extends ADb {
     @Override
     protected void logDebug( String message ) {
         logger.debug(message);
+    }
+    
+    public String checkSqlCompatibilityIssues( String sql ) {
+        return SpatialiteCommonMethods.checkCompatibilityIssues(sql);
     }
 
     public List<String> getTables( boolean doOrder ) throws Exception {

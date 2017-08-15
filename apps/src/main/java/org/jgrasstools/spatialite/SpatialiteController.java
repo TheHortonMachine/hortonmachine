@@ -81,6 +81,7 @@ import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.SpatialiteCommonMethods;
 import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
 import org.jgrasstools.dbs.utils.CommonQueries;
+import org.jgrasstools.gears.io.dbs.DbsHelper;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -1254,8 +1255,7 @@ public abstract class SpatialiteController extends SpatialiteView implements IOn
         if (currentConnectedDatabase instanceof GTSpatialiteThreadsafeDb) {
             try {
                 pm.beginTask("Run query: " + sqlText + "\ninto shapefile: " + selectedFile, IJGTProgressMonitor.UNKNOWN);
-                DefaultFeatureCollection fc = ((GTSpatialiteThreadsafeDb) currentConnectedDatabase)
-                        .runRawSqlToFeatureCollection(sqlText);
+                DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(currentConnectedDatabase, sqlText);
                 OmsVectorWriter.writeVector(selectedFile.getAbsolutePath(), fc);
                 addQueryToHistoryCombo(sqlText);
             } catch (Exception e1) {

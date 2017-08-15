@@ -38,8 +38,8 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.dbs.compat.objects.ColumnLevel;
 import org.jgrasstools.dbs.compat.objects.DbLevel;
 import org.jgrasstools.dbs.compat.objects.TableLevel;
+import org.jgrasstools.gears.io.dbs.DbsHelper;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.jgrasstools.gui.console.LogConsoleController;
 import org.jgrasstools.gui.utils.DefaultGuiBridgeImpl;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
@@ -64,7 +64,7 @@ import gov.nasa.worldwind.util.WWUtil;
  *
  */
 public class SpatialiteViewer extends SpatialiteController implements IOnCloseListener {
-//    private static final Logger logger = LoggerFactory.getLogger(SpatialiteViewer.class);
+    // private static final Logger logger = LoggerFactory.getLogger(SpatialiteViewer.class);
     private static final long serialVersionUID = 1L;
     private ToolsPanelController toolsPanelController;
 
@@ -115,34 +115,28 @@ public class SpatialiteViewer extends SpatialiteController implements IOnCloseLi
         if (sqlText.trim().length() == 0) {
             return false;
         }
-        if (currentConnectedDatabase instanceof GTSpatialiteThreadsafeDb) {
-            try {
-                pm.beginTask("Run query: " + sqlText, IJGTProgressMonitor.UNKNOWN);
-                DefaultFeatureCollection fc = ((GTSpatialiteThreadsafeDb) currentConnectedDatabase)
-                        .runRawSqlToFeatureCollection(sqlText);
-                ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
-                if (toolsPanelController == null) {
-                    openNww();
-                }
-
-                if (toolsPanelController != null) {
-                    if (title == null) {
-                        title = "QueryLayer";
-                    }
-                    toolsPanelController.loadFeatureCollection(null, title, null, rfc, null);
-                    addQueryToHistoryCombo(sqlText);
-                }
-
-            } catch (Exception e1) {
-                String localizedMessage = e1.getLocalizedMessage();
-                hasError = true;
-                pm.errorMessage("An error occurred: " + localizedMessage);
-            } finally {
-                pm.done();
+        try {
+            pm.beginTask("Run query: " + sqlText, IJGTProgressMonitor.UNKNOWN);
+            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(currentConnectedDatabase, sqlText);
+            ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
+            if (toolsPanelController == null) {
+                openNww();
             }
-        } else {
-            guiBridge.messageDialog("WARNING", "This operation is not yet supported for this database type.",
-                    JOptionPane.WARNING_MESSAGE);
+
+            if (toolsPanelController != null) {
+                if (title == null) {
+                    title = "QueryLayer";
+                }
+                toolsPanelController.loadFeatureCollection(null, title, null, rfc, null);
+                addQueryToHistoryCombo(sqlText);
+            }
+
+        } catch (Exception e1) {
+            String localizedMessage = e1.getLocalizedMessage();
+            hasError = true;
+            pm.errorMessage("An error occurred: " + localizedMessage);
+        } finally {
+            pm.done();
         }
         return hasError;
     }

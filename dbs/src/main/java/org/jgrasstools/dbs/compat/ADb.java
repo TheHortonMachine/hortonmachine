@@ -60,7 +60,7 @@ public abstract class ADb implements AutoCloseable {
     public String getDatabasePath() {
         return mDbPath;
     }
-    
+
     /**
      * Get the original jdbc connection.
      * 
@@ -117,10 +117,21 @@ public abstract class ADb implements AutoCloseable {
         }
         sb.append(")");
 
+        String sql = sb.toString();
+        sql = checkSqlCompatibilityIssues(sql);
+
         try (IJGTStatement stmt = mConn.createStatement()) {
-            stmt.execute(sb.toString());
+            stmt.execute(sql);
         }
     }
+
+    /**
+     * Check for compatibility issues with different databases.
+     * 
+     * @param sql the original sql.
+     * @return the fixed sql.
+     */
+    public abstract String checkSqlCompatibilityIssues( String sql );
 
     /**
      * Create a spatial index.

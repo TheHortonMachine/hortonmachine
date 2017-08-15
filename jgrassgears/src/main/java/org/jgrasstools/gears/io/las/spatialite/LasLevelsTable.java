@@ -25,12 +25,10 @@ import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
-import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.io.WKBReader;
 
 /**
  * Table to hold all the table sources.
@@ -41,7 +39,7 @@ public class LasLevelsTable {
     public static final String TABLENAME = "laslevels";
 
     public static final String COLUMN_ID = "id";
-    public static final String COLUMN_GEOM = "the_geom";
+    public static final String COLUMN_GEOM = ASpatialDb.DEFAULT_GEOM_FIELD_NAME;
     public static final String COLUMN_SOURCE_ID = "sources_id";
 
     public static final String COLUMN_AVG_ELEV = "avgelev";
@@ -65,11 +63,11 @@ public class LasLevelsTable {
         return db.hasTable(tablename);
     }
 
-    public static void createTable( SpatialiteDb db, int srid, int levelNum, boolean avoidIndex ) throws Exception {
+    public static void createTable( ASpatialDb db, int srid, int levelNum, boolean avoidIndex ) throws Exception {
         String tablename = TABLENAME + levelNum;
         if (!db.hasTable(tablename)) {
             String[] creates = {//
-                    COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT", //
+                    COLUMN_ID + " INTEGER PRIMARY KEY AUTO_INCREMENT", //
                     COLUMN_SOURCE_ID + " INTEGER", //
                     COLUMN_AVG_ELEV + " REAL", //
                     COLUMN_MIN_ELEV + " REAL", //
@@ -78,8 +76,8 @@ public class LasLevelsTable {
                     COLUMN_MIN_INTENSITY + " INTEGER", //
                     COLUMN_MAX_INTENSITY + " INTEGER" //
             };
-            db.createTable(tablename, creates);
-            db.addGeometryXYColumnAndIndex(tablename, COLUMN_GEOM, "POLYGON", String.valueOf(srid), avoidIndex);
+            
+            db.createSpatialTable(tablename, srid, COLUMN_GEOM + " POLYGON", creates, null, avoidIndex);
 
             db.createIndex(tablename, COLUMN_SOURCE_ID, false);
             // db.createIndex(TABLENAME, COLUMN_MIN_GPSTIME, false);
@@ -107,7 +105,7 @@ public class LasLevelsTable {
                 COLUMN_AVG_INTENSITY + "," + //
                 COLUMN_MIN_INTENSITY + "," + //
                 COLUMN_MAX_INTENSITY + //
-                ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?,?,?)";
+                ") VALUES (ST_GeomFromText(?, " + srid + "),?,?,?,?,?,?,?)";
 
         IJGTConnection conn = db.getConnection();
         try (IJGTPreparedStatement pStmt = conn.prepareStatement(sql)) {
@@ -139,7 +137,7 @@ public class LasLevelsTable {
                 COLUMN_AVG_INTENSITY + "," + //
                 COLUMN_MIN_INTENSITY + "," + //
                 COLUMN_MAX_INTENSITY + //
-                ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?,?,?)";
+                ") VALUES (ST_GeomFromText(?, " + srid + "),?,?,?,?,?,?,?)";
 
         IJGTConnection conn = db.getConnection();
         boolean autoCommit = conn.getAutoCommit();
@@ -176,7 +174,7 @@ public class LasLevelsTable {
     public static List<LasLevel> getLasLevels( ASpatialDb db, int levelNum, Envelope envelope ) throws Exception {
         String tableName = TABLENAME + levelNum;
         List<LasLevel> lasLevels = new ArrayList<>();
-        String sql = "SELECT AS " + COLUMN_GEOM + "," + //
+        String sql = "SELECT " + COLUMN_GEOM + "," + //
                 COLUMN_ID + "," + COLUMN_SOURCE_ID + "," + COLUMN_AVG_ELEV + "," + //
                 COLUMN_MIN_ELEV + "," + //
                 COLUMN_MAX_ELEV + "," + //
@@ -195,14 +193,12 @@ public class LasLevelsTable {
         }
 
         IJGTConnection conn = db.getConnection();
-        WKBReader wkbReader = new WKBReader();
         try (IJGTStatement stmt = conn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 LasLevel lasLevel = new LasLevel();
                 lasLevel.level = levelNum;
                 int i = 1;
-                byte[] geomBytes = rs.getBytes(i++);
-                Geometry geometry = wkbReader.read(geomBytes);
+                Geometry geometry = db.getGeometryFromResultSet(rs, i++);
                 if (geometry instanceof Polygon) {
                     Polygon polygon = (Polygon) geometry;
                     lasLevel.polygon = polygon;
@@ -248,14 +244,12 @@ public class LasLevelsTable {
         }
 
         IJGTConnection conn = db.getConnection();
-        WKBReader wkbReader = new WKBReader();
         try (IJGTStatement stmt = conn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 LasLevel lasLevel = new LasLevel();
                 lasLevel.level = levelNum;
                 int i = 1;
-                byte[] geomBytes = rs.getBytes(i++);
-                Geometry tmpGeometry = wkbReader.read(geomBytes);
+                Geometry tmpGeometry = db.getGeometryFromResultSet(rs, i++);
                 if (tmpGeometry instanceof Polygon) {
                     Polygon polygon = (Polygon) tmpGeometry;
                     lasLevel.polygon = polygon;

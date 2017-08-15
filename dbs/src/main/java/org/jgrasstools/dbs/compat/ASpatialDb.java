@@ -37,7 +37,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
 
     public static String PK_UID = "PK_UID";
     public static String PKUID = "PKUID";
-    public static String defaultGeomFieldName = "the_geom";
+    public final static String DEFAULT_GEOM_FIELD_NAME = "the_geom";
 
     /**
      * Open the connection to a database.
@@ -64,10 +64,28 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      *            KEY).
      * @param foreignKeys
      *            foreign keys definitions, if available (ex. FOREIGN KEY (table1id) REFERENCES table1(id)).
+     * @param avoidIndex if <code>true</code>, no spatial index is created.
      * @throws SQLException
      */
     public abstract void createSpatialTable( String tableName, int tableSrid, String geometryFieldData, String[] fieldData,
-            String[] foreignKeys ) throws Exception;
+            String[] foreignKeys, boolean avoidIndex ) throws Exception;
+
+    /**
+     * Creates a spatial table with default values for foreign keys and index.
+     * 
+     * @param tableName
+     *            the table name.
+     * @param tableSrid the table's epsg code.
+     * @param geometryFieldData the data for the geometry column, ex. the_geom MULTIPOLYGON
+     * @param fieldData
+     *            the data for each the field (ex. id INTEGER NOT NULL PRIMARY
+     *            KEY).
+     * @throws Exception
+     */
+    public void createSpatialTable( String tableName, int tableSrid, String geometryFieldData, String[] fieldData )
+            throws Exception {
+        createSpatialTable(tableName, tableSrid, geometryFieldData, fieldData, null, false);
+    }
 
     /**
      * Create Spatial Metadata initialize SPATIAL_REF_SYS and GEOMETRY_COLUMNS.
@@ -268,5 +286,15 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
     protected abstract void logInfo( String message );
 
     protected abstract void logDebug( String message );
+
+    /**
+     * Extract the geometry from a resultset.
+     * 
+     * @param resultSet the resultset to get the {@link Geometry} from.
+     * @param position the position of the geometry object in the resultset.
+     * @return the extracted geometry.
+     * @throws Exception 
+     */
+    public abstract Geometry getGeometryFromResultSet( IJGTResultSet resultSet, int position ) throws Exception;
 
 }

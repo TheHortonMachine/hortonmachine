@@ -27,11 +27,9 @@ import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
-import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.io.WKBReader;
 
 /**
  * Table to hold all the table sources.
@@ -42,7 +40,7 @@ public class LasSourcesTable {
     public static final String TABLENAME = "lassources";
 
     public static final String COLUMN_ID = "id";
-    public static final String COLUMN_GEOM = "the_geom";
+    public static final String COLUMN_GEOM = ASpatialDb.DEFAULT_GEOM_FIELD_NAME;
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_RESOLUTION = "resolution";
     public static final String COLUMN_FACTOR = "factor";
@@ -52,10 +50,10 @@ public class LasSourcesTable {
     public static final String COLUMN_MININTENSITY = "minintens";
     public static final String COLUMN_MAXINTENSITY = "maxintens";
 
-    public static void createTable( SpatialiteDb db, int srid, boolean avoidIndex ) throws Exception {
+    public static void createTable( ASpatialDb db, int srid, boolean avoidIndex ) throws Exception {
         if (!db.hasTable(TABLENAME)) {
             String[] creates = {//
-                    COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT", //
+                    COLUMN_ID + " INTEGER PRIMARY KEY AUTO_INCREMENT", //
                     COLUMN_NAME + " TEXT", //
                     COLUMN_RESOLUTION + " REAL", //
                     COLUMN_FACTOR + " REAL", //
@@ -65,9 +63,7 @@ public class LasSourcesTable {
                     COLUMN_MININTENSITY + " REAL", //
                     COLUMN_MAXINTENSITY + " REAL"//
             };
-            db.createTable(TABLENAME, creates);
-            String epsg = String.valueOf(srid);
-            db.addGeometryXYColumnAndIndex(TABLENAME, COLUMN_GEOM, "POLYGON", epsg, avoidIndex);
+            db.createSpatialTable(TABLENAME, srid, COLUMN_GEOM + " POLYGON", creates, null, avoidIndex);
         }
     }
 
@@ -94,7 +90,7 @@ public class LasSourcesTable {
                 + " (" + COLUMN_GEOM + "," + COLUMN_NAME + "," + COLUMN_RESOLUTION + "," //
                 + COLUMN_FACTOR + "," + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + "," + COLUMN_MININTENSITY + ","
                 + COLUMN_MAXINTENSITY + //
-                ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?,?,?,?)";
+                ") VALUES (ST_GeomFromText(?, " + srid + "),?,?,?,?,?,?,?,?)";
 
         IJGTConnection conn = db.getConnection();
         try (IJGTPreparedStatement pStmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -143,18 +139,16 @@ public class LasSourcesTable {
      */
     public static List<LasSource> getLasSources( ASpatialDb db ) throws Exception {
         List<LasSource> sources = new ArrayList<>();
-        String sql = "SELECT " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_NAME + ","
-                + COLUMN_RESOLUTION + "," + COLUMN_FACTOR + "," + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + ","
-                + COLUMN_MININTENSITY + "," + COLUMN_MAXINTENSITY + " FROM " + TABLENAME;
+        String sql = "SELECT " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_NAME + "," + COLUMN_RESOLUTION + "," + COLUMN_FACTOR
+                + "," + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + "," + COLUMN_MININTENSITY + ","
+                + COLUMN_MAXINTENSITY + " FROM " + TABLENAME;
 
         IJGTConnection conn = db.getConnection();
-        WKBReader wkbReader = new WKBReader();
         try (IJGTStatement stmt = conn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 LasSource lasSource = new LasSource();
                 int i = 1;
-                byte[] geomBytes = rs.getBytes(i++);
-                Geometry geometry = wkbReader.read(geomBytes);
+                Geometry geometry = db.getGeometryFromResultSet(rs, i++);
                 if (geometry instanceof Polygon) {
                     Polygon polygon = (Polygon) geometry;
                     lasSource.polygon = polygon;

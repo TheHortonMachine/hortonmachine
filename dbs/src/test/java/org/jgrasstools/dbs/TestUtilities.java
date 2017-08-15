@@ -11,7 +11,7 @@ public class TestUtilities {
     public static final String LINES_TABLE = "lines";
     public static final String GEOMCOLL_TABLE = "geomcoll";
 
-    public static void createGeomTables(ASpatialDb db) throws Exception {
+    public static void createGeomTables( ASpatialDb db ) throws Exception {
         String[] multiPolygonInserts = {//
                 "INSERT INTO " + MPOLY_TABLE + " (id, name, temperature, the_geom) VALUES(1, 'Tscherms', 36.0, "
                         + "ST_GeomFromText('MULTIPOLYGON (((0 10, 10 10, 10 0, 0 0, 0 10)))', 4326));", //
@@ -51,19 +51,19 @@ public class TestUtilities {
         };
 
         db.createSpatialTable(MPOLY_TABLE, 4326, "the_geom MULTIPOLYGON",
-                arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"), null);
+                arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"));
         db.createSpatialTable(POLY_TABLE, 4326, "the_geom POLYGON",
-                arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"), null);
+                arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"));
 
         db.createSpatialTable(MPOINTS_TABLE, 4326, "the_geom MULTIPOINT",
-                arr("id INT PRIMARY KEY", "table1id INT", "FOREIGN KEY (table1id) REFERENCES " + MPOLY_TABLE + "(id)"), null);
+                arr("id INT PRIMARY KEY", "table1id INT", "FOREIGN KEY (table1id) REFERENCES " + MPOLY_TABLE + "(id)"));
         db.createSpatialTable(POINTS_TABLE, 4326, "the_geom POINT",
-                arr("id INT PRIMARY KEY", "table1id INT", "FOREIGN KEY (table1id) REFERENCES " + POLY_TABLE + "(id)"), null);
+                arr("id INT PRIMARY KEY", "table1id INT", "FOREIGN KEY (table1id) REFERENCES " + POLY_TABLE + "(id)"));
 
         db.createSpatialTable(MLINES_TABLE, 4326, "the_geom MULTILINESTRING",
-                arr("id INT PRIMARY KEY", "table1id INT", "FOREIGN KEY (table1id) REFERENCES " + MPOLY_TABLE + "(id)"), null);
+                arr("id INT PRIMARY KEY", "table1id INT", "FOREIGN KEY (table1id) REFERENCES " + MPOLY_TABLE + "(id)"));
         db.createSpatialTable(LINES_TABLE, 4326, "the_geom LINESTRING",
-                arr("id INT PRIMARY KEY", "table1id INT", "FOREIGN KEY (table1id) REFERENCES " + POLY_TABLE + "(id)"), null);
+                arr("id INT PRIMARY KEY", "table1id INT", "FOREIGN KEY (table1id) REFERENCES " + POLY_TABLE + "(id)"));
 
         for( String insert : multiPolygonInserts ) {
             db.executeInsertUpdateDeleteSql(insert);

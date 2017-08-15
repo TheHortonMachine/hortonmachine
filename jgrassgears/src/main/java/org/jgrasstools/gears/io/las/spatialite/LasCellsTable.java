@@ -26,13 +26,11 @@ import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
-import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKBReader;
 
 /**
  * Table to hold all the table sources.
@@ -43,7 +41,7 @@ public class LasCellsTable {
     public static final String TABLENAME = "lascells";
 
     public static final String COLUMN_ID = "id";
-    public static final String COLUMN_GEOM = "the_geom";
+    public static final String COLUMN_GEOM = ASpatialDb.DEFAULT_GEOM_FIELD_NAME;
     public static final String COLUMN_SOURCE_ID = "sources_id";
     public static final String COLUMN_POINTS_COUNT = "pointscount";
 
@@ -65,10 +63,10 @@ public class LasCellsTable {
 
     public static final String COLUMN_COLORS_BLOB = "colors_blob";
 
-    public static void createTable( SpatialiteDb db, int srid, boolean avoidIndex  ) throws Exception {
+    public static void createTable( ASpatialDb db, int srid, boolean avoidIndex ) throws Exception {
         if (!db.hasTable(TABLENAME)) {
             String[] creates = {//
-                    COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT", //
+                    COLUMN_ID + " INTEGER PRIMARY KEY AUTO_INCREMENT", //
                     COLUMN_SOURCE_ID + " INTEGER", //
                     COLUMN_POINTS_COUNT + " INTEGER", //
                     COLUMN_AVG_ELEV + " REAL", //
@@ -85,8 +83,7 @@ public class LasCellsTable {
                     COLUMN_GPSTIME_BLOB + " BLOB", //
                     COLUMN_COLORS_BLOB + " BLOB"//
             };
-            db.createTable(TABLENAME, creates);
-            db.addGeometryXYColumnAndIndex(TABLENAME, COLUMN_GEOM, "POLYGON", String.valueOf(srid), avoidIndex);
+            db.createSpatialTable(TABLENAME, srid, COLUMN_GEOM + " POLYGON", creates, null, avoidIndex);
 
             db.createIndex(TABLENAME, COLUMN_SOURCE_ID, false);
             // db.createIndex(TABLENAME, COLUMN_MIN_GPSTIME, false);
@@ -122,7 +119,7 @@ public class LasCellsTable {
                 COLUMN_MAX_GPSTIME + "," + //
                 COLUMN_GPSTIME_BLOB + "," + //
                 COLUMN_COLORS_BLOB + //
-                ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                ") VALUES (ST_GeomFromText(?, " + srid + "),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         IJGTConnection conn = db.getConnection();
         try (IJGTPreparedStatement pStmt = conn.prepareStatement(sql)) {
@@ -171,7 +168,7 @@ public class LasCellsTable {
                 COLUMN_MAX_GPSTIME + "," + //
                 COLUMN_GPSTIME_BLOB + "," + //
                 COLUMN_COLORS_BLOB + //
-                ") VALUES (GeomFromText(?, " + srid + "),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                ") VALUES (ST_GeomFromText(?, " + srid + "),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         IJGTConnection conn = db.getConnection();
         boolean autoCommit = conn.getAutoCommit();
@@ -225,8 +222,7 @@ public class LasCellsTable {
     public static List<LasCell> getLasCells( ASpatialDb db, Envelope envelope, Geometry exactGeometry, boolean doPosition,
             boolean doIntensity, boolean doReturns, boolean doTime, boolean doColor, int limitTo ) throws Exception {
         List<LasCell> lasCells = new ArrayList<>();
-        String sql = "SELECT " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
-                + COLUMN_POINTS_COUNT;
+        String sql = "SELECT " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + "," + COLUMN_POINTS_COUNT;
 
         if (doPosition)
             sql += "," + COLUMN_AVG_ELEV + "," + //
@@ -267,10 +263,9 @@ public class LasCellsTable {
         }
 
         IJGTConnection conn = db.getConnection();
-        WKBReader wkbReader = new WKBReader();
         try (IJGTStatement stmt = conn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
-                LasCell lasCell = resultSetToCell(doPosition, doIntensity, doReturns, doTime, doColor, wkbReader, rs);
+                LasCell lasCell = resultSetToCell(db, doPosition, doIntensity, doReturns, doTime, doColor, rs);
                 lasCells.add(lasCell);
             }
             return lasCells;
@@ -293,8 +288,7 @@ public class LasCellsTable {
     public static List<LasCell> getLasCells( ASpatialDb db, Geometry geometry, boolean doPosition, boolean doIntensity,
             boolean doReturns, boolean doTime, boolean doColor ) throws Exception {
         List<LasCell> lasCells = new ArrayList<>();
-        String sql = "SELECT " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
-                + COLUMN_POINTS_COUNT;
+        String sql = "SELECT " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + "," + COLUMN_POINTS_COUNT;
 
         if (doPosition)
             sql += "," + COLUMN_AVG_ELEV + "," + //
@@ -325,10 +319,9 @@ public class LasCellsTable {
         }
 
         IJGTConnection conn = db.getConnection();
-        WKBReader wkbReader = new WKBReader();
         try (IJGTStatement stmt = conn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
-                LasCell lasCell = resultSetToCell(doPosition, doIntensity, doReturns, doTime, doColor, wkbReader, rs);
+                LasCell lasCell = resultSetToCell(db, doPosition, doIntensity, doReturns, doTime, doColor, rs);
                 lasCells.add(lasCell);
             }
             return lasCells;
@@ -351,8 +344,7 @@ public class LasCellsTable {
     public static List<LasCell> getLasCellsBySource( ASpatialDb db, long sourceId, boolean doPosition, boolean doIntensity,
             boolean doReturns, boolean doTime, boolean doColor ) throws Exception {
         List<LasCell> lasCells = new ArrayList<>();
-        String sql = "SELECT " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + ","
-                + COLUMN_POINTS_COUNT;
+        String sql = "SELECT " + COLUMN_GEOM + "," + COLUMN_ID + "," + COLUMN_SOURCE_ID + "," + COLUMN_POINTS_COUNT;
 
         if (doPosition)
             sql += "," + COLUMN_AVG_ELEV + "," + //
@@ -380,22 +372,21 @@ public class LasCellsTable {
         sql += " WHERE " + COLUMN_SOURCE_ID + "=" + sourceId;
 
         IJGTConnection conn = db.getConnection();
-        WKBReader wkbReader = new WKBReader();
         try (IJGTStatement stmt = conn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
-                LasCell lasCell = resultSetToCell(doPosition, doIntensity, doReturns, doTime, doColor, wkbReader, rs);
+                LasCell lasCell = resultSetToCell(db, doPosition, doIntensity, doReturns, doTime, doColor, rs);
                 lasCells.add(lasCell);
             }
             return lasCells;
         }
     }
 
-    private static LasCell resultSetToCell( boolean doPosition, boolean doIntensity, boolean doReturns, boolean doTime,
-            boolean doColor, WKBReader wkbReader, IJGTResultSet rs ) throws Exception, ParseException {
+    private static LasCell resultSetToCell( ASpatialDb db, boolean doPosition, boolean doIntensity, boolean doReturns,
+            boolean doTime, boolean doColor, IJGTResultSet rs ) throws Exception, ParseException {
         LasCell lasCell = new LasCell();
         int i = 1;
-        byte[] geomBytes = rs.getBytes(i++);
-        Geometry tmpGeometry = wkbReader.read(geomBytes);
+
+        Geometry tmpGeometry = db.getGeometryFromResultSet(rs, i++);
         if (tmpGeometry instanceof Polygon) {
             Polygon polygon = (Polygon) tmpGeometry;
             lasCell.polygon = polygon;

@@ -21,31 +21,18 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
-import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
-import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
-import org.jgrasstools.dbs.spatialite.SpatialiteWKBReader;
 import org.jgrasstools.dbs.spatialite.jgt.SpatialiteThreadsafeDb;
 import org.jgrasstools.gears.utils.CrsUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * A spatialite database threadsafe on writing (see package javadoc for more info).
@@ -54,113 +41,6 @@ import com.vividsolutions.jts.geom.Geometry;
  *
  */
 public class GTSpatialiteThreadsafeDb extends SpatialiteThreadsafeDb {
-    private static final Logger logger = LoggerFactory.getLogger(GTSpatialiteThreadsafeDb.class);
-
-    /**
-     * Extractes a featurecollection from an sql statement.
-     * 
-     * <p>The assumption is made that the first string after the FROM
-     * keyword in the select statement is the table that contains the geometry.
-     * 
-     * @param simpleSql the sql.
-     * @return the features.
-     * @throws Exception
-     */
-    public DefaultFeatureCollection runRawSqlToFeatureCollection( String simpleSql ) throws Exception {
-        String[] split = simpleSql.split("\\s+");
-        String tableName = null;
-        for( int i = 0; i < split.length; i++ ) {
-            if (split[i].toLowerCase().equals("from")) {
-                tableName = split[i + 1];
-                break;
-            }
-        }
-
-        if (tableName == null) {
-            throw new RuntimeException("The geometry table name needs to be the first after the FROM keyword.");
-        }
-
-        GeometryColumn geometryColumns = getGeometryColumnsForTable(tableName);
-        if (geometryColumns == null) {
-            throw new IllegalArgumentException("The supplied table name doesn't seem to be spatial: " + tableName);
-        }
-        String geomColumnName = geometryColumns.geometryColumnName;
-
-        DefaultFeatureCollection fc = new DefaultFeatureCollection();
-        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
-        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(simpleSql)) {
-            IJGTResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
-            int geometryIndex = -1;
-
-            CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumns.srid);
-            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-            b.setName("sql");
-            b.setCRS(crs);
-
-            for( int i = 1; i <= columnCount; i++ ) {
-                String columnTypeName = rsmd.getColumnTypeName(i);
-                String columnName = rsmd.getColumnName(i);
-                if (geomColumnName.equalsIgnoreCase(columnName) || ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
-                    geometryIndex = i;
-
-                    if (rs.next()) {
-                        byte[] geomBytes = rs.getBytes(geometryIndex);
-                        Geometry geometry = wkbReader.read(geomBytes);
-                        b.add("the_geom", geometry.getClass());
-                    }
-
-                } else {
-                    // Class< ? > forName = Class.forName(columnClassName);
-                    switch( columnTypeName ) {
-                    case "INTEGER":
-                        b.add(columnName, Integer.class);
-                        break;
-                    case "DOUBLE":
-                    case "FLOAT":
-                    case "REAL":
-                        b.add(columnName, Double.class);
-                        break;
-                    case "DATE":
-                        b.add(columnName, Date.class);
-                        break;
-                    case "TEXT":
-                    default:
-                        b.add(columnName, String.class);
-                        break;
-                    }
-                }
-            }
-
-            SimpleFeatureType type = b.buildFeatureType();
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-            do {
-
-                try {
-                    Object[] values = new Object[columnCount];
-                    for( int j = 1; j <= columnCount; j++ ) {
-                        if (j == geometryIndex) {
-                            byte[] geomBytes = rs.getBytes(j);
-                            Geometry geometry = wkbReader.read(geomBytes);
-                            values[j - 1] = geometry;
-                        } else {
-                            Object object = rs.getObject(j);
-                            if (object != null) {
-                                values[j - 1] = object;
-                            }
-                        }
-                    }
-                    builder.addAll(values);
-                    SimpleFeature feature = builder.buildFeature(null);
-                    fc.add(feature);
-                } catch (Exception e) {
-                    logger.error("ERROR", e);
-                }
-            } while( rs.next() );
-
-        }
-        return fc;
-    }
 
     @Override
     public ReferencedEnvelope getTableBounds( String tableName ) throws Exception {
