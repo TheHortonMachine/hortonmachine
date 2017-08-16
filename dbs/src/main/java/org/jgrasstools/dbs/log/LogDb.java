@@ -5,13 +5,15 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jgrasstools.dbs.compat.ADb;
+import org.jgrasstools.dbs.compat.EDb;
+import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
-import org.jgrasstools.dbs.spatialite.jgt.SqliteDb;
 import org.joda.time.DateTime;
 
-public class LogDb extends SqliteDb {
+public class LogDb implements AutoCloseable {
     public static final String TABLE_MESSAGES = "logmessages";
 
     // TABLE_EVENTS
@@ -21,8 +23,21 @@ public class LogDb extends SqliteDb {
     public static final String tag_NAME = "tag";
     public static final String message_NAME = "msg";
 
+    private ADb logDb;
+
+    private IJGTConnection mConn;
+
+    public LogDb() throws Exception {
+        this(EDb.SQLITE);
+    }
+
+    public LogDb( EDb dbType ) throws Exception {
+        logDb = dbType.getDb();
+    }
+
     public boolean open( String dbPath ) throws Exception {
-        boolean open = super.open(dbPath);
+        boolean open = logDb.open(dbPath);
+        mConn = logDb.getConnection();
         if (!open) {
             createTable();
             createIndexes();
@@ -31,10 +46,10 @@ public class LogDb extends SqliteDb {
     }
 
     public void createTable() throws Exception {
-        if (!hasTable(TABLE_MESSAGES)) {
+        if (!logDb.hasTable(TABLE_MESSAGES)) {
             String[] fields = { //
-                    ID_NAME + " INTEGER", //
-                    TimeStamp_NAME + " INTEGER", //
+                    ID_NAME + " LONG PRIMARY KEY AUTOINCREMENT", //
+                    TimeStamp_NAME + " LONG", //
                     type_NAME + " INTEGER", //
                     tag_NAME + " TEXT", //
                     message_NAME + " TEXT"//
@@ -49,20 +64,20 @@ public class LogDb extends SqliteDb {
                 }
                 sb.append(fields[i]);
             }
-            sb.append(", PRIMARY KEY (" + ID_NAME + ")");
             sb.append(");");
 
+            String sql = logDb.checkSqlCompatibilityIssues(sb.toString());
             try (IJGTStatement stmt = mConn.createStatement()) {
-                stmt.execute(sb.toString());
+                stmt.execute(sql);
             }
 
         }
     }
 
     public void createIndexes() throws Exception {
-        if (hasTable(TABLE_MESSAGES)) {
-            createIndex(TABLE_MESSAGES, TimeStamp_NAME, false);
-            createIndex(TABLE_MESSAGES, type_NAME, false);
+        if (logDb.hasTable(TABLE_MESSAGES)) {
+            logDb.createIndex(TABLE_MESSAGES, TimeStamp_NAME, false);
+            logDb.createIndex(TABLE_MESSAGES, type_NAME, false);
         }
     }
 
@@ -220,6 +235,15 @@ public class LogDb extends SqliteDb {
         try (IJGTStatement stmt = mConn.createStatement()) {
             stmt.execute("delete from " + TABLE_MESSAGES);
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        logDb.close();
+    }
+
+    public String getDatabasePath() {
+        return logDb.getDatabasePath();
     }
 
 }
