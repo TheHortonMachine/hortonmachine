@@ -455,6 +455,9 @@ public class H2GisDb extends ASpatialDb {
             }
         }
         String itemsWithComma = DbsUtilities.joinByComma(items);
+        if (itemsWithComma.trim().length()==0) {
+            itemsWithComma = "*";
+        }
         sql += itemsWithComma;
         sql += " FROM " + tableName;
         if (envelope != null) {

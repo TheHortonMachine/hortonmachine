@@ -17,6 +17,8 @@
  */
 package org.jgrasstools.dbs.compat;
 
+import java.io.File;
+
 import org.jgrasstools.dbs.compat.objects.ColumnLevel;
 import org.jgrasstools.dbs.compat.objects.TableLevel;
 
@@ -67,5 +69,7 @@ public abstract class ASqlTemplates {
 
     public abstract String reprojectTable( TableLevel table, ASpatialDb db, ColumnLevel geometryColumn, String tableName,
             String newTableName, String newSrid ) throws Exception;
+
+    public abstract String attachShapefile( File file );
 
 }

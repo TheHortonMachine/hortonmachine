@@ -314,6 +314,31 @@ public class SqlTemplatesAndActions {
         };
     }
 
+    public Action getAttachShapefileAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
+        return new AbstractAction("Attach readonly shapefile"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile());
+                if (openFiles != null && openFiles.length > 0) {
+                    try {
+                        GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
+                    } catch (Exception e1) {
+                        logger.error("ERROR", e1);
+                    }
+                } else {
+                    return;
+                }
+                try {
+                    String query = sqlTemplates.attachShapefile(openFiles[0]);
+                    spatialiteViewer.addTextToQueryEditor(query);
+                } catch (Exception e1) {
+                    logger.error("ERROR", e1);
+                }
+                
+            }
+        };
+    }
+
     public Action getSelectAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Select statement"){
             @Override

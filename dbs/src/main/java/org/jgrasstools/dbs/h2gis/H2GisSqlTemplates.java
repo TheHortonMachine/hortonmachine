@@ -17,6 +17,8 @@
  */
 package org.jgrasstools.dbs.h2gis;
 
+import java.io.File;
+
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.ASqlTemplates;
 import org.jgrasstools.dbs.compat.objects.ColumnLevel;
@@ -72,22 +74,14 @@ public class H2GisSqlTemplates extends ASqlTemplates {
 
     @Override
     public String showSpatialMetadata( String tableName, String columnName ) {
-        // TODO
-        String query = "SELECT * FROM geom_cols_ref_sys WHERE Lower(f_table_name) = Lower('" + tableName
+        String query = "SELECT * FROM GEOMETRY_COLUMNS WHERE Lower(f_table_name) = Lower('" + tableName
                 + "') AND Lower(f_geometry_column) = Lower('" + columnName + "')";
         return query;
     }
 
     @Override
     public String dropTable( String tableName, String geometryColumnName ) {
-        // TODO
-        String query = "";
-        if (geometryColumnName != null) {
-            query = "SELECT DiscardGeometryColumn('" + tableName + "', '" + geometryColumnName + "');";
-            query += "\nSELECT DisableSpatialIndex('" + tableName + "', '" + geometryColumnName + "');";
-            query += "\nDROP TABLE idx_" + tableName + "_" + geometryColumnName + ";";
-        }
-        query += "drop table " + tableName + ";";
+        String query = "drop table if exists " + tableName + ";";
         return query;
     }
 
@@ -98,10 +92,20 @@ public class H2GisSqlTemplates extends ASqlTemplates {
         String letter = tableName.substring(0, 1);
         String columnName = letter + "." + geometryColumn.columnName;
         String query = DbsUtilities.getSelectQuery(db, table, false);
-        query = query.replaceFirst(columnName, "TRANSFORM(" + columnName + ", " + newSrid + ")");
+        query = query.replaceFirst(columnName, "ST_Transform(" + columnName + ", " + newSrid + ")");
         query = "create table " + newTableName + " as " + query + ";\n";
         query += "SELECT RecoverGeometryColumn('" + newTableName + "', '" + geometryColumn.columnName + "'," + newSrid + ",'"
                 + geometryColumn.columnType + "'," + geometryColumn.geomColumn.coordinatesDimension + ");";
+        return query;
+    }
+
+    @Override
+    public String attachShapefile( File file ) {
+        String absolutePath = file.getAbsolutePath();
+        String name = file.getName();
+        name = name.substring(0, name.length() - 4);
+        String tableName = name.replace('.', '_');
+        String query = "CALL FILE_TABLE('" + absolutePath + "', '" + tableName + "');";
         return query;
     }
 }

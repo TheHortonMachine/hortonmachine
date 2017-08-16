@@ -264,8 +264,30 @@ public class SpatialiteCommonMethods {
                 gc.isSpatialIndexEnabled = rs.getInt(6);
                 return gc;
             }
-            return null;
         }
+
+        // check in virtual tables
+        sql = "select " + SpatialiteGeometryColumns.VIRT_F_TABLE_NAME + ", " //
+                + SpatialiteGeometryColumns.VIRT_F_GEOMETRY_COLUMN + ", " //
+                + SpatialiteGeometryColumns.VIRT_GEOMETRY_TYPE + "," //
+                + SpatialiteGeometryColumns.VIRT_COORD_DIMENSION + ", " //
+                + SpatialiteGeometryColumns.VIRT_SRID + " from " //
+                + attachedStr + SpatialiteGeometryColumns.VIRT_TABLENAME + " where Lower("
+                + SpatialiteGeometryColumns.VIRT_F_TABLE_NAME + ")=Lower('" + tableName + "')";
+        try (IJGTStatement stmt = connection.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();
+                gc.tableName = rs.getString(1);
+                gc.geometryColumnName = rs.getString(2);
+                gc.geometryType = rs.getInt(3);
+                gc.coordinatesDimension = rs.getInt(4);
+                gc.srid = rs.getInt(5);
+                gc.isSpatialIndexEnabled = 0;
+                return gc;
+            }
+        }
+        
+        return null;
     }
 
     public static void initSpatialMetadata( ASpatialDb db, String options ) throws Exception {

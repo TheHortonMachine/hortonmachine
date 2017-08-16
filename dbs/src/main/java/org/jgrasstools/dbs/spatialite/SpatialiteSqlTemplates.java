@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.dbs.spatialite;
+import java.io.File;
+
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.ASqlTemplates;
 import org.jgrasstools.dbs.compat.objects.ColumnLevel;
@@ -103,10 +105,21 @@ public class SpatialiteSqlTemplates extends ASqlTemplates {
         String letter = tableName.substring(0, 1);
         String columnName = letter + "." + geometryColumn.columnName;
         String query = DbsUtilities.getSelectQuery(db, table, false);
-        query = query.replaceFirst(columnName, "TRANSFORM(" + columnName + ", " + newSrid + ")");
+        query = query.replaceFirst(columnName, "ST_Transform(" + columnName + ", " + newSrid + ")");
         query = "create table " + newTableName + " as " + query + ";\n";
         query += "SELECT RecoverGeometryColumn('" + newTableName + "', '" + geometryColumn.columnName + "'," + newSrid + ",'"
                 + geometryColumn.columnType + "'," + geometryColumn.geomColumn.coordinatesDimension + ");";
+        return query;
+    }
+
+    @Override
+    public String attachShapefile( File file ) {
+        String absolutePath = file.getAbsolutePath();
+        String name = file.getName();
+        name = name.substring(0, name.length() - 4);
+        String tableName = name.replace('.', '_');
+        absolutePath = absolutePath.substring(0, absolutePath.length() - 4);
+        String query = "CREATE VIRTUAL TABLE '" + tableName + "' USING VirtualShape('" + absolutePath + "', 'UTF-8', 4326) ";
         return query;
     }
 }

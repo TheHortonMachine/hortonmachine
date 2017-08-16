@@ -34,4 +34,12 @@ public class SpatialiteGeometryColumns extends GeometryColumn{
     public static final String SRID = "srid";
     public static final String SPATIAL_INDEX_ENABLED = "spatial_index_enabled";
 
+    // virtual tables
+    public static final String VIRT_TABLENAME = "virts_geometry_columns";
+    public static final String VIRT_F_TABLE_NAME = "virt_name";
+    public static final String VIRT_F_GEOMETRY_COLUMN = "virt_geometry";
+    public static final String VIRT_GEOMETRY_TYPE = "geometry_type";
+    public static final String VIRT_COORD_DIMENSION = "coord_dimension";
+    public static final String VIRT_SRID = "srid";
+
 }

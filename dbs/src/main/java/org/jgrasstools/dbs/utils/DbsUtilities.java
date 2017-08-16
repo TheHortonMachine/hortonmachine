@@ -69,6 +69,9 @@ public class DbsUtilities {
         for( String item : items ) {
             sb.append(",").append(item);
         }
+        if (sb.length() == 0) {
+            return "";
+        }
         return sb.substring(1);
     }
 

@@ -20,6 +20,8 @@ package org.jgrasstools.dbs.compat.objects;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jgrasstools.dbs.compat.ETableType;
+
 /**
  * Class representing a db table level.
  * 
@@ -29,6 +31,7 @@ public class TableLevel {
     public DbLevel parent;
     public String tableName;
     public boolean isGeo = false;
+    public ETableType tableType;
 
     public List<ColumnLevel> columnsList = new ArrayList<ColumnLevel>();
 
