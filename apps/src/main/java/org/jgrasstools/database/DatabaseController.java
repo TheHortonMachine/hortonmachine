@@ -149,6 +149,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     private List<String> oldSqlCommands = new ArrayList<String>();
     private JTextPane _sqlEditorArea;
+    protected SqlTemplatesAndActions sqlTemplatesAndActions;
 
     public DatabaseController( GuiBridgeHandler guiBridge ) {
         this.guiBridge = guiBridge;
@@ -941,6 +942,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     }
                     currentConnectedDatabase.open(dbfilePath);
                     currentConnectedDatabase.initSpatialMetadata(null);
+                    sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 
                     DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
 
@@ -1008,6 +1010,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         currentConnectedDatabase = EDb.H2GIS.getSpatialDb();
                     }
                     currentConnectedDatabase.open(selectedFile[0].getAbsolutePath());
+                    sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 
                     DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
 
@@ -1059,7 +1062,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             try {
                 currentConnectedDatabase = EDb.H2GIS.getSpatialDb();
                 currentConnectedDatabase.open(_urlString);
-
+                sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
+                
                 DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
 
                 layoutTree(dbLevel, true);

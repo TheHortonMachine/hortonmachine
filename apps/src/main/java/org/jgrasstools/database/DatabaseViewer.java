@@ -224,63 +224,69 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
     protected List<Action> makeColumnActions( final ColumnLevel selectedColumn ) {
 
         List<Action> actions = new ArrayList<>();
-        actions.add(SqlTemplatesAndActions.getSelectOnColumnAction(selectedColumn, this));
-        actions.add(SqlTemplatesAndActions.getUpdateOnColumnAction(selectedColumn, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getSelectOnColumnAction(selectedColumn, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getUpdateOnColumnAction(selectedColumn, this));
         actions.add(null);
-        actions.add(SqlTemplatesAndActions.getAddGeometryAction(selectedColumn, this));
-        actions.add(SqlTemplatesAndActions.getRecoverGeometryAction(selectedColumn, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getAddGeometryAction(selectedColumn, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getRecoverGeometryAction(selectedColumn, this));
 
         /*
          * geometry bound stuff
          */
 
         if (selectedColumn.geomColumn != null) {
-            actions.add(SqlTemplatesAndActions.getDiscardGeometryColumnAction(selectedColumn, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getDiscardGeometryColumnAction(selectedColumn, this));
             actions.add(null);
-            actions.add(SqlTemplatesAndActions.getCreateSpatialIndexAction(selectedColumn, this));
-            actions.add(SqlTemplatesAndActions.getCheckSpatialIndexAction(selectedColumn, this));
-            actions.add(SqlTemplatesAndActions.getRecoverSpatialIndexAction(selectedColumn, this));
-            actions.add(SqlTemplatesAndActions.getDisableSpatialIndexAction(selectedColumn, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getCreateSpatialIndexAction(selectedColumn, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getCheckSpatialIndexAction(selectedColumn, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getRecoverSpatialIndexAction(selectedColumn, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getDisableSpatialIndexAction(selectedColumn, this));
             actions.add(null);
-            actions.add(SqlTemplatesAndActions.getShowSpatialMetadataAction(selectedColumn, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getShowSpatialMetadataAction(selectedColumn, this));
         }
         /*
          * FK key bound stuff
          */
         if (selectedColumn.references != null) {
             actions.add(null);
-            actions.add(SqlTemplatesAndActions.getCombinedSelectAction(selectedColumn, this));
-            actions.add(SqlTemplatesAndActions.getQuickViewOtherTableAction(selectedColumn, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getCombinedSelectAction(selectedColumn, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewOtherTableAction(selectedColumn, this));
         }
 
         return actions;
     }
 
+    private void addIfNotNull( List<Action> actions, Action selectOnColumnAction ) {
+        if (selectOnColumnAction != null) {
+            actions.add(selectOnColumnAction);
+        }
+    }
+
     protected List<Action> makeDatabaseAction( final DbLevel dbLevel ) {
         List<Action> actions = new ArrayList<>();
-        actions.add(SqlTemplatesAndActions.getRefreshDatabaseAction(guiBridge, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getRefreshDatabaseAction(guiBridge, this));
         actions.add(null);
-        actions.add(SqlTemplatesAndActions.getCopyDatabasePathAction(this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getCopyDatabasePathAction(this));
         actions.add(null);
-        actions.add(SqlTemplatesAndActions.getCreateTableFromShapefileSchemaAction(guiBridge, this));
-        actions.add(SqlTemplatesAndActions.getImportSqlFileAction(guiBridge, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getCreateTableFromShapefileSchemaAction(guiBridge, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getImportSqlFileAction(guiBridge, this));
         actions.add(null);
-        actions.add(SqlTemplatesAndActions.getUpdateLayerStats(guiBridge, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getUpdateLayerStats(guiBridge, this));
         return actions;
     }
 
     protected List<Action> makeTableAction( final TableLevel selectedTable ) {
         List<Action> actions = new ArrayList<>();
-        actions.add(SqlTemplatesAndActions.getCountRowsAction(selectedTable, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getCountRowsAction(selectedTable, this));
         actions.add(null);
-        actions.add(SqlTemplatesAndActions.getSelectAction(selectedTable, this));
-        actions.add(SqlTemplatesAndActions.getDropAction(selectedTable, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getSelectAction(selectedTable, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getDropAction(selectedTable, this));
         actions.add(null);
-        actions.add(SqlTemplatesAndActions.getReprojectTableAction(selectedTable, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getReprojectTableAction(selectedTable, this));
         actions.add(null);
         if (selectedTable.isGeo) {
-            actions.add(SqlTemplatesAndActions.getImportShapefileDataAction(guiBridge, selectedTable, this));
-            actions.add(SqlTemplatesAndActions.getQuickViewTableAction(selectedTable, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getImportShapefileDataAction(guiBridge, selectedTable, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewTableAction(selectedTable, this));
         }
 
         return actions;

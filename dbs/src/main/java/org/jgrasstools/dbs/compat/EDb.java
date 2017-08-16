@@ -23,23 +23,26 @@ package org.jgrasstools.dbs.compat;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public enum EDb {
-    SQLITE(0, ".sqlite", "sqlite", "org.jgrasstools.dbs.spatialite.jgt.SqliteDb", false), //
-    SPATIALITE(1, ".sqlite", "sqlite", "org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb", true), //
-    H2(2, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2Db", false), //
-    H2GIS(3, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2GisDb", true);
+    SQLITE(0, ".sqlite", "sqlite", "org.jgrasstools.dbs.spatialite.jgt.SqliteDb", false, "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates"), //
+    SPATIALITE(1, ".sqlite", "sqlite", "org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb", true, "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates"), //
+    H2(2, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2Db", false, "org.jgrasstools.dbs.h2gis.H2GisSqlTemplates"), //
+    H2GIS(3, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2GisDb", true, "org.jgrasstools.dbs.h2gis.H2GisSqlTemplates");
 
     private int _code;
     private String _extensionOnCreation;
     private String _extension;
-    private String _className;
+    private String _dbClassName;
     private boolean _isSpatial;
+    private String _sqlTemplatesClassName;
 
-    private EDb( int code, String extensionOnCreation, String extension, String className, boolean isSpatial ) {
+    private EDb( int code, String extensionOnCreation, String extension, String dbClassName, boolean isSpatial,
+            String sqlTemplatesClassName ) {
         this._code = code;
         this._extensionOnCreation = extensionOnCreation;
         this._extension = extension;
-        this._className = className;
+        this._dbClassName = dbClassName;
         this._isSpatial = isSpatial;
+        this._sqlTemplatesClassName = sqlTemplatesClassName;
     }
 
     public int getCode() {
@@ -75,7 +78,7 @@ public enum EDb {
      */
     public ASpatialDb getSpatialDb() throws Exception {
         if (_isSpatial) {
-            Class< ? > forName = Class.forName(_className);
+            Class< ? > forName = Class.forName(_dbClassName);
             Object newInstance = forName.newInstance();
             if (newInstance instanceof ASpatialDb) {
                 return (ASpatialDb) newInstance;
@@ -91,9 +94,21 @@ public enum EDb {
      * @throws Exception
      */
     public ADb getDb() throws Exception {
-        Class< ? > forName = Class.forName(_className);
+        Class< ? > forName = Class.forName(_dbClassName);
         Object newInstance = forName.newInstance();
         return (ADb) newInstance;
+    }
+
+    /**
+     * Get a new instance of the sql templates.
+     * 
+     * @return the sql templates instance.
+     * @throws Exception
+     */
+    public ASqlTemplates getSqlTemplates() throws Exception {
+        Class< ? > forName = Class.forName(_sqlTemplatesClassName);
+        Object newInstance = forName.newInstance();
+        return (ASqlTemplates) newInstance;
     }
 
 }
