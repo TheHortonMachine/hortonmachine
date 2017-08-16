@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.jgrasstools.dbs.compat.ADb;
 import org.jgrasstools.dbs.compat.EDb;
+import org.jgrasstools.dbs.compat.ETableType;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.compat.objects.ForeignKey;
@@ -50,7 +51,7 @@ public class H2Db extends ADb {
             e.printStackTrace();
         }
     }
-    
+
     @Override
     public EDb getType() {
         return EDb.H2;
@@ -129,7 +130,8 @@ public class H2Db extends ADb {
         if (!doOrder) {
             orderBy = "";
         }
-        String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL'" + orderBy;
+        String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL'"
+                + orderBy;
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 String tabelName = rs.getString(1);
@@ -141,7 +143,7 @@ public class H2Db extends ADb {
 
     @Override
     public boolean hasTable( String tableName ) throws Exception {
-        String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='TABLE'";
+        String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL'";
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 String name = rs.getString(1);
@@ -151,6 +153,17 @@ public class H2Db extends ADb {
             }
             return false;
         }
+    }
+
+    public ETableType getTableType( String tableName ) throws Exception {
+        String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + tableName + "')";
+        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                String typeStr = rs.getString(1);
+                return ETableType.fromType(typeStr);
+            }
+        }
+        return ETableType.OTHER;
     }
 
     @Override

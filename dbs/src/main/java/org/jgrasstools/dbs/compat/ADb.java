@@ -40,7 +40,7 @@ public abstract class ADb implements AutoCloseable {
     protected String mDbPath;
 
     public boolean mPrintInfos = true;
-    
+
     /**
      * Get the database type.
      * 
@@ -222,6 +222,16 @@ public abstract class ADb implements AutoCloseable {
      * @throws Exception
      */
     public abstract boolean hasTable( String tableName ) throws Exception;
+
+    /**
+     * Gets the table type.
+     * 
+     * @param tableName
+     *            the name of the table.
+     * @return the table type.
+     * @throws Exception
+     */
+    public abstract ETableType getTableType( String tableName ) throws Exception;
 
     /**
      * Get the column [name, type, primarykey] values of a table.

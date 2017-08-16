@@ -31,6 +31,7 @@ import org.h2gis.utilities.SFSUtilities;
 import org.h2gis.utilities.TableLocation;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.EDb;
+import org.jgrasstools.dbs.compat.ETableType;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
@@ -69,7 +70,7 @@ public class H2GisDb extends ASpatialDb {
     public H2GisDb() {
         h2Db = new H2Db();
     }
-    
+
     @Override
     public EDb getType() {
         return EDb.H2GIS;
@@ -201,7 +202,7 @@ public class H2GisDb extends ASpatialDb {
             return info;
         }
     }
-    
+
     public void createSpatialTable( String tableName, int srid, String geometryFieldData, String[] fieldData,
             String[] foreignKeys, boolean avoidIndex ) throws Exception {
         StringBuilder sb = new StringBuilder();
@@ -244,10 +245,14 @@ public class H2GisDb extends ASpatialDb {
     public String checkSqlCompatibilityIssues( String sql ) {
         return h2Db.checkSqlCompatibilityIssues(sql);
     }
-    
+
     @Override
     public boolean hasTable( String tableName ) throws Exception {
         return h2Db.hasTable(tableName);
+    }
+
+    public ETableType getTableType( String tableName ) throws Exception {
+        return h2Db.getTableType(tableName);
     }
 
     @Override
@@ -324,7 +329,7 @@ public class H2GisDb extends ASpatialDb {
     protected void logDebug( String message ) {
         logger.debug(message);
     }
-    
+
     public Geometry getGeometryFromResultSet( IJGTResultSet resultSet, int position ) throws Exception {
         Object object = resultSet.getObject(position);
         if (object instanceof Geometry) {
@@ -455,7 +460,7 @@ public class H2GisDb extends ASpatialDb {
             }
         }
         String itemsWithComma = DbsUtilities.joinByComma(items);
-        if (itemsWithComma.trim().length()==0) {
+        if (itemsWithComma.trim().length() == 0) {
             itemsWithComma = "*";
         }
         sql += itemsWithComma;

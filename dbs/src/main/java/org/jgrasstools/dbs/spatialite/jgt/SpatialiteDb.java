@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.EDb;
+import org.jgrasstools.dbs.compat.ETableType;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
@@ -232,6 +233,10 @@ public class SpatialiteDb extends ASpatialDb {
     @Override
     public boolean hasTable( String tableName ) throws Exception {
         return sqliteDb.hasTable(tableName);
+    }
+    
+    public ETableType getTableType( String tableName ) throws Exception {
+        return SpatialiteCommonMethods.getTableType(this, tableName);
     }
 
     @Override

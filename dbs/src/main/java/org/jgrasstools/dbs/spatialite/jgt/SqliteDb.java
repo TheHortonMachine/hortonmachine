@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.jgrasstools.dbs.compat.ADb;
 import org.jgrasstools.dbs.compat.EDb;
+import org.jgrasstools.dbs.compat.ETableType;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
@@ -149,6 +150,10 @@ public class SqliteDb extends ADb {
             }
             return false;
         }
+    }
+    
+    public ETableType getTableType( String tableName ) throws Exception {
+        return SpatialiteCommonMethods.getTableType(this, tableName);
     }
 
     public List<String[]> getTableColumns( String tableName ) throws Exception {

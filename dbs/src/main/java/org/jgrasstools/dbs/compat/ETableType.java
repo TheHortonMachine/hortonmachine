@@ -15,39 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.dbs.compat.objects;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jgrasstools.dbs.compat.ETableType;
+package org.jgrasstools.dbs.compat;
 
 /**
- * Class representing a db table level.
+ * Different table types.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TableLevel {
-    public DbLevel parent;
-    public String tableName;
-    public boolean isGeo = false;
-    public ETableType tableType = ETableType.OTHER;
+public enum ETableType {
+    OTHER, TABLE, VIEW, EXTERNAL;
 
-    public List<ColumnLevel> columnsList = new ArrayList<ColumnLevel>();
-
-    public ColumnLevel getFirstGeometryColumn() {
-        if (isGeo) {
-            for( ColumnLevel columnLevel : columnsList ) {
-                if (columnLevel.geomColumn != null) {
-                    return columnLevel;
-                }
-            }
+    public static ETableType fromType( String typeStr ) {
+        if (typeStr.equalsIgnoreCase("table")) {
+            return ETableType.TABLE;
+        } else if (typeStr.equalsIgnoreCase("view")) {
+            return ETableType.VIEW;
+        } else if (typeStr.equalsIgnoreCase("external")) {
+            return ETableType.EXTERNAL;
         }
-        return null;
-    }
-
-    @Override
-    public String toString() {
-        return tableName;
+        return ETableType.OTHER;
     }
 }

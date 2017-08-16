@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.EDb;
+import org.jgrasstools.dbs.compat.ETableType;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
@@ -47,7 +48,7 @@ import jsqlite.Database;
  */
 public class GPSpatialiteDb extends ASpatialDb {
     private SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
-    
+
     @Override
     public EDb getType() {
         return EDb.SPATIALITE;
@@ -110,7 +111,7 @@ public class GPSpatialiteDb extends ASpatialDb {
         SpatialiteCommonMethods.createSpatialTable(this, tableName, tableSrid, geometryFieldData, fieldData, foreignKeys,
                 avoidIndex);
     }
-    
+
     public String checkSqlCompatibilityIssues( String sql ) {
         return SpatialiteCommonMethods.checkCompatibilityIssues(sql);
     }
@@ -194,6 +195,10 @@ public class GPSpatialiteDb extends ASpatialDb {
             }
             return false;
         }
+    }
+
+    public ETableType getTableType( String tableName ) throws Exception {
+        return SpatialiteCommonMethods.getTableType(this, tableName);
     }
 
     public List<String[]> getTableColumns( String tableName ) throws Exception {

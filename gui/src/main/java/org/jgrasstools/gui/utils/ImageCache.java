@@ -63,9 +63,13 @@ public class ImageCache {
     public static final String HISTORY_DB = "history_db.gif";
     public static final String NEW_DATABASE = "new_database.gif";
     public static final String DATABASE = "database.gif";
-    public static final String TABLE = "table.gif";
     public static final String TABLE_FOLDER = "table_folder.gif";
+    
+    public static final String TABLE = "table.gif";
+    public static final String VIEW = "view.gif";
     public static final String TABLE_SPATIAL = "table_spatial.gif";
+    public static final String TABLE_SPATIAL_VIRTUAL = "table_spatial_virtual.gif";
+    
     public static final String TABLE_COLUMN = "table_column.gif";
     public static final String TABLE_COLUMN_PRIMARYKEY = "table_column_pk.gif";
     public static final String TABLE_COLUMN_INDEX = "table_column_index.gif";

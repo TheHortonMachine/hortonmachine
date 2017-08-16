@@ -72,6 +72,7 @@ import javax.swing.tree.TreePath;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.EDb;
+import org.jgrasstools.dbs.compat.ETableType;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.objects.ColumnLevel;
 import org.jgrasstools.dbs.compat.objects.DbLevel;
@@ -174,8 +175,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         addDataTableContextMenu();
 
         _sqlEditorArea = new JTextPane();
-        JScrollPane _sqlEditorAreaScrollpane= new JScrollPane(_sqlEditorArea);
-        
+        JScrollPane _sqlEditorAreaScrollpane = new JScrollPane(_sqlEditorArea);
+
         _sqlEditorAreaPanel.setLayout(new BorderLayout());
         _sqlEditorAreaPanel.add(_sqlEditorAreaScrollpane, BorderLayout.CENTER);
         // WrapEditorKit kit = new WrapEditorKit();
@@ -318,10 +319,24 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_FOLDER));
                     } else if (value instanceof TableLevel) {
                         TableLevel tableLevel = (TableLevel) value;
-                        if (tableLevel.isGeo) {
-                            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL));
-                        } else {
+                        try {
+                            ETableType tableType = currentConnectedDatabase.getTableType(tableLevel.tableName);
+                            if (tableLevel.isGeo) {
+                                if (tableType == ETableType.EXTERNAL) {
+                                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL_VIRTUAL));
+                                } else {
+                                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL));
+                                }
+                            } else {
+                                if (tableType == ETableType.VIEW) {
+                                    setIcon(ImageCache.getInstance().getImage(ImageCache.VIEW));
+                                } else {
+                                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE));
+                                }
+                            }
+                        } catch (Exception e) {
                             setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE));
+                            e.printStackTrace();
                         }
                     } else if (value instanceof ColumnLevel) {
                         ColumnLevel columnLevel = (ColumnLevel) value;
@@ -778,7 +793,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _historyButton.setEnabled(enable);
         _clearSqlEditorbutton.setEnabled(enable);
         _viewQueryButton.setEnabled(enable);
-        
+
         _recordCountTextfield.setText("");
 
         _sqlEditorArea.setText("");
@@ -1063,7 +1078,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 currentConnectedDatabase = EDb.H2GIS.getSpatialDb();
                 currentConnectedDatabase.open(_urlString);
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
-                
+
                 DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
 
                 layoutTree(dbLevel, true);
@@ -1098,6 +1113,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 TableLevel tableLevel = new TableLevel();
                 tableLevel.parent = currentDbLevel;
                 tableLevel.tableName = tableName;
+
+                ETableType tableType = db.getTableType(tableName);
+                tableLevel.tableType = tableType;
 
                 GeometryColumn geometryColumns = null;
                 try {

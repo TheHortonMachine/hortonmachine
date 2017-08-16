@@ -23,7 +23,9 @@ import java.sql.Clob;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jgrasstools.dbs.compat.ADb;
 import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.ETableType;
 import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
@@ -286,7 +288,7 @@ public class SpatialiteCommonMethods {
                 return gc;
             }
         }
-        
+
         return null;
     }
 
@@ -515,5 +517,24 @@ public class SpatialiteCommonMethods {
             }
         }
         return "";
+    }
+
+    public static ETableType getTableType( ADb db, String tableName ) throws Exception {
+        String sql = "SELECT type, sql FROM sqlite_master WHERE Lower(tbl_name)=Lower('" + tableName + "')";
+        try (IJGTStatement stmt = db.getConnection().createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                String typeStr = rs.getString(1);
+                String sqlStr = rs.getString(2);
+                ETableType type = ETableType.fromType(typeStr);
+                if (type == ETableType.TABLE) {
+                    // check if it is virtual shp
+                    if (sqlStr.contains("USING VirtualShape")) {
+                        return ETableType.EXTERNAL;
+                    }
+                }
+                return type;
+            }
+        }
+        return ETableType.OTHER;
     }
 }
