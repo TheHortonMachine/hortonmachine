@@ -17,7 +17,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.border.TitledBorder;
 
@@ -29,9 +28,9 @@ public class DatabaseView extends JPanel
    JButton _runQueryButton = new JButton();
    JButton _runQueryAndStoreButton = new JButton();
    JButton _runQueryAndStoreShapefileButton = new JButton();
-   JTextPane _sqlEditorArea = new JTextPane();
    JButton _clearSqlEditorbutton = new JButton();
    JButton _viewQueryButton = new JButton();
+   JPanel _sqlEditorAreaPanel = new JPanel();
    JTable _dataViewerTable = new JTable();
    JButton _newDbButton = new JButton();
    JButton _connectDbButton = new JButton();
@@ -141,10 +140,10 @@ public class DatabaseView extends JPanel
 
       jpanel1.add(createdatabaseTreeView(),new CellConstraints(2,4,1,7,CellConstraints.FILL,CellConstraints.FILL));
       jpanel1.add(createPanel1(),cc.xy(4,4));
-      jpanel1.add(createPanel3(),cc.xy(4,8));
-      jpanel1.add(createPanel4(),cc.xywh(2,2,3,1));
-      jpanel1.add(createPanel5(),cc.xy(4,6));
-      jpanel1.add(createPanel6(),cc.xy(4,10));
+      jpanel1.add(createPanel2(),cc.xy(4,8));
+      jpanel1.add(createPanel3(),cc.xywh(2,2,3,1));
+      jpanel1.add(createPanel4(),cc.xy(4,6));
+      jpanel1.add(createPanel5(),cc.xy(4,10));
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11 });
       return jpanel1;
    }
@@ -152,7 +151,7 @@ public class DatabaseView extends JPanel
    public JPanel createdatabaseTreeView()
    {
       _databaseTreeView.setName("databaseTreeView");
-      TitledBorder titledborder1 = new TitledBorder(null,"Database Connection",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
+      TitledBorder titledborder1 = new TitledBorder(null,"Database Connection",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       _databaseTreeView.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
@@ -172,60 +171,48 @@ public class DatabaseView extends JPanel
    public JPanel createPanel1()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"SQL Editor",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
+      TitledBorder titledborder1 = new TitledBorder(null,"SQL Editor",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0)");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
       _runQueryButton.setActionCommand("1");
       _runQueryButton.setName("runQueryButton");
       _runQueryButton.setText("1");
-      jpanel1.add(_runQueryButton,cc.xy(1,1));
+      jpanel1.add(_runQueryButton,cc.xy(1,2));
 
       _runQueryAndStoreButton.setActionCommand("2");
       _runQueryAndStoreButton.setName("runQueryAndStoreButton");
       _runQueryAndStoreButton.setText("2");
-      jpanel1.add(_runQueryAndStoreButton,cc.xy(1,3));
+      jpanel1.add(_runQueryAndStoreButton,cc.xy(1,4));
 
       _runQueryAndStoreShapefileButton.setActionCommand("3");
       _runQueryAndStoreShapefileButton.setName("runQueryAndStoreShapefileButton");
       _runQueryAndStoreShapefileButton.setText("3");
-      jpanel1.add(_runQueryAndStoreShapefileButton,cc.xy(1,5));
+      jpanel1.add(_runQueryAndStoreShapefileButton,cc.xy(1,6));
 
-      jpanel1.add(createPanel2(),cc.xywh(2,1,2,10));
       _clearSqlEditorbutton.setActionCommand("4");
       _clearSqlEditorbutton.setName("clearSqlEditorbutton");
       _clearSqlEditorbutton.setText("5");
-      jpanel1.add(_clearSqlEditorbutton,cc.xy(1,9));
+      jpanel1.add(_clearSqlEditorbutton,cc.xy(1,10));
 
       _viewQueryButton.setActionCommand("4");
       _viewQueryButton.setName("viewQueryButton");
       _viewQueryButton.setText("4");
-      jpanel1.add(_viewQueryButton,cc.xy(1,7));
+      jpanel1.add(_viewQueryButton,cc.xy(1,8));
 
-      addFillComponents(jpanel1,new int[]{ 2,3 },new int[]{ 2,4,6,8,10 });
+      _sqlEditorAreaPanel.setName("sqlEditorAreaPanel");
+      jpanel1.add(_sqlEditorAreaPanel,cc.xywh(2,2,1,9));
+
+      addFillComponents(jpanel1,new int[]{ 1,2 },new int[]{ 1,3,5,7,9,11 });
       return jpanel1;
    }
 
    public JPanel createPanel2()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:GROW(1.0)");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      _sqlEditorArea.setName("sqlEditorArea");
-      jpanel1.add(_sqlEditorArea,new CellConstraints(1,1,1,1,CellConstraints.FILL,CellConstraints.FILL));
-
-      addFillComponents(jpanel1,new int[0],new int[0]);
-      return jpanel1;
-   }
-
-   public JPanel createPanel3()
-   {
-      JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Data Viewer",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
+      TitledBorder titledborder1 = new TitledBorder(null,"Data Viewer",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
@@ -242,7 +229,7 @@ public class DatabaseView extends JPanel
       return jpanel1;
    }
 
-   public JPanel createPanel4()
+   public JPanel createPanel3()
    {
       JPanel jpanel1 = new JPanel();
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
@@ -283,7 +270,7 @@ public class DatabaseView extends JPanel
       return jpanel1;
    }
 
-   public JPanel createPanel5()
+   public JPanel createPanel4()
    {
       JPanel jpanel1 = new JPanel();
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.4),FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.5)","CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE");
@@ -306,7 +293,7 @@ public class DatabaseView extends JPanel
       return jpanel1;
    }
 
-   public JPanel createPanel6()
+   public JPanel createPanel5()
    {
       JPanel jpanel1 = new JPanel();
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.4),FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.5)","CENTER:2DLU:NONE,CENTER:DEFAULT:NONE");

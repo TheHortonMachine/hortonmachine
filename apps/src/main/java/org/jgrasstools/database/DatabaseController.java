@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.database;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -43,6 +44,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
@@ -146,6 +148,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private Dimension preferredSqleditorButtonSize = new Dimension(30, 30);
 
     private List<String> oldSqlCommands = new ArrayList<String>();
+    private JTextPane _sqlEditorArea;
 
     public DatabaseController( GuiBridgeHandler guiBridge ) {
         this.guiBridge = guiBridge;
@@ -169,6 +172,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _dataViewerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         addDataTableContextMenu();
 
+        _sqlEditorArea = new JTextPane();
+        JScrollPane _sqlEditorAreaScrollpane= new JScrollPane(_sqlEditorArea);
+        
+        _sqlEditorAreaPanel.setLayout(new BorderLayout());
+        _sqlEditorAreaPanel.add(_sqlEditorAreaScrollpane, BorderLayout.CENTER);
         // WrapEditorKit kit = new WrapEditorKit();
         // _sqlEditorArea.setEditorKit(kit);
         SqlDocument doc = new SqlDocument();
@@ -768,6 +776,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _templatesButton.setEnabled(enable);
         _historyButton.setEnabled(enable);
         _clearSqlEditorbutton.setEnabled(enable);
+        _viewQueryButton.setEnabled(enable);
+        
+        _recordCountTextfield.setText("");
 
         _sqlEditorArea.setText("");
         _sqlEditorArea.setEditable(enable);
@@ -1136,6 +1147,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             loadDataViewer(null);
             currentConnectedDatabase.close();
             currentConnectedDatabase = null;
+            _recordCountTextfield.setText("");
         }
     }
 
