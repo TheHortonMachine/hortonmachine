@@ -51,4 +51,9 @@ public class QueryResult {
      * The optional geometries for each record.
      */
     public List<Geometry> geometries = new ArrayList<>();
+    
+    /**
+     * The time taken to complete the query.
+     */
+    public long queryTimeMillis = 0;
 }

@@ -66,14 +66,14 @@ public class SpatialiteCommonMethods {
     public static void main( String[] args ) throws Exception {
         System.out.println(isSqliteFile(new File("/tmp/jgt-dbs-testdbsmain.sqlite")));
     }
-    
+
     /**
      * Check for compatibility issues with other databases.
      * 
      * @param sql the original sql.
      * @return the fixed sql.
      */
-    public static String checkCompatibilityIssues(String sql) {
+    public static String checkCompatibilityIssues( String sql ) {
         sql = sql.replaceAll("AUTO_INCREMENT", "AUTOINCREMENT");
         return sql;
     }
@@ -160,6 +160,7 @@ public class SpatialiteCommonMethods {
                 }
             }
 
+            long start = System.currentTimeMillis();
             while( rs.next() ) {
                 Object[] rec = new Object[columnCount];
                 for( int j = 1; j <= columnCount; j++ ) {
@@ -177,6 +178,8 @@ public class SpatialiteCommonMethods {
                 }
                 queryResult.data.add(rec);
             }
+            long end = System.currentTimeMillis();
+            queryResult.queryTimeMillis = end - start;
             return queryResult;
         }
     }

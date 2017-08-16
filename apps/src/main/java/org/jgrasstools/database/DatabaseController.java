@@ -730,7 +730,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             tableColumn.setPreferredWidth(preferredWidth);
         }
 
-        _recordCountTextfield.setText(values.length + "");
+        _recordCountTextfield.setText(values.length + " in " + millisToTimeString(queryResult.queryTimeMillis));
     }
 
     private void layoutTree( DbLevel dbLevel, boolean expandNodes ) {
@@ -1167,9 +1167,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 QueryResult queryResult = currentConnectedDatabase.getTableRecordsMapFromRawSql(sql, limit);
                                 loadDataViewer(queryResult);
                             } else {
+                                long start = System.currentTimeMillis();
                                 int resultCode = currentConnectedDatabase.executeInsertUpdateDeleteSql(sql);
                                 QueryResult dummyQueryResult = new QueryResult();
-                                dummyQueryResult.names.add("Result = " + resultCode);
+                                long end = System.currentTimeMillis();
+                                dummyQueryResult.queryTimeMillis = end - start;
+                                dummyQueryResult.names.add(
+                                        "Result = " + resultCode + " in " + millisToTimeString(dummyQueryResult.queryTimeMillis));
                                 // loadDataViewer(dummyQueryResult);
                             }
                             // addQueryToHistoryCombo(sql);
@@ -1221,6 +1225,18 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
         }
         return hasError;
+    }
+
+    private String millisToTimeString( long queryTimeMillis ) {
+        if (queryTimeMillis < 1000) {
+            return queryTimeMillis + " milliseconds";
+        } else if (queryTimeMillis < 1000 * 60) {
+            return queryTimeMillis / 1000 + " seconds";
+        } else if (queryTimeMillis < 1000 * 60 * 60) {
+            return queryTimeMillis / 1000 / 60 + " minutes";
+        } else {
+            return queryTimeMillis / 1000 / 60 / 60 + " hours";
+        }
     }
 
     protected int getLimit() {

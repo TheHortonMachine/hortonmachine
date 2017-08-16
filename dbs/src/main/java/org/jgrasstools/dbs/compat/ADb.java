@@ -285,6 +285,7 @@ public abstract class ADb implements AutoCloseable {
                 String columnTypeName = rsmd.getColumnTypeName(i);
                 queryResult.types.add(columnTypeName);
             }
+            long start = System.currentTimeMillis();
             int count = 0;
             while( rs.next() ) {
                 Object[] rec = new Object[columnCount];
@@ -297,6 +298,8 @@ public abstract class ADb implements AutoCloseable {
                     break;
                 }
             }
+            long end = System.currentTimeMillis();
+            queryResult.queryTimeMillis = end - start;
             return queryResult;
         }
     }

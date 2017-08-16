@@ -482,6 +482,7 @@ public class H2GisDb extends ASpatialDb {
                 }
             }
 
+            long start = System.currentTimeMillis();
             while( rs.next() ) {
                 Object[] rec = new Object[columnCount];
                 for( int j = 1; j <= columnCount; j++ ) {
@@ -498,6 +499,8 @@ public class H2GisDb extends ASpatialDb {
                 }
                 queryResult.data.add(rec);
             }
+            long end = System.currentTimeMillis();
+            queryResult.queryTimeMillis = end - start;
             return queryResult;
         }
     }
