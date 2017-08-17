@@ -35,9 +35,11 @@ import javax.swing.JTextPane;
 
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.jgrasstools.dbs.compat.EDb;
 import org.jgrasstools.dbs.compat.objects.ColumnLevel;
 import org.jgrasstools.dbs.compat.objects.DbLevel;
 import org.jgrasstools.dbs.compat.objects.TableLevel;
+import org.jgrasstools.dbs.spatialite.SpatialiteCommonMethods;
 import org.jgrasstools.gears.io.dbs.DbsHelper;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gui.console.LogConsoleController;
@@ -320,7 +322,17 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
         }
 
         if (openFile != null) {
-            controller.openDatabase(openFile);
+            String absolutePath = openFile.getAbsolutePath();
+            EDb dbType = null;
+            if (SpatialiteCommonMethods.isSqliteFile(openFile)) {
+                dbType = EDb.SPATIALITE;
+            } else if (absolutePath.endsWith(EDb.H2GIS.getExtension())) {
+                dbType = EDb.H2GIS;
+            } else {
+                absolutePath = null;
+            }
+
+            controller.openDatabase(dbType, absolutePath, null, null);
         }
     }
 

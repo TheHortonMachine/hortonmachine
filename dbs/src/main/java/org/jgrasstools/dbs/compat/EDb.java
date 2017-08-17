@@ -24,11 +24,13 @@ package org.jgrasstools.dbs.compat;
  */
 public enum EDb {
     SQLITE(0, ".sqlite", "sqlite", "org.jgrasstools.dbs.spatialite.jgt.SqliteDb", false,
-            "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:"), //
+            "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false), //
     SPATIALITE(1, ".sqlite", "sqlite", "org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb", true,
-            "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:"), //
-    H2(2, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2Db", false, "org.jgrasstools.dbs.h2gis.H2GisSqlTemplates", "jdbc:h2:"), //
-    H2GIS(3, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2GisDb", true, "org.jgrasstools.dbs.h2gis.H2GisSqlTemplates", "jdbc:h2:");
+            "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false), //
+    H2(2, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2Db", false, "org.jgrasstools.dbs.h2gis.H2GisSqlTemplates", "jdbc:h2:", true,
+            true), //
+    H2GIS(3, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2GisDb", true, "org.jgrasstools.dbs.h2gis.H2GisSqlTemplates", "jdbc:h2:",
+            true, true);
 
     private int _code;
     private String _extensionOnCreation;
@@ -37,9 +39,11 @@ public enum EDb {
     private boolean _isSpatial;
     private String _sqlTemplatesClassName;
     private String jdbcPrefix;
+    private boolean _supportsPwd;
+    private boolean _supportsServerMode;
 
     private EDb( int code, String extensionOnCreation, String extension, String dbClassName, boolean isSpatial,
-            String sqlTemplatesClassName, String jdbcPrefix ) {
+            String sqlTemplatesClassName, String jdbcPrefix, boolean supportsPwd, boolean supportsServerMode ) {
         this._code = code;
         this._extensionOnCreation = extensionOnCreation;
         this._extension = extension;
@@ -47,6 +51,12 @@ public enum EDb {
         this._isSpatial = isSpatial;
         this._sqlTemplatesClassName = sqlTemplatesClassName;
         this.jdbcPrefix = jdbcPrefix;
+        this._supportsPwd = supportsPwd;
+        this._supportsServerMode = supportsServerMode;
+    }
+
+    public static EDb[] getSpatialTypes() {
+        return new EDb[]{SPATIALITE, H2GIS};
     }
 
     public int getCode() {
@@ -55,6 +65,14 @@ public enum EDb {
 
     public String getJdbcPrefix() {
         return jdbcPrefix;
+    }
+
+    public boolean supportsPwd() {
+        return _supportsPwd;
+    }
+
+    public boolean supportsServerMode() {
+        return _supportsServerMode;
     }
 
     public static EDb forCode( int code ) {

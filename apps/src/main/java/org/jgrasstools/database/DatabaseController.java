@@ -40,6 +40,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -70,6 +71,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import org.geotools.feature.DefaultFeatureCollection;
+import org.h2.jdbc.JdbcSQLException;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.EDb;
 import org.jgrasstools.dbs.compat.ETableType;
@@ -130,9 +132,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     // private static final String DATA_VIEWER = "Data viewer";
     private static final String DATABASE_CONNECTIONS = "Database connection";
     private static final String NEW = "new";
-    private static final String NEW_TOOLTIP = "create a new spatialite database";
+    private static final String NEW_TOOLTIP = "create a new database";
     private static final String CONNECT = "connect";
-    private static final String CONNECT_TOOLTIP = "connect to an existing spatialite database";
+    private static final String CONNECT_TOOLTIP = "connect to an existing database";
     private static final String CONNECT_REMOTE = "remote";
     private static final String CONNECT_REMOTE_TOOLTIP = "connect to a remote database";
     private static final String DB_TREE_TITLE = "Database Connection";
@@ -191,7 +193,25 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _newDbButton.setPreferredSize(preferredToolbarButtonSize);
         _newDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.NEW_DATABASE));
         _newDbButton.addActionListener(e -> {
-            createNewDatabase();
+
+            JDialog f = new JDialog();
+            f.setModal(true);
+            NewDbController newDb = new NewDbController(f, guiBridge, false, null);
+            f.add(newDb, BorderLayout.CENTER);
+            f.setTitle("Create new database");
+            f.pack();
+            f.setIconImage(ImageCache.getInstance().getImage(ImageCache.NEW_DATABASE).getImage());
+            f.setLocationRelativeTo(_newDbButton);
+            f.setVisible(true);
+            f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+            if (newDb.isOk()) {
+                String dbPath = newDb.getDbPath();
+                String user = newDb.getDbUser();
+                String pwd = newDb.getDbPwd();
+                EDb dbType = newDb.getDbType();
+                createNewDatabase(dbType, dbPath, user, pwd);
+            }
         });
 
         _connectDbButton.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -201,7 +221,24 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _connectDbButton.setPreferredSize(preferredToolbarButtonSize);
         _connectDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.CONNECT));
         _connectDbButton.addActionListener(e -> {
-            openDatabase(null);
+            JDialog f = new JDialog();
+            f.setModal(true);
+            NewDbController newDb = new NewDbController(f, guiBridge, true, null);
+            f.add(newDb, BorderLayout.CENTER);
+            f.setTitle("Open database");
+            f.pack();
+            f.setIconImage(ImageCache.getInstance().getImage(ImageCache.CONNECT).getImage());
+            f.setLocationRelativeTo(_connectDbButton);
+            f.setVisible(true);
+            f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+            if (newDb.isOk()) {
+                String dbPath = newDb.getDbPath();
+                String user = newDb.getDbUser();
+                String pwd = newDb.getDbPwd();
+                EDb dbType = newDb.getDbType();
+                openDatabase(dbType, dbPath, user, pwd);
+            }
         });
 
         _connectRemoteDbButton.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -211,7 +248,27 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _connectRemoteDbButton.setPreferredSize(preferredToolbarButtonSize);
         _connectRemoteDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.CONNECT_REMOTE));
         _connectRemoteDbButton.addActionListener(e -> {
-            openRemoteDatabase();
+            JDialog f = new JDialog();
+            f.setModal(true);
+
+            String lastPath = GuiUtilities.getPreference(DatabaseGuiUtils.JGT_JDBC_LAST_URL,
+                    "jdbc:h2:tcp://localhost:9092/absolute_dbpath");
+            NewDbController newDb = new NewDbController(f, guiBridge, false, lastPath);
+            f.add(newDb, BorderLayout.CENTER);
+            f.setTitle("Connect to remote database");
+            f.pack();
+            f.setIconImage(ImageCache.getInstance().getImage(ImageCache.CONNECT_REMOTE).getImage());
+            f.setLocationRelativeTo(_newDbButton);
+            f.setVisible(true);
+            f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+            if (newDb.isOk()) {
+                String dbPath = newDb.getDbPath();
+                String user = newDb.getDbUser();
+                String pwd = newDb.getDbPwd();
+                openRemoteDatabase(dbPath, user, pwd);
+            }
+
         });
 
         _disconnectDbButton.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -921,59 +978,44 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         }
     }
 
-    protected void createNewDatabase() {
+    protected void createNewDatabase( EDb dbType, String dbfilePath, String user, String pwd ) {
         try {
             closeCurrentDb();
         } catch (Exception e1) {
             logger.error("Error closing the database...", e1);
         }
 
-        File[] saveFiles = guiBridge.showSaveFileDialog("Create new database", GuiUtilities.getLastFile());
-        if (saveFiles != null && saveFiles.length > 0) {
+        final LogConsoleController logConsole = new LogConsoleController(pm);
+        JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+
+        new Thread(() -> {
+            logConsole.beginProcess("Create new database");
+
             try {
-                GuiUtilities.setLastPath(saveFiles[0].getAbsolutePath());
-            } catch (Exception e1) {
-                logger.error("ERROR", e1);
-            }
-        } else {
-            return;
-        }
-
-        final File selectedFile = saveFiles[0];
-        if (selectedFile != null) {
-
-            final LogConsoleController logConsole = new LogConsoleController(pm);
-            JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
-
-            new Thread(() -> {
-                logConsole.beginProcess("Create new database");
-
-                try {
-                    String dbfilePath = selectedFile.getAbsolutePath();
-                    if (dbfilePath.endsWith(EDb.H2GIS.getExtension())) {
-                        currentConnectedDatabase = EDb.H2GIS.getSpatialDb();
-                    } else {
-                        currentConnectedDatabase = new GTSpatialiteThreadsafeDb();
-                    }
-                    currentConnectedDatabase.open(dbfilePath);
-                    currentConnectedDatabase.initSpatialMetadata(null);
-                    sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
-
-                    DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-
-                    layoutTree(dbLevel, false);
-                } catch (Exception e) {
-                    currentConnectedDatabase = null;
-                    logger.error("Error connecting to the database...", e);
-                } finally {
-                    logConsole.finishProcess();
-                    logConsole.stopLogging();
-                    logConsole.setVisible(false);
-                    window.dispose();
+                if (dbType == EDb.SPATIALITE) {
+                    currentConnectedDatabase = new GTSpatialiteThreadsafeDb();
+                } else {
+                    currentConnectedDatabase = dbType.getSpatialDb();
                 }
-            }).start();
+                currentConnectedDatabase.setCredentials(user, pwd);
+                currentConnectedDatabase.open(dbfilePath);
+                currentConnectedDatabase.initSpatialMetadata(null);
+                sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 
-        }
+                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
+
+                layoutTree(dbLevel, false);
+            } catch (Exception e) {
+                currentConnectedDatabase = null;
+                logger.error("Error connecting to the database...", e);
+            } finally {
+                logConsole.finishProcess();
+                logConsole.stopLogging();
+                logConsole.setVisible(false);
+                window.dispose();
+            }
+        }).start();
+
     }
 
     protected void setDbTreeTitle( String title ) {
@@ -986,76 +1028,72 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         }
     }
 
-    protected void openDatabase( File file ) {
+    protected void openDatabase( EDb dbType, String dbfilePath, String user, String pwd ) {
+        if (dbfilePath == null && dbType == null) {
+            return;
+        }
         try {
             closeCurrentDb();
         } catch (Exception e1) {
             logger.error("Error closing the database...", e1);
         }
 
-        final File[] selectedFile = new File[1];
-        if (file == null) {
+        final LogConsoleController logConsole = new LogConsoleController(pm);
+        JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
 
-            File[] openFiles = guiBridge.showOpenFileDialog("Open database", GuiUtilities.getLastFile());
-            if (openFiles != null && openFiles.length > 0) {
-                try {
-                    GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
-                } catch (Exception e1) {
-                    logger.error("ERROR", e1);
-                }
-            } else {
-                return;
-            }
+        new Thread(() -> {
+            logConsole.beginProcess("Open database");
 
-            selectedFile[0] = openFiles[0];
-        } else {
-            selectedFile[0] = file;
-        }
-        if (selectedFile[0] != null) {
-            final LogConsoleController logConsole = new LogConsoleController(pm);
-            JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
-
-            new Thread(() -> {
-                logConsole.beginProcess("Open database");
-
-                try {
-                    if (SpatialiteCommonMethods.isSqliteFile(selectedFile[0])) {
+            try {
+                if (dbType == EDb.SPATIALITE) {
+                    if (SpatialiteCommonMethods.isSqliteFile(new File(dbfilePath))) {
                         currentConnectedDatabase = new GTSpatialiteThreadsafeDb();
                     } else {
-                        currentConnectedDatabase = EDb.H2GIS.getSpatialDb();
+                        guiBridge.messageDialog("The selected file is not a Spatialite database.", "WARNING",
+                                JOptionPane.WARNING_MESSAGE);
+                        return;
                     }
-                    currentConnectedDatabase.open(selectedFile[0].getAbsolutePath());
-                    sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
-
-                    DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-
-                    layoutTree(dbLevel, true);
-                    setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
-                } catch (Exception e) {
-                    currentConnectedDatabase = null;
-                    logger.error("Error connecting to the database...", e);
-                } finally {
-                    logConsole.finishProcess();
-                    logConsole.stopLogging();
-                    logConsole.setVisible(false);
-                    window.dispose();
+                } else {
+                    currentConnectedDatabase = dbType.getSpatialDb();
                 }
-            }).start();
-        }
+                currentConnectedDatabase.setCredentials(user, pwd);
+                try {
+                    currentConnectedDatabase.open(dbfilePath);
+                } catch (JdbcSQLException e) {
+                    String message = e.getMessage();
+                    if (message.contains("Wrong user name or password")) {
+                        guiBridge.messageDialog("Wrong user name or password.", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        currentConnectedDatabase = null;
+                        return;
+                    }
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 
+                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
+
+                layoutTree(dbLevel, true);
+                setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
+            } catch (Exception e) {
+                currentConnectedDatabase = null;
+                logger.error("Error connecting to the database...", e);
+            } finally {
+                logConsole.finishProcess();
+                logConsole.stopLogging();
+                logConsole.setVisible(false);
+                window.dispose();
+            }
+        }).start();
     }
 
-    protected void openRemoteDatabase() {
+    protected void openRemoteDatabase( String urlString, String user, String pwd ) {
         try {
             closeCurrentDb();
         } catch (Exception e1) {
             logger.error("Error closing the database...", e1);
         }
-
-        String lastPath = GuiUtilities.getPreference(DatabaseGuiUtils.JGT_JDBC_LAST_URL,
-                "jdbc:h2:tcp://localhost:9092/absolute_dbpath");
-
-        String urlString = GuiUtilities.showInputDialog(this, "Insert the jdbc connection url", lastPath);
 
         EDb type = null;
         if (urlString.trim().startsWith(EDb.H2GIS.getJdbcPrefix())) {
