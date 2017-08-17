@@ -29,7 +29,7 @@ public class TestDbsMain {
     public static void createDb() throws Exception {
         String tempDir = System.getProperty("java.io.tmpdir");
         String dbPath = tempDir + File.separator + "jgt-dbs-testdbsmain" + DB_TYPE.getExtensionOnCreation();
-        new File(dbPath).delete();
+        TestUtilities.deletePrevious(tempDir, dbPath, DB_TYPE);
 
         db = DB_TYPE.getDb();
         db.open(dbPath);

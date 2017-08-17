@@ -75,7 +75,14 @@ public class H2Db extends ADb {
             dbPath = "mem:syntax";
             dbExists = true;
         }
-        jdbcConn = DriverManager.getConnection("jdbc:h2:" + dbPath, user, password);
+
+        String userPwd = "";
+        if (user != null && password != null) {
+            userPwd = ";USER=" + user + ";PASSWORD=" + password;
+        }
+
+        String jdbcUrl = "jdbc:h2:" + dbPath + userPwd;
+        jdbcConn = DriverManager.getConnection(jdbcUrl);
         mConn = new JGTConnection(jdbcConn);
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();

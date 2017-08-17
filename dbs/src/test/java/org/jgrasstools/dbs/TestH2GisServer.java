@@ -43,9 +43,7 @@ public class TestH2GisServer {
     public void testGetGeometriesFromServer() throws Exception {
         String tempDir = System.getProperty("java.io.tmpdir");
         String dbPath = tempDir + File.separator + "jgt-dbs-testspatialdbsservermain" + EDb.H2GIS.getExtensionOnCreation();
-        String dbPathDelete = tempDir + File.separator + "jgt-dbs-testspatialdbsservermain." + EDb.H2GIS.getExtension();
-        File file = new File(dbPathDelete);
-        file.delete();
+        TestUtilities.deletePrevious(tempDir, dbPath, EDb.H2GIS);
 
         String tcpServerUrl = TCP_LOCALHOST + dbPath;
 

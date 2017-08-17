@@ -40,9 +40,7 @@ public class TestSpatialDbsMain {
     public static void createDb() throws Exception {
         String tempDir = System.getProperty("java.io.tmpdir");
         String dbPath = tempDir + File.separator + "jgt-dbs-testspatialdbsmain" + DB_TYPE.getExtensionOnCreation();
-        String dbPathDelete = tempDir + File.separator + "jgt-dbs-testspatialdbsmain." + DB_TYPE.getExtension();
-        File file = new File(dbPathDelete);
-        file.delete();
+        TestUtilities.deletePrevious(tempDir, dbPath, DB_TYPE);
 
         db = DB_TYPE.getSpatialDb();
         db.open(dbPath);

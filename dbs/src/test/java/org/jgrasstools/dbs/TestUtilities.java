@@ -1,6 +1,9 @@
 package org.jgrasstools.dbs;
 
+import java.io.File;
+
 import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.EDb;
 
 public class TestUtilities {
     public static final String MPOLY_TABLE = "multipoly";
@@ -87,5 +90,11 @@ public class TestUtilities {
 
     public static String[] arr( String... strings ) {
         return strings;
+    }
+
+    public static void deletePrevious( String tempDir, String dbPathOnCreation, EDb dbType ) {
+        String dbPath = dbPathOnCreation + "." + dbType.getExtension();
+        new File(dbPath).delete();
+        new File(dbPathOnCreation).delete();
     }
 }
