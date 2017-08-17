@@ -67,8 +67,14 @@ public class SpatialiteDb extends ASpatialDb {
     public EDb getType() {
         return EDb.SPATIALITE;
     }
+    
+    public void setCredentials( String user, String password ) {
+        this.user = user;
+        this.password = password;
+    }
 
     public boolean open( String dbPath ) throws Exception {
+        sqliteDb.setCredentials(user, password);
         boolean dbExists = sqliteDb.open(dbPath);
         this.mDbPath = sqliteDb.getDatabasePath();
         mConn = sqliteDb.getConnection();

@@ -38,6 +38,9 @@ public abstract class ADb implements AutoCloseable {
     protected IJGTConnection mConn = null;
 
     protected String mDbPath;
+    
+    protected String user = "sa";
+    protected String password = "";
 
     public boolean mPrintInfos = true;
 
@@ -60,6 +63,16 @@ public abstract class ADb implements AutoCloseable {
      * @throws Exception
      */
     public abstract boolean open( String dbPath ) throws Exception;
+
+    /**
+     * Set credentials if supported.
+     * 
+     * <p>To be called before the {@link #open(String)} method.</p>
+     * 
+     * @param user the username to set or use.
+     * @param password the password to set or use.
+     */
+    public abstract void setCredentials( String user, String password );
 
     /**
      * @return the path to the database.

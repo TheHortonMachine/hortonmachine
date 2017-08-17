@@ -19,7 +19,7 @@ import org.junit.Test;
  */
 public class TestLogDb {
 
-    public static final EDb DB_TYPE = EDb.H2;
+    private static final EDb DB_TYPE = DatabaseTypeForTests.DB_TYPE;
     private static LogDb logDb;
 
     @BeforeClass

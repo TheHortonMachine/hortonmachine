@@ -1056,26 +1056,39 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 "jdbc:h2:tcp://localhost:9092/absolute_dbpath");
 
         String urlString = GuiUtilities.showInputDialog(this, "Insert the jdbc connection url", lastPath);
-        String prefix = "jdbc:h2:";
-        if (!urlString.trim().startsWith(prefix)) {
+
+        EDb type = null;
+        if (urlString.trim().startsWith(EDb.H2GIS.getJdbcPrefix())) {
+            type = EDb.H2GIS;
+        }
+        // for( EDb edb : EDb.values() ) {
+        // if (urlString.trim().startsWith(edb.getJdbcPrefix())) {
+        // if (edb.isSpatial()) {
+        // type = edb;
+        // break;
+        // }
+        // }
+        // }
+
+        if (type == null) {
             guiBridge.messageDialog("Only H2GIS databases are supported in remote connection.", "ERROR",
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
-
         GuiUtilities.setPreference(DatabaseGuiUtils.JGT_JDBC_LAST_URL, urlString);
 
-        urlString = urlString.replaceFirst(prefix, "");
+        urlString = urlString.replaceFirst(type.getJdbcPrefix(), "");
 
         final LogConsoleController logConsole = new LogConsoleController(pm);
         JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
 
+        EDb _type = type;
         String _urlString = urlString;
         new Thread(() -> {
             logConsole.beginProcess("Open database");
 
             try {
-                currentConnectedDatabase = EDb.H2GIS.getSpatialDb();
+                currentConnectedDatabase = _type.getSpatialDb();
                 currentConnectedDatabase.open(_urlString);
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 

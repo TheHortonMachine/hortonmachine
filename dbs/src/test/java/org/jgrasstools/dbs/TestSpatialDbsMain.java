@@ -31,7 +31,7 @@ public class TestSpatialDbsMain {
     /**
      * The db type to test (set to h2gis for online tests).
      */
-    public static final EDb DB_TYPE = EDb.H2GIS;
+    public static final EDb DB_TYPE = DatabaseTypeForTests.DB_TYPE_SPATIAL;
     private static ASpatialDb db;
 
     private static int tablesCount = 0;

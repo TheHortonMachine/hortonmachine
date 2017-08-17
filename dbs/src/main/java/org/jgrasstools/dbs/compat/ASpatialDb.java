@@ -51,7 +51,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @throws Exception
      */
     public abstract boolean open( String dbPath ) throws Exception;
-
+    
     /**
      * Create a new spatial table.
      * 

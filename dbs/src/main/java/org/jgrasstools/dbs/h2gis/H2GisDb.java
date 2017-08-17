@@ -61,8 +61,6 @@ import com.vividsolutions.jts.geom.Polygon;
  */
 public class H2GisDb extends ASpatialDb {
     private static final Logger logger = LoggerFactory.getLogger(H2GisDb.class);
-    private String user = "sa";
-    private String password = "";
     private Connection jdbcConn;
     private H2Db h2Db;
     private boolean wasInitialized = false;
@@ -84,6 +82,7 @@ public class H2GisDb extends ASpatialDb {
     /**
      * Start the server mode.
      * 
+     * <p>This calls:
      *<pre>
      * Server server = Server.createTcpServer(
      *     "-tcpPort", "9123", "-tcpAllowOthers").start();
@@ -94,12 +93,85 @@ public class H2GisDb extends ASpatialDb {
      * See the main method for details.
      * <p>
      * 
+     * @param port the optional port to use.
+     * @param doSSL if <code>true</code>, ssl is used.
+     * @param tcpPassword an optional tcp passowrd to use.
+     * @param ifExists is <code>true</code>, the database to connect to has to exist.
+     * @param baseDir an optional basedir into which it is allowed to connect.
      * @return
      * @throws SQLException
      */
-    public static Server startServerMode( String... args ) throws SQLException {
-        Server server = Server.createTcpServer(args).start();
+    public static Server startTcpServerMode( String port, boolean doSSL, String tcpPassword, boolean ifExists, String baseDir )
+            throws SQLException {
+        List<String> params = new ArrayList<>();
+        params.add("-tcpAllowOthers");
+        params.add("-tcpPort");
+        if (port == null) {
+            port = "9123";
+        }
+        params.add(port);
+
+        if (doSSL) {
+            params.add("-tcpSSL");
+        }
+        if (tcpPassword != null) {
+            params.add("-tcpPassword");
+            params.add(tcpPassword);
+        }
+
+        if (ifExists) {
+            params.add("-ifExists");
+        }
+
+        if (baseDir != null) {
+            params.add("-baseDir");
+            params.add(baseDir);
+        }
+
+        Server server = Server.createTcpServer(params.toArray(new String[0])).start();
         return server;
+    }
+
+    /**
+     * Start the web server mode.
+     * 
+     * @param port the optional port to use.
+     * @param doSSL if <code>true</code>, ssl is used.
+     * @param ifExists is <code>true</code>, the database to connect to has to exist.
+     * @param baseDir an optional basedir into which it is allowed to connect.
+     * @return
+     * @throws SQLException
+     */
+    public static Server startWebServerMode( String port, boolean doSSL, boolean ifExists, String baseDir ) throws SQLException {
+        List<String> params = new ArrayList<>();
+        params.add("-webAllowOthers");
+        if (port != null) {
+            params.add("-webPort");
+            params.add(port);
+        }
+
+        if (doSSL) {
+            params.add("-webSSL");
+        }
+
+        if (ifExists) {
+            params.add("-ifExists");
+        }
+
+        if (baseDir != null) {
+            params.add("-baseDir");
+            params.add(baseDir);
+        }
+
+        Server server = Server.createWebServer(params.toArray(new String[0])).start();
+        return server;
+    }
+
+    public static void main( String[] args ) throws Exception {
+         startTcpServerMode("9092", false, null, true, null);
+
+//        Server server = startWebServerMode("9092", true, true, null);
+//        server.stop();
     }
 
     public boolean open( String dbPath ) throws Exception {
@@ -598,19 +670,6 @@ public class H2GisDb extends ASpatialDb {
             }
         }
         return "";
-    }
-
-    public static void main( String[] args ) throws Exception {
-        try (H2GisDb db = new H2GisDb()) {
-            // db.setCredentials("asd", "asd");
-            boolean existed = db.open("/home/hydrologis/TMP/H2GIS/h2_test1");
-            if (!existed)
-                db.initSpatialMetadata(null);
-
-            db.createTable("ROADS", "the_geom MULTILINESTRING", "speed_limit INT");
-            db.createIndex(PK_UID, PKUID, existed);
-
-        }
     }
 
     public void addSrid( String tableName, String codeFromCrs ) throws Exception {

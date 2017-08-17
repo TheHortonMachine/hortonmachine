@@ -29,7 +29,7 @@ public class TestH2GisServer {
 
     @BeforeClass
     public static void createDb() throws Exception {
-        server = H2GisDb.startServerMode("-tcpPort", "9092", "-tcpAllowOthers");
+        server = H2GisDb.startTcpServerMode("9092", false, null, false, null);
     }
 
     @AfterClass
@@ -48,7 +48,6 @@ public class TestH2GisServer {
         file.delete();
 
         String tcpServerUrl = TCP_LOCALHOST + dbPath;
-        System.out.println(tcpServerUrl);
 
         try (ASpatialDb db = EDb.H2GIS.getSpatialDb()) {
             db.open(tcpServerUrl);

@@ -40,8 +40,6 @@ import org.slf4j.LoggerFactory;
  */
 public class H2Db extends ADb {
     private static final Logger logger = LoggerFactory.getLogger(H2Db.class);
-    private String user = "sa";
-    private String password = "";
     private Connection jdbcConn;
 
     static {

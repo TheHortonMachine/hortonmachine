@@ -21,10 +21,8 @@ public class TestDbsMain {
 
     private static final String TABLE1 = "table1";
     private static final String TABLE2 = "table2";
-    /**
-     * The db type to test (set to h2 for online tests).
-     */
-    public static final EDb DB_TYPE = EDb.H2;
+    private static final EDb DB_TYPE = DatabaseTypeForTests.DB_TYPE;
+    
     private static ADb db;
 
     @BeforeClass

@@ -23,10 +23,12 @@ package org.jgrasstools.dbs.compat;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public enum EDb {
-    SQLITE(0, ".sqlite", "sqlite", "org.jgrasstools.dbs.spatialite.jgt.SqliteDb", false, "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates"), //
-    SPATIALITE(1, ".sqlite", "sqlite", "org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb", true, "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates"), //
-    H2(2, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2Db", false, "org.jgrasstools.dbs.h2gis.H2GisSqlTemplates"), //
-    H2GIS(3, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2GisDb", true, "org.jgrasstools.dbs.h2gis.H2GisSqlTemplates");
+    SQLITE(0, ".sqlite", "sqlite", "org.jgrasstools.dbs.spatialite.jgt.SqliteDb", false,
+            "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:"), //
+    SPATIALITE(1, ".sqlite", "sqlite", "org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb", true,
+            "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:"), //
+    H2(2, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2Db", false, "org.jgrasstools.dbs.h2gis.H2GisSqlTemplates", "jdbc:h2:"), //
+    H2GIS(3, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2GisDb", true, "org.jgrasstools.dbs.h2gis.H2GisSqlTemplates", "jdbc:h2:");
 
     private int _code;
     private String _extensionOnCreation;
@@ -34,19 +36,25 @@ public enum EDb {
     private String _dbClassName;
     private boolean _isSpatial;
     private String _sqlTemplatesClassName;
+    private String jdbcPrefix;
 
     private EDb( int code, String extensionOnCreation, String extension, String dbClassName, boolean isSpatial,
-            String sqlTemplatesClassName ) {
+            String sqlTemplatesClassName, String jdbcPrefix ) {
         this._code = code;
         this._extensionOnCreation = extensionOnCreation;
         this._extension = extension;
         this._dbClassName = dbClassName;
         this._isSpatial = isSpatial;
         this._sqlTemplatesClassName = sqlTemplatesClassName;
+        this.jdbcPrefix = jdbcPrefix;
     }
 
     public int getCode() {
         return _code;
+    }
+
+    public String getJdbcPrefix() {
+        return jdbcPrefix;
     }
 
     public static EDb forCode( int code ) {

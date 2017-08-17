@@ -54,6 +54,10 @@ public class GPSpatialiteDb extends ASpatialDb {
         return EDb.SPATIALITE;
     }
 
+    public void setCredentials( String user, String password ) {
+        // not supported on android
+    }
+
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;
 

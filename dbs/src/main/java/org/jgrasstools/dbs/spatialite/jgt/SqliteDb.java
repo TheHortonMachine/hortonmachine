@@ -23,6 +23,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.jgrasstools.dbs.compat.ADb;
 import org.jgrasstools.dbs.compat.EDb;
@@ -52,12 +53,16 @@ public class SqliteDb extends ADb {
             e.printStackTrace();
         }
     }
-    
+
     @Override
     public EDb getType() {
         return EDb.SQLITE;
     }
 
+    public void setCredentials( String user, String password ) {
+        this.user = user;
+        this.password = password;
+    }
 
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;
@@ -78,7 +83,10 @@ public class SqliteDb extends ADb {
         // absolutely required by SpatiaLite
         SQLiteConfig config = new SQLiteConfig();
         config.enableLoadExtension(true);
-        jdbcConn = DriverManager.getConnection("jdbc:sqlite:" + dbPath, config.toProperties());
+        Properties properties = config.toProperties();
+        properties.setProperty("user", user);
+        properties.setProperty("password", password);
+        jdbcConn = DriverManager.getConnection("jdbc:sqlite:" + dbPath, properties);
         mConn = new JGTConnection(jdbcConn);
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
@@ -86,7 +94,7 @@ public class SqliteDb extends ADb {
         }
         return dbExists;
     }
-    
+
     public Connection getJdbcConnection() {
         return jdbcConn;
     }
@@ -118,7 +126,7 @@ public class SqliteDb extends ADb {
     protected void logDebug( String message ) {
         logger.debug(message);
     }
-    
+
     public String checkSqlCompatibilityIssues( String sql ) {
         return SpatialiteCommonMethods.checkCompatibilityIssues(sql);
     }
@@ -151,7 +159,7 @@ public class SqliteDb extends ADb {
             return false;
         }
     }
-    
+
     public ETableType getTableType( String tableName ) throws Exception {
         return SpatialiteCommonMethods.getTableType(this, tableName);
     }
