@@ -30,7 +30,7 @@ import org.jgrasstools.dbs.compat.objects.TableLevel;
 public abstract class ASqlTemplates {
 
     public String selectOnColumn( String columnName, String tableName ) {
-        String query = "SELECT " + columnName + " FROM " + tableName;
+        String query = "SELECT * FROM " + tableName + " WHERE " + columnName + "=?";
         return query;
     }
 

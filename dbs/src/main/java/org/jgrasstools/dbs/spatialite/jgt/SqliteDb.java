@@ -84,8 +84,10 @@ public class SqliteDb extends ADb {
         SQLiteConfig config = new SQLiteConfig();
         config.enableLoadExtension(true);
         Properties properties = config.toProperties();
-        properties.setProperty("user", user);
-        properties.setProperty("password", password);
+        if (user != null && password != null) {
+            properties.setProperty("user", user);
+            properties.setProperty("password", password);
+        }
         jdbcConn = DriverManager.getConnection("jdbc:sqlite:" + dbPath, properties);
         mConn = new JGTConnection(jdbcConn);
         if (mPrintInfos) {

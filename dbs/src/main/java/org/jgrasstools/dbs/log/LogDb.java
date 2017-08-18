@@ -1,8 +1,26 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.dbs.log;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.jgrasstools.dbs.compat.ADb;
@@ -11,8 +29,14 @@ import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
-import org.joda.time.DateTime;
 
+/**
+ * A logging database.
+ * 
+ * <p>The database contains a table with [id, timestamp, message type, tag, log message]</p>.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ */
 public class LogDb implements AutoCloseable {
     public static final String TABLE_MESSAGES = "logmessages";
 
@@ -119,6 +143,9 @@ public class LogDb implements AutoCloseable {
     }
 
     public boolean insert( EMessageType type, String tag, String msg ) throws Exception {
+        if (tag == null) {
+            tag = "";
+        }
         // the id is generated
         String sql = "INSERT INTO " + TABLE_MESSAGES + //
                 " (" + getInsertFieldsString() + //
@@ -126,7 +153,7 @@ public class LogDb implements AutoCloseable {
 
         try (IJGTPreparedStatement pStmt = mConn.prepareStatement(sql)) {
             int i = 1;
-            pStmt.setLong(i++, new DateTime().getMillis());
+            pStmt.setLong(i++, new Date().getTime());
             pStmt.setLong(i++, type.getCode());
             pStmt.setString(i++, tag);
             pStmt.setString(i++, msg);
@@ -135,7 +162,23 @@ public class LogDb implements AutoCloseable {
         return true;
     }
 
+    public boolean insertInfo( String tag, String msg ) throws Exception {
+        return insert(EMessageType.INFO, tag, msg);
+    }
+    public boolean insertWarning( String tag, String msg ) throws Exception {
+        return insert(EMessageType.WARNING, tag, msg);
+    }
+    public boolean insertDebug( String tag, String msg ) throws Exception {
+        return insert(EMessageType.DEBUG, tag, msg);
+    }
+    public boolean insertAccess( String tag, String msg ) throws Exception {
+        return insert(EMessageType.ACCESS, tag, msg);
+    }
+
     public boolean insertError( String tag, String msg, Throwable t ) throws Exception {
+        if (tag == null) {
+            tag = "";
+        }
         // the id is generated
         String sql = "INSERT INTO " + TABLE_MESSAGES + //
                 " (" + getInsertFieldsString() + //
@@ -153,7 +196,7 @@ public class LogDb implements AutoCloseable {
 
         try (IJGTPreparedStatement pStmt = mConn.prepareStatement(sql)) {
             int i = 1;
-            pStmt.setLong(i++, new DateTime().getMillis());
+            pStmt.setLong(i++, new Date().getTime());
             pStmt.setLong(i++, EMessageType.ERROR.getCode());
             pStmt.setString(i++, tag);
             pStmt.setString(i++, msg);
@@ -176,7 +219,17 @@ public class LogDb implements AutoCloseable {
         }
     }
 
-    public List<Message> getFilteredList( EMessageType messageType, DateTime fromTs, DateTime toTs, long limit )
+    /**
+     * Get the list of messages, filtered.
+     *  
+     * @param messageType the type to filter.
+     * @param fromTsMillis the start time in millis.
+     * @param toTsMillis the end time in millis.
+     * @param limit the max number of messages.
+     * @return the list of messages.
+     * @throws Exception
+     */
+    public List<Message> getFilteredList( EMessageType messageType, Long fromTsMillis, Long toTsMillis, long limit )
             throws Exception {
         String tableName = TABLE_MESSAGES;
         String sql = "select " + getQueryFieldsString() + " from " + tableName;
@@ -186,12 +239,12 @@ public class LogDb implements AutoCloseable {
             String where = type_NAME + "=" + messageType.getCode();
             wheresList.add(where);
         }
-        if (fromTs != null) {
-            String where = TimeStamp_NAME + ">" + fromTs.getMillis();
+        if (fromTsMillis != null) {
+            String where = TimeStamp_NAME + ">" + fromTsMillis;
             wheresList.add(where);
         }
-        if (toTs != null) {
-            String where = TimeStamp_NAME + "<" + toTs.getMillis();
+        if (toTsMillis != null) {
+            String where = TimeStamp_NAME + "<" + toTsMillis;
             wheresList.add(where);
         }
 

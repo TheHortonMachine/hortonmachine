@@ -3,13 +3,13 @@ package org.jgrasstools.dbs;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 import org.jgrasstools.dbs.compat.EDb;
 import org.jgrasstools.dbs.log.EMessageType;
 import org.jgrasstools.dbs.log.LogDb;
 import org.jgrasstools.dbs.log.Message;
-import org.joda.time.DateTime;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -59,14 +59,15 @@ public class TestLogDb {
         list = logDb.getFilteredList(EMessageType.ERROR, null, null, -1);
         assertEquals(3, list.size());
 
-        DateTime from = DateTime.now().plus(3000);
-        list = logDb.getFilteredList(EMessageType.ALL, from, null, -1);
+        Date from = new Date();
+        long fromTs = from.getTime() + 3000;
+        list = logDb.getFilteredList(EMessageType.ALL, fromTs, null, -1);
         assertEquals(0, list.size());
 
-        DateTime now = DateTime.now();
-        from = now.minus(100000);
-        DateTime to = now.plus(100000);
-        list = logDb.getFilteredList(null, from, to, -1);
+        from = new Date();
+        fromTs = from.getTime() - 100000;
+        long toTs = from.getTime() + 100000;
+        list = logDb.getFilteredList(null, fromTs, toTs, -1);
         assertEquals(11, list.size());
     }
 

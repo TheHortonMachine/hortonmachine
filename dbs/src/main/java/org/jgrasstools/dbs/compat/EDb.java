@@ -24,13 +24,15 @@ package org.jgrasstools.dbs.compat;
  */
 public enum EDb {
     SQLITE(0, ".sqlite", "sqlite", "org.jgrasstools.dbs.spatialite.jgt.SqliteDb", false,
-            "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false), //
+            "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, false, true), //
     SPATIALITE(1, ".sqlite", "sqlite", "org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb", true,
-            "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false), //
+            "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, false, true), //
     H2(2, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2Db", false, "org.jgrasstools.dbs.h2gis.H2GisSqlTemplates", "jdbc:h2:", true,
-            true), //
+            true, false, true), //
     H2GIS(3, "", "mv.db", "org.jgrasstools.dbs.h2gis.H2GisDb", true, "org.jgrasstools.dbs.h2gis.H2GisSqlTemplates", "jdbc:h2:",
-            true, true);
+            true, true, false, true), //
+    SPATIALITE4ANDROID(4, ".sqlite", "sqlite", "org.jgrasstools.dbs.spatialite.android.GPSpatialiteDb", true,
+            "org.jgrasstools.dbs.spatialite.SpatialiteSqlTemplates", "", false, false, true, false); //
 
     private int _code;
     private String _extensionOnCreation;
@@ -38,25 +40,34 @@ public enum EDb {
     private String _dbClassName;
     private boolean _isSpatial;
     private String _sqlTemplatesClassName;
-    private String jdbcPrefix;
+    private String _jdbcPrefix;
     private boolean _supportsPwd;
     private boolean _supportsServerMode;
+    private boolean _supportsMobile;
+    private boolean _supportsDesktop;
 
     private EDb( int code, String extensionOnCreation, String extension, String dbClassName, boolean isSpatial,
-            String sqlTemplatesClassName, String jdbcPrefix, boolean supportsPwd, boolean supportsServerMode ) {
+            String sqlTemplatesClassName, String jdbcPrefix, boolean supportsPwd, boolean supportsServerMode,
+            boolean supportsMobile, boolean supportsDesktop ) {
         this._code = code;
         this._extensionOnCreation = extensionOnCreation;
         this._extension = extension;
         this._dbClassName = dbClassName;
         this._isSpatial = isSpatial;
         this._sqlTemplatesClassName = sqlTemplatesClassName;
-        this.jdbcPrefix = jdbcPrefix;
+        this._jdbcPrefix = jdbcPrefix;
         this._supportsPwd = supportsPwd;
         this._supportsServerMode = supportsServerMode;
+        this._supportsMobile = supportsMobile;
+        this._supportsDesktop = supportsDesktop;
     }
 
-    public static EDb[] getSpatialTypes() {
+    public static EDb[] getSpatialTypesDesktop() {
         return new EDb[]{SPATIALITE, H2GIS};
+    }
+
+    public static EDb[] getSpatialTypesDesktopMobile() {
+        return new EDb[]{SPATIALITE4ANDROID};
     }
 
     public int getCode() {
@@ -64,7 +75,7 @@ public enum EDb {
     }
 
     public String getJdbcPrefix() {
-        return jdbcPrefix;
+        return _jdbcPrefix;
     }
 
     public boolean supportsPwd() {
@@ -73,6 +84,14 @@ public enum EDb {
 
     public boolean supportsServerMode() {
         return _supportsServerMode;
+    }
+
+    public boolean supportsMobile() {
+        return _supportsMobile;
+    }
+
+    public boolean supportsDesktop() {
+        return _supportsDesktop;
     }
 
     public static EDb forCode( int code ) {

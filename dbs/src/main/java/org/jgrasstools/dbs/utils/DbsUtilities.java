@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.dbs.utils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +38,7 @@ import com.vividsolutions.jts.geom.PrecisionModel;
  */
 public class DbsUtilities {
 
+    public static final SimpleDateFormat dbDateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static GeometryFactory geomFactory;
     private static PrecisionModel precModel;
 

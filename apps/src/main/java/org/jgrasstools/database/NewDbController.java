@@ -46,7 +46,7 @@ public class NewDbController extends NewDbView {
                 GuiUtilities.setLastPath(absolutePath);
                 _dbTextField.setText(absolutePath);
 
-                for( EDb edb : EDb.getSpatialTypes() ) {
+                for( EDb edb : EDb.getSpatialTypesDesktop() ) {
                     if (absolutePath.endsWith(edb.getExtension())) {
                         _dbTypeCombo.setSelectedItem(edb);
                         break;
@@ -69,7 +69,7 @@ public class NewDbController extends NewDbView {
         _userTextField.setText("sa");
         _pwdTextField.setText("");
 
-        _dbTypeCombo.setModel(new DefaultComboBoxModel<>(EDb.getSpatialTypes()));
+        _dbTypeCombo.setModel(new DefaultComboBoxModel<>(EDb.getSpatialTypesDesktop()));
         _dbTypeCombo.addActionListener(e -> {
             EDb selectedItem = (EDb) _dbTypeCombo.getSelectedItem();
             _userTextField.setEnabled(selectedItem.supportsPwd());
