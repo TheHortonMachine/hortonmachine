@@ -44,8 +44,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.LookAndFeel;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
@@ -146,13 +144,21 @@ public class GuiUtilities {
      */
     public static void setPreference( String preferenceKey, String value ) {
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
-        preferences.put(preferenceKey, value);
+        if (value != null) {
+            preferences.put(preferenceKey, value);
+        } else {
+            preferences.remove(preferenceKey);
+        }
     }
 
     public static void setPreference( String preferenceKey, String[] valuesArray ) {
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
-        String arrayToString = Stream.of(valuesArray).collect(Collectors.joining(PREF_STRING_SEPARATORS));
-        preferences.put(preferenceKey, arrayToString);
+        if (valuesArray != null) {
+            String arrayToString = Stream.of(valuesArray).collect(Collectors.joining(PREF_STRING_SEPARATORS));
+            preferences.put(preferenceKey, arrayToString);
+        } else {
+            preferences.remove(preferenceKey);
+        }
     }
 
     public static void copyToClipboard( String text ) {

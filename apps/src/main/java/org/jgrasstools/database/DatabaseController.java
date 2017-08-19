@@ -279,7 +279,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _disconnectDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.DISCONNECT));
         _disconnectDbButton.addActionListener(e -> {
             try {
-                closeCurrentDb();
+                closeCurrentDb(true);
             } catch (Exception e1) {
                 logger.error("ERROR", e1);
             }
@@ -972,7 +972,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             GuiUtilities.setPreference(DatabaseGuiUtils.JGT_SPATIALITE_LAST_FILE, currentConnectedDatabase.getDatabasePath());
         }
         try {
-            closeCurrentDb();
+            closeCurrentDb(false);
         } catch (Exception e) {
             logger.error("Error", e);
         }
@@ -980,7 +980,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     protected void createNewDatabase( EDb dbType, String dbfilePath, String user, String pwd ) {
         try {
-            closeCurrentDb();
+            closeCurrentDb(true);
         } catch (Exception e1) {
             logger.error("Error closing the database...", e1);
         }
@@ -1033,7 +1033,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             return;
         }
         try {
-            closeCurrentDb();
+            closeCurrentDb(true);
         } catch (Exception e1) {
             logger.error("Error closing the database...", e1);
         }
@@ -1090,7 +1090,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     protected void openRemoteDatabase( String urlString, String user, String pwd ) {
         try {
-            closeCurrentDb();
+            closeCurrentDb(true);
         } catch (Exception e1) {
             logger.error("Error closing the database...", e1);
         }
@@ -1213,7 +1213,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         return currentDbLevel;
     }
 
-    protected void closeCurrentDb() throws Exception {
+    protected void closeCurrentDb( boolean manually ) throws Exception {
         if (currentConnectedDatabase != null) {
             setDbTreeTitle(DB_TREE_TITLE);
             layoutTree(null, false);
@@ -1221,6 +1221,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             currentConnectedDatabase.close();
             currentConnectedDatabase = null;
             _recordCountTextfield.setText("");
+
+            if (manually)
+                GuiUtilities.setPreference(DatabaseGuiUtils.JGT_SPATIALITE_LAST_FILE, (String) null);
         }
     }
 
