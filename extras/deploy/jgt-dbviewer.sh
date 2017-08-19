@@ -19,4 +19,4 @@
 MEM="-Xmx4g"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-java $MEM -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.jgrasstools.spatialite.SpatialiteViewer $1
+java $MEM -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.jgrasstools.database.DatabaseViewer $1
