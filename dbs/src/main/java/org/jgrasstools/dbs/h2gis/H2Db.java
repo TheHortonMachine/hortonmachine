@@ -71,7 +71,7 @@ public class H2Db extends ADb {
             }
         } else {
             dbPath = "mem:syntax";
-            dbExists = true;
+            dbExists = false;
         }
 
         String jdbcUrl = "jdbc:h2:" + dbPath;
