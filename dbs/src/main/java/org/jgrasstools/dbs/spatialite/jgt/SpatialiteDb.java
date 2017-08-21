@@ -35,6 +35,7 @@ import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.compat.objects.ForeignKey;
 import org.jgrasstools.dbs.compat.objects.QueryResult;
+import org.jgrasstools.dbs.log.Logger;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
 import org.jgrasstools.dbs.spatialite.RasterCoverage;
 import org.jgrasstools.dbs.spatialite.SpatialiteCommonMethods;
@@ -42,8 +43,6 @@ import org.jgrasstools.dbs.spatialite.SpatialiteTableNames;
 import org.jgrasstools.dbs.spatialite.SpatialiteWKBReader;
 import org.jgrasstools.dbs.utils.OsCheck;
 import org.jgrasstools.dbs.utils.OsCheck.OSType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -54,7 +53,6 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SpatialiteDb extends ASpatialDb {
-    private static final Logger logger = LoggerFactory.getLogger(SpatialiteDb.class);
     private SqliteDb sqliteDb;
 
     private SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
@@ -91,24 +89,24 @@ public class SpatialiteDb extends ASpatialDb {
                         stmt.execute("SELECT load_extension('mod_rasterlite2.so', 'sqlite3_modrasterlite_init')");
                     } catch (Exception e) {
                         if (mPrintInfos) {
-                            logger.info("Unable to load mod_rasterlite2.so: " + e.getMessage());
+                            Logger.INSTANCE.insertInfo(null,"Unable to load mod_rasterlite2.so: " + e.getMessage());
                         }
                         try {
                             stmt.execute("SELECT load_extension('mod_rasterlite2', 'sqlite3_modrasterlite_init')");
                         } catch (Exception e1) {
-                            logger.info("Unable to load mod_rasterlite2: " + e1.getMessage());
+                            Logger.INSTANCE.insertInfo(null,"Unable to load mod_rasterlite2: " + e1.getMessage());
                         }
                     }
                     try {
                         stmt.execute("SELECT load_extension('mod_spatialite.so', 'sqlite3_modspatialite_init')");
                     } catch (Exception e) {
                         if (mPrintInfos) {
-                            logger.info("Unable to load mod_spatialite.so: " + e.getMessage());
+                            Logger.INSTANCE.insertInfo(null,"Unable to load mod_spatialite.so: " + e.getMessage());
                         }
                         try {
                             stmt.execute("SELECT load_extension('mod_spatialite', 'sqlite3_modspatialite_init')");
                         } catch (Exception e1) {
-                            logger.info("Unable to load mod_spatialite: " + e1.getMessage());
+                            Logger.INSTANCE.insertInfo(null,"Unable to load mod_spatialite: " + e1.getMessage());
                         }
                         throw e;
                     }
@@ -118,14 +116,14 @@ public class SpatialiteDb extends ASpatialDb {
                         stmt.execute("SELECT load_extension('mod_rasterlite2', 'sqlite3_modrasterlite_init')");
                     } catch (Exception e) {
                         if (mPrintInfos) {
-                            logger.info("Unable to load mod_rasterlite2: " + e.getMessage());
+                            Logger.INSTANCE.insertInfo(null,"Unable to load mod_rasterlite2: " + e.getMessage());
                         }
                     }
                     try {
                         stmt.execute("SELECT load_extension('mod_spatialite', 'sqlite3_modspatialite_init')");
                     } catch (Exception e) {
                         if (mPrintInfos) {
-                            logger.info("Unable to load mod_spatialite: " + e.getMessage());
+                            Logger.INSTANCE.insertInfo(null,"Unable to load mod_spatialite: " + e.getMessage());
                         }
                         throw e;
                     }
@@ -141,8 +139,8 @@ public class SpatialiteDb extends ASpatialDb {
         }
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
-            logger.info("Spatialite Version: " + dbInfo[0]);
-            logger.info("Spatialite Target CPU: " + dbInfo[1]);
+            Logger.INSTANCE.insertInfo(null,"Spatialite Version: " + dbInfo[0]);
+            Logger.INSTANCE.insertInfo(null,"Spatialite Target CPU: " + dbInfo[1]);
         }
         return dbExists;
     }
@@ -192,17 +190,17 @@ public class SpatialiteDb extends ASpatialDb {
 
     @Override
     protected void logWarn( String message ) {
-        logger.warn(message);
+        Logger.INSTANCE.insertWarning(null, message);
     }
 
     @Override
     protected void logInfo( String message ) {
-        logger.info(message);
+        Logger.INSTANCE.insertInfo(null, message);
     }
 
     @Override
     protected void logDebug( String message ) {
-        logger.debug(message);
+        Logger.INSTANCE.insertDebug(null, message);
     }
 
     @Override

@@ -19,8 +19,6 @@ package org.jgrasstools.dbs.spatialite.jgt;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -30,8 +28,6 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SpatialiteThreadsafeDb extends SpatialiteDb {
-    private static final Logger logger = LoggerFactory.getLogger(SpatialiteThreadsafeDb.class);
-
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(true);
 
     public void lockWrite( String tag ) {

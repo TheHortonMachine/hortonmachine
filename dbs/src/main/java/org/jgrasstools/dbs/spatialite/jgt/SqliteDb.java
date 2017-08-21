@@ -32,9 +32,8 @@ import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.compat.objects.ForeignKey;
+import org.jgrasstools.dbs.log.Logger;
 import org.jgrasstools.dbs.spatialite.SpatialiteCommonMethods;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteConfig;
 
 /**
@@ -43,7 +42,6 @@ import org.sqlite.SQLiteConfig;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SqliteDb extends ADb {
-    private static final Logger logger = LoggerFactory.getLogger(SqliteDb.class);
     private Connection jdbcConn;
 
     static {
@@ -72,7 +70,7 @@ public class SqliteDb extends ADb {
             File dbFile = new File(dbPath);
             if (dbFile.exists()) {
                 if (mPrintInfos)
-                    logger.info("Database exists");
+                    Logger.INSTANCE.insertInfo(null, "Database exists");
                 dbExists = true;
             }
         } else {
@@ -92,7 +90,7 @@ public class SqliteDb extends ADb {
         mConn = new JGTConnection(jdbcConn);
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
-            logger.info("SQLite Version: " + dbInfo[0]);
+            Logger.INSTANCE.insertInfo(null, "SQLite Version: " + dbInfo[0]);
         }
         return dbExists;
     }
@@ -116,17 +114,17 @@ public class SqliteDb extends ADb {
 
     @Override
     protected void logWarn( String message ) {
-        logger.warn(message);
+        Logger.INSTANCE.insertWarning(null, message);
     }
 
     @Override
     protected void logInfo( String message ) {
-        logger.info(message);
+        Logger.INSTANCE.insertInfo(null, message);
     }
 
     @Override
     protected void logDebug( String message ) {
-        logger.debug(message);
+        Logger.INSTANCE.insertDebug(null, message);
     }
 
     public String checkSqlCompatibilityIssues( String sql ) {

@@ -38,9 +38,9 @@ import org.jgrasstools.dbs.compat.IJGTResultSetMetaData;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.compat.objects.ForeignKey;
 import org.jgrasstools.dbs.compat.objects.QueryResult;
+import org.jgrasstools.dbs.log.LogDb;
+import org.jgrasstools.dbs.log.Logger;
 import org.jgrasstools.dbs.utils.DbsUtilities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -60,7 +60,6 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class H2GisDb extends ASpatialDb {
-    private static final Logger logger = LoggerFactory.getLogger(H2GisDb.class);
     private Connection jdbcConn;
     private H2Db h2Db;
     private boolean wasInitialized = false;
@@ -168,16 +167,16 @@ public class H2GisDb extends ASpatialDb {
     }
 
     public static void main( String[] args ) throws Exception {
-         startTcpServerMode("9092", false, null, true, null);
+        startTcpServerMode("9092", false, null, true, null);
 
-//        Server server = startWebServerMode("9092", true, true, null);
-//        server.stop();
+        // Server server = startWebServerMode("9092", true, true, null);
+        // server.stop();
     }
 
     public boolean open( String dbPath ) throws Exception {
         h2Db.setCredentials(user, password);
 
-        if (dbPath.endsWith(EDb.H2GIS.getExtension())) {
+        if (dbPath != null && dbPath.endsWith(EDb.H2GIS.getExtension())) {
             dbPath = dbPath.substring(0, dbPath.length() - (EDb.H2GIS.getExtension().length() + 1));
         }
         boolean dbExists = h2Db.open(dbPath);
@@ -193,8 +192,8 @@ public class H2GisDb extends ASpatialDb {
         mConn = h2Db.getConnection();
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
-            logger.info("H2 Version: " + dbInfo[0]);
-            logger.info("H2GIS Version: " + dbInfo[1]);
+            Logger.INSTANCE.insertDebug(null, "H2 Version: " + dbInfo[0]);
+            Logger.INSTANCE.insertDebug(null, "H2GIS Version: " + dbInfo[1]);
         }
         return dbExists;
     }
@@ -389,17 +388,17 @@ public class H2GisDb extends ASpatialDb {
 
     @Override
     protected void logWarn( String message ) {
-        logger.warn(message);
+        Logger.INSTANCE.insertWarning(null, message);
     }
 
     @Override
     protected void logInfo( String message ) {
-        logger.info(message);
+        Logger.INSTANCE.insertInfo(null, message);
     }
 
     @Override
     protected void logDebug( String message ) {
-        logger.debug(message);
+        Logger.INSTANCE.insertDebug(null, message);
     }
 
     public Geometry getGeometryFromResultSet( IJGTResultSet resultSet, int position ) throws Exception {
@@ -632,7 +631,7 @@ public class H2GisDb extends ASpatialDb {
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
 
         if (fields != null) {
-            logger.warn("H2Gis does not support geojson export with fields.");
+            Logger.INSTANCE.insertWarning(null, "H2Gis does not support geojson export with fields.");
         }
 
         String sql;

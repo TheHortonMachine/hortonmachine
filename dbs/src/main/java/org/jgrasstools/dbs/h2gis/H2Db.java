@@ -29,9 +29,8 @@ import org.jgrasstools.dbs.compat.ETableType;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
 import org.jgrasstools.dbs.compat.objects.ForeignKey;
+import org.jgrasstools.dbs.log.Logger;
 import org.jgrasstools.dbs.spatialite.jgt.JGTConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An H2 database.
@@ -39,7 +38,6 @@ import org.slf4j.LoggerFactory;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class H2Db extends ADb {
-    private static final Logger logger = LoggerFactory.getLogger(H2Db.class);
     private Connection jdbcConn;
 
     static {
@@ -68,7 +66,7 @@ public class H2Db extends ADb {
             File dbFile = new File(dbPath + "." + EDb.H2.getExtension());
             if (dbFile.exists()) {
                 if (mPrintInfos)
-                    logger.info("Database exists");
+                    Logger.INSTANCE.insertInfo(null, "Database exists");
                 dbExists = true;
             }
         } else {
@@ -85,7 +83,7 @@ public class H2Db extends ADb {
         mConn = new JGTConnection(jdbcConn);
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
-            logger.debug("H2 Version: " + dbInfo[0]);
+            Logger.INSTANCE.insertDebug(null, "H2 Version: " + dbInfo[0]);
         }
         return dbExists;
     }
@@ -96,17 +94,17 @@ public class H2Db extends ADb {
 
     @Override
     protected void logWarn( String message ) {
-        logger.warn(message);
+        Logger.INSTANCE.insertWarning(null, message);
     }
 
     @Override
     protected void logInfo( String message ) {
-        logger.info(message);
+        Logger.INSTANCE.insertInfo(null, message);
     }
 
     @Override
     protected void logDebug( String message ) {
-        logger.debug(message);
+        Logger.INSTANCE.insertDebug(null, message);
     }
 
     public String[] getDbInfo() throws Exception {

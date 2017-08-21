@@ -37,7 +37,7 @@ import org.jgrasstools.dbs.compat.IJGTStatement;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LogDb implements AutoCloseable {
+public class LogDb implements AutoCloseable, ILogDb {
     public static final String TABLE_MESSAGES = "logmessages";
 
     // TABLE_EVENTS
@@ -124,6 +124,10 @@ public class LogDb implements AutoCloseable {
         return insertFields;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insert(org.jgrasstools.dbs.log.Message)
+     */
+    @Override
     public boolean insert( final Message message ) throws Exception {
         // the id is generated
         String sql = "INSERT INTO " + TABLE_MESSAGES + //
@@ -142,6 +146,10 @@ public class LogDb implements AutoCloseable {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insert(org.jgrasstools.dbs.log.EMessageType, java.lang.String, java.lang.String)
+     */
+    @Override
     public boolean insert( EMessageType type, String tag, String msg ) throws Exception {
         if (tag == null) {
             tag = "";
@@ -162,19 +170,39 @@ public class LogDb implements AutoCloseable {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insertInfo(java.lang.String, java.lang.String)
+     */
+    @Override
     public boolean insertInfo( String tag, String msg ) throws Exception {
         return insert(EMessageType.INFO, tag, msg);
     }
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insertWarning(java.lang.String, java.lang.String)
+     */
+    @Override
     public boolean insertWarning( String tag, String msg ) throws Exception {
         return insert(EMessageType.WARNING, tag, msg);
     }
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insertDebug(java.lang.String, java.lang.String)
+     */
+    @Override
     public boolean insertDebug( String tag, String msg ) throws Exception {
         return insert(EMessageType.DEBUG, tag, msg);
     }
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insertAccess(java.lang.String, java.lang.String)
+     */
+    @Override
     public boolean insertAccess( String tag, String msg ) throws Exception {
         return insert(EMessageType.ACCESS, tag, msg);
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insertError(java.lang.String, java.lang.String, java.lang.Throwable)
+     */
+    @Override
     public boolean insertError( String tag, String msg, Throwable t ) throws Exception {
         if (tag == null) {
             tag = "";
@@ -205,6 +233,10 @@ public class LogDb implements AutoCloseable {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#getList()
+     */
+    @Override
     public List<Message> getList() throws Exception {
         String tableName = TABLE_MESSAGES;
         String sql = "select " + getQueryFieldsString() + " from " + tableName;
@@ -284,17 +316,28 @@ public class LogDb implements AutoCloseable {
         return message;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#clearTable()
+     */
+    @Override
     public void clearTable() throws Exception {
         try (IJGTStatement stmt = mConn.createStatement()) {
             stmt.execute("delete from " + TABLE_MESSAGES);
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#close()
+     */
     @Override
     public void close() throws Exception {
         logDb.close();
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#getDatabasePath()
+     */
+    @Override
     public String getDatabasePath() {
         return logDb.getDatabasePath();
     }
