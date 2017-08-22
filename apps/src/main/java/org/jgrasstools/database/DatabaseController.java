@@ -38,6 +38,7 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -98,6 +99,7 @@ import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
+import org.jgrasstools.gears.ui.JGTMapframe;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.style.Utilities;
@@ -105,6 +107,7 @@ import org.jgrasstools.gui.console.LogConsoleController;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
+import org.jgrasstools.nww.SimpleNwwViewer;
 import org.jgrasstools.gui.utils.ImageCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,6 +168,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private List<String> oldSqlCommands = new ArrayList<String>();
     private JTextPane _sqlEditorArea;
     protected SqlTemplatesAndActions sqlTemplatesAndActions;
+    private JGTMapframe mapFrame;
 
     public DatabaseController( GuiBridgeHandler guiBridge ) {
         this.guiBridge = guiBridge;
@@ -796,7 +800,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             if (geomsList.size() > 0) {
                                 SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(null,
                                         geomsList.toArray(new Geometry[0]));
-                                openMapFrame(fc);
+                                showInMapFrame(false, fc);
                             }
 
                         }
@@ -1427,7 +1431,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         if (currentConnectedDatabase instanceof GTSpatialiteThreadsafeDb) {
             try {
                 pm.beginTask("Run query: " + sqlText + "\ninto shapefile: " + selectedFile, IJGTProgressMonitor.UNKNOWN);
-                DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(currentConnectedDatabase, sqlText);
+                DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(null, currentConnectedDatabase, sqlText);
                 OmsVectorWriter.writeVector(selectedFile.getAbsolutePath(), fc);
                 addQueryToHistoryCombo(sqlText);
             } catch (Exception e1) {
@@ -1477,21 +1481,21 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         layoutTree(dbLevel, true);
     }
 
-    private void openMapFrame( SimpleFeatureCollection fc ) {
-        MapContent map = new MapContent();
-        map.setTitle("Feature selection tool example");
-        Style style = Utilities.createDefaultStyle(fc);
-        FeatureLayer fl = new FeatureLayer(fc, style);
-        map.addLayer(fl);
-        JMapFrame mapFrame = new JMapFrame(map);
-        mapFrame.enableToolBar(true);
-        mapFrame.enableStatusBar(false);
-        mapFrame.enableTool(Tool.PAN, Tool.ZOOM, Tool.RESET);
-        mapFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        // JToolBar toolBar = mapFrame.getToolBar();
-
-        mapFrame.setSize(600, 600);
-        mapFrame.setVisible(true);
+    protected void showInMapFrame( boolean withLayers, SimpleFeatureCollection fc ) {
+        if (mapFrame == null || !mapFrame.isVisible()) {
+            Class<DatabaseController> class1 = DatabaseController.class;
+            ImageIcon icon = new ImageIcon(class1.getResource("/org/jgrasstools/images/hm150.png"));
+            mapFrame = new JGTMapframe("Geometries Viewer");
+            mapFrame.setIconImage(icon.getImage());
+            mapFrame.enableToolBar(true);
+            mapFrame.enableStatusBar(false);
+            mapFrame.enableLayerTable(withLayers);
+            mapFrame.enableTool(Tool.PAN, Tool.ZOOM, Tool.RESET);
+            mapFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            mapFrame.setSize(600, 600);
+            mapFrame.setVisible(true);
+        }
+        mapFrame.addLayer(fc);
     }
 
 }

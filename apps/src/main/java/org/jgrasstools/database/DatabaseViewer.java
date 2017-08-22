@@ -112,14 +112,14 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
         });
     }
 
-    boolean viewSpatialQueryResult( String title, String sqlText, IJGTProgressMonitor pm ) {
+    public boolean viewSpatialQueryResult3D( String title, String sqlText, IJGTProgressMonitor pm ) {
         boolean hasError = false;
         if (sqlText.trim().length() == 0) {
             return false;
         }
         try {
             pm.beginTask("Run query: " + sqlText, IJGTProgressMonitor.UNKNOWN);
-            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(currentConnectedDatabase, sqlText);
+            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(title, currentConnectedDatabase, sqlText);
             ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
             if (toolsPanelController == null) {
                 openNww();
@@ -132,6 +132,29 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
                 toolsPanelController.loadFeatureCollection(null, title, null, rfc, null);
                 addQueryToHistoryCombo(sqlText);
             }
+
+        } catch (Exception e1) {
+            String localizedMessage = e1.getLocalizedMessage();
+            hasError = true;
+            pm.errorMessage("An error occurred: " + localizedMessage);
+        } finally {
+            pm.done();
+        }
+        return hasError;
+    }
+
+    public boolean viewSpatialQueryResult( String title, String sqlText, IJGTProgressMonitor pm ) {
+        boolean hasError = false;
+        if (sqlText.trim().length() == 0) {
+            return false;
+        }
+        try {
+            pm.beginTask("Run query: " + sqlText, IJGTProgressMonitor.UNKNOWN);
+            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(title, currentConnectedDatabase, sqlText);
+            ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
+            showInMapFrame(true, rfc);
+
+            addQueryToHistoryCombo(sqlText);
 
         } catch (Exception e1) {
             String localizedMessage = e1.getLocalizedMessage();
@@ -290,6 +313,7 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
         if (selectedTable.isGeo) {
             addIfNotNull(actions, sqlTemplatesAndActions.getImportShapefileDataAction(guiBridge, selectedTable, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewTableAction(selectedTable, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewTableGeometriesAction(selectedTable, this));
         }
 
         return actions;

@@ -461,7 +461,21 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getQuickViewTableAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Quick View Table"){
+        return new AbstractAction("Quick View Table in 3D"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                try {
+                    String query = DbsUtilities.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
+                    spatialiteViewer.viewSpatialQueryResult(table.tableName, query, spatialiteViewer.pm);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        };
+    }
+
+    public Action getQuickViewTableGeometriesAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
+        return new AbstractAction("Quick View Table Geometries"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {

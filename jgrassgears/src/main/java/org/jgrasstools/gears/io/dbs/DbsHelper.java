@@ -44,18 +44,21 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class DbsHelper {
     private static final Logger logger = LoggerFactory.getLogger(DbsHelper.class);
-    
+
     /**
      * Extractes a featurecollection from an sql statement.
      * 
      * <p>The assumption is made that the first string after the FROM
      * keyword in the select statement is the table that contains the geometry.
      * 
+     * @param name the name of the resulting layer.
+     * @param db
      * @param simpleSql the sql.
      * @return the features.
      * @throws Exception
      */
-    public static DefaultFeatureCollection runRawSqlToFeatureCollection(ASpatialDb db, String simpleSql ) throws Exception {
+    public static DefaultFeatureCollection runRawSqlToFeatureCollection( String name, ASpatialDb db, String simpleSql )
+            throws Exception {
         String[] split = simpleSql.split("\\s+");
         String tableName = null;
         for( int i = 0; i < split.length; i++ ) {
@@ -83,7 +86,8 @@ public class DbsHelper {
 
             CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumns.srid);
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-            b.setName("sql");
+            if (name != null)
+                b.setName(name);
             b.setCRS(crs);
 
             for( int i = 1; i <= columnCount; i++ ) {
