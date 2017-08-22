@@ -89,10 +89,12 @@ public class SpatialDbsImportUtils {
         List<String> attrSql = new ArrayList<String>();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
         for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+            String attrName = attributeDescriptor.getLocalName();
             if (attributeDescriptor instanceof GeometryDescriptor) {
                 continue;
+            } else if (attrName.equalsIgnoreCase(ASpatialDb.PK_UID)) {
+                continue;
             }
-            String attrName = attributeDescriptor.getLocalName();
             Class< ? > binding = attributeDescriptor.getType().getBinding();
             if (binding.isAssignableFrom(Double.class) || binding.isAssignableFrom(Float.class)) {
                 attrSql.add(attrName + " REAL");
@@ -194,18 +196,20 @@ public class SpatialDbsImportUtils {
             featureIterator = features.features();
         }
 
+        List<String> attrNames = new ArrayList<>();
         String valueNames = "";
         String qMarks = "";
         for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
-            String attrName = attributeDescriptor.getLocalName().toUpperCase();
-            if (attrName.equals(ASpatialDb.PK_UID)) {
+            String attrName = attributeDescriptor.getLocalName();
+            if (attrName.equalsIgnoreCase(ASpatialDb.PK_UID)) {
                 continue;
             }
+            attrNames.add(attrName);
             if (attributeDescriptor instanceof GeometryDescriptor) {
                 valueNames += "," + gCol;
                 qMarks += ",ST_GeomFromText(?, " + epsg + ")";
             } else {
-                if (!tableColumns.contains(attrName)) {
+                if (!tableColumns.contains(attrName.toUpperCase())) {
                     pm.errorMessage(
                             "The imported shapefile doesn't seem to match the table's schema. Doesn't exist: " + attrName);
                     return false;
@@ -225,9 +229,8 @@ public class SpatialDbsImportUtils {
             try {
                 while( featureIterator.hasNext() ) {
                     SimpleFeature f = (SimpleFeature) featureIterator.next();
-                    List<Object> attributes = f.getAttributes();
-                    for( int i = 0; i < attributes.size(); i++ ) {
-                        Object object = attributes.get(i);
+                    for( int i = 0; i < attrNames.size(); i++ ) {
+                        Object object = f.getAttribute(attrNames.get(i));
                         if (object == null) {
                             continue;
                         }

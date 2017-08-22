@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
 import org.geotools.filter.function.FilterFunction_offset;
@@ -38,6 +39,8 @@ import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.styling.Symbolizer;
 import org.geotools.styling.UserLayer;
 import org.jgrasstools.gears.utils.SldUtilities;
+import org.jgrasstools.gears.utils.geometry.EGeometryType;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.Function;
@@ -80,30 +83,30 @@ public class Utilities {
      * The SLD defined well known mark codes.
      */
     public static final String[] wkMarkDefs = { //
-        "", //
-        "cross", //
-        "circle", //
-        "triangle", //
-        "X", //
-        "star", //
-        "arrow", //
-        "hatch", //
-        "square"//
+            "", //
+            "cross", //
+            "circle", //
+            "triangle", //
+            "X", //
+            "star", //
+            "arrow", //
+            "hatch", //
+            "square"//
     };
 
     /**
      * The SLD defined well known mark names for gui use.
      */
     public static final String[] wkMarkNames = { //
-        "", //
-        "cross", //
-        "circle", //
-        "triangle", //
-        "X", //
-        "star", //
-        "arrow", //
-        "hatch", //
-        "square"//
+            "", //
+            "cross", //
+            "circle", //
+            "triangle", //
+            "X", //
+            "star", //
+            "arrow", //
+            "hatch", //
+            "square"//
     };
 
     public static final String SHAPE_PREFIX = "shape://";
@@ -112,27 +115,27 @@ public class Utilities {
      * The custom shape mark names as needed by geotools.
      */
     public static final String[] shapeMarkDefs = { //
-        "", //
-        SHAPE_PREFIX + "vertline", //
-        SHAPE_PREFIX + "horline", //
-        SHAPE_PREFIX + "slash", //
-        SHAPE_PREFIX + "backslash", //
-        SHAPE_PREFIX + "times", //
-        SHAPE_PREFIX + "dot", //
-        SHAPE_PREFIX + "plus" //
+            "", //
+            SHAPE_PREFIX + "vertline", //
+            SHAPE_PREFIX + "horline", //
+            SHAPE_PREFIX + "slash", //
+            SHAPE_PREFIX + "backslash", //
+            SHAPE_PREFIX + "times", //
+            SHAPE_PREFIX + "dot", //
+            SHAPE_PREFIX + "plus" //
     };
     /**
      * The custom shape mark names for gui.
      */
     public static final String[] shapeMarkNames = { //
-        "", //
-        "vertical lines", //
-        "horizontal lines", //
-        "diagonal lines", //
-        "inverse diagonal lines", //
-        "crossed diagonal lines", //
-        "dots", //
-        "plus" //
+            "", //
+            "vertical lines", //
+            "horizontal lines", //
+            "diagonal lines", //
+            "inverse diagonal lines", //
+            "crossed diagonal lines", //
+            "dots", //
+            "plus" //
     };
 
     /**
@@ -175,29 +178,29 @@ public class Utilities {
      * The SLD names of the line cap definitions.
      */
     public static final String[] lineCapNames = { //
-        "", //
-        "butt", //
-        "round", //
-        "square" //
+            "", //
+            "butt", //
+            "round", //
+            "square" //
     };
 
     /**
      * The SLD names of the line join definitions.
      */
     public static final String[] verticalPlacementNames = { //
-        "bevel", //
-        "miter", //
-        "round" //
+            "bevel", //
+            "miter", //
+            "round" //
     };
 
     /**
      * The SLD names of the line join definitions.
      */
     public static final String[] lineJoinNames = { //
-        "", //
-        "bevel", //
-        "miter", //
-        "round" //
+            "", //
+            "bevel", //
+            "miter", //
+            "round" //
     };
 
     /**
@@ -227,10 +230,10 @@ public class Utilities {
      */
     public static StyleBuilder sb = new StyleBuilder(sf, ff);
 
-    //    /** 
-    //     * Utility class for working with Images, Features and Styles 
-    //     */
-    //    private static Drawing d = Drawing.create();
+    // /**
+    // * Utility class for working with Images, Features and Styles
+    // */
+    // private static Drawing d = Drawing.create();
 
     /**
      * Parse a file and extract the {@link StyledLayerDescriptor}.
@@ -239,7 +242,7 @@ public class Utilities {
      * @return the styled layer descriptor.
      * @throws IOException
      */
-    public static StyledLayerDescriptor readStyle(File file) throws IOException {
+    public static StyledLayerDescriptor readStyle( File file ) throws IOException {
         SLDParser stylereader = new SLDParser(sf, file);
         StyledLayerDescriptor sld = stylereader.parseSLD();
         return sld;
@@ -251,11 +254,11 @@ public class Utilities {
      * @param rule the rule to check.
      * @return the extracted {@link ExternalGraphic}s.
      */
-    public static List<ExternalGraphic> externalGraphicsFromRule(Rule rule) {
+    public static List<ExternalGraphic> externalGraphicsFromRule( Rule rule ) {
         List<ExternalGraphic> gList = new ArrayList<ExternalGraphic>();
         List<Symbolizer> symbolizers = rule.symbolizers();
         if (symbolizers.size() != 0) {
-            for (Symbolizer symbolizer : symbolizers) {
+            for( Symbolizer symbolizer : symbolizers ) {
                 Graphic[] graphics = new Graphic[2];
                 if (symbolizer instanceof PointSymbolizer) {
                     PointSymbolizer pointSymbolizer = (PointSymbolizer) symbolizer;
@@ -273,9 +276,9 @@ public class Utilities {
                     if (fill != null)
                         graphics[1] = fill.getGraphicFill();
                 }
-                for (int i = 0; i < graphics.length; i++) {
+                for( int i = 0; i < graphics.length; i++ ) {
                     if (graphics[i] != null) {
-                        for (GraphicalSymbol gs : graphics[i].graphicalSymbols()) {
+                        for( GraphicalSymbol gs : graphics[i].graphicalSymbols() ) {
                             if ((gs != null) && (gs instanceof ExternalGraphic)) {
                                 ExternalGraphic externalGraphic = (ExternalGraphic) gs;
                                 gList.add(externalGraphic);
@@ -295,15 +298,32 @@ public class Utilities {
      * @param graphic the graphic to check.
      * @return the extracted {@link ExternalGraphic}s.
      */
-    public static List<ExternalGraphic> externalGraphicsFromGraphic(Graphic graphic) {
+    public static List<ExternalGraphic> externalGraphicsFromGraphic( Graphic graphic ) {
         List<ExternalGraphic> gList = new ArrayList<ExternalGraphic>();
-        for (GraphicalSymbol gs : graphic.graphicalSymbols()) {
+        for( GraphicalSymbol gs : graphic.graphicalSymbols() ) {
             if ((gs != null) && (gs instanceof ExternalGraphic)) {
                 ExternalGraphic externalGraphic = (ExternalGraphic) gs;
                 gList.add(externalGraphic);
             }
         }
         return gList;
+    }
+
+    /**
+     * Creates a default {@link Style} for a featurecollection.
+     * 
+     * @return the default style.
+     */
+    public static Style createDefaultStyle( SimpleFeatureCollection featureCollection ) {
+        GeometryDescriptor geometryDescriptor = featureCollection.getSchema().getGeometryDescriptor();
+        if (EGeometryType.isPoint(geometryDescriptor)) {
+            return createDefaultPointStyle();
+        } else if (EGeometryType.isLine(geometryDescriptor)) {
+            return createDefaultLineStyle();
+        } else if (EGeometryType.isPolygon(geometryDescriptor)) {
+            return createDefaultPolygonStyle();
+        }
+        return null;
     }
 
     /**
@@ -332,7 +352,7 @@ public class Utilities {
         Mark circleMark = sf.getCircleMark();
         circleMark.setFill(sf.createFill(ff.literal("#" + Integer.toHexString(Color.RED.getRGB() & 0xffffff))));
         circleMark.setStroke(sf.createStroke(ff.literal("#" + Integer.toHexString(Color.BLACK.getRGB() & 0xffffff)),
-            ff.literal(DEFAULT_WIDTH)));
+                ff.literal(DEFAULT_WIDTH)));
         graphic.graphicalSymbols().clear();
         graphic.graphicalSymbols().add(circleMark);
         graphic.setSize(ff.literal(DEFAULT_SIZE));
@@ -370,8 +390,8 @@ public class Utilities {
         PolygonSymbolizer polygonSymbolizer = sf.createPolygonSymbolizer();
         polygonSymbolizer.setFill(sf.createFill(ff.literal("#" + Integer.toHexString(Color.RED.getRGB() & 0xffffff))));
         polygonSymbolizer.getFill().setOpacity(ff.literal(0.50));
-        polygonSymbolizer.setStroke(sf.createStroke(
-            ff.literal("#" + Integer.toHexString(Color.BLACK.getRGB() & 0xffffff)), ff.literal(DEFAULT_WIDTH)));
+        polygonSymbolizer.setStroke(sf.createStroke(ff.literal("#" + Integer.toHexString(Color.BLACK.getRGB() & 0xffffff)),
+                ff.literal(DEFAULT_WIDTH)));
 
         Rule rule = sf.createRule();
         rule.setName("New rule");
@@ -403,7 +423,7 @@ public class Utilities {
     public static Rule createDefaultLineRule() {
         LineSymbolizer lineSymbolizer = sf.createLineSymbolizer();
         lineSymbolizer.setStroke(
-            sf.createStroke(ff.literal("#" + Integer.toHexString(Color.BLACK.getRGB() & 0xffffff)), ff.literal(1)));
+                sf.createStroke(ff.literal("#" + Integer.toHexString(Color.BLACK.getRGB() & 0xffffff)), ff.literal(1)));
 
         Rule rule = sf.createRule();
         rule.setName("New rule");
@@ -412,62 +432,64 @@ public class Utilities {
         return rule;
     }
 
-    //    /**
-    //     * Creates a default {@link TextSymbolizer} for a given type.
-    //     * 
-    //     * @return the default symbolizer.
-    //     */
-    //    public static TextSymbolizer createDefaultTextSymbolizer(SLD type) {
-    //        LabelPlacement labelPlacement = null;
+    // /**
+    // * Creates a default {@link TextSymbolizer} for a given type.
+    // *
+    // * @return the default symbolizer.
+    // */
+    // public static TextSymbolizer createDefaultTextSymbolizer(SLD type) {
+    // LabelPlacement labelPlacement = null;
     //
-    //        switch (type) {
-    //        case POINT:
-    //        case POLYGON:
-    //            labelPlacement = sf.createPointPlacement(sf.createAnchorPoint(ff.literal(0.0), ff.literal(0.0)),
-    //                sf.createDisplacement(ff.literal(0.0), ff.literal(0.0)), ff.literal(0.0));
-    //            break;
-    //        case LINE:
-    //            labelPlacement = sf.createLinePlacement(ff.literal(10.0));
-    //            break;
+    // switch (type) {
+    // case POINT:
+    // case POLYGON:
+    // labelPlacement = sf.createPointPlacement(sf.createAnchorPoint(ff.literal(0.0),
+    // ff.literal(0.0)),
+    // sf.createDisplacement(ff.literal(0.0), ff.literal(0.0)), ff.literal(0.0));
+    // break;
+    // case LINE:
+    // labelPlacement = sf.createLinePlacement(ff.literal(10.0));
+    // break;
     //
-    //        default:
-    //            throw new IllegalArgumentException();
-    //        }
+    // default:
+    // throw new IllegalArgumentException();
+    // }
     //
-    //        Font font = sb.createFont("Arial", false, false, 12); //$NON-NLS-1$
-    //        TextSymbolizer textSymbolizer = sf.createTextSymbolizer(sf.createFill(ff.literal(DEFAULT_COLOR)),
-    //            new Font[] { font }, null, ff.literal("dummy"), labelPlacement, null);
+    // Font font = sb.createFont("Arial", false, false, 12); //$NON-NLS-1$
+    // TextSymbolizer textSymbolizer =
+    // sf.createTextSymbolizer(sf.createFill(ff.literal(DEFAULT_COLOR)),
+    // new Font[] { font }, null, ff.literal("dummy"), labelPlacement, null);
     //
-    //        return textSymbolizer;
-    //    }
+    // return textSymbolizer;
+    // }
     //
-    //    /**
-    //     * Creates a default {@link TextSymbolizer} for a point.
-    //     * 
-    //     * @return the default symbolizer.
-    //     */
-    //    public static Symbolizer createDefaultGeometrySymbolizer(SLD type) {
-    //        Symbolizer symbolizer = null;
-    //        switch (type) {
-    //        case POINT:
-    //            Rule defaultPointRule = createDefaultPointRule();
-    //            symbolizer = defaultPointRule.getSymbolizers()[0];
-    //            break;
-    //        case POLYGON:
-    //            Rule defaultPolygonRule = createDefaultPolygonRule();
-    //            symbolizer = defaultPolygonRule.getSymbolizers()[0];
-    //            break;
-    //        case LINE:
-    //            Rule defaultLineRule = createDefaultLineRule();
-    //            symbolizer = defaultLineRule.getSymbolizers()[0];
-    //            break;
+    // /**
+    // * Creates a default {@link TextSymbolizer} for a point.
+    // *
+    // * @return the default symbolizer.
+    // */
+    // public static Symbolizer createDefaultGeometrySymbolizer(SLD type) {
+    // Symbolizer symbolizer = null;
+    // switch (type) {
+    // case POINT:
+    // Rule defaultPointRule = createDefaultPointRule();
+    // symbolizer = defaultPointRule.getSymbolizers()[0];
+    // break;
+    // case POLYGON:
+    // Rule defaultPolygonRule = createDefaultPolygonRule();
+    // symbolizer = defaultPolygonRule.getSymbolizers()[0];
+    // break;
+    // case LINE:
+    // Rule defaultLineRule = createDefaultLineRule();
+    // symbolizer = defaultLineRule.getSymbolizers()[0];
+    // break;
     //
-    //        default:
-    //            throw new IllegalArgumentException();
-    //        }
+    // default:
+    // throw new IllegalArgumentException();
+    // }
     //
-    //        return symbolizer;
-    //    }
+    // return symbolizer;
+    // }
 
     /**
      * Get the {@link PointSymbolizer} from the given rule.
@@ -475,10 +497,10 @@ public class Utilities {
      * @param rule the rule to check for symbolizers.
      * @return the first symbolizer found.
      */
-    public static PointSymbolizer pointSymbolizerFromRule(Rule rule) {
+    public static PointSymbolizer pointSymbolizerFromRule( Rule rule ) {
         List<Symbolizer> symbolizers = rule.symbolizers();
         PointSymbolizer pointSymbolizer = null;
-        for (Symbolizer symbolizer : symbolizers) {
+        for( Symbolizer symbolizer : symbolizers ) {
             if (symbolizer instanceof PointSymbolizer) {
                 pointSymbolizer = (PointSymbolizer) symbolizer;
                 break;
@@ -496,10 +518,10 @@ public class Utilities {
      * @param rule the rule to check for symbolizers.
      * @return the first symbolizer found.
      */
-    public static PolygonSymbolizer polygonSymbolizerFromRule(Rule rule) {
+    public static PolygonSymbolizer polygonSymbolizerFromRule( Rule rule ) {
         List<Symbolizer> symbolizers = rule.symbolizers();
         PolygonSymbolizer polygonSymbolizer = null;
-        for (Symbolizer symbolizer : symbolizers) {
+        for( Symbolizer symbolizer : symbolizers ) {
             if (symbolizer instanceof PolygonSymbolizer) {
                 polygonSymbolizer = (PolygonSymbolizer) symbolizer;
                 break;
@@ -517,10 +539,10 @@ public class Utilities {
      * @param rule the rule to check for symbolizers.
      * @return the first symbolizer found.
      */
-    public static LineSymbolizer lineSymbolizerFromRule(Rule rule) {
+    public static LineSymbolizer lineSymbolizerFromRule( Rule rule ) {
         List<Symbolizer> symbolizers = rule.symbolizers();
         LineSymbolizer lineSymbolizer = null;
-        for (Symbolizer symbolizer : symbolizers) {
+        for( Symbolizer symbolizer : symbolizers ) {
             if (symbolizer instanceof LineSymbolizer) {
                 lineSymbolizer = (LineSymbolizer) symbolizer;
                 break;
@@ -538,7 +560,7 @@ public class Utilities {
      * @param rule the rule of which the mark has to be changed.
      * @param wellKnownMarkName the name of the new mark.
      */
-    public static void substituteMark(Rule rule, String wellKnownMarkName) {
+    public static void substituteMark( Rule rule, String wellKnownMarkName ) {
         PointSymbolizer pointSymbolizer = Utilities.pointSymbolizerFromRule(rule);
         Mark oldMark = SLD.mark(pointSymbolizer);
 
@@ -560,7 +582,7 @@ public class Utilities {
      * @param rule the rule of which the external graphic has to be changed.
      * @param path the path of the image.
      */
-    public static void substituteExternalGraphics(Rule rule, URL externalGraphicsUrl) {
+    public static void substituteExternalGraphics( Rule rule, URL externalGraphicsUrl ) {
         String urlString = externalGraphicsUrl.toString();
         String format = "";
         if (urlString.toLowerCase().endsWith(".png")) {
@@ -586,7 +608,7 @@ public class Utilities {
         graphic.graphicalSymbols().add(exGraphic);
     }
 
-    public static String getFormat(String path) {
+    public static String getFormat( String path ) {
         String format = "";
         if (path.toLowerCase().endsWith(".png")) {
             format = "image/png";
@@ -606,7 +628,7 @@ public class Utilities {
      * @param name the path or file name to test against.
      * @return teh format definition.
      */
-    public static String getExternalGraphicFormat(String name) {
+    public static String getExternalGraphicFormat( String name ) {
         String format = "";
         if (name.toLowerCase().endsWith(".png")) {
             format = "image/png";
@@ -629,7 +651,7 @@ public class Utilities {
      * @param rule the {@link Rule}.
      * @param newSize the new size.
      */
-    public static void changeMarkSize(Rule rule, int newSize) {
+    public static void changeMarkSize( Rule rule, int newSize ) {
         PointSymbolizer pointSymbolizer = Utilities.pointSymbolizerFromRule(rule);
         Graphic graphic = SLD.graphic(pointSymbolizer);
         graphic.setSize(ff.literal(newSize));
@@ -644,7 +666,7 @@ public class Utilities {
      * @param rule the {@link Rule}.
      * @param newRotation the new rotation value in degrees.
      */
-    public static void changeRotation(Rule rule, int newRotation) {
+    public static void changeRotation( Rule rule, int newRotation ) {
         PointSymbolizer pointSymbolizer = Utilities.pointSymbolizerFromRule(rule);
         Graphic graphic = SLD.graphic(pointSymbolizer);
         graphic.setRotation(ff.literal(newRotation));
@@ -659,7 +681,7 @@ public class Utilities {
      * @return the offset.
      */
     @SuppressWarnings("rawtypes")
-    public static Point2D getOffset(Symbolizer symbolizer) {
+    public static Point2D getOffset( Symbolizer symbolizer ) {
         Expression geometry = symbolizer.getGeometry();
         if (geometry != null) {
             if (geometry instanceof FilterFunction_offset) {
@@ -684,8 +706,8 @@ public class Utilities {
      * @param symbolizer the symbolizer.
      * @param text the text representing the offsets in the CSV form.
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static void setOffset(Symbolizer symbolizer, String text) {
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static void setOffset( Symbolizer symbolizer, String text ) {
         if (text.indexOf(',') == -1) {
             return;
         }
@@ -705,8 +727,7 @@ public class Utilities {
                 parameters.set(2, ff.literal(yOffset));
             }
         } else {
-            Function function =
-                ff.function("offset", ff.property("the_geom"), ff.literal(xOffset), ff.literal(yOffset));
+            Function function = ff.function("offset", ff.property("the_geom"), ff.literal(xOffset), ff.literal(yOffset));
             symbolizer.setGeometry(function);
         }
     }
@@ -720,10 +741,10 @@ public class Utilities {
      * @param ruleName the name of the rule to find.
      * @return the new name of the rule.
      */
-    public static String checkSameNameRule(List<RuleWrapper> rulesWrapper, String ruleName) {
+    public static String checkSameNameRule( List<RuleWrapper> rulesWrapper, String ruleName ) {
         int index = 1;
         String name = ruleName.trim();
-        for (int i = 0; i < rulesWrapper.size(); i++) {
+        for( int i = 0; i < rulesWrapper.size(); i++ ) {
             RuleWrapper ruleWrapper = rulesWrapper.get(i);
             String tmpName = ruleWrapper.getName();
             if (tmpName == null) {
@@ -758,10 +779,10 @@ public class Utilities {
      * @param ftsName the name of the featureTypeStyle to find.
      * @return the new name of the featureTypeStyle.
      */
-    public static String checkSameNameFeatureTypeStyle(List<FeatureTypeStyleWrapper> ftsWrapperList, String ftsName) {
+    public static String checkSameNameFeatureTypeStyle( List<FeatureTypeStyleWrapper> ftsWrapperList, String ftsName ) {
         int index = 1;
         String name = ftsName.trim();
-        for (int i = 0; i < ftsWrapperList.size(); i++) {
+        for( int i = 0; i < ftsWrapperList.size(); i++ ) {
             FeatureTypeStyleWrapper ftsWrapper = ftsWrapperList.get(i);
             String tmpName = ftsWrapper.getName();
             if (tmpName == null) {
@@ -796,10 +817,10 @@ public class Utilities {
      * @param styleName the name of the style to find.
      * @return the new name of the style.
      */
-    public static String checkSameNameStyle(List<StyleWrapper> styles, String styleName) {
+    public static String checkSameNameStyle( List<StyleWrapper> styles, String styleName ) {
         int index = 1;
         String name = styleName.trim();
-        for (int i = 0; i < styles.size(); i++) {
+        for( int i = 0; i < styles.size(); i++ ) {
             StyleWrapper styleWrapper = styles.get(i);
             String tmpName = styleWrapper.getName();
             if (tmpName == null) {
@@ -833,18 +854,18 @@ public class Utilities {
      * @param oneFeaturetypestylePerRule switch to create a {@link FeatureTypeStyle} per {@link Rule}. 
      * @return the new style created.
      */
-    public static Style rulesToStyle(List<Rule> rules, String name, boolean oneFeaturetypestylePerRule) {
+    public static Style rulesToStyle( List<Rule> rules, String name, boolean oneFeaturetypestylePerRule ) {
         Style namedStyle = Utilities.sf.createStyle();
         if (!oneFeaturetypestylePerRule) {
             FeatureTypeStyle featureTypeStyle = Utilities.sf.createFeatureTypeStyle();
             List<Rule> currentRules = featureTypeStyle.rules();
-            for (int i = 0; i < rules.size(); i++) {
+            for( int i = 0; i < rules.size(); i++ ) {
                 Rule rule = rules.get(i);
                 currentRules.add(rule);
             }
             namedStyle.featureTypeStyles().add(featureTypeStyle);
         } else {
-            for (int i = 0; i < rules.size(); i++) {
+            for( int i = 0; i < rules.size(); i++ ) {
                 FeatureTypeStyle featureTypeStyle = Utilities.sf.createFeatureTypeStyle();
                 Rule rule = rules.get(i);
                 featureTypeStyle.rules().add(rule);
@@ -862,10 +883,10 @@ public class Utilities {
      * @return the style string.
      * @throws Exception
      */
-    public static String styleToString(Style style) throws Exception {
+    public static String styleToString( Style style ) throws Exception {
         StyledLayerDescriptor sld = sf.createStyledLayerDescriptor();
         UserLayer layer = sf.createUserLayer();
-        layer.setLayerFeatureConstraints(new FeatureTypeConstraint[] { null });
+        layer.setLayerFeatureConstraints(new FeatureTypeConstraint[]{null});
         sld.addStyledLayer(layer);
         layer.addUserStyle(style);
 
@@ -882,7 +903,7 @@ public class Utilities {
      * @return the generated style.
      * @throws IOException
      */
-    public static StyleWrapper createStyleFromGraphic(File graphicsPath) throws IOException {
+    public static StyleWrapper createStyleFromGraphic( File graphicsPath ) throws IOException {
         String name = graphicsPath.getName();
         ExternalGraphic exGraphic = null;
         if (name.toLowerCase().endsWith(".png")) {
@@ -925,7 +946,7 @@ public class Utilities {
      * @param dashStr the dash string definition. 
      * @return the dash array or null if the definition can't be parsed.
      */
-    public static float[] getDash(String dashStr) {
+    public static float[] getDash( String dashStr ) {
         if (dashStr == null) {
             return null;
         }
@@ -933,7 +954,7 @@ public class Utilities {
         int size = dashSplit.length;
         float[] dash = new float[size];
         try {
-            for (int i = 0; i < dash.length; i++) {
+            for( int i = 0; i < dash.length; i++ ) {
                 dash[i] = Float.parseFloat(dashSplit[i].trim());
             }
             return dash;
@@ -948,9 +969,9 @@ public class Utilities {
      * @param dashArray the dash array.
      * @return the converted string.
      */
-    public static String getDashString(float[] dashArray) {
+    public static String getDashString( float[] dashArray ) {
         StringBuilder sb = null;
-        for (float f : dashArray) {
+        for( float f : dashArray ) {
             if (sb == null) {
                 sb = new StringBuilder(String.valueOf(f));
             } else {
@@ -969,7 +990,7 @@ public class Utilities {
      * @return the number or null, if the parsing fails.
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Number> T isNumber(String value, Class<T> adaptee) {
+    public static <T extends Number> T isNumber( String value, Class<T> adaptee ) {
         if (value == null) {
             return null;
         }
@@ -1013,7 +1034,7 @@ public class Utilities {
      * @param sldJoin the sld join string.
      * @return the awt value.
      */
-    public static int sld2awtJoin(String sldJoin) {
+    public static int sld2awtJoin( String sldJoin ) {
         if (sldJoin.equals(lineJoinNames[1])) {
             return BasicStroke.JOIN_BEVEL;
         } else if (sldJoin.equals("") || sldJoin.equals(lineJoinNames[2])) {
@@ -1031,7 +1052,7 @@ public class Utilities {
      * @param sldCap the sld cap string.
      * @return the awt value.
      */
-    public static int sld2awtCap(String sldCap) {
+    public static int sld2awtCap( String sldCap ) {
         if (sldCap.equals("") || sldCap.equals(lineCapNames[1])) {
             return BasicStroke.CAP_BUTT;
         } else if (sldCap.equals(lineCapNames[2])) {

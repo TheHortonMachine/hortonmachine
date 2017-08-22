@@ -70,7 +70,13 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.map.FeatureLayer;
+import org.geotools.map.MapContent;
+import org.geotools.styling.Style;
+import org.geotools.swing.JMapFrame;
+import org.geotools.swing.JMapFrame.Tool;
 import org.h2.jdbc.JdbcSQLException;
 import org.jgrasstools.dbs.compat.ASpatialDb;
 import org.jgrasstools.dbs.compat.EDb;
@@ -92,7 +98,9 @@ import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.style.Utilities;
 import org.jgrasstools.gui.console.LogConsoleController;
 import org.jgrasstools.gui.utils.GuiBridgeHandler;
 import org.jgrasstools.gui.utils.GuiUtilities;
@@ -100,6 +108,10 @@ import org.jgrasstools.gui.utils.GuiUtilities.IOnCloseListener;
 import org.jgrasstools.gui.utils.ImageCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 /**
  * The spatialite/h2gis view controller.
@@ -737,6 +749,20 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             @Override
             public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
+                int[] selectedRows = _dataViewerTable.getSelectedRows();
+                int[] selectedCols = _dataViewerTable.getSelectedColumns();
+
+                boolean isGeom = false;
+                if (selectedCols.length == 1 && selectedRows.length > 0) {
+                    // check coontent
+                    String valueAt = _dataViewerTable.getValueAt(selectedRows[0], selectedCols[0]).toString();
+                    String[] split = valueAt.split("\\s+");
+                    if (split.length > 0 && ESpatialiteGeometryType.isGeometryName(split[0])) {
+                        isGeom = true;
+                    }
+
+                }
+
                 JMenuItem item = new JMenuItem(new AbstractAction("Copy cells content"){
                     private static final long serialVersionUID = 1L;
 
@@ -747,8 +773,38 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 TransferHandler.COPY);
                     }
                 });
-                popupMenu.add(item);
                 item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                popupMenu.add(item);
+                if (isGeom) {
+                    JMenuItem item1 = new JMenuItem(new AbstractAction("View geometry"){
+                        private static final long serialVersionUID = 1L;
+                        @Override
+                        public void actionPerformed( ActionEvent e ) {
+
+                            WKTReader wktReader = new WKTReader();
+                            List<Geometry> geomsList = new ArrayList<>();
+                            for( int r : selectedRows ) {
+                                try {
+                                    String valueAt = _dataViewerTable.getValueAt(r, selectedCols[0]).toString();
+                                    Geometry geometry = wktReader.read(valueAt);
+                                    geomsList.add(geometry);
+                                } catch (ParseException e1) {
+                                    e1.printStackTrace();
+                                }
+                            }
+
+                            if (geomsList.size() > 0) {
+                                SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(null,
+                                        geomsList.toArray(new Geometry[0]));
+                                openMapFrame(fc);
+                            }
+
+                        }
+
+                    });
+                    item1.setHorizontalTextPosition(JMenuItem.RIGHT);
+                    popupMenu.add(item1);
+                }
             }
 
             @Override
@@ -1419,6 +1475,23 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
         setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
         layoutTree(dbLevel, true);
+    }
+
+    private void openMapFrame( SimpleFeatureCollection fc ) {
+        MapContent map = new MapContent();
+        map.setTitle("Feature selection tool example");
+        Style style = Utilities.createDefaultStyle(fc);
+        FeatureLayer fl = new FeatureLayer(fc, style);
+        map.addLayer(fl);
+        JMapFrame mapFrame = new JMapFrame(map);
+        mapFrame.enableToolBar(true);
+        mapFrame.enableStatusBar(false);
+        mapFrame.enableTool(Tool.PAN, Tool.ZOOM, Tool.RESET);
+        mapFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        // JToolBar toolBar = mapFrame.getToolBar();
+
+        mapFrame.setSize(600, 600);
+        mapFrame.setVisible(true);
     }
 
 }
