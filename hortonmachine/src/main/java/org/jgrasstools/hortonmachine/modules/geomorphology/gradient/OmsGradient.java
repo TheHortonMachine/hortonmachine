@@ -21,28 +21,25 @@ import static java.lang.Math.atan;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.toDegrees;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOMORPHOLOGY;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_DOCUMENTATION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_doDegrees_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_inElev_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_outSlope_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_pMode_DESCRIPTION;
+import static org.jgrasstools.gears.libs.modules.Variables.EVANS;
+import static org.jgrasstools.gears.libs.modules.Variables.FINITE_DIFFERENCES;
+import static org.jgrasstools.gears.libs.modules.Variables.HORN;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.multiprocessing.GridMultiProcessing;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -55,29 +52,25 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-
-@Description(OMSGRADIENT_DESCRIPTION)
-@Documentation(OMSGRADIENT_DOCUMENTATION)
-@Author(name = OMSGRADIENT_AUTHORNAMES, contact = OMSGRADIENT_AUTHORCONTACTS)
-@Keywords(OMSGRADIENT_KEYWORDS)
-@Label(OMSGRADIENT_LABEL)
-@Name(OMSGRADIENT_NAME)
-@Status(OMSGRADIENT_STATUS)
-@License(OMSGRADIENT_LICENSE)
-public class OmsGradient extends JGTModel {
+@Description(OmsGradient.OMSGRADIENT_DESCRIPTION)
+@Documentation(OmsGradient.OMSGRADIENT_DOCUMENTATION)
+@Author(name = OmsGradient.OMSGRADIENT_AUTHORNAMES, contact = OmsGradient.OMSGRADIENT_AUTHORCONTACTS)
+@Keywords(OmsGradient.OMSGRADIENT_KEYWORDS)
+@Label(OmsGradient.OMSGRADIENT_LABEL)
+@Name(OmsGradient.OMSGRADIENT_NAME)
+@Status(OmsGradient.OMSGRADIENT_STATUS)
+@License(OmsGradient.OMSGRADIENT_LICENSE)
+public class OmsGradient extends GridMultiProcessing {
     @Description(OMSGRADIENT_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
     @Description(OMSGRADIENT_pMode_DESCRIPTION)
+    @UI("combo:" + FINITE_DIFFERENCES + "," + HORN + "," + EVANS)
     @In
-    public int pMode = 0;
+    public String pMode = FINITE_DIFFERENCES;
 
     @Description(OMSGRADIENT_doDegrees_DESCRIPTION)
     @In
@@ -86,6 +79,20 @@ public class OmsGradient extends JGTModel {
     @Description(OMSGRADIENT_outSlope_DESCRIPTION)
     @Out
     public GridCoverage2D outSlope = null;
+
+    public static final String OMSGRADIENT_DESCRIPTION = "Calculates the gradient in each point of the map.";
+    public static final String OMSGRADIENT_DOCUMENTATION = "OmsGradient.html";
+    public static final String OMSGRADIENT_KEYWORDS = "Geomorphology, OmsDrainDir, OmsFlowDirections, OmsSlope, OmsCurvatures";
+    public static final String OMSGRADIENT_LABEL = GEOMORPHOLOGY;
+    public static final String OMSGRADIENT_NAME = "gradient";
+    public static final int OMSGRADIENT_STATUS = 40;
+    public static final String OMSGRADIENT_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSGRADIENT_AUTHORNAMES = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
+    public static final String OMSGRADIENT_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
+    public static final String OMSGRADIENT_inElev_DESCRIPTION = "The map of the digital elevation model (DEM or pit).";
+    public static final String OMSGRADIENT_pMode_DESCRIPTION = "The gradient formula mode.";
+    public static final String OMSGRADIENT_doDegrees_DESCRIPTION = "The output type, if false = tan of the angle (default), if true = degrees";
+    public static final String OMSGRADIENT_outSlope_DESCRIPTION = "The map of gradient.";
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
@@ -98,31 +105,35 @@ public class OmsGradient extends JGTModel {
     private double yRes;
 
     @Execute
-    public void process() {
+    public void process() throws Exception {
         if (!concatOr(outSlope == null, doReset)) {
             return;
         }
+
         checkNull(inElev);
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
-        nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        xRes = regionMap.get(CoverageUtilities.XRES);
-        yRes = regionMap.get(CoverageUtilities.YRES);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
+        nCols = regionMap.getCols();
+        nRows = regionMap.getRows();
+        xRes = regionMap.getXres();
+        yRes = regionMap.getYres();
 
         RenderedImage elevationRI = inElev.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
-        WritableRaster gradientWR = null;
-        if (pMode == 1) {
-            pm.message("Using Horn formula");
-            gradientWR = gradientHorn(elevationIter);
-        } else if (pMode == 2) {
-            pm.message("Using Evans formula");
-            gradientWR = gradientEvans(elevationIter);
-        } else {
-            pm.message("Using finite differences");
-            gradientWR = gradientDiff(elevationIter);
+
+        WritableRaster gradientWR;
+        try {
+            gradientWR = null;
+            if (pMode.equals(HORN)) {
+                gradientWR = gradientHorn(elevationIter);
+            } else if (pMode.equals(EVANS)) {
+                gradientWR = gradientEvans(elevationIter);
+            } else {
+                gradientWR = gradientDiff(elevationIter);
+            }
+            outSlope = CoverageUtilities.buildCoverage("gradient", gradientWR, regionMap, inElev.getCoordinateReferenceSystem());
+        } finally {
+            elevationIter.done();
         }
-        outSlope = CoverageUtilities.buildCoverage("gradient", gradientWR, regionMap, inElev.getCoordinateReferenceSystem());
     }
 
     /**
@@ -147,29 +158,121 @@ public class OmsGradient extends JGTModel {
     * 
     * <p>
     * This numeration is used to extract the appropriate elevation value (es elev1 an so on)
+     * @throws Exception 
     */
-    private WritableRaster gradientHorn( RandomIter elevationIter ) {
-
-        WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-
-        pm.beginTask(msg.message("gradient.working"), nRows);
-        for( int y = 1; y < nRows - 1; y++ ) {
-            if (isCanceled(pm)) {
-                return null;
+    private WritableRaster gradientHorn( RandomIter elevationIter ) throws Exception {
+        WritableRaster gradientWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        pm.beginTask(msg.message("gradient.working") + " (" + HORN + ")", nRows * nCols);
+        processGrid(nCols, nRows, true, ( c, r ) -> {
+            if (pm.isCanceled()) {
+                return;
             }
-            for( int x = 1; x < nCols - 1; x++ ) {
-                // extract the value to use for the algoritm. It is the finite difference approach.
-                double value = doGradientHornOnCell(elevationIter, x, y, xRes, yRes, doDegrees);
-                gradientWR.setSample(x, y, 0, value);
-            }
+            // extract the value to use for the algoritm. It is the finite difference approach.
+            double value = doGradientHornOnCell(elevationIter, c, r, xRes, yRes, doDegrees);
+            gradientWR.setSample(c, r, 0, value);
             pm.worked(1);
-        }
+        });
         pm.done();
-
         return gradientWR;
     }
 
-    public static double doGradientHornOnCell( RandomIter elevationIter, int x, int y, double xRes, double yRes, boolean doDegrees ) {
+    /**
+     * Estimate the gradient (p=f_{x}^{2}+f_{y}^{2}) with a finite difference formula:
+     * 
+     * <pre>
+     *  p=&radic{f<sub>x</sub>&sup2;+f<sub>y</sub>&sup2;}
+     * f<sub>x</sub>=(f(x+1,y)-f(x-1,y))/(2 &#916 x) 
+     * f<sub>y</sub>=(f(x,y+1)-f(x,y-1))/(2 &#916 y)
+     * </pre>
+     * @throws Exception 
+     * 
+    */
+    private WritableRaster gradientDiff( RandomIter elevationIter ) throws Exception {
+        WritableRaster gradientWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        pm.beginTask(msg.message("gradient.working") + " (" + FINITE_DIFFERENCES + ")", nRows * nCols);
+        processGrid(nCols, nRows, true, ( c, r ) -> {
+            if (pm.isCanceled()) {
+                return;
+            }
+            double value = doGradientDiffOnCell(elevationIter, c, r, xRes, yRes, doDegrees);
+            gradientWR.setSample(c, r, 0, value);
+            pm.worked(1);
+        });
+        pm.done();
+        return gradientWR;
+    }
+
+    /** estimate the gradient using the Horn formula.
+     * <p>
+     * Where the gradient is:
+     * </p>
+     * <pre>
+     *  p=&radic{f<sub>x</sub>&sup2;+f<sub>y</sub>&sup2;}
+     *  
+     *  and the derivatives can be calculate with the  the Evans formula:
+     * f<sub>x</sub>=(f(x+1,y)+f(x+1,y-1)+f(x+1,y+1)-f(x-1,y)-f(x-1,y+1)-f(x-1,y-1))/(6 &#916 x) 
+     * f<sub>y</sub>=(f(x,y+1)+f(x+1,y+1)+f(x-1,y+1)-f(x,y-1)-f(x+1,y-1)+f(x-1,y-1))/(6 &#916 y)
+     * <p>
+     * The kernel is compound of 9 cell (8 around the central pixel) and the numeration is:
+     * 
+     * 1   2   3
+     * 4   5   6
+     * 7   8   9
+     * 
+     * This enumeration is used to extract the appropriate elevation value (es elev1 an so on)
+     * 
+     * </p>
+     * @throws Exception 
+     */
+    private WritableRaster gradientEvans( RandomIter elevationIter ) throws Exception {
+        WritableRaster gradientWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        pm.beginTask(msg.message("gradient.working") + " (" + EVANS + ")", nRows * nCols);
+        processGrid(nCols, nRows, true, ( c, r ) -> {
+            if (pm.isCanceled()) {
+                return;
+            }
+            double value = doGradientEvansOnCell(elevationIter, c, r, xRes, yRes, doDegrees);
+            gradientWR.setSample(c, r, 0, value);
+            pm.worked(1);
+        });
+        pm.done();
+        return gradientWR;
+    }
+
+    public static double doGradientEvansOnCell( RandomIter elevationIter, int x, int y, double xRes, double yRes,
+            boolean doDegrees ) {
+        // extract the value to use for the algoritm. It is the finite difference approach.
+        double elev5 = elevationIter.getSampleDouble(x, y, 0);
+        double elev4 = elevationIter.getSampleDouble(x - 1, y, 0);
+        double elev6 = elevationIter.getSampleDouble(x + 1, y, 0);
+        double elev2 = elevationIter.getSampleDouble(x, y - 1, 0);
+        double elev8 = elevationIter.getSampleDouble(x, y + 1, 0);
+        double elev9 = elevationIter.getSampleDouble(x + 1, y + 1, 0);
+        double elev1 = elevationIter.getSampleDouble(x - 1, y - 1, 0);
+        double elev3 = elevationIter.getSampleDouble(x + 1, y - 1, 0);
+        double elev7 = elevationIter.getSampleDouble(x - 1, y + 1, 0);
+
+        if (isNovalue(elev5) || isNovalue(elev1) || isNovalue(elev2) || isNovalue(elev3) || isNovalue(elev4) || isNovalue(elev6)
+                || isNovalue(elev7) || isNovalue(elev8) || isNovalue(elev9)) {
+            return doubleNovalue;
+        } else {
+            double fu = elev6 + elev9 + elev3;
+            double fd = elev4 + elev7 + elev1;
+            double xGrad = (fu - fd) / (6 * xRes);
+            fu = elev8 + elev7 + elev9;
+            fd = elev2 + elev1 + elev3;
+
+            double yGrad = (fu - fd) / (6 * yRes);
+            double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
+            if (doDegrees) {
+                grad = transform(grad);
+            }
+            return grad;
+        }
+    }
+
+    public static double doGradientHornOnCell( RandomIter elevationIter, int x, int y, double xRes, double yRes,
+            boolean doDegrees ) {
         double elev5 = elevationIter.getSampleDouble(x, y, 0);
         double elev4 = elevationIter.getSampleDouble(x - 1, y, 0);
         double elev6 = elevationIter.getSampleDouble(x + 1, y, 0);
@@ -208,31 +311,8 @@ public class OmsGradient extends JGTModel {
         return toDegrees(atan(value));
     }
 
-    /**
-     * Estimate the gradient (p=f_{x}^{2}+f_{y}^{2}) with a finite difference formula:
-     * 
-     * <pre>
-     *  p=&radic{f<sub>x</sub>&sup2;+f<sub>y</sub>&sup2;}
-     * f<sub>x</sub>=(f(x+1,y)-f(x-1,y))/(2 &#916 x) 
-     * f<sub>y</sub>=(f(x,y+1)-f(x,y-1))/(2 &#916 y)
-     * </pre>
-     * 
-    */
-    private WritableRaster gradientDiff( RandomIter elevationIter ) {
-        WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        pm.beginTask(msg.message("gradient.working"), nRows);
-        for( int y = 1; y < nRows - 1; y++ ) {
-            for( int x = 1; x < nCols - 1; x++ ) {
-                double value = doGradientDiffOnCell(elevationIter, x, y, xRes, yRes, doDegrees);
-                gradientWR.setSample(x, y, 0, value);
-            }
-            pm.worked(1);
-        }
-        pm.done();
-        return gradientWR;
-    }
-
-    public static double doGradientDiffOnCell( RandomIter elevationIter, int x, int y, double xRes, double yRes, boolean doDegrees ) {
+    public static double doGradientDiffOnCell( RandomIter elevationIter, int x, int y, double xRes, double yRes,
+            boolean doDegrees ) {
         // extract the value to use for the algoritm. It is the finite difference approach.
         double elevIJ = elevationIter.getSampleDouble(x, y, 0);
         double elevIJipre = elevationIter.getSampleDouble(x - 1, y, 0);
@@ -255,73 +335,4 @@ public class OmsGradient extends JGTModel {
             throw new ModelsIllegalargumentException("Error in gradient", "GRADIENT");
         }
     }
-
-    /** estimate the gradient using the Horn formula.
-     * <p>
-     * Where the gradient is:
-     * </p>
-     * <pre>
-     *  p=&radic{f<sub>x</sub>&sup2;+f<sub>y</sub>&sup2;}
-     *  
-     *  and the derivatives can be calculate with the  the Evans formula:
-     * f<sub>x</sub>=(f(x+1,y)+f(x+1,y-1)+f(x+1,y+1)-f(x-1,y)-f(x-1,y+1)-f(x-1,y-1))/(6 &#916 x) 
-     * f<sub>y</sub>=(f(x,y+1)+f(x+1,y+1)+f(x-1,y+1)-f(x,y-1)-f(x+1,y-1)+f(x-1,y-1))/(6 &#916 y)
-     * <p>
-     * The kernel is compound of 9 cell (8 around the central pixel) and the numeration is:
-     * 
-     * 1   2   3
-     * 4   5   6
-     * 7   8   9
-     * 
-     * This enumeration is used to extract the appropriate elevation value (es elev1 an so on)
-     * 
-     * </p>
-     *
-     */
-    private WritableRaster gradientEvans( RandomIter elevationIter ) {
-        WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        pm.beginTask(msg.message("gradient.working"), nRows);
-        for( int y = 1; y < nRows - 1; y++ ) {
-            for( int x = 1; x < nCols - 1; x++ ) {
-                double value = doGradientEvansOnCell(elevationIter, x, y, xRes, yRes, doDegrees);
-                gradientWR.setSample(x, y, 0, value);
-            }
-            pm.worked(1);
-        }
-        pm.done();
-        return gradientWR;
-    }
-
-    public static double doGradientEvansOnCell( RandomIter elevationIter, int x, int y, double xRes, double yRes,
-            boolean doDegrees ) {
-        // extract the value to use for the algoritm. It is the finite difference approach.
-        double elev5 = elevationIter.getSampleDouble(x, y, 0);
-        double elev4 = elevationIter.getSampleDouble(x - 1, y, 0);
-        double elev6 = elevationIter.getSampleDouble(x + 1, y, 0);
-        double elev2 = elevationIter.getSampleDouble(x, y - 1, 0);
-        double elev8 = elevationIter.getSampleDouble(x, y + 1, 0);
-        double elev9 = elevationIter.getSampleDouble(x + 1, y + 1, 0);
-        double elev1 = elevationIter.getSampleDouble(x - 1, y - 1, 0);
-        double elev3 = elevationIter.getSampleDouble(x + 1, y - 1, 0);
-        double elev7 = elevationIter.getSampleDouble(x - 1, y + 1, 0);
-
-        if (isNovalue(elev5) || isNovalue(elev1) || isNovalue(elev2) || isNovalue(elev3) || isNovalue(elev4) || isNovalue(elev6)
-                || isNovalue(elev7) || isNovalue(elev8) || isNovalue(elev9)) {
-            return doubleNovalue;
-        } else {
-            double fu = elev6 + elev9 + elev3;
-            double fd = elev4 + elev7 + elev1;
-            double xGrad = (fu - fd) / (6 * xRes);
-            fu = elev8 + elev7 + elev9;
-            fd = elev2 + elev1 + elev3;
-
-            double yGrad = (fu - fd) / (6 * yRes);
-            double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
-            if (doDegrees) {
-                grad = transform(grad);
-            }
-            return grad;
-        }
-    }
-
 }

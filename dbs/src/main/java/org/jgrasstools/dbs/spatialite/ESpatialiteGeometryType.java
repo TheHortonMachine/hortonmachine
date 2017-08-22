@@ -385,4 +385,18 @@ public enum ESpatialiteGeometryType {
         }
         return null;
     }
+
+    /**
+     * Returns <code>true</code> if the given name is a geometry name.
+     * 
+     * @param name the geometry type name.
+     * @return <code>true</code> if the name represents a geometry.
+     */
+    public static boolean isGeometryName( String name ) {
+        for( ESpatialiteGeometryType type : values() ) {
+            if (type.getDescription().startsWith(name.toLowerCase()))
+                return true;
+        }
+        return false;
+    }
 }

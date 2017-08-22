@@ -79,7 +79,7 @@ public class OmsKernelFilter extends JGTModel {
         RenderedImage inImg = inRaster.getRenderedImage();
         RandomIter inIter = RandomIterFactory.create(inImg, null);
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         float[] kernelData = kernel.getKernelData();

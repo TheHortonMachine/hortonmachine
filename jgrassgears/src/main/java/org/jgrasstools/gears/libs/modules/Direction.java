@@ -70,8 +70,8 @@ public enum Direction {
     private int entering;
 
     private static Direction[][] dirs = {//
-    {NW, N, EN},//
-            {W, null, E},//
+            {NW, N, EN}, //
+            {W, null, E}, //
             {WS, S, SE}//
     };
 
@@ -110,7 +110,10 @@ public enum Direction {
      * @return the direction or <code>null</code> for illegal values.
      */
     public static Direction getDir( int col, int row ) {
-        return dirs[col][row];
+        if (col < -1 || col > 1 || row < -1 || col > 1) {
+            return null;
+        }
+        return dirs[row + 1][col + 1];
     }
 
     /**

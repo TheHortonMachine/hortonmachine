@@ -18,8 +18,8 @@
 package org.jgrasstools.dbs.spatialite.jgt;
 
 import org.jgrasstools.dbs.compat.ASpatialDb;
-import org.jgrasstools.dbs.compat.ImportExportUtils;
 import org.jgrasstools.dbs.spatialite.ESpatialiteGeometryType;
+import org.jgrasstools.dbs.spatialite.ImportExportUtils;
 import org.jgrasstools.dbs.spatialite.android.GPTransactionExecuter;
 
 /**

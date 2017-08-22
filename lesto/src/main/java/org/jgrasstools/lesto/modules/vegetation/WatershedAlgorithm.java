@@ -241,7 +241,7 @@ public class WatershedAlgorithm extends JGTModel {
         }
         /** End of flooding **/
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         pm.beginTask("Setting watersheds...", watershedStructure.size());

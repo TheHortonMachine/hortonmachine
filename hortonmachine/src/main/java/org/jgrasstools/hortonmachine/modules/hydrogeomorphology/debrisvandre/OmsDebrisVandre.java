@@ -209,7 +209,7 @@ public class OmsDebrisVandre extends JGTModel {
             if (inNet == null) {
                 throw new ModelsIllegalargumentException("If the soil map is supplied also the network map is needed.", this, pm);
             }
-            outSoilWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, Double.NaN);
+            outSoilWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, Double.NaN);
             outSoilIter = RandomIterFactory.createWritable(outSoilWR, null);
 
             RenderedImage soilRI = inSoil.getRenderedImage();

@@ -117,11 +117,11 @@ public class RegionGrowing extends JGTModel {
             GridCoverage2D inDtmGC = getRaster(inDtm);
             dtmIter = CoverageUtilities.getRandomIterator(inDtmGC);
         } else {
-            WritableRaster dtmWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 0.0);
+            WritableRaster dtmWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, 0.0);
             dtmIter = RandomIterFactory.createWritable(dtmWR, null);
         }
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         outIter = RandomIterFactory.createWritable(outWR, null);
 
         SimpleFeatureCollection inMaximaFC = getVector(inMaxima);
@@ -158,7 +158,7 @@ public class RegionGrowing extends JGTModel {
 
             // do region growing
             if (doElev) {
-                dsmNode.setValueInMap(outIter, topDsmElevation);
+                dsmNode.setDoubleValueInMap(outIter, topDsmElevation);
             } else {
                 dsmNode.setValueInMap(outIter, index);
             }
@@ -205,7 +205,7 @@ public class RegionGrowing extends JGTModel {
 
                     // mark it
                     if (doElev) {
-                        surroundingDsmNode.setValueInMap(outIter, topDsmElevation);
+                        surroundingDsmNode.setDoubleValueInMap(outIter, topDsmElevation);
                     } else {
                         surroundingDsmNode.setValueInMap(outIter, index);
                     }

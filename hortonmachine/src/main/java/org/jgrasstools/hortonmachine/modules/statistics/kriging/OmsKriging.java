@@ -593,7 +593,7 @@ public class OmsKriging extends JGTModel {
         xres = regionMap.getXres();
         yres = regionMap.getYres();
 
-        outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
 
         double northing = south;
         double easting = west;

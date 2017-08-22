@@ -85,7 +85,7 @@ public class OmsNetNumbering extends JGTModel {
 
     @Description(OMSNETNUMBERING_pThres_DESCRIPTION)
     @In
-    public double pThres = 0;
+    public int pThres = 0;
 
     @Description(OMSNETNUMBERING_outNetnum_DESCRIPTION)
     @Out
@@ -106,18 +106,25 @@ public class OmsNetNumbering extends JGTModel {
         int nRows = regionMap.getRows();
 
         RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
+        WritableRaster flowWR = CoverageUtilities.renderedImage2IntWritableRaster(flowRI, true);
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
-
         RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
 
-        WritableRaster netNumWR = ModelsEngine.netNumbering(inFlow, inNet, inTca, pThres, inPoints, pm);
+        WritableRandomIter netNumIter = null;
+        try {
+            WritableRaster netNumWR = ModelsEngine.netNumbering(inFlow, inNet, inTca, pThres, inPoints, pm);
 
-        WritableRandomIter netNumIter = RandomIterFactory.createWritable(netNumWR, null);
-        WritableRaster basinWR = ModelsEngine.extractSubbasins(flowIter, netIter, netNumIter, nRows, nCols, pm);
+            netNumIter = RandomIterFactory.createWritable(netNumWR, null);
+            WritableRaster basinWR = ModelsEngine.extractSubbasins(flowIter, netIter, netNumIter, nRows, nCols, pm);
 
-        outNetnum = CoverageUtilities.buildCoverage("netnum", netNumWR, regionMap, inFlow.getCoordinateReferenceSystem());
-        outBasins = CoverageUtilities.buildCoverage("subbasins", basinWR, regionMap, inFlow.getCoordinateReferenceSystem());
+            outNetnum = CoverageUtilities.buildCoverage("netnum", netNumWR, regionMap, inFlow.getCoordinateReferenceSystem());
+            outBasins = CoverageUtilities.buildCoverage("subbasins", basinWR, regionMap, inFlow.getCoordinateReferenceSystem());
+        } finally {
+            flowIter.done();
+            netIter.done();
+            if (netNumIter != null)
+                netNumIter.done();
+        }
     }
 
 }

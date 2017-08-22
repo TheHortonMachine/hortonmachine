@@ -131,7 +131,7 @@ public class OmsIntensityClassifierFlood extends JGTModel {
         RandomIter waterdepthIter = CoverageUtilities.getRandomIterator(inWaterDepth);
         RandomIter velocityIter = CoverageUtilities.getRandomIterator(inVelocity);
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         pm.beginTask("Processing map...", nRows);

@@ -17,7 +17,7 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,32 +36,33 @@ public class FlowNode extends Node {
     /**
      * The outlet value of flow.
      */
-    public static final double OUTLET = 10.0;
+    public static final int OUTLET = 10;
+
     /**
      * The defaut value used for marking a network. 
      */
-    public static double NETVALUE = 2.0;
+    public static final int NETVALUE = 2;
 
-    public final double flow;
+    public final int flow;
 
     private boolean isMarkedAsOutlet = false;
     private boolean isHeadingOutside = false;
     private boolean wasHeadingOutsideChecked = false;
-    private double eFlow;
-    private double enFlow;
-    private double nFlow;
-    private double nwFlow;
-    private double wFlow;
-    private double wsFlow;
-    private double sFlow;
-    private double seFlow;
+    private int eFlow;
+    private int enFlow;
+    private int nFlow;
+    private int nwFlow;
+    private int wFlow;
+    private int wsFlow;
+    private int sFlow;
+    private int seFlow;
 
     private List<FlowNode> enteringNodes;
 
     /**
      * The constructor.
      * 
-     * @param flowIter the elevation model raster iter.
+     * @param flowIter the flow raster iterator.
      * @param cols the cols of the raster.
      * @param rows the rows of the raster.
      * @param col the col of the current {@link FlowNode node}.
@@ -72,9 +73,12 @@ public class FlowNode extends Node {
 
         if (!isInRaster(col, row)) {
             isValid = false;
-            flow = doubleNovalue;
+            flow = intNovalue;
         } else {
-            flow = gridIter.getSampleDouble(col, row, 0);
+            // TODO remove the two sync blocks if possible
+            synchronized (gridIter) {
+                flow = gridIter.getSample(col, row, 0);
+            }
             if (JGTConstants.isNovalue(flow)) {
                 isValid = false;
             } else {
@@ -95,11 +99,13 @@ public class FlowNode extends Node {
                 }
                 int newC = col + c;
                 int newR = row + r;
-                double tmp = doubleNovalue;
+                int tmp = intNovalue;
                 if (!isInRaster(newC, newR)) {
                     touchesBound = true;
                 } else {
-                    tmp = gridIter.getSampleDouble(newC, newR, 0);
+                    synchronized (gridIter) {
+                        tmp = gridIter.getSample(newC, newR, 0);
+                    }
                 }
 
                 switch( index ) {
@@ -194,9 +200,9 @@ public class FlowNode extends Node {
      * Get the value of the flow in one of the surrounding direction.
      * 
      * @param direction the {@link Direction}.
-     * @return the elevation value.
+     * @return the flow value.
      */
-    public double getFlowAt( Direction direction ) {
+    public int getFlowAt( Direction direction ) {
         switch( direction ) {
         case E:
             return eFlow;
@@ -226,7 +232,7 @@ public class FlowNode extends Node {
      */
     public FlowNode goDownstream() {
         if (isValid) {
-            Direction direction = Direction.forFlow((int) flow);
+            Direction direction = Direction.forFlow(flow);
             if (direction != null) {
                 FlowNode nextNode = new FlowNode(gridIter, cols, rows, col + direction.col, row + direction.row);
                 if (nextNode.isValid) {
@@ -249,7 +255,7 @@ public class FlowNode extends Node {
             for( Direction direction : orderedDirs ) {
                 switch( direction ) {
                 case E:
-                    if ((int) eFlow == Direction.E.getEnteringFlow()) {
+                    if (eFlow == Direction.E.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
                         FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
@@ -257,7 +263,7 @@ public class FlowNode extends Node {
                     }
                     break;
                 case N:
-                    if ((int) nFlow == Direction.N.getEnteringFlow()) {
+                    if (nFlow == Direction.N.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
                         FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
@@ -265,7 +271,7 @@ public class FlowNode extends Node {
                     }
                     break;
                 case W:
-                    if ((int) wFlow == Direction.W.getEnteringFlow()) {
+                    if (wFlow == Direction.W.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
                         FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
@@ -273,7 +279,7 @@ public class FlowNode extends Node {
                     }
                     break;
                 case S:
-                    if ((int) sFlow == Direction.S.getEnteringFlow()) {
+                    if (sFlow == Direction.S.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
                         FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
@@ -281,7 +287,7 @@ public class FlowNode extends Node {
                     }
                     break;
                 case EN:
-                    if ((int) enFlow == Direction.EN.getEnteringFlow()) {
+                    if (enFlow == Direction.EN.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
                         FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
@@ -289,7 +295,7 @@ public class FlowNode extends Node {
                     }
                     break;
                 case NW:
-                    if ((int) nwFlow == Direction.NW.getEnteringFlow()) {
+                    if (nwFlow == Direction.NW.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
                         FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
@@ -297,7 +303,7 @@ public class FlowNode extends Node {
                     }
                     break;
                 case WS:
-                    if ((int) wsFlow == Direction.WS.getEnteringFlow()) {
+                    if (wsFlow == Direction.WS.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
                         FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
@@ -305,7 +311,7 @@ public class FlowNode extends Node {
                     }
                     break;
                 case SE:
-                    if ((int) seFlow == Direction.SE.getEnteringFlow()) {
+                    if (seFlow == Direction.SE.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
                         FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
@@ -340,56 +346,56 @@ public class FlowNode extends Node {
             int newRow = 0;
             switch( direction ) {
             case E:
-                if ((int) eFlow == Direction.E.getEnteringFlow()) {
+                if (eFlow == Direction.E.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
                     gotOne = true;
                 }
                 break;
             case N:
-                if ((int) nFlow == Direction.N.getEnteringFlow()) {
+                if (nFlow == Direction.N.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
                     gotOne = true;
                 }
                 break;
             case W:
-                if ((int) wFlow == Direction.W.getEnteringFlow()) {
+                if (wFlow == Direction.W.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
                     gotOne = true;
                 }
                 break;
             case S:
-                if ((int) sFlow == Direction.S.getEnteringFlow()) {
+                if (sFlow == Direction.S.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
                     gotOne = true;
                 }
                 break;
             case EN:
-                if ((int) enFlow == Direction.EN.getEnteringFlow()) {
+                if (enFlow == Direction.EN.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
                     gotOne = true;
                 }
                 break;
             case NW:
-                if ((int) nwFlow == Direction.NW.getEnteringFlow()) {
+                if (nwFlow == Direction.NW.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
                     gotOne = true;
                 }
                 break;
             case WS:
-                if ((int) wsFlow == Direction.WS.getEnteringFlow()) {
+                if (wsFlow == Direction.WS.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
                     gotOne = true;
                 }
                 break;
             case SE:
-                if ((int) seFlow == Direction.SE.getEnteringFlow()) {
+                if (seFlow == Direction.SE.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
                     gotOne = true;
@@ -399,11 +405,11 @@ public class FlowNode extends Node {
                 throw new IllegalArgumentException();
             }
             if (isInRaster(newCol, newRow)) {
-                double flowValue = gridIter.getSampleDouble(newCol, newRow, 0);
+                int flowValue = gridIter.getSample(newCol, newRow, 0);
                 if (JGTConstants.isNovalue(flowValue)) {
                     continue;
                 }
-                double tcaValue = tcaIter.getSampleDouble(newCol, newRow, 0);
+                int tcaValue = tcaIter.getSample(newCol, newRow, 0);
                 double hacklengthValue = 0.0;
                 if (hacklengthIter != null)
                     hacklengthValue = tcaIter.getSampleDouble(newCol, newRow, 0);

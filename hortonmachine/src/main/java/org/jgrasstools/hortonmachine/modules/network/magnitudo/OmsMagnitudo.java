@@ -87,7 +87,7 @@ public class OmsMagnitudo extends JGTModel {
         RenderedImage flowRI = inFlow.getRenderedImage();
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
 
-        WritableRaster magWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 0.0);
+        WritableRaster magWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, 0.0);
         if (magWR == null) {
             return;
         } else {

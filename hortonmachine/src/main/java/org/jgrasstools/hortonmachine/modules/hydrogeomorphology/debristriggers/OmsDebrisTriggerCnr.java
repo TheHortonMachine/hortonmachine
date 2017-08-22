@@ -56,6 +56,7 @@ import oms3.annotations.Unit;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.Variables;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient;
@@ -102,7 +103,7 @@ public class OmsDebrisTriggerCnr extends JGTModel {
         // calculate gradient map degrees
         OmsGradient gradient = new OmsGradient();
         gradient.inElev = inElev;
-        gradient.pMode = 0;
+        gradient.pMode = Variables.FINITE_DIFFERENCES;
         gradient.doDegrees = true;
         gradient.pm = pm;
         gradient.process();
@@ -111,7 +112,7 @@ public class OmsDebrisTriggerCnr extends JGTModel {
         // calculate gradient map %
         gradient = new OmsGradient();
         gradient.inElev = inElev;
-        gradient.pMode = 0;
+        gradient.pMode = Variables.FINITE_DIFFERENCES;
         gradient.doDegrees = false;
         gradient.pm = pm;
         gradient.process();
@@ -141,7 +142,7 @@ public class OmsDebrisTriggerCnr extends JGTModel {
         RandomIter gradientTanIter = RandomIterFactory.create(gradientTanRI, null);
 
         WritableRaster outputWR = CoverageUtilities
-                .createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+                .createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         WritableRandomIter outputIter = RandomIterFactory.createWritable(outputWR, null);
 
         pm.beginTask("Extracting trigger points...", cols);

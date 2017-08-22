@@ -19,8 +19,11 @@ package org.jgrasstools.gui.utils;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.FileDialog;
+import java.awt.Frame;
 import java.awt.geom.Point2D;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.HashMap;
 import java.util.prefs.Preferences;
 
@@ -68,8 +71,6 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
         // I18nManager i18nManager = ToolsLocator.getI18nManager();
         // return i18nManager.getTranslation(message, args);
     }
-    
-    
 
     public int confirmDialog( final String message, final String title, final int optionType, final int messageType ) {
         RunnableWithParameters runnable = new RunnableWithParameters(){
@@ -163,6 +164,30 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
             final boolean multiselection, final File initialPath, final FileFilter filter, final boolean fileHidingEnabled ) {
         RunnableWithParameters runnable = new RunnableWithParameters(){
             public void run() {
+
+                // FileDialog fd = new FileDialog((Frame) null, title, type);
+                // fd.setDirectory(initialPath.getAbsolutePath());
+                // fd.setMultipleMode(multiselection);
+                // fd.setFilenameFilter(new FilenameFilter(){
+                // @Override
+                // public boolean accept( File dir, String name ) {
+                // File file = new File(dir, name);
+                // if (selectionMode == JFileChooser.DIRECTORIES_ONLY && !file.isDirectory()) {
+                // return false;
+                // }
+                //
+                // if (fileHidingEnabled && !file.isDirectory()) {
+                // return false;
+                // }
+                // if (filter != null) {
+                // return filter.accept(file);
+                // }
+                // return true;
+                // }
+                // });
+                // fd.setVisible(true);
+                // this.returnValue = fd.getFiles();
+
                 JFileChooser fc = new JFileChooser();
                 fc.setDialogTitle(title);
                 fc.setDialogType(type);
@@ -254,7 +279,7 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
         preferences.put(DEBUG_KEY, debug);
         preferences.put(HEAP_KEY, heap);
     }
-    
+
     @Override
     public HashMap<String, String> getGeopaparazziProjectViewerPreferencesMap() {
         Preferences preferences = Preferences.userRoot().node(PREFS_NODE_NAME);
@@ -288,13 +313,11 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
         Class<SpatialtoolboxController> class1 = SpatialtoolboxController.class;
         ImageIcon icon = new ImageIcon(class1.getResource("/org/jgrasstools/images/hm150.png"));
         frame.setIconImage(icon.getImage());
-        
+
         frame.getContentPane().add(component, BorderLayout.CENTER);
         frame.pack();
         frame.setVisible(true);
         return frame;
     }
-
-
 
 }

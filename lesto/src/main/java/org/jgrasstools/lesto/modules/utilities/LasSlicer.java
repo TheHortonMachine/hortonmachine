@@ -218,7 +218,7 @@ public class LasSlicer extends JGTModel {
         GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(maxY, minY, maxX, minX, cols, rows, crs);
         RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometry);
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
 
         Point point = new Point();

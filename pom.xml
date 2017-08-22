@@ -4,7 +4,11 @@
 
 
     <properties>
-		<gt.version>16.1</gt.version>
+		<gt.version>17.1</gt.version>
+        <!-- comes with h2gis 
+            <jts-core-version>1.14.0</jts-core-version>
+            <jts-io-version>1.14.0</jts-io-version>
+        -->
 		<jaitools.version>1.3.1</jaitools.version>
 		<jiffle.version>0.2.1</jiffle.version>
 		<slf4j.version>1.7.5</slf4j.version>

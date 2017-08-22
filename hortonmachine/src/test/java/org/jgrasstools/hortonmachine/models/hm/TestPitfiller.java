@@ -17,10 +17,15 @@
  */
 package org.jgrasstools.hortonmachine.models.hm;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+
+import java.awt.image.RenderedImage;
 import java.util.HashMap;
 
+import javax.media.jai.iterator.RectIter;
+import javax.media.jai.iterator.RectIterFactory;
+
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -34,7 +39,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestPitfiller extends HMTestCase {
     public void testPitfiller() throws Exception {
-
         double[][] elevationData = HMTestMaps.mapData;
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
@@ -46,7 +50,32 @@ public class TestPitfiller extends HMTestCase {
         pitfiller.process();
 
         GridCoverage2D pitfillerCoverage = pitfiller.outPit;
-
+        // printImage(pitfillerCoverage.getRenderedImage());
         checkMatrixEqual(pitfillerCoverage.getRenderedImage(), HMTestMaps.outPitData, 0);
+
     }
+
+    protected void checkMatrixEqualLimit( RenderedImage image, double[][] matrix, double delta ) {
+        RectIter rectIter = RectIterFactory.create(image, null);
+        int y = 0;
+        do {
+            int x = 0;
+            do {
+                double value = rectIter.getSampleDouble();
+                double expectedResult = matrix[y][x];
+                if (isNovalue(value)) {
+                    assertTrue(x + " " + y, isNovalue(expectedResult));
+                } else {
+                    assertEquals(x + " " + y, expectedResult, value, delta);
+                }
+                x++;
+            } while( !rectIter.nextPixelDone() );
+            rectIter.startPixels();
+            y++;
+            if (y > 10) {
+                break;
+            }
+        } while( !rectIter.nextLineDone() );
+    }
+
 }

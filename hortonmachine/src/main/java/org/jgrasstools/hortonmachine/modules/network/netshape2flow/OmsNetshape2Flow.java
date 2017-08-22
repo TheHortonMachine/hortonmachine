@@ -128,8 +128,8 @@ public class OmsNetshape2Flow extends JGTModel {
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
         int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
 
-        WritableRaster flowWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
-        WritableRaster netWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster flowWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster netWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
 
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
         WritableRandomIter netIter = RandomIterFactory.createWritable(netWR, null);

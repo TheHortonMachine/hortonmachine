@@ -247,7 +247,7 @@ public class Las2BivariateRasterMosaic extends JGTModel {
         double xRes = (e - w) / cols;
         double yRes = (n - s) / rows;
         RegionMap regionMap = CoverageUtilities.makeRegionParamsMap(n, s, w, e, xRes, yRes, cols, rows);
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         GridCoverage2D outputCoverage = CoverageUtilities.buildCoverage("data", outWR, regionMap, crs);
 
         // pm.message("Reading laspoints for: " + tileName);

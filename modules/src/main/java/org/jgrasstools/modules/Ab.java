@@ -16,18 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.modules;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_inPlan_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_inTca_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_outAb_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_outB_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.ab.OmsAb.*;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;

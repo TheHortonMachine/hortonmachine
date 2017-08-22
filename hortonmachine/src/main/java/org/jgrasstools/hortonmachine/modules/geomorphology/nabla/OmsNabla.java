@@ -99,7 +99,7 @@ public class OmsNabla extends JGTModel {
         RenderedImage elevationRI = inElev.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
 
-        WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster gradientWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
         if (pThreshold == null) {
             nabla(elevationIter, gradientWR);
         } else {
@@ -115,7 +115,7 @@ public class OmsNabla extends JGTModel {
         double[] z = new double[9];
         int[][] v = ModelsEngine.DIR;
 
-        WritableRaster segnWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster segnWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
         // grid contains the dimension of pixels according with flow directions
         double[] grid = new double[9];

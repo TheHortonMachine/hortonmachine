@@ -61,6 +61,7 @@ public class TestSumDownStream extends HMTestCase {
         sumDownstream.process();
         summedCoverage = sumDownstream.outSummed;
 
+        printImage(summedCoverage.getRenderedImage());
         checkMatrixEqual(summedCoverage.getRenderedImage(), HMTestMaps.sumDownstreamThresData, 0.01);
     }
 

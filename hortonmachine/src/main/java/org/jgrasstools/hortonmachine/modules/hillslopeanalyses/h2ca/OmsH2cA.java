@@ -112,7 +112,7 @@ public class OmsH2cA extends JGTModel {
         pm.done();
         netIter.done();
 
-        WritableRaster h2caWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRaster h2caWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
         WritableRandomIter h2caIter = RandomIterFactory.createWritable(h2caWR, null);
 
         ModelsEngine.markHillSlopeWithLinkValue(flowIter, attributeIter, h2caIter, cols, rows, pm);

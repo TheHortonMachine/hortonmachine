@@ -1,16 +1,19 @@
-/* 
- * polymap.org
- * Copyright (C) 2017, the @authors. All rights reserved.
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 3.0 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.gears.libs.modules.multiprocessing;
 
@@ -32,10 +35,10 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 public abstract class GridNodeMultiProcessing extends MultiProcessing {
 
     /** The cache of {@link #regionMap()} */
-    private Map<Integer, RegionMap> regionMaps = new HashMap();
+    private Map<Integer, RegionMap> regionMaps = new HashMap<>();
 
     /**
-     * Calculates the {@link RegionMap} for teh given grid by calling
+     * Calculates the {@link RegionMap} for the given grid by calling
      * {@link CoverageUtilities#getRegionParamsFromGridCoverage(GridCoverage2D)}. The
      * result is cached and re-used.
      */
@@ -62,12 +65,11 @@ public abstract class GridNodeMultiProcessing extends MultiProcessing {
         planner.setNumberOfTasks(rows * cols);
 
         // Cycling into the valid region.
-        for( int r = 1; r < rows - 1; r++ ) {
-            for( int c = 1; c < cols - 1; c++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 int _c = c, _r = r;
                 planner.submit(() -> {
                     if (!pm.isCanceled()) {
-                        // GridNode ctor does a lot of calculating -> must be inside the loop
                         GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, _c, _r);
                         calculator.calculate(node);
                     }

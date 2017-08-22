@@ -18,6 +18,8 @@
  */
 package org.jgrasstools.gears.libs.monitor;
 
+import java.io.PrintStream;
+
 /**
  * A progress monitor that sends progress to log.
  * 
@@ -25,19 +27,34 @@ package org.jgrasstools.gears.libs.monitor;
  */
 public class LogProgressMonitor implements IJGTProgressMonitor {
 
+    private static final String DOTS = "...";
     private static final String PERC = "%...";
     protected boolean cancelled = false;
     protected String taskName;
     protected int totalWork;
     protected int runningWork;
-    protected int lastPercentage = -1;
+    protected volatile int lastPercentage = -1;
     private String prefix = null;
+    private PrintStream outStream = System.out;
+    private PrintStream errorStream = System.err;
 
     public LogProgressMonitor() {
-        this("");
+        this(null, null, "");
+    }
+
+    public LogProgressMonitor( PrintStream outStream, PrintStream errorStream ) {
+        this(outStream, errorStream, "");
     }
 
     public LogProgressMonitor( String prefix ) {
+        this(null, null, prefix);
+    }
+
+    public LogProgressMonitor( PrintStream outStream, PrintStream errorStream, String prefix ) {
+        if (outStream != null)
+            this.outStream = outStream;
+        if (errorStream != null)
+            this.errorStream = errorStream;
         this.prefix = prefix;
     }
 
@@ -48,8 +65,7 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
         if (prefix != null) {
             taskName = prefix + taskName;
         }
-        System.out.println(taskName);
-        // log.info(taskName);
+        outStream.println(taskName);
     }
 
     public void beginTask( String name ) {
@@ -59,8 +75,7 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
         if (prefix != null) {
             taskName = prefix + taskName;
         }
-        System.out.println(taskName);
-        // log.info(taskName);
+        outStream.println(taskName);
     }
 
     public void done() {
@@ -68,9 +83,7 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
         if (prefix != null) {
             msg = prefix + msg;
         }
-
-        System.out.println(msg);
-        // log.info(msg);
+        outStream.println(msg);
     }
 
     public void internalWorked( double work ) {
@@ -91,29 +104,26 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
     public void subTask( String name ) {
     }
 
-    public void worked( int work ) {
+    public void worked( int workDone ) {
         if (totalWork == -1) {
-            String msg = "...";
+            String msg = DOTS;
             if (prefix != null) {
                 msg = prefix + msg;
             }
-            System.out.println(msg);
-            // log.info(msg);
+            outStream.println(msg);
         } else {
-            runningWork = runningWork + work;
+            runningWork = runningWork + workDone;
             // calculate %
-            int percentage = (int) (100 * (runningWork / (double) totalWork));
-            if (percentage != lastPercentage && percentage % 10 == 0) {
-                // if (percentage < 0) {
-                // System.err.println(runningWork + "/" + totalWork + "/" + work);
-                // }
-                String msg = percentage + "%...";
+            int percentage = (int) (100 * (runningWork / (float) totalWork));
+            if (percentage % 10 == 0) {
+                String msg = percentage + PERC;
                 if (prefix != null) {
                     msg = prefix + msg;
                 }
-                System.out.println(msg);
-                // log.info(msg);
-                lastPercentage = percentage;
+                if (percentage != lastPercentage) {
+                    outStream.println(msg);
+                    lastPercentage = percentage;
+                }
             }
         }
     }
@@ -124,20 +134,18 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
 
     public void errorMessage( String message ) {
         if (prefix != null) {
-            System.err.println(prefix + message);
+            errorStream.println(prefix + message);
         } else {
-            System.err.println(message);
+            errorStream.println(message);
         }
-        // log.severe(message);
     }
 
     public void message( String message ) {
         if (prefix != null) {
-            System.out.println(prefix + message);
+            outStream.println(prefix + message);
         } else {
-            System.out.println(message);
+            outStream.println(message);
         }
-        // log.info(message);
     }
 
     public void exceptionThrown( String message ) {

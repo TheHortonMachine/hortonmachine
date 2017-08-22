@@ -150,7 +150,7 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
 
         WritableRaster hackWR = null;
         if (doHack) {
-            hackWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+            hackWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
             hackWIter = CoverageUtilities.getWritableRandomIterator(hackWR);
         }
 

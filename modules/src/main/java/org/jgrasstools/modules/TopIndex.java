@@ -17,17 +17,22 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_inSlope_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_inTca_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_outTopindex_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex.OMSTOPINDEX_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex.OMSTOPINDEX_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex.OMSTOPINDEX_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex.OMSTOPINDEX_KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex.OMSTOPINDEX_LABEL;
+import static org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex.OMSTOPINDEX_LICENSE;
+import static org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex.OMSTOPINDEX_NAME;
+import static org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex.OMSTOPINDEX_STATUS;
+import static org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex.OMSTOPINDEX_inSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex.OMSTOPINDEX_inTca_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex.OMSTOPINDEX_outTopindex_DESCRIPTION;
+
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -38,10 +43,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex;
 
 @Description(OMSTOPINDEX_DESCRIPTION)
 @Author(name = OMSTOPINDEX_AUTHORNAMES, contact = OMSTOPINDEX_AUTHORCONTACTS)

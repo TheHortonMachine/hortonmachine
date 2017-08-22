@@ -147,7 +147,7 @@ public class OmsBasinShape extends JGTModel {
             }
         }
 
-        WritableRaster subbasinsWR = CoverageUtilities.createDoubleWritableRaster(basinsRI.getWidth(), basinsRI.getHeight(),
+        WritableRaster subbasinsWR = CoverageUtilities.createWritableRaster(basinsRI.getWidth(), basinsRI.getHeight(),
                 null, basinsRI.getSampleModel(), doubleNovalue);
 
         // create the feature type
@@ -307,7 +307,7 @@ public class OmsBasinShape extends JGTModel {
                 }
                 values[7] = centroidElevation;
                 subbasinIter.done();
-                subbasinsWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+                subbasinsWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
                 // add the values
                 builder.addAll(values);

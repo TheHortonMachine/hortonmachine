@@ -132,7 +132,7 @@ public class OmsWateroutlet extends JGTModel {
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, false);
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
 
-        WritableRaster basinWR = CoverageUtilities.createDoubleWritableRaster(ncols, nrows, null, null, null);
+        WritableRaster basinWR = CoverageUtilities.createWritableRaster(ncols, nrows, null, null, null);
         WritableRandomIter basinIter = RandomIterFactory.createWritable(basinWR, null);
 
         drain_ptrs = new double[size_array(pt_seg, nrows, ncols)];

@@ -151,28 +151,29 @@
 			<artifactId>gt-graph</artifactId>
 			<version>${gt.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.geotools.jdbc</groupId>
-			<artifactId>gt-jdbc-h2</artifactId>
-			<version>${gt.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>net.sourceforge.hatbox</groupId>
-					<artifactId>hatbox</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.geotools.jdbc</groupId> -->
+<!-- 			<artifactId>gt-jdbc-h2</artifactId> -->
+<!-- 			<version>${gt.version}</version> -->
+<!-- 			<exclusions> -->
+<!-- 				<exclusion> -->
+<!-- 					<groupId>net.sourceforge.hatbox</groupId> -->
+<!-- 					<artifactId>hatbox</artifactId> -->
+<!-- 				</exclusion> -->
+<!-- 			</exclusions> -->
+<!-- 		</dependency> -->
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
 			<version>2.9.4</version>
 		</dependency>
+<!--
 		<dependency>
 			<groupId>com.vividsolutions</groupId>
 			<artifactId>jts</artifactId>
-			<version>1.13</version>
+			<version>${jts.version}</version>
 		</dependency>
-
+-->
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-swing</artifactId>

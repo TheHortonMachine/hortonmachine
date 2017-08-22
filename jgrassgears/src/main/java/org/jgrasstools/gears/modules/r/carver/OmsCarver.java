@@ -185,7 +185,7 @@ public class OmsCarver extends JGTModel {
         RenderedImage dtmRI = inRaster.getRenderedImage();
         RenderedImage depthRI = finalCarveGC.getRenderedImage();
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, Double.NaN);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, Double.NaN);
 
         RandomIter dtmIter = RandomIterFactory.create(dtmRI, null);
         RandomIter depthIter = RandomIterFactory.create(depthRI, null);

@@ -57,7 +57,7 @@ import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.WEST;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.YRES;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.buildCoverage;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.createDoubleWritableRaster;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.createWritableRaster;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.createGridGeometryGeneralParameter;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionParams;
@@ -459,7 +459,7 @@ public class OmsRasterReader extends JGTModel {
             HashMap<String, Double> params = getRegionParamsFromGridCoverage(outRaster);
             int height = params.get(ROWS).intValue();
             int width = params.get(COLS).intValue();
-            WritableRaster tmpWR = createDoubleWritableRaster(width, height, null, null, null);
+            WritableRaster tmpWR = createWritableRaster(width, height, null, null, null);
             WritableRandomIter tmpIter = RandomIterFactory.createWritable(tmpWR, null);
             RenderedImage readRI = outRaster.getRenderedImage();
             RandomIter readIter = RandomIterFactory.create(readRI, null);

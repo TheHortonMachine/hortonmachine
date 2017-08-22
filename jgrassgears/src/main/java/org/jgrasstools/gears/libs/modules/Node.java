@@ -25,7 +25,7 @@ import javax.media.jai.iterator.WritableRandomIter;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class Node {
+public abstract class Node {
 
     public final int row;
     public final int col;
@@ -33,6 +33,7 @@ public class Node {
     public final int rows;
     protected boolean isValid;
     protected boolean touchesBound = false;
+    protected boolean touchesNovalue = false;
     protected final RandomIter gridIter;
 
     public Node( RandomIter gridIter, int cols, int rows, int col, int row ) {
@@ -42,14 +43,62 @@ public class Node {
         this.col = col;
         this.row = row;
     }
+    
+    /**
+     * Get the value from a map. Default to getting a double value.
+     * 
+     * @param map the map to read from.
+     * @return the float value read.
+     */
+    public double getValueFromMap( RandomIter map ) {
+        return getDoubleValueFromMap(map);
+    }
 
     /**
-     * Get the value of another map in the current node position.
+     * Get the float value of another map in the current node position.
+     * 
+     * @param map the map from which to get the value. 
+     * @return the float value or a novalue.
+     */
+    public float getFloatValueFromMap( RandomIter map ) {
+        try {
+            if (map == null) {
+                return JGTConstants.floatNovalue;
+            }
+            float value = map.getSampleFloat(col, row, 0);
+            return value;
+        } catch (Exception e) {
+            // ignore and return novalue
+            return JGTConstants.floatNovalue;
+        }
+    }
+
+    /**
+     * Get the int value of another map in the current node position.
+     * 
+     * @param map the map from which to get the value. 
+     * @return the int value or a novalue.
+     */
+    public int getIntValueFromMap( RandomIter map ) {
+        try {
+            if (map == null) {
+                return JGTConstants.intNovalue;
+            }
+            int value = map.getSample(col, row, 0);
+            return value;
+        } catch (Exception e) {
+            // ignore and return novalue
+            return JGTConstants.intNovalue;
+        }
+    }
+
+    /**
+     * Get the double value of another map in the current node position.
      * 
      * @param map the map from which to get the value. 
      * @return the double value or a novalue.
      */
-    public double getValueFromMap( RandomIter map ) {
+    public double getDoubleValueFromMap( RandomIter map ) {
         try {
             if (map == null) {
                 return JGTConstants.doubleNovalue;
@@ -61,6 +110,10 @@ public class Node {
             return JGTConstants.doubleNovalue;
         }
     }
+    
+    public void setValueInMap( WritableRandomIter map, double value ) {
+        setDoubleValueInMap(map, value);
+    }
 
     /**
      * Utility method to set the value of a certain map in the current node position.
@@ -68,7 +121,29 @@ public class Node {
      * @param map the map to set the value in. if <code>null</code>, it is ignored.
      * @param value the value to set.
      */
-    public void setValueInMap( WritableRandomIter map, double value ) {
+    public void setFloatValueInMap( WritableRandomIter map, float value ) {
+        if (map == null) {
+            return;
+        }
+        try {
+            map.setSample(col, row, 0, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setIntValueInMap( WritableRandomIter map, int value ) {
+        if (map == null) {
+            return;
+        }
+        try {
+            map.setSample(col, row, 0, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setDoubleValueInMap( WritableRandomIter map, double value ) {
         if (map == null) {
             return;
         }
@@ -95,10 +170,17 @@ public class Node {
     }
 
     /**
-     * @return <code>true</code> if this node touches a boundary, i.e. any novalue or raster limit.
+     * @return <code>true</code> if this node touches a boundary.
      */
     public boolean touchesBound() {
         return touchesBound;
+    }
+
+    /**
+     * @return <code>true</code> if this node touches a novalue.
+     */
+    public boolean touchesNovalue() {
+        return touchesNovalue;
     }
 
 }

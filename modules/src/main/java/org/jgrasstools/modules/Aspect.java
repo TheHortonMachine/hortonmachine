@@ -17,18 +17,7 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_doRadiants_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_doRound_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_inElev_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_outAspect_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect.*;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;

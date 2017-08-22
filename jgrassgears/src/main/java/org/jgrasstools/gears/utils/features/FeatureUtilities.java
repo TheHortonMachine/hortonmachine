@@ -57,7 +57,7 @@ import org.geotools.gce.grassraster.JGrassConstants;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
-import org.jgrasstools.dbs.spatialite.QueryResult;
+import org.jgrasstools.dbs.compat.objects.QueryResult;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -236,7 +236,6 @@ public class FeatureUtilities {
      * @return the created {@link FeatureCollection}
      * @throws Exception
      */
-    @SuppressWarnings("nls")
     public static SimpleFeatureCollection csvFileToFeatureCollection( File csvFile, CoordinateReferenceSystem crs,
             LinkedHashMap<String, Integer> fieldsAndTypesIndex, String separator, IJGTProgressMonitor pm ) throws Exception {
         GeometryFactory gf = new GeometryFactory();
@@ -388,7 +387,6 @@ public class FeatureUtilities {
      * @return
      * @throws Exception 
      */
-    @SuppressWarnings("nls")
     public static ShapefileDataStore createShapeFileDatastore( String name, String fieldsSpec, CoordinateReferenceSystem crs )
             throws Exception {
         // Create the file you want to write to

@@ -20,12 +20,12 @@ package org.jgrasstools.dbs.compat;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.jgrasstools.dbs.spatialite.ForeignKey;
-import org.jgrasstools.dbs.spatialite.QueryResult;
+import org.jgrasstools.dbs.compat.objects.ForeignKey;
+import org.jgrasstools.dbs.compat.objects.QueryResult;
 
 /**
  * Abstract non spatial db class.
@@ -38,8 +38,18 @@ public abstract class ADb implements AutoCloseable {
     protected IJGTConnection mConn = null;
 
     protected String mDbPath;
+    
+    protected String user = "sa";
+    protected String password = "";
 
     public boolean mPrintInfos = true;
+
+    /**
+     * Get the database type.
+     * 
+     * @return the database type.
+     */
+    public abstract EDb getType();
 
     /**
      * Open the connection to a database.
@@ -55,11 +65,28 @@ public abstract class ADb implements AutoCloseable {
     public abstract boolean open( String dbPath ) throws Exception;
 
     /**
+     * Set credentials if supported.
+     * 
+     * <p>To be called before the {@link #open(String)} method.</p>
+     * 
+     * @param user the username to set or use.
+     * @param password the password to set or use.
+     */
+    public abstract void setCredentials( String user, String password );
+
+    /**
      * @return the path to the database.
      */
     public String getDatabasePath() {
         return mDbPath;
     }
+
+    /**
+     * Get the original jdbc connection.
+     * 
+     * @return the jdbc connection.
+     */
+    public abstract Connection getJdbcConnection();
 
     /**
      * Toggle autocommit mode.
@@ -83,22 +110,10 @@ public abstract class ADb implements AutoCloseable {
     /**
      * Get database infos.
      * 
-     * @return the string array of [sqlite_version, spatialite_version,
-     *         spatialite_target_cpu]
+     * @return the string array of database version information.
      * @throws SQLException
      */
-    public String[] getDbInfo() throws Exception {
-        // checking SQLite and SpatiaLite version + target CPU
-        String sql = "SELECT sqlite_version()";
-        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            String[] info = new String[1];
-            while( rs.next() ) {
-                // read the result set
-                info[0] = rs.getString(1);
-            }
-            return info;
-        }
-    }
+    public abstract String[] getDbInfo() throws Exception;
 
     /**
      * Create a new table.
@@ -122,8 +137,36 @@ public abstract class ADb implements AutoCloseable {
         }
         sb.append(")");
 
+        String sql = sb.toString();
+        sql = checkSqlCompatibilityIssues(sql);
+
         try (IJGTStatement stmt = mConn.createStatement()) {
-            stmt.execute(sb.toString());
+            stmt.execute(sql);
+        }
+    }
+
+    /**
+     * Check for compatibility issues with different databases.
+     * 
+     * @param sql the original sql.
+     * @return the fixed sql.
+     */
+    public abstract String checkSqlCompatibilityIssues( String sql );
+
+    /**
+     * Create a spatial index.
+     * 
+     * @param tableName the table name.
+     * @param geomColumnName the geometry column name.
+     * @throws Exception
+     */
+    public void createSpatialIndex( String tableName, String geomColumnName ) throws Exception {
+        if (geomColumnName == null) {
+            geomColumnName = "the_geom";
+        }
+        String sql = "CREATE SPATIAL INDEX ON " + tableName + "(" + geomColumnName + ");";
+        try (IJGTStatement stmt = mConn.createStatement()) {
+            stmt.execute(sql.toString());
         }
     }
 
@@ -181,21 +224,7 @@ public abstract class ADb implements AutoCloseable {
      * @return the list of names.
      * @throws Exception
      */
-    public List<String> getTables( boolean doOrder ) throws Exception {
-        List<String> tableNames = new ArrayList<String>();
-        String orderBy = " ORDER BY name";
-        if (!doOrder) {
-            orderBy = "";
-        }
-        String sql = "SELECT name FROM sqlite_master WHERE type='table' or type='view'" + orderBy;
-        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                String tabelName = rs.getString(1);
-                tableNames.add(tabelName);
-            }
-            return tableNames;
-        }
-    }
+    public abstract List<String> getTables( boolean doOrder ) throws Exception;
 
     /**
      * Checks if the table is available.
@@ -205,68 +234,29 @@ public abstract class ADb implements AutoCloseable {
      * @return <code>true</code> if the table exists.
      * @throws Exception
      */
-    public boolean hasTable( String tableName ) throws Exception {
-        String sql = "SELECT name FROM sqlite_master WHERE type='table'";
-        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                String name = rs.getString(1);
-                if (name.equals(tableName)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
+    public abstract boolean hasTable( String tableName ) throws Exception;
 
     /**
-     * Get the column [name, type, pk] values of a table.
+     * Gets the table type.
+     * 
+     * @param tableName
+     *            the name of the table.
+     * @return the table type.
+     * @throws Exception
+     */
+    public abstract ETableType getTableType( String tableName ) throws Exception;
+
+    /**
+     * Get the column [name, type, primarykey] values of a table.
+     * 
+     * <p>pk = 0 -> false</p>
      * 
      * @param tableName
      *            the table to check.
      * @return the list of column [name, type, pk].
      * @throws SQLException
      */
-    public List<String[]> getTableColumns( String tableName ) throws Exception {
-        String sql;
-        if (tableName.indexOf('.') != -1) {
-            // it is an attached database
-            String[] split = tableName.split("\\.");
-            String dbName = split[0];
-            String tmpTableName = split[1];
-            sql = "PRAGMA " + dbName + ".table_info(" + tmpTableName + ")";
-        } else {
-            sql = "PRAGMA table_info(" + tableName + ")";
-        }
-
-        List<String[]> columnNames = new ArrayList<String[]>();
-        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            IJGTResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
-            int nameIndex = -1;
-            int typeIndex = -1;
-            int pkIndex = -1;
-            for( int i = 1; i <= columnCount; i++ ) {
-                String columnName = rsmd.getColumnName(i);
-                if (columnName.equals("name")) {
-                    nameIndex = i;
-                } else if (columnName.equals("type")) {
-                    typeIndex = i;
-                } else if (columnName.equals("pk")) {
-                    pkIndex = i;
-                }
-            }
-
-            while( rs.next() ) {
-                String name = rs.getString(nameIndex);
-                String type = rs.getString(typeIndex);
-                String pk = "0";
-                if (pkIndex > 0)
-                    pk = rs.getString(pkIndex);
-                columnNames.add(new String[]{name, type, pk});
-            }
-            return columnNames;
-        }
-    }
+    public abstract List<String[]> getTableColumns( String tableName ) throws Exception;
 
     /**
      * Get the foreign keys from a table.
@@ -276,52 +266,7 @@ public abstract class ADb implements AutoCloseable {
      * @return the list of keys.
      * @throws Exception
      */
-    public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
-        String sql = null;
-        if (tableName.indexOf('.') != -1) {
-            // it is an attached database
-            String[] split = tableName.split("\\.");
-            String dbName = split[0];
-            String tmpTableName = split[1];
-            sql = "PRAGMA " + dbName + ".foreign_key_list(" + tmpTableName + ")";
-        } else {
-            sql = "PRAGMA foreign_key_list(" + tableName + ")";
-        }
-
-        List<ForeignKey> fKeys = new ArrayList<ForeignKey>();
-        try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql)) {
-            IJGTResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
-            int fromIndex = -1;
-            int toIndex = -1;
-            int toTableIndex = -1;
-            for( int i = 1; i <= columnCount; i++ ) {
-                String columnName = rsmd.getColumnName(i);
-                if (columnName.equals("from")) {
-                    fromIndex = i;
-                } else if (columnName.equals("to")) {
-                    toIndex = i;
-                } else if (columnName.equals("table")) {
-                    toTableIndex = i;
-                }
-            }
-            while( rs.next() ) {
-                ForeignKey fKey = new ForeignKey();
-                Object fromObj = rs.getObject(fromIndex);
-                Object toObj = rs.getObject(toIndex);
-                Object toTableObj = rs.getObject(toTableIndex);
-                if (fromObj != null && toObj != null && toTableObj != null) {
-                    fKey.from = fromObj.toString();
-                    fKey.to = toObj.toString();
-                    fKey.table = toTableObj.toString();
-                } else {
-                    continue;
-                }
-                fKeys.add(fKey);
-            }
-            return fKeys;
-        }
-    }
+    public abstract List<ForeignKey> getForeignKeys( String tableName ) throws Exception;
 
     /**
      * Get the record count of a table.
@@ -363,6 +308,7 @@ public abstract class ADb implements AutoCloseable {
                 String columnTypeName = rsmd.getColumnTypeName(i);
                 queryResult.types.add(columnTypeName);
             }
+            long start = System.currentTimeMillis();
             int count = 0;
             while( rs.next() ) {
                 Object[] rec = new Object[columnCount];
@@ -375,6 +321,8 @@ public abstract class ADb implements AutoCloseable {
                     break;
                 }
             }
+            long end = System.currentTimeMillis();
+            queryResult.queryTimeMillis = end - start;
             return queryResult;
         }
     }

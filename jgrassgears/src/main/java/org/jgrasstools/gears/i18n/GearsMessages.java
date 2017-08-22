@@ -18,9 +18,21 @@
  */
 package org.jgrasstools.gears.i18n;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
-
-import org.jgrasstools.gears.libs.modules.JGTConstants;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.FEATUREREADER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.FEATUREWRITER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GENERICREADER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GENERICWRITER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GRIDGEOMETRYREADER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.HASHMAP_READER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.HASHMAP_WRITER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.LIST_READER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.LIST_WRITER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.MATRIXREADER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.OTHER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.RASTERPROCESSING;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.RASTERREADER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.RASTERWRITER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.VECTORPROCESSING;
 /**
  * Messages for the JGrassGears.
  * 
@@ -664,22 +676,6 @@ public class GearsMessages {
     public static final String OMSCARVER_P_DEPTH_POLYGONS_DESCRIPTION = "The carve depth to use for vector polygons if no field is supplied.";
     public static final String OMSCARVER_OUT_RASTER_DESCRIPTION = "The carved raster map.";
 
-    public static final String OMSCUTOUT_DESCRIPTION = "Module for raster thresholding and masking.";
-    public static final String OMSCUTOUT_DOCUMENTATION = "OmsCutOut.html";
-    public static final String OMSCUTOUT_KEYWORDS = "Raster, Threshold, OmsMapcalc";
-    public static final String OMSCUTOUT_LABEL = RASTERPROCESSING;
-    public static final String OMSCUTOUT_NAME = "cutout";
-    public static final int OMSCUTOUT_STATUS = 40;
-    public static final String OMSCUTOUT_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSCUTOUT_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
-    public static final String OMSCUTOUT_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSCUTOUT_IN_RASTER_DESCRIPTION = "The map that has to be processed.";
-    public static final String OMSCUTOUT_IN_MASK_DESCRIPTION = "The map to use as mask.";
-    public static final String OMSCUTOUT_P_MAX_DESCRIPTION = "The upper threshold value.";
-    public static final String OMSCUTOUT_P_MIN_DESCRIPTION = "The lower threshold value.";
-    public static final String OMSCUTOUT_DO_INVERSE_DESCRIPTION = "Switch for doing extraction of the mask area or the inverse (negative). Default is false and extract the mask area.";
-    public static final String OMSCUTOUT_OUT_RASTER_DESCRIPTION = "The processed map.";
-
     public static final String OMSSHAPEFILEFEATUREWRITER_DESCRIPTION = "Utility class for writing geotools featurecollections to shapefile.";
     public static final String OMSSHAPEFILEFEATUREWRITER_DOCUMENTATION = "";
     public static final String OMSSHAPEFILEFEATUREWRITER_KEYWORDS = "IO, Shapefile, Feature, Vector, Writing";
@@ -1168,20 +1164,6 @@ public class GearsMessages {
     public static final String OMSRASTERVALUEROUNDER_P_PATTERN_DESCRIPTION = "The rounding pattern.";
     public static final String OMSRASTERVALUEROUNDER_OUT_RASTER_DESCRIPTION = "The rounded raster.";
 
-    public static final String OMSRASTERNULL_DESCRIPTION = "Module that puts a certain value of the raster to null.";
-    public static final String OMSRASTERNULL_DOCUMENTATION = "";
-    public static final String OMSRASTERNULL_KEYWORDS = "Null, Raster";
-    public static final String OMSRASTERNULL_LABEL = RASTERPROCESSING;
-    public static final String OMSRASTERNULL_NAME = "rnull";
-    public static final int OMSRASTERNULL_STATUS = 40;
-    public static final String OMSRASTERNULL_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERNULL_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERNULL_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERNULL_IN_RASTER_DESCRIPTION = "The raster to modify.";
-    public static final String OMSRASTERNULL_P_VALUE_DESCRIPTION = "The value to set to null.";
-    public static final String OMSRASTERNULL_P_NULL_DESCRIPTION = "The the null value to set (else it is guessed).";
-    public static final String OMSRASTERNULL_OUT_RASTER_DESCRIPTION = "The new raster.";
-
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_DESCRIPTION = "Module for raster to vector conversion";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_DOCUMENTATION = "";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_KEYWORDS = "Raster, Vector";
@@ -1270,18 +1252,6 @@ public class GearsMessages {
     public static final String OMSVECTORWRITER_IN_VECTOR_DESCRIPTION = "The read feature collection.";
     public static final String OMSVECTORWRITER_P_TYPE_DESCRIPTION = "The vector type to write (Supported is: shp).";
     public static final String OMSVECTORWRITER_FILE_DESCRIPTION = "The vector file to write.";
-
-    public static final String OMSRASTERCONVERTER_DESCRIPTION = "Raster conversion module.";
-    public static final String OMSRASTERCONVERTER_DOCUMENTATION = "OmsRasterConverter.html";
-    public static final String OMSRASTERCONVERTER_KEYWORDS = "IO, Coverage, Raster, Convert, OmsRasterReader";
-    public static final String OMSRASTERCONVERTER_LABEL = RASTERPROCESSING;
-    public static final String OMSRASTERCONVERTER_NAME = "oms_rconvert";
-    public static final int OMSRASTERCONVERTER_STATUS = 40;
-    public static final String OMSRASTERCONVERTER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERCONVERTER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERCONVERTER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERCONVERTER_IN_RASTER_DESCRIPTION = "The input raster.";
-    public static final String OMSRASTERCONVERTER_OUT_RASTER_DESCRIPTION = "The output raster.";
 
     public static final String OMSCOVERAGEVIEWER_DESCRIPTION = "Utility class for viewing coverages.";
     public static final String OMSCOVERAGEVIEWER_DOCUMENTATION = "";
@@ -1392,20 +1362,6 @@ public class GearsMessages {
     public static final String OMSPOINTSRASTERIZER_IN_GRID_DESCRIPTION = "The grid on which to place the values.";
     public static final String OMSPOINTSRASTERIZER_F_CAT_DESCRIPTION = "The field of the vector to take the category from.";
     public static final String OMSPOINTSRASTERIZER_OUT_RASTER_DESCRIPTION = "The output raster.";
-
-    public static final String OMSTIMESERIESREADER_DESCRIPTION = "Utility class for reading data from a OMS formatted csv file. The data is assumed to be first col a date and then al numbers.";
-    public static final String OMSTIMESERIESREADER_DOCUMENTATION = "OmsTimeSeriesReader.html";
-    public static final String OMSTIMESERIESREADER_KEYWORDS = "IO, Reading";
-    public static final String OMSTIMESERIESREADER_LABEL = HASHMAP_READER;
-    public static final String OMSTIMESERIESREADER_NAME = "tsreader";
-    public static final int OMSTIMESERIESREADER_STATUS = 40;
-    public static final String OMSTIMESERIESREADER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSTIMESERIESREADER_AUTHORNAMES = "Andrea Antonello and Silvia Franceschi";
-    public static final String OMSTIMESERIESREADER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSTIMESERIESREADER_FILE_DESCRIPTION = "The csv file to read from.";
-    public static final String OMSTIMESERIESREADER_FILE_NOVALUE_DESCRIPTION = "The file novalue to be translated into the internal novalue (defaults to -9999.0). Can be also a string.";
-    public static final String OMSTIMESERIESREADER_NOVALUE_DESCRIPTION = "The internal novalue to use (defaults to NaN).";
-    public static final String OMSTIMESERIESREADER_OUT_DATA_DESCRIPTION = "The sorted hashmap of read data.";
 
     public static final String OMSTIMESERIESITERATORREADER_DESCRIPTION = "Utility class for reading data from a OMS formatted csv file. The file needs a metadata line containing the id of the station. The table is supposed to have a first column of timestamp and all olther columns of data related to the ids defined.";
     public static final String OMSTIMESERIESITERATORREADER_DOCUMENTATION = "OmsTimeSeriesIteratorReader.html";

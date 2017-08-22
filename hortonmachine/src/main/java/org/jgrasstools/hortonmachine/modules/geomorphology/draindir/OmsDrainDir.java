@@ -17,32 +17,26 @@
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.draindir;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOMORPHOLOGY;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_DOCUMENTATION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_doLad_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_inFlow_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_inFlownet_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_inPit_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_outFlow_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_outTca_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_pLambda_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.FlowNode;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.ModelsSupporter;
+import org.jgrasstools.gears.utils.BitMatrix;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -56,22 +50,14 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.utils.BitMatrix;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-
-@Description(OMSDRAINDIR_DESCRIPTION)
-@Documentation(OMSDRAINDIR_DOCUMENTATION)
-@Author(name = OMSDRAINDIR_AUTHORNAMES, contact = OMSDRAINDIR_AUTHORCONTACTS)
-@Keywords(OMSDRAINDIR_KEYWORDS)
-@Label(OMSDRAINDIR_LABEL)
-@Name(OMSDRAINDIR_NAME)
-@Status(OMSDRAINDIR_STATUS)
-@License(OMSDRAINDIR_LICENSE)
+@Description(OmsDrainDir.OMSDRAINDIR_DESCRIPTION)
+@Documentation(OmsDrainDir.OMSDRAINDIR_DOCUMENTATION)
+@Author(name = OmsDrainDir.OMSDRAINDIR_AUTHORNAMES, contact = OmsDrainDir.OMSDRAINDIR_AUTHORCONTACTS)
+@Keywords(OmsDrainDir.OMSDRAINDIR_KEYWORDS)
+@Label(OmsDrainDir.OMSDRAINDIR_LABEL)
+@Name(OmsDrainDir.OMSDRAINDIR_NAME)
+@Status(OmsDrainDir.OMSDRAINDIR_STATUS)
+@License(OmsDrainDir.OMSDRAINDIR_LICENSE)
 public class OmsDrainDir extends JGTModel {
 
     @Description(OMSDRAINDIR_inPit_DESCRIPTION)
@@ -102,21 +88,53 @@ public class OmsDrainDir extends JGTModel {
     @Out
     public GridCoverage2D outTca = null;
 
+    public static final String OMSDRAINDIR_DESCRIPTION = "It calculates the drainage directions minimizing the deviation from the real flow";
+    public static final String OMSDRAINDIR_DOCUMENTATION = "OmsDrainDir.html";
+    public static final String OMSDRAINDIR_KEYWORDS = "Geomorphology, Pitfiller, OmsFlowDirections";
+    public static final String OMSDRAINDIR_LABEL = GEOMORPHOLOGY;
+    public static final String OMSDRAINDIR_NAME = "draindir";
+    public static final int OMSDRAINDIR_STATUS = 40;
+    public static final String OMSDRAINDIR_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSDRAINDIR_AUTHORNAMES = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo";
+    public static final String OMSDRAINDIR_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
+    public static final String OMSDRAINDIR_inPit_DESCRIPTION = "The depitted elevation model.";
+    public static final String OMSDRAINDIR_inFlow_DESCRIPTION = "The map of flowdirections.";
+    public static final String OMSDRAINDIR_inFlownet_DESCRIPTION = "The map of flowdirections on the network pixels (considered only in case of LTD method). Remember that in the case of fixed flow calculation the tca has to be recalculated afterwards; the tca output in this case is not corrected.";
+    public static final String OMSDRAINDIR_pLambda_DESCRIPTION = "The direction correction factor.";
+    public static final String OMSDRAINDIR_doLad_DESCRIPTION = "Switch for the mode to use: true = LAD (default), false = LTD)).";
+    public static final String OMSDRAINDIR_outFlow_DESCRIPTION = "The map of drainage directions.";
+    public static final String OMSDRAINDIR_outTca_DESCRIPTION = "The map of total contributing areas.";
+
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     private static final double PI = Math.PI;
-
-    private static final double NaN = doubleNovalue;
 
     /*
      * indicates the position of the triangle's vertexes
      */
     private int[][] order = ModelsSupporter.DIR;
 
+    private int[][] tri = {{1, 2, 1}, /* tri 012 */
+            {3, 2, -1}, /* tri 023 |4|3|2| */
+            {3, 4, 1}, /* tri 034 |5|0|1| drainage direction. */
+            {5, 4, -1}, /* tri 045 |6|7|8| */
+            {5, 6, 1}, /*
+                        * tri 056 indico direzioni di drenaggio corrispondenti ai
+                        * verici
+                        */
+            {7, 6, -1}, /*
+                         * tri 067 dei triangoli (colonne 1,2) e il segno (sigma)
+                         * associato
+                         */
+            {7, 8, 1}, /* tri 078 al triangolo stesso (colonna 3). */
+            {1, 8, -1} /* tri 089 */
+    };
+
     private int cols;
     private int rows;
     private double xRes;
     private double yRes;
+    private double dxySqrt;
 
     /**
      * Calculates new drainage directions
@@ -129,35 +147,36 @@ public class OmsDrainDir extends JGTModel {
             return;
         }
         checkNull(inFlow, inPit);
-        double[] orderedelev, indexes;
-        int nelev;
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inPit);
-        cols = regionMap.get(CoverageUtilities.COLS).intValue();
-        rows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        xRes = regionMap.get(CoverageUtilities.XRES);
-        yRes = regionMap.get(CoverageUtilities.YRES);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inPit);
+        cols = regionMap.getCols();
+        rows = regionMap.getRows();
+        xRes = regionMap.getXres();
+        yRes = regionMap.getYres();
+        dxySqrt = Math.sqrt(xRes * xRes + yRes * yRes);
 
         RenderedImage pitfillerRI = inPit.getRenderedImage();
-        WritableRaster pitfillerWR = CoverageUtilities.renderedImage2WritableRaster(pitfillerRI, true);
+        WritableRaster pitfillerWR = CoverageUtilities.renderedImage2DoubleWritableRaster(pitfillerRI, true);
         RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
+        WritableRaster flowWR = CoverageUtilities.renderedImage2ShortWritableRaster(flowRI, true);
 
         RandomIter pitRandomIter = RandomIterFactory.create(pitfillerWR, null);
 
         // create new matrix
-        orderedelev = new double[cols * rows];
-        indexes = new double[cols * rows];
+        double[] orderedelev = new double[cols * rows];
+        int[] indexes = new int[cols * rows];
 
-        nelev = 0;
-        for( int j = 0; j < rows; j++ ) {
-            if (isCanceled(pm)) {
+        int nelev = 0;
+        for( int r = 0; r < rows; r++ ) {
+            if (pm.isCanceled()) {
                 return;
             }
-            for( int i = 0; i < cols; i++ ) {
-                orderedelev[((j) * cols) + i] = pitRandomIter.getSampleDouble(i, j, 0);
-                indexes[((j) * cols) + i] = ((j) * cols) + i + 1;
-                if (!isNovalue(pitRandomIter.getSampleDouble(i, j, 0))) {
+            for( int c = 0; c < cols; c++ ) {
+                double pitValue = pitRandomIter.getSampleDouble(c, r, 0);
+                int pos = (r * cols) + c;
+                orderedelev[pos] = pitValue;
+                indexes[pos] = pos + 1;
+                if (!isNovalue(pitValue)) {
                     nelev = nelev + 1;
                 }
             }
@@ -169,355 +188,270 @@ public class OmsDrainDir extends JGTModel {
         pm.message(msg.message("draindir.initializematrix"));
 
         // Initialize new RasterData and set value
-        WritableRaster tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, Double.class, null, NaN);
-        WritableRaster dirWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, Double.class, null, NaN);
+        WritableRaster tcaWR = CoverageUtilities.createWritableRaster(cols, rows, Integer.class, null, JGTConstants.intNovalue);
+        WritableRaster dirWR = CoverageUtilities.createWritableRaster(cols, rows, Short.class, null, JGTConstants.shortNovalue);
 
         // it contains the analyzed cells
-        WritableRaster deviationsWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRaster deviationsWR = CoverageUtilities.createWritableRaster(cols, rows, Double.class, null, null);
         BitMatrix analizedMatrix = new BitMatrix(cols, rows);
 
         if (doLad) {
-            OrlandiniD8_LAD(indexes, deviationsWR, analizedMatrix, pitfillerWR, flowWR, tcaWR, dirWR, nelev);
+            orlandiniD8LAD(indexes, deviationsWR, analizedMatrix, pitfillerWR, flowWR, tcaWR, dirWR, nelev);
         } else {
-            OrlandiniD8_LTD(indexes, deviationsWR, analizedMatrix, pitfillerWR, flowWR, tcaWR, dirWR, nelev);
+            orlandiniD8LTD(indexes, deviationsWR, analizedMatrix, pitfillerWR, flowWR, tcaWR, dirWR, nelev);
+            if (pm.isCanceled()) {
+                return;
+            }
             // only if required executes this method
             if (inFlownet != null) {
                 newDirections(pitfillerWR, dirWR);
             }
         }
-        if (isCanceled(pm)) {
+        if (pm.isCanceled()) {
             return;
         }
         outFlow = CoverageUtilities.buildCoverage("draindir", dirWR, regionMap, inPit.getCoordinateReferenceSystem());
         outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, inPit.getCoordinateReferenceSystem());
     }
 
-    /**
-     * routine that defines the draining directions
-     * 
-     * @param indexes
-     *            vector containing the order of elevation
-     * @param deviationsImage
-     *            the map containing the deviation
-     * @param analizedMatrix 
-     * @param nelev
-     * @return
-     */
-    private void OrlandiniD8_LAD( double[] indexes, WritableRaster deviationsImage, BitMatrix analizedMatrix,
-            WritableRaster pitImage, WritableRaster flowImage, WritableRaster tcaImage, WritableRaster dirImage, int nelev ) {
-        int row, col, ncelle, nr, nc;
-        double dev1, dev2, sumdev1, sumdev2, sumdev;
-        /*
-         * it contains:
-         * pend,dir,e0,e1,e2,sumdev,
-         * didren1,dirdren2,sigma
-         */
-        double[] dati = new double[10];
-        double count, flow;
+    private void orlandiniD8LAD( int[] indexes, WritableRaster deviationsWR, BitMatrix analizedMatrix, WritableRaster pitWR,
+            WritableRaster flowWR, WritableRaster tcaWR, WritableRaster dirWR, int nelev ) {
+        RandomIter pitRandomIter = RandomIterFactory.create(pitWR, null);
+        RandomIter flowRandomIter = RandomIterFactory.create(flowWR, null);
 
-        double[] u = {xRes, yRes};
-        double[] v = {NaN, NaN};
-        // get rows and cols from the active region
+        WritableRandomIter tcaRandomIter = RandomIterFactory.createWritable(tcaWR, null);
+        WritableRandomIter deviationRandomIter = RandomIterFactory.createWritable(deviationsWR, null);
+        WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirWR, null);
 
-        ncelle = 0;
-        RandomIter pitRandomIter = RandomIterFactory.create(pitImage, null);
-        RandomIter flowRandomIter = RandomIterFactory.create(flowImage, null);
-
-        WritableRandomIter tcaRandomIter = RandomIterFactory.createWritable(tcaImage, null);
-        WritableRandomIter deviationRandomIter = RandomIterFactory.createWritable(deviationsImage, null);
-        WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirImage, null);
-
-        pm.beginTask(msg.message("draindir.orlandinilad"), rows * cols);
-        for( int i = rows * cols - 1; i >= 0; i-- ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            count = indexes[i] - 1;
-            row = (int) Math.floor(count / cols);
-            col = (int) (count % cols);
-            if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0)) && !isNovalue(flowRandomIter.getSampleDouble(col, row, 0))) {
-                ncelle = ncelle + 1;
-                compose(analizedMatrix, pitRandomIter, tcaRandomIter, dati, u, v, col, row);
-
-                if (dati[1] > 0) {
-                    dev1 = dati[2];
-                    dev2 = (PI / 4) - dati[2];
-
-                    if (dati[9] == 1) {
-                        dev2 = -dev2;
-                    } else {
-                        dev1 = -dev1;
-                    }
-                    calcarea(row, col, dati, v, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter, dirRandomIter,
-                            i, i);
-
-                    sumdev = dati[6];
-                    sumdev1 = dev1 + (pLambda * sumdev);
-                    sumdev2 = dev2 + (pLambda * sumdev);
-                    if ((Math.abs(sumdev1) <= Math.abs(sumdev2)) && ((dati[3] - dati[4]) > 0.0)) {
-                        dirRandomIter.setSample(col, row, 0, dati[7]);
-                        deviationRandomIter.setSample(col, row, 0, sumdev1);
-                    } else if (Math.abs(sumdev1) > Math.abs(sumdev2) || (dati[3] - dati[5]) > 0.0) {
-                        dirRandomIter.setSample(col, row, 0, dati[8]);
-                        deviationRandomIter.setSample(col, row, 0, sumdev2);
-                    } else {
-                        break;
-                    }
-                } else if (dati[1] == 0) {
-                    if (ncelle == nelev) {
-                        /* sono all'uscita */
-                        calcarea(row, col, dati, v, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter,
-                                dirRandomIter, cols, rows);
-                        dirRandomIter.setSample(col, row, 0, 10);
-                        deviationRandomIter.setSample(col, row, 0, pLambda * dati[6]);
-
-                        if (tcaRandomIter.getSampleDouble(col, row, 0) != ncelle) {
-                            pm.done();
-                            return;
-                        } else {
-                            pm.done();
-                            return;
-                        }
-                    } else {
-                        calcarea(row, col, dati, v, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter,
-                                dirRandomIter, cols, rows);
-                        sumdev = pLambda * dati[6];
-                        dirRandomIter.setSample(col, row, 0, flowRandomIter.getSampleDouble(col, row, 0));
-                        flow = dirRandomIter.getSampleDouble(col, row, 0);
-                        nr = row + order[(int) flow][0];
-                        nc = col + order[(int) flow][1];
-                        while( analizedMatrix.isMarked(nc, nr) ) {
-                            tcaRandomIter.setSample(nc, nr, 0,
-                                    tcaRandomIter.getSampleDouble(nc, nr, 0) + tcaRandomIter.getSampleDouble(col, row, 0));
-                            flow = dirRandomIter.getSampleDouble(nc, nr, 0);
-                            nr = nr + order[(int) flow][0];
-                            nc = nc + order[(int) flow][1];
-                        }
-                        deviationRandomIter.setSample(col, row, 0, sumdev);
-                    }
+        try {
+            int ncelle = 0;
+            pm.beginTask(msg.message("draindir.orlandinilad"), rows * cols);
+            for( int i = rows * cols - 1; i >= 0; i-- ) {
+                if (pm.isCanceled()) {
+                    return;
                 }
-            }
-            pm.worked(1);
-        }
-        pm.done();
+                double count = indexes[i] - 1;
+                int row = (int) Math.floor(count / cols);
+                int col = (int) (count % cols);
+                try {
+                    if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0)) && !isNovalue(flowRandomIter.getSample(col, row, 0))) {
+                        ncelle = ncelle + 1;
+                        double[] maxSlopeData = calculateMaximumSlope(analizedMatrix, pitRandomIter, tcaRandomIter, col, row);
 
-        dirRandomIter.done();
-        pitRandomIter.done();
-        flowRandomIter.done();
-        deviationRandomIter.done();
-        tcaRandomIter.done();
+                        if (maxSlopeData[1] > 0) {
+                            double dev1 = maxSlopeData[2];
+                            double dev2 = ((PI / 4) - maxSlopeData[2]);
+
+                            if (maxSlopeData[9] == 1) {
+                                dev2 = -dev2;
+                            } else {
+                                dev1 = -dev1;
+                            }
+                            calculateDrainageArea(row, col, maxSlopeData, analizedMatrix, deviationRandomIter, pitRandomIter,
+                                    tcaRandomIter, dirRandomIter, i, i);
+
+                            double sumdev = maxSlopeData[6];
+                            double sumdev1 = dev1 + (pLambda * sumdev);
+                            double sumdev2 = dev2 + (pLambda * sumdev);
+                            if ((Math.abs(sumdev1) <= Math.abs(sumdev2)) && ((maxSlopeData[3] - maxSlopeData[4]) > 0.0)) {
+                                dirRandomIter.setSample(col, row, 0, maxSlopeData[7]);
+                                deviationRandomIter.setSample(col, row, 0, sumdev1);
+                            } else if (Math.abs(sumdev1) > Math.abs(sumdev2) || (maxSlopeData[3] - maxSlopeData[5]) > 0.0) {
+                                dirRandomIter.setSample(col, row, 0, maxSlopeData[8]);
+                                deviationRandomIter.setSample(col, row, 0, sumdev2);
+                            } else {
+                                break;
+                            }
+                        } else if (maxSlopeData[1] == 0) {
+                            if (ncelle == nelev) {
+                                /* sono all'uscita */
+                                calculateDrainageArea(row, col, maxSlopeData, analizedMatrix, deviationRandomIter, pitRandomIter,
+                                        tcaRandomIter, dirRandomIter, cols, rows);
+                                dirRandomIter.setSample(col, row, 0, FlowNode.OUTLET);
+                                deviationRandomIter.setSample(col, row, 0, pLambda * maxSlopeData[6]);
+
+                                pm.done();
+                                return;
+                            } else {
+                                calculateDrainageArea(row, col, maxSlopeData, analizedMatrix, deviationRandomIter, pitRandomIter,
+                                        tcaRandomIter, dirRandomIter, cols, rows);
+                                double sumdev = pLambda * maxSlopeData[6];
+                                dirRandomIter.setSample(col, row, 0, flowRandomIter.getSample(col, row, 0));
+                                int flow = dirRandomIter.getSample(col, row, 0);
+                                int nr = row + order[flow][0];
+                                int nc = col + order[flow][1];
+                                while( analizedMatrix.isMarked(nc, nr) ) {
+                                    tcaRandomIter.setSample(nc, nr, 0,
+                                            tcaRandomIter.getSample(nc, nr, 0) + tcaRandomIter.getSample(col, row, 0));
+                                    flow = dirRandomIter.getSample(nc, nr, 0);
+                                    nr = nr + order[(int) flow][0];
+                                    nc = nc + order[(int) flow][1];
+                                }
+                                deviationRandomIter.setSample(col, row, 0, sumdev);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    pm.errorMessage("Error in col: " + col + " row: " + row);
+                    e.printStackTrace();
+                }
+                pm.worked(1);
+            }
+            pm.done();
+
+        } finally {
+            dirRandomIter.done();
+            pitRandomIter.done();
+            flowRandomIter.done();
+            deviationRandomIter.done();
+            tcaRandomIter.done();
+        }
     }
 
-    /**
-     * routine that defines the draining directions
-     * 
-     * @param indexes
-     *            vector containing the order of elevation
-     * @param deviationsImage
-     *            the map containing the deviation
-     * @param analizedMatrix
-     * @param nelev
-     * @return
-     */
-    private void OrlandiniD8_LTD( double[] indexes, WritableRaster deviationsImage, BitMatrix analizedMatrix,
-            WritableRaster pitImage, WritableRaster flowImage, WritableRaster tcaImage, WritableRaster dirImage, int nelev ) {
+    private void orlandiniD8LTD( int[] indexes, WritableRaster deviationsWR, BitMatrix analizedMatrix, WritableRaster pitWR,
+            WritableRaster flowWR, WritableRaster tcaWR, WritableRaster dirWR, int nelev ) {
 
-        int row, col, ncelle, nr, nc;
-        double dx, dev1, dev2, sumdev1, sumdev2, sumdev;
-        /*
-         * it contains:
-         * pend,dir,e0,e1,e2,sumdev,
-         * didren1,dirdren2,sigma
-         */
-        double[] dati = new double[10];
-        double count, flow;
         /*
          * it indicates the position of the triangle's vertexes
          */
-        ncelle = 0;
-        RandomIter pitRandomIter = RandomIterFactory.create(pitImage, null);
-        RandomIter flowRandomIter = RandomIterFactory.create(flowImage, null);
+        // ncelle = 0;
+        RandomIter pitRandomIter = RandomIterFactory.create(pitWR, null);
+        RandomIter flowRandomIter = RandomIterFactory.create(flowWR, null);
 
-        WritableRandomIter tcaRandomIter = RandomIterFactory.createWritable(tcaImage, null);
-        WritableRandomIter deviationRandomIter = RandomIterFactory.createWritable(deviationsImage, null);
-        WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirImage, null);
-        double[] u = {xRes, yRes};
-        double[] v = {NaN, NaN};
-        dx = u[0];
-        // get rows and cols from the active region
-        rows = pitImage.getHeight();
-        cols = pitImage.getWidth();
+        WritableRandomIter tcaRandomIter = RandomIterFactory.createWritable(tcaWR, null);
+        WritableRandomIter deviationRandomIter = RandomIterFactory.createWritable(deviationsWR, null);
+        WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirWR, null);
+        try {
+            int ncelle = 0;
+            pm.beginTask(msg.message("draindir.orlandiniltd"), rows * cols);
+            for( int i = rows * cols - 1; i >= 0; i-- ) {
+                if (pm.isCanceled()) {
+                    return;
+                }
+                double count = indexes[i] - 1;
+                int row = (int) Math.floor(count / cols);
+                int col = (int) (count % cols);
 
-        ncelle = 0;
-        pm.beginTask(msg.message("draindir.orlandiniltd"), rows * cols);
-        for( int i = rows * cols - 1; i >= 0; i-- ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            count = indexes[i] - 1;
-            row = (int) Math.floor(count / cols);
-            col = (int) (count % cols);
+                if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0)) && !isNovalue(flowRandomIter.getSample(col, row, 0))) {
+                    ncelle = ncelle + 1;
 
-            if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0)) && !isNovalue(flowRandomIter.getSampleDouble(col, row, 0))) {
-                ncelle = ncelle + 1;
+                    double[] maxSlopeData = calculateMaximumSlope(analizedMatrix, pitRandomIter, tcaRandomIter, col, row);
 
-                compose(analizedMatrix, pitRandomIter, tcaRandomIter, dati, u, v, col, row);
+                    if (maxSlopeData[1] > 0) {
+                        double dev1 = (xRes * Math.sin(maxSlopeData[2]));
+                        double dev2 = (xRes * Math.sqrt(2.0) * Math.sin(PI / 4 - maxSlopeData[2]));
+                        if (maxSlopeData[9] == 1) {
+                            dev2 = -dev2;
+                        } else {
+                            dev1 = -dev1;
+                        }
+                        calculateDrainageArea(row, col, maxSlopeData, analizedMatrix, deviationRandomIter, pitRandomIter,
+                                tcaRandomIter, dirRandomIter, cols, rows);
+                        double sumdev = maxSlopeData[6];
+                        double sumdev1 = dev1 + pLambda * sumdev;
+                        double sumdev2 = dev2 + pLambda * sumdev;
+                        if (Math.abs(sumdev1) <= Math.abs(sumdev2) && (maxSlopeData[3] - maxSlopeData[4]) > 0.0) {
+                            dirRandomIter.setSample(col, row, 0, (int) maxSlopeData[7]);
+                            deviationRandomIter.setSample(col, row, 0, sumdev1);
+                        } else if (Math.abs(sumdev1) > Math.abs(sumdev2) || (maxSlopeData[3] - maxSlopeData[5]) > 0.0) {
+                            dirRandomIter.setSample(col, row, 0, (int) maxSlopeData[8]);
+                            deviationRandomIter.setSample(col, row, 0, sumdev2);
+                        } else {
+                            break;
+                        }
+                    } else if (maxSlopeData[1] == 0) {
+                        if (ncelle == nelev) {
+                            /* sono all'uscita */
+                            calculateDrainageArea(row, col, maxSlopeData, analizedMatrix, deviationRandomIter, pitRandomIter,
+                                    tcaRandomIter, dirRandomIter, cols, rows);
+                            dirRandomIter.setSample(col, row, 0, FlowNode.OUTLET);
+                            deviationRandomIter.setSample(col, row, 0, pLambda * maxSlopeData[6]);
 
-                if (dati[1] > 0) {
-                    dev1 = dx * Math.sin(dati[2]);
-                    dev2 = dx * Math.sqrt(2.0) * Math.sin(PI / 4 - dati[2]);
-                    if (dati[9] == 1) {
-                        dev2 = -dev2;
-                    } else {
-                        dev1 = -dev1;
-                    }
-                    calcarea(row, col, dati, v, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter, dirRandomIter,
-                            cols, rows);
-                    sumdev = dati[6];
-                    sumdev1 = dev1 + pLambda * sumdev;
-                    sumdev2 = dev2 + pLambda * sumdev;
-                    if (Math.abs(sumdev1) <= Math.abs(sumdev2) && (dati[3] - dati[4]) > 0.0) {
-                        dirRandomIter.setSample(col, row, 0, dati[7]);
-                        deviationRandomIter.setSample(col, row, 0, sumdev1);
-                    } else if (Math.abs(sumdev1) > Math.abs(sumdev2) || (dati[3] - dati[5]) > 0.0) {
-                        dirRandomIter.setSample(col, row, 0, dati[8]);
-                        deviationRandomIter.setSample(col, row, 0, sumdev2);
-                    } else {
-                        break;
-                    }
-                } else if (dati[1] == 0) {
-                    if (ncelle == nelev) {
-                        /* sono all'uscita */
-                        calcarea(row, col, dati, v, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter,
-                                dirRandomIter, cols, rows);
-                        dirRandomIter.setSample(col, row, 0, 10);
-                        deviationRandomIter.setSample(col, row, 0, pLambda * dati[6]);
-
-                        if (tcaRandomIter.getSampleDouble(col, row, 0) != ncelle) {
                             pm.done();
                             return;
                         } else {
-                            pm.done();
-                            return;
+                            calculateDrainageArea(row, col, maxSlopeData, analizedMatrix, deviationRandomIter, pitRandomIter,
+                                    tcaRandomIter, dirRandomIter, cols, rows);
+                            double sumdev = pLambda * maxSlopeData[6];
+                            dirRandomIter.setSample(col, row, 0, flowRandomIter.getSample(col, row, 0));
+                            int flow = dirRandomIter.getSample(col, row, 0);
+                            int nr = row + order[flow][0];
+                            int nc = col + order[flow][1];
+                            while( analizedMatrix.isMarked(nc, nr) ) {
+                                tcaRandomIter.setSample(nc, nr, 0,
+                                        (tcaRandomIter.getSample(nc, nr, 0) + tcaRandomIter.getSample(col, row, 0)));
+                                flow = dirRandomIter.getSample(nc, nr, 0);
+                                nr = nr + order[flow][0];
+                                nc = nc + order[flow][1];
+                            }
+                            deviationRandomIter.setSample(col, row, 0, sumdev);
                         }
-                    } else {
-                        calcarea(row, col, dati, v, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter,
-                                dirRandomIter, cols, rows);
-                        sumdev = pLambda * dati[6];
-                        dirRandomIter.setSample(col, row, 0, flowRandomIter.getSampleDouble(col, row, 0));
-                        flow = dirRandomIter.getSampleDouble(col, row, 0);
-                        nr = row + order[(int) flow][0];
-                        nc = col + order[(int) flow][1];
-                        while( analizedMatrix.isMarked(nc, nr) ) {
-                            tcaRandomIter.setSample(nc, nr, 0,
-                                    (tcaRandomIter.getSampleDouble(nc, nr, 0) + tcaRandomIter.getSampleDouble(col, row, 0)));
-                            flow = dirRandomIter.getSampleDouble(nc, nr, 0);
-                            nr = nr + order[(int) flow][0];
-                            nc = nc + order[(int) flow][1];
-                        }
-                        deviationRandomIter.setSample(col, row, 0, sumdev);
                     }
                 }
+                pm.worked(1);
             }
-            pm.worked(1);
+            pm.done();
+        } finally {
+            dirRandomIter.done();
+            pitRandomIter.done();
+            flowRandomIter.done();
+            deviationRandomIter.done();
+            tcaRandomIter.done();
         }
-        pm.done();
-
-        dirRandomIter.done();
-        pitRandomIter.done();
-        flowRandomIter.done();
-        deviationRandomIter.done();
-        tcaRandomIter.done();
     }
-    /**
-     * It calculates the drainage area for a cell[rows][cols]
-     * 
-     * @param row
-     * @param col
-     * @param dati
-     * @param v
-     * @param analizedMatrix
-     * @param deviation
-     */
-    private void calcarea( int row, int col, double[] dati, double[] v, BitMatrix analizedMatrix, WritableRandomIter deviation,
-            RandomIter pitRandomIter, WritableRandomIter tcaRandomIter, WritableRandomIter dirRandomIter, int nCols, int nRows ) {
-        int conta, ninflow;
-        int outdir;
-        double sumdev;
-        double[] dev = new double[8];
-        double[] are = new double[8];
 
-        ninflow = 0;
-        sumdev = 0;
+    private void calculateDrainageArea( int row, int col, double[] dati, BitMatrix analizedMatrix, WritableRandomIter deviation,
+            RandomIter pitRandomIter, WritableRandomIter tcaRandomIter, WritableRandomIter dirRandomIter, int nCols, int nRows ) {
+        double[] dev = new double[8];
+        int[] are = new int[8];
+
+        int ninflow = 0;
+        double sumdev = 0;
         for( int n = 1; n <= 8; n++ ) {
-            conta = (col + order[n][1] - 1) * nCols + row + order[n][0];
+            int conta = (col + order[n][1] - 1) * nCols + row + order[n][0];
             /*
              * verifico se la cella che sto considerando e' stata gia' processata
              */
             if (analizedMatrix.isMarked(col + order[n][1], row + order[n][0])) {
-                if (!isNovalue(pitRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0)) || conta <= nRows * nCols) {
-                    outdir = (int) dirRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0);
+                if (!isNovalue(pitRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0))
+                        || conta <= nRows * nCols) {
+                    int outdir = dirRandomIter.getSample(col + order[n][1], row + order[n][0], 0);
                     /*
                      * verifico se la cella che sto considerando drena nel pixel
                      * centrale
                      */
                     if (outdir - n == 4 || outdir - n == -4) {
                         ninflow = ninflow + 1;
-                        tcaRandomIter.setSample(
-                                col,
-                                row,
-                                0,
-                                tcaRandomIter.getSampleDouble(col, row, 0)
-                                        + tcaRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0));
+                        tcaRandomIter.setSample(col, row, 0, tcaRandomIter.getSample(col, row, 0)
+                                + tcaRandomIter.getSample(col + order[n][1], row + order[n][0], 0));
                         dev[ninflow] = deviation.getSampleDouble(col + order[n][1], row + order[n][0], 0);
-                        are[ninflow] = tcaRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0);
+                        are[ninflow] = tcaRandomIter.getSample(col + order[n][1], row + order[n][0], 0);
                     }
                 }
             }
         }
 
         for( int i = 1; i <= ninflow; i++ ) {
-            sumdev = sumdev + are[i] * dev[i] / tcaRandomIter.getSampleDouble(col, row, 0);
+            sumdev = sumdev + are[i] * dev[i] / tcaRandomIter.getSample(col, row, 0);
         }
         dati[6] = sumdev;
 
     }
 
     /**
-     * It calculates the direction of maximun slope.
-     * 
-     * @param analizedMatrix
-     * @param dati
-     * @param u
-     * @param v
-     * @param col
-     * @param row
+     * Calculates the max slope data as an array: [maxslope,maxdir,elevation,e1,e2,sumdev, dirdren1,dirdren2,sigma]
      */
-    private void compose( BitMatrix analizedMatrix, RandomIter pitRandomIter, WritableRandomIter tcaRandomIter, double[] dati,
-            double[] u, double[] v, int col, int row ) {
+    private double[] calculateMaximumSlope( BitMatrix analizedMatrix, RandomIter pitRandomIter, WritableRandomIter tcaRandomIter,
+            int col, int row ) {
+        double[] maxSlopeData = new double[10];
         int n = 1, m = 1;
 
-        double pendmax, dirmax = 0.0, e1min = -9999.0, e2min = -9999.0;
-        int[][] tri = {{1, 2, 1}, /* tri 012 */
-        {3, 2, -1}, /* tri 023 |4|3|2| */
-        {3, 4, 1}, /* tri 034 |5|0|1| drainage direction. */
-        {5, 4, -1}, /* tri 045 |6|7|8| */
-        {5, 6, 1}, /*
-                    * tri 056 indico direzioni di drenaggio corrispondenti ai
-                    * verici
-                    */
-        {7, 6, -1}, /*
-                     * tri 067 dei triangoli (colonne 1,2) e il segno (sigma)
-                     * associato
-                     */
-        {7, 8, 1}, /* tri 078 al triangolo stesso (colonna 3). */
-        {1, 8, -1} /* tri 089 */
-        };
+        double dirmax = 0f, e1min = -9999f, e2min = -9999f;
 
         analizedMatrix.mark(col, row);
-        tcaRandomIter.setSample(col, row, 0, 1.0);
-        pendmax = 0.0;
-        dati[3] = pitRandomIter.getSampleDouble(col, row, 0);
+        tcaRandomIter.setSample(col, row, 0, 1);
+        double pendmax = 0f;
+        maxSlopeData[3] = pitRandomIter.getSampleDouble(col, row, 0);
         /*
          * per ogni triangolo calcolo la pendenza massima e la direzione di
          * deflusso reale.
@@ -526,68 +460,60 @@ public class OmsDrainDir extends JGTModel {
             n = tri[j][0];
             m = tri[j][1];
 
-            dati[4] = pitRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0);
-            dati[5] = pitRandomIter.getSampleDouble(col + order[m][1], row + order[m][0], 0);
+            maxSlopeData[4] = pitRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0);
+            maxSlopeData[5] = pitRandomIter.getSampleDouble(col + order[m][1], row + order[m][0], 0);
             /*
              * verifico che i punti attorno al pixel considerato non siano
              * novalue. In questo caso trascuro il triangolo.
              */
-            if (!isNovalue(dati[4]) && !isNovalue(dati[5])) {
-                triangoli(u, dati);
-                if (dati[1] > pendmax) {
-                    dirmax = dati[2];
-                    pendmax = dati[1];
+            if (!isNovalue(maxSlopeData[4]) && !isNovalue(maxSlopeData[5])) {
+                calculateMaxSlopeAndDirection4Triangles(maxSlopeData);
+                if (maxSlopeData[1] > pendmax) {
+                    dirmax = maxSlopeData[2];
+                    pendmax = maxSlopeData[1];
                     /* - direzione cardinale */
-                    dati[7] = tri[j][0];
+                    maxSlopeData[7] = tri[j][0];
                     /* - direzione diagonale */
-                    dati[8] = tri[j][1];
+                    maxSlopeData[8] = tri[j][1];
                     /* - segno del triangolo */
-                    dati[9] = tri[j][2];
+                    maxSlopeData[9] = tri[j][2];
                     /*
                      * - quote del triangolo avente pendenza
                      * maggiore
                      */
-                    e1min = dati[4];
+                    e1min = maxSlopeData[4];
                     /*
                      * non necessariamente sono le quote
                      * minime.
                      */
-                    e2min = dati[5];
+                    e2min = maxSlopeData[5];
                 }
             }
         }
-        dati[1] = pendmax;
-        dati[2] = dirmax;
-        dati[4] = e1min;
-        dati[5] = e2min;
+        maxSlopeData[1] = pendmax;
+        maxSlopeData[2] = dirmax;
+        maxSlopeData[4] = e1min;
+        maxSlopeData[5] = e2min;
 
+        return maxSlopeData;
     }
 
-    /**
-     * Calcola per ogni triangolo la direzione e la pendenza massima.
-     * 
-     * @param u
-     * @param dati
-     */
-    private void triangoli( double[] u, double[] dati ) {
-        double pend1, pend2, sp, sd, dx, dy;
+    private void calculateMaxSlopeAndDirection4Triangles( double[] dati ) {
         /* definsco le dim. del pixel */
-        dx = u[0];
-        dy = u[1];
 
-        pend1 = (dati[3] - dati[4]) / dy;
-        pend2 = (dati[4] - dati[5]) / dx;
+        double pend1 = (dati[3] - dati[4]) / yRes;
+        double pend2 = (dati[4] - dati[5]) / xRes;
         if (pend1 == 0.0) {
             if (pend2 >= 0.0) {
-                dati[2] = +PI / 2;
+                dati[2] = (+PI / 2);
             } else {
-                dati[2] = -PI / 2;
+                dati[2] = (-PI / 2);
             }
         } else {
             dati[2] = Math.atan(pend2 / pend1);
         }
-        sp = Math.sqrt(pend1 * pend1 + pend2 * pend2);
-        sd = (dati[3] - dati[5]) / Math.sqrt(dx * dx + dy * dy);
+        double sp = Math.sqrt(pend1 * pend1 + pend2 * pend2);
+        double sd = ((dati[3] - dati[5]) / dxySqrt);
 
         if (dati[2] >= 0 && dati[2] <= PI / 4 && pend1 >= 0) {
             dati[1] = sp;
@@ -597,7 +523,7 @@ public class OmsDrainDir extends JGTModel {
                 dati[2] = 0;
             } else {
                 dati[1] = sd;
-                dati[2] = PI / 4;
+                dati[2] = (PI / 4);
             }
         }
     }
@@ -609,74 +535,75 @@ public class OmsDrainDir extends JGTModel {
     private void newDirections( WritableRaster pitWR, WritableRaster dirWR ) {
         int[][] odir = {{0, 0, 0}, {0, 1, 1}, {-1, 1, 2}, {-1, 0, 3}, {-1, -1, 4}, {0, -1, 5}, {1, -1, 6}, {1, 0, 7}, {1, 1, 8},
                 {0, 0, 9}, {0, 0, 10}};
-        double elev = 0.0;
         int[] flow = new int[2], nflow = new int[2];
         RandomIter pitRandomIter = RandomIterFactory.create(pitWR, null);
 
-        RenderedImage flowFixedRI = inFlownet.getRenderedImage();
-        WritableRaster flowFixedWR = CoverageUtilities.renderedImage2WritableRaster(flowFixedRI, true);
-        RandomIter flowFixedIter = RandomIterFactory.create(flowFixedWR, null);
-
+        RandomIter flowFixedIter = CoverageUtilities.getRandomIterator(inFlownet);
         WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirWR, null);
-
-        WritableRaster modflowImage = CoverageUtilities.createDoubleWritableRaster(pitWR.getWidth(), pitWR.getHeight(), null,
+        WritableRaster modifiedFlowWR = CoverageUtilities.createWritableRaster(pitWR.getWidth(), pitWR.getHeight(), Integer.class,
                 null, null);
-        WritableRandomIter modflowRandomIter = RandomIterFactory.createWritable(modflowImage, null);
+        WritableRandomIter modflowRandomIter = RandomIterFactory.createWritable(modifiedFlowWR, null);
 
-        pm.beginTask("Correcting drainage directions...", rows);
-        for( int j = 0; j < rows; j++ ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            for( int i = 0; i < cols; i++ ) {
-                if (!isNovalue(flowFixedIter.getSampleDouble(i, j, 0))) {
-                    flow[0] = i;
-                    flow[1] = j;
-                    for( int k = 1; k <= 8; k++ ) {
-                        nflow[0] = flow[0] + odir[k][1];
-                        nflow[1] = flow[1] + odir[k][0];
-                        if (modflowRandomIter.getSampleDouble(nflow[0], nflow[1], 0) == 0
-                                && isNovalue(flowFixedIter.getSampleDouble(nflow[0], nflow[1], 0))) {
-                            elev = pitRandomIter.getSampleDouble(nflow[0] + odir[1][1], nflow[1] + odir[1][0], 0);
-                            for( int n = 2; n <= 8; n++ ) {
-                                if (nflow[0] + odir[n][0] >= 0 && nflow[0] + odir[n][1] < rows && nflow[1] + odir[n][0] >= 0
-                                        && nflow[1] + odir[n][0] < cols) {
-                                    if (pitRandomIter.getSampleDouble(nflow[0] + odir[n][1], nflow[1] + odir[n][0], 0) >= elev) {
-                                        elev = pitRandomIter.getSampleDouble(nflow[0] + odir[n][1], nflow[1] + odir[n][0], 0);
-                                        dirRandomIter.setSample(nflow[0], nflow[1], 0, odir[n][2]);
-                                    }
-                                }
-                            }
-                            for( int s = 1; s <= 8; s++ ) {
-                                if (nflow[0] + odir[s][0] >= 0 && nflow[0] + odir[s][0] < rows && nflow[1] + odir[s][1] >= 0
-                                        && nflow[1] + odir[s][1] < cols) {
-                                    if (!isNovalue(flowFixedIter.getSampleDouble(nflow[0] + odir[s][1], nflow[1] + odir[s][0], 0))) {
-
-                                        if (pitRandomIter.getSampleDouble(nflow[0] + odir[s][1], nflow[1] + odir[s][0], 0) <= elev) {
-                                            elev = pitRandomIter.getSampleDouble(nflow[0] + odir[s][1], nflow[1] + odir[s][0], 0);
-                                            dirRandomIter.setSample(nflow[0], nflow[1], 0, odir[s][2]);
+        try {
+            pm.beginTask("Correcting drainage directions...", rows);
+            for( int j = 0; j < rows; j++ ) {
+                if (pm.isCanceled()) {
+                    return;
+                }
+                for( int i = 0; i < cols; i++ ) {
+                    if (!isNovalue(flowFixedIter.getSample(i, j, 0))) {
+                        flow[0] = i;
+                        flow[1] = j;
+                        for( int k = 1; k <= 8; k++ ) {
+                            nflow[0] = flow[0] + odir[k][1];
+                            nflow[1] = flow[1] + odir[k][0];
+                            if (modflowRandomIter.getSample(nflow[0], nflow[1], 0) == 0
+                                    && isNovalue(flowFixedIter.getSample(nflow[0], nflow[1], 0))) {
+                                double elev = pitRandomIter.getSampleDouble(nflow[0] + odir[1][1], nflow[1] + odir[1][0], 0);
+                                for( int n = 2; n <= 8; n++ ) {
+                                    if (nflow[0] + odir[n][0] >= 0 && nflow[0] + odir[n][1] < rows && nflow[1] + odir[n][0] >= 0
+                                            && nflow[1] + odir[n][0] < cols) {
+                                        double tmpElev = pitRandomIter.getSampleDouble(nflow[0] + odir[n][1],
+                                                nflow[1] + odir[n][0], 0);
+                                        if (tmpElev >= elev) {
+                                            elev = tmpElev;
+                                            dirRandomIter.setSample(nflow[0], nflow[1], 0, odir[n][2]);
                                         }
                                     }
                                 }
+                                for( int s = 1; s <= 8; s++ ) {
+                                    if (nflow[0] + odir[s][0] >= 0 && nflow[0] + odir[s][0] < rows && nflow[1] + odir[s][1] >= 0
+                                            && nflow[1] + odir[s][1] < cols) {
+                                        if (!isNovalue(
+                                                flowFixedIter.getSample(nflow[0] + odir[s][1], nflow[1] + odir[s][0], 0))) {
+                                            double tmpElev = pitRandomIter.getSampleDouble(nflow[0] + odir[s][1],
+                                                    nflow[1] + odir[s][0], 0);
+                                            if (tmpElev <= elev) {
+                                                elev = tmpElev;
+                                                dirRandomIter.setSample(nflow[0], nflow[1], 0, odir[s][2]);
+                                            }
+                                        }
+                                    }
+                                }
+                                modflowRandomIter.setSample(nflow[0], nflow[1], 0, 1);
                             }
-                            modflowRandomIter.setSample(nflow[0], nflow[1], 0, 1);
-                        }
 
+                        }
+                    }
+                    if (!isNovalue(flowFixedIter.getSample(i, j, 0))) {
+                        dirRandomIter.setSample(i, j, 0, flowFixedIter.getSample(i, j, 0));
                     }
                 }
-                if (!isNovalue(flowFixedIter.getSampleDouble(i, j, 0))) {
-                    dirRandomIter.setSample(i, j, 0, flowFixedIter.getSampleDouble(i, j, 0));
-                }
+                pm.worked(1);
             }
-            pm.worked(1);
+            pm.done();
+
+        } finally {
+            dirRandomIter.done();
+            pitRandomIter.done();
+            modflowRandomIter.done();
+            flowFixedIter.done();
         }
-        pm.done();
-
-        dirRandomIter.done();
-        pitRandomIter.done();
-        modflowRandomIter.done();
-        flowFixedIter.done();
-
     }
 
 }

@@ -3,7 +3,6 @@ package org.jgrasstools.hortonmachine.models.hm;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.hillslopeanalyses.h2ca.OmsH2cA;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -32,7 +31,6 @@ public class TestH2cA extends HMTestCase {
         h2cA.inAttribute = gradientGC;
         h2cA.process();
         GridCoverage2D outH2cA = h2cA.outAttribute;
-
         checkMatrixEqual(outH2cA.getRenderedImage(), HMTestMaps.h2caForGradient, 0.05);
     }
 }

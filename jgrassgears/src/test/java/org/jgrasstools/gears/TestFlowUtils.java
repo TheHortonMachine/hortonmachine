@@ -1,7 +1,5 @@
 package org.jgrasstools.gears;
 
-import static java.lang.Double.NaN;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
@@ -27,6 +25,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 @SuppressWarnings("nls")
 public class TestFlowUtils extends HMTestCase {
+    private static final double NaN = JGTConstants.doubleNovalue;
 
     private int nCols;
     private int nRows;
@@ -58,44 +57,35 @@ public class TestFlowUtils extends HMTestCase {
         double[][] window = n.getWindow(4, false);
 
         double[][] expected = new double[][]{//
-        /*    */{NaN, NaN, NaN, NaN, NaN},//
-                {NaN, NaN, NaN, NaN, NaN},//
-                {NaN, NaN, 800.0, 900.0, 1000.0},//
-                {NaN, NaN, 600.0, NaN, 750.0},//
-                {NaN, NaN, 500.0, 550.0, 700.0}//
+                /*    */{NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, 800.0, 900.0, 1000}, //
+                {NaN, NaN, 600.0, NaN, 750}, //
+                {NaN, NaN, 500.0, 550.0, 700}//
         };
         checkMatrixEqual(expected, window, DELTA);
 
         n = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 4, 5);
         window = n.getWindow(5, false);
         expected = new double[][]{//
-        /*    */{650.0, 700.0, 750.0, 800.0, 850.0},//
-                {430.0, 500.0, 600.0, 700.0, 800.0},//
-                {700.0, 750.0, 760.0, 770.0, 850.0},//
-                {750.0, 800.0, 780.0, 790.0, 1000.0},//
-                {980.0, 1001.0, 1150.0, 1200.0, 1250.0}//
+                /*    */{650, 700, 750, 800, 850}, //
+                {430, 500, 600, 700, 800}, //
+                {700, 750, 760, 770, 850}, //
+                {750, 800, 780, 790, 1000}, //
+                {980, 1001, 1150, 1200, 1250}//
         };
         checkMatrixEqual(expected, window, DELTA);
 
         window = n.getWindow(5, true);
         expected = new double[][]{//
-        /*    */{NaN, NaN, 750.0, NaN, NaN},//
-                {NaN, 500.0, 600.0, 700.0, NaN},//
-                {700.0, 750.0, 760.0, 770.0, 850.0},//
-                {NaN, 800.0, 780.0, 790.0, NaN},//
-                {NaN, NaN, 1150.0, NaN, NaN}//
+                /*    */{NaN, NaN, 750, NaN, NaN}, //
+                {NaN, 500, 600, 700, NaN}, //
+                {700, 750, 760, 770, 850}, //
+                {NaN, 800, 780, 790, NaN}, //
+                {NaN, NaN, 1150, NaN, NaN}//
         };
         checkMatrixEqual(expected, window, DELTA);
 
-        for( int c = 0; c < nCols; c++ ) {
-            for( int r = 0; r < nRows; r++ ) {
-                n = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
-                if (n.isPit()) {
-                    assertEquals(0, c);
-                    assertEquals(3, r);
-                }
-            }
-        }
     }
 
     public void testSlopeTo() throws Exception {
@@ -169,12 +159,12 @@ public class TestFlowUtils extends HMTestCase {
 
     public void testTouchesBound() throws Exception {
         GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
-        boolean touchesBound = node1.touchesBound();
-        assertTrue(touchesBound);
+        boolean touchesNovalue = node1.touchesNovalue();
+        assertTrue(touchesNovalue);
 
         node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 1, 5);
-        touchesBound = node1.touchesBound();
-        assertFalse(touchesBound);
+        touchesNovalue = node1.touchesNovalue();
+        assertFalse(touchesNovalue);
     }
 
     public void testElevationSort() throws Exception {

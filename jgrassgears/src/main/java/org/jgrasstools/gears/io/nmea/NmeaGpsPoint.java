@@ -192,7 +192,6 @@ public class NmeaGpsPoint {
 
     }
 
-    @SuppressWarnings("nls")
     public String toString() {
         final String TAB = "/";
 

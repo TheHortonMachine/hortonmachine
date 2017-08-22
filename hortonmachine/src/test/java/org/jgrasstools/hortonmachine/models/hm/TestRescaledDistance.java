@@ -34,7 +34,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestRescaledDistance extends HMTestCase {
 
-    public void testRescaledDistance() throws IOException {
+    public void testRescaledDistance() throws Exception {
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
@@ -46,7 +46,7 @@ public class TestRescaledDistance extends HMTestCase {
         OmsRescaledDistance rescaledDistance = new OmsRescaledDistance();
         rescaledDistance.inFlow = flowCoverage;
         rescaledDistance.inNet = netCoverage;
-        rescaledDistance.pRatio = 0.3;
+        rescaledDistance.pRatio = 0.3f;
         rescaledDistance.pm = pm;
 
         rescaledDistance.process();
@@ -55,7 +55,7 @@ public class TestRescaledDistance extends HMTestCase {
         checkMatrixEqual(rescaledDistanceCoverage.getRenderedImage(), HMTestMaps.rescaledDistanceData, 0.1);
     }
 
-    public void testRescaledDistance3D() throws IOException {
+    public void testRescaledDistance3D() throws Exception {
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
@@ -70,7 +70,7 @@ public class TestRescaledDistance extends HMTestCase {
         rescaledDistance.inFlow = flowCoverage;
         rescaledDistance.inNet = netCoverage;
         rescaledDistance.inElev = elevCoverage;
-        rescaledDistance.pRatio = 0.3;
+        rescaledDistance.pRatio = 0.3f;
         rescaledDistance.pm = pm;
 
         rescaledDistance.process();

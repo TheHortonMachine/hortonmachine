@@ -153,7 +153,7 @@ public class OmsDebrisFlow extends JGTModel {
             throw new ModelsIllegalargumentException("Input coordinates are on a novalue elevation point.", this, pm);
         }
 
-        WritableRaster mcsWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster mcsWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         WritableRandomIter probIter = RandomIterFactory.createWritable(mcsWR, null);
 
         Random flatRnd = new Random();
@@ -348,7 +348,7 @@ public class OmsDebrisFlow extends JGTModel {
         double avgProb = probSum / validCells;
         double avgHeight = pDcoeff * pow(pVolume, 1.0 / 3.0);
 
-        WritableRaster depoWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster depoWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         WritableRandomIter depoIter = RandomIterFactory.createWritable(depoWR, null);
 
         for( int c = 0; c < cols; c++ ) {

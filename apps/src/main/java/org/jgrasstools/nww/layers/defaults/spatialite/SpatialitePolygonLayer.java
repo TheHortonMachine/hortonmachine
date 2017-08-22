@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.dbs.compat.ASpatialDb;
-import org.jgrasstools.dbs.spatialite.QueryResult;
+import org.jgrasstools.dbs.compat.objects.QueryResult;
 import org.jgrasstools.dbs.spatialite.jgt.SpatialiteDb;
 import org.jgrasstools.gears.libs.logging.JGTLogger;
 import org.jgrasstools.gears.spatialite.GTSpatialiteThreadsafeDb;

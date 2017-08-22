@@ -18,3 +18,4 @@ install_into_stage.sh
 *.tar.gz
 apps/*.so
 gpserver/*.so
+bin/

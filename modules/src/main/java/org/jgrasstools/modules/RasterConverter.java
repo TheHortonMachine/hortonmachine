@@ -25,8 +25,10 @@ import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_SOUTH_DESCRIPTI
 import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_WEST_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_X_RES_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.GENERIC_P_Y_RES_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_IN_RASTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_OUT_RASTER_DESCRIPTION;
+import static org.jgrasstools.gears.libs.modules.Variables.TYPE_DOUBLE;
+import static org.jgrasstools.gears.libs.modules.Variables.TYPE_FLOAT;
+import static org.jgrasstools.gears.libs.modules.Variables.TYPE_INT;
+
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -84,6 +86,11 @@ public class RasterConverter extends OmsRasterConverter {
     @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer pCols = null;
+    
+    @Description(OMSRASTERCONVERTER_OUT_RASTER_TYPE)
+    @UI("combo:" + TYPE_INT + "," + TYPE_FLOAT + "," + TYPE_DOUBLE)
+    @In
+    public String pOutType = "";
 
     @Description(OMSRASTERCONVERTER_OUT_RASTER_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
@@ -107,10 +114,19 @@ public class RasterConverter extends OmsRasterConverter {
         rasterreader.process();
         OmsRasterConverter rasterconverter = new OmsRasterConverter();
         rasterconverter.inRaster = rasterreader.outRaster;
+        rasterconverter.pOutType = pOutType;
         rasterconverter.pm = pm;
         rasterconverter.doProcess = doProcess;
         rasterconverter.doReset = doReset;
         rasterconverter.process();
         dumpRaster(rasterconverter.outRaster, outRaster);
+    }
+    
+    public static void main( String[] args ) throws Exception {
+        org.jgrasstools.modules.RasterConverter _rasterconverter = new org.jgrasstools.modules.RasterConverter();
+        _rasterconverter.inRaster = "/home/hydrologis/TMP/PITFILLE/DTM_calvello/dtm_all.asc";
+        _rasterconverter.pOutType = "INTEGER";
+        _rasterconverter.outRaster = "/home/hydrologis/TMP/PITFILLE/DTM_calvello/dtm_all_int.tiff";
+        _rasterconverter.process();
     }
 }

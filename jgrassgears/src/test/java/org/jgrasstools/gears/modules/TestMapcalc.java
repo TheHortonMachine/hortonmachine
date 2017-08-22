@@ -36,7 +36,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 @SuppressWarnings("nls")
 public class TestMapcalc extends HMTestCase {
-    
+
     public void testMapcalc() throws Exception {
 
         double[][] elevationData = HMTestMaps.pitData;
@@ -55,7 +55,16 @@ public class TestMapcalc extends HMTestCase {
 
         RenderedImage renderedImage = outMap.getRenderedImage();
         // printImage(renderedImage);
-        checkMatrixEqual(renderedImage, HMTestMaps.pitData, 0.000000001);
+        double[][] expectedData = new double[][]{//
+                {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
+                {600, Double.NaN, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
+                {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
+                {400, 410, 650, 700, 750, 800, 850, 800, 800, 1500}, //
+                {450, 550, 430, 500, 600, 700, 800, 800, 800, 1500}, //
+                {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
+                {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
+                {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
+        checkMatrixEqual(renderedImage, expectedData, 0.000000001);
     }
 
     public void testMapcalc2() throws Exception {
@@ -75,7 +84,7 @@ public class TestMapcalc extends HMTestCase {
 
         GridCoverage2D outMap = mapcalc.outRaster;
         RenderedImage renderedImage = outMap.getRenderedImage();
-        // printImage(renderedImage);
+        printImage(renderedImage);
         checkMatrixEqual(renderedImage, HMTestMaps.flowData, 0.000000001);
     }
 

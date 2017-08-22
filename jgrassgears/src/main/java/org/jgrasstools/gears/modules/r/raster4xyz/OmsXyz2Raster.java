@@ -160,7 +160,7 @@ public class OmsXyz2Raster extends JGTModel {
         int cols = (int) ((e - w) / res);
         GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(n, s, e, w, rows, cols, crs);
 
-        WritableRaster writableRaster = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null,
+        WritableRaster writableRaster = CoverageUtilities.createWritableRaster(cols, rows, null, null,
                 JGTConstants.doubleNovalue);
 
         pm.beginTask("Create raster...", coordList.size());

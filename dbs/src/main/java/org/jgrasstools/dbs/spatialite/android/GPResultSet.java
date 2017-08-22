@@ -120,5 +120,11 @@ public class GPResultSet implements IJGTResultSet {
     public long getLong( String name ) throws Exception {
         throw new RuntimeException("Function not supported: getLong( String name)");
     }
+    
+
+    @Override
+    public <T> T unwrap( Class<T> iface ) throws Exception {
+        throw new RuntimeException("Function not supported: unwrap( Class<T> iface )");
+    }
 
 }

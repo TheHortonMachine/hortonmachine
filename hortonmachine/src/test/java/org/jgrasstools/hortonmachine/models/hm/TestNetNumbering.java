@@ -74,7 +74,7 @@ public class TestNetNumbering extends HMTestCase {
         netNumbering.inFlow = flowCoverage;
         netNumbering.inNet = netCoverage;
         netNumbering.inTca = tcaCoverage;
-        netNumbering.pThres = 2.0;
+        netNumbering.pThres = 2;
         netNumbering.pm = pm;
 
         netNumbering.process();
@@ -144,7 +144,7 @@ public class TestNetNumbering extends HMTestCase {
         netNumbering.inNet = netCoverage;
         netNumbering.inTca = tcaCoverage;
         netNumbering.inPoints = pointsFC;
-        netNumbering.pThres = 2.0;
+        netNumbering.pThres = 2;
         netNumbering.pm = pm;
         netNumbering.process();
 

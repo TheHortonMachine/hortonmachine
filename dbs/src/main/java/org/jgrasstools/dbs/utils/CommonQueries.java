@@ -55,7 +55,7 @@ public class CommonQueries {
     public static final LinkedHashMap<String, String> templatesMap = new LinkedHashMap<String, String>();
     static {
         templatesMap.put("simple select", "select * from TABLENAME");
-        templatesMap.put("geometry select", "select ST_AsBinary(the_geom) as the_geom from TABLENAME");
+        templatesMap.put("geometry select", "select the_geom from TABLENAME");
         templatesMap.put("where select", "select * from TABLENAME where FIELD > VALUE");
         templatesMap.put("limited select", "select * from TABLENAME limit 10");
         templatesMap.put("sorted select", "select * from TABLENAME order by FIELD asc");
@@ -65,7 +65,7 @@ public class CommonQueries {
         templatesMap.put("spatial index geom intersection part",
                 "AND table1.ROWID IN (\nSELECT ROWID FROM SpatialIndex\nWHERE f_table_name='table2' AND search_frame=table2Geom)");
         templatesMap.put("create intersection of table1 with buffer of table2",
-                "SELECT ST_AsBinary(intersection(t1.the_geom, buffer(t2.the_geom, 100))) as the_geom FROM table1 t1, table2 t2\n"
+                "SELECT intersection(t1.the_geom, buffer(t2.the_geom, 100)) as the_geom FROM table1 t1, table2 t2\n"
                         + "where (\nintersects (t1.the_geom, buffer(t2.the_geom, 100))=1\n"
                         + "AND t1.ROWID IN (\nSELECT ROWID FROM SpatialIndex\nWHERE f_table_name='table1' AND search_frame=buffer(t2.the_geom, 100)\n))");
     }

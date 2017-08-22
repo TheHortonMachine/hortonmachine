@@ -95,9 +95,9 @@ public class OmsMultiTca extends JGTModel {
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlow);
         RandomIter pitIter = CoverageUtilities.getRandomIterator(inPit);
         RandomIter cp9Iter = CoverageUtilities.getRandomIterator(inCp9);
-        WritableRaster alreadyDonePixelWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 0.0);
+        WritableRaster alreadyDonePixelWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, 0.0);
         WritableRandomIter alreadyDoneIter = RandomIterFactory.createWritable(alreadyDonePixelWR, null);
-        WritableRaster multiTcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 1.0);
+        WritableRaster multiTcaWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, 1.0);
         WritableRandomIter multiTcaIter = RandomIterFactory.createWritable(multiTcaWR, null);
 
         /*

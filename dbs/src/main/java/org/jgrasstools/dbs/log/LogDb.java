@@ -1,19 +1,43 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.dbs.log;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.jgrasstools.dbs.compat.ADb;
+import org.jgrasstools.dbs.compat.EDb;
+import org.jgrasstools.dbs.compat.IJGTConnection;
 import org.jgrasstools.dbs.compat.IJGTPreparedStatement;
 import org.jgrasstools.dbs.compat.IJGTResultSet;
 import org.jgrasstools.dbs.compat.IJGTStatement;
-import org.jgrasstools.dbs.spatialite.jgt.SqliteDb;
-import org.joda.time.DateTime;
 
-import com.vividsolutions.jts.io.WKBReader;
-
-public class LogDb extends SqliteDb {
+/**
+ * A logging database.
+ * 
+ * <p>The database contains a table with [id, timestamp, message type, tag, log message]</p>.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ */
+public class LogDb implements AutoCloseable, ILogDb {
     public static final String TABLE_MESSAGES = "logmessages";
 
     // TABLE_EVENTS
@@ -23,8 +47,21 @@ public class LogDb extends SqliteDb {
     public static final String tag_NAME = "tag";
     public static final String message_NAME = "msg";
 
+    private ADb logDb;
+
+    private IJGTConnection mConn;
+
+    public LogDb() throws Exception {
+        this(EDb.SQLITE);
+    }
+
+    public LogDb( EDb dbType ) throws Exception {
+        logDb = dbType.getDb();
+    }
+
     public boolean open( String dbPath ) throws Exception {
-        boolean open = super.open(dbPath);
+        boolean open = logDb.open(dbPath);
+        mConn = logDb.getConnection();
         if (!open) {
             createTable();
             createIndexes();
@@ -33,10 +70,10 @@ public class LogDb extends SqliteDb {
     }
 
     public void createTable() throws Exception {
-        if (!hasTable(TABLE_MESSAGES)) {
+        if (!logDb.hasTable(TABLE_MESSAGES)) {
             String[] fields = { //
-                    ID_NAME + " INTEGER", //
-                    TimeStamp_NAME + " INTEGER", //
+                    ID_NAME + " LONG PRIMARY KEY AUTOINCREMENT", //
+                    TimeStamp_NAME + " LONG", //
                     type_NAME + " INTEGER", //
                     tag_NAME + " TEXT", //
                     message_NAME + " TEXT"//
@@ -51,20 +88,20 @@ public class LogDb extends SqliteDb {
                 }
                 sb.append(fields[i]);
             }
-            sb.append(", PRIMARY KEY (" + ID_NAME + ")");
             sb.append(");");
 
+            String sql = logDb.checkSqlCompatibilityIssues(sb.toString());
             try (IJGTStatement stmt = mConn.createStatement()) {
-                stmt.execute(sb.toString());
+                stmt.execute(sql);
             }
 
         }
     }
 
     public void createIndexes() throws Exception {
-        if (hasTable(TABLE_MESSAGES)) {
-            createIndex(TABLE_MESSAGES, TimeStamp_NAME, false);
-            createIndex(TABLE_MESSAGES, type_NAME, false);
+        if (logDb.hasTable(TABLE_MESSAGES)) {
+            logDb.createIndex(TABLE_MESSAGES, TimeStamp_NAME, false);
+            logDb.createIndex(TABLE_MESSAGES, type_NAME, false);
         }
     }
 
@@ -87,6 +124,10 @@ public class LogDb extends SqliteDb {
         return insertFields;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insert(org.jgrasstools.dbs.log.Message)
+     */
+    @Override
     public boolean insert( final Message message ) throws Exception {
         // the id is generated
         String sql = "INSERT INTO " + TABLE_MESSAGES + //
@@ -105,7 +146,14 @@ public class LogDb extends SqliteDb {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insert(org.jgrasstools.dbs.log.EMessageType, java.lang.String, java.lang.String)
+     */
+    @Override
     public boolean insert( EMessageType type, String tag, String msg ) throws Exception {
+        if (tag == null) {
+            tag = "";
+        }
         // the id is generated
         String sql = "INSERT INTO " + TABLE_MESSAGES + //
                 " (" + getInsertFieldsString() + //
@@ -113,7 +161,7 @@ public class LogDb extends SqliteDb {
 
         try (IJGTPreparedStatement pStmt = mConn.prepareStatement(sql)) {
             int i = 1;
-            pStmt.setLong(i++, new DateTime().getMillis());
+            pStmt.setLong(i++, new Date().getTime());
             pStmt.setLong(i++, type.getCode());
             pStmt.setString(i++, tag);
             pStmt.setString(i++, msg);
@@ -122,7 +170,43 @@ public class LogDb extends SqliteDb {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insertInfo(java.lang.String, java.lang.String)
+     */
+    @Override
+    public boolean insertInfo( String tag, String msg ) throws Exception {
+        return insert(EMessageType.INFO, tag, msg);
+    }
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insertWarning(java.lang.String, java.lang.String)
+     */
+    @Override
+    public boolean insertWarning( String tag, String msg ) throws Exception {
+        return insert(EMessageType.WARNING, tag, msg);
+    }
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insertDebug(java.lang.String, java.lang.String)
+     */
+    @Override
+    public boolean insertDebug( String tag, String msg ) throws Exception {
+        return insert(EMessageType.DEBUG, tag, msg);
+    }
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insertAccess(java.lang.String, java.lang.String)
+     */
+    @Override
+    public boolean insertAccess( String tag, String msg ) throws Exception {
+        return insert(EMessageType.ACCESS, tag, msg);
+    }
+
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#insertError(java.lang.String, java.lang.String, java.lang.Throwable)
+     */
+    @Override
     public boolean insertError( String tag, String msg, Throwable t ) throws Exception {
+        if (tag == null) {
+            tag = "";
+        }
         // the id is generated
         String sql = "INSERT INTO " + TABLE_MESSAGES + //
                 " (" + getInsertFieldsString() + //
@@ -140,7 +224,7 @@ public class LogDb extends SqliteDb {
 
         try (IJGTPreparedStatement pStmt = mConn.prepareStatement(sql)) {
             int i = 1;
-            pStmt.setLong(i++, new DateTime().getMillis());
+            pStmt.setLong(i++, new Date().getTime());
             pStmt.setLong(i++, EMessageType.ERROR.getCode());
             pStmt.setString(i++, tag);
             pStmt.setString(i++, msg);
@@ -149,6 +233,10 @@ public class LogDb extends SqliteDb {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#getList()
+     */
+    @Override
     public List<Message> getList() throws Exception {
         String tableName = TABLE_MESSAGES;
         String sql = "select " + getQueryFieldsString() + " from " + tableName;
@@ -156,14 +244,24 @@ public class LogDb extends SqliteDb {
         List<Message> messages = new ArrayList<Message>();
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql);) {
             while( rs.next() ) {
-                Message event = resultSetToItem(rs, null);
+                Message event = resultSetToItem(rs);
                 messages.add(event);
             }
             return messages;
         }
     }
 
-    public List<Message> getFilteredList( EMessageType messageType, DateTime fromTs, DateTime toTs, long limit )
+    /**
+     * Get the list of messages, filtered.
+     *  
+     * @param messageType the type to filter.
+     * @param fromTsMillis the start time in millis.
+     * @param toTsMillis the end time in millis.
+     * @param limit the max number of messages.
+     * @return the list of messages.
+     * @throws Exception
+     */
+    public List<Message> getFilteredList( EMessageType messageType, Long fromTsMillis, Long toTsMillis, long limit )
             throws Exception {
         String tableName = TABLE_MESSAGES;
         String sql = "select " + getQueryFieldsString() + " from " + tableName;
@@ -173,12 +271,12 @@ public class LogDb extends SqliteDb {
             String where = type_NAME + "=" + messageType.getCode();
             wheresList.add(where);
         }
-        if (fromTs != null) {
-            String where = TimeStamp_NAME + ">" + fromTs.getMillis();
+        if (fromTsMillis != null) {
+            String where = TimeStamp_NAME + ">" + fromTsMillis;
             wheresList.add(where);
         }
-        if (toTs != null) {
-            String where = TimeStamp_NAME + "<" + toTs.getMillis();
+        if (toTsMillis != null) {
+            String where = TimeStamp_NAME + "<" + toTsMillis;
             wheresList.add(where);
         }
 
@@ -200,14 +298,14 @@ public class LogDb extends SqliteDb {
         List<Message> messages = new ArrayList<Message>();
         try (IJGTStatement stmt = mConn.createStatement(); IJGTResultSet rs = stmt.executeQuery(sql);) {
             while( rs.next() ) {
-                Message event = resultSetToItem(rs, null);
+                Message event = resultSetToItem(rs);
                 messages.add(event);
             }
             return messages;
         }
     }
 
-    public Message resultSetToItem( IJGTResultSet rs, WKBReader wkbReader ) throws Exception {
+    public Message resultSetToItem( IJGTResultSet rs ) throws Exception {
         int i = 1;
         Message message = new Message();
         message.id = rs.getLong(i++);
@@ -218,10 +316,30 @@ public class LogDb extends SqliteDb {
         return message;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#clearTable()
+     */
+    @Override
     public void clearTable() throws Exception {
         try (IJGTStatement stmt = mConn.createStatement()) {
             stmt.execute("delete from " + TABLE_MESSAGES);
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#close()
+     */
+    @Override
+    public void close() throws Exception {
+        logDb.close();
+    }
+
+    /* (non-Javadoc)
+     * @see org.jgrasstools.dbs.log.ILogDb#getDatabasePath()
+     */
+    @Override
+    public String getDatabasePath() {
+        return logDb.getDatabasePath();
     }
 
 }

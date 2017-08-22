@@ -39,13 +39,14 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.dbs.compat.ASpatialDb;
+import org.jgrasstools.dbs.compat.GeometryColumn;
 import org.jgrasstools.dbs.spatialite.SpatialiteGeometryColumns;
-import org.jgrasstools.gears.io.las.spatialite.LasCell;
-import org.jgrasstools.gears.io.las.spatialite.LasCellsTable;
-import org.jgrasstools.gears.io.las.spatialite.LasLevel;
-import org.jgrasstools.gears.io.las.spatialite.LasLevelsTable;
-import org.jgrasstools.gears.io.las.spatialite.LasSource;
-import org.jgrasstools.gears.io.las.spatialite.LasSourcesTable;
+import org.jgrasstools.gears.io.las.databases.LasCell;
+import org.jgrasstools.gears.io.las.databases.LasCellsTable;
+import org.jgrasstools.gears.io.las.databases.LasLevel;
+import org.jgrasstools.gears.io.las.databases.LasLevelsTable;
+import org.jgrasstools.gears.io.las.databases.LasSource;
+import org.jgrasstools.gears.io.las.databases.LasSourcesTable;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.TransformationUtils;
 import org.jgrasstools.gears.utils.colors.ColorInterpolator;
@@ -104,7 +105,7 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
 
         try {
             Envelope tableBounds = db.getTableBounds(LasSourcesTable.TABLENAME);
-            SpatialiteGeometryColumns spatialiteGeometryColumns = db.getGeometryColumnsForTable(LasCellsTable.TABLENAME);
+            GeometryColumn spatialiteGeometryColumns = db.getGeometryColumnsForTable(LasCellsTable.TABLENAME);
             CoordinateReferenceSystem dataCrs = CRS.decode("EPSG:" + spatialiteGeometryColumns.srid);
             CoordinateReferenceSystem targetCRS = DefaultGeographicCRS.WGS84;
             ReferencedEnvelope env = new ReferencedEnvelope(tableBounds, dataCrs);
@@ -140,7 +141,7 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
 
         int finalTileSize = tileSize;
 
-        SpatialiteGeometryColumns spatialiteGeometryColumns = db.getGeometryColumnsForTable(LasCellsTable.TABLENAME);
+        GeometryColumn spatialiteGeometryColumns = db.getGeometryColumnsForTable(LasCellsTable.TABLENAME);
         CoordinateReferenceSystem dataCrs = CRS.decode("EPSG:" + spatialiteGeometryColumns.srid);
         CoordinateReferenceSystem nwwCRS = DefaultGeographicCRS.WGS84;
 

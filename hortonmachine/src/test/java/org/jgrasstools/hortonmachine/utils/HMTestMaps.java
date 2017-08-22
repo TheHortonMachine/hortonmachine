@@ -18,9 +18,6 @@
  */
 package org.jgrasstools.hortonmachine.utils;
 
-import static java.lang.Double.NaN;
-
-import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -36,7 +33,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class HMTestMaps {
-    private static final double N = NaN;
+    private static final double N = -9999.0;
+    private static final int NI = -9999;
 
     private static RegionMap envelopeParams = null;
     private static CoordinateReferenceSystem crs = null;
@@ -122,6 +120,19 @@ public class HMTestMaps {
             {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
             {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500} //
     };
+    /**
+     * Output data of the {@link OmsPitfiller} module.
+     */
+    public static double[][] outNewPitData = new double[][]{ //
+        /*    */{800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
+        {600, N, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
+        {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
+        {400, 410, 650, 700, 750, 800, 850, 800.000002, 800.000004, 1500}, //
+        {450, 550, 430, 500, 600, 700, 800, 800.000002, 800.000004, 1500}, //
+        {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
+        {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
+        {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500} //
+    };
 
     /**
      * Output data of the {@link OmsFlowDirections} module.
@@ -150,6 +161,17 @@ public class HMTestMaps {
             {N, 2, 3, 3, 4, 4, 4, 3, 3, N}, //
             {N, 4, 4, 4, 4, 4, 5, 4, 4, N}, //
             {N, N, N, N, N, N, N, N, N, N} //
+    };
+
+    public static int[][] newIntFlowData = new int[][]{ //
+        /*    */{NI, NI, NI, NI, NI, NI, NI, NI, NI, NI}, //
+        {NI, NI, NI, 6, 6, 6, 6, 6, 6, NI}, //
+        {NI, NI, NI, 6, 6, 6, 6, 7, 7, NI}, //
+        {NI, 10, 5, 7, 6, 6, 6, 6, 5, NI}, //
+        {NI, 3, 4, 5, 5, 5, 5, 5, 5, NI}, //
+        {NI, 2, 3, 3, 4, 4, 4, 3, 3, NI}, //
+        {NI, 10, 4, 4, 4, 4, 5, 4, 4, NI}, //
+        {NI, NI, NI, NI, NI, NI, NI, NI, NI, NI} //
     };
 
     /**

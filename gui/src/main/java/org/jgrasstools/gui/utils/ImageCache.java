@@ -58,13 +58,18 @@ public class ImageCache {
     public static final String REFRESH = "refresh.gif";
 
     public static final String CONNECT = "connect.gif";
+    public static final String CONNECT_REMOTE = "connect_remote.gif";
     public static final String DISCONNECT = "disconnect.gif";
     public static final String HISTORY_DB = "history_db.gif";
     public static final String NEW_DATABASE = "new_database.gif";
     public static final String DATABASE = "database.gif";
-    public static final String TABLE = "table.gif";
     public static final String TABLE_FOLDER = "table_folder.gif";
+    
+    public static final String TABLE = "table.gif";
+    public static final String VIEW = "view.gif";
     public static final String TABLE_SPATIAL = "table_spatial.gif";
+    public static final String TABLE_SPATIAL_VIRTUAL = "table_spatial_virtual.gif";
+    
     public static final String TABLE_COLUMN = "table_column.gif";
     public static final String TABLE_COLUMN_PRIMARYKEY = "table_column_pk.gif";
     public static final String TABLE_COLUMN_INDEX = "table_column_index.gif";
@@ -94,6 +99,9 @@ public class ImageCache {
     public static final String TREE_OPEN = "tree_open.png";
     public static final String TREE_CLOSED = "tree_closed.png";
 
+    public static final String SPATIALITE32 = "spatialite32.png";
+    public static final String H2GIS32 = "h2gis32.png";
+    
     private static ImageCache imageCache;
 
     private HashMap<String, ImageIcon> imageMap = new HashMap<String, ImageIcon>();

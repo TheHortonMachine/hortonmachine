@@ -180,7 +180,7 @@ public class OmsIntensityClassifierDebrisFlowTN extends JGTModel {
         RandomIter erosiondepthIter = CoverageUtilities.getRandomIterator(inErosionDepth);
         RandomIter depositThicknessIter = CoverageUtilities.getRandomIterator(inDepositsThickness);
 
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         pm.beginTask("Processing map...", nRows);

@@ -27,6 +27,10 @@ public interface Variables {
 
     public String PROGRESS_MONITOR_EN = "The progress monitor.";
 
+    public String TYPE_INT = "INTEGER";
+    public String TYPE_FLOAT = "FLOAT";
+    public String TYPE_DOUBLE = "DOUBLE";
+
     public String TPS = "TPS";
     public String IDW = "IDW";
 
@@ -42,6 +46,10 @@ public interface Variables {
     public String TCA = "only tca";
     public String TCA_SLOPE = "tca and slope";
     public String TCA_CONVERGENT = "tca in convergent sites";
+
+    public String FINITE_DIFFERENCES = "Finite Differences";
+    public String HORN = "Horn";
+    public String EVANS = "Evans";
 
     public String FIXED_NETWORK = "with fixed network";
 

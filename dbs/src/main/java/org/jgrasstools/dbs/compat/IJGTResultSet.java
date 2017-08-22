@@ -56,4 +56,6 @@ public interface IJGTResultSet extends AutoCloseable {
     boolean wasNull() throws Exception;
 
     float getFloat( int index ) throws Exception;
+
+    <T> T unwrap(java.lang.Class<T> iface) throws Exception;
 }

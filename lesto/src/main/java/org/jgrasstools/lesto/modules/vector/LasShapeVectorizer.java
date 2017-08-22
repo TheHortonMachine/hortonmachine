@@ -122,7 +122,7 @@ public class LasShapeVectorizer extends JGTModel {
         final GridGeometry2D gridGeometry2D = CoverageUtilities.gridGeometryFromRegionValues(north, south, east, west, cols, rows,
                 crs);
         RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometry2D);
-        final WritableRaster wr = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null,
+        final WritableRaster wr = CoverageUtilities.createWritableRaster(cols, rows, null, null,
                 JGTConstants.doubleNovalue);
         // now map the points on the raster
         pm.beginTask("Mapping points on raster...", (int) recordsCount);

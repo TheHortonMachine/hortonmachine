@@ -19,27 +19,12 @@ package org.jgrasstools.hortonmachine.modules.network.extractnetwork;
 
 import static java.lang.Math.pow;
 import static org.jgrasstools.gears.libs.modules.FlowNode.NETVALUE;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.NETWORK;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.shortNovalue;
 import static org.jgrasstools.gears.libs.modules.Variables.TCA;
 import static org.jgrasstools.gears.libs.modules.Variables.TCA_CONVERGENT;
 import static org.jgrasstools.gears.libs.modules.Variables.TCA_SLOPE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_inFlow_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_inSlope_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_inTc3_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_inTca_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_outNet_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_pExp_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_pMode_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_pThres_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -47,6 +32,15 @@ import java.awt.image.WritableRaster;
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.FlowNode;
+import org.jgrasstools.gears.libs.modules.Node;
+import org.jgrasstools.gears.libs.modules.multiprocessing.GridMultiProcessing;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -60,23 +54,14 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.FlowNode;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.Node;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-
-@Description(OMSEXTRACTNETWORK_DESCRIPTION)
-@Author(name = OMSEXTRACTNETWORK_AUTHORNAMES, contact = OMSEXTRACTNETWORK_AUTHORCONTACTS)
-@Keywords(OMSEXTRACTNETWORK_KEYWORDS)
-@Label(OMSEXTRACTNETWORK_LABEL)
-@Name(OMSEXTRACTNETWORK_NAME)
-@Status(OMSEXTRACTNETWORK_STATUS)
-@License(OMSEXTRACTNETWORK_LICENSE)
-public class OmsExtractNetwork extends JGTModel {
+@Description(OmsExtractNetwork.OMSEXTRACTNETWORK_DESCRIPTION)
+@Author(name = OmsExtractNetwork.OMSEXTRACTNETWORK_AUTHORNAMES, contact = OmsExtractNetwork.OMSEXTRACTNETWORK_AUTHORCONTACTS)
+@Keywords(OmsExtractNetwork.OMSEXTRACTNETWORK_KEYWORDS)
+@Label(OmsExtractNetwork.OMSEXTRACTNETWORK_LABEL)
+@Name(OmsExtractNetwork.OMSEXTRACTNETWORK_NAME)
+@Status(OmsExtractNetwork.OMSEXTRACTNETWORK_STATUS)
+@License(OmsExtractNetwork.OMSEXTRACTNETWORK_LICENSE)
+public class OmsExtractNetwork extends GridMultiProcessing {
 
     @Description(OMSEXTRACTNETWORK_inTca_DESCRIPTION)
     @In
@@ -96,7 +81,7 @@ public class OmsExtractNetwork extends JGTModel {
 
     @Description(OMSEXTRACTNETWORK_pThres_DESCRIPTION)
     @In
-    public double pThres = 0;
+    public int pThres = 0;
 
     @Description(OMSEXTRACTNETWORK_pMode_DESCRIPTION)
     @UI("combo:" + TCA + "," + TCA_SLOPE + "," + TCA_CONVERGENT)
@@ -110,6 +95,24 @@ public class OmsExtractNetwork extends JGTModel {
     @Description(OMSEXTRACTNETWORK_outNet_DESCRIPTION)
     @Out
     public GridCoverage2D outNet = null;
+
+    public static final String OMSEXTRACTNETWORK_DESCRIPTION = "Extracts the raster network from an elevation model.";
+    public static final String OMSEXTRACTNETWORK_DOCUMENTATION = "OmsExtractNetwork.html";
+    public static final String OMSEXTRACTNETWORK_KEYWORDS = "Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope";
+    public static final String OMSEXTRACTNETWORK_LABEL = NETWORK;
+    public static final String OMSEXTRACTNETWORK_NAME = "extractnet";
+    public static final int OMSEXTRACTNETWORK_STATUS = 40;
+    public static final String OMSEXTRACTNETWORK_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSEXTRACTNETWORK_AUTHORNAMES = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Andrea Cozzini, Silvano Pisoni";
+    public static final String OMSEXTRACTNETWORK_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
+    public static final String OMSEXTRACTNETWORK_inTca_DESCRIPTION = "The map of total contributing areas.";
+    public static final String OMSEXTRACTNETWORK_inFlow_DESCRIPTION = "The optional map of flowdirections (needed for case with slope or topographic classes).";
+    public static final String OMSEXTRACTNETWORK_inSlope_DESCRIPTION = "The optional map of slope.";
+    public static final String OMSEXTRACTNETWORK_inTc3_DESCRIPTION = "The optional map of aggregated topographic classes.";
+    public static final String OMSEXTRACTNETWORK_pThres_DESCRIPTION = "The threshold on the map.";
+    public static final String OMSEXTRACTNETWORK_pMode_DESCRIPTION = "The thresholding mode (default is on tca).";
+    public static final String OMSEXTRACTNETWORK_pExp_DESCRIPTION = "OmsTca exponent for the mode with slope or topographic classes (default = 0.5).";
+    public static final String OMSEXTRACTNETWORK_outNet_DESCRIPTION = "The extracted network raster.";
 
     /*
      * INTERNAL VARIABLES
@@ -143,8 +146,10 @@ public class OmsExtractNetwork extends JGTModel {
             RenderedImage classRI = inTc3.getRenderedImage();
             RenderedImage slopeRI = inSlope.getRenderedImage();
             networkWR = extractNetMode2(flowRI, tcaRI, classRI, slopeRI);
+        } else {
+            throw new ModelsIllegalargumentException("The selected mode is not valid.", this);
         }
-        if (isCanceled(pm)) {
+        if (pm.isCanceled()) {
             return;
         }
         outNet = CoverageUtilities.buildCoverage("network", networkWR, regionMap, inTca.getCoordinateReferenceSystem());
@@ -154,54 +159,57 @@ public class OmsExtractNetwork extends JGTModel {
     /**
      * this method calculates the network using a threshold value on the
      * contributing areas or on magnitudo
+     * @throws Exception 
      */
-    private WritableRaster extractNetTcaThreshold( RenderedImage tcaRI ) {
+    private WritableRaster extractNetTcaThreshold( RenderedImage tcaRI ) throws Exception {
         RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
-        WritableRaster netWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster netWR = CoverageUtilities.createWritableRaster(cols, rows, Short.class, null, shortNovalue);
         WritableRandomIter netIter = RandomIterFactory.createWritable(netWR, null);
 
-        pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
-        for( int r = 0; r < rows; r++ ) {
-            if (isCanceled(pm)) {
-                return null;
-            }
-            for( int c = 0; c < cols; c++ ) {
-                double tcaValue = tcaIter.getSampleDouble(c, r, 0);
+        try {
+            pm.beginTask(msg.message("extractnetwork.extracting"), rows * cols); //$NON-NLS-1$
+            processGrid(cols, rows, false, ( c, r ) -> {
+                if (pm.isCanceled()) {
+                    return;
+                }
+                int tcaValue = tcaIter.getSample(c, r, 0);
                 if (!isNovalue(tcaValue)) {
                     if (tcaValue >= pThres) { // FIXME needs power here?
                         netIter.setSample(c, r, 0, NETVALUE);
                     }
                 }
-            }
-            pm.worked(1);
+                pm.worked(1);
+            });
+            pm.done();
+            return netWR;
+        } finally {
+            netIter.done();
+            tcaIter.done();
         }
-        pm.done();
-        return netWR;
     }
 
     /**
      * this method calculates the network imposing a threshold value on the
      * product of two quantities, for example the contributing area and the
      * slope.
+     * @throws Exception 
      */
-    private WritableRaster extractNetMode1( RenderedImage flowRI, RenderedImage tcaRI, RenderedImage slopeRI ) {
+    private WritableRaster extractNetMode1( RenderedImage flowRI, RenderedImage tcaRI, RenderedImage slopeRI ) throws Exception {
 
         RandomIter flowRandomIter = RandomIterFactory.create(flowRI, null);
         RandomIter tcaRandomIter = RandomIterFactory.create(tcaRI, null);
         RandomIter slopeRandomIter = RandomIterFactory.create(slopeRI, null);
 
         // create new RasterData for the network matrix
-        WritableRaster networkWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null,
-                JGTConstants.doubleNovalue);
+        WritableRaster networkWR = CoverageUtilities.createWritableRaster(cols, rows, Short.class, null, shortNovalue);
         WritableRandomIter netRandomIter = RandomIterFactory.createWritable(networkWR, null);
-
-        pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
-        for( int r = 0; r < rows; r++ ) {
-            if (isCanceled(pm)) {
-                return null;
-            }
-            for( int c = 0; c < cols; c++ ) {
-                double tcaValue = tcaRandomIter.getSampleDouble(c, r, 0);
+        try {
+            pm.beginTask(msg.message("extractnetwork.extracting"), rows * cols); //$NON-NLS-1$
+            processGrid(cols, rows, false, ( c, r ) -> {
+                if (pm.isCanceled()) {
+                    return;
+                }
+                double tcaValue = tcaRandomIter.getSample(c, r, 0);
                 double slopeValue = slopeRandomIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(tcaValue) && !isNovalue(slopeValue)) {
                     tcaValue = pow(tcaValue, pExp);
@@ -213,7 +221,7 @@ public class OmsExtractNetwork extends JGTModel {
                         while( (runningNode = runningNode.goDownstream()) != null ) {
                             int rCol = runningNode.col;
                             int rRow = runningNode.row;
-                            double tmpNetValue = netRandomIter.getSampleDouble(rCol, rRow, 0);
+                            int tmpNetValue = netRandomIter.getSample(rCol, rRow, 0);
                             if (!isNovalue(tmpNetValue)) {
                                 break;
                             }
@@ -231,41 +239,48 @@ public class OmsExtractNetwork extends JGTModel {
                         }
                     }
                 } else {
-                    netRandomIter.setSample(c, r, 0, doubleNovalue);
+                    netRandomIter.setSample(c, r, 0, shortNovalue);
                 }
-            }
-            pm.worked(1);
+                pm.worked(1);
+            });
+            pm.done();
+            return networkWR;
+        } finally {
+            flowRandomIter.done();
+            tcaRandomIter.done();
+            slopeRandomIter.done();
+            netRandomIter.done();
         }
-        pm.done();
-        return networkWR;
     }
 
     /**
      * this method the network is extracted by considering only concave points
      * as being part of the channel network.
+     * @throws Exception 
      */
     private WritableRaster extractNetMode2( RenderedImage flowRI, RenderedImage tcaRI, RenderedImage classRI,
-            RenderedImage slopeRI ) {
+            RenderedImage slopeRI ) throws Exception {
         RandomIter flowRandomIter = RandomIterFactory.create(flowRI, null);
         RandomIter tcaRandomIter = RandomIterFactory.create(tcaRI, null);
         RandomIter classRandomIter = RandomIterFactory.create(classRI, null);
         RandomIter slopeRandomIter = RandomIterFactory.create(slopeRI, null);
-        WritableRaster netImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRaster netImage = CoverageUtilities.createWritableRaster(cols, rows, Short.class, null, shortNovalue);
 
         // try the operation!!
 
         WritableRandomIter netRandomIter = RandomIterFactory.createWritable(netImage, null);
 
-        pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
-        for( int r = 0; r < rows; r++ ) {
-            if (isCanceled(pm)) {
-                return null;
-            }
-            for( int c = 0; c < cols; c++ ) {
-                double tcaValue = tcaRandomIter.getSampleDouble(c, r, 0);
+        try {
+            pm.beginTask(msg.message("extractnetwork.extracting"), rows * cols); //$NON-NLS-1$
+            processGrid(cols, rows, false, ( c, r ) -> {
+                if (pm.isCanceled()) {
+                    return;
+                }
+
+                double tcaValue = tcaRandomIter.getSample(c, r, 0);
                 double slopeValue = slopeRandomIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(tcaValue) && !isNovalue(slopeValue)) {
-                    tcaValue = pow(tcaValue, pExp) * slopeValue;
+                    tcaValue = (pow(tcaValue, pExp) * slopeValue);
                     if (tcaValue >= pThres && classRandomIter.getSample(c, r, 0) == 15.0) {
                         netRandomIter.setSample(c, r, 0, NETVALUE);
                         FlowNode flowNode = new FlowNode(flowRandomIter, cols, rows, c, r);
@@ -273,7 +288,7 @@ public class OmsExtractNetwork extends JGTModel {
                         while( (runningNode = runningNode.goDownstream()) != null ) {
                             int rCol = runningNode.col;
                             int rRow = runningNode.row;
-                            double tmpNetValue = netRandomIter.getSampleDouble(rCol, rRow, 0);
+                            short tmpNetValue = (short) netRandomIter.getSample(rCol, rRow, 0);
                             if (!isNovalue(tmpNetValue)) {
                                 break;
                             }
@@ -291,11 +306,17 @@ public class OmsExtractNetwork extends JGTModel {
                         }
                     }
                 }
-            }
-            pm.worked(1);
+                pm.worked(1);
+            });
+            pm.done();
+            return netImage;
+        } finally {
+            flowRandomIter.done();
+            tcaRandomIter.done();
+            classRandomIter.done();
+            slopeRandomIter.done();
+            netRandomIter.done();
         }
-        pm.done();
-        return netImage;
     }
 
 }

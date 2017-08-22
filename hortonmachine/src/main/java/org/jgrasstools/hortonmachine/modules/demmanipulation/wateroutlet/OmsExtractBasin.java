@@ -17,51 +17,23 @@
  */
 package org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.DEMMANIPULATION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_doSmoothing_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_doVector_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_inFlow_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_inNetwork_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_outArea_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_outBasin_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_outOutlet_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_outVectorBasin_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_pEast_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_pNorth_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_pSnapbuffer_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_pValue_DESCRIPTION;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.shortNovalue;
 
-import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
+import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -69,10 +41,6 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.util.NullProgressListener;
-import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
-import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -103,13 +71,25 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.linearref.LinearLocation;
 import com.vividsolutions.jts.linearref.LocationIndexedLine;
 
-@Description(OMSEXTRACTBASIN_DESCRIPTION)
-@Author(name = OMSEXTRACTBASIN_AUTHORNAMES, contact = OMSEXTRACTBASIN_AUTHORCONTACTS)
-@Keywords(OMSEXTRACTBASIN_KEYWORDS)
-@Label(OMSEXTRACTBASIN_LABEL)
-@Name(OMSEXTRACTBASIN_NAME)
-@Status(OMSEXTRACTBASIN_STATUS)
-@License(OMSEXTRACTBASIN_LICENSE)
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
+
+@Description(OmsExtractBasin.OMSEXTRACTBASIN_DESCRIPTION)
+@Author(name = OmsExtractBasin.OMSEXTRACTBASIN_AUTHORNAMES, contact = OmsExtractBasin.OMSEXTRACTBASIN_AUTHORCONTACTS)
+@Keywords(OmsExtractBasin.OMSEXTRACTBASIN_KEYWORDS)
+@Label(OmsExtractBasin.OMSEXTRACTBASIN_LABEL)
+@Name(OmsExtractBasin.OMSEXTRACTBASIN_NAME)
+@Status(OmsExtractBasin.OMSEXTRACTBASIN_STATUS)
+@License(OmsExtractBasin.OMSEXTRACTBASIN_LICENSE)
 public class OmsExtractBasin extends JGTModel {
 
     @Description(OMSEXTRACTBASIN_pNorth_DESCRIPTION)
@@ -121,10 +101,6 @@ public class OmsExtractBasin extends JGTModel {
     @UI(JGTConstants.EASTING_UI_HINT)
     @In
     public double pEast = -1.0;
-
-    @Description(OMSEXTRACTBASIN_pValue_DESCRIPTION)
-    @In
-    public double pValue = 1.0;
 
     @Description(OMSEXTRACTBASIN_inFlow_DESCRIPTION)
     @In
@@ -162,17 +138,37 @@ public class OmsExtractBasin extends JGTModel {
     @Out
     public SimpleFeatureCollection outVectorBasin = null;
 
+    public static final String OMSEXTRACTBASIN_DESCRIPTION = "Extract a basin from a map of flowdirections.";
+    public static final String OMSEXTRACTBASIN_DOCUMENTATION = "";
+    public static final String OMSEXTRACTBASIN_KEYWORDS = "Dem manipulation, Basin, OmsFlowDirections";
+    public static final String OMSEXTRACTBASIN_LABEL = DEMMANIPULATION;
+    public static final String OMSEXTRACTBASIN_NAME = "extractbasin";
+    public static final int OMSEXTRACTBASIN_STATUS = 5;
+    public static final String OMSEXTRACTBASIN_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSEXTRACTBASIN_AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
+    public static final String OMSEXTRACTBASIN_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSEXTRACTBASIN_pNorth_DESCRIPTION = "The northern coordinate of the watershed outlet.";
+    public static final String OMSEXTRACTBASIN_pEast_DESCRIPTION = "The eastern coordinate of the watershed outlet.";
+    public static final String OMSEXTRACTBASIN_inFlow_DESCRIPTION = "The map of flowdirections.";
+    public static final String OMSEXTRACTBASIN_inNetwork_DESCRIPTION = "A user supplied network map. If available, the outlet point is snapped to it before extracting the basin.";
+    public static final String OMSEXTRACTBASIN_pSnapbuffer_DESCRIPTION = "A buffer to consider for network snapping.";
+    public static final String OMSEXTRACTBASIN_doVector_DESCRIPTION = "Flag to enable vector basin extraction.";
+    public static final String OMSEXTRACTBASIN_doSmoothing_DESCRIPTION = "Flag to enable vector basin smoothing.";
+    public static final String OMSEXTRACTBASIN_outArea_DESCRIPTION = "The area of the extracted basin.";
+    public static final String OMSEXTRACTBASIN_outBasin_DESCRIPTION = "The extracted basin mask.";
+    public static final String OMSEXTRACTBASIN_outOutlet_DESCRIPTION = "The optional outlet point vector map.";
+    public static final String OMSEXTRACTBASIN_outVectorBasin_DESCRIPTION = "The optional extracted basin vector map.";
+
     public static final String FIELD_BASINAREA = "basinarea";
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     private int ncols;
-
     private int nrows;
 
     private CoordinateReferenceSystem crs;
-
     private GeometryFactory gf = GeometryUtilities.gf();
+    private boolean alreadyWarned = false;
 
     @Execute
     public void process() throws Exception {
@@ -197,8 +193,8 @@ public class OmsExtractBasin extends JGTModel {
             throw new ModelsIllegalargumentException("No outlet coordinates were supplied.", this.getClass().getSimpleName(), pm);
         }
         if (pNorth > north || pNorth < south || pEast > east || pEast < west) {
-            throw new ModelsIllegalargumentException("The outlet point lies outside the map region.", this.getClass()
-                    .getSimpleName(), pm);
+            throw new ModelsIllegalargumentException("The outlet point lies outside the map region.",
+                    this.getClass().getSimpleName(), pm);
         }
 
         Coordinate snapOutlet = snapOutlet();
@@ -207,56 +203,60 @@ public class OmsExtractBasin extends JGTModel {
             pNorth = snapOutlet.y;
         }
 
-        RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, false);
-        WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
-
-        WritableRaster basinWR = CoverageUtilities.createDoubleWritableRaster(ncols, nrows, null, null, doubleNovalue);
+        RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlow);
+        WritableRaster basinWR = CoverageUtilities.createWritableRaster(ncols, nrows, Short.class, null, shortNovalue);
         WritableRandomIter basinIter = RandomIterFactory.createWritable(basinWR, null);
 
-        Coordinate outlet = new Coordinate(pEast, pNorth);
+        try {
+            Coordinate outlet = new Coordinate(pEast, pNorth);
 
-        int[] outletColRow = CoverageUtilities.colRowFromCoordinate(outlet, inFlow.getGridGeometry(), null);
+            int[] outletColRow = CoverageUtilities.colRowFromCoordinate(outlet, inFlow.getGridGeometry(), null);
 
-        double outletFlow = flowIter.getSampleDouble(outletColRow[0], outletColRow[1], 0);
-        if (isNovalue(outletFlow)) {
-            throw new IllegalArgumentException("The chosen outlet point doesn't have a valid value.");
-        }
-
-        FlowNode runningNode = new FlowNode(flowIter, ncols, nrows, outletColRow[0], outletColRow[1]);
-        runningNode.setValueInMap(basinIter, pValue);
-        outArea++;
-        List<FlowNode> enteringNodes = runningNode.getEnteringNodes();
-
-        boolean alreadyWarned = false;
-        pm.beginTask(msg.message("wateroutlet.extracting"), -1);
-        while( enteringNodes.size() > 0 ) {
-            if (pm.isCanceled()) {
-                return;
+            int outletFlow = flowIter.getSample(outletColRow[0], outletColRow[1], 0);
+            if (isNovalue(outletFlow)) {
+                throw new IllegalArgumentException("The chosen outlet point doesn't have a valid value.");
             }
-            List<FlowNode> newEnteringNodes = new ArrayList<FlowNode>();
-            for( FlowNode flowNode : enteringNodes ) {
-                if (!alreadyWarned && flowNode.touchesBound()) {
-                    pm.errorMessage(MessageFormat
-                            .format("WARNING: touched boundaries in col/row = {0}/{1}. You might consider to review your processing region.",
-                                    flowNode.col, flowNode.row));
-                    alreadyWarned = true;
+
+            FlowNode runningNode = new FlowNode(flowIter, ncols, nrows, outletColRow[0], outletColRow[1]);
+            runningNode.setIntValueInMap(basinIter, 1);
+            outArea++;
+
+            ConcurrentLinkedQueue<FlowNode> enteringNodes = new ConcurrentLinkedQueue<>(runningNode.getEnteringNodes());
+            pm.beginTask(msg.message("wateroutlet.extracting"), -1);
+            while( enteringNodes.size() > 0 ) {
+                if (pm.isCanceled()) {
+                    return;
                 }
-                flowNode.setValueInMap(basinIter, pValue);
-                outArea++;
 
-                List<FlowNode> newEntering = flowNode.getEnteringNodes();
-                if (newEntering.size() > 0)
+                ConcurrentLinkedQueue<FlowNode> newEnteringNodes = new ConcurrentLinkedQueue<>();
+                enteringNodes.parallelStream().forEach(flowNode -> {
+                    if (pm.isCanceled()) {
+                        return;
+                    }
+                    if (!alreadyWarned && flowNode.touchesBound()) {
+                        pm.errorMessage(MessageFormat.format(
+                                "WARNING: touched boundaries in col/row = {0}/{1}. You might consider to review your processing region.",
+                                flowNode.col, flowNode.row));
+                        alreadyWarned = true;
+                    }
+                    flowNode.setIntValueInMap(basinIter, 1);
+                    outArea++;
+
+                    List<FlowNode> newEntering = flowNode.getEnteringNodes();
                     newEnteringNodes.addAll(newEntering);
+                });
+                enteringNodes = newEnteringNodes;
             }
-            enteringNodes = newEnteringNodes;
+            pm.done();
+
+            outArea = outArea * xRes * yRes;
+            outBasin = CoverageUtilities.buildCoverage("basin", basinWR, regionMap, crs);
+
+            extractVectorBasin();
+        } finally {
+            flowIter.done();
+            basinIter.done();
         }
-        pm.done();
-
-        outArea = outArea * xRes * yRes;
-        outBasin = CoverageUtilities.buildCoverage("basin", basinWR, regionMap, crs);
-
-        extractVectorBasin();
     }
 
     private void extractVectorBasin() throws Exception {
@@ -264,7 +264,9 @@ public class OmsExtractBasin extends JGTModel {
             return;
         }
 
-        Collection<Polygon> polygons = FeatureUtilities.doVectorize(outBasin, null);
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("outsideValues", Arrays.asList(JGTConstants.doubleNovalue));
+        Collection<Polygon> polygons = FeatureUtilities.doVectorize(outBasin, params);
 
         Polygon rightPolygon = null;
         double maxArea = Double.NEGATIVE_INFINITY;
@@ -394,32 +396,6 @@ public class OmsExtractBasin extends JGTModel {
         builder.addAll(values);
         SimpleFeature feature = builder.buildFeature(null);
         ((DefaultFeatureCollection) outOutlet).add(feature);
-    }
-
-    public static void main( String[] args ) throws Exception {
-        String grassdb = "/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/grassdata/finland/testset/cell/";
-        String shapeBase = "/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/GISdata/04_164/";
-
-        String inFlowPath = grassdb + "carved_flow";
-        String inNetworkPath = shapeBase + "vv_04_164.shp";
-        String outBasinPath = grassdb + "carved_eb";
-        String outOutletPath = shapeBase + "eb_outlet.shp";
-        String outVectorBasinPath = shapeBase + "eb_basin_smoothed.shp";
-
-        OmsExtractBasin eb = new OmsExtractBasin();
-        eb.pNorth = 6862353.979338094;
-        eb.pEast = 3520253.4090277995;
-        eb.pValue = 1.0;
-        eb.inFlow = OmsRasterReader.readRaster(inFlowPath);
-        eb.inNetwork = OmsVectorReader.readVector(inNetworkPath);
-        eb.pSnapbuffer = 200.0;
-        eb.doVector = true;
-        eb.doSmoothing = true;
-        eb.process();
-
-        OmsRasterWriter.writeRaster(outBasinPath, eb.outBasin);
-        OmsVectorWriter.writeVector(outVectorBasinPath, eb.outVectorBasin);
-        OmsVectorWriter.writeVector(outOutletPath, eb.outOutlet);
     }
 
 }

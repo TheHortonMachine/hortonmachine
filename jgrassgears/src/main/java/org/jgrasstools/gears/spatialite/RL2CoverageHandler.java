@@ -81,11 +81,11 @@ public class RL2CoverageHandler {
 
         String sql;
         if (geomEpsg != null) {
-            sql = "select GetMapImageFromRaster('" + mTableName + "', ST_Transform(GeomFromText('" + geom.toText() + "', "
+            sql = "select GetMapImageFromRaster('" + mTableName + "', ST_Transform(ST_GeomFromText('" + geom.toText() + "', "
                     + geomEpsg + "), " + mTargetEpsg + ") , " + width + " , " + height
                     + ", 'default', 'image/png', '#ffffff', 0, 80, 1 )";
         } else {
-            sql = "select GetMapImageFromRaster('" + mTableName + "', GeomFromText('" + geom.toText() + "') , " + width + " , "
+            sql = "select GetMapImageFromRaster('" + mTableName + "', ST_GeomFromText('" + geom.toText() + "') , " + width + " , "
                     + height + ", 'default', 'image/png', '#ffffff', 0, 80, 1 )";
         }
 
@@ -118,7 +118,7 @@ public class RL2CoverageHandler {
     }
 
     public static void main( String[] args ) throws Exception {
-        try (ASpatialDb db = new GTSpatialiteThreadsafeDb()) {
+        try (GTSpatialiteThreadsafeDb db = new GTSpatialiteThreadsafeDb()) {
             db.open("/media/hydrologis/SPEEDBALL/DATI/ORTOFOTO/ortofoto.sqlite");
 
             List<RasterCoverage> rcList = db.getRasterCoverages(false);

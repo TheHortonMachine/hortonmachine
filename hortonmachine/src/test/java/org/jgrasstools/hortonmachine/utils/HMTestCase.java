@@ -81,9 +81,50 @@ public class HMTestCase extends TestCase {
                 double value = rectIter.getSampleDouble();
                 double expectedResult = matrix[y][x];
                 if (isNovalue(value)) {
+                    boolean novalue = isNovalue(expectedResult);
+                    assertTrue("col:" + x + " row:" + y + "=" + expectedResult, novalue);
+                } else {
+                    assertEquals("col:" + x + " row:" + y + "=" + value, expectedResult, value, delta);
+                }
+                x++;
+            } while( !rectIter.nextPixelDone() );
+            rectIter.startPixels();
+            y++;
+        } while( !rectIter.nextLineDone() );
+    }
+
+    protected void checkMatrixEqual( RenderedImage image, float[][] matrix, float delta ) {
+        RectIter rectIter = RectIterFactory.create(image, null);
+        int y = 0;
+        do {
+            int x = 0;
+            do {
+                float value = rectIter.getSampleFloat();
+                float expectedResult = matrix[y][x];
+                if (isNovalue(value)) {
                     assertTrue(x + " " + y, isNovalue(expectedResult));
                 } else {
                     assertEquals(x + " " + y, expectedResult, value, delta);
+                }
+                x++;
+            } while( !rectIter.nextPixelDone() );
+            rectIter.startPixels();
+            y++;
+        } while( !rectIter.nextLineDone() );
+    }
+
+    protected void checkMatrixEqual( RenderedImage image, int[][] matrix ) {
+        RectIter rectIter = RectIterFactory.create(image, null);
+        int y = 0;
+        do {
+            int x = 0;
+            do {
+                int value = rectIter.getSample();
+                int expectedResult = matrix[y][x];
+                if (isNovalue(value)) {
+                    assertTrue(x + " " + y, isNovalue(expectedResult));
+                } else {
+                    assertEquals(x + " " + y, expectedResult, value);
                 }
                 x++;
             } while( !rectIter.nextPixelDone() );

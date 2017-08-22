@@ -139,7 +139,7 @@ public class OmsHackLength extends JGTModel {
         double runningDistance = 0.0;
         double maxTca = 0.0;
 
-        WritableRaster hacklengthWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster hacklengthWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRandomIter hacklengthIter = RandomIterFactory.createWritable(hacklengthWR, null);
 
         pm.beginTask(msg.message("hacklength.calculating"), nRows); //$NON-NLS-1$

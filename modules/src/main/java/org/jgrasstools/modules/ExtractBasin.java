@@ -17,26 +17,29 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_doSmoothing_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_doVector_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_inFlow_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_inNetwork_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_outArea_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_outBasin_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_outOutlet_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_outVectorBasin_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_pEast_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_pNorth_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_pSnapbuffer_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_pValue_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_LABEL;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_LICENSE;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_NAME;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_STATUS;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_doSmoothing_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_inNetwork_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_outArea_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_outBasin_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_outOutlet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_outVectorBasin_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_pEast_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_pNorth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_pSnapbuffer_DESCRIPTION;
+
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -48,10 +51,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin;
 
 @Description(OMSEXTRACTBASIN_DESCRIPTION)
 @Author(name = OMSEXTRACTBASIN_AUTHORNAMES, contact = OMSEXTRACTBASIN_AUTHORCONTACTS)
@@ -71,10 +70,6 @@ public class ExtractBasin extends JGTModel {
     @In
     public double pEast = -1.0;
 
-    @Description(OMSEXTRACTBASIN_pValue_DESCRIPTION)
-    @In
-    public double pValue = 1.0;
-
     @Description(OMSEXTRACTBASIN_inFlow_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
@@ -88,10 +83,6 @@ public class ExtractBasin extends JGTModel {
     @Description(OMSEXTRACTBASIN_pSnapbuffer_DESCRIPTION)
     @In
     public double pSnapbuffer = 200;
-
-    @Description(OMSEXTRACTBASIN_doVector_DESCRIPTION)
-    @In
-    public boolean doVector = true;
 
     @Description(OMSEXTRACTBASIN_doSmoothing_DESCRIPTION)
     @In
@@ -121,10 +112,13 @@ public class ExtractBasin extends JGTModel {
         OmsExtractBasin extractbasin = new OmsExtractBasin();
         extractbasin.pNorth = pNorth;
         extractbasin.pEast = pEast;
-        extractbasin.pValue = pValue;
         extractbasin.inFlow = getRaster(inFlow);
         extractbasin.inNetwork = getVector(inNetwork);
         extractbasin.pSnapbuffer = pSnapbuffer;
+        boolean doVector = false;
+        if (outVectorBasin != null) {
+            doVector = true;
+        }
         extractbasin.doVector = doVector;
         extractbasin.doSmoothing = doSmoothing;
         extractbasin.pm = pm;

@@ -110,10 +110,10 @@ public class OmsTc extends JGTModel {
         RenderedImage tanRI = inTan.getRenderedImage();
         RandomIter tangRandomIter = RandomIterFactory.create(tanRI, null);
 
-        WritableRaster tc3WR = CoverageUtilities.createDoubleWritableRaster(profRI.getWidth(), profRI.getHeight(), null,
+        WritableRaster tc3WR = CoverageUtilities.createWritableRaster(profRI.getWidth(), profRI.getHeight(), null,
                 profRI.getSampleModel(), null);
         WritableRandomIter tc3Iter = RandomIterFactory.createWritable(tc3WR, null);
-        WritableRaster tc9WR = CoverageUtilities.createDoubleWritableRaster(profRI.getWidth(), profRI.getHeight(), null,
+        WritableRaster tc9WR = CoverageUtilities.createWritableRaster(profRI.getWidth(), profRI.getHeight(), null,
                 profRI.getSampleModel(), null);
         WritableRandomIter tc9Iter = RandomIterFactory.createWritable(tc9WR, null);
 

@@ -202,7 +202,7 @@ public class OmsScanLineRasterizer extends JGTModel {
             width = paramsMap.getCols();
             xRes = paramsMap.getXres();
 
-            outWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, doubleNovalue);
+            outWR = CoverageUtilities.createWritableRaster(width, height, null, null, doubleNovalue);
         }
 
         GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();

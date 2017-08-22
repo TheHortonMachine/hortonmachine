@@ -18,6 +18,7 @@
 package org.jgrasstools.gears.modules;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -26,6 +27,7 @@ import org.jgrasstools.gears.modules.v.vectorize.OmsVectorizer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -53,15 +55,24 @@ public class TestVectorizer extends HMTestCase {
         vectorizer.process();
 
         SimpleFeatureCollection outGeodata = vectorizer.outVector;
-        assertEquals(1, outGeodata.size());
+        assertEquals(2, outGeodata.size());
 
-        SimpleFeatureIterator featureIterator = outGeodata.features();
-        assertTrue(featureIterator.hasNext());
+        List<SimpleFeature> features = FeatureUtilities.featureCollectionToList(outGeodata);
+        SimpleFeature f1 = features.get(0);
+        SimpleFeature f2 = features.get(1);
+        Geometry g1 = (Geometry) f1.getDefaultGeometry();
+        Geometry g2 = (Geometry) f2.getDefaultGeometry();
 
-        SimpleFeature feature = featureIterator.next();
-        double value = ((Number) feature.getAttribute("rast")).doubleValue();
+        // SimpleFeature nvFeature = f1;
+        SimpleFeature valuesFeature = f2;
+        if (g1.getArea() < g2.getArea()) {
+            // nvFeature = f2;
+            valuesFeature = f1;
+        }
+
+        double value = ((Number) valuesFeature.getAttribute("rast")).doubleValue();
         assertEquals(2.0, value, 0.0000001);
-        Geometry geometry = (Geometry) feature.getDefaultGeometry();
+        Geometry geometry = (Geometry) valuesFeature.getDefaultGeometry();
         double area = geometry.getArea();
         assertEquals(6300.0, area, 0.0000001);
     }
@@ -71,7 +82,7 @@ public class TestVectorizer extends HMTestCase {
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
-        
+
         OmsVectorizer vectorizer = new OmsVectorizer();
         vectorizer.pm = pm;
         vectorizer.inRaster = inCoverage;
@@ -79,17 +90,26 @@ public class TestVectorizer extends HMTestCase {
         vectorizer.pThres = 1;
         vectorizer.fDefault = "rast";
         vectorizer.process();
-        
+
         SimpleFeatureCollection outGeodata = vectorizer.outVector;
-        assertEquals(1, outGeodata.size());
-        
-        SimpleFeatureIterator featureIterator = outGeodata.features();
-        assertTrue(featureIterator.hasNext());
-        
-        SimpleFeature feature = featureIterator.next();
-        double value = ((Number) feature.getAttribute("rast")).doubleValue();
+        assertEquals(2, outGeodata.size());
+
+        List<SimpleFeature> features = FeatureUtilities.featureCollectionToList(outGeodata);
+        SimpleFeature f1 = features.get(0);
+        SimpleFeature f2 = features.get(1);
+        Geometry g1 = (Geometry) f1.getDefaultGeometry();
+        Geometry g2 = (Geometry) f2.getDefaultGeometry();
+
+        // SimpleFeature nvFeature = f1;
+        SimpleFeature valuesFeature = f2;
+        if (g1.getArea() < g2.getArea()) {
+            // nvFeature = f2;
+            valuesFeature = f1;
+        }
+
+        double value = ((Number) valuesFeature.getAttribute("rast")).doubleValue();
         assertEquals(2.0, value, 0.0000001);
-        Geometry geometry = (Geometry) feature.getDefaultGeometry();
+        Geometry geometry = (Geometry) valuesFeature.getDefaultGeometry();
         double area = geometry.getArea();
         assertEquals(6300.0, area, 0.0000001);
     }

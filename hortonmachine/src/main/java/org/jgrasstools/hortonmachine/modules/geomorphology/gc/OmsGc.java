@@ -125,10 +125,10 @@ public class OmsGc extends JGTModel {
         RandomIter netIter = CoverageUtilities.getRandomIterator(inNetwork);
         RandomIter cp9Iter = CoverageUtilities.getRandomIterator(inCp9);
 
-        WritableRaster cpClassWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRaster cpClassWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
         WritableRandomIter cpClassIter = RandomIterFactory.createWritable(cpClassWR, null);
 
-        WritableRaster cpAggClassWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRaster cpAggClassWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
         WritableRandomIter cpAggClassIter = RandomIterFactory.createWritable(cpAggClassWR, null);
         // calculate ...
 

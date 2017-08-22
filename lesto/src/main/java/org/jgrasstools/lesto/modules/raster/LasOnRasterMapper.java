@@ -124,7 +124,7 @@ public class LasOnRasterMapper extends JGTModel {
         final GridGeometry2D newGridGeometry2D = CoverageUtilities.gridGeometryFromRegionValues(north, south, east, west,
                 newCols, newRows, crs);
         RegionMap newRegionMap = CoverageUtilities.gridGeometry2RegionParamsMap(newGridGeometry2D);
-        final WritableRaster newWR = CoverageUtilities.createDoubleWritableRaster(newCols, newRows, null, null,
+        final WritableRaster newWR = CoverageUtilities.createWritableRaster(newCols, newRows, null, null,
                 JGTConstants.doubleNovalue);
 
         RandomIter dtmIter = CoverageUtilities.getRandomIterator(inDtmGC);

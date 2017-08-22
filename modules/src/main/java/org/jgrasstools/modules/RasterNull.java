@@ -17,19 +17,7 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_DOCUMENTATION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_IN_RASTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_OUT_RASTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_P_NULL_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERNULL_P_VALUE_DESCRIPTION;
+import static org.jgrasstools.gears.modules.r.rasternull.OmsRasterNull.*;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;

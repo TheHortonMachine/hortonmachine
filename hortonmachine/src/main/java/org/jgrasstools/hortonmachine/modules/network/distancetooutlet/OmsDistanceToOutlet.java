@@ -104,7 +104,7 @@ public class OmsDistanceToOutlet extends JGTModel {
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
 
-        WritableRaster distanceWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 0.0);
+        WritableRaster distanceWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, 0.0);
         WritableRandomIter distanceIter = CoverageUtilities.getWritableRandomIterator(distanceWR);
 
         if (pMode == 1) {

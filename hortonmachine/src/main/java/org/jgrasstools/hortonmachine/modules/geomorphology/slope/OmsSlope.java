@@ -105,7 +105,7 @@ public class OmsSlope extends JGTModel {
         RenderedImage flowRI = inFlow.getRenderedImage();
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
 
-        WritableRaster slopeWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster slopeWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
         pm.beginTask(msg.message("slope.calculating"), nCols);
         for( int c = 0; c < nCols; c++ ) {

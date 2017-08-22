@@ -113,7 +113,7 @@ public class OmsHillshade extends JGTModel {
         int height = pitRI.getHeight();
         pitRI = null;
 
-        WritableRaster hillshadeWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, pitWR.getSampleModel(),
+        WritableRaster hillshadeWR = CoverageUtilities.createWritableRaster(width, height, null, pitWR.getSampleModel(),
                 0.0);
         WritableRaster gradientWR = normalVector(pitWR, dx);
 
@@ -214,7 +214,7 @@ public class OmsHillshade extends JGTModel {
          * cells, which have 3 components so the Image have 3 bands..
          */
         SampleModel sm = RasterFactory.createBandedSampleModel(5, cols, rows, 3);
-        WritableRaster tmpNormalVectorWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, sm, 0.0);
+        WritableRaster tmpNormalVectorWR = CoverageUtilities.createWritableRaster(cols, rows, null, sm, 0.0);
         WritableRandomIter tmpNormaIter = RandomIterFactory.createWritable(tmpNormalVectorWR, null);
         /*
          * apply the corripio's formula (is the formula (3) in the article)

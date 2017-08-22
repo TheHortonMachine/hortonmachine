@@ -106,9 +106,9 @@ public class OmsHazardClassifier extends JGTModel {
         RandomIter tr100Iter = CoverageUtilities.getRandomIterator(inIntensityTr100);
         RandomIter tr30Iter = CoverageUtilities.getRandomIterator(inIntensityTr30);
 
-        WritableRaster outIP1WR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster outIP1WR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRandomIter outIP1Iter = RandomIterFactory.createWritable(outIP1WR, null);
-        WritableRaster outIP2WR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster outIP2WR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRandomIter outIP2Iter = RandomIterFactory.createWritable(outIP2WR, null);
 
         pm.beginTask("Processing map...", nRows);

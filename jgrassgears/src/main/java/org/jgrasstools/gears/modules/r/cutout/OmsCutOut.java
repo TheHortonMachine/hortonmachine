@@ -17,30 +17,21 @@
  */
 package org.jgrasstools.gears.modules.r.cutout;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_DOCUMENTATION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_KEYWORDS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_STATUS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_DO_INVERSE_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_IN_MASK_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_IN_RASTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_OUT_RASTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_P_MAX_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_P_MIN_DESCRIPTION;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.RASTERPROCESSING;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.multiprocessing.GridMultiProcessing;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -54,20 +45,15 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-
-@Description(OMSCUTOUT_DESCRIPTION)
-@Documentation(OMSCUTOUT_DOCUMENTATION)
-@Author(name = OMSCUTOUT_AUTHORNAMES, contact = OMSCUTOUT_AUTHORCONTACTS)
-@Keywords(OMSCUTOUT_KEYWORDS)
-@Label(OMSCUTOUT_LABEL)
-@Name(OMSCUTOUT_NAME)
-@Status(OMSCUTOUT_STATUS)
-@License(OMSCUTOUT_LICENSE)
-public class OmsCutOut extends JGTModel {
+@Description(OmsCutOut.OMSCUTOUT_DESCRIPTION)
+@Documentation(OmsCutOut.OMSCUTOUT_DOCUMENTATION)
+@Author(name = OmsCutOut.OMSCUTOUT_AUTHORNAMES, contact = OmsCutOut.OMSCUTOUT_AUTHORCONTACTS)
+@Keywords(OmsCutOut.OMSCUTOUT_KEYWORDS)
+@Label(OmsCutOut.OMSCUTOUT_LABEL)
+@Name(OmsCutOut.OMSCUTOUT_NAME)
+@Status(OmsCutOut.OMSCUTOUT_STATUS)
+@License(OmsCutOut.OMSCUTOUT_LICENSE)
+public class OmsCutOut extends GridMultiProcessing {
 
     @Description(OMSCUTOUT_IN_RASTER_DESCRIPTION)
     @In
@@ -93,9 +79,27 @@ public class OmsCutOut extends JGTModel {
     @Out
     public GridCoverage2D outRaster = null;
 
+    public static final String OMSCUTOUT_DESCRIPTION = "Module for raster thresholding and masking.";
+    public static final String OMSCUTOUT_DOCUMENTATION = "OmsCutOut.html";
+    public static final String OMSCUTOUT_KEYWORDS = "Raster, Threshold, OmsMapcalc";
+    public static final String OMSCUTOUT_LABEL = RASTERPROCESSING;
+    public static final String OMSCUTOUT_NAME = "cutout";
+    public static final int OMSCUTOUT_STATUS = 40;
+    public static final String OMSCUTOUT_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSCUTOUT_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
+    public static final String OMSCUTOUT_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSCUTOUT_IN_RASTER_DESCRIPTION = "The map that has to be processed.";
+    public static final String OMSCUTOUT_IN_MASK_DESCRIPTION = "The map to use as mask.";
+    public static final String OMSCUTOUT_P_MAX_DESCRIPTION = "The upper threshold value.";
+    public static final String OMSCUTOUT_P_MIN_DESCRIPTION = "The lower threshold value.";
+    public static final String OMSCUTOUT_DO_INVERSE_DESCRIPTION = "Switch for doing extraction of the mask area or the inverse (negative). Default is false and extract the mask area.";
+    public static final String OMSCUTOUT_OUT_RASTER_DESCRIPTION = "The processed map.";
+
     private RandomIter maskIter;
     private boolean doMax = false;
     private boolean doMin = false;
+    private double max = -1;
+    private double min = -1;
 
     @Execute
     public void process() throws Exception {
@@ -103,8 +107,6 @@ public class OmsCutOut extends JGTModel {
             return;
         }
 
-        double max = -1;
-        double min = -1;
         // do autoboxing only once
         if (pMax != null) {
             max = pMax;
@@ -115,9 +117,9 @@ public class OmsCutOut extends JGTModel {
             doMin = true;
         }
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
+        int nCols = regionMap.getCols();
+        int nRows = regionMap.getRows();
 
         RenderedImage geodataRI = inRaster.getRenderedImage();
         RandomIter geodataIter = RandomIterFactory.create(geodataRI, null);
@@ -130,41 +132,62 @@ public class OmsCutOut extends JGTModel {
         WritableRaster outWR = CoverageUtilities.renderedImage2WritableRaster(geodataRI, false);
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
-        pm.beginTask("Processing map...", nRows);
-        for( int i = 0; i < nRows; i++ ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            for( int j = 0; j < nCols; j++ ) {
+        try {
+            pm.beginTask("Processing map...", nRows * nCols);
+            processGrid(nCols, nRows, false, ( c, r ) -> {
+                if (pm.isCanceled()) {
+                    return;
+                }
+                pm.worked(1);
                 if (maskIter != null) {
-                    double maskValue = maskIter.getSampleDouble(j, i, 0);
+                    double maskValue = maskIter.getSampleDouble(c, r, 0);
                     if (!doInverse) {
                         if (isNovalue(maskValue)) {
-                            outIter.setSample(j, i, 0, JGTConstants.doubleNovalue);
-                            continue;
+                            outIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
+                            return;
                         }
                     } else {
                         if (!isNovalue(maskValue)) {
-                            outIter.setSample(j, i, 0, JGTConstants.doubleNovalue);
-                            continue;
+                            outIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
+                            return;
                         }
                     }
                 }
-                double value = geodataIter.getSampleDouble(j, i, 0);
+                double value = geodataIter.getSampleDouble(c, r, 0);
                 if (doMax && value > max) {
-                    outIter.setSample(j, i, 0, JGTConstants.doubleNovalue);
-                    continue;
+                    outIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
+                    return;
                 }
                 if (doMin && value < min) {
-                    outIter.setSample(j, i, 0, JGTConstants.doubleNovalue);
-                    continue;
+                    outIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
                 }
+            });
+            pm.done();
+        } finally {
+            geodataIter.done();
+            outIter.done();
+            if (maskIter != null) {
+                maskIter.done();
             }
-            pm.worked(1);
         }
-        pm.done();
 
-        outRaster = CoverageUtilities.buildCoverage("pitfiller", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
+        outRaster = CoverageUtilities.buildCoverage("cutout", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
 
+    }
+
+    /**
+     * Cut a raster on a mask using the default parameters.
+     * 
+     * @param raster the raster to cut.
+     * @param mask the mask to apply.
+     * @return the cut map.
+     * @throws Exception
+     */
+    public static GridCoverage2D cut( GridCoverage2D raster, GridCoverage2D mask ) throws Exception {
+        OmsCutOut cutDrain = new OmsCutOut();
+        cutDrain.inRaster = raster;
+        cutDrain.inMask = mask;
+        cutDrain.process();
+        return cutDrain.outRaster;
     }
 }

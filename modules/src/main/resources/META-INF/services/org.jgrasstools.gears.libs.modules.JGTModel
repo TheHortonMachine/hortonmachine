@@ -10,6 +10,7 @@ org.jgrasstools.modules.ContourExtractor
 org.jgrasstools.modules.Curvatures
 org.jgrasstools.modules.CurvaturesBivariate
 org.jgrasstools.modules.CutOut
+org.jgrasstools.modules.DePitter
 org.jgrasstools.modules.DebrisFlow
 org.jgrasstools.modules.DebrisTriggerCnr
 org.jgrasstools.modules.DebrisVandre
@@ -41,6 +42,7 @@ org.jgrasstools.modules.HackLength
 org.jgrasstools.modules.HazardClassifier
 org.jgrasstools.modules.HecrasInputBuilder
 org.jgrasstools.modules.Hillshade
+org.jgrasstools.modules.HoleFiller
 org.jgrasstools.modules.ImageMosaicCreator
 org.jgrasstools.modules.Insolation
 org.jgrasstools.modules.IntensityClassifierDebrisFlowTN

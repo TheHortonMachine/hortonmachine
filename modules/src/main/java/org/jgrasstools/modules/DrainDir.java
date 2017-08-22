@@ -17,21 +17,26 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_doLad_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_inFlow_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_inFlownet_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_inPit_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_outFlow_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_outTca_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_pLambda_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_KEYWORDS;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_LABEL;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_LICENSE;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_NAME;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_STATUS;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_doLad_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_inFlownet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_inPit_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_outFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_outTca_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir.OMSDRAINDIR_pLambda_DESCRIPTION;
+
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -42,10 +47,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir;
 
 @Description(OMSDRAINDIR_DESCRIPTION)
 @Author(name = OMSDRAINDIR_AUTHORNAMES, contact = OMSDRAINDIR_AUTHORCONTACTS)
@@ -73,7 +74,7 @@ public class DrainDir extends JGTModel {
 
     @Description(OMSDRAINDIR_pLambda_DESCRIPTION)
     @In
-    public double pLambda = 1.0;
+    public float pLambda = 1f;
 
     @Description(OMSDRAINDIR_doLad_DESCRIPTION)
     @In

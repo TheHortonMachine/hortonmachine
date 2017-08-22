@@ -163,18 +163,6 @@ public class HortonMessages {
     public static final String OMSTC_outTc9_DESCRIPTION = "The map of 9 topographic classes.";
     public static final String OMSTC_outTc3_DESCRIPTION = "The map of 3 aggregated fundamental topographic classes.";
 
-    public static final String OMSPITFILLER_DESCRIPTION = "It fills the depression points present within a DEM.";
-    public static final String OMSPITFILLER_DOCUMENTATION = "OmsPitfiller.html";
-    public static final String OMSPITFILLER_KEYWORDS = "Dem manipulation, Geomorphology, OmsDrainDir";
-    public static final String OMSPITFILLER_LABEL = DEMMANIPULATION;
-    public static final String OMSPITFILLER_NAME = "pit";
-    public static final int OMSPITFILLER_STATUS = 40;
-    public static final String OMSPITFILLER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSPITFILLER_AUTHORNAMES = "David Tarboton, Andrea Antonello";
-    public static final String OMSPITFILLER_AUTHORCONTACTS = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com";
-    public static final String OMSPITFILLER_inElev_DESCRIPTION = "The map of digital elevation model (DEM).";
-    public static final String OMSPITFILLER_outPit_DESCRIPTION = "The depitted elevation map.";
-
     public static final String OMSSKYVIEW_DESCRIPTION = "Calculates the skyview factor.";
     public static final String OMSSKYVIEW_DOCUMENTATION = "OmsSkyview.html";
     public static final String OMSSKYVIEW_KEYWORDS = "Hydrology, Radiation, OmsInsolation, OmsHillshade";
@@ -399,20 +387,6 @@ public class HortonMessages {
     public static final String OMSEPANETPROJECTFILESGENERATOR_inFolder_DESCRIPTION = "The folder into which to create the base files.";
     public static final String OMSEPANETPROJECTFILESGENERATOR_pCode_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).";
 
-    public static final String OMSASPECT_DESCRIPTION = "Calculates the aspect considering the zero toward the north and the rotation angle counterclockwise.";
-    public static final String OMSASPECT_DOCUMENTATION = "OmsAspect.html";
-    public static final String OMSASPECT_KEYWORDS = "Geomorphology, OmsDrainDir, OmsFlowDirections";
-    public static final String OMSASPECT_LABEL = GEOMORPHOLOGY;
-    public static final String OMSASPECT_NAME = "aspect";
-    public static final int OMSASPECT_STATUS = 40;
-    public static final String OMSASPECT_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSASPECT_AUTHORNAMES = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Pisoni Silvano, Andrea Cozzini";
-    public static final String OMSASPECT_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSASPECT_inElev_DESCRIPTION = "The map of the digital elevation model (DEM).";
-    public static final String OMSASPECT_doRadiants_DESCRIPTION = "Switch to define whether create the output map in degrees (default) or radiants.";
-    public static final String OMSASPECT_doRound_DESCRIPTION = "Switch to define whether the output map values should be rounded (might make sense in the case of degree maps).";
-    public static final String OMSASPECT_outAspect_DESCRIPTION = "The map of aspect.";
-
     public static final String OMSSUMDOWNSTREAM_DESCRIPTION = "Sums the values of a map downstream following the flowdirections.";
     public static final String OMSSUMDOWNSTREAM_DOCUMENTATION = "OmsSumDownStream.html";
     public static final String OMSSUMDOWNSTREAM_KEYWORDS = "Sumdownstream, Statistic, OmsExtractNetwork";
@@ -508,20 +482,6 @@ public class HortonMessages {
     public static final String OMSTCA3D_inPit_DESCRIPTION = "The depitted elevation model.";
     public static final String OMSTCA3D_inFlow_DESCRIPTION = "The map of flowdirections.";
     public static final String OMSTCA3D_outTca_DESCRIPTION = "The map of total contributing areas 3d.";
-
-    public static final String OMSGRADIENT_DESCRIPTION = "Calculates the gradient in each point of the map.";
-    public static final String OMSGRADIENT_DOCUMENTATION = "OmsGradient.html";
-    public static final String OMSGRADIENT_KEYWORDS = "Geomorphology, OmsDrainDir, OmsFlowDirections, OmsSlope, OmsCurvatures";
-    public static final String OMSGRADIENT_LABEL = GEOMORPHOLOGY;
-    public static final String OMSGRADIENT_NAME = "gradient";
-    public static final int OMSGRADIENT_STATUS = 40;
-    public static final String OMSGRADIENT_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSGRADIENT_AUTHORNAMES = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
-    public static final String OMSGRADIENT_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSGRADIENT_inElev_DESCRIPTION = "The map of the digital elevation model (DEM or pit).";
-    public static final String OMSGRADIENT_pMode_DESCRIPTION = "The gradient formula mode (0 = finite differences, 1 = horn, 2 = evans).";
-    public static final String OMSGRADIENT_doDegrees_DESCRIPTION = "The output type, if false = tan of the angle (default), if true = degrees";
-    public static final String OMSGRADIENT_outSlope_DESCRIPTION = "The map of gradient.";
 
     public static final String OMSNABLA_DESCRIPTION = "Calculates the nabla in each point of the map.";
     public static final String OMSNABLA_DOCUMENTATION = "";
@@ -647,35 +607,6 @@ public class HortonMessages {
     public static final String OMSFAOETPDAILY_defaultPressure_DESCRIPTION = "The pressure default value in case of missing data.";
     public static final String OMSFAOETPDAILY_outFaoEtp_DESCRIPTION = "The reference evapotranspiration.";
 
-    public static final String OMSCURVATURES_DESCRIPTION = "It estimates the longitudinal, normal and planar curvatures.";
-    public static final String OMSCURVATURES_DOCUMENTATION = "OmsCurvatures.html";
-    public static final String OMSCURVATURES_KEYWORDS = "Geomorphology";
-    public static final String OMSCURVATURES_LABEL = GEOMORPHOLOGY;
-    public static final String OMSCURVATURES_NAME = "curvatures";
-    public static final int OMSCURVATURES_STATUS = 40;
-    public static final String OMSCURVATURES_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSCURVATURES_AUTHORNAMES = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
-    public static final String OMSCURVATURES_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSCURVATURES_inElev_DESCRIPTION = "The map of the digital elevation model (DEM or pit).";
-    public static final String OMSCURVATURES_outProf_DESCRIPTION = "The map of profile curvatures.";
-    public static final String OMSCURVATURES_outPlan_DESCRIPTION = "The map of planar curvatures.";
-    public static final String OMSCURVATURES_outTang_DESCRIPTION = "The map of tangential curvatures.";
-
-    public static final String OMSRESCALEDDISTANCE_DESCRIPTION = "Calculates the rescaled distance of each pixel from the outlet.";
-    public static final String OMSRESCALEDDISTANCE_DOCUMENTATION = "OmsRescaledDistance.html";
-    public static final String OMSRESCALEDDISTANCE_KEYWORDS = "Basin, Geomorphology, D2O";
-    public static final String OMSRESCALEDDISTANCE_LABEL = BASIN;
-    public static final String OMSRESCALEDDISTANCE_NAME = "rescdist";
-    public static final int OMSRESCALEDDISTANCE_STATUS = 40;
-    public static final String OMSRESCALEDDISTANCE_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRESCALEDDISTANCE_AUTHORNAMES = "Antonello Andrea, Franceschi Silvia, Daniele Andreis,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo";
-    public static final String OMSRESCALEDDISTANCE_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSRESCALEDDISTANCE_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSRESCALEDDISTANCE_inNet_DESCRIPTION = "The map of the network.";
-    public static final String OMSRESCALEDDISTANCE_inElev_DESCRIPTION = "The optional map of elevation for 3D.";
-    public static final String OMSRESCALEDDISTANCE_pRatio_DESCRIPTION = "Ratio between the velocity in the channel and in the hillslope.";
-    public static final String OMSRESCALEDDISTANCE_outRescaled_DESCRIPTION = "The map of the rescaled distances.";
-
     public static final String OMSNETWORKATTRIBUTESBUILDER_DESCRIPTION = "Extracts network attributes and the vector network based on a raster network.";
     public static final String OMSNETWORKATTRIBUTESBUILDER_DOCUMENTATION = "";
     public static final String OMSNETWORKATTRIBUTESBUILDER_KEYWORDS = "Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope";
@@ -785,44 +716,6 @@ public class HortonMessages {
     public static final String OMSFAOETP_defaultPressure_DESCRIPTION = "The pressure default value in case of missing data.";
     public static final String OMSFAOETP_outFaoEtp_DESCRIPTION = "The reference evapotranspiration.";
 
-    public static final String OMSPEAKFLOW_DESCRIPTION = "The OmsPeakflow semidistributed hydrologic model.";
-    public static final String OMSPEAKFLOW_DOCUMENTATION = "OmsPeakflow.html";
-    public static final String OMSPEAKFLOW_KEYWORDS = "OmsPeakflow, Discharge, Hydrologic, OmsCb, RescaledDistance";
-    public static final String OMSPEAKFLOW_LABEL = HYDROGEOMORPHOLOGY;
-    public static final String OMSPEAKFLOW_NAME = "peakflow";
-    public static final int OMSPEAKFLOW_STATUS = 40;
-    public static final String OMSPEAKFLOW_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSPEAKFLOW_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello, Riccardo Rigon";
-    public static final String OMSPEAKFLOW_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSPEAKFLOW_pA_DESCRIPTION = "The a parameter for statistic rain calculations.";
-    public static final String OMSPEAKFLOW_pN_DESCRIPTION = "The n parameter for statistic rain calculations.";
-    public static final String OMSPEAKFLOW_pCelerity_DESCRIPTION = "The channel celerity parameter.";
-    public static final String OMSPEAKFLOW_pDiffusion_DESCRIPTION = "The diffusion parameter.";
-    public static final String OMSPEAKFLOW_pSat_DESCRIPTION = "The saturation percentage.";
-    public static final String OMSPEAKFLOW_inTopindex_DESCRIPTION = "The map of Topindex.";
-    public static final String OMSPEAKFLOW_inSat_DESCRIPTION = "Optional map of saturation.";
-    public static final String OMSPEAKFLOW_inRescaledsup_DESCRIPTION = "The map of superficial rescaled distance.";
-    public static final String OMSPEAKFLOW_inRescaledsub_DESCRIPTION = "The map of sub-superficial rescaled distance.";
-    public static final String OMSPEAKFLOW_inRainfall_DESCRIPTION = "The sorted hasmap of rainfall data per timestep.";
-    public static final String OMSPEAKFLOW_outDischarge_DESCRIPTION = "The sorted hashmap of peakflow output per timestep.";
-
-    public static final String OMSDRAINDIR_DESCRIPTION = "It calculates the drainage directions minimizing the deviation from the real flow";
-    public static final String OMSDRAINDIR_DOCUMENTATION = "OmsDrainDir.html";
-    public static final String OMSDRAINDIR_KEYWORDS = "Geomorphology, Pitfiller, OmsFlowDirections";
-    public static final String OMSDRAINDIR_LABEL = GEOMORPHOLOGY;
-    public static final String OMSDRAINDIR_NAME = "draindir";
-    public static final int OMSDRAINDIR_STATUS = 40;
-    public static final String OMSDRAINDIR_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSDRAINDIR_AUTHORNAMES = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo";
-    public static final String OMSDRAINDIR_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSDRAINDIR_inPit_DESCRIPTION = "The depitted elevation model.";
-    public static final String OMSDRAINDIR_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSDRAINDIR_inFlownet_DESCRIPTION = "The map of flowdirections on the network pixels (considered only in case of LTD method). Remember that in the case of fixed flow calculation the tca has to be recalculated afterwards; the tca output in this case is not corrected.";
-    public static final String OMSDRAINDIR_pLambda_DESCRIPTION = "The direction correction factor.";
-    public static final String OMSDRAINDIR_doLad_DESCRIPTION = "Switch for the mode to use: true = LAD (default), false = LTD)).";
-    public static final String OMSDRAINDIR_outFlow_DESCRIPTION = "The map of drainage directions.";
-    public static final String OMSDRAINDIR_outTca_DESCRIPTION = "The map of total contributing areas.";
-
     public static final String OMSADIGE_DESCRIPTION = "The OmsAdige model.";
     public static final String OMSADIGE_DOCUMENTATION = "";
     public static final String OMSADIGE_KEYWORDS = "Hydrology";
@@ -888,19 +781,6 @@ public class HortonMessages {
     public static final String OMSSTRAHLERRATIOS_outArea_DESCRIPTION = "The area ratio.";
     public static final String OMSSTRAHLERRATIOS_outLength_DESCRIPTION = "The length ratio.";
 
-    public static final String OMSOLDTCA_DESCRIPTION = "Calculates the contributing areas that represent the areas (in number of pixels) afferent to each point.";
-    public static final String OMSOLDTCA_DOCUMENTATION = "OmsTca.html";
-    public static final String OMSOLDTCA_KEYWORDS = "Geomorphology, OmsDrainDir, Tca3D, OmsAb, Multitca";
-    public static final String OMSOLDTCA_LABEL = GEOMORPHOLOGY;
-    public static final String OMSOLDTCA_NAME = "oldtca";
-    public static final int OMSOLDTCA_STATUS = 40;
-    public static final String OMSOLDTCA_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSOLDTCA_AUTHORNAMES = "Antonello Andrea, Rigon Riccardo";
-    public static final String OMSOLDTCA_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSOLDTCA_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSOLDTCA_outTca_DESCRIPTION = "The map of total contributing areas.";
-    public static final String OMSOLDTCA_outLoop_DESCRIPTION = "The vector containing loops, if there are any.";
-
     public static final String OMSFLOWDIRECTIONS_DESCRIPTION = "Calculates the drainage directions with the D8 method.";
     public static final String OMSFLOWDIRECTIONS_DOCUMENTATION = "OmsFlowDirections.html";
     public static final String OMSFLOWDIRECTIONS_KEYWORDS = "Geomorphology, OmsAspect";
@@ -912,24 +792,6 @@ public class HortonMessages {
     public static final String OMSFLOWDIRECTIONS_AUTHORCONTACTS = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
     public static final String OMSFLOWDIRECTIONS_inPit_DESCRIPTION = "The depitted elevation map.";
     public static final String OMSFLOWDIRECTIONS_outFlow_DESCRIPTION = "The map of flowdirections.";
-
-    public static final String OMSEXTRACTNETWORK_DESCRIPTION = "Extracts the raster network from an elevation model.";
-    public static final String OMSEXTRACTNETWORK_DOCUMENTATION = "OmsExtractNetwork.html";
-    public static final String OMSEXTRACTNETWORK_KEYWORDS = "Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope";
-    public static final String OMSEXTRACTNETWORK_LABEL = NETWORK;
-    public static final String OMSEXTRACTNETWORK_NAME = "extractnet";
-    public static final int OMSEXTRACTNETWORK_STATUS = 40;
-    public static final String OMSEXTRACTNETWORK_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSEXTRACTNETWORK_AUTHORNAMES = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Andrea Cozzini, Silvano Pisoni";
-    public static final String OMSEXTRACTNETWORK_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSEXTRACTNETWORK_inTca_DESCRIPTION = "The map of total contributing areas.";
-    public static final String OMSEXTRACTNETWORK_inFlow_DESCRIPTION = "The optional map of flowdirections (needed for case with slope or topographic classes).";
-    public static final String OMSEXTRACTNETWORK_inSlope_DESCRIPTION = "The optional map of slope.";
-    public static final String OMSEXTRACTNETWORK_inTc3_DESCRIPTION = "The optional map of aggregated topographic classes.";
-    public static final String OMSEXTRACTNETWORK_pThres_DESCRIPTION = "The threshold on the map.";
-    public static final String OMSEXTRACTNETWORK_pMode_DESCRIPTION = "The thresholding mode (default is on tca).";
-    public static final String OMSEXTRACTNETWORK_pExp_DESCRIPTION = "OmsTca exponent for the mode with slope or topographic classes (default = 0.5).";
-    public static final String OMSEXTRACTNETWORK_outNet_DESCRIPTION = "The extracted network raster.";
 
     public static final String OMSVARIOGRAM_DESCRIPTION = "Experimental semivariogram algorithm.";
     public static final String OMSVARIOGRAM_DOCUMENTATION = "Experimental semivariogram";
@@ -980,19 +842,6 @@ public class HortonMessages {
     public static final String OMSEPANETFEATURESSYNCHRONIZER_inValves_DESCRIPTION = "The valves features.";
     public static final String OMSEPANETFEATURESSYNCHRONIZER_inPipes_DESCRIPTION = "The pipes features.";
     public static final String OMSEPANETFEATURESSYNCHRONIZER_outWarning_DESCRIPTION = "Warning messages if something odd happened but is no error.";
-
-    public static final String OMSTOPINDEX_DESCRIPTION = "Topographic index calculator.";
-    public static final String OMSTOPINDEX_DOCUMENTATION = "OmsTopIndex.html";
-    public static final String OMSTOPINDEX_KEYWORDS = "Hydrology";
-    public static final String OMSTOPINDEX_LABEL = BASIN;
-    public static final String OMSTOPINDEX_NAME = "topindex";
-    public static final int OMSTOPINDEX_STATUS = 40;
-    public static final String OMSTOPINDEX_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSTOPINDEX_AUTHORNAMES = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
-    public static final String OMSTOPINDEX_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSTOPINDEX_inTca_DESCRIPTION = "The map of the contributing area.";
-    public static final String OMSTOPINDEX_inSlope_DESCRIPTION = "The map of slope.";
-    public static final String OMSTOPINDEX_outTopindex_DESCRIPTION = "The map of the topographic index.";
 
     public static final String OMSTCA_DESCRIPTION = "Calculates the contributing areas that represent the areas (in number of pixels) afferent to each point.";
     public static final String OMSTCA_DOCUMENTATION = "";
@@ -1047,20 +896,6 @@ public class HortonMessages {
     public static final String OMSENERGYBALANCE_outSwe_DESCRIPTION = "SWE for each basin.";
     public static final String OMSENERGYBALANCE_outNetradiation_DESCRIPTION = "Net radiation for each basin.";
     public static final String OMSENERGYBALANCE_outNetshortradiation_DESCRIPTION = "Net shortwave radiation for each basin.";
-
-    public static final String OMSAB_DESCRIPTION = "Calculates the draining area per length unit.";
-    public static final String OMSAB_DOCUMENTATION = "OmsAb.html";
-    public static final String OMSAB_KEYWORDS = "Geomorphology, OmsTca, OmsCurvatures, OmsDrainDir, OmsFlowDirections";
-    public static final String OMSAB_LABEL = GEOMORPHOLOGY;
-    public static final String OMSAB_NAME = "ab";
-    public static final int OMSAB_STATUS = 40;
-    public static final String OMSAB_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSAB_AUTHORNAMES = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Andrea Cozzini, Silvano Pisoni";
-    public static final String OMSAB_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSAB_inTca_DESCRIPTION = "The map of the total contributing area.";
-    public static final String OMSAB_inPlan_DESCRIPTION = "The map of the planar curvatures.";
-    public static final String OMSAB_outAb_DESCRIPTION = "The map of area per length.";
-    public static final String OMSAB_outB_DESCRIPTION = "The map of contour line.";
 
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_DESCRIPTION = "Generates the input shapefiles for a OmsTrentoP simulation.";
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_DOCUMENTATION = "OmsTrentoPProjectFilesGenerator.html";
@@ -1233,27 +1068,5 @@ public class HortonMessages {
     public static final String OMSEPANETPARAMETERSOPTIONS_tolerance_DESCRIPTION = "Tolerance.";
     public static final String OMSEPANETPARAMETERSOPTIONS_inFile_DESCRIPTION = "Properties file containing the options.";
     public static final String OMSEPANETPARAMETERSOPTIONS_outProperties_DESCRIPTION = "The Properties needed for epanet.";
-
-    public static final String OMSEXTRACTBASIN_DESCRIPTION = "Extract a basin from a map of flowdirections.";
-    public static final String OMSEXTRACTBASIN_DOCUMENTATION = "";
-    public static final String OMSEXTRACTBASIN_KEYWORDS = "Dem manipulation, Basin, OmsFlowDirections";
-    public static final String OMSEXTRACTBASIN_LABEL = DEMMANIPULATION;
-    public static final String OMSEXTRACTBASIN_NAME = "extractbasin";
-    public static final int OMSEXTRACTBASIN_STATUS = 5;
-    public static final String OMSEXTRACTBASIN_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSEXTRACTBASIN_AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
-    public static final String OMSEXTRACTBASIN_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSEXTRACTBASIN_pNorth_DESCRIPTION = "The northern coordinate of the watershed outlet.";
-    public static final String OMSEXTRACTBASIN_pEast_DESCRIPTION = "The eastern coordinate of the watershed outlet.";
-    public static final String OMSEXTRACTBASIN_pValue_DESCRIPTION = "The value for the map (defaults to 1).";
-    public static final String OMSEXTRACTBASIN_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSEXTRACTBASIN_inNetwork_DESCRIPTION = "A user supplied network map. If available, the outlet point is snapped to it before extracting the basin.";
-    public static final String OMSEXTRACTBASIN_pSnapbuffer_DESCRIPTION = "A buffer to consider for network snapping.";
-    public static final String OMSEXTRACTBASIN_doVector_DESCRIPTION = "Flag to enable vector basin extraction.";
-    public static final String OMSEXTRACTBASIN_doSmoothing_DESCRIPTION = "Flag to enable vector basin smoothing.";
-    public static final String OMSEXTRACTBASIN_outArea_DESCRIPTION = "The area of the extracted basin.";
-    public static final String OMSEXTRACTBASIN_outBasin_DESCRIPTION = "The extracted basin mask.";
-    public static final String OMSEXTRACTBASIN_outOutlet_DESCRIPTION = "The optional outlet point vector map.";
-    public static final String OMSEXTRACTBASIN_outVectorBasin_DESCRIPTION = "The optional extracted basin vector map.";
 
 }

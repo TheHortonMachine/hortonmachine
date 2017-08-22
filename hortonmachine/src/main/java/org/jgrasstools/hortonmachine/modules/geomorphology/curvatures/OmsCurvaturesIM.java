@@ -17,19 +17,7 @@
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.curvatures;
 
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_DOCUMENTATION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_KEYWORDS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_LABEL;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_inElev_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_outPlan_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_outProf_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCURVATURES_outTang_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures.*;
 
 import java.io.File;
 
@@ -47,6 +35,7 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
+import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTModelIM;
 import org.jgrasstools.gears.utils.colors.EColorTables;
 
@@ -77,8 +66,6 @@ public class OmsCurvaturesIM extends JGTModelIM {
     public String outProf = null;
 
     private double[] planTangProf = new double[3];
-    private double disXX;
-    private double disYY;
 
     @Execute
     public void process() throws Exception {
@@ -91,14 +78,12 @@ public class OmsCurvaturesIM extends JGTModelIM {
             addDestination(new File(outProf), 2);
 
         cellBuffer = 1;
-        disXX = Math.pow(xRes, 2.0);
-        disYY = Math.pow(yRes, 2.0);
 
         processByTileCells();
 
         makeMosaic();
         makeStyle(EColorTables.extrainbow, 0, 1);
-        
+
         dispose();
     }
 
@@ -107,13 +92,15 @@ public class OmsCurvaturesIM extends JGTModelIM {
             int writeRows ) {
 
         RandomIter elevIter = inRasterIterators.get(0);
-        OmsCurvatures.calculateCurvatures(elevIter, planTangProf, readCol, readRow, xRes, yRes, disXX, disYY);
+
+        GridNode node = new GridNode(elevIter, readCols, readRows, xRes, yRes, readCol, readRow);
+        OmsCurvatures.calculateCurvatures2(node, planTangProf);
         if (outPlan != null)
-            outRasters.get(0).setSample(writeCol, writeRow, 0, planTangProf[0]);
+            outRasterIterators.get(0).setSample(writeCol, writeRow, 0, planTangProf[0]);
         if (outTang != null)
-            outRasters.get(1).setSample(writeCol, writeRow, 0, planTangProf[1]);
+            outRasterIterators.get(1).setSample(writeCol, writeRow, 0, planTangProf[1]);
         if (outProf != null)
-            outRasters.get(2).setSample(writeCol, writeRow, 0, planTangProf[2]);
+            outRasterIterators.get(2).setSample(writeCol, writeRow, 0, planTangProf[2]);
 
     }
 }

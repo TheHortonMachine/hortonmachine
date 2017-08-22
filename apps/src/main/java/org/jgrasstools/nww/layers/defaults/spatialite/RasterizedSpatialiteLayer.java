@@ -39,7 +39,7 @@ import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.jgrasstools.dbs.compat.ASpatialDb;
-import org.jgrasstools.gears.spatialite.SpatialiteImportUtils;
+import org.jgrasstools.gears.spatialite.SpatialDbsImportUtils;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.nww.layers.defaults.NwwLayer;
@@ -105,7 +105,7 @@ public class RasterizedSpatialiteLayer extends BasicMercatorTiledImageLayer impl
                 }
             }
 
-            DefaultFeatureCollection fc = SpatialiteImportUtils.tableToFeatureFCollection(db, tableName, featureLimit,
+            DefaultFeatureCollection fc = SpatialDbsImportUtils.tableToFeatureFCollection(db, tableName, featureLimit,
                     NwwUtilities.GPS_CRS_SRID);
             long t2 = System.currentTimeMillis();
             System.out.println("FINISHED READING: " + tableName + " -> " + ((t2 - t1) / 1000) + "sec");

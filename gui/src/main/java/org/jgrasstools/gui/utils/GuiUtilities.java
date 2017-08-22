@@ -70,7 +70,7 @@ public class GuiUtilities {
      * @param component
      *            the component to center.
      */
-    public static void centerOnScreen(Component component) {
+    public static void centerOnScreen( Component component ) {
         Dimension prefSize = component.getPreferredSize();
         Dimension parentSize;
         java.awt.Point parentLocation = new java.awt.Point(0, 0);
@@ -103,7 +103,7 @@ public class GuiUtilities {
      * @param lastPath
      *            the last path to save.
      */
-    public static void setLastPath(String lastPath) {
+    public static void setLastPath( String lastPath ) {
         File file = new File(lastPath);
         if (!file.isDirectory()) {
             lastPath = file.getParentFile().getAbsolutePath();
@@ -121,13 +121,13 @@ public class GuiUtilities {
      *            the default value in case of <code>null</code>.
      * @return the string preference asked.
      */
-    public static String getPreference(String preferenceKey, String defaultValue) {
+    public static String getPreference( String preferenceKey, String defaultValue ) {
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
         String preference = preferences.get(preferenceKey, defaultValue);
         return preference;
     }
 
-    public static String[] getPreference(String preferenceKey, String[] defaultValue) {
+    public static String[] getPreference( String preferenceKey, String[] defaultValue ) {
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
         String preference = preferences.get(preferenceKey, "");
         String[] split = preference.split(PREF_STRING_SEPARATORS);
@@ -142,31 +142,39 @@ public class GuiUtilities {
      * @param value
      *            the value to set.
      */
-    public static void setPreference(String preferenceKey, String value) {
+    public static void setPreference( String preferenceKey, String value ) {
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
-        preferences.put(preferenceKey, value);
+        if (value != null) {
+            preferences.put(preferenceKey, value);
+        } else {
+            preferences.remove(preferenceKey);
+        }
     }
 
-    public static void setPreference(String preferenceKey, String[] valuesArray) {
+    public static void setPreference( String preferenceKey, String[] valuesArray ) {
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
-        String arrayToString = Stream.of(valuesArray).collect(Collectors.joining(PREF_STRING_SEPARATORS));
-        preferences.put(preferenceKey, arrayToString);
+        if (valuesArray != null) {
+            String arrayToString = Stream.of(valuesArray).collect(Collectors.joining(PREF_STRING_SEPARATORS));
+            preferences.put(preferenceKey, arrayToString);
+        } else {
+            preferences.remove(preferenceKey);
+        }
     }
 
-    public static void copyToClipboard(String text) {
+    public static void copyToClipboard( String text ) {
         StringSelection selection = new StringSelection(text);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection, selection);
     }
 
-    public static void openFile(File file) throws IOException {
+    public static void openFile( File file ) throws IOException {
         if (Desktop.isDesktopSupported()) {
             Desktop desktop = Desktop.getDesktop();
             desktop.open(file);
         }
     }
 
-    public static JDialog openDialogWithPanel(JPanel panel, String title, Dimension dimension) {
+    public static JDialog openDialogWithPanel( JPanel panel, String title, Dimension dimension ) {
         JDialog f = new JDialog();
         f.add(panel, BorderLayout.CENTER);
         f.setTitle(title);
@@ -177,6 +185,11 @@ public class GuiUtilities {
         f.setVisible(true);
         f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         return f;
+    }
+
+    public static String showInputDialog( Component parentComponent, String message, String defaultInput ) {
+        String answer = JOptionPane.showInputDialog(parentComponent, message, defaultInput);
+        return answer;
     }
 
     /**
@@ -191,15 +204,15 @@ public class GuiUtilities {
      *            a set of default values.
      * @return the result inserted by the user.
      */
-    public static String[] showMultiInputDialog(Component parentComponent, String title, String[] labels,
-            String[] defaultValues, HashMap<String, String[]> fields2ValuesMap) {
+    public static String[] showMultiInputDialog( Component parentComponent, String title, String[] labels, String[] defaultValues,
+            HashMap<String, String[]> fields2ValuesMap ) {
         Component[] valuesFields = new Component[labels.length];
         JPanel panel = new JPanel();
         // panel.setPreferredSize(new Dimension(400, 300));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         String input[] = new String[labels.length];
         panel.setLayout(new GridLayout(labels.length, 2, 5, 5));
-        for (int i = 0; i < labels.length; i++) {
+        for( int i = 0; i < labels.length; i++ ) {
             panel.add(new JLabel(labels[i]));
 
             boolean doneCombo = false;
@@ -229,7 +242,7 @@ public class GuiUtilities {
         if (result != JOptionPane.OK_OPTION) {
             return null;
         }
-        for (int i = 0; i < labels.length; i++) {
+        for( int i = 0; i < labels.length; i++ ) {
             if (valuesFields[i] instanceof JTextField) {
                 JTextField textField = (JTextField) valuesFields[i];
                 input[i] = textField.getText();
@@ -242,18 +255,18 @@ public class GuiUtilities {
         return input;
     }
 
-    public static String showComboDialog(Component parentComponent, String title, String message, String[] values) {
-        String result = (String) JOptionPane.showInputDialog(parentComponent, message, title,
-                JOptionPane.QUESTION_MESSAGE, null, values, values[0]);
+    public static String showComboDialog( Component parentComponent, String title, String message, String[] values ) {
+        String result = (String) JOptionPane.showInputDialog(parentComponent, message, title, JOptionPane.QUESTION_MESSAGE, null,
+                values, values[0]);
         return result;
     }
 
     public static void setDefaultLookAndFeel() {
         try {
             OSType osType = OsCheck.getOperatingSystemType();
-            switch (osType) {
+            switch( osType ) {
             case Windows:
-                for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
                     String name = info.getName();
                     if ("Windows".equalsIgnoreCase(name)) {
                         javax.swing.UIManager.setLookAndFeel(info.getClassName());
@@ -261,15 +274,23 @@ public class GuiUtilities {
                     }
                 }
             case Linux:
-                for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                // for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
+                // String name = info.getName();
+                // if ("GTK".equalsIgnoreCase(name) || "GTK+".equalsIgnoreCase(name)) {
+                // javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                // return;
+                // }
+                // }
+
+                for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
                     String name = info.getName();
-                    if ("GTK".equalsIgnoreCase(name) || "GTK+".equalsIgnoreCase(name)) {
+                    if ("Nimbus".equalsIgnoreCase(name)) {
                         javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                        return;
+                        break;
                     }
                 }
             default:
-                for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
                     String name = info.getName();
                     if ("Nimbus".equalsIgnoreCase(name)) {
                         javax.swing.UIManager.setLookAndFeel(info.getClassName());
@@ -283,10 +304,10 @@ public class GuiUtilities {
         }
     }
 
-    public static void addClosingListener(JFrame frame, IOnCloseListener freeResourcesComponent) {
-        WindowListener exitListener = new WindowAdapter() {
+    public static void addClosingListener( JFrame frame, IOnCloseListener freeResourcesComponent ) {
+        WindowListener exitListener = new WindowAdapter(){
             @Override
-            public void windowClosing(WindowEvent e) {
+            public void windowClosing( WindowEvent e ) {
                 int confirm = JOptionPane.showOptionDialog(frame, "Are you sure you want to exit?", "Exit Confirmation",
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
                 if (confirm == JOptionPane.YES_OPTION) {
@@ -299,21 +320,21 @@ public class GuiUtilities {
         frame.addWindowListener(exitListener);
     }
 
-    public static void showInfoMessage(Component parentComponent, String title, String message) {
+    public static void showInfoMessage( Component parentComponent, String title, String message ) {
         if (title == null) {
             title = "INFO";
         }
         JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.INFORMATION_MESSAGE);
     }
 
-    public static void showWarningMessage(Component parentComponent, String title, String message) {
+    public static void showWarningMessage( Component parentComponent, String title, String message ) {
         if (title == null) {
             title = "WARNING";
         }
         JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.WARNING_MESSAGE);
     }
 
-    public static void showErrorMessage(Component parentComponent, String title, String message) {
+    public static void showErrorMessage( Component parentComponent, String title, String message ) {
         if (title == null) {
             title = "ERROR";
         }
