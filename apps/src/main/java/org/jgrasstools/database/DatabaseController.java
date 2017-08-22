@@ -1492,7 +1492,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             mapFrame.enableLayerTable(withLayers);
             mapFrame.enableTool(Tool.PAN, Tool.ZOOM, Tool.RESET);
             mapFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            mapFrame.setSize(600, 600);
+            if (withLayers) {
+                mapFrame.setSize(900, 600);
+            } else {
+                mapFrame.setSize(600, 600);
+            }
             mapFrame.setVisible(true);
         }
         mapFrame.addLayer(fc);
