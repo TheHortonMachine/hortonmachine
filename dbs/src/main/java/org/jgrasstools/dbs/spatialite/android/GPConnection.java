@@ -67,17 +67,15 @@ public class GPConnection implements IJGTConnection {
 
     @Override
     public boolean getAutoCommit() throws SQLException {
-        throw new RuntimeException("Function not supported: getAutoCommit()");
+        return true;
     }
 
     @Override
     public void setAutoCommit(boolean b) throws SQLException {
-        throw new RuntimeException("Function not supported: setAutoCommit()");
     }
 
     @Override
     public void commit() throws SQLException {
-        throw new RuntimeException("Function not supported: commit()");
     }
 
     @Override
@@ -87,7 +85,6 @@ public class GPConnection implements IJGTConnection {
 
     @Override
     public void rollback( Savepoint savepoint ) throws Exception {
-        throw new RuntimeException("Function not supported: rollback()");
     }
 
 }
