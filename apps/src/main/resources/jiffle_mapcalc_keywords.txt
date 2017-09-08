@@ -1,0 +1,14 @@
+images
+read
+write
+con
+xmin
+ymin
+xmax
+ymax
+x
+y
+xres
+yres
+height
+width

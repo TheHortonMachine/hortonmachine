@@ -12,14 +12,14 @@ import javax.swing.text.BadLocationException;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gui.utils.GuiUtilities;
 import org.jgrasstools.gui.utils.ImageCache;
 import org.joda.time.DateTime;
 
 public class LogConsoleController extends LogConsoleView {
 
-    private IJGTProgressMonitor pm = new LogProgressMonitor();
+    private IJGTProgressMonitor pm = null;
     private String processName;
     private PrintStream logAreaPrintStream;
 
@@ -59,6 +59,9 @@ public class LogConsoleController extends LogConsoleView {
         stopButton.setIcon(ImageCache.getInstance().getImage(ImageCache.PROGRESS_STOP));
 
         logAreaPrintStream = new PrintStream(new CustomOutputStream(logArea));
+        if (pm == null) {
+            pm = new PrintStreamProgressMonitor(logAreaPrintStream, logAreaPrintStream);
+        }
 
         // re-assigns standard output stream and error output stream
         System.setOut(logAreaPrintStream);
