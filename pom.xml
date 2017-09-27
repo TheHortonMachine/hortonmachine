@@ -26,16 +26,15 @@
     <modules>
 	<module>oms3</module>
 	<module>dbs</module>
-        <module>jgrassgears</module>
-        <module>hortonmachine</module>
-        <module>lesto</module>
-        <module>modules</module>
-        <module>gui</module>
-<!--        
+    <module>jgrassgears</module>
+    <module>hortonmachine</module>
+    <module>lesto</module>
+    <module>modules</module>
+    <module>gui</module>
+<!--REMONREL
 	<module>apps</module>
-	    <module>gpserver</module>
-        <module>grass</module>
- -->
+	<module>gpserver</module>
+ REMONREL-->
   </modules>
 
 	<issueManagement>
