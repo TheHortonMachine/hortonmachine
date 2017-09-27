@@ -178,30 +178,6 @@ def depsList = [];
 def startIndex = -1;
 def endIndex = -1;
 
-/*
-// uncomment the following for maven 2
-for (int i = 0; i < lines.size(); i++){
-    def line = lines[i];
-	
-    //if(line.startsWith("[INFO] [dependency:tree")){
-    if(line.startsWith("[INFO] --- maven-dependency-plugin")){
-		println "...found start line: " + line;
-        startIndex = i + 1;
-        continue;
-    }
-    if(startIndex != -1 && line.startsWith("[INFO] ----------")){
-		println "...found end line: " + line;
-		endIndex = i - 1
-        break;
-    }
-    if(startIndex == -1){
-        continue;
-    }
-
-    lista << line;
-} // end maven 2
-*/
-
 // with maven 3
 for (int i = 0; i < lines.size(); i++){
     def line = lines[i];
@@ -285,12 +261,7 @@ if(copyPath){
             def path = file.getAbsolutePath();
             def newPath = new File(copyPath, name).getAbsolutePath();
 
-            // exclude those that go in the modules folder
-            if(!name.startsWith("jgt-jgrassgears-") && 
-               !name.startsWith("jgt-hortonmachine-") && 
-               !name.startsWith("jgt-modules-")
-            )
-                new AntBuilder().copy ( file : path , tofile : newPath )
+            new AntBuilder().copy ( file : path , tofile : newPath )
         }
     }
 
