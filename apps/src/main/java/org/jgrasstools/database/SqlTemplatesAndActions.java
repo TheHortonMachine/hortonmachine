@@ -466,7 +466,7 @@ public class SqlTemplatesAndActions {
             public void actionPerformed( ActionEvent e ) {
                 try {
                     String query = DbsUtilities.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
-                    spatialiteViewer.viewSpatialQueryResult(table.tableName, query, spatialiteViewer.pm);
+                    spatialiteViewer.viewSpatialQueryResult3D(table.tableName, query, spatialiteViewer.pm);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }

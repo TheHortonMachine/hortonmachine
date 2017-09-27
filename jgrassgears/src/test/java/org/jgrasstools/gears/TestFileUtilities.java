@@ -17,4 +17,25 @@ public class TestFileUtilities extends HMTestCase {
         assertEquals(expected, newPath);
     }
 
+    public void testValidNames() {
+        String name = "test";
+        String safeFileName = FileUtilities.getSafeFileName(name);
+        assertEquals(name, safeFileName);
+        
+        name = "test/asd?qwe><\\zxc*|\":.exe";
+        safeFileName = FileUtilities.getSafeFileName(name);
+        assertEquals("test_asd_qwe___zxc____.exe", safeFileName);
+
+        name = "test/asd.exe.";
+        safeFileName = FileUtilities.getSafeFileName(name);
+        assertEquals("test_asd.exe", safeFileName);
+
+        name = "test/asd.exe ";
+        safeFileName = FileUtilities.getSafeFileName(name);
+        assertEquals("test_asd.exe", safeFileName);
+        
+        name = "LPT8";
+        safeFileName = FileUtilities.getSafeFileName(name);
+        assertEquals("LPT8_", safeFileName);
+    }
 }

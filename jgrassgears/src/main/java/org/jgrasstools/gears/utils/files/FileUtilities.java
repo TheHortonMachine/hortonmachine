@@ -309,33 +309,53 @@ public class FileUtilities {
 
     /**
      * Makes a file name safe to be used.
-     * <p/>
-     * <p>Taken from http://stackoverflow.com/questions/1184176/how-can-i-safely-encode-a-string-in-java-to-use-as-a-filename
      *
      * @param fileName the file name to "encode".
-     *
      * @return the safe filename.
      */
     public static String getSafeFileName( String fileName ) {
-        char fileSep = '/'; // ... or do this portably.
-        char escape = '%'; // ... or some other legal char.
+        // not allowed chars in win and linux
+        char[] notAllowed = new char[]{'/', '>', '<', ':', '"', '/', '\\', '|', '?', '*'};
+        char escape = '_';
         int len = fileName.length();
         StringBuilder sb = new StringBuilder(len);
         for( int i = 0; i < len; i++ ) {
             char ch = fileName.charAt(i);
-            if (ch < ' ' || ch >= 0x7F || ch == fileSep // add other illegal chars
-                    || (ch == '.' && i == 0) // we don't want to collide with "." or ".."!
-                    || ch == '?' || ch == escape) {
-                sb.append(escape);
-                if (ch < 0x10) {
-                    sb.append('0');
+
+            boolean trapped = false;
+            for( char forbidden : notAllowed ) {
+                if (ch == forbidden) {
+                    sb.append(escape);
+                    trapped = true;
+                    break;
                 }
-                sb.append(Integer.toHexString(ch));
-            } else {
+            }
+
+            if (!trapped) {
                 sb.append(ch);
             }
         }
-        return sb.toString();
+        String newName = sb.toString();
+        // no space at end is allowed
+        newName = newName.trim();
+
+        // win doesn't allow dots at the end
+        if (newName.endsWith(".")) {
+            newName = newName.substring(0, newName.length() - 1);
+        }
+
+        // reserved words for windows
+        String[] reservedWindows = {"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
+                "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
+
+        for( String reservedWin : reservedWindows ) {
+            if (newName.equals(reservedWin)) {
+                newName = newName + "_";
+                break;
+            }
+        }
+
+        return newName;
     }
 
     /**
