@@ -1,8 +1,8 @@
  #
- # This file is part of JGrasstools (http://www.jgrasstools.org)
+ # This file is part of HortonMachine (http://www.hortonmachine.org)
  # (C) HydroloGIS - www.hydrologis.com 
  # 
- # JGrasstools is free software: you can redistribute it and/or modify
+ # HortonMachine is free software: you can redistribute it and/or modify
  # it under the terms of the GNU General Public License as published by
  # the Free Software Foundation, either version 3 of the License, or
  # (at your option) any later version.
@@ -16,9 +16,7 @@
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
 
-MEM="-Xmx4g"
+MEM="-Xmx1g"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-# the necessary argument is the port of the running server
-java $MEM -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.h2.tools.Server -tcpShutdown tcp://localhost:$1
+java $MEM -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController ./libs

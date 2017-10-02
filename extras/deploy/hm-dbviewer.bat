@@ -1,7 +1,7 @@
-:: This file is part of JGrasstools (http://www.jgrasstools.org)
+:: This file is part of HortonMachine (http://www.hortonmachine.org)
 :: (C) HydroloGIS - www.hydrologis.com 
 :: 
-:: JGrasstools is free software: you can redistribute it and/or modify
+:: HortonMachine is free software: you can redistribute it and/or modify
 :: it under the terms of the GNU General Public License as published by
 :: the Free Software Foundation, either version 3 of the License, or
 :: (at your option) any later version.
@@ -17,7 +17,7 @@
 
 setlocal
 
-set MEM="-Xmx1g"
-java %MEM% -cp ".\libs\*" org.jgrasstools.gui.spatialtoolbox.SpatialtoolboxController ./libs
+set MEM="-Xmx2g"
+java %MEM% -Djava.library.path=.\natives\ -cp ".\libs\*" org.hortonmachine.database.DatabaseViewer %1
 
 endlocal
