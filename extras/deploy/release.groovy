@@ -1,5 +1,5 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * HortonMachine
  * (C) HydroloGIS - www.hydrologis.com 
  * 
  * This library is free software; you can redistribute it and/or modify it under
@@ -50,7 +50,7 @@ if(!copyPathFile.exists()){
     copyPathFile.mkdir();
 }
 
-// copy jgrasstools modules
+// copy hortonmachine modules
 JGTMODULESCOPY: {
     def modulesFolder = "./extras/deploy/libs/"
     def modulesFolderFile = new File(modulesFolder);
@@ -58,9 +58,9 @@ JGTMODULESCOPY: {
         modulesFolderFile.mkdir();
     }
     // take latest jgrassgears jar
-    def jarFiles = new File("./jgrassgears/target").listFiles(new FilenameFilter() {  
+    def jarFiles = new File("./gears/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
-            return filename.startsWith("jgt-jgrassgears-") && filename.endsWith(".jar")  
+            return filename.startsWith("hm-gears-") && filename.endsWith(".jar")  
         }  
     });
     Arrays.sort(jarFiles, Collections.reverseOrder());
@@ -69,9 +69,9 @@ JGTMODULESCOPY: {
     (new AntBuilder()).copy( file : jgtJar , tofile : jgtCopyToFile )
 
     // take latest hortonmachine jar
-    jarFiles = new File("./hortonmachine/target").listFiles(new FilenameFilter() {  
+    jarFiles = new File("./hmachine/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
-            return filename.startsWith("jgt-hortonmachine-") && filename.endsWith(".jar")  
+            return filename.startsWith("hm-hmachine-") && filename.endsWith(".jar")  
         }  
     });
     Arrays.sort(jarFiles, Collections.reverseOrder());
@@ -82,7 +82,7 @@ JGTMODULESCOPY: {
     // take latest modules jar
     jarFiles = new File("./modules/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
-            return filename.startsWith("jgt-modules-") && filename.endsWith(".jar")  
+            return filename.startsWith("hm-modules-") && filename.endsWith(".jar")  
         }  
     });
     Arrays.sort(jarFiles, Collections.reverseOrder());
@@ -93,7 +93,7 @@ JGTMODULESCOPY: {
     // take latest dbs jar
     jarFiles = new File("./dbs/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
-            return filename.startsWith("jgt-dbs-") && filename.endsWith(".jar")  
+            return filename.startsWith("hm-dbs-") && filename.endsWith(".jar")  
         }  
     });
     Arrays.sort(jarFiles, Collections.reverseOrder());
@@ -104,7 +104,7 @@ JGTMODULESCOPY: {
     // take latest lesto jar
     jarFiles = new File("./lesto/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
-            return filename.startsWith("jgt-lesto-") && filename.endsWith(".jar")  
+            return filename.startsWith("hm-lesto-") && filename.endsWith(".jar")  
         }  
     });
     Arrays.sort(jarFiles, Collections.reverseOrder());
@@ -115,7 +115,7 @@ JGTMODULESCOPY: {
     // take latest gui jar
     jarFiles = new File("./gui/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
-            return filename.startsWith("jgt-gui-") && filename.endsWith(".jar")  
+            return filename.startsWith("hm-gui-") && filename.endsWith(".jar")  
         }  
     });
     Arrays.sort(jarFiles, Collections.reverseOrder());
@@ -126,7 +126,7 @@ JGTMODULESCOPY: {
     // take latest apps jar
     jarFiles = new File("./apps/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
-            return filename.startsWith("jgt-apps-") && filename.endsWith(".jar")  
+            return filename.startsWith("hm-apps-") && filename.endsWith(".jar")  
         }  
     });
     Arrays.sort(jarFiles, Collections.reverseOrder());
@@ -137,7 +137,7 @@ JGTMODULESCOPY: {
     // take latest gpserver jar
     jarFiles = new File("./gpserver/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
-            return filename.startsWith("jgt-gpserver-") && filename.endsWith(".jar")  
+            return filename.startsWith("hm-gpserver-") && filename.endsWith(".jar")  
         }  
     });
     Arrays.sort(jarFiles, Collections.reverseOrder());
@@ -182,7 +182,7 @@ def endIndex = -1;
 for (int i = 0; i < lines.size(); i++){
     def line = lines[i];
 
-    if(line.startsWith("[INFO] org.jgrasstools") || line.endsWith(":compile")){
+    if(line.startsWith("[INFO] org.hortonmachine") || line.endsWith(":compile")){
     	lista << line;
     }
 } // end maven 3
@@ -271,10 +271,10 @@ if(copyPath){
     def date = new java.text.SimpleDateFormat("yyyyMMddHHmm").format(new Date());
     def versionStr = date;
     if(VERSION) versionStr = VERSION;
-    // ant.zip(destfile: "./extras/deploy/jgrasstools-${versionStr}.zip",  basedir: "./extras/deploy/",  includes: "**",  excludes: "*release.groovy*,*deploylibs.groovy*,jgrasstools*.zip,modules")  
+    // ant.zip(destfile: "./extras/deploy/hortonmachine-${versionStr}.zip",  basedir: "./extras/deploy/",  includes: "**",  excludes: "*release.groovy*,*deploylibs.groovy*,hortonmachine*.zip,modules")  
 
-    def tarPath = "./extras/deploy/jgrasstools-${versionStr}.tar";
-    ant.tar(destfile: tarPath,  basedir: "./extras/deploy/",  includes: "**",  excludes: "*release.groovy*,*deploylibs.groovy*,jgrasstools*.zip,modules")  
+    def tarPath = "./extras/deploy/hortonmachine-${versionStr}.tar";
+    ant.tar(destfile: tarPath,  basedir: "./extras/deploy/",  includes: "**",  excludes: "*release.groovy*,*deploylibs.groovy*,hortonmachine*.zip,modules")  
     ant.gzip(destfile: tarPath + ".gz", src: tarPath)
     
     new File(tarPath).delete()
