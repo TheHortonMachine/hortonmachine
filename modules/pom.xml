@@ -3,27 +3,27 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.jgrasstools</groupId>
-    <artifactId>jgrasstools</artifactId>
+    <groupId>org.hortonmachine</groupId>
+    <artifactId>hortonmachine</artifactId>
     <version>0.8.2-SNAPSHOT</version>
   </parent>
 
-  <groupId>org.jgrasstools</groupId>
-  <artifactId>jgt-modules</artifactId>
+  <groupId>org.hortonmachine</groupId>
+  <artifactId>hm-modules</artifactId>
   <version>0.8.2-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>JGrasstools Simple Modules Wrapper</name>
+  <name>HM Simple Modules Wrapper</name>
   
   <dependencies>
 	<dependency>
-		<groupId>org.jgrasstools</groupId>
-		<artifactId>jgt-hortonmachine</artifactId>
+		<groupId>org.hortonmachine</groupId>
+		<artifactId>hm-hmachine</artifactId>
         <version>0.8.2-SNAPSHOT</version>
 </dependency>
 
 	<dependency>
-		<groupId>org.jgrasstools</groupId>
-		<artifactId>jgt-lesto</artifactId>
+		<groupId>org.hortonmachine</groupId>
+		<artifactId>hm-lesto</artifactId>
         <version>0.8.2-SNAPSHOT</version>
 	</dependency>
 

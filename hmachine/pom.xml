@@ -1,0 +1,91 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.hortonmachine</groupId>
+    <artifactId>hortonmachine</artifactId>
+    <version>0.8.2-SNAPSHOT</version>
+  </parent>
+
+	<groupId>org.hortonmachine</groupId>
+	<artifactId>hm-hmachine</artifactId>
+    <version>0.8.2-SNAPSHOT</version>    
+	<packaging>jar</packaging>
+	<name>The Horton Machine modules</name>
+
+	<!-- Project dependencies -->
+	<dependencies>
+		<dependency>
+			<groupId>org.hortonmachine</groupId>
+			<artifactId>hm-oms3</artifactId>
+            <version>0.8.2-SNAPSHOT</version>
+		</dependency>
+	
+		<dependency>
+			<groupId>org.hortonmachine</groupId>
+			<artifactId>hm-gears</artifactId>
+            <version>0.8.2-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.5</version>
+			<scope>test</scope>
+		</dependency>		
+		
+	</dependencies>
+
+
+ <!-- create a runnable jar with all dependencies in it which is able to run OMS3 scripts 
+	<build>
+		<plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>install-commons-validator</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>${java.home}/../lib/tools.jar</file>
+                            <groupId>com.sun</groupId>
+                            <artifactId>tools</artifactId>
+                            <version>1.6.0</version>
+                            <packaging>jar</packaging>
+                            <createChecksum>true</createChecksum>
+                            <generatePom>true</generatePom>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+			
+            <plugin>
+              <artifactId>maven-assembly-plugin</artifactId>
+              <configuration>
+                <descriptorRefs>
+                  <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+                <archive>
+                    <manifest>
+                      <mainClass>org.hortonmachine.hmachine.oms.ScriptLauncher</mainClass>
+                    </manifest>
+                </archive>
+              </configuration>
+              <executions>
+                <execution>
+                  <id>make-assembly</id> 
+                  <phase>package</phase> 
+                  <goals>
+                    <goal>single</goal> 
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
+		</plugins>
+	</build>
+-->
+</project>

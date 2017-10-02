@@ -8,7 +8,7 @@
 <jsp:include page="header.jsp">
 	<jsp:param
 		name="title"
-		value="Simple JGrasstools Server - Admin Page" />
+		value="Simple Geopaparazzi Server - Admin Page" />
 	<jsp:param
 		name="isAdmin"
 		value="true" />

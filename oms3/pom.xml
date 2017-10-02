@@ -2,16 +2,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.jgrasstools</groupId>
-    <artifactId>jgrasstools</artifactId>
+    <groupId>org.hortonmachine</groupId>
+    <artifactId>hortonmachine</artifactId>
     <version>0.8.2-SNAPSHOT</version>
   </parent>
   
-  <groupId>org.jgrasstools</groupId>
-  <artifactId>jgt-oms3</artifactId>
+  <groupId>org.hortonmachine</groupId>
+  <artifactId>hm-oms3</artifactId>
   <version>0.8.2-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>Object Modeling System (JGrasstools package)</name>
+  <name>Object Modeling System (Hortonmachine package)</name>
   
 	<dependencies>
 		<dependency>

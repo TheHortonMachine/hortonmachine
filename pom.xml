@@ -15,25 +15,25 @@
 		<performRelease>false</performRelease>
 	</properties>
 
-    <groupId>org.jgrasstools</groupId>
-    <artifactId>jgrasstools</artifactId>
+    <groupId>org.hortonmachine</groupId>
+    <artifactId>hortonmachine</artifactId>
     <version>0.8.2-SNAPSHOT</version>
 
     <packaging>pom</packaging>
-    <name>JGrasstools - Spatial Tools for Environmental Modelling</name>
-    <url>http://www.jgrasstools.org</url>
+    <name>The Horton Machine - Spatial Tools for Environmental Modelling</name>
+    <url>http://www.hortonmachine.org</url>
 
     <modules>
 	<module>oms3</module>
 	<module>dbs</module>
-    <module>jgrassgears</module>
-    <module>hortonmachine</module>
+    <module>gears</module>
+    <module>hmachine</module>
     <module>lesto</module>
     <module>modules</module>
     <module>gui</module>
-<!--REMONREL
 	<module>apps</module>
 	<module>gpserver</module>
+<!--REMONREL
  REMONREL-->
   </modules>
 

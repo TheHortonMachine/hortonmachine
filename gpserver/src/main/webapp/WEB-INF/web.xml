@@ -5,19 +5,19 @@
 
 	<servlet>
 		<servlet-name>FileUpoadServlet</servlet-name>
-		<servlet-class>org.jgrasstools.server.jetty.fileupload.FileUpoadServlet</servlet-class>
+		<servlet-class>org.hortonmachine.server.jetty.fileupload.FileUpoadServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<servlet-name>ProgressServlet</servlet-name>
-		<servlet-class>org.jgrasstools.server.jetty.fileupload.ProgressServlet</servlet-class>
+		<servlet-class>org.hortonmachine.server.jetty.fileupload.ProgressServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<servlet-name>UserServlet</servlet-name>
-		<servlet-class>org.jgrasstools.server.jetty.security.UserServlet</servlet-class>
+		<servlet-class>org.hortonmachine.server.jetty.security.UserServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<servlet-name>AdminServlet</servlet-name>
-		<servlet-class>org.jgrasstools.server.jetty.security.AdminServlet</servlet-class>
+		<servlet-class>org.hortonmachine.server.jetty.security.AdminServlet</servlet-class>
 	</servlet>
 
 	<servlet-mapping>
