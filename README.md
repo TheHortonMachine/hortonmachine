@@ -1,7 +1,7 @@
-jgrasstools
-===========
+The Horton Machine
+===================
 
-uDig's geospatial toolbox (but not only)
+Spatial Tools for Environmental Modelling.
 
 
-Landing page: http://moovida.github.io/jgrasstools/
+Landing page: http://thehortonmachine.github.io/hortonmachine/
