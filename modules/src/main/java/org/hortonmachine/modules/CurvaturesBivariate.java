@@ -19,32 +19,39 @@ package org.hortonmachine.modules;
 
 import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvatures.*;
 
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvaturesBivariate;
 
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Name;
+import oms3.annotations.UI;
 
 @Name("curvaturesbivariate")
 public class CurvaturesBivariate extends OmsCurvaturesBivariate {
     @Description("The map of the digital elevation model (DEM or pit).")
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
 
     @Description(OMSCURVATURES_outProf_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outProf = null;
 
     @Description(OMSCURVATURES_outPlan_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outPlan = null;
 
     @Description("The map of slope.")
+    @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outSlope = null;
 
     @Description("The map of aspect")
+    @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outAspect = null;
 

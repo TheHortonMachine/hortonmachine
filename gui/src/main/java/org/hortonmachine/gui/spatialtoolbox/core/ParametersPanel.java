@@ -66,8 +66,6 @@ public class ParametersPanel extends JPanel implements MouseListener {
 
     private static final String PM_VAR_NAME = "pm";
 
-    private Class< ? > parentOmsClass;
-
     private String[] rasterLayers;
 
     private String[] vectorLayers;
@@ -145,7 +143,6 @@ public class ParametersPanel extends JPanel implements MouseListener {
         if (module == null) {
             return;
         }
-        parentOmsClass = getParentClass(module);
 
         final List<FieldData> inputsList = module.getInputsList();
         // final List<FieldData> outputsList = module.getOutputsList();
@@ -378,16 +375,13 @@ public class ParametersPanel extends JPanel implements MouseListener {
 
             boolean isVector = false;
             boolean isRaster = false;
-            if (parentOmsClass != null && !typeCheck.isOutput) {
-                try {
-                    Field field = parentOmsClass.getField(inputField.fieldName);
-                    if (field != null) {
-                        Class< ? > fieldClass = field.getType();
-                        isVector = isAtLeastOneAssignable(fieldClass.getCanonicalName(), SimpleFeatureCollection.class);
-                        isRaster = isAtLeastOneAssignable(fieldClass.getCanonicalName(), GridCoverage2D.class);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+
+            if (!typeCheck.isOutput) {
+                String guiHints = inputField.guiHints;
+                if (guiHints.contains(HMConstants.FILEIN_UI_HINT_RASTER)) {
+                    isRaster = true;
+                } else if (guiHints.contains(HMConstants.FILEIN_UI_HINT_VECTOR)) {
+                    isVector = true;
                 }
             }
 
@@ -472,7 +466,7 @@ public class ParametersPanel extends JPanel implements MouseListener {
         if (files != null && files.length > 0) {
             final File gpapFile = files[0];
             GuiUtilities.setLastPath(gpapFile.getAbsolutePath());
-            
+
             textField.setText(gpapFile.getAbsolutePath());
         }
     }

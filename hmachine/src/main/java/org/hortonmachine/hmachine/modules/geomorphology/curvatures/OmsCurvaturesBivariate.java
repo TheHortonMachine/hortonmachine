@@ -26,23 +26,13 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
-import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvatures.*;
+import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_LABEL;
+import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_outPlan_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_outProf_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 
 import javax.media.jai.iterator.RandomIter;
-
-import oms3.annotations.Author;
-import oms3.annotations.Bibliography;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
 
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -57,6 +47,19 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
+
 @Description("Estimates the longitudinal, normal and planar curvatures by means of a bivariate quadratic representation of the terrain.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("curvatures, bivariate, slope, aspect")
@@ -67,6 +70,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Bibliography("Multiscale Terrain Analysis of Multibeam Bathymetry Data for Habitat Mapping on the Continental Slope, Wilson M., 2007")
 public class OmsCurvaturesBivariate extends HMModel {
     @Description("The map of the digital elevation model (DEM or pit).")
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public GridCoverage2D inElev = null;
 
@@ -76,18 +80,22 @@ public class OmsCurvaturesBivariate extends HMModel {
 
     // output
     @Description(OMSCURVATURES_outProf_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outProf = null;
 
     @Description(OMSCURVATURES_outPlan_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outPlan = null;
 
     @Description("The map of slope.")
+    @UI(HMConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outSlope = null;
 
     @Description("The map of aspect")
+    @UI(HMConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outAspect = null;
 
@@ -126,7 +134,7 @@ public class OmsCurvaturesBivariate extends HMModel {
          */
         pm.beginTask("Processing...", nRows - 2);
         for( int r = 1; r < nRows - 1; r++ ) {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return;
             }
             for( int c = 1; c < nCols - 1; c++ ) {
@@ -140,7 +148,7 @@ public class OmsCurvaturesBivariate extends HMModel {
         }
         pm.done();
 
-        if (isCanceled(pm)) {
+        if (pm.isCanceled()) {
             return;
         }
         CoordinateReferenceSystem crs = inElev.getCoordinateReferenceSystem();
