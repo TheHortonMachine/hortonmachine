@@ -28,8 +28,12 @@ public class MapcalcView extends JPanel
    JTabbedPane _syntaxHelpTab = new JTabbedPane();
    JButton _runButton = new JButton();
    JTable _availableMapsTable = new JTable();
+   JPanel _manualAddFileLayout = new JPanel();
    JLabel _allMapsLabel = new JLabel();
    JButton _addMapButton = new JButton();
+   JPanel _comboAddLayerlayout = new JPanel();
+   JButton _addMapFromComboButton = new JButton();
+   JComboBox _layerCombo = new JComboBox();
    JTextField _outputPathText = new JTextField();
    JButton _outPathButton = new JButton();
 
@@ -194,7 +198,7 @@ public class MapcalcView extends JPanel
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Available maps",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -203,20 +207,52 @@ public class MapcalcView extends JPanel
       jscrollpane1.setViewportView(_availableMapsTable);
       jscrollpane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
       jscrollpane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-      jpanel1.add(jscrollpane1,cc.xywh(2,4,3,1));
+      jpanel1.add(jscrollpane1,cc.xywh(2,5,7,1));
+
+      jpanel1.add(createmanualAddFileLayout(),cc.xywh(2,2,7,1));
+      jpanel1.add(createcomboAddLayerlayout(),cc.xywh(2,3,7,1));
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9 },new int[]{ 1,2,3,4,5 });
+      return jpanel1;
+   }
+
+   public JPanel createmanualAddFileLayout()
+   {
+      _manualAddFileLayout.setName("manualAddFileLayout");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      _manualAddFileLayout.setLayout(formlayout1);
 
       _allMapsLabel.setName("allMapsLabel");
       _allMapsLabel.setText("add map files from filesystem");
-      _allMapsLabel.setHorizontalAlignment(JLabel.TRAILING);
-      jpanel1.add(_allMapsLabel,cc.xy(2,2));
+      _allMapsLabel.setHorizontalAlignment(JLabel.LEFT);
+      _manualAddFileLayout.add(_allMapsLabel,cc.xy(1,1));
 
       _addMapButton.setActionCommand("...");
       _addMapButton.setName("addMapButton");
       _addMapButton.setText("...");
-      jpanel1.add(_addMapButton,cc.xy(4,2));
+      _manualAddFileLayout.add(_addMapButton,cc.xy(3,1));
 
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4 });
-      return jpanel1;
+      addFillComponents(_manualAddFileLayout,new int[]{ 2 },new int[0]);
+      return _manualAddFileLayout;
+   }
+
+   public JPanel createcomboAddLayerlayout()
+   {
+      _comboAddLayerlayout.setName("comboAddLayerlayout");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      _comboAddLayerlayout.setLayout(formlayout1);
+
+      _addMapFromComboButton.setActionCommand("...");
+      _addMapFromComboButton.setName("addMapFromComboButton");
+      _addMapFromComboButton.setText("+");
+      _comboAddLayerlayout.add(_addMapFromComboButton,cc.xy(3,1));
+
+      _layerCombo.setName("layerCombo");
+      _comboAddLayerlayout.add(_layerCombo,cc.xy(1,1));
+
+      addFillComponents(_comboAddLayerlayout,new int[]{ 2 },new int[0]);
+      return _comboAddLayerlayout;
    }
 
    public JPanel createPanel5()

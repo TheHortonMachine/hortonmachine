@@ -47,6 +47,9 @@ public class HMFileFilter extends FileFilter {
 
     @Override
     public boolean accept( File f ) {
+        if (f.isDirectory()) {
+            return true;
+        }
         String name = f.getName();
         for( String ext : allowedExt ) {
             if (name.endsWith(ext)) {

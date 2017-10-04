@@ -7,12 +7,10 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -26,34 +24,44 @@ import javax.swing.JTextPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 
-import org.apache.commons.lang.text.StrBuilder;
 import org.hortonmachine.database.DatabaseViewer;
-import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
+import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 
 public class MapcalcController extends MapcalcView implements IOnCloseListener {
     private static final String MAPCALC_HISTORY_KEY = "MAPCALC_HISTORY_KEY";
-    private DefaultGuiBridgeImpl gBridge;
+    private GuiBridgeHandler gBridge;
     private JTextPane _functionArea;
 
     private LinkedHashMap<String, String> name2PathMap = new LinkedHashMap<>();
     private List<String> historyList = new ArrayList<>();
+    private boolean manualAdd;
 
-    public MapcalcController( DefaultGuiBridgeImpl gBridge ) {
+    public MapcalcController( GuiBridgeHandler gBridge, boolean manualAdd ) {
         this.gBridge = gBridge;
+        this.manualAdd = manualAdd;
         setPreferredSize(new Dimension(900, 600));
         init();
     }
 
+    protected void preInit() {
+
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    protected void setLayerNames( String[] names ) {
+        _layerCombo.setModel(new DefaultComboBoxModel(names));
+    }
+
     @SuppressWarnings("unchecked")
     private void init() {
+        preInit();
         LinkedHashMap<String, List<Constructs>> mapByCategory = Constructs.getMapByCategory();
         for( Entry<String, List<Constructs>> entry : mapByCategory.entrySet() ) {
             addTab(entry);
@@ -69,18 +77,33 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         MapcalcDocument doc = new MapcalcDocument();
         _functionArea.setDocument(doc);
 
-        _addMapButton.addActionListener(( e ) -> {
-            File[] files = gBridge.showOpenFileDialog("Select raster map file", GuiUtilities.getLastFile(),
-                    HMConstants.rasterFileFilter);
-            if (files != null && files.length > 0) {
-                for( File file : files ) {
+        if (manualAdd) {
+            _comboAddLayerlayout.removeAll();
+            _addMapButton.addActionListener(( e ) -> {
+                File[] files = gBridge.showOpenFileDialog("Select raster map file", GuiUtilities.getLastFile(),
+                        HMConstants.rasterFileFilter);
+                if (files != null && files.length > 0) {
+                    for( File file : files ) {
+                        String absolutePath = file.getAbsolutePath();
+                        GuiUtilities.setLastPath(absolutePath);
+                        String name = FileUtilities.getNameWithoutExtention(file);
+                        loadNewMap(name, absolutePath);
+                    }
+                }
+            });
+        } else {
+            _manualAddFileLayout.removeAll();
+            _addMapFromComboButton.addActionListener(( e ) -> {
+                String layerName = _layerCombo.getSelectedItem().toString();
+                File file = getFileForLayerName(layerName);
+                if (file != null) {
                     String absolutePath = file.getAbsolutePath();
                     GuiUtilities.setLastPath(absolutePath);
                     String name = FileUtilities.getNameWithoutExtention(file);
                     loadNewMap(name, absolutePath);
                 }
-            }
-        });
+            });
+        }
 
         _outPathButton.addActionListener(( e ) -> {
             File[] files = gBridge.showSaveFileDialog("Choose output file", GuiUtilities.getLastFile(),
@@ -120,8 +143,14 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
                     sb.append("}\n");
                     sb.append(script);
 
-                    MapcalcJiffler j = new MapcalcJiffler(sb.toString(), _outputPathText.getText(), name2PathMap);
+                    String resultPath = _outputPathText.getText();
+                    MapcalcJiffler j = new MapcalcJiffler(sb.toString(), resultPath, name2PathMap);
                     j.exec(pm);
+
+                    File resultFile = new File(resultPath);
+                    if (resultFile.exists()) {
+                        loadRasterLayer(resultFile);
+                    }
                 } catch (Exception ex) {
                     pm.errorMessage(ex.getLocalizedMessage());
                     hadErrors = true;
@@ -147,6 +176,18 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
             addTextToFunctionArea(selectedItem);
         });
 
+    }
+
+    protected File getFileForLayerName( String layerName ) {
+        return null;
+    }
+
+    /**
+     * Override if loading of layers is supported.
+     * 
+     * @param file
+     */
+    protected void loadRasterLayer( File file ) {
     }
 
     public void loadNewMap( String name, String path ) {
@@ -248,7 +289,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         GuiUtilities.setDefaultLookAndFeel();
 
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
-        final MapcalcController controller = new MapcalcController(gBridge);
+        final MapcalcController controller = new MapcalcController(gBridge, true);
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Mapcalc");
 
         Class<DatabaseViewer> class1 = DatabaseViewer.class;

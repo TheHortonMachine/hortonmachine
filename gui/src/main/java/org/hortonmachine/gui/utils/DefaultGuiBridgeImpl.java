@@ -234,7 +234,7 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
                                 }
                                 String msg = "The used extension is not supported.";
                                 if (allowedExtensions != null)
-                                    msg += " Supported extenstions are: " + Arrays.toString(allowedExtensions);
+                                    msg += " Supported extensions are: " + Arrays.toString(allowedExtensions);
                                 messageDialog(msg, "WARNING", JOptionPane.WARNING_MESSAGE);
                                 allowedFiles = null;
                                 this.returnValue = null;
@@ -264,15 +264,15 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
     }
 
     public File[] showOpenDirectoryDialog( String title, File initialPath ) {
-        return showChooserDialog(title, JFileChooser.OPEN_DIALOG, JFileChooser.DIRECTORIES_ONLY, false, initialPath, null, false);
+        return showChooserDialog(title, JFileChooser.OPEN_DIALOG, JFileChooser.DIRECTORIES_ONLY, false, initialPath, null, true);
     }
 
     public File[] showOpenFileDialog( String title, File initialPath, FileFilter filter ) {
-        return showChooserDialog(title, JFileChooser.OPEN_DIALOG, JFileChooser.FILES_ONLY, false, initialPath, filter, false);
+        return showChooserDialog(title, JFileChooser.OPEN_DIALOG, JFileChooser.FILES_ONLY, false, initialPath, filter, true);
     }
 
     public File[] showSaveFileDialog( String title, File initialPath, FileFilter filter ) {
-        return showChooserDialog(title, JFileChooser.SAVE_DIALOG, JFileChooser.FILES_ONLY, false, initialPath, filter, false);
+        return showChooserDialog(title, JFileChooser.SAVE_DIALOG, JFileChooser.FILES_ONLY, false, initialPath, filter, true);
     }
 
     @Override
