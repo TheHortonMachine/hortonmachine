@@ -7,6 +7,7 @@ import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 
@@ -37,9 +38,11 @@ public class NewDbController extends NewDbView {
         _browseButton.addActionListener(e -> {
             File[] files;
             if (doOpen) {
-                files = guiBridge.showOpenFileDialog("Select database to open", GuiUtilities.getLastFile());
+                files = guiBridge.showOpenFileDialog("Select database to open", GuiUtilities.getLastFile(),
+                        HMConstants.dbFileFilter);
             } else {
-                files = guiBridge.showSaveFileDialog("Select database to create", GuiUtilities.getLastFile());
+                files = guiBridge.showSaveFileDialog("Select database to create", GuiUtilities.getLastFile(),
+                        HMConstants.dbFileFilter);
             }
             if (files != null && files.length > 0) {
                 String absolutePath = files[0].getAbsolutePath();

@@ -42,6 +42,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.filechooser.FileFilter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -80,6 +81,8 @@ public class ParametersPanel extends JPanel implements MouseListener {
     private ModuleDescription module;
 
     private GuiBridgeHandler guiBridge;
+
+    private Class< ? > parentClass;
 
     public ParametersPanel( GuiBridgeHandler guiBridge ) {
         this.guiBridge = guiBridge;
@@ -143,6 +146,8 @@ public class ParametersPanel extends JPanel implements MouseListener {
         if (module == null) {
             return;
         }
+
+        parentClass = getParentClass(module);
 
         final List<FieldData> inputsList = module.getInputsList();
         // final List<FieldData> outputsList = module.getOutputsList();
@@ -375,24 +380,33 @@ public class ParametersPanel extends JPanel implements MouseListener {
 
             boolean isVector = false;
             boolean isRaster = false;
+            boolean isLas = false;
 
-            if (!typeCheck.isOutput) {
-                String guiHints = inputField.guiHints;
-                if (guiHints.contains(HMConstants.FILEIN_UI_HINT_RASTER)) {
-                    isRaster = true;
-                } else if (guiHints.contains(HMConstants.FILEIN_UI_HINT_VECTOR)) {
-                    isVector = true;
+            String guiHints = inputField.guiHints;
+            if (guiHints.contains(HMConstants.FILEIN_UI_HINT_RASTER)) {
+                isRaster = true;
+            } else if (guiHints.contains(HMConstants.FILEIN_UI_HINT_VECTOR)) {
+                isVector = true;
+            } else if (guiHints.contains(HMConstants.FILEIN_UI_HINT_LAS)) {
+                isLas = true;
+            } else if (guiHints.contains(HMConstants.FILEOUT_UI_HINT) && parentClass != null) {
+                // TODO change all annotations as done for inputs to better check type
+                try {
+                    Field field = parentClass.getField(inputField.fieldName);
+                    if (field != null) {
+                        Class< ? > clazz = field.getType();
+                        if (clazz.isAssignableFrom(GridCoverage2D.class)) {
+                            isRaster = true;
+                        } else if (clazz.isAssignableFrom(SimpleFeatureCollection.class)) {
+                            isVector = true;
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
 
-            if (isVector && (vectorLayers == null || vectorLayers.length == 0)) {
-                isVector = false;
-            }
-            if (isRaster && (rasterLayers == null || rasterLayers.length == 0)) {
-                isRaster = false;
-            }
-
-            if (isVector) {
+            if (isVector && vectorLayers != null && !typeCheck.isOutput) {
                 String[] tmpVectorLayers = new String[vectorLayers.length + 1];
                 tmpVectorLayers[0] = "";
                 System.arraycopy(vectorLayers, 0, tmpVectorLayers, 1, vectorLayers.length);
@@ -400,7 +414,7 @@ public class ParametersPanel extends JPanel implements MouseListener {
                 this.add(comboBox, cc.xy(col, row));
                 vectorComboList.add(comboBox);
                 fieldName2ValueHolderMap.put(inputField.fieldName, comboBox);
-            } else if (isRaster) {
+            } else if (isRaster && rasterLayers != null && !typeCheck.isOutput) {
                 String[] tmpRasterLayers = new String[rasterLayers.length + 1];
                 tmpRasterLayers[0] = "";
                 System.arraycopy(rasterLayers, 0, tmpRasterLayers, 1, rasterLayers.length);
@@ -419,11 +433,23 @@ public class ParametersPanel extends JPanel implements MouseListener {
 
                 JButton browseButton = new JButton("...");
                 subPanel.add(browseButton, BorderLayout.EAST);
+
+                FileFilter fileFilter = null;
+                if (isRaster) {
+                    fileFilter = HMConstants.rasterFileFilter;
+                } else if (isVector) {
+                    fileFilter = HMConstants.vectorFileFilter;
+                } else if (isLas) {
+                    fileFilter = HMConstants.lasFileFilter;
+                }
+                FileFilter _fileFilter = fileFilter;
+
                 if (!typeCheck.isFolder && !typeCheck.isOutput) {
                     // input file
                     browseButton.addActionListener(new ActionListener(){
                         public void actionPerformed( ActionEvent e ) {
-                            File[] files = guiBridge.showOpenFileDialog("Select input file", GuiUtilities.getLastFile());
+                            File[] files = guiBridge.showOpenFileDialog("Select input file", GuiUtilities.getLastFile(),
+                                    _fileFilter);
                             setSelectedFile(textField, files);
                         }
 
@@ -433,7 +459,8 @@ public class ParametersPanel extends JPanel implements MouseListener {
                     // output file
                     browseButton.addActionListener(new ActionListener(){
                         public void actionPerformed( ActionEvent e ) {
-                            File[] files = guiBridge.showSaveFileDialog("Select file to save", GuiUtilities.getLastFile());
+                            File[] files = guiBridge.showSaveFileDialog("Select file to save", GuiUtilities.getLastFile(),
+                                    _fileFilter);
                             setSelectedFile(textField, files);
                         }
                     });

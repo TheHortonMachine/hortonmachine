@@ -21,7 +21,10 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.geom.Point2D;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import javax.swing.ImageIcon;
@@ -33,6 +36,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.gears.libs.modules.HMFileFilter;
 import org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController;
 
 /**
@@ -193,10 +197,12 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
                 fc.setCurrentDirectory(initialPath);
                 fc.setFileFilter(filter);
                 fc.setFileHidingEnabled(fileHidingEnabled);
+                boolean isSave = false;
                 int r = JFileChooser.CANCEL_OPTION;
                 switch( type ) {
                 case JFileChooser.SAVE_DIALOG:
                     r = fc.showSaveDialog(getRootComponent());
+                    isSave = true;
                     break;
                 case JFileChooser.OPEN_DIALOG:
                 default:
@@ -207,11 +213,42 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
                     this.returnValue = null;
                     return;
                 }
-                if (fc.isMultiSelectionEnabled()) {
-                    this.returnValue = fc.getSelectedFiles();
-                } else {
-                    this.returnValue = new File[]{fc.getSelectedFile()};
+
+                if (filter != null) {
+                    List<File> allowedFiles = new ArrayList<>();
+                    if (fc.isMultiSelectionEnabled()) {
+                        File[] selectedFiles = fc.getSelectedFiles();
+                        for( File selectedFile : selectedFiles ) {
+                            if (filter.accept(selectedFile)) {
+                                allowedFiles.add(selectedFile);
+                            }
+                        }
+                    } else {
+                        File selectedFile = fc.getSelectedFile();
+                        if (isSave) {
+                            if (!filter.accept(selectedFile)) {
+                                String[] allowedExtensions = null;
+                                if (filter instanceof HMFileFilter) {
+                                    HMFileFilter hmfilter = (HMFileFilter) filter;
+                                    allowedExtensions = hmfilter.getAllowedExtensions();
+                                }
+                                String msg = "The used extension is not supported.";
+                                if (allowedExtensions != null)
+                                    msg += " Supported extenstions are: " + Arrays.toString(allowedExtensions);
+                                messageDialog(msg, "WARNING", JOptionPane.WARNING_MESSAGE);
+                                allowedFiles = null;
+                                this.returnValue = null;
+                            }
+                        }
+                        if (filter.accept(selectedFile) && allowedFiles != null) {
+                            allowedFiles.add(selectedFile);
+                        }
+                    }
+                    if (allowedFiles != null && allowedFiles.size() > 0) {
+                        this.returnValue = allowedFiles.toArray(new File[0]);
+                    }
                 }
+
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -230,12 +267,12 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
         return showChooserDialog(title, JFileChooser.OPEN_DIALOG, JFileChooser.DIRECTORIES_ONLY, false, initialPath, null, false);
     }
 
-    public File[] showOpenFileDialog( String title, File initialPath ) {
-        return showChooserDialog(title, JFileChooser.OPEN_DIALOG, JFileChooser.FILES_ONLY, false, initialPath, null, false);
+    public File[] showOpenFileDialog( String title, File initialPath, FileFilter filter ) {
+        return showChooserDialog(title, JFileChooser.OPEN_DIALOG, JFileChooser.FILES_ONLY, false, initialPath, filter, false);
     }
 
-    public File[] showSaveFileDialog( String title, File initialPath ) {
-        return showChooserDialog(title, JFileChooser.SAVE_DIALOG, JFileChooser.FILES_ONLY, false, initialPath, null, false);
+    public File[] showSaveFileDialog( String title, File initialPath, FileFilter filter ) {
+        return showChooserDialog(title, JFileChooser.SAVE_DIALOG, JFileChooser.FILES_ONLY, false, initialPath, filter, false);
     }
 
     @Override

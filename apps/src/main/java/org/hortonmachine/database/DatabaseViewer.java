@@ -324,7 +324,7 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
 
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
         final DatabaseViewer controller = new DatabaseViewer(gBridge);
-        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Spatialite Viewer");
+        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Database Viewer");
 
         Class<DatabaseViewer> class1 = DatabaseViewer.class;
         ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));

@@ -29,6 +29,7 @@ import javax.swing.text.BadLocationException;
 import org.apache.commons.lang.text.StrBuilder;
 import org.hortonmachine.database.DatabaseViewer;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.utils.files.FileUtilities;
@@ -69,7 +70,8 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         _functionArea.setDocument(doc);
 
         _addMapButton.addActionListener(( e ) -> {
-            File[] files = gBridge.showOpenFileDialog("Select raster map file", GuiUtilities.getLastFile());
+            File[] files = gBridge.showOpenFileDialog("Select raster map file", GuiUtilities.getLastFile(),
+                    HMConstants.rasterFileFilter);
             if (files != null && files.length > 0) {
                 for( File file : files ) {
                     String absolutePath = file.getAbsolutePath();
@@ -81,7 +83,8 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         });
 
         _outPathButton.addActionListener(( e ) -> {
-            File[] files = gBridge.showSaveFileDialog("Choose output file", GuiUtilities.getLastFile());
+            File[] files = gBridge.showSaveFileDialog("Choose output file", GuiUtilities.getLastFile(),
+                    HMConstants.rasterFileFilter);
             if (files != null && files.length > 0) {
                 for( File file : files ) {
                     String absolutePath = file.getAbsolutePath();

@@ -18,6 +18,10 @@
  */
 package org.hortonmachine.gears.libs.modules;
 
+import javax.swing.filechooser.FileFilter;
+
+import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.gears.io.geopaparazzi.GeopaparazziUtilities;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -245,6 +249,8 @@ public class HMConstants {
     public static final String[] SUPPORTED_VECTOR_EXTENSIONS = {SHP};
     public static final String[] SUPPORTED_LIDAR_EXTENSIONS = {LAS};
     public static final String[] SUPPORTED_RASTER_EXTENSIONS = {GEOTIFF, GEOTIF, ESRIGRID};
+    public static final String[] SUPPORTED_DB_EXTENSIONS = {EDb.SPATIALITE.getExtension(), EDb.H2GIS.getExtension(),
+            GeopaparazziUtilities.GPAP_EXTENSION};
 
     /*
      * modules categories
@@ -284,7 +290,7 @@ public class HMConstants {
      */
     public static final String WORKINGFOLDER = "@@@WORKINGFOLDER@@@";
     public static final String HIDE_UI_HINT = "hide";
-    
+
     public static final String FILEIN_UI_HINT_GENERIC = "infile";
     public static final String FILEIN_UI_HINT_CSV = "infile_csv";
     public static final String FILEIN_UI_HINT_LAS = "infile_las";
@@ -293,7 +299,7 @@ public class HMConstants {
     public static final String FILEIN_UI_HINT_DBF = "infile_dbf";
     public static final String FILEIN_UI_HINT_GPAP = "infile_gpap";
     public static final String FILEIN_UI_HINT_JSON = "infile_json";
-    
+
     public static final String FOLDERIN_UI_HINT = "infolder";
     public static final String FILEOUT_UI_HINT = "outfile";
     public static final String FOLDEROUT_UI_HINT = "outfolder";
@@ -315,4 +321,11 @@ public class HMConstants {
     public static final String PROCESS_XRES_UI_HINT = "process_xres";
     public static final String PROCESS_YRES_UI_HINT = "process_yres";
 
+    public static final FileFilter vectorFileFilter = new HMFileFilter("Supported Vector Files", SUPPORTED_VECTOR_EXTENSIONS);
+
+    public static final FileFilter rasterFileFilter = new HMFileFilter("Supported Raster Files", SUPPORTED_RASTER_EXTENSIONS);
+
+    public static final FileFilter lasFileFilter = new HMFileFilter("Supported LiDAR Files", SUPPORTED_LIDAR_EXTENSIONS);
+
+    public static final FileFilter dbFileFilter = new HMFileFilter("Supported Database Files", SUPPORTED_DB_EXTENSIONS);
 }

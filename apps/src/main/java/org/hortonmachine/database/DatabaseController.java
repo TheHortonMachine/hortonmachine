@@ -92,6 +92,7 @@ import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.utils.CommonQueries;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
@@ -538,7 +539,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             String sqlText = _sqlEditorArea.getText().trim();
             if (sqlText.length() > 0) {
                 if (isSelectOrPragma(sqlText)) {
-                    File[] saveFiles = guiBridge.showSaveFileDialog("Select file to save to", GuiUtilities.getLastFile());
+                    File[] saveFiles = guiBridge.showSaveFileDialog("Select file to save to", GuiUtilities.getLastFile(), null);
                     if (saveFiles != null && saveFiles.length > 0) {
                         try {
                             GuiUtilities.setLastPath(saveFiles[0].getAbsolutePath());
@@ -592,7 +593,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             String sqlText = _sqlEditorArea.getText().trim();
             if (sqlText.length() > 0) {
                 if (sqlText.toLowerCase().startsWith("select")) {
-                    File[] saveFiles = guiBridge.showSaveFileDialog("Select shapefile to save to", GuiUtilities.getLastFile());
+                    File[] saveFiles = guiBridge.showSaveFileDialog("Select shapefile to save to", GuiUtilities.getLastFile(),
+                            HMConstants.vectorFileFilter);
                     if (saveFiles != null && saveFiles.length > 0) {
                         try {
                             GuiUtilities.setLastPath(saveFiles[0].getAbsolutePath());

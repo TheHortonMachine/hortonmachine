@@ -32,6 +32,7 @@ import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
@@ -293,7 +294,8 @@ public class SqlTemplatesAndActions {
         return new AbstractAction("Create table from shapefile"){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile());
+                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile(),
+                        HMConstants.vectorFileFilter);
                 if (openFiles != null && openFiles.length > 0) {
                     try {
                         GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
@@ -318,7 +320,8 @@ public class SqlTemplatesAndActions {
         return new AbstractAction("Attach readonly shapefile"){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile());
+                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile(),
+                        HMConstants.vectorFileFilter);
                 if (openFiles != null && openFiles.length > 0) {
                     try {
                         GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
@@ -334,7 +337,7 @@ public class SqlTemplatesAndActions {
                 } catch (Exception e1) {
                     logger.error("ERROR", e1);
                 }
-                
+
             }
         };
     }
@@ -395,7 +398,8 @@ public class SqlTemplatesAndActions {
         return new AbstractAction("Import data from shapefile"){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile());
+                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile(),
+                        HMConstants.vectorFileFilter);
                 if (openFiles != null && openFiles.length > 0) {
                     try {
                         GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
@@ -506,7 +510,7 @@ public class SqlTemplatesAndActions {
         return new AbstractAction("Import sql file"){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                File[] openFiles = guiBridge.showOpenFileDialog("Open sql file", GuiUtilities.getLastFile());
+                File[] openFiles = guiBridge.showOpenFileDialog("Open sql file", GuiUtilities.getLastFile(), null);
                 if (openFiles != null && openFiles.length > 0) {
                     try {
                         GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());

@@ -23,6 +23,7 @@ import java.util.HashMap;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.filechooser.FileFilter;
 
 /**
  * A class to help to bridge with extenral softwares.
@@ -39,7 +40,7 @@ public interface GuiBridgeHandler {
     String HEAP_KEY = "jgt_prefs_heap";
     String DEBUG_KEY = "jgt_prefs_debug";
     String LAST_GP_PROJECTS_PATH = "jgt_last_projects_path";
-    
+
     String PREFS_NODE_NAME = "/org/hortonmachine/gui";
 
     /**
@@ -58,7 +59,7 @@ public interface GuiBridgeHandler {
      * @param initialPath
      * @return
      */
-    public File[] showOpenFileDialog( String title, File initialPath );
+    public File[] showOpenFileDialog( String title, File initialPath, FileFilter filter );
 
     /**
      * Open a save file dialog.
@@ -67,7 +68,7 @@ public interface GuiBridgeHandler {
      * @param initialPath
      * @return
      */
-    public File[] showSaveFileDialog( String title, File initialPath );
+    public File[] showSaveFileDialog( String title, File initialPath, FileFilter filter );
 
     public void messageDialog( String message, String title, int messageType );
 
@@ -119,7 +120,7 @@ public interface GuiBridgeHandler {
      * @return the {@link HashMap} of preferences.
      */
     public HashMap<String, String> getGeopaparazziProjectViewerPreferencesMap();
-    
+
     /**
      * Save SpatialToolbox preferences map.
      * 

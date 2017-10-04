@@ -181,7 +181,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         _runScriptButton.setToolTipText("Run a script from file.");
         _runScriptButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
-                File[] loadFiles = guiBridge.showOpenFileDialog("Load script", GuiUtilities.getLastFile());
+                File[] loadFiles = guiBridge.showOpenFileDialog("Load script", GuiUtilities.getLastFile(), null);
                 if (loadFiles != null && loadFiles.length > 0) {
                     try {
                         GuiUtilities.setLastPath(loadFiles[0].getAbsolutePath());
@@ -226,7 +226,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
                 StringBuilder scriptBuilder = getScript(fieldName2ValueHolderMap, outputFieldNames, outputStringsMap,
                         moduleClass);
 
-                File[] saveFiles = guiBridge.showSaveFileDialog("Save script", GuiUtilities.getLastFile());
+                File[] saveFiles = guiBridge.showSaveFileDialog("Save script", GuiUtilities.getLastFile(), null);
                 if (saveFiles != null && saveFiles.length > 0) {
                     try {
                         GuiUtilities.setLastPath(saveFiles[0].getAbsolutePath());
@@ -528,7 +528,8 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
                 : SpatialToolboxConstants.LOGLEVEL_GUI_OFF;
         String ramLevel = _heapCombo.getSelectedItem().toString();
 
-        String sessionId = moduleClass.getSimpleName() + " " + ETimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.format(new Date());
+        String sessionId = moduleClass.getSimpleName() + " "
+                + ETimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.format(new Date());
         Process process = exec.exec(sessionId, scriptBuilder.toString(), logLevel, ramLevel, null);
         logConsole.beginProcess(process, sessionId);
     }
@@ -816,12 +817,12 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
             // IGNORE
         }
         if (libsFile == null || !libsFile.exists() || !libsFile.isDirectory()) {
-            Logger.INSTANCE.insertWarning("","The libraries folder is missing or not properly set.");
+            Logger.INSTANCE.insertWarning("", "The libraries folder is missing or not properly set.");
             libsFile = new File("/home/hydrologis/development/hortonmachine-git/extras/export/libs");
             // System.exit(1);
         }
 
-        Logger.INSTANCE.insertInfo("","Libraries folder used: " + libsFile.getAbsolutePath());
+        Logger.INSTANCE.insertInfo("", "Libraries folder used: " + libsFile.getAbsolutePath());
 
         HortonmachineModulesManager.getInstance().init();
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
