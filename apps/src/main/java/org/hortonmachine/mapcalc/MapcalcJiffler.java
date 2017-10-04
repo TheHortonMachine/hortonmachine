@@ -19,7 +19,6 @@ public class MapcalcJiffler {
 
     public static final String RESULT_MAP_NAME = "result";
 
-    private JiffleBuilder interp;
     private String function;
     private HashMap<String, RenderedImage> sourceImgParams = new HashMap<String, RenderedImage>();
 
@@ -73,7 +72,7 @@ public class MapcalcJiffler {
         }
 
         pm.beginTask("Adding source maps...", sourceImgParams.size());
-        interp = new JiffleBuilder();
+        JiffleBuilder interp = new JiffleBuilder();
         interp.script(function);
         for( Entry<String, RenderedImage> entry : sourceImgParams.entrySet() ) {
             interp.source(entry.getKey(), entry.getValue());
