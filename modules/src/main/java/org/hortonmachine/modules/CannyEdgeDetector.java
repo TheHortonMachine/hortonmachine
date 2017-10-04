@@ -30,7 +30,7 @@ import oms3.annotations.UI;
 public class CannyEdgeDetector extends OmsCannyEdgeDetector {
 
     @Description("The map on which to perform edge detection.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     public String inMap = null;
 
     @Description("The resulting map.")

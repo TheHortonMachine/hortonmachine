@@ -75,62 +75,62 @@ import org.hortonmachine.gears.modules.r.mosaic.OmsMosaic;
 public class Mosaic12 extends HMModel {
 
     @Description(OMSMOSAIC12_IN_MAP1_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap1;
 
     @Description(OMSMOSAIC12_IN_MAP2_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap2;
 
     @Description(OMSMOSAIC12_IN_MAP3_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap3;
 
     @Description(OMSMOSAIC12_IN_MAP4_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap4;
 
     @Description(OMSMOSAIC12_IN_MAP5_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap5;
 
     @Description(OMSMOSAIC12_IN_MAP6_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap6;
 
     @Description(OMSMOSAIC12_IN_MAP7_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap7;
 
     @Description(OMSMOSAIC12_IN_MAP8_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap8;
 
     @Description(OMSMOSAIC12_IN_MAP9_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap9;
 
     @Description(OMSMOSAIC12_IN_MAP10_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap10;
 
     @Description(OMSMOSAIC12_IN_MAP11_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap11;
 
     @Description(OMSMOSAIC12_IN_MAP12_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap12;
 

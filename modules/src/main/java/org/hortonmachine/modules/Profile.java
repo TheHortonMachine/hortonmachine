@@ -58,7 +58,7 @@ import oms3.annotations.UI;
 public class Profile extends HMModel {
 
     @Description(OMSPROFILE_IN_RASTER_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster;
 
@@ -67,7 +67,7 @@ public class Profile extends HMModel {
     public String inCoordinates;
 
     @Description(OMSPROFILE_IN_VECTOR_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector;
 

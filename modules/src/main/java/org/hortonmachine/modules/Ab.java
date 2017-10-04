@@ -41,12 +41,12 @@ import oms3.annotations.UI;
 @License(OMSAB_LICENSE)
 public class Ab extends OmsAb {
     @Description(OMSAB_inTca_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTca = null;
 
     @Description(OMSAB_inPlan_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inPlan = null;
 

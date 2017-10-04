@@ -56,7 +56,7 @@ import oms3.annotations.UI;
 public class DxfConverter extends HMModel {
 
     @Description(OMSDXFCONVERTER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String file = null;
 

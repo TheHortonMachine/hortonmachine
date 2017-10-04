@@ -58,17 +58,17 @@ import oms3.annotations.Unit;
 public class DebrisTriggerCnr extends HMModel {
 
     @Description(OMSDEBRISTRIGGERCNR_inElev_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
 
     @Description(OMSDEBRISTRIGGERCNR_inNet_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inNet = null;
 
     @Description(OMSDEBRISTRIGGERCNR_inTca_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTca = null;
 

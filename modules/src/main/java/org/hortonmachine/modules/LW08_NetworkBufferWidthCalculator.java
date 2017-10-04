@@ -54,17 +54,17 @@ import oms3.annotations.UI;
 @License(OmsLW08_NetworkBufferWidthCalculator.LICENSE)
 public class LW08_NetworkBufferWidthCalculator extends HMModel implements LWFields {
     @Description(inNetPoints_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inNetPoints = null;
 
     @Description(inGeo_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inGeo = null;
 
     @Description(inTransSect_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inTransSect = null;
 

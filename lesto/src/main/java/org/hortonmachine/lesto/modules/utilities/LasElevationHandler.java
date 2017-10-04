@@ -48,12 +48,12 @@ import oms3.annotations.UI;
 @License(HMConstants.GPL3_LICENSE)
 public class LasElevationHandler extends HMModel {
     @Description("The las file to handle.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inFile;
 
     @Description("A dtm raster to use for the ellevation normlization.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm;
 

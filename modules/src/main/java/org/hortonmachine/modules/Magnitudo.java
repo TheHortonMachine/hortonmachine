@@ -53,7 +53,7 @@ import oms3.annotations.UI;
 public class Magnitudo extends HMModel {
 
     @Description(OMSMAGNITUDO_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 

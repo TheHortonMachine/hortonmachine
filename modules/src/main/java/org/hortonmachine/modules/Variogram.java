@@ -61,7 +61,7 @@ import org.hortonmachine.hmachine.modules.statistics.kriging.OmsVariogram;
 public class Variogram extends HMModel {
 
     @Description(OMSVARIOGRAM_inStations_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inStations = null;
 

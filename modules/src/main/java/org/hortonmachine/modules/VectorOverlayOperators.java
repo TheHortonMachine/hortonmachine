@@ -48,12 +48,12 @@ import oms3.annotations.UI;
 public class VectorOverlayOperators extends HMModel {
 
     @Description(OMSVECTOROVERLAYOPERATORS_inMap1_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inMap1 = null;
 
     @Description(OMSVECTOROVERLAYOPERATORS_inMap2_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inMap2 = null;
 

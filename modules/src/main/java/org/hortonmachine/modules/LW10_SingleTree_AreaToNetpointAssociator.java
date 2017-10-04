@@ -62,37 +62,37 @@ import oms3.annotations.Unit;
 public class LW10_SingleTree_AreaToNetpointAssociator extends HMModel {
 
     @Description(inNetPoints_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inNetPoints = null;
 
     @Description(inTreePoints_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inTreePoints = null;
 
     @Description(inInundationArea_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inInundationArea = null;
 
     @Description(inFlow_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 
     @Description(inTca_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTca = null;
 
     @Description(inNet_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inNet = null;
 
     @Description(inConnectivity_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inConnectivity = null;
 

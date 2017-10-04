@@ -59,7 +59,7 @@ import oms3.annotations.UI;
 public class VectorTableJoiner extends HMModel {
 
     @Description(OMSVECTORTABLEJOINER_IN_VECTOR_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector;
 

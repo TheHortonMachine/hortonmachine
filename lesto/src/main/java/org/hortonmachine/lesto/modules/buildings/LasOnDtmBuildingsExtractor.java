@@ -76,12 +76,12 @@ import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 @License(HMConstants.GPL3_LICENSE)
 public class LasOnDtmBuildingsExtractor extends HMModel {
     @Description("The las file")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas;
 
     @Description("The dtm raster")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm;
 

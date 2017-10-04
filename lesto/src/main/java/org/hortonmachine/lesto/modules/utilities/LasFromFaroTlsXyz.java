@@ -59,7 +59,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License(HMConstants.GPL3_LICENSE)
 public class LasFromFaroTlsXyz extends HMModel {
     @Description("The xyz file to convert.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String inFile;
 

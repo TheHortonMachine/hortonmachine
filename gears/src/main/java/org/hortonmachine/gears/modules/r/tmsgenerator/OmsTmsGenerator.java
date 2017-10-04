@@ -102,7 +102,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 public class OmsTmsGenerator extends HMModel {
 
     @Description(OMSTMSGENERATOR_IN_RASTER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRasterFile = null;
 
@@ -111,7 +111,7 @@ public class OmsTmsGenerator extends HMModel {
     public List<GridGeometry2D> inRasterBounds = null;
 
     @Description(OMSTMSGENERATOR_IN_VECTOR_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVectorFile = null;
 
@@ -157,7 +157,7 @@ public class OmsTmsGenerator extends HMModel {
     public String pEpsg;
 
     @Description("An optional prj file to use instead of the epsg code.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String inPrj;
 

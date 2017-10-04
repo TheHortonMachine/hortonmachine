@@ -54,47 +54,47 @@ import oms3.annotations.UI;
 @License(OMSHYDRO_LICENSE)
 public class GeopaparazziMapsCreator extends HMModel {
     @Description("Area of interest shapefile.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inROI = null;
 
     @Description("Zoom limit area shapefile.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inZoomLimitROI = null;
 
     @Description("Optional input raster map 1.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster1 = null;
 
     @Description("Optional input raster map 2.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster2 = null;
 
     @Description("Optional input vector map 1.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inVector1 = null;
 
     @Description("Optional input vector map 2.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector2 = null;
 
     @Description("Optional input vector map 3.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector3 = null;
 
     @Description("Optional input vector map 4.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector4 = null;
 
     @Description("Optional input vector map 5.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector5 = null;
 

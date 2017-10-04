@@ -39,17 +39,17 @@ import oms3.annotations.UI;
 @License(OMSGC_LICENSE)
 public class Gc extends HMModel {
     @Description(OMSGC_inSlope_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inSlope = null;
 
     @Description(OMSGC_inNetwork_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inNetwork = null;
 
     @Description(OMSGC_inCp9_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inCp9 = null;
 

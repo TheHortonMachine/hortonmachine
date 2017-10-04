@@ -59,7 +59,7 @@ import oms3.annotations.UI;
 public class RasterResolutionResampler extends HMModel {
 
     @Description(OMSRASTERRESOLUTIONRESAMPLER_IN_GEODATA_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inGeodata;
 

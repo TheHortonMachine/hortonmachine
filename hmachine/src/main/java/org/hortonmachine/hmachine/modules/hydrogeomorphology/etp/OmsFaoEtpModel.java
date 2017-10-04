@@ -70,7 +70,7 @@ import oms3.annotations.Unit;
 public class OmsFaoEtpModel extends HMModel {
 
     @Description(OMSFAOETPMODEL_inNetradiation_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     @Unit("MJ m-2 hour-1")
     public String inNetradiation;
@@ -81,7 +81,7 @@ public class OmsFaoEtpModel extends HMModel {
     public double defaultNetradiation = 2.0;
 
     @Description(OMSFAOETPMODEL_inWind_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     @Unit("m s-1")
     public String inWind;

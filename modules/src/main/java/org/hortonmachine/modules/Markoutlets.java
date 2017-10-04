@@ -52,7 +52,7 @@ import oms3.annotations.UI;
 @License(OMSMARKOUTLETS_LICENSE)
 public class Markoutlets extends HMModel {
     @Description(OMSMARKOUTLETS_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 

@@ -68,12 +68,12 @@ import com.vividsolutions.jts.geom.Polygon;
 public class Las2RasterInterpolator extends HMModel {
 
     @Description("Las files folder main index file path.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inIndexFile = null;
 
     @Description("A dtm raster to use for the area of interest and to calculate the elevation threshold.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm;
 

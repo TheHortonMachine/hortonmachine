@@ -64,17 +64,17 @@ import org.hortonmachine.gears.modules.r.interpolation2d.OmsSurfaceInterpolator;
 public class SurfaceInterpolator extends HMModel {
 
     @Description(OMSSURFACEINTERPOLATOR_IN_VECTOR_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector;
 
     @Description(OMSSURFACEINTERPOLATOR_IN_GRID_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inGrid;
 
     @Description(OMSSURFACEINTERPOLATOR_IN_MASK_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMask = null;
 

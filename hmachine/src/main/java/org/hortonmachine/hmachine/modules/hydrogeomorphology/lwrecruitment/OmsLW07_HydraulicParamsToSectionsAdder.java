@@ -75,7 +75,6 @@ public class OmsLW07_HydraulicParamsToSectionsAdder extends HMModel implements L
     public SimpleFeatureCollection inNetPoints = null;
 
     @Description(inDischarge_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
     @Unit("m3/s")
     @In
     public double pDischarge;

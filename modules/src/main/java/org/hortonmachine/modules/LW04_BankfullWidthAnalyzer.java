@@ -60,12 +60,12 @@ import oms3.annotations.Unit;
 public class LW04_BankfullWidthAnalyzer extends HMModel {
 
     @Description(inBankfull_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inBankfull = null;
 
     @Description(inNetPoints_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inNetPoints = null;
 

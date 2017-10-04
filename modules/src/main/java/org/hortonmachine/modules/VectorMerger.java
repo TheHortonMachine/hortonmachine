@@ -28,7 +28,7 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_LICENSE
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_NAME;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_OUT_VECTOR_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_STATUS;
-import static org.hortonmachine.gears.libs.modules.HMConstants.FILEIN_UI_HINT;
+import static org.hortonmachine.gears.libs.modules.HMConstants.FILEIN_UI_HINT_VECTOR;
 
 import java.util.Arrays;
 
@@ -57,12 +57,12 @@ import oms3.annotations.UI;
 public class VectorMerger extends HMModel {
 
     @Description(OMSVECTORMERGER_IN_VECTOR1_DESCRIPTION)
-    @UI(FILEIN_UI_HINT)
+    @UI(FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector1;
 
     @Description(OMSVECTORMERGER_IN_VECTOR2_DESCRIPTION)
-    @UI(FILEIN_UI_HINT)
+    @UI(FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector2;
 

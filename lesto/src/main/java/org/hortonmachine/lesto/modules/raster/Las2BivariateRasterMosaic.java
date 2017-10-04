@@ -86,12 +86,12 @@ import com.vividsolutions.jts.geom.Polygon;
 public class Las2BivariateRasterMosaic extends HMModel {
 
     @Description("Las files folder main index file path.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas = null;
 
     @Description("A region of interest. If not supplied the whole dataset is used.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inRoi;
 

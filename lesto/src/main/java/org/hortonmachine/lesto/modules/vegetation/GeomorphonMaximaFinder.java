@@ -50,12 +50,12 @@ import oms3.annotations.Unit;
 @License(OmsGeomorphonMaximaFinder.LICENSE)
 public class GeomorphonMaximaFinder extends HMModel {
     @Description(inDTM_DESC)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDTM;
 
     @Description(inDSM_DESC)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDSM;
 

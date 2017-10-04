@@ -53,7 +53,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License(OMSHYDRO_LICENSE)
 public class LasInfo extends HMModel {
     @Description("Las file or folder path.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas = null;
 

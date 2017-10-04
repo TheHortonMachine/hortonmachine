@@ -52,7 +52,7 @@ import oms3.annotations.UI;
 @License(OMSFLOWDIRECTIONS_LICENSE)
 public class FlowDirections extends HMModel {
     @Description(OMSFLOWDIRECTIONS_inPit_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inPit = null;
 

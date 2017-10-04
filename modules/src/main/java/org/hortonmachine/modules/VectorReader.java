@@ -56,7 +56,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 public class VectorReader extends HMModel {
 
     @Description(OMSVECTORREADER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String file = null;
 

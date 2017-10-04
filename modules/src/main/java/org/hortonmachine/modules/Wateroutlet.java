@@ -66,7 +66,7 @@ public class Wateroutlet extends HMModel {
     public double pEast = -1.0;
 
     @Description(OMSWATEROUTLET_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow;
 

@@ -56,47 +56,47 @@ import oms3.annotations.UI;
 public class LW10_CHM_AreaToNetpointAssociator extends HMModel {
 
     @Description(inNetPoints_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inNetPoints = null;
 
     @Description(inInundationArea_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inInundationArea = null;
 
     @Description(inFlow_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 
     @Description(inTca_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTca = null;
 
     @Description(inNet_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inNet = null;
 
     @Description(inDtm_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm = null;
 
     @Description(inDsm_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDsm = null;
 
     @Description(inStand_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inStand = null;
 
     @Description(inConnectivity_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inConnectivity = null;
 
@@ -127,7 +127,7 @@ public class LW10_CHM_AreaToNetpointAssociator extends HMModel {
         npa.inInundationArea = getVector(inInundationArea);
         npa.inFlow = getRaster(inFlow);
         npa.inTca = getRaster(inTca);
-        npa.inNet = getRaster(inTca);
+        npa.inNet = getRaster(inNet);
         npa.inDtm = getRaster(inDtm);
         npa.inDsm = getRaster(inDsm);
         npa.inStand = getRaster(inStand);

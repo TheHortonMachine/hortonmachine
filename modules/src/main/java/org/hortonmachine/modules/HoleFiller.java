@@ -62,12 +62,12 @@ import oms3.annotations.Unit;
 public class HoleFiller extends HMModel {
 
     @Description(OMSHOLEFILLER_IN_RASTER_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster;
 
     @Description(OMSHOLEFILLER_IN_ROI_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inROI;
 

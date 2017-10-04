@@ -53,7 +53,7 @@ import oms3.annotations.UI;
 @License(OMSPITFILLER_LICENSE)
 public class Pitfiller extends HMModel {
     @Description(OMSPITFILLER_inElev_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev;
 

@@ -74,17 +74,17 @@ import com.vividsolutions.jts.geom.Geometry;
 @License(HMConstants.GPL3_LICENSE)
 public class LasHeightDistribution extends HMModel {
     @Description("Las files folder main index file path.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inIndexFile = null;
 
     @Description("DEM to normalize heights.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDem = null;
 
     @Description("Tiled region to work on.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector = null;
 

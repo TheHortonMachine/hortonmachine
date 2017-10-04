@@ -45,13 +45,13 @@ import oms3.annotations.Unit;
 public class IntensityClassifierFlood extends HMModel {
 
     @Description(OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @Unit("m")
     @In
     public String inWaterDepth;
 
     @Description(OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @Unit("m/s")
     @In
     public String inVelocity;

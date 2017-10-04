@@ -282,7 +282,7 @@ public class ParametersPanel extends JPanel implements MouseListener {
         TypeCheck f = new TypeCheck();
         String guiHints = inputField.guiHints;
         if (guiHints != null) {
-            if (guiHints.contains(HMConstants.FILEIN_UI_HINT)) {
+            if (guiHints.contains(HMConstants.FILEIN_UI_HINT_GENERIC)) {
                 f.isFile = true;
             } else if (guiHints.contains(HMConstants.FILEOUT_UI_HINT)) {
                 f.isFile = true;

@@ -29,7 +29,7 @@ import oms3.annotations.UI;
 public class Morpher extends OmsMorpher {
 
     @Description("The map to morph.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap = null;
 

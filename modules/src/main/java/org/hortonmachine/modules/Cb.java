@@ -58,12 +58,12 @@ import oms3.annotations.UI;
 public class Cb extends HMModel {
 
     @Description(OMSCB_inRaster1_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster1 = null;
 
     @Description(OMSCB_inRaster2_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster2 = null;
 

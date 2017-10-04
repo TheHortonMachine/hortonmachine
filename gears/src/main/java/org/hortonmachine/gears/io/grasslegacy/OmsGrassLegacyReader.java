@@ -71,7 +71,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 public class OmsGrassLegacyReader extends HMModel {
 
     @Description(OMSGRASSLEGACYREADER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String file = null;
 

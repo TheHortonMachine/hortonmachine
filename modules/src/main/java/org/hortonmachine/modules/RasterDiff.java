@@ -59,12 +59,12 @@ import oms3.annotations.UI;
 public class RasterDiff extends HMModel {
 
     @Description(OMSRASTERDIFF_IN_RASTER1_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster1;
 
     @Description(OMSRASTERDIFF_IN_RASTER2_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster2;
 

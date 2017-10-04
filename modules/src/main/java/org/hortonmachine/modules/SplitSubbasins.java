@@ -56,12 +56,12 @@ import oms3.annotations.UI;
 @License(OMSSPLITSUBBASINS_LICENSE)
 public class SplitSubbasins extends HMModel {
     @Description(OMSSPLITSUBBASINS_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 
     @Description(OMSSPLITSUBBASINS_inHack_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inHack = null;
 

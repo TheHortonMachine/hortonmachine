@@ -71,7 +71,7 @@ public class OmsNmeaFeatureReader extends HMModel {
     public static final String DESCRIPTION = "A reader for NMEA gps sentences.";
 
     @Description(file_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String file = null;
 

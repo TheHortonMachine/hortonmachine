@@ -46,7 +46,7 @@ import oms3.annotations.UI;
 @License(HMConstants.GPL3_LICENSE)
 public class LasMover extends HMModel {
     @Description("The las file to move.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inFile;
 

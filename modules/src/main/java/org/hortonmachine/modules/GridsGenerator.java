@@ -66,12 +66,12 @@ import oms3.annotations.UI;
 public class GridsGenerator extends HMModel {
 
     @Description(OMSGRIDSGENERATOR_inVector_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector = null;
 
     @Description(OMSGRIDSGENERATOR_inRaster_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster = null;
 

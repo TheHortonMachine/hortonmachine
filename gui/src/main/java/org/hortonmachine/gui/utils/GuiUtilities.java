@@ -274,21 +274,21 @@ public class GuiUtilities {
                     }
                 }
             case Linux:
-                // for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
-                // String name = info.getName();
-                // if ("GTK".equalsIgnoreCase(name) || "GTK+".equalsIgnoreCase(name)) {
-                // javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                // return;
-                // }
-                // }
-
                 for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
                     String name = info.getName();
-                    if ("Nimbus".equalsIgnoreCase(name)) {
+                    if ("GTK".equalsIgnoreCase(name) || "GTK+".equalsIgnoreCase(name)) {
                         javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                        break;
+                        return;
                     }
                 }
+
+                // for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
+                // String name = info.getName();
+                // if ("Nimbus".equalsIgnoreCase(name)) {
+                // javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                // break;
+                // }
+                // }
             default:
                 for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
                     String name = info.getName();

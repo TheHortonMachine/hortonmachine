@@ -50,12 +50,12 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 public class RasterExtruder extends HMModel {
 
     @Description("The input raster to modify.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster;
 
     @Description("The input vector with the values to add.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector;
 

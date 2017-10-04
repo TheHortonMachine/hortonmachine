@@ -73,7 +73,7 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.etp.OmsPresteyTaylo
 public class PresteyTaylorEtpModel extends HMModel {
 
     @Description(OMSPRESTEYTAYLORETPMODEL_inNetradiation_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     @Unit("Watt m-2 ")
     public String inNetradiation;
@@ -97,7 +97,7 @@ public class PresteyTaylorEtpModel extends HMModel {
     public String fDataID;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_inTemp_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     @Unit("C")
     public String inTemp;
@@ -121,7 +121,7 @@ public class PresteyTaylorEtpModel extends HMModel {
     public double defaultTemp = 15.0;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_inPressure_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     @Unit("KPa")
     public String inPressure;

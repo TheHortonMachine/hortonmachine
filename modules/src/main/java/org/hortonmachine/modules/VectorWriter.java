@@ -66,7 +66,7 @@ public class VectorWriter extends HMModel {
     public String pType = null;
 
     @Description(OMSVECTORWRITER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 

@@ -76,12 +76,12 @@ import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder;
 public class LasTriangulation2Dsm extends HMModel {
 
     @Description("Las file path.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas = null;
 
     @Description("A dtm raster to use for the area of interest.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm;
 

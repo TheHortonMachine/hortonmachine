@@ -81,12 +81,12 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 @SuppressWarnings("nls")
 public class AdaptiveTinFilter extends HMModel {
     @Description("The las folder index file")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas;
 
     @Description("Input raster to use as output grid template.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTemplate;
 

@@ -77,22 +77,22 @@ import org.hortonmachine.hmachine.modules.statistics.kriging.OmsKriging;
 public class Kriging extends HMModel {
 
     @Description(OMSKRIGING_inStations_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inStations = null;
 
     @Description(OMSKRIGING_inData_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inData = null;
 
     @Description(OMSKRIGING_inInterpolate_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inInterpolate = null;
 
     @Description(OMSKRIGING_inInterpolationGrid_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inInterpolationGrid = null;
 

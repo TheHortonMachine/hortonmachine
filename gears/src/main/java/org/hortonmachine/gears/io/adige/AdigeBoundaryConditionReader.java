@@ -54,7 +54,7 @@ import oms3.io.TableIterator;
 public class AdigeBoundaryConditionReader extends HMModel {
 
     @Description(ADIGEBOUNDARYCONDITIONREADER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String file = null;
 

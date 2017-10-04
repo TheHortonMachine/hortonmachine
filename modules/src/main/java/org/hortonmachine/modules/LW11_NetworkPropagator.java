@@ -49,7 +49,7 @@ import oms3.annotations.UI;
 public class LW11_NetworkPropagator extends HMModel implements LWFields {
 
     @Description(inNetPoints_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inNetPoints = null;
 

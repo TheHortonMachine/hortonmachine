@@ -52,7 +52,7 @@ import oms3.annotations.UI;
 @License(LICENSE)
 public class LW03_NetworkHierarchyToPointsSplitter extends HMModel {
     @Description(inNet_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inNet = null;
 

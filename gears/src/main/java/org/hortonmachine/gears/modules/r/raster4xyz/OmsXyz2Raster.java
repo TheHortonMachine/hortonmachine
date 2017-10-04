@@ -77,7 +77,7 @@ import com.vividsolutions.jts.geom.Envelope;
 public class OmsXyz2Raster extends HMModel {
 
     @Description(OMSXYZ2RASTER_IN_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String inFile;
 

@@ -71,27 +71,27 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.energyindexcalculat
 public class EnergyIndexCalculator extends HMModel {
 
     @Description(OMSENERGYINDEXCALCULATOR_inElev_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
 
     @Description(OMSENERGYINDEXCALCULATOR_inBasins_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inBasins = null;
 
     @Description(OMSENERGYINDEXCALCULATOR_inCurvatures_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inCurvatures = null;
 
     @Description(OMSENERGYINDEXCALCULATOR_inAspect_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inAspect = null;
 
     @Description(OMSENERGYINDEXCALCULATOR_inSlope_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inSlope = null;
 

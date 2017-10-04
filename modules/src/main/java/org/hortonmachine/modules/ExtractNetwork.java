@@ -47,22 +47,22 @@ import oms3.annotations.UI;
 public class ExtractNetwork extends HMModel {
 
     @Description(OMSEXTRACTNETWORK_inTca_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTca = null;
 
     @Description(OMSEXTRACTNETWORK_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 
     @Description(OMSEXTRACTNETWORK_inSlope_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inSlope = null;
 
     @Description(OMSEXTRACTNETWORK_inTc3_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTc3 = null;
 

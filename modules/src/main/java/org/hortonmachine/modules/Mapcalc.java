@@ -37,27 +37,27 @@ import org.hortonmachine.gears.modules.r.mapcalc.OmsMapcalc;
 public class Mapcalc extends OmsMapcalc {
 
     @Description("Raster map to process.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster1;
 
     @Description("Optional raster map to process.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster2;
 
     @Description("Optional raster map to process.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster3;
 
     @Description("Optional raster map to process.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster4;
 
     @Description("Optional raster map to process.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster5;
 
@@ -66,7 +66,6 @@ public class Mapcalc extends OmsMapcalc {
     @In
     public String outRaster = null;
 
-    @SuppressWarnings("nls")
     @Execute
     public void process() throws Exception {
         OmsMapcalc mapcalc = new OmsMapcalc();

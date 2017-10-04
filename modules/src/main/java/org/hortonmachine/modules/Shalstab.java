@@ -69,17 +69,17 @@ import oms3.annotations.Unit;
 public class Shalstab extends HMModel {
 
     @Description(OMSSHALSTAB_inSlope_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inSlope = null;
 
     @Description(OMSSHALSTAB_inTca_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTca = null;
 
     @Description(OMSSHALSTAB_inTrasmissivity_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @Unit("m^2/day")
     @In
     public String inTrasmissivity = null;
@@ -90,7 +90,7 @@ public class Shalstab extends HMModel {
     public double pTrasmissivity = -1.0;
 
     @Description(OMSSHALSTAB_inTgphi_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTgphi = null;
 
@@ -99,7 +99,7 @@ public class Shalstab extends HMModel {
     public double pTgphi = -1.0;
 
     @Description(OMSSHALSTAB_inCohesion_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @Unit("Pa")
     @In
     public String inCohesion = null;
@@ -110,7 +110,7 @@ public class Shalstab extends HMModel {
     public double pCohesion = -1.0;
 
     @Description(OMSSHALSTAB_inSdepth_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @Unit("m")
     @In
     public String inSdepth = null;
@@ -121,7 +121,7 @@ public class Shalstab extends HMModel {
     public double pSdepth = -1.0;
 
     @Description(OMSSHALSTAB_inQ_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @Unit("mm/day")
     @In
     public String inQ = null;
@@ -132,7 +132,7 @@ public class Shalstab extends HMModel {
     public double pQ = -1.0;
 
     @Description(OMSSHALSTAB_inRho_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRho = null;
 

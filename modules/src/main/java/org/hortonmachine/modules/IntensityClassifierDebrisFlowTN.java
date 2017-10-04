@@ -69,7 +69,7 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier
 public class IntensityClassifierDebrisFlowTN extends HMModel {
 
     @Description(OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @Unit("m")
     @In
     public String inWaterDepth;
@@ -85,7 +85,7 @@ public class IntensityClassifierDebrisFlowTN extends HMModel {
     public Double pLowerThresWaterdepth = 0.5;
 
     @Description(OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @Unit("m/s")
     @In
     public String inVelocity;
@@ -101,7 +101,7 @@ public class IntensityClassifierDebrisFlowTN extends HMModel {
     public Double pLowerThresVelocity = 0.5;
 
     @Description(OMSINTENSITYCLASSIFIER_inDepositsThickness_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @Unit("m")
     @In
     public String inDepositsThickness;
@@ -117,7 +117,7 @@ public class IntensityClassifierDebrisFlowTN extends HMModel {
     public Double pLowerThresDepositsThickness = 0.5;
 
     @Description(OMSINTENSITYCLASSIFIER_inErosionDepth_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @Unit("m")
     @In
     public String inErosionDepth;

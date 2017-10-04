@@ -44,17 +44,17 @@ import oms3.annotations.UI;
 public class LW02_NetworkAttributesBuilder extends HMModel {
 
     @Description("The extracted network raster map")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inNet = null;
 
     @Description("The map of flow directions")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 
     @Description("The map of Total Contributing Areas")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTca = null;
 

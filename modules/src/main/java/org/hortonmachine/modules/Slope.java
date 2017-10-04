@@ -54,12 +54,12 @@ import oms3.annotations.UI;
 @License(OMSSLOPE_LICENSE)
 public class Slope extends HMModel {
     @Description(OMSSLOPE_inPit_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inPit = null;
 
     @Description(OMSSLOPE_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 

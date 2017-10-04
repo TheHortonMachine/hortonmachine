@@ -59,17 +59,17 @@ import com.vividsolutions.jts.geom.Geometry;
 @License(HMConstants.GPL3_LICENSE)
 public class RegionGrowing extends HMModel {
     @Description("The vector of maxima points")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inMaxima;
 
     @Description("The dsm raster")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDsm;
 
     @Description("The dtm raster. If not supplied it will be put to a plane placed in 0.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm;
 

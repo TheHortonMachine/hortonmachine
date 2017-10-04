@@ -71,17 +71,17 @@ import com.vividsolutions.jts.geom.Polygon;
 public class PointCloudMaximaFinder extends HMModel {
 
     @Description(inLas_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas = null;
 
     @Description(inDtm_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm;
 
     @Description(inRoi_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inRoi;
 

@@ -60,7 +60,7 @@ import oms3.annotations.Unit;
 @License(OMSDEBRISFLOW_LICENSE)
 public class DebrisFlow extends HMModel {
     @Description(OMSDEBRISFLOW_inElev_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
 

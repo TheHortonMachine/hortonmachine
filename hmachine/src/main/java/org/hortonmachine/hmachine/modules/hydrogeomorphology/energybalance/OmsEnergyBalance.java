@@ -190,7 +190,7 @@ public class OmsEnergyBalance extends HMModel {
     public List<EIAreas> inAreas = null;
 
     @Description(OMSENERGYBALANCE_pInitsafepoint_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String pInitsafepoint;
 

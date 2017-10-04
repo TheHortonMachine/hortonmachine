@@ -49,7 +49,7 @@ import org.hortonmachine.lesto.modules.vegetation.rastermaxima.OmsRasterMaximaFi
 public class RasterMaximaFinder extends HMModel {
 
     @Description(OmsRasterMaximaFinder.inGeodata_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDsmDtmDiff;
 

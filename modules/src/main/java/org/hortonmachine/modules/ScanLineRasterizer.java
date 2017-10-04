@@ -63,7 +63,7 @@ import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
 public class ScanLineRasterizer extends HMModel {
 
     @Description(OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector = null;
 

@@ -56,7 +56,7 @@ import oms3.annotations.UI;
 @License(OMSNABLA_LICENSE)
 public class Nabla extends HMModel {
     @Description(OMSNABLA_inElev_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
 

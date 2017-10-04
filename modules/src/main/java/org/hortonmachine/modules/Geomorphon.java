@@ -42,7 +42,7 @@ import oms3.annotations.Unit;
 @License(OmsGeomorphon.LICENSE)
 public class Geomorphon extends OmsGeomorphon {
     @Description(inELEV_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev;
 

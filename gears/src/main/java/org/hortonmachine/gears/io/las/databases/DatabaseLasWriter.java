@@ -96,7 +96,7 @@ public class DatabaseLasWriter extends HMModel {
     public String inFolder;
 
     @Description("The output database path.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String inDatabasePath;
 
@@ -106,7 +106,7 @@ public class DatabaseLasWriter extends HMModel {
     public String pDbType = EDb.SPATIALITE.name();
 
     @Description("The optional image mosaic of ortophoto to take the color from (has to be 3-band).")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inOrtophoto;
 

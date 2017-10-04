@@ -73,7 +73,7 @@ public class OmsVectorReader extends HMModel {
     public String pType = null;
 
     @Description(OMSVECTORREADER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String file = null;
 

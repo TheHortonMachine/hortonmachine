@@ -55,7 +55,7 @@ import oms3.annotations.UI;
 public class Insolation extends HMModel {
 
     @Description(OMSINSOLATION_inElev_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
 

@@ -56,7 +56,7 @@ import oms3.annotations.UI;
 public class Hillshade extends HMModel {
 
     @Description(OMSHILLSHADE_inElev_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
 

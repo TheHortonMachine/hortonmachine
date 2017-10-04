@@ -53,7 +53,7 @@ import oms3.annotations.UI;
 @License(OMSTCA_LICENSE)
 public class Tca extends HMModel {
     @Description(OMSTCA_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 

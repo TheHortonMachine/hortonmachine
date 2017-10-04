@@ -59,17 +59,17 @@ import oms3.annotations.UI;
 public class Carver extends HMModel {
 
     @Description(OMSCARVER_IN_RASTER_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster = null;
 
     @Description(OMSCARVER_IN_CARVE_R_POLYGONS_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inCarverPolygons = null;
 
     @Description(OMSCARVER_IN_CARVE_R_LINES_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inCarverLines = null;
 

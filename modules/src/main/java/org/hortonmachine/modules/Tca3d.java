@@ -53,12 +53,12 @@ import oms3.annotations.UI;
 @License(OMSTCA3D_LICENSE)
 public class Tca3d extends HMModel {
     @Description(OMSTCA3D_inPit_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inPit = null;
 
     @Description(OMSTCA3D_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 

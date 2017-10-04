@@ -66,7 +66,7 @@ import oms3.io.TableIterator;
 public class OmsTimeSeriesReader extends HMModel {
 
     @Description(OMSTIMESERIESREADER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String file = null;
 

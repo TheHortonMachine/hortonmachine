@@ -63,7 +63,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 public class OmsDbfTableReader extends HMModel {
 
     @Description(OMSDBFTABLEREADER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_DBF)
     @In
     public String file = null;
 

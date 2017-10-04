@@ -50,7 +50,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License(HMConstants.GPL3_LICENSE)
 public class LasHistogram extends HMModel {
     @Description("A las file to analyze.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas;
 

@@ -65,7 +65,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 public class OmsShapefileFeatureReader extends HMModel {
 
     @Description(OMSSHAPEFILEFEATUREREADER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String file = null;
 

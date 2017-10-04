@@ -45,7 +45,7 @@ import oms3.annotations.UI;
 public class LW09_NetworBufferMergerHolesRemover extends HMModel {
 
     @Description(inInundationArea_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inInundationArea = null;
 

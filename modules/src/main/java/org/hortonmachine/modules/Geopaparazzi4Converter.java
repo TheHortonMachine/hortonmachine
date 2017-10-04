@@ -54,7 +54,7 @@ import oms3.annotations.*;
 public class Geopaparazzi4Converter extends HMModel {
 
     @Description(OmsGeopaparazzi4Converter.THE_GEOPAPARAZZI_DATABASE_FILE)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GPAP)
     @In
     public String inGeopaparazzi = null;
 

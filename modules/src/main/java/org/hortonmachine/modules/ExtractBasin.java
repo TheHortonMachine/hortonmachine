@@ -71,12 +71,12 @@ public class ExtractBasin extends HMModel {
     public double pEast = -1.0;
 
     @Description(OMSEXTRACTBASIN_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow;
 
     @Description(OMSEXTRACTBASIN_inNetwork_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inNetwork;
 

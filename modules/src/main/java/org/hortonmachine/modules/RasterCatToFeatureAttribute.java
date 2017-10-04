@@ -56,12 +56,12 @@ import oms3.annotations.UI;
 public class RasterCatToFeatureAttribute extends HMModel {
 
     @Description(OMSRASTERCATTOFEATUREATTRIBUTE_IN_RASTER_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster;
 
     @Description(OMSRASTERCATTOFEATUREATTRIBUTE_IN_VECTOR_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector = null;
 

@@ -68,7 +68,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 public class OmsPropertiesFeatureReader extends HMModel {
 
     @Description(OMSPROPERTIESFEATUREREADER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String file = null;
 

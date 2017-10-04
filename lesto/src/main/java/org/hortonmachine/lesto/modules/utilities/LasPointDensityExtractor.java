@@ -71,7 +71,7 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 public class LasPointDensityExtractor extends HMModel {
 
     @Description("Las file path.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inFile;
 

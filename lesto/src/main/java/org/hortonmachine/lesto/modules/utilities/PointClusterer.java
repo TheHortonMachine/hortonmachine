@@ -68,7 +68,7 @@ import com.vividsolutions.jts.geom.Point;
 @License(OMSHYDRO_LICENSE)
 public class PointClusterer extends HMModel {
     @Description("Input las or shp file to be clustered.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inFile = null;
 

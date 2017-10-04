@@ -44,17 +44,17 @@ import oms3.annotations.UI;
 public class RescaledDistance extends HMModel {
 
     @Description(OMSRESCALEDDISTANCE_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 
     @Description(OMSRESCALEDDISTANCE_inNet_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inNet = null;
 
     @Description(OMSRESCALEDDISTANCE_inElev_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
 

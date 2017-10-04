@@ -56,7 +56,7 @@ import oms3.annotations.UI;
 public class VectorConverter extends HMModel {
 
     @Description(OMSVECTORCONVERTER_IN_GEODATA_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inGeodata;
 

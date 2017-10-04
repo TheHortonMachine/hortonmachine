@@ -54,17 +54,17 @@ import oms3.annotations.UI;
 @License(OMSH2CA_LICENSE)
 public class H2cA extends HMModel {
     @Description(OMSH2CA_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 
     @Description(OMSH2CA_inNet_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inNet = null;
 
     @Description(OMSH2CA_inAttribute_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inAttribute = null;
 

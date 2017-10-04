@@ -63,7 +63,7 @@ import oms3.io.TableIterator;
 public class VegetationLibraryReader extends HMModel {
 
     @Description(VEGETATIONLIBRARYREADER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String file = null;
 

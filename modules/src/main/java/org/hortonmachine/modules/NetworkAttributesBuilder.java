@@ -57,17 +57,17 @@ import oms3.annotations.UI;
 public class NetworkAttributesBuilder extends HMModel {
 
     @Description(OMSNETWORKATTRIBUTESBUILDER_inNet_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inNet = null;
 
     @Description(OMSNETWORKATTRIBUTESBUILDER_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 
     @Description(OMSNETWORKATTRIBUTESBUILDER_inTca_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTca = null;
 

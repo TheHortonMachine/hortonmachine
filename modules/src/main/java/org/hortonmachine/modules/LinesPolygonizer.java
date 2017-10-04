@@ -56,12 +56,12 @@ import oms3.annotations.UI;
 public class LinesPolygonizer extends HMModel {
 
     @Description(OMSLINESPOLYGONIZER_IN_MAP_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inMap = null;
 
     @Description(OMSLINESPOLYGONIZER_IN_POINTS_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inPoints = null;
 

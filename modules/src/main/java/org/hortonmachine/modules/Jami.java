@@ -83,7 +83,7 @@ import org.hortonmachine.hmachine.modules.statistics.jami.OmsJami;
 public class Jami extends HMModel {
 
     @Description(OMSJAMI_inStations_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inStations;
 
@@ -104,7 +104,7 @@ public class Jami extends HMModel {
     public int pNum = 3;
 
     @Description(OMSJAMI_inInterpolate_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inInterpolate;
 
@@ -157,17 +157,17 @@ public class Jami extends HMModel {
     public double defaultTolltmax = 2.0;
 
     @Description(OMSJAMI_inAltimetry_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String inAltimetry = null;
 
     @Description(OMSJAMI_inAreas_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String inAreas = null;
 
     @Description(OMSJAMI_inMeteo_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String inMeteo = null;
 

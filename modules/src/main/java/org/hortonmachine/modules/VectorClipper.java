@@ -55,12 +55,12 @@ import oms3.annotations.UI;
 public class VectorClipper extends HMModel {
 
     @Description(OMSVECTORCLIPPER_IN_MAP_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inMap = null;
 
     @Description(OMSVECTORCLIPPER_IN_CLIPPER_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inClipper = null;
 

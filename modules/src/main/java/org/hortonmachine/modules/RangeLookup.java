@@ -55,7 +55,7 @@ import oms3.annotations.UI;
 public class RangeLookup extends HMModel {
 
     @Description(OMSRANGELOOKUP_IN_RASTER_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster;
 

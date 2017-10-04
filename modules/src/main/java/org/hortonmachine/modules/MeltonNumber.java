@@ -55,12 +55,12 @@ import oms3.annotations.UI;
 public class MeltonNumber extends HMModel {
 
     @Description(OMSMELTONNUMBER_inElev_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
 
     @Description(OMSMELTONNUMBER_inFans_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inFans = null;
 

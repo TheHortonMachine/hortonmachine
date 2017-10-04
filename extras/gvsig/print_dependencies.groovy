@@ -20,7 +20,7 @@
 // THIS FILE HAS TO BE RUN FROM THE PROJECT ROOT LIKE:
 // groovy extras/deploy/deploylibs.groovy 
 
-def VERSION = "0.8.1-SNAPSHOT";
+def VERSION = "0.8.2-SNAPSHOT";
 
 def javaHome = System.getProperty("java.home");
 def javaHomeFile = new File(javaHome);
@@ -75,7 +75,7 @@ def endIndex = -1;
 for (int i = 0; i < lines.size(); i++){
     def line = lines[i];
 
-    if(line.startsWith("[INFO] org.jgrasstools") || line.endsWith(":compile")){
+    if(line.startsWith("[INFO] org.hortonmachine") || line.endsWith(":compile")){
     	lista << line;
     }
 }

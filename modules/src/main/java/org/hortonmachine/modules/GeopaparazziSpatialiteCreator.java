@@ -101,7 +101,7 @@ import oms3.annotations.UI;
 public class GeopaparazziSpatialiteCreator extends HMModel {
 
     @Description(THE_GEOPAPARAZZI_DATABASE_FILE)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GPAP)
     @In
     public String inGeopaparazzi = null;
 

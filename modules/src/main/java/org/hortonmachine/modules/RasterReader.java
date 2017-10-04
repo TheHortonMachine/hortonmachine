@@ -67,7 +67,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 public class RasterReader extends HMModel {
 
     @Description(OMSRASTERREADER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String file = null;
 

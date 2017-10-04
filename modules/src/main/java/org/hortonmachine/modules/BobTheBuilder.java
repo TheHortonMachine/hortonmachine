@@ -60,17 +60,17 @@ import oms3.annotations.UI;
 public class BobTheBuilder extends HMModel {
 
     @Description(OMSBOBTHEBUILDER_IN_RASTER_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster = null;
 
     @Description(OMSBOBTHEBUILDER_IN_AREA_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inArea = null;
 
     @Description(OMSBOBTHEBUILDER_IN_ELEVATIONS_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inElevations = null;
 

@@ -47,7 +47,7 @@ import oms3.annotations.UI;
 @License(HMConstants.GPL3_LICENSE)
 public class LasThresholder extends HMModel {
     @Description("A las file to filter.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas;
 

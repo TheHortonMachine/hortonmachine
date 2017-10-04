@@ -67,12 +67,12 @@ import com.vividsolutions.jts.geom.Polygon;
 public class LasOnRasterMapper extends HMModel {
 
     @Description("Las file path.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas = null;
 
     @Description("A dtm raster to use for the area of interest and lower threshold.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm;
 

@@ -57,12 +57,12 @@ import oms3.annotations.UI;
 public class CutOut extends HMModel {
 
     @Description(OMSCUTOUT_IN_RASTER_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster;
 
     @Description(OMSCUTOUT_IN_MASK_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMask;
 

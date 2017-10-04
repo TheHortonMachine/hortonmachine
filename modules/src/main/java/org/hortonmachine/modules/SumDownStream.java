@@ -56,12 +56,12 @@ import oms3.annotations.UI;
 public class SumDownStream extends HMModel {
 
     @Description(OMSSUMDOWNSTREAM_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 
     @Description(OMSSUMDOWNSTREAM_inToSum_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inToSum = null;
 

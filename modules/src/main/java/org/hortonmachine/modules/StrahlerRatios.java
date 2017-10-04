@@ -57,17 +57,17 @@ import oms3.annotations.UI;
 public class StrahlerRatios extends HMModel {
 
     @Description(OMSSTRAHLERRATIOS_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 
     @Description(OMSSTRAHLERRATIOS_inStrahler_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inStrahler = null;
 
     @Description(OMSSTRAHLERRATIOS_inNet_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inNet = null;
 

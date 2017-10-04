@@ -56,7 +56,7 @@ import oms3.annotations.UI;
 public class KernelDensity extends HMModel {
 
     @Description(OMSKERNELDENSITY_inMap_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap = null;
 

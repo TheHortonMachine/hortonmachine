@@ -54,7 +54,7 @@ import oms3.annotations.UI;
 @License(HMConstants.GPL3_LICENSE)
 public class LasSplitter extends HMModel {
     @Description("A las file to split.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inFile;
 

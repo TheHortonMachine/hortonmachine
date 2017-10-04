@@ -53,7 +53,7 @@ import oms3.annotations.UI;
 @License(OMSDEPITTER_LICENSE)
 public class DePitter extends HMModel {
     @Description(OMSDEPITTER_inElev_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev;
 

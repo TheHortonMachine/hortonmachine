@@ -64,12 +64,12 @@ import oms3.annotations.UI;
 public class LasConverter extends HMModel {
 
     @Description(OMSLASCONVERTER_inFile_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inFile;
 
     @Description(OMSLASCONVERTER_inPolygons_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inPolygons;
 

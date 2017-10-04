@@ -43,7 +43,7 @@ import oms3.annotations.UI;
 @License(OMSCURVATURES_LICENSE)
 public class Curvatures extends HMModel {
     @Description(OMSCURVATURES_inElev_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
 

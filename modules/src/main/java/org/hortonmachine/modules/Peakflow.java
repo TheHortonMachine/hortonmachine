@@ -91,27 +91,27 @@ public class Peakflow extends HMModel {
     public double pSat = -1f;
 
     @Description(OMSPEAKFLOW_inTopindex_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTopindex = null;
 
     @Description(OMSPEAKFLOW_inSat_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inSat = null;
 
     @Description(OMSPEAKFLOW_inRescaledsup_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRescaledsup = null;
 
     @Description(OMSPEAKFLOW_inRescaledsub_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRescaledsub = null;
 
     @Description("The oms csv of rainfall data per timestep.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String inRainfall;
 

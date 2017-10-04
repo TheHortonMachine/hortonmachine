@@ -55,17 +55,17 @@ import oms3.annotations.UI;
 @License(LICENSE)
 public class HecrasInputBuilder extends HMModel {
     @Description(inRiver_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inRiverPoints = null;
 
     @Description(inSections_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inSections = null;
 
     @Description(inSectionPoints_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inSectionPoints = null;
 
@@ -75,7 +75,7 @@ public class HecrasInputBuilder extends HMModel {
 
     @Description(outHecras_DESCRIPTION)
     @In
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEOUT_UI_HINT)
     public String outHecras = null;
 
     @Execute

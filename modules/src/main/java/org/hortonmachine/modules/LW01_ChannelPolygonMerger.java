@@ -53,7 +53,7 @@ import oms3.annotations.UI;
 public class LW01_ChannelPolygonMerger extends HMModel {
 
     @Description(inBankfull_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inBankfull = null;
 

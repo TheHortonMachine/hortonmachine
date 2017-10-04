@@ -57,12 +57,12 @@ import oms3.annotations.UI;
 public class Tc extends HMModel {
 
     @Description(OMSTC_inProf_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inProf = null;
 
     @Description(OMSTC_inTan_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTan = null;
 

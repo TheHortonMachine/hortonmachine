@@ -77,12 +77,12 @@ import com.vividsolutions.jts.geom.Polygon;
 @License(OMSHYDRO_LICENSE)
 public class LasSlicer extends HMModel {
     @Description("Las file or folder path.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas = null;
 
     @Description("DTM path for normalization.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm = null;
 

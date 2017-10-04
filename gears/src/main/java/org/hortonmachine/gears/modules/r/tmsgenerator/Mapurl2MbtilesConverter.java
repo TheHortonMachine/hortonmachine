@@ -61,7 +61,7 @@ import oms3.annotations.UI;
 public class Mapurl2MbtilesConverter extends HMModel {
 
     @Description("TMS folder mapurl file.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String inFile = null;
 

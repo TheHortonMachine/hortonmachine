@@ -66,7 +66,7 @@ import oms3.annotations.UI;
 public class OmsId2ValueArrayReader extends HMModel {
 
     @Description(OMSID2VALUEARRAYREADER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String file = null;
 

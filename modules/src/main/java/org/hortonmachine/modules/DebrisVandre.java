@@ -65,33 +65,33 @@ import oms3.annotations.Unit;
 public class DebrisVandre extends HMModel {
 
     @Description(OMSDEBRISVANDRE_inElev_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
 
     @Description(OMSDEBRISVANDRE_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 
     @Description(OMSDEBRISVANDRE_inSlope_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @Unit("degree")
     @In
     public String inSlope = null;
 
     @Description(OMSDEBRISVANDRE_inTriggers_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTriggers = null;
 
     @Description(OMSDEBRISVANDRE_inSoil_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inSoil = null;
 
     @Description(OMSDEBRISVANDRE_inNet_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inNet = null;
 
@@ -105,7 +105,7 @@ public class DebrisVandre extends HMModel {
     public double pDistance = 100.0;
 
     @Description(OMSDEBRISVANDRE_inObstacles_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inObstacles = null;
 

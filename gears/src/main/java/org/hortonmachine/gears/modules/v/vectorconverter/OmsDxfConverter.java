@@ -71,7 +71,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class OmsDxfConverter extends HMModel {
 
     @Description(OMSDXFCONVERTER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String file = null;
 

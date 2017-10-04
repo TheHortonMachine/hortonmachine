@@ -83,7 +83,7 @@ import org.hortonmachine.lesto.modules.vegetation.watershed.WatershedStructure;
 public class WatershedAlgorithm extends HMModel {
 
     @Description("An elevation raster")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster;
 

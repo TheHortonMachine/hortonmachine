@@ -37,17 +37,17 @@ import oms3.annotations.UI;
 @License(OMSMULTITCA_LICENSE)
 public class MultiTca extends HMModel {
     @Description(OMSMULTITCA_inPit_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inPit = null;
 
     @Description(OMSMULTITCA_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 
     @Description(OMSMULTITCA_inCp9_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inCp9 = null;
 

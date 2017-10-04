@@ -63,7 +63,7 @@ import oms3.annotations.UI;
 public class Buffer extends HMModel {
 
     @Description(OMSBUFFER_IN_MAP_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inMap = null;
 

@@ -63,7 +63,7 @@ public class FlightLinesExtractor extends HMModel {
     public static final String ADJUSTED_STANDARD_GPS_TIME = "Adjusted Standard GPS Time";
 
     @Description("A las file to split.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas;
 

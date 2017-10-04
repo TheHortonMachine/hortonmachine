@@ -65,7 +65,7 @@ import oms3.annotations.UI;
 public class LasShapeVectorizer extends HMModel {
 
     @Description("Las file path.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas = null;
 

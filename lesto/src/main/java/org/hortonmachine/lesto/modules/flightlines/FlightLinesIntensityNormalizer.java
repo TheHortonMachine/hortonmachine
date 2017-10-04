@@ -72,12 +72,12 @@ import oms3.annotations.UI;
 @License(HMConstants.GPL3_LICENSE)
 public class FlightLinesIntensityNormalizer extends HMModel {
     @Description("A las file.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas;
 
     @Description("Shapefile containing the string fields of date, time, elev.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inFlightpoints;
 

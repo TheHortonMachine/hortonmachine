@@ -75,37 +75,37 @@ import org.joda.time.DateTime;
 @License(LICENSE)
 public class SaintGeo extends HMModel {
     @Description(inRiver_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inRiverPoints = null;
 
     @Description(inSections_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inSections = null;
 
     @Description(inSectionPoints_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inSectionPoints = null;
 
     @Description(inDischarge_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String inDischarge;
 
     @Description(inDownstreamLevel_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String inDownstreamLevel;
 
     @Description(inLateralId2DischargeMap_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String inLateralId2Discharge;
 
     @Description(inConfluenceId2DischargeMap_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String inConfluenceId2Discharge;
 

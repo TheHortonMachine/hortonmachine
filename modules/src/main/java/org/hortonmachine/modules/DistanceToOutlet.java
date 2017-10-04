@@ -54,12 +54,12 @@ import oms3.annotations.UI;
 public class DistanceToOutlet extends HMModel {
 
     @Description(OMSDISTANCETOOUTLET_inPit_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inPit = null;
 
     @Description(OMSDISTANCETOOUTLET_inFlow_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlow = null;
 

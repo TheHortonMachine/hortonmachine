@@ -51,7 +51,7 @@ import oms3.annotations.UI;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DiametersReader extends HMModel {
     @Description("The csv file to read from.")
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String file = null;
 

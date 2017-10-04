@@ -284,7 +284,16 @@ public class HMConstants {
      */
     public static final String WORKINGFOLDER = "@@@WORKINGFOLDER@@@";
     public static final String HIDE_UI_HINT = "hide";
-    public static final String FILEIN_UI_HINT = "infile";
+    
+    public static final String FILEIN_UI_HINT_GENERIC = "infile";
+    public static final String FILEIN_UI_HINT_CSV = "infile_csv";
+    public static final String FILEIN_UI_HINT_LAS = "infile_las";
+    public static final String FILEIN_UI_HINT_RASTER = "infile_raster";
+    public static final String FILEIN_UI_HINT_VECTOR = "infile_vector";
+    public static final String FILEIN_UI_HINT_DBF = "infile_dbf";
+    public static final String FILEIN_UI_HINT_GPAP = "infile_gpap";
+    public static final String FILEIN_UI_HINT_JSON = "infile_json";
+    
     public static final String FOLDERIN_UI_HINT = "infolder";
     public static final String FILEOUT_UI_HINT = "outfile";
     public static final String FOLDEROUT_UI_HINT = "outfolder";

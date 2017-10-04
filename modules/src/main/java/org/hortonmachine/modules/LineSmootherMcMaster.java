@@ -58,7 +58,7 @@ import oms3.annotations.UI;
 public class LineSmootherMcMaster extends HMModel {
 
     @Description(OMSLINESMOOTHERMCMASTER_IN_VECTOR_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector;
 

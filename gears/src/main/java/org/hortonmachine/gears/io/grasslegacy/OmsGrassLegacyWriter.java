@@ -60,7 +60,6 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 public class OmsGrassLegacyWriter extends HMModel {
 
     @Description(OMSGRASSLEGACYWRITER_GEODATA_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
     @In
     public double[][] geodata = null;
 

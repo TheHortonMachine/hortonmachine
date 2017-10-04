@@ -80,7 +80,7 @@ public class OmsHecrasInputBuilder extends HMModel {
 
     @Description(outHecras_DESCRIPTION)
     @In
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEOUT_UI_HINT)
     public String outHecras = null;
 
     public static final String DESCRIPTION = "Module that prepares input data for Hecras.";

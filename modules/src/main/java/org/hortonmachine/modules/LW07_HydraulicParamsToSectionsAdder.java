@@ -55,22 +55,21 @@ import oms3.annotations.Unit;
 @License(OmsLW07_HydraulicParamsToSectionsAdder.LICENSE)
 public class LW07_HydraulicParamsToSectionsAdder extends HMModel implements LWFields {
     @Description(inDtm_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm = null;
 
     @Description(inNet_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inNet = null;
 
     @Description(inNetPoints_DESCR)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inNetPoints = null;
 
     @Description(inDischarge_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
     @Unit("m3/s")
     @In
     public double pDischarge;

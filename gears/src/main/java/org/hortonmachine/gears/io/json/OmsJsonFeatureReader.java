@@ -73,7 +73,7 @@ import com.vividsolutions.jts.geom.Point;
 public class OmsJsonFeatureReader extends HMModel {
 
     @Description(OMSJSONFEATUREREADER_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_JSON)
     @In
     public String file = null;
 

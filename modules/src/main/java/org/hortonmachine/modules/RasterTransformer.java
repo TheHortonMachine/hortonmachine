@@ -68,7 +68,7 @@ import oms3.annotations.Unit;
 @License(OMSRASTERTRANSFORMER_LICENSE)
 public class RasterTransformer extends HMModel {
     @Description(OMSRASTERTRANSFORMER_IN_RASTER_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster;
 
