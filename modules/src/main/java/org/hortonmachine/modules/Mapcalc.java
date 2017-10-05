@@ -23,17 +23,18 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.modules.r.mapcalc.OmsMapcalc;
+
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Name;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.modules.r.mapcalc.OmsMapcalc;
-
 @Name("mapcalc")
+@UI("hide")
 public class Mapcalc extends OmsMapcalc {
 
     @Description("Raster map to process.")
