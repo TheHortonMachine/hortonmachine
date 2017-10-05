@@ -21,45 +21,33 @@ package org.hortonmachine.gears.libs.modules;
 import static org.hortonmachine.gears.libs.modules.Variables.PROGRESS_MONITOR_EN;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
-import oms3.Access;
-import oms3.ComponentAccess;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.Finalize;
-import oms3.annotations.In;
-import oms3.annotations.Initialize;
-import oms3.annotations.Out;
-import oms3.annotations.UI;
-
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.process.Process;
-import org.geotools.process.ProcessException;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.exceptions.ModelsUserCancelException;
-import org.hortonmachine.gears.libs.monitor.GeotoolsProgressMonitorAdapter;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
-import org.opengis.util.ProgressListener;
 
 import com.vividsolutions.jts.geom.GeometryFactory;
+
+import oms3.annotations.Description;
+import oms3.annotations.In;
+import oms3.annotations.Out;
+import oms3.annotations.UI;
 
 /**
  * Superclass for modules.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class HMModel implements Process {
+public class HMModel {
 
     private static boolean doLogging = false;
     static {
@@ -178,35 +166,35 @@ public class HMModel implements Process {
         }
     }
 
-    public Map<String, Object> execute( Map<String, Object> input, ProgressListener monitor ) throws ProcessException {
-        // the geotools monitor is wrapped into the internal progress monitor
-        GeotoolsProgressMonitorAdapter pm = new GeotoolsProgressMonitorAdapter(monitor);
-        input.put("pm", pm); //$NON-NLS-1$
-        // set the inputs to the model
-        ComponentAccess.setInputData(input, this, null);
-
-        // trigger execution of the module
-        ComponentAccess.callAnnotated(this, Initialize.class, true);
-        ComponentAccess.callAnnotated(this, Execute.class, false);
-        ComponentAccess.callAnnotated(this, Finalize.class, true);
-
-        // get the results
-        ComponentAccess cA = new ComponentAccess(this);
-        Collection<Access> outputs = cA.outputs();
-
-        // and put them into the output map
-        HashMap<String, Object> outputMap = new HashMap<String, Object>();
-        for( Access access : outputs ) {
-            try {
-                String fieldName = access.getField().getName();
-                Object fieldValue = access.getFieldValue();
-                outputMap.put(fieldName, fieldValue);
-            } catch (Exception e) {
-                throw new ProcessException(e.getLocalizedMessage());
-            }
-        }
-        return outputMap;
-    }
+//    public Map<String, Object> execute( Map<String, Object> input, ProgressListener monitor ) throws ProcessException {
+//        // the geotools monitor is wrapped into the internal progress monitor
+//        GeotoolsProgressMonitorAdapter pm = new GeotoolsProgressMonitorAdapter(monitor);
+//        input.put("pm", pm); //$NON-NLS-1$
+//        // set the inputs to the model
+//        ComponentAccess.setInputData(input, this, null);
+//
+//        // trigger execution of the module
+//        ComponentAccess.callAnnotated(this, Initialize.class, true);
+//        ComponentAccess.callAnnotated(this, Execute.class, false);
+//        ComponentAccess.callAnnotated(this, Finalize.class, true);
+//
+//        // get the results
+//        ComponentAccess cA = new ComponentAccess(this);
+//        Collection<Access> outputs = cA.outputs();
+//
+//        // and put them into the output map
+//        HashMap<String, Object> outputMap = new HashMap<String, Object>();
+//        for( Access access : outputs ) {
+//            try {
+//                String fieldName = access.getField().getName();
+//                Object fieldValue = access.getFieldValue();
+//                outputMap.put(fieldName, fieldValue);
+//            } catch (Exception e) {
+//                throw new ProcessException(e.getLocalizedMessage());
+//            }
+//        }
+//        return outputMap;
+//    }
 
     /**
      * Utility method to concatenate conditions with or.

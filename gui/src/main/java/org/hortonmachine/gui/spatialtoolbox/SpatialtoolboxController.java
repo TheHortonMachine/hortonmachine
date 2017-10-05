@@ -166,7 +166,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
             public void actionPerformed( ActionEvent e ) {
 
                 final ProcessLogConsoleController logConsole = new ProcessLogConsoleController();
-                guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+                guiBridge.showWindow(logConsole.asJComponent(), "Spatial Toolbox Log");
 
                 try {
                     runModuleInNewJVM(logConsole);
@@ -266,6 +266,16 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
             heapStr = SpatialToolboxConstants.HEAPLEVELS[0];
         }
         _heapCombo.setSelectedItem(heapStr);
+        
+        _debugCheckbox.addActionListener(e->{
+            prefsMap.put(GuiBridgeHandler.DEBUG_KEY, _debugCheckbox.isSelected() + "");
+            guiBridge.setSpatialToolboxPreferencesMap(prefsMap);
+        });
+        _heapCombo.addActionListener(e->{
+            String ramLevel = _heapCombo.getSelectedItem().toString();
+            prefsMap.put(GuiBridgeHandler.HEAP_KEY, ramLevel);
+            guiBridge.setSpatialToolboxPreferencesMap(prefsMap);
+        });
 
         _filterField.addKeyListener(new KeyAdapter(){
             @Override
@@ -567,7 +577,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
                 field.setAccessible(true);
                 Class< ? > type = field.getType();
                 if (type.isAssignableFrom(String.class)) {
-                    scriptBuilder.append("\"").append(value).append("\"");
+                    scriptBuilder.append("\"\"\"").append(value).append("\"\"\"");
                     if (outputFieldNames.contains(fieldName)) {
                         outputStringsMap.put(fieldName, value);
                     }

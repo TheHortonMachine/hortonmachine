@@ -60,6 +60,16 @@ public class Mapcalc extends OmsMapcalc {
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster5;
+    
+    public String inRaster6;
+    public String inRaster7;
+    public String inRaster8;
+    public String inRaster9;
+    public String inRaster10;
+    public String inRaster11;
+    public String inRaster12;
+    public String inRaster13;
+    public String inRaster14;
 
     @Description(OMSMAPCALC_OUT_RASTER_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -76,6 +86,15 @@ public class Mapcalc extends OmsMapcalc {
         addRaster(coverages, inRaster3);
         addRaster(coverages, inRaster4);
         addRaster(coverages, inRaster5);
+        addRaster(coverages, inRaster6);
+        addRaster(coverages, inRaster7);
+        addRaster(coverages, inRaster8);
+        addRaster(coverages, inRaster9);
+        addRaster(coverages, inRaster10);
+        addRaster(coverages, inRaster11);
+        addRaster(coverages, inRaster12);
+        addRaster(coverages, inRaster13);
+        addRaster(coverages, inRaster14);
 
         mapcalc.inRasters = coverages;
         mapcalc.pFunction = pFunction;

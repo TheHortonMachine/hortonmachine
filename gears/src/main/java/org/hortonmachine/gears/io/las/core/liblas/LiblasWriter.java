@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
-import org.geotools.process.gs.GSProcess;
 import org.hortonmachine.gears.io.las.core.ALasWriter;
 import org.hortonmachine.gears.io.las.core.ILasHeader;
 import org.hortonmachine.gears.io.las.core.LasRecord;

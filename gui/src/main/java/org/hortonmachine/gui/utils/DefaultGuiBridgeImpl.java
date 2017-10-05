@@ -247,6 +247,14 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
                     if (allowedFiles != null && allowedFiles.size() > 0) {
                         this.returnValue = allowedFiles.toArray(new File[0]);
                     }
+                } else {
+                    if (fc.isMultiSelectionEnabled()) {
+                        File[] selectedFiles = fc.getSelectedFiles();
+                        this.returnValue = selectedFiles;
+                    } else {
+                        File selectedFile = fc.getSelectedFile();
+                        this.returnValue = new File[]{selectedFile};
+                    }
                 }
 
             }

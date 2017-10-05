@@ -10,6 +10,7 @@ import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -25,7 +26,6 @@ public class MapcalcView extends JPanel
 {
    JComboBox _historyCombo = new JComboBox();
    JPanel _functionAreaPanel = new JPanel();
-   JTabbedPane _syntaxHelpTab = new JTabbedPane();
    JButton _runButton = new JButton();
    JTable _availableMapsTable = new JTable();
    JPanel _manualAddFileLayout = new JPanel();
@@ -36,6 +36,9 @@ public class MapcalcView extends JPanel
    JComboBox _layerCombo = new JComboBox();
    JTextField _outputPathText = new JTextField();
    JButton _outPathButton = new JButton();
+   JTabbedPane _syntaxHelpTab = new JTabbedPane();
+   JCheckBox _debugCheckbox = new JCheckBox();
+   JComboBox _heapCombo = new JComboBox();
 
    /**
     * Default constructor
@@ -127,21 +130,27 @@ public class MapcalcView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.6),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.6),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
       jpanel1.add(createPanel1(),cc.xywh(2,2,9,1));
-      jpanel1.add(createPanel2(),cc.xywh(2,4,9,1));
+      jpanel1.add(createPanel2(),cc.xywh(2,4,9,3));
+      jpanel1.add(createPanel3(),cc.xywh(2,14,18,1));
+      jpanel1.add(createPanel4(),cc.xywh(13,2,7,5));
+      jpanel1.add(createPanel5(),cc.xywh(13,12,7,1));
       _syntaxHelpTab.setName("syntaxHelpTab");
       TitledBorder titledborder1 = new TitledBorder(null,"Syntax Help",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       _syntaxHelpTab.setBorder(titledborder1);
-      jpanel1.add(_syntaxHelpTab,cc.xywh(2,6,9,6));
+      jpanel1.add(_syntaxHelpTab,cc.xywh(2,8,9,5));
 
-      jpanel1.add(createPanel3(),cc.xywh(2,13,18,1));
-      jpanel1.add(createPanel4(),cc.xywh(13,2,7,8));
-      jpanel1.add(createPanel5(),cc.xywh(13,11,7,1));
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14 });
+      _debugCheckbox.setActionCommand("Debug");
+      _debugCheckbox.setName("debugCheckbox");
+      _debugCheckbox.setText("Debug");
+      jpanel1.add(_debugCheckbox,cc.xywh(13,8,7,1));
+
+      jpanel1.add(createPanel6(),cc.xywh(13,10,7,1));
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 });
       return jpanel1;
    }
 
@@ -271,6 +280,24 @@ public class MapcalcView extends JPanel
       _outPathButton.setName("outPathButton");
       _outPathButton.setText("...");
       jpanel1.add(_outPathButton,cc.xy(3,1));
+
+      addFillComponents(jpanel1,new int[]{ 2 },new int[0]);
+      return jpanel1;
+   }
+
+   public JPanel createPanel6()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      JLabel jlabel1 = new JLabel();
+      jlabel1.setText("Heap [MB]");
+      jpanel1.add(jlabel1,cc.xy(1,1));
+
+      _heapCombo.setName("heapCombo");
+      jpanel1.add(_heapCombo,cc.xy(3,1));
 
       addFillComponents(jpanel1,new int[]{ 2 },new int[0]);
       return jpanel1;
