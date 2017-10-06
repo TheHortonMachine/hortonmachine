@@ -281,6 +281,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
                 mc.append("_mapcalc.inRaster" + inputCount + " =\"\"\"");
                 mc.append(path);
                 mc.append("\"\"\";\n");
+                inputCount++;
             }
         }
         mc.append("_mapcalc.process()\n");
