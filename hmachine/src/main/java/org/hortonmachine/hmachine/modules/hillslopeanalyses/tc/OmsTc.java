@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.hmachine.modules.hillslopeanalyses.tc;
 
+import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTC_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTC_AUTHORNAMES;
@@ -105,27 +106,23 @@ public class OmsTc extends HMModel {
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
 
-        RenderedImage profRI = inProf.getRenderedImage();
-        RandomIter profRandomIter = RandomIterFactory.create(profRI, null);
-        RenderedImage tanRI = inTan.getRenderedImage();
-        RandomIter tangRandomIter = RandomIterFactory.create(tanRI, null);
-
-        WritableRaster tc3WR = CoverageUtilities.createWritableRaster(profRI.getWidth(), profRI.getHeight(), null,
-                profRI.getSampleModel(), null);
+        WritableRaster tc3WR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRaster tc9WR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
         WritableRandomIter tc3Iter = RandomIterFactory.createWritable(tc3WR, null);
-        WritableRaster tc9WR = CoverageUtilities.createWritableRaster(profRI.getWidth(), profRI.getHeight(), null,
-                profRI.getSampleModel(), null);
         WritableRandomIter tc9Iter = RandomIterFactory.createWritable(tc9WR, null);
+        
+        RandomIter profIter = CoverageUtilities.getRandomIterator(inProf);
+        RandomIter tangIter = CoverageUtilities.getRandomIterator(inTan);
 
         // calculate ...
         pm.beginTask(msg.message("working") + "tc9...", rows); //$NON-NLS-1$ //$NON-NLS-2$
         for( int j = 0; j < rows; j++ ) {
             for( int i = 0; i < cols; i++ ) {
-                double tangValue = tangRandomIter.getSampleDouble(i, j, 0);
+                double tangValue = tangIter.getSampleDouble(i, j, 0);
                 if (isNovalue(tangValue)) {
                     tc9Iter.setSample(i, j, 0, HMConstants.doubleNovalue);
                 } else {
-                    double profValue = profRandomIter.getSampleDouble(i, j, 0);
+                    double profValue = profIter.getSampleDouble(i, j, 0);
                     if (Math.abs(tangValue) <= pTanthres) {
                         if (Math.abs(profValue) <= pProfthres) {
                             tc9Iter.setSample(i, j, 0, 10);
@@ -156,6 +153,9 @@ public class OmsTc extends HMModel {
             pm.worked(1);
         }
         pm.done();
+        
+        profIter.done();
+        tangIter.done();
 
         pm.beginTask(msg.message("working") + "tc3...", rows); //$NON-NLS-1$ //$NON-NLS-2$
         for( int j = 0; j < rows; j++ ) {

@@ -32,6 +32,8 @@ public enum EColorTables {
     greyscaleinverse, //
     geomorphon, //
     tca, //
+    tc3, //
+    tc9, //
     sea, //
     slope; //
 }
