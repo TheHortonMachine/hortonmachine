@@ -183,6 +183,23 @@ public class DefaultTables {
                 "1007.0 50 189 160\n" + //
                 "1008.0 0 0 255\n";
         map.put(EColorTables.geomorphon.name(), geomorphon);
+        
+        String tc3 = "15 255 255 0\n" + //
+                "25 0 0 255\n" + //
+                "35 255 0 0\n";
+        map.put(EColorTables.tc3.name(), tc3);
+
+        String tc9 = "10:planar-planar 255 255 0\n" + //
+                "20 0 255 0\n" + //
+                "30 0 255 128\n" + //
+                "40 0 255 255\n" + //
+                "50 0 128 255\n" + //
+                "60 0 0 255\n" + //
+                "70 128 0 255\n" + //
+                "80 255 0 255\n" + //
+                "90 255 0 0\n";
+        map.put(EColorTables.tc9.name(), tc9);
+
     }
 
     /**
@@ -191,7 +208,7 @@ public class DefaultTables {
      * @param name the name of the table.
      * @param palette the colors and values.
      */
-    public static void addRuntimeTable(String name, String palette){
+    public static void addRuntimeTable( String name, String palette ) {
         map.put(name, palette);
     }
 
