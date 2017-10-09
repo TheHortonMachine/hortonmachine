@@ -280,8 +280,8 @@ public class OmsExtractNetwork extends GridMultiProcessing {
                 double tcaValue = tcaRandomIter.getSample(c, r, 0);
                 double slopeValue = slopeRandomIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(tcaValue) && !isNovalue(slopeValue)) {
-                    tcaValue = (pow(tcaValue, pExp) * slopeValue);
-                    if (tcaValue >= pThres && classRandomIter.getSample(c, r, 0) == 15.0) {
+                    tcaValue = pow(tcaValue, pExp) * slopeValue;
+                    if (tcaValue >= pThres && classRandomIter.getSample(c, r, 0) == 15) {
                         netRandomIter.setSample(c, r, 0, NETVALUE);
                         FlowNode flowNode = new FlowNode(flowRandomIter, cols, rows, c, r);
                         FlowNode runningNode = flowNode;

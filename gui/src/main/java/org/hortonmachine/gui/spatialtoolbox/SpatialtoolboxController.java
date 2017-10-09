@@ -655,7 +655,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
             scriptSb.append("println \"");
             scriptSb.append(fieldName);
             scriptSb.append(" = \" + ");
-            scriptSb.append(fieldName);
+            scriptSb.append(objectName).append(".").append(fieldName);
             scriptSb.append("\n");
         }
 
