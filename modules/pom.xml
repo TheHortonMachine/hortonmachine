@@ -5,12 +5,12 @@
   <parent>
     <groupId>org.hortonmachine</groupId>
     <artifactId>hortonmachine</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.1-SNAPSHOT</version>
   </parent>
 
   <groupId>org.hortonmachine</groupId>
   <artifactId>hm-modules</artifactId>
-  <version>0.9.0</version>
+  <version>0.9.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>HM Simple Modules Wrapper</name>
   
@@ -18,13 +18,13 @@
 	<dependency>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hm-hmachine</artifactId>
-        <version>0.9.0</version>
+        <version>0.9.1-SNAPSHOT</version>
 </dependency>
 
 	<dependency>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hm-lesto</artifactId>
-        <version>0.9.0</version>
+        <version>0.9.1-SNAPSHOT</version>
 	</dependency>
 
     <dependency>
