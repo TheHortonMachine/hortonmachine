@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
-		<version>0.8.2-SNAPSHOT</version>
+		<version>0.9.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -16,7 +16,7 @@
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hm-gpserver</artifactId>
-	<version>0.8.2-SNAPSHOT</version>
+	<version>0.9.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>Geopaparazzi Simple Server Implementation</name>
 
@@ -24,7 +24,7 @@
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-apps</artifactId>
-			<version>0.8.2-SNAPSHOT</version>
+			<version>0.9.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
