@@ -35,12 +35,21 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSCARVER_P_DEPTH_LINES
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCARVER_P_DEPTH_POLYGONS_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCARVER_STATUS;
 
-import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer;
+import org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -53,16 +62,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer;
-import org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description(OMSCARVER_DESCRIPTION)
 @Documentation(OMSCARVER_DOCUMENTATION)
@@ -89,6 +88,8 @@ public class OmsCarver extends HMModel {
     // @Description("The buffer.")
     // @UI("combo:" + "simple" + "," + "interpolated")
     // @In
+    
+    // for now only the simple mode is supported
     private String pMode = "simple";
 
     // @Description("The buffer to use in the interpolation mode.")
@@ -182,17 +183,19 @@ public class OmsCarver extends HMModel {
                     this, pm);
         }
 
-        RenderedImage dtmRI = inRaster.getRenderedImage();
-        RenderedImage depthRI = finalCarveGC.getRenderedImage();
+        
+        RandomIter dtmIter = CoverageUtilities.getRandomIterator(inRaster);
+        RandomIter depthIter = CoverageUtilities.getRandomIterator(finalCarveGC);
 
-        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, Double.NaN);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
 
-        RandomIter dtmIter = RandomIterFactory.create(dtmRI, null);
-        RandomIter depthIter = RandomIterFactory.create(depthRI, null);
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
-        for( int x = 0; x < dtmRI.getWidth(); x++ ) {
-            for( int y = 0; y < dtmRI.getHeight(); y++ ) {
+        for( int x = 0; x < cols; x++ ) {
+            for( int y = 0; y < rows; y++ ) {
                 double dtmValue = dtmIter.getSampleDouble(x, y, 0);
+                if (HMConstants.isNovalue(dtmValue)) {
+                    continue;
+                }
                 double depthValue = depthIter.getSampleDouble(x, y, 0);
                 double newValue;
                 if (HMConstants.isNovalue(depthValue)) {
@@ -200,11 +203,7 @@ public class OmsCarver extends HMModel {
                 } else {
                     newValue = dtmValue - depthValue;
                 }
-
-                double existing = outWR.getSampleDouble(x, y, 0);
-                if (HMConstants.isNovalue(existing)) {
-                    outIter.setSample(x, y, 0, newValue);
-                }
+                outIter.setSample(x, y, 0, newValue);
             }
         }
 
