@@ -88,7 +88,7 @@ public class OmsCarver extends HMModel {
     // @Description("The buffer.")
     // @UI("combo:" + "simple" + "," + "interpolated")
     // @In
-    
+
     // for now only the simple mode is supported
     private String pMode = "simple";
 
@@ -183,28 +183,33 @@ public class OmsCarver extends HMModel {
                     this, pm);
         }
 
-        
         RandomIter dtmIter = CoverageUtilities.getRandomIterator(inRaster);
         RandomIter depthIter = CoverageUtilities.getRandomIterator(finalCarveGC);
 
         WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
-
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
-        for( int x = 0; x < cols; x++ ) {
-            for( int y = 0; y < rows; y++ ) {
-                double dtmValue = dtmIter.getSampleDouble(x, y, 0);
-                if (HMConstants.isNovalue(dtmValue)) {
-                    continue;
+
+        try {
+            for( int x = 0; x < cols; x++ ) {
+                for( int y = 0; y < rows; y++ ) {
+                    double dtmValue = dtmIter.getSampleDouble(x, y, 0);
+                    if (HMConstants.isNovalue(dtmValue)) {
+                        continue;
+                    }
+                    double depthValue = depthIter.getSampleDouble(x, y, 0);
+                    double newValue;
+                    if (HMConstants.isNovalue(depthValue)) {
+                        newValue = dtmValue;
+                    } else {
+                        newValue = dtmValue - depthValue;
+                    }
+                    outIter.setSample(x, y, 0, newValue);
                 }
-                double depthValue = depthIter.getSampleDouble(x, y, 0);
-                double newValue;
-                if (HMConstants.isNovalue(depthValue)) {
-                    newValue = dtmValue;
-                } else {
-                    newValue = dtmValue - depthValue;
-                }
-                outIter.setSample(x, y, 0, newValue);
             }
+        } finally {
+            dtmIter.done();
+            depthIter.done();
+            outIter.done();
         }
 
         outRaster = CoverageUtilities.buildCoverage("outraster", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
