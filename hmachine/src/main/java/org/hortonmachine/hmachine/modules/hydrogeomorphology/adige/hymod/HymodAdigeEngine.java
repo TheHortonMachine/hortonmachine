@@ -60,7 +60,6 @@ public class HymodAdigeEngine implements IAdigeEngine {
     private final IHMProgressMonitor pm;
     private final List<String> pfaffsList;
     private double[] coeffs;
-    public static final double doubleNovalue = Double.NaN;
     int conta = 0;
 
     public HymodAdigeEngine( HymodInputs hymodInputs, List<IHillSlope> orderedHillslopes,

@@ -70,6 +70,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -209,7 +210,7 @@ public class OmsDebrisVandre extends HMModel {
             if (inNet == null) {
                 throw new ModelsIllegalargumentException("If the soil map is supplied also the network map is needed.", this, pm);
             }
-            outSoilWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, Double.NaN);
+            outSoilWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
             outSoilIter = RandomIterFactory.createWritable(outSoilWR, null);
 
             RenderedImage soilRI = inSoil.getRenderedImage();

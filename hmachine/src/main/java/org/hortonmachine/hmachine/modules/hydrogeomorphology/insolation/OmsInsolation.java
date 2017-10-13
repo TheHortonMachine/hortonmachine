@@ -57,6 +57,7 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -176,8 +177,8 @@ public class OmsInsolation extends HMModel {
         pm.done();
         for( int y = 2; y < height - 2; y++ ) {
             for( int x = 2; x < width - 2; x++ ) {
-                if (pitWR.getSampleDouble(x, y, 0) == -9999.0) {
-                    insolationIterator.setSample(x, y, 0, Double.NaN);
+                if (HMConstants.isNovalue(pitWR.getSampleDouble(x, y, 0))) {
+                    insolationIterator.setSample(x, y, 0, HMConstants.doubleNovalue);
 
                 }
             }
