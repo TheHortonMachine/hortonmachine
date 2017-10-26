@@ -169,8 +169,10 @@ public class SpatialiteCommonMethods {
                 for( int j = 1; j <= columnCount; j++ ) {
                     if (hasGeom && queryResult.geometryIndex == j - 1) {
                         byte[] geomBytes = rs.getBytes(j);
-                        Geometry geometry = wkbReader.read(geomBytes);
-                        rec[j - 1] = geometry;
+                        if (geomBytes != null) {
+                            Geometry geometry = wkbReader.read(geomBytes);
+                            rec[j - 1] = geometry;
+                        }
                     } else {
                         Object object = rs.getObject(j);
                         if (object instanceof Clob) {

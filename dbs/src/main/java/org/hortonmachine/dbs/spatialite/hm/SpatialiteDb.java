@@ -60,12 +60,12 @@ public class SpatialiteDb extends ASpatialDb {
     public SpatialiteDb() {
         sqliteDb = new SqliteDb();
     }
-    
+
     @Override
     public EDb getType() {
         return EDb.SPATIALITE;
     }
-    
+
     public void setCredentials( String user, String password ) {
         this.user = user;
         this.password = password;
@@ -89,24 +89,24 @@ public class SpatialiteDb extends ASpatialDb {
                         stmt.execute("SELECT load_extension('mod_rasterlite2.so', 'sqlite3_modrasterlite_init')");
                     } catch (Exception e) {
                         if (mPrintInfos) {
-                            Logger.INSTANCE.insertInfo(null,"Unable to load mod_rasterlite2.so: " + e.getMessage());
+                            Logger.INSTANCE.insertInfo(null, "Unable to load mod_rasterlite2.so: " + e.getMessage());
                         }
                         try {
                             stmt.execute("SELECT load_extension('mod_rasterlite2', 'sqlite3_modrasterlite_init')");
                         } catch (Exception e1) {
-                            Logger.INSTANCE.insertInfo(null,"Unable to load mod_rasterlite2: " + e1.getMessage());
+                            Logger.INSTANCE.insertInfo(null, "Unable to load mod_rasterlite2: " + e1.getMessage());
                         }
                     }
                     try {
                         stmt.execute("SELECT load_extension('mod_spatialite.so', 'sqlite3_modspatialite_init')");
                     } catch (Exception e) {
                         if (mPrintInfos) {
-                            Logger.INSTANCE.insertInfo(null,"Unable to load mod_spatialite.so: " + e.getMessage());
+                            Logger.INSTANCE.insertInfo(null, "Unable to load mod_spatialite.so: " + e.getMessage());
                         }
                         try {
                             stmt.execute("SELECT load_extension('mod_spatialite', 'sqlite3_modspatialite_init')");
                         } catch (Exception e1) {
-                            Logger.INSTANCE.insertInfo(null,"Unable to load mod_spatialite: " + e1.getMessage());
+                            Logger.INSTANCE.insertInfo(null, "Unable to load mod_spatialite: " + e1.getMessage());
                         }
                         throw e;
                     }
@@ -116,14 +116,14 @@ public class SpatialiteDb extends ASpatialDb {
                         stmt.execute("SELECT load_extension('mod_rasterlite2', 'sqlite3_modrasterlite_init')");
                     } catch (Exception e) {
                         if (mPrintInfos) {
-                            Logger.INSTANCE.insertInfo(null,"Unable to load mod_rasterlite2: " + e.getMessage());
+                            Logger.INSTANCE.insertInfo(null, "Unable to load mod_rasterlite2: " + e.getMessage());
                         }
                     }
                     try {
                         stmt.execute("SELECT load_extension('mod_spatialite', 'sqlite3_modspatialite_init')");
                     } catch (Exception e) {
                         if (mPrintInfos) {
-                            Logger.INSTANCE.insertInfo(null,"Unable to load mod_spatialite: " + e.getMessage());
+                            Logger.INSTANCE.insertInfo(null, "Unable to load mod_spatialite: " + e.getMessage());
                         }
                         throw e;
                     }
@@ -139,8 +139,8 @@ public class SpatialiteDb extends ASpatialDb {
         }
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
-            Logger.INSTANCE.insertInfo(null,"Spatialite Version: " + dbInfo[0]);
-            Logger.INSTANCE.insertInfo(null,"Spatialite Target CPU: " + dbInfo[1]);
+            Logger.INSTANCE.insertInfo(null, "Spatialite Version: " + dbInfo[0]);
+            Logger.INSTANCE.insertInfo(null, "Spatialite Target CPU: " + dbInfo[1]);
         }
         return dbExists;
     }
@@ -173,11 +173,11 @@ public class SpatialiteDb extends ASpatialDb {
         SpatialiteCommonMethods.createSpatialTable(this, tableName, tableSrid, geometryFieldData, fieldData, foreignKeys,
                 avoidIndex);
     }
-    
+
     public String checkSqlCompatibilityIssues( String sql ) {
         return SpatialiteCommonMethods.checkCompatibilityIssues(sql);
     }
-    
+
     @Override
     public Envelope getTableBounds( String tableName ) throws Exception {
         return SpatialiteCommonMethods.getTableBounds(this, tableName);
@@ -206,8 +206,11 @@ public class SpatialiteDb extends ASpatialDb {
     @Override
     public Geometry getGeometryFromResultSet( IHMResultSet resultSet, int position ) throws Exception {
         byte[] geomBytes = resultSet.getBytes(position);
-        Geometry geometry = wkbReader.read(geomBytes);
-        return geometry;
+        if (geomBytes != null) {
+            Geometry geometry = wkbReader.read(geomBytes);
+            return geometry;
+        }
+        return null;
     }
 
     public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
@@ -238,7 +241,7 @@ public class SpatialiteDb extends ASpatialDb {
     public boolean hasTable( String tableName ) throws Exception {
         return sqliteDb.hasTable(tableName);
     }
-    
+
     public ETableType getTableType( String tableName ) throws Exception {
         return SpatialiteCommonMethods.getTableType(this, tableName);
     }
@@ -349,8 +352,10 @@ public class SpatialiteDb extends ASpatialDb {
                 for( int j = 1; j <= columnCount; j++ ) {
                     if (j == geometryIndex) {
                         byte[] geomBytes = rs.getBytes(j);
-                        Geometry geometry = wkbReader.read(geomBytes);
-                        rec[j - 1] = geometry;
+                        if (geomBytes != null) {
+                            Geometry geometry = wkbReader.read(geomBytes);
+                            rec[j - 1] = geometry;
+                        }
                     } else {
                         Object object = rs.getObject(j);
                         if (object instanceof Clob) {
