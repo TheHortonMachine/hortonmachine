@@ -12,11 +12,8 @@ package org.hortonmachine.jython_tmp;
 //import org.hortonmachine.gui.utils.GuiBridgeHandler;
 //import org.hortonmachine.gui.utils.GuiUtilities;
 //import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
 //
 //public class SimpleRunnerController extends SimpleRunnerGui implements IOnCloseListener {
-//    private static final Logger logger = LoggerFactory.getLogger(SimpleRunnerController.class);
 //
 //    private GuiBridgeHandler guiBridge;
 //
@@ -33,7 +30,7 @@ package org.hortonmachine.jython_tmp;
 //                try {
 //                    GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
 //                } catch (Exception e1) {
-//                    logger.error("ERROR", e1);
+//                    //logger.error("ERROR", e1);
 //                }
 //            } else {
 //                return;

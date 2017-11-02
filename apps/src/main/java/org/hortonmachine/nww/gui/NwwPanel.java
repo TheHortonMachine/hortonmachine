@@ -31,10 +31,9 @@ import javax.swing.border.Border;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.nww.layers.defaults.raster.OSMMapnikLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import gov.nasa.worldwind.Model;
 import gov.nasa.worldwind.View;
@@ -65,7 +64,7 @@ import gov.nasa.worldwind.view.orbit.OrbitViewLimits;
  */
 @SuppressWarnings("serial")
 public class NwwPanel extends JPanel {
-    private static final Logger logger = LoggerFactory.getLogger(NwwPanel.class);
+    private static final Logger logger = Logger.INSTANCE;
 
     private WorldWindow wwd;
     protected StatusBar statusBar;
@@ -76,7 +75,7 @@ public class NwwPanel extends JPanel {
         try {
             return new NwwPanel(useWwGlCanvas);
         } catch (UnsatisfiedLinkError ule) {
-            logger.error("error", ule);
+            logger.insertError("NwwPanel", "error", ule);
             String msg = "<html><b><font color=red size=+1>";
             msg += "<p>An error occurred while loading the native NWW libraries,</p>";
             msg += "<p>check your installation.</p><p></p>";
@@ -87,7 +86,7 @@ public class NwwPanel extends JPanel {
             errorLabel.setBorder(paddingBorder);
             return errorLabel;
         } catch (Exception e) {
-            logger.error("error", e);
+            logger.insertError("NwwPanel", "error", e);
         }
 
         return null;

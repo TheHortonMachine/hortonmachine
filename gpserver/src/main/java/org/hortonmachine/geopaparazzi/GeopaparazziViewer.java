@@ -37,18 +37,17 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 
 import org.hortonmachine.dbs.compat.IHMConnection;
+import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
+import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.Image;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.Note;
-import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
 import org.hortonmachine.geopaparazzi.simpleserver.GeopaparazziController;
 import org.hortonmachine.geopaparazzi.simpleserver.ProjectInfo;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The spatialtoolbox view controller.
@@ -57,11 +56,11 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class GeopaparazziViewer extends GeopaparazziController {
-    private static final Logger logger = LoggerFactory.getLogger(GeopaparazziViewer.class);
+    private static final Logger logger = Logger.INSTANCE;
     private static final long serialVersionUID = 1L;
 
     private static final int MAX_IMAGE_SIZE = 800;
-    
+
     public GeopaparazziViewer( GuiBridgeHandler guiBridge ) {
         super(guiBridge);
     }
@@ -94,7 +93,7 @@ public class GeopaparazziViewer extends GeopaparazziController {
                 bufferedImage = createImage(imageStream, doOriginalSize);
 
             } catch (Exception e) {
-                logger.error("error", e);
+                logger.insertError("GeopaparazziViewer", "error", e);
             }
         }
         return bufferedImage;
@@ -146,7 +145,7 @@ public class GeopaparazziViewer extends GeopaparazziController {
                 try {
                     loadProjectData(project, true);
                 } catch (Exception ex) {
-                    logger.error("Error", ex);
+                    logger.insertError("GeopaparazziViewer", "Error", ex);
                 }
             }
         });
@@ -156,7 +155,7 @@ public class GeopaparazziViewer extends GeopaparazziController {
                 try {
                     editProjectData(project);
                 } catch (Exception ex) {
-                    logger.error("Error", ex);
+                    logger.insertError("GeopaparazziViewer", "Error", ex);
                 }
             }
         });
@@ -174,7 +173,7 @@ public class GeopaparazziViewer extends GeopaparazziController {
                 try {
                     openImageInDialog(selectedImage.getId(), selectedImage.getName(), currentSelectedProject.databaseFile, false);
                 } catch (Exception ex) {
-                    logger.error("Error", ex);
+                    logger.insertError("GeopaparazziViewer", "Error", ex);
                 }
             }
         });
@@ -192,7 +191,7 @@ public class GeopaparazziViewer extends GeopaparazziController {
                     }
 
                 } catch (Exception ex) {
-                    logger.error("Error", ex);
+                    logger.insertError("GeopaparazziViewer", "Error", ex);
                 }
             }
         });

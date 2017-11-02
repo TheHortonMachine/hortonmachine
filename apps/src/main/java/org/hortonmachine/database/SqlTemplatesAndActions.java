@@ -31,6 +31,7 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
+import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
@@ -38,8 +39,6 @@ import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Simple queries templates.
@@ -55,7 +54,7 @@ public class SqlTemplatesAndActions {
         sqlTemplates = dbType.getSqlTemplates();
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(SqlTemplatesAndActions.class);
+    private static final Logger logger = Logger.INSTANCE;
 
     public Action getSelectOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Select on column"){
@@ -268,7 +267,7 @@ public class SqlTemplatesAndActions {
                         databaseViewer.refreshDatabaseTree();
                     } catch (Exception ex) {
                         databaseViewer.currentConnectedDatabase = null;
-                        logger.error("Error refreshing database...", ex);
+                        logger.insertError("SqlTemplatesAndActions", "Error refreshing database...", ex);
                     } finally {
                         logConsole.finishProcess();
                         logConsole.stopLogging();
@@ -300,7 +299,7 @@ public class SqlTemplatesAndActions {
                     try {
                         GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
                     } catch (Exception e1) {
-                        logger.error("ERROR", e1);
+                        logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
                     }
                 } else {
                     return;
@@ -309,7 +308,7 @@ public class SqlTemplatesAndActions {
                     SpatialDbsImportUtils.createTableFromShp(spatialiteViewer.currentConnectedDatabase, openFiles[0]);
                     spatialiteViewer.refreshDatabaseTree();
                 } catch (Exception e1) {
-                    logger.error("ERROR", e1);
+                    logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
                 }
 
             }
@@ -326,7 +325,7 @@ public class SqlTemplatesAndActions {
                     try {
                         GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
                     } catch (Exception e1) {
-                        logger.error("ERROR", e1);
+                        logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
                     }
                 } else {
                     return;
@@ -335,7 +334,7 @@ public class SqlTemplatesAndActions {
                     String query = sqlTemplates.attachShapefile(openFiles[0]);
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception e1) {
-                    logger.error("ERROR", e1);
+                    logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
                 }
 
             }
@@ -350,7 +349,7 @@ public class SqlTemplatesAndActions {
                     String query = DbsUtilities.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception e1) {
-                    logger.error("Error", e1);
+                    logger.insertError("SqlTemplatesAndActions", "Error", e1);
                 }
             }
         };
@@ -373,7 +372,7 @@ public class SqlTemplatesAndActions {
                     String query = sqlTemplates.dropTable(tableName, geometryColumnName);
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception ex) {
-                    logger.error("Error", ex);
+                    logger.insertError("SqlTemplatesAndActions", "Error", ex);
                 }
             }
         };
@@ -388,7 +387,7 @@ public class SqlTemplatesAndActions {
                     long count = spatialiteViewer.currentConnectedDatabase.getCount(tableName);
                     JOptionPane.showMessageDialog(spatialiteViewer, "Count: " + count);
                 } catch (Exception ex) {
-                    logger.error("Error", ex);
+                    logger.insertError("SqlTemplatesAndActions", "Error", ex);
                 }
             }
         };
@@ -404,7 +403,7 @@ public class SqlTemplatesAndActions {
                     try {
                         GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
                     } catch (Exception e1) {
-                        logger.error("ERROR", e1);
+                        logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
                     }
                 } else {
                     return;
@@ -420,7 +419,7 @@ public class SqlTemplatesAndActions {
                         hasErrors = !SpatialDbsImportUtils.importShapefile(spatialiteViewer.currentConnectedDatabase,
                                 openFiles[0], spatialiteViewer.currentSelectedTable.tableName, -1, spatialiteViewer.pm);
                     } catch (Exception ex) {
-                        logger.error("Error importing data from shapefile", ex);
+                        logger.insertError("SqlTemplatesAndActions", "Error importing data from shapefile", ex);
                     } finally {
                         logConsole.finishProcess();
                         logConsole.stopLogging();
@@ -458,7 +457,7 @@ public class SqlTemplatesAndActions {
 
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception ex) {
-                    logger.error("Error", ex);
+                    logger.insertError("SqlTemplatesAndActions", "Error", ex);
                 }
             }
         };
@@ -515,7 +514,7 @@ public class SqlTemplatesAndActions {
                     try {
                         GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
                     } catch (Exception e1) {
-                        logger.error("ERROR", e1);
+                        logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
                     }
                 } else {
                     return;
@@ -533,7 +532,7 @@ public class SqlTemplatesAndActions {
                         spatialiteViewer.runQuery(readFile, spatialiteViewer.pm);
                         spatialiteViewer.refreshDatabaseTree();
                     } catch (Exception ex) {
-                        logger.error("Error importing sql from file", ex);
+                        logger.insertError("SqlTemplatesAndActions", "Error importing sql from file", ex);
                     } finally {
                         logConsole.finishProcess();
                         logConsole.stopLogging();

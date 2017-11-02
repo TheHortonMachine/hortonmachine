@@ -41,6 +41,7 @@ import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
+import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteDb;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -51,8 +52,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
@@ -68,7 +67,7 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SpatialDbsImportUtils {
-    private static final Logger logger = LoggerFactory.getLogger(SpatialDbsImportUtils.class);
+    private static final Logger logger = Logger.INSTANCE;
 
     /**
      * Create a spatial table using a shapefile as schema.
@@ -261,7 +260,7 @@ public class SpatialDbsImportUtils {
                     pm.worked(1);
                 }
             } catch (Exception e) {
-                logger.error("error", e);
+                logger.insertError("SpatialDbsImportUtils", "error", e);
             } finally {
                 pm.done();
                 featureIterator.close();
@@ -271,7 +270,7 @@ public class SpatialDbsImportUtils {
                 pm.beginTask("Execute batch import of " + featureCount + " features...", IHMProgressMonitor.UNKNOWN);
                 pStmt.executeBatch();
             } catch (Exception e) {
-                logger.error("error", e);
+                logger.insertError("SpatialDbsImportUtils", "error", e);
             } finally {
                 pm.done();
             }

@@ -27,13 +27,12 @@ import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
+import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -43,7 +42,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class DbsHelper {
-    private static final Logger logger = LoggerFactory.getLogger(DbsHelper.class);
+    private static final Logger logger = Logger.INSTANCE;
 
     /**
      * Extractes a featurecollection from an sql statement.
@@ -144,7 +143,7 @@ public class DbsHelper {
                     SimpleFeature feature = builder.buildFeature(null);
                     fc.add(feature);
                 } catch (Exception e) {
-                    logger.error("ERROR", e);
+                    logger.insertError("DbsHelper", "ERROR", e);
                 }
             } while( rs.next() );
 

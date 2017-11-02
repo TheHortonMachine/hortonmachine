@@ -32,8 +32,6 @@ import java.util.Set;
 import org.hortonmachine.gears.libs.modules.ClassField;
 import org.scannotation.AnnotationDB;
 import org.scannotation.ClasspathUrlFinder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import oms3.Access;
 import oms3.ComponentAccess;
