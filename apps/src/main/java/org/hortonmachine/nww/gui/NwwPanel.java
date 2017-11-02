@@ -71,9 +71,9 @@ public class NwwPanel extends JPanel {
 
     private double lastElevation = Double.NaN;
 
-    public static Component createNwwPanel( boolean useWwGlCanvas ) {
+    public static Component createNwwPanel( boolean useWwGlCanvas, boolean withStatusBar ) {
         try {
-            return new NwwPanel(useWwGlCanvas);
+            return new NwwPanel(useWwGlCanvas, withStatusBar);
         } catch (UnsatisfiedLinkError ule) {
             logger.insertError("NwwPanel", "error", ule);
             String msg = "<html><b><font color=red size=+1>";
@@ -92,7 +92,11 @@ public class NwwPanel extends JPanel {
         return null;
     }
 
-    protected NwwPanel( boolean useWwGlCanvas ) {
+    public static Component createNwwPanel( boolean useWwGlCanvas ) {
+        return createNwwPanel(useWwGlCanvas, true);
+    }
+
+    protected NwwPanel( boolean useWwGlCanvas, boolean withStatusBar ) {
         super(new BorderLayout());
 
         // Configuration.setValue(AVKey.INITIAL_LATITUDE, gpsLogShps[0].y);
@@ -125,9 +129,12 @@ public class NwwPanel extends JPanel {
         layers.addAll(addBack);
 
         this.add((Component) this.getWwd(), BorderLayout.CENTER);
-        this.statusBar = new StatusBar();
-        this.add(statusBar, BorderLayout.PAGE_END);
-        this.statusBar.setEventSource(getWwd());
+
+        if (withStatusBar) {
+            this.statusBar = new StatusBar();
+            this.add(statusBar, BorderLayout.PAGE_END);
+            this.statusBar.setEventSource(getWwd());
+        }
     }
 
     public ViewControlsLayer addViewControls( double scale, boolean showZoomControls, boolean showPanControls,
