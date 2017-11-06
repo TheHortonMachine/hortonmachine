@@ -14,6 +14,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.nww.gui.LayersPanelController;
 import org.hortonmachine.nww.gui.NwwPanel;
@@ -64,6 +65,7 @@ public class SimpleNwwViewer {
 
             if (nwwComponent instanceof NwwPanel) {
                 wwjPanel = (NwwPanel) nwwComponent;
+                ((Component) wwjPanel.getWwd()).setPreferredSize(new Dimension(500, 500));
                 wwjPanel.addOsmLayer();
                 ViewControlsLayer viewControls = wwjPanel.addViewControls();
                 viewControls.setScale(1.5);
@@ -130,13 +132,14 @@ public class SimpleNwwViewer {
         return null;
     }
 
-    public static void main( String[] args ) {
+    public static void main( String[] args ) throws Exception {
         if (Configuration.isMacOS() && APPNAME != null) {
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", APPNAME);
         }
 
         GuiUtilities.setDefaultLookAndFeel();
 
+        Logger.INSTANCE.init();
         openNww(APPNAME, -1);
 
     }

@@ -19,7 +19,6 @@ package org.hortonmachine.nww.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -71,9 +70,9 @@ public class NwwPanel extends JPanel {
 
     private double lastElevation = Double.NaN;
 
-    public static Component createNwwPanel( boolean useWwGlCanvas, boolean withStatusBar ) {
+    public static Component createNwwPanel( boolean useWwGlCanvas, boolean withStatusBar, boolean removeDefaultLayers ) {
         try {
-            return new NwwPanel(useWwGlCanvas, withStatusBar);
+            return new NwwPanel(useWwGlCanvas, withStatusBar, removeDefaultLayers);
         } catch (UnsatisfiedLinkError ule) {
             logger.insertError("NwwPanel", "error", ule);
             String msg = "<html><b><font color=red size=+1>";
@@ -93,10 +92,10 @@ public class NwwPanel extends JPanel {
     }
 
     public static Component createNwwPanel( boolean useWwGlCanvas ) {
-        return createNwwPanel(useWwGlCanvas, true);
+        return createNwwPanel(useWwGlCanvas, true, true);
     }
 
-    protected NwwPanel( boolean useWwGlCanvas, boolean withStatusBar ) {
+    protected NwwPanel( boolean useWwGlCanvas, boolean withStatusBar, boolean removeDefaultLayers ) {
         super(new BorderLayout());
 
         // Configuration.setValue(AVKey.INITIAL_LATITUDE, gpsLogShps[0].y);
@@ -104,30 +103,41 @@ public class NwwPanel extends JPanel {
         // Configuration.setValue(AVKey.INITIAL_ALTITUDE, 1000);
         // Configuration.setValue(AVKey.INITIAL_PITCH, 45);
 
+        long t1 = System.currentTimeMillis();
         if (useWwGlCanvas) {
+            logger.insertDebug("NwwPanel", "Create GLCanvas");
             wwd = new WorldWindowGLCanvas();
         } else {
+            logger.insertDebug("NwwPanel", "Create GLJPanel");
             wwd = new WorldWindowGLJPanel();
         }
-        ((Component) wwd).setPreferredSize(new Dimension(500, 500));
+        // ((Component) wwd).setPreferredSize(new Dimension(500, 500));
+        long t2 = System.currentTimeMillis();
+        logger.insertDebug("NwwPanel", "Create Canvas - DONE " + (t2 - t1) / 1000);
 
+        logger.insertDebug("NwwPanel", "Create Model");
         Model model = (Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME);
         this.getWwd().setModel(model);
+        long t3 = System.currentTimeMillis();
+        logger.insertDebug("NwwPanel", "Create Model - DONE " + (t3 - t2) / 1000);
 
-        LayerList layers = model.getLayers();
-        List<Layer> addBack = new ArrayList<>();
-        Iterator<Layer> layerIterator = layers.iterator();
-        List<String> namesToKeep = NwwUtilities.LAYERS_TO_KEEP_FROM_ORIGNALNWW;
-        while( layerIterator.hasNext() ) {
-            Layer layer = layerIterator.next();
-            if (namesToKeep.contains(layer.getName())) {
-                addBack.add(layer);
+        if (removeDefaultLayers) {
+            logger.insertDebug("NwwPanel", "Remove and add layers");
+            LayerList layers = model.getLayers();
+            List<Layer> addBack = new ArrayList<>();
+            Iterator<Layer> layerIterator = layers.iterator();
+            List<String> namesToKeep = NwwUtilities.LAYERS_TO_KEEP_FROM_ORIGNALNWW;
+            while( layerIterator.hasNext() ) {
+                Layer layer = layerIterator.next();
+                if (namesToKeep.contains(layer.getName())) {
+                    addBack.add(layer);
+                }
             }
+            layers.clear();
+            layers.addAll(addBack);
+            long t4 = System.currentTimeMillis();
+            logger.insertDebug("NwwPanel", "Remove and add layers - DONE " + (t4 - t3) / 1000);
         }
-        layers.clear();
-
-        layers.addAll(addBack);
-
         this.add((Component) this.getWwd(), BorderLayout.CENTER);
 
         if (withStatusBar) {

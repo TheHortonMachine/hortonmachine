@@ -158,7 +158,11 @@ public class NmeaGpsPoint {
         if (currentGPRMCsentence != null && currentGPRMCsentence.startsWith(GPRMC)) {
             String[] dataBlocks = currentGPRMCsentence.split(","); //$NON-NLS-1$
             if (dataBlocks[1].length() > 0 && dataBlocks[9].length() > 0) {
-                utcDateTime = nmeaDateFormatter.parseDateTime(dataBlocks[9] + dataBlocks[1]);
+                try {
+                    utcDateTime = nmeaDateFormatter.parseDateTime(dataBlocks[9] + dataBlocks[1]);
+                } catch (Exception e) {
+                    utcDateTime = DateTime.now();
+                }
             }
             if (dataBlocks[2].length() > 0 && dataBlocks[2].trim().equals("A")) //$NON-NLS-1$
                 isValid = true;
@@ -197,11 +201,11 @@ public class NmeaGpsPoint {
 
         String retValue = "";
 
+        String time = utcDateTime != null ? utcDateTime.toString(dateFormatter) : "-";
         retValue = "GpsPoint ( " + "latitude = " + this.latitude + TAB + "longitude = " + this.longitude + TAB + "speed = "
-                + this.speed + TAB + "altitude = " + this.altitude + TAB + "quality = " + this.quality + TAB + "sat = "
-                + this.sat + TAB + "hdop = " + this.hdop + TAB + "msl = " + this.ellipsoidVsMsl + TAB + "utctime = "
-                + this.utcDateTime.toString(dateFormatter) + TAB + "mag_var = " + this.mag_var + TAB + "angle = " + this.angle
-                + TAB + " )";
+                + this.speed + TAB + "altitude = " + this.altitude + TAB + "quality = " + this.quality + TAB + "sat = " + this.sat
+                + TAB + "hdop = " + this.hdop + TAB + "msl = " + this.ellipsoidVsMsl + TAB + "utctime = " + time + TAB
+                + "mag_var = " + this.mag_var + TAB + "angle = " + this.angle + TAB + " )";
 
         return retValue;
     }
