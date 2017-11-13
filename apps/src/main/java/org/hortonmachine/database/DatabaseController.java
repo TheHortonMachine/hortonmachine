@@ -861,6 +861,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             if (preferredWidth < 50) {
                 preferredWidth = 50;
             }
+            if (preferredWidth > 300) {
+                preferredWidth = 300;
+            }
             tableColumn.setPreferredWidth(preferredWidth);
         }
 
