@@ -51,7 +51,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @throws Exception
      */
     public abstract boolean open( String dbPath ) throws Exception;
-    
+
     /**
      * Create a new spatial table.
      * 
@@ -296,5 +296,31 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @throws Exception 
      */
     public abstract Geometry getGeometryFromResultSet( IHMResultSet resultSet, int position ) throws Exception;
+
+    /**
+     * Run a generic sql string (also multiline).
+     * 
+     * @param sql the sql to run.
+     * @throws Exception
+     */
+    public void runSql( String sql ) throws Exception {
+        String[] sqlSplit = sql.split("\n");
+        StringBuilder sb = new StringBuilder();
+        for( String string : sqlSplit ) {
+            String trim = string.trim();
+            if (trim.length() == 0) {
+                continue;
+            }
+            if (trim.startsWith("--")) {
+                continue;
+            }
+            sb.append(trim + " ");
+        }
+
+        String[] sqls = sb.toString().split(";");
+        for( String single : sqls ) {
+            executeInsertUpdateDeleteSql(single);
+        }
+    }
 
 }
