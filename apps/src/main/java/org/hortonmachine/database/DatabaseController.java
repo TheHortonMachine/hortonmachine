@@ -32,7 +32,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
 
@@ -57,24 +56,21 @@ import javax.swing.TransferHandler;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.EventListenerList;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.swing.JMapFrame.Tool;
 import org.h2.jdbc.JdbcSQLException;
+import org.hortonmachine.database.tree.DatabaseTreeCellRenderer;
+import org.hortonmachine.database.tree.DatabaseTreeModel;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
@@ -82,6 +78,7 @@ import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
+import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.compat.objects.TypeLevel;
@@ -107,7 +104,6 @@ import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.ImageCache;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
@@ -164,6 +160,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private JTextPane _sqlEditorArea;
     protected SqlTemplatesAndActions sqlTemplatesAndActions;
     private HMMapframe mapFrame;
+
+    private DatabaseTreeCellRenderer databaseTreeCellRenderer;
 
     public DatabaseController( GuiBridgeHandler guiBridge ) {
         this.guiBridge = guiBridge;
@@ -362,102 +360,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             addJtreeContextMenu();
 
-            _databaseTree.setCellRenderer(new DefaultTreeCellRenderer(){
-                @Override
-                public java.awt.Component getTreeCellRendererComponent( JTree tree, Object value, boolean selected,
-                        boolean expanded, boolean leaf, int row, boolean hasFocus ) {
-
-                    super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-
-                    if (value instanceof DbLevel) {
-                        if (currentConnectedDatabase != null) {
-                            switch( currentConnectedDatabase.getType() ) {
-                            case H2GIS:
-                                setIcon(ImageCache.getInstance().getImage(ImageCache.H2GIS32));
-                                break;
-                            case SPATIALITE:
-                                setIcon(ImageCache.getInstance().getImage(ImageCache.SPATIALITE32));
-                                break;
-                            default:
-                                setIcon(ImageCache.getInstance().getImage(ImageCache.DATABASE));
-                                break;
-                            }
-                        }
-                    } else if (value instanceof TypeLevel) {
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_FOLDER));
-                    } else if (value instanceof TableLevel) {
-                        TableLevel tableLevel = (TableLevel) value;
-                        try {
-                            ETableType tableType = currentConnectedDatabase.getTableType(tableLevel.tableName);
-                            if (tableLevel.isGeo) {
-                                if (tableType == ETableType.EXTERNAL) {
-                                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL_VIRTUAL));
-                                } else {
-                                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL));
-                                }
-                            } else {
-                                if (tableType == ETableType.VIEW) {
-                                    setIcon(ImageCache.getInstance().getImage(ImageCache.VIEW));
-                                } else {
-                                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE));
-                                }
-                            }
-                        } catch (Exception e) {
-                            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE));
-                            e.printStackTrace();
-                        }
-                    } else if (value instanceof ColumnLevel) {
-                        ColumnLevel columnLevel = (ColumnLevel) value;
-                        if (columnLevel.isPK) {
-                            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_PRIMARYKEY));
-                        } else if (columnLevel.references != null) {
-                            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_INDEX));
-                        } else if (columnLevel.geomColumn != null) {
-                            ESpatialiteGeometryType gType = ESpatialiteGeometryType.forValue(columnLevel.geomColumn.geometryType);
-                            switch( gType ) {
-                            case POINT_XY:
-                            case POINT_XYM:
-                            case POINT_XYZ:
-                            case POINT_XYZM:
-                            case MULTIPOINT_XY:
-                            case MULTIPOINT_XYM:
-                            case MULTIPOINT_XYZ:
-                            case MULTIPOINT_XYZM:
-                                setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POINT));
-                                break;
-                            case LINESTRING_XY:
-                            case LINESTRING_XYM:
-                            case LINESTRING_XYZ:
-                            case LINESTRING_XYZM:
-                            case MULTILINESTRING_XY:
-                            case MULTILINESTRING_XYM:
-                            case MULTILINESTRING_XYZ:
-                            case MULTILINESTRING_XYZM:
-                                setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_LINE));
-                                break;
-                            case POLYGON_XY:
-                            case POLYGON_XYM:
-                            case POLYGON_XYZ:
-                            case POLYGON_XYZM:
-                            case MULTIPOLYGON_XY:
-                            case MULTIPOLYGON_XYM:
-                            case MULTIPOLYGON_XYZ:
-                            case MULTIPOLYGON_XYZM:
-                                setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POLYGON));
-                                break;
-                            default:
-                                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
-                                break;
-                            }
-                        } else {
-                            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
-                        }
-                    }
-
-                    return this;
-                }
-
-            });
+            databaseTreeCellRenderer = new DatabaseTreeCellRenderer(currentConnectedDatabase);
+            _databaseTree.setCellRenderer(databaseTreeCellRenderer);
 
             _databaseTree.addTreeSelectionListener(new TreeSelectionListener(){
                 public void valueChanged( TreeSelectionEvent evt ) {
@@ -925,7 +829,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         }
         setDbTreeTitle(title);
 
-        ObjectTreeModel model = new ObjectTreeModel();
+        DatabaseTreeModel model = new DatabaseTreeModel();
         model.setRoot(dbLevel);
         _databaseTree.setModel(model);
 
@@ -962,101 +866,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     // }
     // }
 
-    class ObjectTreeModel implements TreeModel {
-
-        private DbLevel root;
-        private EventListenerList listenerList = new EventListenerList();
-        /**
-        * Constructs an empty tree.
-        */
-        public ObjectTreeModel() {
-            root = null;
-        }
-
-        /**
-        * Sets the root to a given variable.
-        * @param v the variable that is being described by this tree
-        */
-        public void setRoot( DbLevel v ) {
-            DbLevel oldRoot = v;
-            root = v;
-            fireTreeStructureChanged(oldRoot);
-        }
-
-        public Object getRoot() {
-            return root;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public int getChildCount( Object parent ) {
-            if (parent instanceof DbLevel) {
-                DbLevel dbLevel = (DbLevel) parent;
-                return dbLevel.typesList.size();
-            } else if (parent instanceof TypeLevel) {
-                TypeLevel typeLevel = (TypeLevel) parent;
-                return typeLevel.tablesList.size();
-            } else if (parent instanceof TableLevel) {
-                TableLevel tableLevel = (TableLevel) parent;
-                return tableLevel.columnsList.size();
-            } else if (parent instanceof ColumnLevel) {
-                return 0;
-            } else if (parent instanceof List) {
-                List list = (List) parent;
-                return list.size();
-            }
-            return 0;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public Object getChild( Object parent, int index ) {
-            if (parent instanceof DbLevel) {
-                DbLevel dbLevel = (DbLevel) parent;
-                return dbLevel.typesList.get(index);
-            } else if (parent instanceof TypeLevel) {
-                TypeLevel typeLevel = (TypeLevel) parent;
-                return typeLevel.tablesList.get(index);
-            } else if (parent instanceof TableLevel) {
-                TableLevel tableLevel = (TableLevel) parent;
-                return tableLevel.columnsList.get(index);
-            } else if (parent instanceof List) {
-                List list = (List) parent;
-                Object item = list.get(index);
-                return item;
-            }
-            return null;
-        }
-
-        public int getIndexOfChild( Object parent, Object child ) {
-            int n = getChildCount(parent);
-            for( int i = 0; i < n; i++ )
-                if (getChild(parent, i).equals(child))
-                    return i;
-            return -1;
-        }
-
-        public boolean isLeaf( Object node ) {
-            return getChildCount(node) == 0;
-        }
-
-        public void valueForPathChanged( TreePath path, Object newValue ) {
-        }
-
-        public void addTreeModelListener( TreeModelListener l ) {
-            listenerList.add(TreeModelListener.class, l);
-        }
-
-        public void removeTreeModelListener( TreeModelListener l ) {
-            listenerList.remove(TreeModelListener.class, l);
-        }
-
-        protected void fireTreeStructureChanged( Object oldRoot ) {
-            TreeModelEvent event = new TreeModelEvent(this, new Object[]{oldRoot});
-            EventListener[] listeners = listenerList.getListeners(TreeModelListener.class);
-            for( int i = 0; i < listeners.length; i++ )
-                ((TreeModelListener) listeners[i]).treeStructureChanged(event);
-        }
-
-    }
+   
 
     public JComponent asJComponent() {
         return this;
@@ -1098,6 +908,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 
                 DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
+                
+                if (databaseTreeCellRenderer!=null) {
+                    databaseTreeCellRenderer.setDb(currentConnectedDatabase);
+                }
 
                 layoutTree(dbLevel, false);
             } catch (Exception e) {
@@ -1168,7 +982,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 
                 DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-
+                if (databaseTreeCellRenderer!=null) {
+                    databaseTreeCellRenderer.setDb(currentConnectedDatabase);
+                }
+                
                 layoutTree(dbLevel, true);
                 setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
             } catch (Exception e) {
@@ -1274,6 +1091,14 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     foreignKeys = db.getForeignKeys(tableName);
                 } catch (Exception e) {
                 }
+                
+                List<Index> indexes = new ArrayList<>();
+                try {
+                    indexes = db.getIndexes(tableName);
+                } catch (Exception e) {
+                }
+                
+                
                 tableLevel.isGeo = geometryColumns != null;
                 List<String[]> tableInfo;
                 try {
@@ -1297,6 +1122,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     for( ForeignKey fKey : foreignKeys ) {
                         if (fKey.from.equals(columnName)) {
                             columnLevel.setFkReferences(fKey);
+                        }
+                    }
+                    for( Index index : indexes ) {
+                        if (index.columns.contains(columnName)) {
+                            columnLevel.setIndex(index);
                         }
                     }
                     tableLevel.columnsList.add(columnLevel);

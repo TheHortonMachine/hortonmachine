@@ -20,6 +20,7 @@ package org.hortonmachine.dbs.spatialite;
 import java.io.File;
 import java.io.FileInputStream;
 import java.sql.Clob;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +32,7 @@ import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
+import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 
@@ -538,5 +540,48 @@ public class SpatialiteCommonMethods {
             }
         }
         return ETableType.OTHER;
+    }
+
+    public static List<Index> getIndexes( ADb db, String tableName ) throws Exception {
+        String sql = "SELECT name, sql FROM sqlite_master WHERE type='index' and tbl_name='" + tableName + "'";
+
+        List<Index> indexes = new ArrayList<Index>();
+        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+            while( rs.next() ) {
+                Index index = new Index();
+
+                String indexName = rs.getString(1);
+
+                index.table = tableName;
+                index.name = indexName;
+
+                String createSql = rs.getString(2);
+                String lower = createSql.toLowerCase();
+                if (lower.startsWith("create index") || lower.startsWith("create unique index")) {
+                    String[] split = createSql.split("\\(|\\)");
+                    String columns = split[1];
+                    String[] colSplit = columns.split(",");
+                    for( String col : colSplit ) {
+                        col = col.trim();
+                        if (col.length() > 0) {
+                            index.columns.add(col);
+                        }
+                    }
+
+                    if (lower.startsWith("create unique index")) {
+                        index.isUnique = true;
+                    }
+
+                    indexes.add(index);
+                }
+            }
+            return indexes;
+        } catch (SQLException e) {
+            if (e.getMessage().contains("query does not return ResultSet")) {
+                return indexes;
+            } else {
+                throw e;
+            }
+        }
     }
 }

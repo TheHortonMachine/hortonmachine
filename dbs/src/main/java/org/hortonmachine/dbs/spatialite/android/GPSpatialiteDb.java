@@ -31,6 +31,7 @@ import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
+import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
@@ -314,6 +315,11 @@ public class GPSpatialiteDb extends ASpatialDb {
     public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg )
             throws Exception {
         addGeometryXYColumnAndIndex(tableName, geomColName, geomType, epsg, false);
+    }
+    
+    @Override
+    public List<Index> getIndexes( String tableName ) throws Exception {
+        return SpatialiteCommonMethods.getIndexes(this, tableName);
     }
 
 }

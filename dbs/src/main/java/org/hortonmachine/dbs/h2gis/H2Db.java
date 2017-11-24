@@ -20,6 +20,7 @@ package org.hortonmachine.dbs.h2gis;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,7 @@ import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
+import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.hm.HMConnection;
 
@@ -219,17 +221,49 @@ public class H2Db extends ADb {
         return fKeys;
     }
 
-    public static void main( String[] args ) throws Exception {
-        try (H2Db db = new H2Db()) {
-            db.setCredentials("asd", "asd");
-            db.open("/home/hydrologis/TMP/H2GIS/h2_test1");
+    @Override
+    public List<Index> getIndexes( String tableName ) throws Exception {
 
-            List<String> tables = db.getTables(false);
-            for( String table : tables ) {
-                System.out.println(table);
+        String sql = "SELECT INDEX_NAME, TABLE_NAME, sql FROM information_schema.indexes where upper(FTABLE_NAME)='" + tableName.toUpperCase()
+                + "'";
+
+        List<Index> indexes = new ArrayList<Index>();
+        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+            while( rs.next() ) {
+                Index index = new Index();
+
+                String indexName = rs.getString(1);
+
+                index.table = tableName;
+                index.name = indexName;
+
+                String createSql = rs.getString(2);
+                String lower = createSql.toLowerCase();
+                if (lower.startsWith("create index") || lower.startsWith("create unique index")) {
+                    String[] split = createSql.split("\\(|\\)");
+                    String columns = split[1];
+                    String[] colSplit = columns.split(",");
+                    for( String col : colSplit ) {
+                        col = col.trim();
+                        if (col.length() > 0) {
+                            index.columns.add(col);
+                        }
+                    }
+
+                    if (lower.startsWith("create unique index")) {
+                        index.isUnique = true;
+                    }
+
+                    indexes.add(index);
+                }
             }
-            System.out.println("has table bau? " + db.hasTable("bau"));
-            System.out.println("has table test? " + db.hasTable("test"));
+            return indexes;
+        } catch (SQLException e) {
+            if (e.getMessage().contains("query does not return ResultSet")) {
+                return indexes;
+            } else {
+                throw e;
+            }
         }
     }
 

@@ -37,8 +37,8 @@ import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
+import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
-import org.hortonmachine.dbs.log.LogDb;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 
@@ -337,6 +337,11 @@ public class H2GisDb extends ASpatialDb {
     @Override
     public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
         return h2Db.getForeignKeys(tableName);
+    }
+    
+    @Override
+    public List<Index> getIndexes( String tableName ) throws Exception {
+        return h2Db.getIndexes(tableName);
     }
 
     @Override
@@ -684,4 +689,6 @@ public class H2GisDb extends ASpatialDb {
             SFSUtilities.addTableSRIDConstraint(jdbcConn, tableLocation, srid);
         }
     }
+
+
 }

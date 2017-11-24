@@ -38,6 +38,8 @@ public class ColumnLevel {
      */
     public String references;
 
+    public Index index;
+
     public String[] tableColsFromFK() {
         String tmpReferences = references.replaceFirst("->", "").trim();
         String[] split = tmpReferences.split("\\(|\\)");
@@ -57,11 +59,18 @@ public class ColumnLevel {
             if (references != null) {
                 col += " " + references;
             }
+            if (index != null) {
+                col += " [idx: " + index.toString() + "]";
+            }
             return col;
         } else {
             String gType = ESpatialiteGeometryType.forValue(geomColumn.geometryType).getDescription();
             boolean indexEnabled = geomColumn.isSpatialIndexEnabled == 1 ? true : false;
             return columnName + " [" + gType + ",EPSG:" + geomColumn.srid + ",idx:" + indexEnabled + "]";
         }
+    }
+
+    public void setIndex( Index index ) {
+        this.index = index;
     }
 }

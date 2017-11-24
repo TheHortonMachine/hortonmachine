@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
+import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 
 /**
@@ -38,7 +39,7 @@ public abstract class ADb implements AutoCloseable {
     protected IHMConnection mConn = null;
 
     protected String mDbPath;
-    
+
     protected String user = "sa";
     protected String password = "";
 
@@ -267,6 +268,16 @@ public abstract class ADb implements AutoCloseable {
      * @throws Exception
      */
     public abstract List<ForeignKey> getForeignKeys( String tableName ) throws Exception;
+
+    /**
+     * Get the indexes of a table.
+     * 
+     * @param tableName
+     *            the table to check on.
+     * @return the list of indexes.
+     * @throws Exception
+     */
+    public abstract List<Index> getIndexes( String tableName ) throws Exception;
 
     /**
      * Get the record count of a table.
