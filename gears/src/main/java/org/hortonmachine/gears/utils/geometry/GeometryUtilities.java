@@ -266,7 +266,7 @@ public class GeometryUtilities {
     }
 
     public static Coordinate getCoordinateAtAzimuthDistance( Coordinate startPoint, double azimuthDeg, double distance ) {
-        
+
         double x1 = startPoint.x + distance * Math.sin(Math.toRadians(azimuthDeg));
         double y1 = startPoint.y + distance * Math.cos(Math.toRadians(azimuthDeg));
 
@@ -924,6 +924,51 @@ public class GeometryUtilities {
         } else {
             return 0;
         }
+    }
+
+    /**
+     * Creates simple arrow polygons in the direction of the coordinates.
+     * 
+     * @param geometries the geometries (lines and polygons) for which to create the arrows.
+     * @return the list of polygon arrows.
+     */
+    public static List<Polygon> createSimpleDirectionArrow( Geometry... geometries ) {
+        List<Polygon> polygons = new ArrayList<>();
+        for( Geometry geometry : geometries ) {
+            for( int i = 0; i < geometry.getNumGeometries(); i++ ) {
+                Geometry geometryN = geometry.getGeometryN(i);
+                if (geometryN instanceof LineString) {
+                    LineString line = (LineString) geometryN;
+                    polygons.addAll(makeArrows(line));
+                } else if (geometryN instanceof Polygon) {
+                    Polygon polygonGeom = (Polygon) geometryN;
+                    LineString exteriorRing = polygonGeom.getExteriorRing();
+                    polygons.addAll(makeArrows(exteriorRing));
+                    int numInteriorRing = polygonGeom.getNumInteriorRing();
+                    for( int j = 0; j < numInteriorRing; j++ ) {
+                        LineString interiorRingN = polygonGeom.getInteriorRingN(j);
+                        polygons.addAll(makeArrows(interiorRingN));
+                    }
+                }
+            }
+        }
+        return polygons;
+    }
+
+    private static List<Polygon> makeArrows( LineString line ) {
+        List<Polygon> polygons = new ArrayList<>();
+        Coordinate[] coordinates = line.getCoordinates();
+        for( int i = 0; i < coordinates.length-1; i++ ) {
+            LineSegment ls = new LineSegment(coordinates[i], coordinates[i+1]);
+            double length = ls.getLength();
+            double delta = length / 10.0;
+            Coordinate c1 = ls.pointAlongOffset(0.3, delta);
+            Coordinate c2 = ls.pointAlongOffset(0.3, -delta);
+            Coordinate c3 = ls.pointAlong(0.7);
+            Polygon polygon = gf().createPolygon(new Coordinate[]{c1, c2, c3, c1});
+            polygons.add(polygon);
+        }
+        return polygons;
     }
 
 }

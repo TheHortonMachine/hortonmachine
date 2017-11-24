@@ -22,6 +22,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.util.AffineTransformation;
+import com.vividsolutions.jts.geom.util.NoninvertibleTransformationException;
 
 /**
  * Utils to do transformations.
@@ -50,5 +52,36 @@ public class TransformationUtils {
         return getWorldToPixel(worldEnvelope, pixelRectangle).createInverse();
     }
 
+    public static AffineTransformation getWorldToRectangle( Envelope worldEnvelope, Rectangle pixelRectangle ) {
+        int cols = (int) pixelRectangle.getWidth();
+        int rows = (int) pixelRectangle.getHeight();
+        double worldWidth = worldEnvelope.getWidth();
+        double worldHeight = worldEnvelope.getHeight();
+
+        double x = -worldEnvelope.getMinX();
+        double y = -worldEnvelope.getMinY();
+        AffineTransformation translate = AffineTransformation.translationInstance(x, y);
+        double xScale = cols / worldWidth;
+        double yScale = rows / worldHeight;
+        AffineTransformation scale = AffineTransformation.scaleInstance(xScale, yScale);
+
+        int m00 = 1;
+        int m10 = 0;
+        int m01 = 0;
+        int m11 = -1;
+        int m02 = 0;
+        int m12 = rows;
+        AffineTransformation mirror_y = new AffineTransformation(m00, m01, m02, m10, m11, m12);
+
+        AffineTransformation world2pixel = new AffineTransformation(translate);
+        world2pixel.compose(scale);
+        world2pixel.compose(mirror_y);
+        return world2pixel;
+    }
+
+    public static AffineTransformation getRectangleToWorld( Rectangle pixelRectangle, Envelope worldEnvelope )
+            throws NoninvertibleTransformationException {
+        return getWorldToRectangle(worldEnvelope, pixelRectangle).getInverse();
+    }
 
 }

@@ -99,6 +99,7 @@ import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.hortonmachine.gears.ui.HMMapframe;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
@@ -106,6 +107,8 @@ import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.ImageCache;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -750,12 +753,14 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 int[] selectedCols = _dataViewerTable.getSelectedColumns();
 
                 boolean isGeom = false;
+                ESpatialiteGeometryType geomType = null;
                 if (selectedCols.length == 1 && selectedRows.length > 0) {
                     // check coontent
                     String valueAt = _dataViewerTable.getValueAt(selectedRows[0], selectedCols[0]).toString();
                     String[] split = valueAt.split("\\s+");
                     if (split.length > 0 && ESpatialiteGeometryType.isGeometryName(split[0])) {
                         isGeom = true;
+                        geomType = ESpatialiteGeometryType.forName(split[0]);
                     }
 
                 }
@@ -801,6 +806,40 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     });
                     item1.setHorizontalTextPosition(JMenuItem.RIGHT);
                     popupMenu.add(item1);
+                    if (geomType != null && !geomType.isPoint()) {
+                        JMenuItem item2 = new JMenuItem(new AbstractAction("View geometry with directions hint"){
+                            private static final long serialVersionUID = 1L;
+                            @Override
+                            public void actionPerformed( ActionEvent e ) {
+
+                                WKTReader wktReader = new WKTReader();
+                                List<Geometry> geomsList = new ArrayList<>();
+                                for( int r : selectedRows ) {
+                                    try {
+                                        String valueAt = _dataViewerTable.getValueAt(r, selectedCols[0]).toString();
+                                        Geometry geometry = wktReader.read(valueAt);
+                                        List<Polygon> simpleDirectionArrows = GeometryUtilities
+                                                .createSimpleDirectionArrow(geometry);
+
+                                        geomsList.add(geometry);
+                                        geomsList.addAll(simpleDirectionArrows);
+                                    } catch (ParseException e1) {
+                                        e1.printStackTrace();
+                                    }
+                                }
+
+                                if (geomsList.size() > 0) {
+                                    SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(null,
+                                            geomsList.toArray(new Geometry[0]));
+                                    showInMapFrame(false, fc);
+                                }
+
+                            }
+
+                        });
+                        item2.setHorizontalTextPosition(JMenuItem.RIGHT);
+                        popupMenu.add(item2);
+                    }
                 }
             }
 
