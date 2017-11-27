@@ -48,6 +48,8 @@ public interface IHMPreparedStatement extends AutoCloseable {
     void setBytes( int index, byte[] value ) throws Exception;
 
     void setShort( int index, short value ) throws Exception;
+    
+    void setObject( int index, Object value ) throws Exception;
 
     ResultSet getGeneratedKeys() throws Exception;
 

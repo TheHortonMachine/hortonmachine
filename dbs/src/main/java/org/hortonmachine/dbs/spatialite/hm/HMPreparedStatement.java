@@ -100,5 +100,10 @@ public class HMPreparedStatement implements IHMPreparedStatement {
     public ResultSet getGeneratedKeys() throws Exception {
         return preparedStatement.getGeneratedKeys();
     }
+    
+    @Override
+    public void setObject( int index, Object value ) throws Exception {
+        preparedStatement.setObject(index, value);
+    }
 
 }

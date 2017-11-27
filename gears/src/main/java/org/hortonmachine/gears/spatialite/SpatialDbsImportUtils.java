@@ -137,11 +137,12 @@ public class SpatialDbsImportUtils {
                 H2GisDb spatialiteDb = (H2GisDb) db;
                 String typeStringExtra = typeString;
                 // String typeStringExtra = "GEOMETRY(" + typeString + "," + codeFromCrs + ")";
-                attrSql.add("the_geom " + typeStringExtra);
+                String geomField = "the_geom";
+                attrSql.add(geomField + " " + typeStringExtra);
                 String[] array = attrSql.toArray(new String[0]);
                 spatialiteDb.createTable(shpName, array);
-                spatialiteDb.addSrid(shpName, codeFromCrs);
-                spatialiteDb.createSpatialIndex(shpName, null);
+                spatialiteDb.addSrid(shpName, codeFromCrs, geomField);
+                spatialiteDb.createSpatialIndex(shpName, geomField);
             }
         } else {
             db.createTable(shpName, attrSql.toArray(new String[0]));

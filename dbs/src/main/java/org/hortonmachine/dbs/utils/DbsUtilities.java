@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.dbs.utils;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -164,5 +165,25 @@ public class DbsUtilities {
         }
         query += " FROM " + tableName + " " + letter;
         return query;
+    }
+    
+    /**
+     * Returns the name of the file without the extension.
+     * <p/>
+     * <p>Note that if the file has no extension, the name is returned.
+     *
+     * @param file the file to trim.
+     *
+     * @return the name without extension.
+     */
+    public static String getNameWithoutExtention( File file ) {
+        String name = file.getName();
+        int lastDot = name.lastIndexOf("."); //$NON-NLS-1$
+        if (lastDot == -1) {
+            // file has no extension, return the name
+            return name;
+        }
+        name = name.substring(0, lastDot);
+        return name;
     }
 }

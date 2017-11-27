@@ -109,6 +109,11 @@ public class GPPreparedStatement implements IHMPreparedStatement {
     public void setBoolean( int index, boolean value ) throws java.lang.Exception {
         preparedStmt.bind(index, value ? 1 : 0);
     }
+    
+    @Override
+    public void setObject( int index, Object value ) throws Exception {
+        throw new RuntimeException("Function not supported: setObject()");
+    }
 
     @Override
     public ResultSet getGeneratedKeys() throws Exception {

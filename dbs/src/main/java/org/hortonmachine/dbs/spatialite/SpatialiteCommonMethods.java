@@ -556,23 +556,25 @@ public class SpatialiteCommonMethods {
                 index.name = indexName;
 
                 String createSql = rs.getString(2);
-                String lower = createSql.toLowerCase();
-                if (lower.startsWith("create index") || lower.startsWith("create unique index")) {
-                    String[] split = createSql.split("\\(|\\)");
-                    String columns = split[1];
-                    String[] colSplit = columns.split(",");
-                    for( String col : colSplit ) {
-                        col = col.trim();
-                        if (col.length() > 0) {
-                            index.columns.add(col);
+                if (createSql != null) {
+                    String lower = createSql.toLowerCase();
+                    if (lower.startsWith("create index") || lower.startsWith("create unique index")) {
+                        String[] split = createSql.split("\\(|\\)");
+                        String columns = split[1];
+                        String[] colSplit = columns.split(",");
+                        for( String col : colSplit ) {
+                            col = col.trim();
+                            if (col.length() > 0) {
+                                index.columns.add(col);
+                            }
                         }
-                    }
 
-                    if (lower.startsWith("create unique index")) {
-                        index.isUnique = true;
-                    }
+                        if (lower.startsWith("create unique index")) {
+                            index.isUnique = true;
+                        }
 
-                    indexes.add(index);
+                        indexes.add(index);
+                    }
                 }
             }
             return indexes;

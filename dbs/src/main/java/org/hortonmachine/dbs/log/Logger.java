@@ -39,6 +39,9 @@ public enum Logger implements ILogDb {
     public static PrintStream err = System.err;
 
     private static boolean doLog = false;
+    private static final boolean doLogStd = true;
+
+    public String EMPTY = "";
 
     /**
      * Initialize to log to standard out/err.
@@ -79,11 +82,11 @@ public enum Logger implements ILogDb {
     }
 
     public boolean insertInfo( String tag, String msg ) {
-        if (!doLog)
+        if (doLogStd) {
+            out.println("INFO:: " + getTag(tag) + msg);
+        }
+        if (!doLog) {
             return true;
-        if (db == null) {
-            out.println("INFO:: " + tag + ":: " + msg);
-            return false;
         }
         try {
             return db.insertInfo(tag, msg);
@@ -94,11 +97,11 @@ public enum Logger implements ILogDb {
     }
 
     public boolean insertWarning( String tag, String msg ) {
-        if (!doLog)
+        if (doLogStd) {
+            out.println("WARNING:: " + getTag(tag) + msg);
+        }
+        if (!doLog) {
             return true;
-        if (db == null) {
-            out.println("WARNING:: " + tag + ":: " + msg);
-            return false;
         }
         try {
             return db.insertWarning(tag, msg);
@@ -109,11 +112,11 @@ public enum Logger implements ILogDb {
     }
 
     public boolean insertDebug( String tag, String msg ) {
-        if (!doLog)
+        if (doLogStd) {
+            out.println("DEBUG:: " + getTag(tag) + msg);
+        }
+        if (!doLog) {
             return true;
-        if (db == null) {
-            out.println("DEBUG:: " + tag + ":: " + msg);
-            return false;
         }
         try {
             return db.insertDebug(tag, msg);
@@ -124,11 +127,11 @@ public enum Logger implements ILogDb {
     }
 
     public boolean insertAccess( String tag, String msg ) {
-        if (!doLog)
+        if (doLogStd) {
+            out.println("ACCESS:: " + getTag(tag) + msg);
+        }
+        if (!doLog) {
             return true;
-        if (db == null) {
-            out.println("ACCESS:: " + tag + ":: " + msg);
-            return false;
         }
         try {
             return db.insertAccess(tag, msg);
@@ -139,13 +142,15 @@ public enum Logger implements ILogDb {
     }
 
     public boolean insertError( String tag, String msg, Throwable t ) {
-        if (!doLog)
-            return true;
-        if (db == null) {
-            err.println("ERROR:: " + tag + ":: " + msg);
-            t.printStackTrace();
-            return false;
+        if (doLogStd) {
+            out.println("ERROR:: " + getTag(tag) + msg);
+            if (t != null)
+                t.printStackTrace();
         }
+        if (!doLog) {
+            return true;
+        }
+
         if (t == null) {
             t = new RuntimeException(msg);
         }
@@ -159,6 +164,9 @@ public enum Logger implements ILogDb {
 
     @Override
     public boolean insert( Message message ) throws Exception {
+        if (doLogStd) {
+            out.println(EMessageType.fromCode(message.type) + ":: " + message.tag + ":: " + message.msg);
+        }
         if (!doLog)
             return true;
         if (db == null) {
@@ -220,4 +228,20 @@ public enum Logger implements ILogDb {
         return db.getDatabasePath();
     }
 
+    public void setOutPrintStream( PrintStream logAreaPrintStream ) {
+        out = logAreaPrintStream;
+    }
+
+    public void setErrPrintStream( PrintStream logAreaPrintStream ) {
+        err = logAreaPrintStream;
+    }
+
+    private String getTag( String tag ) {
+        if (tag != null) {
+            tag += tag + ":: ";
+        } else {
+            tag = EMPTY;
+        }
+        return tag;
+    }
 }

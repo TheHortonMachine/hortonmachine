@@ -165,7 +165,9 @@ public abstract class ADb implements AutoCloseable {
         if (geomColumnName == null) {
             geomColumnName = "the_geom";
         }
-        String sql = "CREATE SPATIAL INDEX ON " + tableName + "(" + geomColumnName + ");";
+        String realColumnName = getProperColumnNameCase(tableName, geomColumnName);
+        String realTableName = getProperTableNameCase(tableName);
+        String sql = "CREATE SPATIAL INDEX ON " + realTableName + "(" + realColumnName + ");";
         try (IHMStatement stmt = mConn.createStatement()) {
             stmt.execute(sql.toString());
         }
@@ -476,6 +478,45 @@ public abstract class ADb implements AutoCloseable {
             datePattern = "%Y-%m-%d %H:%M:%S";
         String sql = "strftime('" + datePattern + "', " + columnName + " / 1000, 'unixepoch')";
         return sql;
+    }
+
+    /**
+     * Get the name of a column in the proper case.
+     * 
+     * @param tableName the table to check.
+     * @param columnName the column name to check. 
+     * @return the name found in the columns list of the table.
+     * @throws Exception
+     */
+    public String getProperColumnNameCase( String tableName, String columnName ) throws Exception {
+        List<String[]> tableColumns = getTableColumns(tableName);
+        String realName = columnName;
+        for( String[] cols : tableColumns ) {
+            if (cols[0].equalsIgnoreCase(columnName)) {
+                realName = cols[0];
+                break;
+            }
+        }
+        return realName;
+    }
+
+    /**
+     * Get the table name in the proper case.
+     * 
+     * @param tableName the table to check.
+     * @return
+     * @throws Exception
+     */
+    public String getProperTableNameCase( String tableName ) throws Exception {
+        List<String> tables = getTables(false);
+        String realName = tableName;
+        for( String name : tables ) {
+            if (name.equalsIgnoreCase(tableName)) {
+                realName = name;
+                break;
+            }
+        }
+        return realName;
     }
 
     protected abstract void logWarn( String message );

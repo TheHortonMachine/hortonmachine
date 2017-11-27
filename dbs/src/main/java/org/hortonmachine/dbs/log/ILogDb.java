@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.dbs.log;
 
+import java.io.PrintStream;
 import java.util.List;
 
 /**
@@ -48,4 +49,7 @@ public interface ILogDb {
 
     String getDatabasePath();
 
+    public void setOutPrintStream( PrintStream printStream );
+
+    public void setErrPrintStream( PrintStream printStream );
 }

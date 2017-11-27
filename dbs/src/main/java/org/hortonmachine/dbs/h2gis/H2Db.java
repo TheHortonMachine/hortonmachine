@@ -123,7 +123,13 @@ public class H2Db extends ADb {
     }
 
     public String checkSqlCompatibilityIssues( String sql ) {
-        sql = sql.replaceAll("AUTOINCREMENT", "AUTO_INCREMENT");
+
+        String lowerCase = sql.toLowerCase().trim();
+        if (lowerCase.startsWith("create table")) {
+            sql = sql.replaceAll("AUTOINCREMENT", "AUTO_INCREMENT");
+            sql = sql.replaceAll("TEXT", "varchar(255)");
+        }
+
         return sql;
     }
 
@@ -162,10 +168,17 @@ public class H2Db extends ADb {
     public ETableType getTableType( String tableName ) throws Exception {
         String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + tableName + "')";
         try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) {
+
+            ETableType type = null;
+            while( rs.next() ) {
                 String typeStr = rs.getString(1);
-                return ETableType.fromType(typeStr);
+                ETableType tmp = ETableType.fromType(typeStr);
+                if (type == null || type == ETableType.OTHER) {
+                    type = tmp;
+                }
             }
+            if (type != null)
+                return type;
         }
         return ETableType.OTHER;
     }
@@ -187,7 +200,7 @@ public class H2Db extends ADb {
 
         List<String[]> colInfo = new ArrayList<>();
         String sql = "select COLUMN_NAME, TYPE_NAME from information_schema.columns where upper(table_name) = '" + tableNameUpper
-                + "'";
+                + "' and TABLE_SCHEMA != 'INFORMATION_SCHEMA'";
         try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 String colName = rs.getString(1);
@@ -224,8 +237,8 @@ public class H2Db extends ADb {
     @Override
     public List<Index> getIndexes( String tableName ) throws Exception {
 
-        String sql = "SELECT INDEX_NAME, TABLE_NAME, sql FROM information_schema.indexes where upper(FTABLE_NAME)='" + tableName.toUpperCase()
-                + "'";
+        String sql = "SELECT INDEX_NAME, sql FROM information_schema.indexes where upper(TABLE_NAME)='"
+                + tableName.toUpperCase() + "'";
 
         List<Index> indexes = new ArrayList<Index>();
         try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {

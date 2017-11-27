@@ -46,6 +46,15 @@ public class TableLevel {
         return null;
     }
 
+    public boolean hasFks() {
+        for( ColumnLevel columnLevel : columnsList ) {
+            if (columnLevel.references != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     @Override
     public String toString() {
         return tableName;

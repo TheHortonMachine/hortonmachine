@@ -76,9 +76,9 @@ public enum ESpatialiteGeometryType {
     MULTIPOINT_XYZM(3004, "multipoint_xyzm", "CastToMultiPoint", "CastToXYZM", "CastToMulti", MultiPoint.class), //
     MULTILINESTRING_XYZM(3005, "multilinestring_xyzm", "CastToMultiLinestring", "CastToXYZM", "CastToMulti",
             MultiLineString.class), //
-            MULTIPOLYGON_XYZM(3006, "multipolygon_xyzm", "CastToMultiPolygon", "CastToXYZM", "CastToMulti", MultiPolygon.class), //
-            GEOMETRYCOLLECTION_XYZM(3007, "geometrycollection_xyzm", "CastToGeometyCollection", "CastToXYZM", null,
-                    GeometryCollection.class);//
+    MULTIPOLYGON_XYZM(3006, "multipolygon_xyzm", "CastToMultiPolygon", "CastToXYZM", "CastToMulti", MultiPolygon.class), //
+    GEOMETRYCOLLECTION_XYZM(3007, "geometrycollection_xyzm", "CastToGeometyCollection", "CastToXYZM", null,
+            GeometryCollection.class);//
 
     private final int type;
     private final String description;
@@ -352,6 +352,29 @@ public enum ESpatialiteGeometryType {
         case MULTIPOINT_XYM:
         case MULTIPOINT_XYZ:
         case MULTIPOINT_XYZM:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * @return <code>true</code>, if it is of type multi.
+     */
+    public boolean isMulti() {
+        switch( this ) {
+        case MULTIPOINT_XY:
+        case MULTIPOINT_XYM:
+        case MULTIPOINT_XYZ:
+        case MULTIPOINT_XYZM:
+        case MULTILINESTRING_XY:
+        case MULTILINESTRING_XYM:
+        case MULTILINESTRING_XYZ:
+        case MULTILINESTRING_XYZM:
+        case MULTIPOLYGON_XY:
+        case MULTIPOLYGON_XYM:
+        case MULTIPOLYGON_XYZ:
+        case MULTIPOLYGON_XYZM:
             return true;
         default:
             return false;

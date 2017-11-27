@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.dbs.log;
 
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -340,6 +341,14 @@ public class LogDb implements AutoCloseable, ILogDb {
     @Override
     public String getDatabasePath() {
         return logDb.getDatabasePath();
+    }
+
+    @Override
+    public void setOutPrintStream( PrintStream printStream ) {
+    }
+
+    @Override
+    public void setErrPrintStream( PrintStream printStream ) {
     }
 
 }

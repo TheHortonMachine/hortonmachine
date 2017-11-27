@@ -300,14 +300,13 @@ public class H2GisDb extends ASpatialDb {
             stmt.execute(sb.toString());
         }
 
-        addSrid(tableName, String.valueOf(srid));
+        addSrid(tableName, String.valueOf(srid), null);
 
         if (!avoidIndex) {
             String[] split = geometryFieldData.trim().split("\\s+");
             String geomColName = split[0];
 
-            String indexSql = "CREATE SPATIAL INDEX ON " + tableName + "(" + geomColName + ")";
-            executeInsertUpdateDeleteSql(indexSql);
+            createSpatialIndex(tableName, geomColName);
         }
     }
 
@@ -338,7 +337,7 @@ public class H2GisDb extends ASpatialDb {
     public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
         return h2Db.getForeignKeys(tableName);
     }
-    
+
     @Override
     public List<Index> getIndexes( String tableName ) throws Exception {
         return h2Db.getIndexes(tableName);
@@ -679,16 +678,17 @@ public class H2GisDb extends ASpatialDb {
         return "";
     }
 
-    public void addSrid( String tableName, String codeFromCrs ) throws Exception {
+    public void addSrid( String tableName, String codeFromCrs, String geometryColumnName ) throws Exception {
         int srid = Integer.parseInt(codeFromCrs);
-        try {
-            TableLocation tableLocation = TableLocation.parse(tableName);
-            SFSUtilities.addTableSRIDConstraint(jdbcConn, tableLocation, srid);
-        } catch (Exception e) {
-            TableLocation tableLocation = TableLocation.parse(tableName.toUpperCase());
-            SFSUtilities.addTableSRIDConstraint(jdbcConn, tableLocation, srid);
+        if (geometryColumnName == null)
+            geometryColumnName = "the_geom";
+        String realName = getProperColumnNameCase(tableName, geometryColumnName);
+        String realTableName = getProperTableNameCase(tableName);
+        TableLocation tableLocation = TableLocation.parse(realTableName);
+        if (srid > 0) {
+            jdbcConn.createStatement().execute(
+                    String.format("ALTER TABLE %s ADD CHECK ST_SRID(" + realName + ")=%d", tableLocation.toString(), srid));
         }
     }
-
 
 }

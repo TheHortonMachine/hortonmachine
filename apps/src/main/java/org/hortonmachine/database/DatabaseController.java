@@ -32,7 +32,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -73,15 +72,10 @@ import org.hortonmachine.database.tree.DatabaseTreeCellRenderer;
 import org.hortonmachine.database.tree.DatabaseTreeModel;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.compat.ETableType;
-import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
-import org.hortonmachine.dbs.compat.objects.ForeignKey;
-import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
-import org.hortonmachine.dbs.compat.objects.TypeLevel;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
@@ -95,7 +89,6 @@ import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.hortonmachine.gears.ui.HMMapframe;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
@@ -415,6 +408,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
 
             final LogConsoleController logConsole = new LogConsoleController(pm);
+            Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
+            Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
             JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
 
             new Thread(() -> {
@@ -467,6 +462,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
 
             final LogConsoleController logConsole = new LogConsoleController(pm);
+            Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
+            Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
             JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
             final File f_selectedFile = selectedFile;
             new Thread(() -> {
@@ -522,6 +519,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
 
             final LogConsoleController logConsole = new LogConsoleController(pm);
+            Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
+            Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
             JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
             final File f_selectedFile = selectedFile;
             new Thread(() -> {
@@ -866,8 +865,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     // }
     // }
 
-   
-
     public JComponent asJComponent() {
         return this;
     }
@@ -891,11 +888,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         }
 
         final LogConsoleController logConsole = new LogConsoleController(pm);
+        Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
+        Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
         JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
 
         new Thread(() -> {
             logConsole.beginProcess("Create new database");
-
+            boolean hadError = false;
             try {
                 if (dbType == EDb.SPATIALITE) {
                     currentConnectedDatabase = new GTSpatialiteThreadsafeDb();
@@ -908,8 +907,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 
                 DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-                
-                if (databaseTreeCellRenderer!=null) {
+
+                if (databaseTreeCellRenderer != null) {
                     databaseTreeCellRenderer.setDb(currentConnectedDatabase);
                 }
 
@@ -917,11 +916,14 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             } catch (Exception e) {
                 currentConnectedDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
+                hadError = true;
             } finally {
                 logConsole.finishProcess();
                 logConsole.stopLogging();
-                logConsole.setVisible(false);
-                window.dispose();
+                if (!hadError) {
+                    logConsole.setVisible(false);
+                    window.dispose();
+                }
             }
         }).start();
 
@@ -948,11 +950,14 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         }
 
         final LogConsoleController logConsole = new LogConsoleController(pm);
+        Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
+        Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
         JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
 
         new Thread(() -> {
             logConsole.beginProcess("Open database");
 
+            boolean hadError = false;
             try {
                 if (dbType == EDb.SPATIALITE) {
                     if (SpatialiteCommonMethods.isSqliteFile(new File(dbfilePath))) {
@@ -975,27 +980,35 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         currentConnectedDatabase = null;
                         return;
                     }
+                    if (message.contains("Database may be already in use")) {
+                        guiBridge.messageDialog("Database may be already in use. Close all connections or use server mode.", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        currentConnectedDatabase = null;
+                        return;
+                    }
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    Logger.INSTANCE.insertError("", "ERROR", e);
+                    hadError = true;
                 }
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 
                 DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-                if (databaseTreeCellRenderer!=null) {
+                if (databaseTreeCellRenderer != null) {
                     databaseTreeCellRenderer.setDb(currentConnectedDatabase);
                 }
-                
+
                 layoutTree(dbLevel, true);
                 setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
             } catch (Exception e) {
                 currentConnectedDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
+                hadError = true;
             } finally {
                 logConsole.finishProcess();
                 logConsole.stopLogging();
-                logConsole.setVisible(false);
-                window.dispose();
+                if (!hadError) {
+                    logConsole.setVisible(false);
+                    window.dispose();
+                }
             }
         }).start();
     }
@@ -1030,13 +1043,15 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         urlString = urlString.replaceFirst(type.getJdbcPrefix(), "");
 
         final LogConsoleController logConsole = new LogConsoleController(pm);
+        Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
+        Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
         JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
 
         EDb _type = type;
         String _urlString = urlString;
         new Thread(() -> {
             logConsole.beginProcess("Open database");
-
+            boolean hadError = false;
             try {
                 currentConnectedDatabase = _type.getSpatialDb();
                 currentConnectedDatabase.open(_urlString);
@@ -1049,92 +1064,21 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             } catch (Exception e) {
                 currentConnectedDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
+                hadError = true;
             } finally {
                 logConsole.finishProcess();
                 logConsole.stopLogging();
-                logConsole.setVisible(false);
-                window.dispose();
+                if (!hadError) {
+                    logConsole.setVisible(false);
+                    window.dispose();
+                }
             }
         }).start();
 
     }
 
     protected DbLevel gatherDatabaseLevels( ASpatialDb db ) throws Exception {
-        currentDbLevel = new DbLevel();
-        String databasePath = db.getDatabasePath();
-        File dbFile = new File(databasePath);
-
-        String dbName = FileUtilities.getNameWithoutExtention(dbFile);
-        currentDbLevel.dbName = dbName;
-
-        HashMap<String, List<String>> currentDatabaseTablesMap = db.getTablesMap(true);
-        for( String typeName : SpatialiteTableNames.ALL_TYPES_LIST ) {
-            TypeLevel typeLevel = new TypeLevel();
-            typeLevel.typeName = typeName;
-            List<String> tablesList = currentDatabaseTablesMap.get(typeName);
-            for( String tableName : tablesList ) {
-                TableLevel tableLevel = new TableLevel();
-                tableLevel.parent = currentDbLevel;
-                tableLevel.tableName = tableName;
-
-                ETableType tableType = db.getTableType(tableName);
-                tableLevel.tableType = tableType;
-
-                GeometryColumn geometryColumns = null;
-                try {
-                    geometryColumns = db.getGeometryColumnsForTable(tableName);
-                } catch (Exception e1) {
-                    // ignore
-                }
-                List<ForeignKey> foreignKeys = new ArrayList<>();
-                try {
-                    foreignKeys = db.getForeignKeys(tableName);
-                } catch (Exception e) {
-                }
-                
-                List<Index> indexes = new ArrayList<>();
-                try {
-                    indexes = db.getIndexes(tableName);
-                } catch (Exception e) {
-                }
-                
-                
-                tableLevel.isGeo = geometryColumns != null;
-                List<String[]> tableInfo;
-                try {
-                    tableInfo = db.getTableColumns(tableName);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    continue;
-                }
-                for( String[] columnInfo : tableInfo ) {
-                    ColumnLevel columnLevel = new ColumnLevel();
-                    columnLevel.parent = tableLevel;
-                    String columnName = columnInfo[0];
-                    String columnType = columnInfo[1];
-                    String columnPk = columnInfo[2];
-                    columnLevel.columnName = columnName;
-                    columnLevel.columnType = columnType;
-                    columnLevel.isPK = columnPk.equals("1") ? true : false;
-                    if (geometryColumns != null && columnName.equalsIgnoreCase(geometryColumns.geometryColumnName)) {
-                        columnLevel.geomColumn = geometryColumns;
-                    }
-                    for( ForeignKey fKey : foreignKeys ) {
-                        if (fKey.from.equals(columnName)) {
-                            columnLevel.setFkReferences(fKey);
-                        }
-                    }
-                    for( Index index : indexes ) {
-                        if (index.columns.contains(columnName)) {
-                            columnLevel.setIndex(index);
-                        }
-                    }
-                    tableLevel.columnsList.add(columnLevel);
-                }
-                typeLevel.tablesList.add(tableLevel);
-            }
-            currentDbLevel.typesList.add(typeLevel);
-        }
+        currentDbLevel = DbLevel.getDbLevel(db, SpatialiteTableNames.ALL_TYPES_LIST.toArray(new String[0]));
         return currentDbLevel;
     }
 
