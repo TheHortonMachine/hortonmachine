@@ -71,5 +71,14 @@ public abstract class ASqlTemplates {
             String newTableName, String newSrid ) throws Exception;
 
     public abstract String attachShapefile( File file );
+    
+    /**
+     * Get the syntax for geojson.
+     * 
+     * @param geomPart the geom part with srid and transforms if necessary. ex. ST_Collect(ST_Transform(the_geom,4326))
+     * @param precision the precision, if db supports it.
+     * @return the right string to use.
+     */
+    public abstract String getGeoJsonSyntax( String geomPart, double precision );
 
 }

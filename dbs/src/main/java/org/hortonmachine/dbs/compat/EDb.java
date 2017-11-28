@@ -27,10 +27,10 @@ public enum EDb {
             "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, false, true), //
     SPATIALITE(1, ".sqlite", "sqlite", "org.hortonmachine.dbs.spatialite.hm.SpatialiteDb", true,
             "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, false, true), //
-    H2(2, "", "mv.db", "org.hortonmachine.dbs.h2gis.H2Db", false, "org.hortonmachine.dbs.h2gis.H2GisSqlTemplates", "jdbc:h2:", true,
-            true, false, true), //
-    H2GIS(3, "", "mv.db", "org.hortonmachine.dbs.h2gis.H2GisDb", true, "org.hortonmachine.dbs.h2gis.H2GisSqlTemplates", "jdbc:h2:",
+    H2(2, "", "mv.db", "org.hortonmachine.dbs.h2gis.H2Db", false, "org.hortonmachine.dbs.h2gis.H2GisSqlTemplates", "jdbc:h2:",
             true, true, false, true), //
+    H2GIS(3, "", "mv.db", "org.hortonmachine.dbs.h2gis.H2GisDb", true, "org.hortonmachine.dbs.h2gis.H2GisSqlTemplates",
+            "jdbc:h2:", true, true, false, true), //
     SPATIALITE4ANDROID(4, ".sqlite", "sqlite", "org.hortonmachine.dbs.spatialite.android.GPSpatialiteDb", true,
             "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "", false, false, true, false); //
 
@@ -45,6 +45,7 @@ public enum EDb {
     private boolean _supportsServerMode;
     private boolean _supportsMobile;
     private boolean _supportsDesktop;
+    private ASqlTemplates sqlTemplates;
 
     private EDb( int code, String extensionOnCreation, String extension, String dbClassName, boolean isSpatial,
             String sqlTemplatesClassName, String jdbcPrefix, boolean supportsPwd, boolean supportsServerMode,
@@ -151,9 +152,11 @@ public enum EDb {
      * @throws Exception
      */
     public ASqlTemplates getSqlTemplates() throws Exception {
-        Class< ? > forName = Class.forName(_sqlTemplatesClassName);
-        Object newInstance = forName.newInstance();
-        return (ASqlTemplates) newInstance;
+        if (sqlTemplates == null) {
+            Class< ? > forName = Class.forName(_sqlTemplatesClassName);
+            Object newInstance = forName.newInstance();
+            sqlTemplates = (ASqlTemplates) newInstance;
+        }
+        return sqlTemplates;
     }
-
 }

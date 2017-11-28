@@ -108,4 +108,9 @@ public class H2GisSqlTemplates extends ASqlTemplates {
         String query = "CALL FILE_TABLE('" + absolutePath + "', '" + tableName + "');";
         return query;
     }
+    
+    @Override
+    public String getGeoJsonSyntax( String geomPart, double precision ) {
+        return "ST_AsGeoJson(" + geomPart + ")";
+    }
 }

@@ -122,4 +122,10 @@ public class SpatialiteSqlTemplates extends ASqlTemplates {
         String query = "CREATE VIRTUAL TABLE '" + tableName + "' USING VirtualShape('" + absolutePath + "', 'UTF-8', 4326) ";
         return query;
     }
+    
+    @Override
+    public String getGeoJsonSyntax( String geomPart, double precision ) {
+        return "ST_AsGeoJson(" + geomPart + "), " + precision + ",0)";
+    }
+
 }
