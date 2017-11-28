@@ -110,7 +110,7 @@ public class H2GisSqlTemplates extends ASqlTemplates {
     }
     
     @Override
-    public String getGeoJsonSyntax( String geomPart, double precision ) {
+    public String getGeoJsonSyntax( String geomPart, int precision ) {
         return "ST_AsGeoJson(" + geomPart + ")";
     }
 }

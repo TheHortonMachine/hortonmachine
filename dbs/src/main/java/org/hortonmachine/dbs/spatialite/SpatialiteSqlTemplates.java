@@ -124,8 +124,8 @@ public class SpatialiteSqlTemplates extends ASqlTemplates {
     }
     
     @Override
-    public String getGeoJsonSyntax( String geomPart, double precision ) {
-        return "ST_AsGeoJson(" + geomPart + "), " + precision + ",0)";
+    public String getGeoJsonSyntax( String geomPart, int precision ) {
+        return "AsGeoJson(" + geomPart + "," + precision + ",0)";
     }
 
 }

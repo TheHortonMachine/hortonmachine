@@ -17,6 +17,12 @@
  */
 package org.hortonmachine.dbs.compat;
 
+import org.hortonmachine.dbs.h2gis.H2Db;
+import org.hortonmachine.dbs.h2gis.H2GisDb;
+import org.hortonmachine.dbs.spatialite.android.GPSpatialiteDb;
+import org.hortonmachine.dbs.spatialite.hm.SpatialiteDb;
+import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
+
 /**
  * The available databases.
  * 
@@ -102,6 +108,21 @@ public enum EDb {
             }
         }
         throw new IllegalArgumentException("No db type for code: " + code);
+    }
+
+    public static EDb forObject( Object dbObject ) {
+        if (dbObject instanceof SqliteDb) {
+            return SQLITE;
+        } else if (dbObject instanceof SpatialiteDb) {
+            return SQLITE;
+        } else if (dbObject instanceof H2Db) {
+            return H2;
+        } else if (dbObject instanceof H2GisDb) {
+            return H2GIS;
+        } else if (dbObject instanceof GPSpatialiteDb) {
+            return SPATIALITE4ANDROID;
+        }
+        throw new IllegalArgumentException("No db type for object: " + dbObject.getClass());
     }
 
     public String getExtensionOnCreation() {

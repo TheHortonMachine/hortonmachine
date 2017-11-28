@@ -79,6 +79,6 @@ public abstract class ASqlTemplates {
      * @param precision the precision, if db supports it.
      * @return the right string to use.
      */
-    public abstract String getGeoJsonSyntax( String geomPart, double precision );
+    public abstract String getGeoJsonSyntax( String geomPart, int precision );
 
 }

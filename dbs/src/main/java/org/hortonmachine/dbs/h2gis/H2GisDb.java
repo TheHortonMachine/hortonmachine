@@ -637,10 +637,6 @@ public class H2GisDb extends ASpatialDb {
         }
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
 
-        if (fields != null) {
-            Logger.INSTANCE.insertWarning(null, "H2Gis does not support geojson export with fields.");
-        }
-
         String sql;
         if (fields == null || fields.length == 0) {
             sql = "SELECT ST_AsGeoJson(ST_Collect(ST_Transform(" + gCol.geometryColumnName + ",4326))) FROM " + tableName;
