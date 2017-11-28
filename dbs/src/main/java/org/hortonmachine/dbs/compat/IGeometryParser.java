@@ -17,17 +17,22 @@
  */
 package org.hortonmachine.dbs.compat;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 /**
- * Class representing a geometry_columns record.
+ * A helper class that parses geometries from binary.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public abstract class GeometryColumn {
-    // VARIABLES
-    public String tableName;
-    public String geometryColumnName;
-    public int geometryType;
-    public int coordinatesDimension;
-    public int srid;
-    public int isSpatialIndexEnabled;
+public interface IGeometryParser {
+
+    /**
+     * Extract the geometry form the database..
+     * 
+     * @param rs the resultset.
+     * @param index the index in the resultset.
+     * @return the geometry.
+     * @throws Exception 
+     */
+    Geometry fromResultSet( IHMResultSet rs, int index ) throws Exception;
 }

@@ -15,19 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.dbs.compat;
+package org.hortonmachine.dbs.spatialite;
 
-/**
- * Class representing a geometry_columns record.
- * 
- * @author Andrea Antonello (www.hydrologis.com)
- */
-public abstract class GeometryColumn {
-    // VARIABLES
-    public String tableName;
-    public String geometryColumnName;
-    public int geometryType;
-    public int coordinatesDimension;
-    public int srid;
-    public int isSpatialIndexEnabled;
+import org.hortonmachine.dbs.compat.IGeometryParser;
+import org.hortonmachine.dbs.compat.IHMResultSet;
+
+import com.vividsolutions.jts.geom.Geometry;
+
+public class SpatialiteGeometryParser implements IGeometryParser {
+    SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+
+    @Override
+    public Geometry fromResultSet( IHMResultSet rs, int index ) throws Exception {
+        byte[] geomBytes = rs.getBytes(index);
+        Geometry geometry = wkbReader.read(geomBytes);
+        return geometry;
+    }
+
 }

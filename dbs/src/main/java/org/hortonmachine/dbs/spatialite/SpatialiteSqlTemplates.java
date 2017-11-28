@@ -122,10 +122,28 @@ public class SpatialiteSqlTemplates extends ASqlTemplates {
         String query = "CREATE VIRTUAL TABLE '" + tableName + "' USING VirtualShape('" + absolutePath + "', 'UTF-8', 4326) ";
         return query;
     }
-    
+
     @Override
     public String getGeoJsonSyntax( String geomPart, int precision ) {
         return "AsGeoJson(" + geomPart + "," + precision + ",0)";
+    }
+
+    @Override
+    public String getFormatTimeSyntax( String timestampField, String formatPattern ) {
+        String pattern = "%Y-%m-%d %H:%M:%S";
+        if (formatPattern != null) {
+            pattern = formatPattern;
+            // supported for now YYYY-dd-MM HH:mm:ss
+            pattern = pattern.replaceAll("YYYY", "%Y");
+            pattern = pattern.replaceAll("dd", "%d");
+            pattern = pattern.replaceAll("MM", "%m");
+            pattern = pattern.replaceAll("HH", "%H");
+            pattern = pattern.replaceAll("mm", "%M");
+            pattern = pattern.replaceAll("ss", "%S");
+        }
+
+        String sql = "strftime('" + pattern + "'," + timestampField + " / 1000, 'unixepoch')";
+        return sql;
     }
 
 }

@@ -30,8 +30,13 @@ import static java.lang.Math.toRadians;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.gears.utils.math.matrixes.MatrixException;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * Conversion of Geodetic coordinates to the Local Tangent Plane.
@@ -215,6 +220,53 @@ public class ENU {
         double lon = toDegrees(lamGeod);
         double lat = toDegrees(phiGeod);
         return new Coordinate(lon, lat, h);
+    }
+
+    /**
+     * Converts a geometry from ENU to WGS. 
+     * 
+     * <p>Note that the geometry is internally converted. Use clone() if you need a copy.</p>
+     * 
+     * @param geometryEnu
+     */
+    public void convertGeometryFromEnuToWgs84( Geometry geometryEnu ) {
+        Coordinate[] coordinates = geometryEnu.getCoordinates();
+        for( int i = 0; i < coordinates.length; i++ ) {
+            Coordinate wgs84 = enuToWgs84(coordinates[i]);
+            coordinates[i].x = wgs84.x;
+            coordinates[i].y = wgs84.y;
+            coordinates[i].z = wgs84.z;
+        }
+    }
+
+    /**
+     * Converts a geometry from WGS to ENU. 
+     * 
+     * <p>Note that the geometry is internally converted. Use clone() if you need a copy.</p>
+     * 
+     * @param geometryWgs
+     */
+    public void convertGeometryFromWgsToEnu( Geometry geometryWgs ) {
+        Coordinate[] coordinates = geometryWgs.getCoordinates();
+        for( int i = 0; i < coordinates.length; i++ ) {
+            Coordinate enu = wgs84ToEnu(coordinates[i]);
+            coordinates[i].x = enu.x;
+            coordinates[i].y = enu.y;
+            coordinates[i].z = enu.z;
+        }
+    }
+
+    /**
+     * Converts an envelope from WGS to ENU. 
+     * 
+     * @param envelopeWgs
+     * @return the converted envelope.
+     */
+    public Envelope convertEnvelopeFromWgsToEnu( Envelope envelopeWgs ) {
+        Polygon polygonEnu = GeometryUtilities.createPolygonFromEnvelope(envelopeWgs);
+        convertGeometryFromWgsToEnu(polygonEnu);
+        Envelope envelopeEnu = polygonEnu.getEnvelopeInternal();
+        return envelopeEnu;
     }
 
     private void checkZ( Coordinate coordinate ) {

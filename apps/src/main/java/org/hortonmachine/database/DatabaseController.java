@@ -1211,7 +1211,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     protected boolean isSelectOrPragma( String sqlText ) {
         sqlText = sqlText.trim();
-        return sqlText.toLowerCase().startsWith("select") || sqlText.toLowerCase().startsWith("pragma");
+        return sqlText.toLowerCase().startsWith("select") || sqlText.toLowerCase().startsWith("pragma") || sqlText.toLowerCase().startsWith("explain");
     }
 
     protected boolean runQueryToFile( String sqlText, File selectedFile, IHMProgressMonitor pm ) {

@@ -71,6 +71,10 @@ public class H2Db extends ADb {
                     Logger.INSTANCE.insertInfo(null, "Database exists");
                 dbExists = true;
             }
+            if (dbPath.toLowerCase().startsWith("tcp")) {
+                // no way to check, assume it exists
+                dbExists = true;
+            }
         } else {
             dbPath = "mem:syntax";
             dbExists = false;

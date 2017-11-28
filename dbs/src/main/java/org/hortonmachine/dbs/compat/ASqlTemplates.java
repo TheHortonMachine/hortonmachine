@@ -71,7 +71,7 @@ public abstract class ASqlTemplates {
             String newTableName, String newSrid ) throws Exception;
 
     public abstract String attachShapefile( File file );
-    
+
     /**
      * Get the syntax for geojson.
      * 
@@ -80,5 +80,14 @@ public abstract class ASqlTemplates {
      * @return the right string to use.
      */
     public abstract String getGeoJsonSyntax( String geomPart, int precision );
+
+    /**
+     * Get the format time syntax for the db.
+     * 
+     * @param timestampField the field of timestamp (unix epoch).
+     * @param formatPattern the pattern. In java format: YYYY-MM-dd HH:mm:ss
+     * @return the string for the current db type.
+     */
+    public abstract String getFormatTimeSyntax( String timestampField, String formatPattern );
 
 }

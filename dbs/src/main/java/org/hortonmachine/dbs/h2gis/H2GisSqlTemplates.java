@@ -108,9 +108,19 @@ public class H2GisSqlTemplates extends ASqlTemplates {
         String query = "CALL FILE_TABLE('" + absolutePath + "', '" + tableName + "');";
         return query;
     }
-    
+
     @Override
     public String getGeoJsonSyntax( String geomPart, int precision ) {
         return "ST_AsGeoJson(" + geomPart + ")";
+    }
+
+    @Override
+    public String getFormatTimeSyntax( String timestampField, String formatPattern ) {
+        String pattern = "YYYY-MM-dd HH:mm:ss";
+        if (formatPattern != null) {
+            pattern = formatPattern;
+        }
+        String sql = "FORMATDATETIME( DATEADD('SECOND', " + timestampField + "/1000, DATE '1970-01-01'),'" + pattern + "')";
+        return sql;
     }
 }

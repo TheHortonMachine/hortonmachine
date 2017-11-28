@@ -17,6 +17,9 @@
  */
 package org.hortonmachine.dbs.compat;
 
+import org.hortonmachine.dbs.h2gis.H2GisGeometryParser;
+import org.hortonmachine.dbs.spatialite.SpatialiteGeometryParser;
+
 /**
  * The available databases.
  * 
@@ -158,5 +161,17 @@ public enum EDb {
             sqlTemplates = (ASqlTemplates) newInstance;
         }
         return sqlTemplates;
+    }
+
+    public IGeometryParser getGeometryParser() {
+        switch( this ) {
+        case H2GIS:
+            return new H2GisGeometryParser();
+        case SPATIALITE:
+        case SPATIALITE4ANDROID:
+            return new SpatialiteGeometryParser();
+        default:
+            return null;
+        }
     }
 }
