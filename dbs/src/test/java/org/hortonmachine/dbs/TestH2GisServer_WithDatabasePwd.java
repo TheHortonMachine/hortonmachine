@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.util.List;
 
+import org.h2.jdbc.JdbcSQLException;
 import org.h2.tools.Server;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
@@ -20,9 +21,9 @@ import com.vividsolutions.jts.geom.Geometry;
 /**
  * Main tests for h2gis server db
  */
-public class TestH2GisServer {
+public class TestH2GisServer_WithDatabasePwd {
 
-    private static final String TCP_LOCALHOST = "tcp://localhost:9092/";
+    private static final String TCP_LOCALHOST = "tcp://localhost:9093/";
 
     private static Server server;
 
@@ -31,13 +32,14 @@ public class TestH2GisServer {
     @BeforeClass
     public static void createDb() throws Exception {
         String tempDir = System.getProperty("java.io.tmpdir");
-        server = H2GisDb.startTcpServerMode("9092", false, null, true, tempDir);
+        server = H2GisDb.startTcpServerMode("9093", false, null, true, tempDir);
 
-        dbPath = tempDir + File.separator + "jgt-dbs-testspatialdbsservermain" + EDb.H2GIS.getExtensionOnCreation();
+        dbPath = tempDir + File.separator + "jgt-dbs-testspatialdbsserverpwdmain" + EDb.H2GIS.getExtensionOnCreation();
         TestUtilities.deletePrevious(tempDir, dbPath, EDb.H2GIS);
 
         // create the local db to connect to
         try (ASpatialDb db = EDb.H2GIS.getSpatialDb()) {
+            db.setCredentials("dbuser", "dbpwd");
             db.open(dbPath);
             db.initSpatialMetadata("'WGS84'");
         }
@@ -51,12 +53,23 @@ public class TestH2GisServer {
         }
     }
 
-    @Test
-    public void testGetGeometriesFromServer() throws Exception {
+    @Test(expected = JdbcSQLException.class)
+    public void testGetGeometriesFromServerWithoutPwd() throws Exception {
+        connect(false);
+    }
 
+    @Test
+    public void testGetGeometriesFromServerWithPwd() throws Exception {
+        connect(true);
+    }
+
+    private void connect( boolean withDbPwd ) throws Exception {
         String tcpServerUrl = TCP_LOCALHOST + dbPath;
 
         try (ASpatialDb db = EDb.H2GIS.getSpatialDb()) {
+            if (withDbPwd) {
+                db.setCredentials("dbuser", "dbpwd");
+            }
             db.open(tcpServerUrl);
             db.initSpatialMetadata("'WGS84'");
 
