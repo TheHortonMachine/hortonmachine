@@ -26,23 +26,33 @@ public class TestH2GisServer {
 
     private static Server server;
 
+    private static String dbPath;
+
     @BeforeClass
     public static void createDb() throws Exception {
         server = H2GisDb.startTcpServerMode("9092", false, null, false, null);
+
+        String tempDir = System.getProperty("java.io.tmpdir");
+        dbPath = tempDir + File.separator + "jgt-dbs-testspatialdbsservermain" + EDb.H2GIS.getExtensionOnCreation();
+        TestUtilities.deletePrevious(tempDir, dbPath, EDb.H2GIS);
+
+        // create the local db to connect to
+        try (ASpatialDb db = EDb.H2GIS.getSpatialDb()) {
+            db.open(dbPath);
+            db.initSpatialMetadata("'WGS84'");
+        }
     }
 
     @AfterClass
     public static void closeDb() throws Exception {
         if (server != null) {
             server.stop();
+            new File(dbPath + "." + EDb.H2GIS.getExtension()).delete();
         }
     }
 
     @Test
     public void testGetGeometriesFromServer() throws Exception {
-        String tempDir = System.getProperty("java.io.tmpdir");
-        String dbPath = tempDir + File.separator + "jgt-dbs-testspatialdbsservermain" + EDb.H2GIS.getExtensionOnCreation();
-        TestUtilities.deletePrevious(tempDir, dbPath, EDb.H2GIS);
 
         String tcpServerUrl = TCP_LOCALHOST + dbPath;
 

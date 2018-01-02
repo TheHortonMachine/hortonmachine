@@ -89,7 +89,7 @@ public class H2Db extends ADb {
         mConn = new HMConnection(jdbcConn);
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
-            Logger.INSTANCE.insertDebug(null, "H2 Version: " + dbInfo[0]);
+            Logger.INSTANCE.insertDebug(null, "H2 Version: " + dbInfo[0] + "(" + dbPath + ")");
         }
         return dbExists;
     }
@@ -241,8 +241,8 @@ public class H2Db extends ADb {
     @Override
     public List<Index> getIndexes( String tableName ) throws Exception {
 
-        String sql = "SELECT INDEX_NAME, sql FROM information_schema.indexes where upper(TABLE_NAME)='"
-                + tableName.toUpperCase() + "'";
+        String sql = "SELECT INDEX_NAME, sql FROM information_schema.indexes where upper(TABLE_NAME)='" + tableName.toUpperCase()
+                + "'";
 
         List<Index> indexes = new ArrayList<Index>();
         try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {

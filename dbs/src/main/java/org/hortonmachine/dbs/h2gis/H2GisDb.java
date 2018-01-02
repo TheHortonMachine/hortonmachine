@@ -195,7 +195,6 @@ public class H2GisDb extends ASpatialDb {
                 initSpatialMetadata(null);
             }
             String[] dbInfo = getDbInfo();
-            Logger.INSTANCE.insertDebug(null, "H2 Version: " + dbInfo[0]);
             Logger.INSTANCE.insertDebug(null, "H2GIS Version: " + dbInfo[1]);
         }
         return dbExists;
