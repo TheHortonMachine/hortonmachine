@@ -43,9 +43,11 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
@@ -55,6 +57,8 @@ import javax.swing.TransferHandler;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -150,11 +154,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private Dimension preferredSqleditorButtonSize = new Dimension(30, 30);
 
     private List<String> oldSqlCommands = new ArrayList<String>();
-    private JTextPane _sqlEditorArea;
     protected SqlTemplatesAndActions sqlTemplatesAndActions;
     private HMMapframe mapFrame;
 
     private DatabaseTreeCellRenderer databaseTreeCellRenderer;
+
+    private JTextPane currentSqlEditorArea;
+    private JTextPane[] editorPanesArray;
 
     public DatabaseController( GuiBridgeHandler guiBridge ) {
         this.guiBridge = guiBridge;
@@ -178,15 +184,33 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _dataViewerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         addDataTableContextMenu();
 
-        _sqlEditorArea = new JTextPane();
-        JScrollPane _sqlEditorAreaScrollpane = new JScrollPane(_sqlEditorArea);
-
         _sqlEditorAreaPanel.setLayout(new BorderLayout());
-        _sqlEditorAreaPanel.add(_sqlEditorAreaScrollpane, BorderLayout.CENTER);
-        // WrapEditorKit kit = new WrapEditorKit();
-        // _sqlEditorArea.setEditorKit(kit);
-        SqlDocument doc = new SqlDocument();
-        _sqlEditorArea.setDocument(doc);
+
+        JTabbedPane tabbedEditorPane = new JTabbedPane();
+        tabbedEditorPane.addChangeListener(new ChangeListener(){
+            public void stateChanged( ChangeEvent e ) {
+                int selectedIndex = tabbedEditorPane.getSelectedIndex();
+                currentSqlEditorArea = editorPanesArray[selectedIndex];
+            }
+        });
+        int tabCount = 5;
+        editorPanesArray = new JTextPane[tabCount];
+        for( int i = 0; i < tabCount; i++ ) {
+            JPanel panel1 = new JPanel();
+            panel1.setLayout(new BorderLayout());
+            tabbedEditorPane.addTab("Editor " + (i + 1), panel1);
+            JTextPane sqlEditorArea = new JTextPane();
+            JScrollPane _sqlEditorAreaScrollpane = new JScrollPane(sqlEditorArea);
+            panel1.add(_sqlEditorAreaScrollpane, BorderLayout.CENTER);
+            SqlDocument doc = new SqlDocument();
+            sqlEditorArea.setDocument(doc);
+            if (i == 0) {
+                currentSqlEditorArea = sqlEditorArea;
+            }
+            editorPanesArray[i] = sqlEditorArea;
+        }
+
+        _sqlEditorAreaPanel.add(tabbedEditorPane, BorderLayout.CENTER);
 
         _newDbButton.setVerticalTextPosition(SwingConstants.BOTTOM);
         _newDbButton.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -402,7 +426,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _runQueryButton.setPreferredSize(preferredSqleditorButtonSize);
         _runQueryButton.addActionListener(e -> {
 
-            String sqlText = _sqlEditorArea.getText().trim();
+            String sqlText = currentSqlEditorArea.getText().trim();
             if (sqlText.length() == 0) {
                 return;
             }
@@ -438,7 +462,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _runQueryAndStoreButton.addActionListener(e -> {
 
             File selectedFile = null;
-            String sqlText = _sqlEditorArea.getText().trim();
+            String sqlText = currentSqlEditorArea.getText().trim();
             if (sqlText.length() > 0) {
                 if (isSelectOrPragma(sqlText)) {
                     File[] saveFiles = guiBridge.showSaveFileDialog("Select file to save to", GuiUtilities.getLastFile(), null);
@@ -494,7 +518,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _runQueryAndStoreShapefileButton.addActionListener(e -> {
 
             File selectedFile = null;
-            String sqlText = _sqlEditorArea.getText().trim();
+            String sqlText = currentSqlEditorArea.getText().trim();
             if (sqlText.length() > 0) {
                 if (sqlText.toLowerCase().startsWith("select")) {
                     File[] saveFiles = guiBridge.showSaveFileDialog("Select shapefile to save to", GuiUtilities.getLastFile(),
@@ -544,14 +568,14 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }).start();
         });
 
-        setViewQueryButton(_viewQueryButton, preferredSqleditorButtonSize, _sqlEditorArea);
+        setViewQueryButton(_viewQueryButton, preferredSqleditorButtonSize, currentSqlEditorArea);
 
         _clearSqlEditorbutton.setIcon(ImageCache.getInstance().getImage(ImageCache.TRASH));
         _clearSqlEditorbutton.setToolTipText(CLEAR_SQL_EDITOR);
         _clearSqlEditorbutton.setText("");
         _clearSqlEditorbutton.setPreferredSize(preferredSqleditorButtonSize);
         _clearSqlEditorbutton.addActionListener(e -> {
-            _sqlEditorArea.setText("");
+            currentSqlEditorArea.setText("");
         });
     }
 
@@ -851,8 +875,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
         _recordCountTextfield.setText("");
 
-        _sqlEditorArea.setText("");
-        _sqlEditorArea.setEditable(enable);
+        currentSqlEditorArea.setText("");
+        currentSqlEditorArea.setEditable(enable);
     }
 
     // private void expandAllNodes( JTree tree, int startingIndex, int rowCount ) {
@@ -981,7 +1005,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         return;
                     }
                     if (message.contains("Database may be already in use")) {
-                        guiBridge.messageDialog("Database may be already in use. Close all connections or use server mode.", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        guiBridge.messageDialog("Database may be already in use. Close all connections or use server mode.",
+                                "ERROR", JOptionPane.ERROR_MESSAGE);
                         currentConnectedDatabase = null;
                         return;
                     }
@@ -1211,7 +1236,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     protected boolean isSelectOrPragma( String sqlText ) {
         sqlText = sqlText.trim();
-        return sqlText.toLowerCase().startsWith("select") || sqlText.toLowerCase().startsWith("pragma") || sqlText.toLowerCase().startsWith("explain");
+        return sqlText.toLowerCase().startsWith("select") || sqlText.toLowerCase().startsWith("pragma")
+                || sqlText.toLowerCase().startsWith("explain");
     }
 
     protected boolean runQueryToFile( String sqlText, File selectedFile, IHMProgressMonitor pm ) {
@@ -1258,12 +1284,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     }
 
     protected void addTextToQueryEditor( String newText ) {
-        String text = _sqlEditorArea.getText();
+        String text = currentSqlEditorArea.getText();
         if (text.trim().length() != 0) {
             text += "\n";
         }
         text += newText;
-        _sqlEditorArea.setText(text);
+        currentSqlEditorArea.setText(text);
     }
 
     protected void addQueryToHistoryCombo( String sqlText ) {
