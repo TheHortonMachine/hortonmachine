@@ -71,7 +71,7 @@ public class LogDb implements AutoCloseable, ILogDb {
     }
 
     public void createTable() throws Exception {
-        if (!logDb.hasTable(TABLE_MESSAGES)) {
+        if (logDb != null && !logDb.hasTable(TABLE_MESSAGES)) {
             String[] fields = { //
                     ID_NAME + " LONG PRIMARY KEY AUTOINCREMENT", //
                     TimeStamp_NAME + " LONG", //
@@ -100,7 +100,7 @@ public class LogDb implements AutoCloseable, ILogDb {
     }
 
     public void createIndexes() throws Exception {
-        if (logDb.hasTable(TABLE_MESSAGES)) {
+        if (logDb != null && logDb.hasTable(TABLE_MESSAGES)) {
             logDb.createIndex(TABLE_MESSAGES, TimeStamp_NAME, false);
             logDb.createIndex(TABLE_MESSAGES, type_NAME, false);
         }
@@ -125,9 +125,6 @@ public class LogDb implements AutoCloseable, ILogDb {
         return insertFields;
     }
 
-    /* (non-Javadoc)
-     * @see org.hortonmachine.dbs.log.ILogDb#insert(org.hortonmachine.dbs.log.Message)
-     */
     @Override
     public boolean insert( final Message message ) throws Exception {
         // the id is generated
@@ -135,21 +132,19 @@ public class LogDb implements AutoCloseable, ILogDb {
                 " (" + getInsertFieldsString() + //
                 ") VALUES (?,?,?,?)";
 
-        try (IHMPreparedStatement pStmt = mConn.prepareStatement(sql)) {
-            int i = 1;
-            pStmt.setLong(i++, message.ts);
-            pStmt.setLong(i++, message.type);
-            pStmt.setString(i++, message.tag);
-            pStmt.setString(i++, message.msg);
+        if (mConn != null)
+            try (IHMPreparedStatement pStmt = mConn.prepareStatement(sql)) {
+                int i = 1;
+                pStmt.setLong(i++, message.ts);
+                pStmt.setLong(i++, message.type);
+                pStmt.setString(i++, message.tag);
+                pStmt.setString(i++, message.msg);
 
-            pStmt.executeUpdate();
-        }
+                pStmt.executeUpdate();
+            }
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.hortonmachine.dbs.log.ILogDb#insert(org.hortonmachine.dbs.log.EMessageType, java.lang.String, java.lang.String)
-     */
     @Override
     public boolean insert( EMessageType type, String tag, String msg ) throws Exception {
         if (tag == null) {
@@ -159,50 +154,38 @@ public class LogDb implements AutoCloseable, ILogDb {
         String sql = "INSERT INTO " + TABLE_MESSAGES + //
                 " (" + getInsertFieldsString() + //
                 ") VALUES (?,?,?,?)";
-
-        try (IHMPreparedStatement pStmt = mConn.prepareStatement(sql)) {
-            int i = 1;
-            pStmt.setLong(i++, new Date().getTime());
-            pStmt.setLong(i++, type.getCode());
-            pStmt.setString(i++, tag);
-            pStmt.setString(i++, msg);
-            pStmt.executeUpdate();
-        }
+        if (mConn != null)
+            try (IHMPreparedStatement pStmt = mConn.prepareStatement(sql)) {
+                int i = 1;
+                pStmt.setLong(i++, new Date().getTime());
+                pStmt.setLong(i++, type.getCode());
+                pStmt.setString(i++, tag);
+                pStmt.setString(i++, msg);
+                pStmt.executeUpdate();
+            }
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.hortonmachine.dbs.log.ILogDb#insertInfo(java.lang.String, java.lang.String)
-     */
     @Override
     public boolean insertInfo( String tag, String msg ) throws Exception {
         return insert(EMessageType.INFO, tag, msg);
     }
-    /* (non-Javadoc)
-     * @see org.hortonmachine.dbs.log.ILogDb#insertWarning(java.lang.String, java.lang.String)
-     */
+
     @Override
     public boolean insertWarning( String tag, String msg ) throws Exception {
         return insert(EMessageType.WARNING, tag, msg);
     }
-    /* (non-Javadoc)
-     * @see org.hortonmachine.dbs.log.ILogDb#insertDebug(java.lang.String, java.lang.String)
-     */
+
     @Override
     public boolean insertDebug( String tag, String msg ) throws Exception {
         return insert(EMessageType.DEBUG, tag, msg);
     }
-    /* (non-Javadoc)
-     * @see org.hortonmachine.dbs.log.ILogDb#insertAccess(java.lang.String, java.lang.String)
-     */
+
     @Override
     public boolean insertAccess( String tag, String msg ) throws Exception {
         return insert(EMessageType.ACCESS, tag, msg);
     }
 
-    /* (non-Javadoc)
-     * @see org.hortonmachine.dbs.log.ILogDb#insertError(java.lang.String, java.lang.String, java.lang.Throwable)
-     */
     @Override
     public boolean insertError( String tag, String msg, Throwable t ) throws Exception {
         if (tag == null) {
@@ -223,33 +206,32 @@ public class LogDb implements AutoCloseable, ILogDb {
 
         msg += printStackTrace;
 
-        try (IHMPreparedStatement pStmt = mConn.prepareStatement(sql)) {
-            int i = 1;
-            pStmt.setLong(i++, new Date().getTime());
-            pStmt.setLong(i++, EMessageType.ERROR.getCode());
-            pStmt.setString(i++, tag);
-            pStmt.setString(i++, msg);
-            pStmt.executeUpdate();
-        }
+        if (mConn != null)
+            try (IHMPreparedStatement pStmt = mConn.prepareStatement(sql)) {
+                int i = 1;
+                pStmt.setLong(i++, new Date().getTime());
+                pStmt.setLong(i++, EMessageType.ERROR.getCode());
+                pStmt.setString(i++, tag);
+                pStmt.setString(i++, msg);
+                pStmt.executeUpdate();
+            }
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.hortonmachine.dbs.log.ILogDb#getList()
-     */
     @Override
     public List<Message> getList() throws Exception {
         String tableName = TABLE_MESSAGES;
         String sql = "select " + getQueryFieldsString() + " from " + tableName;
 
         List<Message> messages = new ArrayList<Message>();
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql);) {
-            while( rs.next() ) {
-                Message event = resultSetToItem(rs);
-                messages.add(event);
+        if (mConn != null)
+            try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql);) {
+                while( rs.next() ) {
+                    Message event = resultSetToItem(rs);
+                    messages.add(event);
+                }
             }
-            return messages;
-        }
+        return messages;
     }
 
     /**
@@ -297,13 +279,14 @@ public class LogDb implements AutoCloseable, ILogDb {
         }
 
         List<Message> messages = new ArrayList<Message>();
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql);) {
-            while( rs.next() ) {
-                Message event = resultSetToItem(rs);
-                messages.add(event);
+        if (mConn != null)
+            try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql);) {
+                while( rs.next() ) {
+                    Message event = resultSetToItem(rs);
+                    messages.add(event);
+                }
             }
-            return messages;
-        }
+        return messages;
     }
 
     public Message resultSetToItem( IHMResultSet rs ) throws Exception {
@@ -317,30 +300,25 @@ public class LogDb implements AutoCloseable, ILogDb {
         return message;
     }
 
-    /* (non-Javadoc)
-     * @see org.hortonmachine.dbs.log.ILogDb#clearTable()
-     */
     @Override
     public void clearTable() throws Exception {
-        try (IHMStatement stmt = mConn.createStatement()) {
-            stmt.execute("delete from " + TABLE_MESSAGES);
-        }
+        if (mConn != null)
+            try (IHMStatement stmt = mConn.createStatement()) {
+                stmt.execute("delete from " + TABLE_MESSAGES);
+            }
     }
 
-    /* (non-Javadoc)
-     * @see org.hortonmachine.dbs.log.ILogDb#close()
-     */
     @Override
     public void close() throws Exception {
-        logDb.close();
+        if (logDb != null)
+            logDb.close();
     }
 
-    /* (non-Javadoc)
-     * @see org.hortonmachine.dbs.log.ILogDb#getDatabasePath()
-     */
     @Override
     public String getDatabasePath() {
-        return logDb.getDatabasePath();
+        if (logDb != null)
+            return logDb.getDatabasePath();
+        return null;
     }
 
     @Override
