@@ -153,9 +153,14 @@ public class SpatialiteLinesLayer extends RenderableLayer implements NwwVectorLa
                         }
                     }
                     String info = sb.toString();
-                    Geometry geometry = (Geometry) objects[0];
-                    if (geometry == null) {
-                        continue;
+
+                    int geometryIndex = tableRecords.geometryIndex;
+                    Geometry geometry = null;
+                    if (geometryIndex != -1) {
+                        geometry = (Geometry) objects[geometryIndex];
+                        if (geometry == null) {
+                            continue;
+                        }
                     }
                     boolean doExtrude = false;
                     if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {

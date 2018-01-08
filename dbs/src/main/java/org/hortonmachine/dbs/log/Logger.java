@@ -38,7 +38,7 @@ public enum Logger implements ILogDb {
     public static PrintStream out = System.out;
     public static PrintStream err = System.err;
 
-    private static boolean doLog = false;
+    private static boolean doDbLog = false;
     private static final boolean doLogStd = true;
 
     public String EMPTY = "";
@@ -49,7 +49,7 @@ public enum Logger implements ILogDb {
      * @throws Exception
      */
     public void init() throws Exception {
-        doLog = true;
+        doDbLog = false;
     }
 
     /**
@@ -60,9 +60,9 @@ public enum Logger implements ILogDb {
      */
     public void init( String dbPath ) throws Exception {
         if (db == null) {
-            doLog = true;
             db = new LogDb(EDb.SPATIALITE4ANDROID);
             db.open(dbPath);
+            doDbLog = true;
         }
     }
 
@@ -75,9 +75,9 @@ public enum Logger implements ILogDb {
      */
     public void init( String dbPath, EDb type ) throws Exception {
         if (db == null) {
-            doLog = true;
             db = new LogDb(type);
             db.open(dbPath);
+            doDbLog = true;
         }
     }
 
@@ -85,7 +85,7 @@ public enum Logger implements ILogDb {
         if (doLogStd) {
             out.println("INFO:: " + getTag(tag) + msg);
         }
-        if (!doLog) {
+        if (!doDbLog) {
             return true;
         }
         try {
@@ -100,7 +100,7 @@ public enum Logger implements ILogDb {
         if (doLogStd) {
             out.println("WARNING:: " + getTag(tag) + msg);
         }
-        if (!doLog) {
+        if (!doDbLog) {
             return true;
         }
         try {
@@ -115,7 +115,7 @@ public enum Logger implements ILogDb {
         if (doLogStd) {
             out.println("DEBUG:: " + getTag(tag) + msg);
         }
-        if (!doLog) {
+        if (!doDbLog) {
             return true;
         }
         try {
@@ -130,7 +130,7 @@ public enum Logger implements ILogDb {
         if (doLogStd) {
             out.println("ACCESS:: " + getTag(tag) + msg);
         }
-        if (!doLog) {
+        if (!doDbLog) {
             return true;
         }
         try {
@@ -147,7 +147,7 @@ public enum Logger implements ILogDb {
             if (t != null)
                 t.printStackTrace();
         }
-        if (!doLog) {
+        if (!doDbLog) {
             return true;
         }
 
@@ -167,12 +167,8 @@ public enum Logger implements ILogDb {
         if (doLogStd) {
             out.println(EMessageType.fromCode(message.type) + ":: " + message.tag + ":: " + message.msg);
         }
-        if (!doLog)
+        if (!doDbLog)
             return true;
-        if (db == null) {
-            out.println(message.toString());
-            return false;
-        }
         try {
             return db.insert(message);
         } catch (Exception e) {
@@ -183,12 +179,13 @@ public enum Logger implements ILogDb {
 
     @Override
     public boolean insert( EMessageType type, String tag, String msg ) throws Exception {
-        if (!doLog)
+        if (!doDbLog)
             return true;
-        if (db == null) {
+        if (doLogStd) {
             out.println(type.name() + ":: " + tag + ":: " + msg);
-            return false;
         }
+        if (!doDbLog)
+            return true;
         try {
             return db.insert(type, tag, msg);
         } catch (Exception e) {
@@ -211,15 +208,13 @@ public enum Logger implements ILogDb {
     }
 
     public void clearTable() throws Exception {
-        if (db == null)
-            return;
-        db.clearTable();
+        if (db != null)
+            db.clearTable();
     }
 
     public void close() throws Exception {
-        if (db == null)
-            return;
-        db.close();
+        if (db != null)
+            db.close();
     }
 
     public String getDatabasePath() {
