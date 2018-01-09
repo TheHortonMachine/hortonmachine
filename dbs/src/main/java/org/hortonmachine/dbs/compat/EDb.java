@@ -174,4 +174,13 @@ public enum EDb {
             return null;
         }
     }
+
+    public static EDb fromFileNameDesktop( String name ) {
+        for( EDb edb : values() ) {
+            if (name.toLowerCase().endsWith(edb.getExtension()) && edb.supportsDesktop()) {
+                return edb;
+            }
+        }
+        return null;
+    }
 }
