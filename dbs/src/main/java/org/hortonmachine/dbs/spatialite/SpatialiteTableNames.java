@@ -31,10 +31,11 @@ import org.hortonmachine.dbs.compat.ISpatialTableNames;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class SpatialiteTableNames implements ISpatialTableNames{
+public class SpatialiteTableNames implements ISpatialTableNames {
+    public static final String CHECK_SPATIALITE_TABLE = "spatial_ref_sys";
     public static final String startsWithIndexTables = "idx_";
-    public static final List<String> spatialindexTables = Arrays.asList("spatialindex", //SpatialIndex
-            "knn" //KNN
+    public static final List<String> spatialindexTables = Arrays.asList("spatialindex", // SpatialIndex
+            "knn" // KNN
     );
 
     // STYLE
@@ -65,7 +66,7 @@ public class SpatialiteTableNames implements ISpatialTableNames{
     public static final List<String> internalDataTables = Arrays.asList(//
             "sqlite_stat1", //
             "sqlite_stat3", //
-            "elementarygeometries", //ElementaryGeometries
+            "elementarygeometries", // ElementaryGeometries
             "geometry_columns_auth", //
             "geometry_columns_field_infos", //
             "geometry_columns_statistics", //

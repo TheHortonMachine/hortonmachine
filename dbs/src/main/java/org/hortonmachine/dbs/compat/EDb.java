@@ -17,8 +17,12 @@
  */
 package org.hortonmachine.dbs.compat;
 
+import java.io.File;
+
 import org.hortonmachine.dbs.h2gis.H2GisGeometryParser;
+import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryParser;
+import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 
 /**
  * The available databases.
@@ -175,7 +179,44 @@ public enum EDb {
         }
     }
 
+    /**
+     * Guesses the database type from the extension.
+     * 
+     * @param name the db name to check.
+     * @return the db type.
+     */
     public static EDb fromFileNameDesktop( String name ) {
+        for( EDb edb : values() ) {
+            if (name.toLowerCase().endsWith(edb.getExtension()) && edb.supportsDesktop()) {
+                return edb;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Checks the db by connecting.
+     * 
+     * <p>Spatialite and sqlite are checked properly by magic number 
+     * and tables presence. H2GIS by its extension.
+     * 
+     * @param file the db file to check.
+     * @return the db type.
+     * @throws Exception 
+     */
+    public static EDb fromFileDesktop( File file ) throws Exception {
+        if (SpatialiteCommonMethods.isSqliteFile(file)) {
+            // sqlite
+            try (ASpatialDb db = SPATIALITE.getSpatialDb()) {
+                db.open(file.getAbsolutePath());
+                if (db.hasTable(SpatialiteTableNames.CHECK_SPATIALITE_TABLE)) {
+                    return SPATIALITE;
+                } else {
+                    return SQLITE;
+                }
+            }
+        }
+        String name = file.getName();
         for( EDb edb : values() ) {
             if (name.toLowerCase().endsWith(edb.getExtension()) && edb.supportsDesktop()) {
                 return edb;
