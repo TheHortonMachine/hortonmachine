@@ -431,7 +431,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 return;
             }
 
-            final LogConsoleController logConsole = new LogConsoleController(pm);
+            final LogConsoleController logConsole = new LogConsoleController(null);
+            pm = logConsole.getProgressMonitor();
             Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
             Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
             JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
@@ -485,7 +486,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             }
 
-            final LogConsoleController logConsole = new LogConsoleController(pm);
+            final LogConsoleController logConsole = new LogConsoleController(null);
+            pm = logConsole.getProgressMonitor();
             Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
             Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
             JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
@@ -542,7 +544,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             }
 
-            final LogConsoleController logConsole = new LogConsoleController(pm);
+            final LogConsoleController logConsole = new LogConsoleController(null);
+            pm = logConsole.getProgressMonitor();
             Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
             Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
             JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
@@ -911,7 +914,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             Logger.INSTANCE.insertError("", "Error closing the database...", e1);
         }
 
-        final LogConsoleController logConsole = new LogConsoleController(pm);
+        final LogConsoleController logConsole = new LogConsoleController(null);
+        pm = logConsole.getProgressMonitor();
         Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
         Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
         JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
@@ -973,7 +977,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             Logger.INSTANCE.insertError("", "Error closing the database...", e1);
         }
 
-        final LogConsoleController logConsole = new LogConsoleController(pm);
+        final LogConsoleController logConsole = new LogConsoleController(null);
+        pm = logConsole.getProgressMonitor();
         Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
         Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
         JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
@@ -1067,7 +1072,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
         urlString = urlString.replaceFirst(type.getJdbcPrefix(), "");
 
-        final LogConsoleController logConsole = new LogConsoleController(pm);
+        final LogConsoleController logConsole = new LogConsoleController(null);
+        pm = logConsole.getProgressMonitor();
         Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
         Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
         JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
@@ -1128,6 +1134,16 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         boolean hasError = false;
         if (currentConnectedDatabase != null && sqlText.length() > 0) {
             try {
+                String[] split = sqlText.split("\n");
+                StringBuilder sb = new StringBuilder();
+                for( String string : split ) {
+                    if (string.trim().startsWith("--")) {
+                        continue;
+                    }
+                    sb.append(string).append("\n");
+                }
+                sqlText = sb.toString();
+                
                 int maxLength = 100;
                 String queryForLog;
                 if (sqlText.length() > maxLength) {

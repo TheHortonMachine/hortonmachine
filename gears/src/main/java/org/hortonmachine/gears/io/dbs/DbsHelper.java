@@ -75,6 +75,9 @@ public class DbsHelper {
         if (geometryColumns == null) {
             throw new IllegalArgumentException("The supplied table name doesn't seem to be spatial: " + tableName);
         }
+        if (geometryColumns.srid == 0) {
+            geometryColumns.srid = 4326; // fallback with hope
+        }
         String geomColumnName = geometryColumns.geometryColumnName;
 
         DefaultFeatureCollection fc = new DefaultFeatureCollection();

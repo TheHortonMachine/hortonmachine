@@ -430,6 +430,8 @@ public class H2GisDb extends ASpatialDb {
             // {0}", attachedStr));
         }
 
+        // int srid = SFSUtilities.getSRID(jdbcConn, new TableLocation(tableName));
+
         String sql = "select " + H2GisGeometryColumns.F_TABLE_NAME + ", " //
                 + H2GisGeometryColumns.F_GEOMETRY_COLUMN + ", " //
                 + H2GisGeometryColumns.GEOMETRY_TYPE + "," //
