@@ -24,6 +24,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -165,6 +166,12 @@ public class GuiUtilities {
         StringSelection selection = new StringSelection(text);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection, selection);
+    }
+
+    public static String getFromClipboard() throws Exception {
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        String string = (String) clipboard.getData(DataFlavor.stringFlavor);
+        return string;
     }
 
     public static void openFile( File file ) throws IOException {

@@ -2,6 +2,7 @@ package org.hortonmachine.nww.utils;
 
 import java.awt.Color;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,9 +30,11 @@ import org.opengis.referencing.operation.MathTransform;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 
 import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.SelectEvent;
@@ -42,6 +45,13 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layers.CompassLayer;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
+import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.render.BasicShapeAttributes;
+import gov.nasa.worldwind.render.Material;
+import gov.nasa.worldwind.render.Path;
+import gov.nasa.worldwind.render.PointPlacemark;
+import gov.nasa.worldwind.render.PointPlacemarkAttributes;
+import gov.nasa.worldwind.render.Polygon;
 import gov.nasa.worldwindx.hm.ToolTipController;
 
 public class NwwUtilities {
@@ -333,25 +343,114 @@ public class NwwUtilities {
         float distance = (float) (b * A * (sigma - deltaSigma));
         return distance;
     }
-    
+
     /**
      * Insert a layer before the compass layer.
      * 
      * @param wwd the {@link WorldWindow}.
      * @param layer the layer to insert.
      */
-    public static void insertBeforeCompass(WorldWindow wwd, Layer layer)
-    {
+    public static void insertBeforeCompass( WorldWindow wwd, Layer layer ) {
         // Insert the layer into the layer list just before the compass.
         int compassPosition = 0;
         LayerList layers = wwd.getModel().getLayers();
-        for (Layer l : layers)
-        {
+        for( Layer l : layers ) {
             if (l instanceof CompassLayer)
                 compassPosition = layers.indexOf(l);
         }
         layers.add(compassPosition, layer);
     }
 
+    public static void addGeometries( RenderableLayer layer, Geometry geometry ) {
+        Material mFillMaterial = Material.BLUE;
+        Material mStrokeMaterial = Material.RED;
+        double mFillOpacity = 0.8;
+        double mStrokeWidth = 2;
+        double mMarkerSize = 15d;
+        BasicShapeAttributes polyghonAttributes = new BasicShapeAttributes();
+        polyghonAttributes.setInteriorMaterial(mFillMaterial);
+        polyghonAttributes.setInteriorOpacity(mFillOpacity);
+        polyghonAttributes.setOutlineMaterial(mStrokeMaterial);
+        polyghonAttributes.setOutlineWidth(mStrokeWidth);
+
+        BasicShapeAttributes lineAttributes = new BasicShapeAttributes();
+        lineAttributes.setOutlineMaterial(mStrokeMaterial);
+        lineAttributes.setOutlineWidth(mStrokeWidth);
+
+        PointPlacemarkAttributes pointAttributes = new PointPlacemarkAttributes();
+        pointAttributes.setLabelMaterial(mFillMaterial);
+        pointAttributes.setLineMaterial(mFillMaterial);
+        pointAttributes.setUsePointAsDefaultImage(true);
+        pointAttributes.setScale(mMarkerSize);
+
+        int mElevationMode = WorldWind.CLAMP_TO_GROUND;
+        for( int i = 0; i < geometry.getNumGeometries(); i++ ) {
+            Geometry geometryN = geometry.getGeometryN(i);
+            if (geometryN instanceof com.vividsolutions.jts.geom.Polygon) {
+                Coordinate[] coordinates = geometryN.getCoordinates();
+                int numVertices = coordinates.length;
+                if (numVertices < 4)
+                    continue;
+                com.vividsolutions.jts.geom.Polygon poly = (com.vividsolutions.jts.geom.Polygon) geometryN;
+
+                Polygon polygon = new Polygon();
+
+                Coordinate[] extCoords = poly.getExteriorRing().getCoordinates();
+                int extSize = extCoords.length;
+                List<Position> verticesList = new ArrayList<>(extSize);
+                for( int n = 0; n < extSize; n++ ) {
+                    Coordinate c = extCoords[n];
+                    verticesList.add(Position.fromDegrees(c.y, c.x));
+                }
+                verticesList.add(verticesList.get(0));
+                polygon.setOuterBoundary(verticesList);
+
+                int numInteriorRings = poly.getNumInteriorRing();
+                for( int k = 0; k < numInteriorRings; k++ ) {
+                    LineString interiorRing = poly.getInteriorRingN(k);
+                    Coordinate[] intCoords = interiorRing.getCoordinates();
+                    int internalNumVertices = intCoords.length;
+                    List<Position> internalVerticesList = new ArrayList<>(internalNumVertices);
+                    for( int j = 0; j < internalNumVertices; j++ ) {
+                        Coordinate c = intCoords[j];
+                        internalVerticesList.add(Position.fromDegrees(c.y, c.x));
+                    }
+                    polygon.addInnerBoundary(internalVerticesList);
+                }
+
+                polygon.setAltitudeMode(mElevationMode);
+                polygon.setAttributes(polyghonAttributes);
+
+                layer.addRenderable(polygon);
+            } else if (geometryN instanceof LineString) {
+                Coordinate[] coordinates = geometryN.getCoordinates();
+                if (coordinates.length < 2)
+                    return;
+
+                if (geometryN instanceof LineString) {
+                    LineString line = (LineString) geometryN;
+                    Coordinate[] lineCoords = line.getCoordinates();
+                    int numVertices = lineCoords.length;
+                    List<Position> verticesList = new ArrayList<>(numVertices);
+                    for( int j = 0; j < numVertices; j++ ) {
+                        Coordinate c = lineCoords[j];
+                        verticesList.add(Position.fromDegrees(c.y, c.x));
+                    }
+                    Path path = new Path();
+                    path.setAltitudeMode(mElevationMode);
+                    path.setAttributes(lineAttributes);
+
+                    layer.addRenderable(path);
+                }
+            } else if (geometryN instanceof Point) {
+                Point point = (Point) geometryN;
+                PointPlacemark marker = new PointPlacemark(Position.fromDegrees(point.getY(), point.getX(), 0));
+                marker.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+                marker.setAttributes(pointAttributes);
+                layer.addRenderable(marker);
+            }
+        }
+
+    }
 
 }

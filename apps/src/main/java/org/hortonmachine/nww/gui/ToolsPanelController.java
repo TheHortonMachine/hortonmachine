@@ -43,11 +43,13 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.spatialite.RasterCoverage;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.hortonmachine.gears.spatialite.RL2CoverageHandler;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.style.SimpleStyle;
 import org.hortonmachine.gears.utils.style.SimpleStyleUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities;
@@ -79,11 +81,13 @@ import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
 import org.hortonmachine.nww.utils.selection.ObjectsOnScreenByBoxSelector;
 import org.hortonmachine.nww.utils.selection.SectorByBoxSelector;
+import org.joda.time.DateTime;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
@@ -92,6 +96,7 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layers.AnnotationLayer;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
+import gov.nasa.worldwind.layers.RenderableLayer;
 
 /**
  * The tools panel.
@@ -250,6 +255,27 @@ public class ToolsPanelController extends ToolsPanelView {
                         }
                     }
                 }
+            }
+        });
+
+        _pasteWkt.addActionListener(e -> {
+            try {
+                RenderableLayer layer = new RenderableLayer(){
+                    @Override
+                    public String toString() {
+                        return "WKT PASTE " + DateTime.now().toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSS);
+                    }
+                };
+                String fromClipboard = GuiUtilities.getFromClipboard();
+                WKTReader r = new WKTReader();
+                Geometry geometry = r.read(fromClipboard);
+
+                NwwUtilities.addGeometries(layer, geometry);
+
+                wwjPanel.getWwd().getModel().getLayers().add(layer);
+                layerEventsListener.onLayerAdded(layer);
+            } catch (Exception e1) {
+                e1.printStackTrace();
             }
         });
 

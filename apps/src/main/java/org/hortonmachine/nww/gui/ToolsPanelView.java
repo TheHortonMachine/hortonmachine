@@ -1,23 +1,22 @@
 package org.hortonmachine.nww.gui;
 
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
-
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.border.TitledBorder;
-
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 
 public class ToolsPanelView extends JPanel
@@ -28,6 +27,7 @@ public class ToolsPanelView extends JPanel
    JToggleButton _selectByBoxButton = new JToggleButton();
    JToggleButton _zoomByBoxButton = new JToggleButton();
    JButton _addAnnotationButton = new JButton();
+   JButton _pasteWkt = new JButton();
    JLabel _globeModeLabel = new JLabel();
    JComboBox _globeModeCombo = new JComboBox();
    JLabel _loadGpsLabel = new JLabel();
@@ -128,7 +128,7 @@ public class ToolsPanelView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Tools",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(90,90,90));
+      TitledBorder titledborder1 = new TitledBorder(null,"Tools",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.7),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
@@ -215,7 +215,12 @@ public class ToolsPanelView extends JPanel
       _addAnnotationButton.setText("Add Annotation");
       jpanel1.add(_addAnnotationButton,cc.xy(3,3));
 
-      addFillComponents(jpanel1,new int[]{ 2,4,5,6,7,8,9,10 },new int[]{ 2 });
+      _pasteWkt.setActionCommand("Paste WGS84 WKT");
+      _pasteWkt.setName("pasteWkt");
+      _pasteWkt.setText("Paste WGS84 WKT");
+      jpanel1.add(_pasteWkt,cc.xy(5,1));
+
+      addFillComponents(jpanel1,new int[]{ 2,4,6,7,8,9,10 },new int[]{ 2 });
       return jpanel1;
    }
 
