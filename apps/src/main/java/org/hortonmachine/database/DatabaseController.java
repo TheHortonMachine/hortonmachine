@@ -1143,7 +1143,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     sb.append(string).append("\n");
                 }
                 sqlText = sb.toString();
-                
+
                 int maxLength = 100;
                 String queryForLog;
                 if (sqlText.length() > maxLength) {
@@ -1282,7 +1282,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         if (currentConnectedDatabase instanceof GTSpatialiteThreadsafeDb) {
             try {
                 pm.beginTask("Run query: " + sqlText + "\ninto shapefile: " + selectedFile, IHMProgressMonitor.UNKNOWN);
-                DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(null, currentConnectedDatabase, sqlText);
+                DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(null, currentConnectedDatabase, sqlText,
+                        null);
                 OmsVectorWriter.writeVector(selectedFile.getAbsolutePath(), fc);
                 addQueryToHistoryCombo(sqlText);
             } catch (Exception e1) {

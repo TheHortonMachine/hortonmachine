@@ -35,6 +35,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * Database spatial helper methods.
@@ -53,11 +54,12 @@ public class DbsHelper {
      * @param name the name of the resulting layer.
      * @param db
      * @param simpleSql the sql.
+     * @param roi an optional region to limit the query to. 
      * @return the features.
      * @throws Exception
      */
-    public static DefaultFeatureCollection runRawSqlToFeatureCollection( String name, ASpatialDb db, String simpleSql )
-            throws Exception {
+    public static DefaultFeatureCollection runRawSqlToFeatureCollection( String name, ASpatialDb db, String simpleSql,
+            Polygon roi ) throws Exception {
         String[] split = simpleSql.split("\\s+");
         String tableName = null;
         for( int i = 0; i < split.length; i++ ) {
@@ -79,6 +81,11 @@ public class DbsHelper {
             geometryColumns.srid = 4326; // fallback with hope
         }
         String geomColumnName = geometryColumns.geometryColumnName;
+
+        if (roi != null) {
+            String where = db.getSpatialindexGeometryWherePiece(tableName, null, roi);
+            simpleSql += " where " + where;
+        }
 
         DefaultFeatureCollection fc = new DefaultFeatureCollection();
         try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(simpleSql)) {

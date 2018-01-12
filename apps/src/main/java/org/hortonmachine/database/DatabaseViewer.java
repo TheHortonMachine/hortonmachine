@@ -119,7 +119,7 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
         }
         try {
             pm.beginTask("Run query: " + sqlText, IHMProgressMonitor.UNKNOWN);
-            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(title, currentConnectedDatabase, sqlText);
+            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(title, currentConnectedDatabase, sqlText, null);
             ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
             if (toolsPanelController == null) {
                 openNww();
@@ -150,7 +150,7 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
         }
         try {
             pm.beginTask("Run query: " + sqlText, IHMProgressMonitor.UNKNOWN);
-            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(title, currentConnectedDatabase, sqlText);
+            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(title, currentConnectedDatabase, sqlText, null);
             ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
             showInMapFrame(true, rfc);
 
