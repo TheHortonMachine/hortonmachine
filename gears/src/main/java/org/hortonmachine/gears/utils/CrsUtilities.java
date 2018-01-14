@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.gears.utils;
 
+import java.awt.geom.Point2D;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.utils.files.FileUtilities;
@@ -214,6 +216,22 @@ public class CrsUtilities {
 
     public static CoordinateReferenceSystem getCrsFromEpsg( String epsgPlusCode ) {
         return getCrsFromEpsg(epsgPlusCode, null);
+    }
+
+    /**
+     * Converts meters to degrees, based on a given coordinate in 90 degrees direction.
+     * 
+     * @param meters the meters to convert.
+     * @param c the position to consider.
+     * @return the converted degrees.
+     */
+    public static double getMetersAsWGS84( double meters, Coordinate c ) {
+        GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
+        gc.setStartingGeographicPoint(c.x, c.y);
+        gc.setDirection(90, meters);
+        Point2D destinationGeographicPoint = gc.getDestinationGeographicPoint();
+        double degrees = Math.abs(destinationGeographicPoint.getX() - c.x);
+        return degrees;
     }
 
 }

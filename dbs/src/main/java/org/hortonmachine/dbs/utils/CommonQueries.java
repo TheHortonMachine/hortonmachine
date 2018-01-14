@@ -68,6 +68,12 @@ public class CommonQueries {
                 "SELECT intersection(t1.the_geom, buffer(t2.the_geom, 100)) as the_geom FROM table1 t1, table2 t2\n"
                         + "where (\nintersects (t1.the_geom, buffer(t2.the_geom, 100))=1\n"
                         + "AND t1.ROWID IN (\nSELECT ROWID FROM SpatialIndex\nWHERE f_table_name='table1' AND search_frame=buffer(t2.the_geom, 100)\n))");
+        templatesMap.put("create new spatial table from select", "create table newtablename as SELECT * FROM tablename;\n" + 
+                "SELECT RecoverGeometryColumn('newtablename', 'geometry',  4326, 'LINESTRING', 'XY');\n" + 
+                "SELECT CreateSpatialIndex('newtablename', 'geometry');");
+        templatesMap.put("aggregate and merge lines", "select column, ST_LineMerge(geometry) from tablename\n" + 
+                "where column like 'pattern%' group by column");
+        
     }
     
     /**
