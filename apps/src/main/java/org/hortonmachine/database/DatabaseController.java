@@ -161,6 +161,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     private JTextPane currentSqlEditorArea;
     private JTextPane[] editorPanesArray;
+    private JTable[] dataTablesArray;
+    private JTable currentDataTable;
 
     public DatabaseController( GuiBridgeHandler guiBridge ) {
         this.guiBridge = guiBridge;
@@ -181,19 +183,49 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
         _recordCountTextfield.setEditable(false);
 
-        _dataViewerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        addDataTableContextMenu();
-
         _sqlEditorAreaPanel.setLayout(new BorderLayout());
 
+        JTabbedPane tabbedDataViewerPane = new JTabbedPane();
         JTabbedPane tabbedEditorPane = new JTabbedPane();
-        tabbedEditorPane.addChangeListener(new ChangeListener(){
-            public void stateChanged( ChangeEvent e ) {
-                int selectedIndex = tabbedEditorPane.getSelectedIndex();
+
+        tabbedDataViewerPane.addChangeListener(e -> {
+            if (editorPanesArray != null && dataTablesArray != null) {
+                int selectedIndex = tabbedDataViewerPane.getSelectedIndex();
                 currentSqlEditorArea = editorPanesArray[selectedIndex];
+                currentDataTable = dataTablesArray[selectedIndex];
+
+                tabbedEditorPane.setSelectedIndex(selectedIndex);
             }
         });
+
+        tabbedEditorPane.addChangeListener(e -> {
+            if (editorPanesArray != null && dataTablesArray != null) {
+                int selectedIndex = tabbedEditorPane.getSelectedIndex();
+                currentSqlEditorArea = editorPanesArray[selectedIndex];
+                currentDataTable = dataTablesArray[selectedIndex];
+
+                tabbedDataViewerPane.setSelectedIndex(selectedIndex);
+            }
+        });
+
         int tabCount = 5;
+        dataTablesArray = new JTable[tabCount];
+        for( int i = 0; i < tabCount; i++ ) {
+            JPanel panel1 = new JPanel();
+            panel1.setLayout(new BorderLayout());
+            tabbedDataViewerPane.addTab("Viewer " + (i + 1), panel1);
+            JTable table = new JTable();
+            JScrollPane dataTablesScrollpane = new JScrollPane(table);
+            panel1.add(dataTablesScrollpane, BorderLayout.CENTER);
+            if (i == 0) {
+                currentDataTable = table;
+            }
+            dataTablesArray[i] = table;
+
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            addDataTableContextMenu(table);
+        }
+
         editorPanesArray = new JTextPane[tabCount];
         for( int i = 0; i < tabCount; i++ ) {
             JPanel panel1 = new JPanel();
@@ -211,6 +243,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         }
 
         _sqlEditorAreaPanel.add(tabbedEditorPane, BorderLayout.CENTER);
+        _dataViewerPanel.setLayout(new BorderLayout());
+        _dataViewerPanel.add(tabbedDataViewerPane, BorderLayout.CENTER);
 
         _newDbButton.setVerticalTextPosition(SwingConstants.BOTTOM);
         _newDbButton.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -390,8 +424,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         Object selectedItem = paths[0].getLastPathComponent();
                         if (selectedItem instanceof DbLevel) {
                             currentSelectedDb = (DbLevel) selectedItem;
-                        }
-                        if (selectedItem instanceof TableLevel) {
+                        } else if (selectedItem instanceof ColumnLevel) {
+                            currentSelectedColumn = (ColumnLevel) selectedItem;
+                        } else if (selectedItem instanceof TableLevel) {
                             currentSelectedTable = (TableLevel) selectedItem;
 
                             try {
@@ -403,12 +438,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             }
                         } else {
                             currentSelectedTable = null;
-                            _dataViewerTable.setModel(new DefaultTableModel());
+                            currentDataTable.setModel(new DefaultTableModel());
                         }
 
-                        if (selectedItem instanceof ColumnLevel) {
-                            currentSelectedColumn = (ColumnLevel) selectedItem;
-                        }
                     }
                 }
             });
@@ -672,21 +704,21 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         });
     }
 
-    private void addDataTableContextMenu() {
+    private void addDataTableContextMenu( JTable table ) {
         JPopupMenu popupMenu = new JPopupMenu();
         popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
         popupMenu.addPopupMenuListener(new PopupMenuListener(){
 
             @Override
             public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
-                int[] selectedRows = _dataViewerTable.getSelectedRows();
-                int[] selectedCols = _dataViewerTable.getSelectedColumns();
+                int[] selectedRows = table.getSelectedRows();
+                int[] selectedCols = table.getSelectedColumns();
 
                 boolean isGeom = false;
                 ESpatialiteGeometryType geomType = null;
                 if (selectedCols.length == 1 && selectedRows.length > 0) {
                     // check coontent
-                    String valueAt = _dataViewerTable.getValueAt(selectedRows[0], selectedCols[0]).toString();
+                    String valueAt = table.getValueAt(selectedRows[0], selectedCols[0]).toString();
                     String[] split = valueAt.split("\\s+");
                     if (split.length > 0 && ESpatialiteGeometryType.isGeometryName(split[0])) {
                         isGeom = true;
@@ -701,8 +733,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                        _dataViewerTable.getTransferHandler().exportToClipboard(_dataViewerTable, clipboard,
-                                TransferHandler.COPY);
+                        table.getTransferHandler().exportToClipboard(table, clipboard, TransferHandler.COPY);
                     }
                 });
                 item.setHorizontalTextPosition(JMenuItem.RIGHT);
@@ -717,7 +748,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             List<Geometry> geomsList = new ArrayList<>();
                             for( int r : selectedRows ) {
                                 try {
-                                    String valueAt = _dataViewerTable.getValueAt(r, selectedCols[0]).toString();
+                                    String valueAt = table.getValueAt(r, selectedCols[0]).toString();
                                     Geometry geometry = wktReader.read(valueAt);
                                     geomsList.add(geometry);
                                 } catch (ParseException e1) {
@@ -746,7 +777,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 List<Geometry> geomsList = new ArrayList<>();
                                 for( int r : selectedRows ) {
                                     try {
-                                        String valueAt = _dataViewerTable.getValueAt(r, selectedCols[0]).toString();
+                                        String valueAt = table.getValueAt(r, selectedCols[0]).toString();
                                         Geometry geometry = wktReader.read(valueAt);
                                         List<Polygon> simpleDirectionArrows = GeometryUtilities
                                                 .createSimpleDirectionArrow(geometry);
@@ -784,7 +815,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
         });
 
-        _dataViewerTable.addMouseListener(new MouseAdapter(){
+        table.addMouseListener(new MouseAdapter(){
             @Override
             public void mouseClicked( MouseEvent e ) {
                 if (SwingUtilities.isRightMouseButton(e)) {
@@ -797,7 +828,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     protected void loadDataViewer( QueryResult queryResult ) {
         if (queryResult == null) {
-            _dataViewerTable.setModel(new DefaultTableModel());
+            currentDataTable.setModel(new DefaultTableModel());
             return;
         }
         Object[] names = queryResult.names.toArray(new String[0]);
@@ -808,18 +839,18 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             values[index++] = objects;
         }
 
-        _dataViewerTable.setModel(new DefaultTableModel(values, names));
-        _dataViewerTable.setCellSelectionEnabled(true);
+        currentDataTable.setModel(new DefaultTableModel(values, names));
+        currentDataTable.setCellSelectionEnabled(true);
 
-        for( int column = 0; column < _dataViewerTable.getColumnCount(); column++ ) {
-            TableColumn tableColumn = _dataViewerTable.getColumnModel().getColumn(column);
+        for( int column = 0; column < currentDataTable.getColumnCount(); column++ ) {
+            TableColumn tableColumn = currentDataTable.getColumnModel().getColumn(column);
             int preferredWidth = tableColumn.getMinWidth();
             int maxWidth = tableColumn.getMaxWidth();
 
-            for( int row = 0; row < _dataViewerTable.getRowCount(); row++ ) {
-                TableCellRenderer cellRenderer = _dataViewerTable.getCellRenderer(row, column);
-                Component c = _dataViewerTable.prepareRenderer(cellRenderer, row, column);
-                int width = c.getPreferredSize().width + _dataViewerTable.getIntercellSpacing().width;
+            for( int row = 0; row < currentDataTable.getRowCount(); row++ ) {
+                TableCellRenderer cellRenderer = currentDataTable.getCellRenderer(row, column);
+                Component c = currentDataTable.prepareRenderer(cellRenderer, row, column);
+                int width = c.getPreferredSize().width + currentDataTable.getIntercellSpacing().width;
                 preferredWidth = Math.max(preferredWidth, width);
 
                 if (preferredWidth >= maxWidth) {

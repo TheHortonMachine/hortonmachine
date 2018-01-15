@@ -15,7 +15,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.border.TitledBorder;
@@ -31,7 +30,7 @@ public class DatabaseView extends JPanel
    JButton _clearSqlEditorbutton = new JButton();
    JButton _viewQueryButton = new JButton();
    JPanel _sqlEditorAreaPanel = new JPanel();
-   JTable _dataViewerTable = new JTable();
+   JPanel _dataViewerPanel = new JPanel();
    JButton _newDbButton = new JButton();
    JButton _connectDbButton = new JButton();
    JButton _disconnectDbButton = new JButton();
@@ -218,12 +217,8 @@ public class DatabaseView extends JPanel
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      _dataViewerTable.setName("dataViewerTable");
-      JScrollPane jscrollpane1 = new JScrollPane();
-      jscrollpane1.setViewportView(_dataViewerTable);
-      jscrollpane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-      jscrollpane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-      jpanel1.add(jscrollpane1,new CellConstraints(1,1,1,1,CellConstraints.FILL,CellConstraints.FILL));
+      _dataViewerPanel.setName("dataViewerPanel");
+      jpanel1.add(_dataViewerPanel,cc.xy(1,1));
 
       addFillComponents(jpanel1,new int[0],new int[0]);
       return jpanel1;
