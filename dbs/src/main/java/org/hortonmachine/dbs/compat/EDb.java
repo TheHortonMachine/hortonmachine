@@ -19,10 +19,12 @@ package org.hortonmachine.dbs.compat;
 
 import java.io.File;
 
+import org.hortonmachine.dbs.h2gis.H2NonSpatialDataType;
 import org.hortonmachine.dbs.h2gis.H2GisGeometryParser;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryParser;
 import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
+import org.hortonmachine.dbs.spatialite.SqliteNonSpatialDataType;
 
 /**
  * The available databases.
@@ -186,12 +188,17 @@ public enum EDb {
      * @return the db type.
      */
     public static EDb fromFileNameDesktop( String name ) {
+        EDb tmpNonspatial = null;
         for( EDb edb : values() ) {
             if (name.toLowerCase().endsWith(edb.getExtension()) && edb.supportsDesktop()) {
-                return edb;
+                if (edb.isSpatial()) {
+                    return edb;
+                } else {
+                    tmpNonspatial = edb;
+                }
             }
         }
-        return null;
+        return tmpNonspatial;
     }
 
     /**
@@ -205,6 +212,9 @@ public enum EDb {
      * @throws Exception 
      */
     public static EDb fromFileDesktop( File file ) throws Exception {
+        if (!file.exists()) {
+            return fromFileNameDesktop(file.getName());
+        }
         if (SpatialiteCommonMethods.isSqliteFile(file)) {
             // sqlite
             try (ASpatialDb db = SPATIALITE.getSpatialDb()) {
@@ -223,5 +233,19 @@ public enum EDb {
             }
         }
         return null;
+    }
+
+    public ANonSpatialDataType getNonSpatialdataType() {
+        switch( this ) {
+        case H2:
+        case H2GIS:
+            return new H2NonSpatialDataType();
+        case SQLITE:
+        case SPATIALITE:
+        case SPATIALITE4ANDROID:
+            return new SqliteNonSpatialDataType();
+        default:
+            return null;
+        }
     }
 }

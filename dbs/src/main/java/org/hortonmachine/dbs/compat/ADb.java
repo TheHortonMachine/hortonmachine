@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
@@ -517,6 +518,33 @@ public abstract class ADb implements AutoCloseable {
             }
         }
         return realName;
+    }
+
+    /**
+     * Add new columns to a table if they are not there.
+     * 
+     * @param tableName
+     *            the name of the table.
+     * @param columnToAdd
+     *            the column name to add.
+     * @param typeToAdd
+     *            the type of the column to add.
+     * @throws Exception 
+     */
+    public void addNewColumn( String tableName, String columnToAdd, String typeToAdd ) throws Exception {
+        if (hasTable(tableName)) {
+            List<String[]> tableColumns = getTableColumns(tableName);
+            List<String> tableColumnsFirst = new ArrayList<String>();
+            for( String[] tc : tableColumns ) {
+                tableColumnsFirst.add(tc[0].toLowerCase());
+            }
+
+            if (!tableColumnsFirst.contains(columnToAdd.toLowerCase())) {
+                String sql = "ALTER TABLE '" + tableName + "' ADD COLUMN " + columnToAdd + " " + typeToAdd + ";";
+                executeInsertUpdateDeleteSql(sql);
+            }
+        }
+
     }
 
     protected abstract void logWarn( String message );

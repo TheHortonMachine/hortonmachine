@@ -155,7 +155,16 @@ public class GuiUtilities {
     public static void setPreference( String preferenceKey, String[] valuesArray ) {
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
         if (valuesArray != null) {
+            int maxLength = Preferences.MAX_VALUE_LENGTH;
             String arrayToString = Stream.of(valuesArray).collect(Collectors.joining(PREF_STRING_SEPARATORS));
+            
+            // remove from last if it is too large
+            int remIndex = valuesArray.length-1;
+            while( arrayToString.length() > maxLength ) {
+                valuesArray[remIndex--] = "";
+                arrayToString = Stream.of(valuesArray).collect(Collectors.joining(PREF_STRING_SEPARATORS));
+            }
+            
             preferences.put(preferenceKey, arrayToString);
         } else {
             preferences.remove(preferenceKey);

@@ -32,8 +32,6 @@ import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.h2gis.utilities.SFSUtilities;
-import org.h2gis.utilities.TableLocation;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IHMConnection;
@@ -42,7 +40,6 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.log.Logger;
-import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteDb;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
@@ -322,7 +319,7 @@ public class SpatialDbsImportUtils {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(tableName);
         b.setCRS(crs);
-
+        
         for( int i = 0; i < names.size(); i++ ) {
             if (i == geometryIndex) {
                 Class< ? > geometryClass = sampleGeom.getClass();

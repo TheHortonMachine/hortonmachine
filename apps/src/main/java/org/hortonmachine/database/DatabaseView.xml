@@ -25,7 +25,7 @@
     <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
    </super>
    <at name="id">/home/hydrologis/development/hortonmachine-git/apps/src/main/java/org/hortonmachine/database/DatabaseView.xml</at>
-   <at name="rowspecs">CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(0.1),CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(1.0),CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE</at>
+   <at name="rowspecs">CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(1.0),CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(1.0),CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE</at>
    <at name="colspecs">FILL:DEFAULT:NONE,FILL:250PX:GROW(0.3),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.7),FILL:DEFAULT:NONE</at>
    <at name="components">
     <object classname="java.util.LinkedList">
@@ -46,7 +46,7 @@
          </at>
          <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
         </super>
-        <at name="id">embedded.826419162</at>
+        <at name="id">embedded.1125624355</at>
         <at name="rowspecs">FILL:DEFAULT:GROW(1.0)</at>
         <at name="colspecs">FILL:DEFAULT:GROW(1.0)</at>
         <at name="components">
@@ -245,8 +245,8 @@
          </at>
          <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
         </super>
-        <at name="id">embedded.1066342712</at>
-        <at name="rowspecs">CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE</at>
+        <at name="id">embedded.1652305810</at>
+        <at name="rowspecs">CENTER:2DLU:NONE,FILL:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,FILL:2DLU:GROW(1.0)</at>
         <at name="colspecs">FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)</at>
         <at name="components">
          <object classname="java.util.LinkedList">
@@ -539,7 +539,7 @@
                 <at name="column">2</at>
                 <at name="row">2</at>
                 <at name="colspan">1</at>
-                <at name="rowspan">9</at>
+                <at name="rowspan">10</at>
                 <at name="halign">default</at>
                 <at name="valign">default</at>
                 <at name="insets" object="insets">0,0,0,0</at>
@@ -556,7 +556,7 @@
                 <object classname="com.jeta.forms.store.support.PropertyMap">
                  <at name="name">sqlEditorAreaPanel</at>
                  <at name="width">674</at>
-                 <at name="height">138</at>
+                 <at name="height">228</at>
                 </object>
                </at>
               </object>
@@ -593,7 +593,7 @@
               </at>
              </object>
             </at>
-            <at name="name"/>
+            <at name="name"></at>
             <at name="fill">
              <object classname="com.jeta.forms.store.properties.effects.PaintProperty">
               <at name="name">fill</at>
@@ -705,7 +705,7 @@
          </at>
          <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
         </super>
-        <at name="id">embedded.1475438687</at>
+        <at name="id">embedded.1561464675</at>
         <at name="rowspecs">FILL:DEFAULT:GROW(1.0)</at>
         <at name="colspecs">FILL:DEFAULT:GROW(1.0)</at>
         <at name="components">
@@ -736,7 +736,7 @@
                 <object classname="com.jeta.forms.store.support.PropertyMap">
                  <at name="name">dataViewerPanel</at>
                  <at name="width">691</at>
-                 <at name="height">169</at>
+                 <at name="height">98</at>
                 </object>
                </at>
               </object>
@@ -772,7 +772,7 @@
               </at>
              </object>
             </at>
-            <at name="name"></at>
+            <at name="name"/>
             <at name="fill">
              <object classname="com.jeta.forms.store.properties.effects.PaintProperty">
               <at name="name">fill</at>
@@ -854,7 +854,7 @@
          </at>
          <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
         </super>
-        <at name="id">embedded.1772319403</at>
+        <at name="id">embedded.1003477276</at>
         <at name="rowspecs">CENTER:DEFAULT:NONE</at>
         <at name="colspecs">FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE</at>
         <at name="components">
@@ -1294,7 +1294,7 @@
          </at>
          <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
         </super>
-        <at name="id">embedded.472486306</at>
+        <at name="id">embedded.1268479920</at>
         <at name="rowspecs">CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE</at>
         <at name="colspecs">FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.4),FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.5)</at>
         <at name="components">
@@ -1574,7 +1574,7 @@
          </at>
          <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
         </super>
-        <at name="id">embedded.1936184438</at>
+        <at name="id">embedded.2056035805</at>
         <at name="rowspecs">CENTER:2DLU:NONE,CENTER:DEFAULT:NONE</at>
         <at name="colspecs">FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.4),FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.5)</at>
         <at name="components">

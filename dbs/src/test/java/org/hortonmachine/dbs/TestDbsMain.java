@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.ANonSpatialDataType;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.junit.AfterClass;
@@ -22,7 +23,7 @@ public class TestDbsMain {
     private static final String TABLE1 = "table1";
     private static final String TABLE2 = "table2";
     private static final EDb DB_TYPE = DatabaseTypeForTests.DB_TYPE;
-    
+
     private static ADb db;
 
     @BeforeClass
@@ -31,10 +32,12 @@ public class TestDbsMain {
         String dbPath = tempDir + File.separator + "jgt-dbs-testdbsmain" + DB_TYPE.getExtensionOnCreation();
         TestUtilities.deletePrevious(tempDir, dbPath, DB_TYPE);
 
+        ANonSpatialDataType dt = DB_TYPE.getNonSpatialdataType();
+
         db = DB_TYPE.getDb();
         db.open(dbPath);
 
-        db.createTable(TABLE1, "id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL");
+        db.createTable(TABLE1, "id " + dt.INTEGER() + " PRIMARY KEY", "name " + dt.TEXT(), "temperature " + dt.REAL());
         String[] inserts = {//
                 "INSERT INTO " + TABLE1 + " VALUES(1, 'Tscherms', 36.0);", //
                 "INSERT INTO " + TABLE1 + " VALUES(2, 'Meran', 34.0);", //
@@ -44,7 +47,8 @@ public class TestDbsMain {
             db.executeInsertUpdateDeleteSql(insert);
         }
 
-        db.createTable(TABLE2, "id INT PRIMARY KEY", "table1id INT", "FOREIGN KEY (table1id) REFERENCES " + TABLE1 + "(id)");
+        db.createTable(TABLE2, "id " + dt.INTEGER() + " PRIMARY KEY", "table1id " + dt.INTEGER(),
+                "FOREIGN KEY (table1id) REFERENCES " + TABLE1 + "(id)");
         inserts = new String[]{//
                 "INSERT INTO " + TABLE2 + " VALUES(1, 1);", //
                 "INSERT INTO " + TABLE2 + " VALUES(2, 2);", //
