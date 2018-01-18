@@ -227,12 +227,7 @@ public enum EDb {
             }
         }
         String name = file.getName();
-        for( EDb edb : values() ) {
-            if (name.toLowerCase().endsWith(edb.getExtension()) && edb.supportsDesktop()) {
-                return edb;
-            }
-        }
-        return null;
+        return fromFileNameDesktop(name);
     }
 
     public ANonSpatialDataType getNonSpatialdataType() {
