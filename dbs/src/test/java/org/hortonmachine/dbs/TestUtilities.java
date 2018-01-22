@@ -4,7 +4,7 @@ import java.io.File;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.compat.ANonSpatialDataType;
+import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 
 public class TestUtilities {
     public static final String MPOLY_TABLE = "multipoly";
@@ -54,7 +54,7 @@ public class TestUtilities {
                         + " (id, table1id, the_geom) VALUES(2, 2, ST_GeomFromText('LINESTRING (20.5 20, 20.5 5)', 4326));", //
         };
 
-        ANonSpatialDataType dt = db.getType().getNonSpatialdataType();
+        ADatabaseSyntaxHelper dt = db.getType().getNonSpatialdataType();
 
         db.createSpatialTable(MPOLY_TABLE, 4326, "the_geom MULTIPOLYGON",
                 arr("id " + dt.INTEGER() + " PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"));

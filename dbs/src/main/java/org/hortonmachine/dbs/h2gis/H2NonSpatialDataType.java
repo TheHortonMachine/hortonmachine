@@ -17,12 +17,14 @@
  */
 package org.hortonmachine.dbs.h2gis;
 
-import org.hortonmachine.dbs.compat.ANonSpatialDataType;
+import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 
 /**
+ * Non spatial data types and small syntax for the h2 db.
+ * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class H2NonSpatialDataType extends ANonSpatialDataType {
+public class H2NonSpatialDataType extends ADatabaseSyntaxHelper {
 
     public String TEXT() {
         return "VARCHAR(255)";
@@ -46,6 +48,16 @@ public class H2NonSpatialDataType extends ANonSpatialDataType {
 
     public String CLOB() {
         return "CLOB";
+    }
+
+    @Override
+    public String PRIMARYKEY() {
+        return "PRIMARY KEY";
+    }
+
+    @Override
+    public String AUTOINCREMENT() {
+        return "AUTO_INCREMENT";
     }
 
 }

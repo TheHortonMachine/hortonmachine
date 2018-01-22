@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.compat.ANonSpatialDataType;
+import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.junit.AfterClass;
@@ -32,7 +32,7 @@ public class TestDbsMain {
         String dbPath = tempDir + File.separator + "jgt-dbs-testdbsmain" + DB_TYPE.getExtensionOnCreation();
         TestUtilities.deletePrevious(tempDir, dbPath, DB_TYPE);
 
-        ANonSpatialDataType dt = DB_TYPE.getNonSpatialdataType();
+        ADatabaseSyntaxHelper dt = DB_TYPE.getNonSpatialdataType();
 
         db = DB_TYPE.getDb();
         db.open(dbPath);

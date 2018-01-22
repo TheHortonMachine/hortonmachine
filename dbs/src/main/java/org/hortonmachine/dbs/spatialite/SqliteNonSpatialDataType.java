@@ -17,14 +17,14 @@
  */
 package org.hortonmachine.dbs.spatialite;
 
-import org.hortonmachine.dbs.compat.ANonSpatialDataType;
+import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 
 /**
- * Non spatial data types for different dbs.
+ * Non spatial data types and small syntax for the sqlite db.
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class SqliteNonSpatialDataType extends ANonSpatialDataType {
+public class SqliteNonSpatialDataType extends ADatabaseSyntaxHelper {
 
     public String TEXT() {
         return "TEXT";
@@ -48,5 +48,15 @@ public class SqliteNonSpatialDataType extends ANonSpatialDataType {
 
     public String CLOB() {
         return "CLOB";
+    }
+
+    @Override
+    public String PRIMARYKEY() {
+        return "PRIMARY KEY";
+    }
+
+    @Override
+    public String AUTOINCREMENT() {
+        return "AUTOINCREMENT";
     }
 }

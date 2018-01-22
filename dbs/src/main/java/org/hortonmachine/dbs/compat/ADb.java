@@ -540,7 +540,7 @@ public abstract class ADb implements AutoCloseable {
             }
 
             if (!tableColumnsFirst.contains(columnToAdd.toLowerCase())) {
-                String sql = "ALTER TABLE '" + tableName + "' ADD COLUMN " + columnToAdd + " " + typeToAdd + ";";
+                String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnToAdd + " " + typeToAdd + ";";
                 executeInsertUpdateDeleteSql(sql);
             }
         }

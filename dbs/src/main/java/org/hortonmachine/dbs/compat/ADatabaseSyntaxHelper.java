@@ -18,11 +18,11 @@
 package org.hortonmachine.dbs.compat;
 
 /**
- * Non spatial data types for different dbs.
+ * Database Syntax Compatibility Helper class.
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public abstract class ANonSpatialDataType {
+public abstract class ADatabaseSyntaxHelper {
     public static final String COMPAT_TEXT = "TEXT";
     public static final String COMPAT_INT = "INT";
     public static final String COMPAT_LONG = "LONG";
@@ -63,11 +63,11 @@ public abstract class ANonSpatialDataType {
     /**
      * Get the type by its compatibility name.
      * 
-     * @param compatibilityName the compat name, as for example {@link #COMPAT_TEXT};
+     * @param compatibilityDataTypeName the compat name, as for example {@link #COMPAT_TEXT};
      * @return the data type;
      */
-    public String of( String compatibilityName ) {
-        switch( compatibilityName ) {
+    public String of( String compatibilityDataTypeName ) {
+        switch( compatibilityDataTypeName ) {
         case COMPAT_TEXT:
             return TEXT();
         case COMPAT_INT:
@@ -81,6 +81,17 @@ public abstract class ANonSpatialDataType {
         case COMPAT_CLOB:
             return CLOB();
         }
-        throw new RuntimeException("No type for name: " + compatibilityName);
+        throw new RuntimeException("No type for name: " + compatibilityDataTypeName);
     }
+
+    public abstract String PRIMARYKEY();
+
+    /**
+     * @return the string used to define the primary key as long and with autoincrement.
+     */
+    public String LONG_PRIMARYKEY_AUTOINCREMENT() {
+        return LONG() + " " + PRIMARYKEY() + " " + AUTOINCREMENT();
+    }
+
+    public abstract String AUTOINCREMENT();
 }

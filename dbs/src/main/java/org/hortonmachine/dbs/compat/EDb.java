@@ -230,7 +230,7 @@ public enum EDb {
         return fromFileNameDesktop(name);
     }
 
-    public ANonSpatialDataType getNonSpatialdataType() {
+    public ADatabaseSyntaxHelper getNonSpatialdataType() {
         switch( this ) {
         case H2:
         case H2GIS:
