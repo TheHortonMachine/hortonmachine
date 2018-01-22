@@ -32,7 +32,7 @@ public class TestDbsMain {
         String dbPath = tempDir + File.separator + "jgt-dbs-testdbsmain" + DB_TYPE.getExtensionOnCreation();
         TestUtilities.deletePrevious(tempDir, dbPath, DB_TYPE);
 
-        ADatabaseSyntaxHelper dt = DB_TYPE.getNonSpatialdataType();
+        ADatabaseSyntaxHelper dt = DB_TYPE.getDatabaseSyntaxHelper();
 
         db = DB_TYPE.getDb();
         db.open(dbPath);

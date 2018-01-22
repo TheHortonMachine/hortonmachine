@@ -60,4 +60,9 @@ public class H2NonSpatialDataType extends ADatabaseSyntaxHelper {
         return "AUTO_INCREMENT";
     }
 
+    @Override
+    public String MAKEPOINT2D() {
+        return "ST_MakePoint";
+    }
+
 }

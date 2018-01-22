@@ -59,4 +59,9 @@ public class SqliteNonSpatialDataType extends ADatabaseSyntaxHelper {
     public String AUTOINCREMENT() {
         return "AUTOINCREMENT";
     }
+
+    @Override
+    public String MAKEPOINT2D() {
+        return "MakePoint";
+    }
 }

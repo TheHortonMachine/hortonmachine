@@ -94,4 +94,6 @@ public abstract class ADatabaseSyntaxHelper {
     }
 
     public abstract String AUTOINCREMENT();
+
+    public abstract String MAKEPOINT2D();
 }

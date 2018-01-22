@@ -54,7 +54,7 @@ public class TestUtilities {
                         + " (id, table1id, the_geom) VALUES(2, 2, ST_GeomFromText('LINESTRING (20.5 20, 20.5 5)', 4326));", //
         };
 
-        ADatabaseSyntaxHelper dt = db.getType().getNonSpatialdataType();
+        ADatabaseSyntaxHelper dt = db.getType().getDatabaseSyntaxHelper();
 
         db.createSpatialTable(MPOLY_TABLE, 4326, "the_geom MULTIPOLYGON",
                 arr("id " + dt.INTEGER() + " PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"));
