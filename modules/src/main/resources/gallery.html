@@ -1,0 +1,264 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Simple Image Gallery</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<style>
+body {
+	background-color: #000;
+	color: #eee;
+	font: 13px Verdana, sans-serif;
+	margin: 0 auto 100px;
+	width: 60%;
+}
+
+h1 {
+	font-weight: 100;
+	margin-bottom: 0;
+}
+
+p {
+	margin: 0 0 16px;
+}
+
+.boximage>a {
+	display: inline-block;
+	position: relative;
+	text-decoration: none;
+	vertical-align: bottom;
+	width: 16.66%;
+}
+
+.boximage>a>img {
+	border: none;
+	display: block;
+	height: auto;
+	width: 100%;
+}
+
+.arrow::after {
+	border: 10px solid #333;
+	content: "";
+	left: 50%;
+	position: absolute;
+	transform: translate(-10px, -10px) rotate(45deg);
+}
+
+.box {
+	background: #333;
+	float: left;
+	padding: 13px 0;
+	position: relative;
+	text-align: center;
+	width: 100%;
+}
+
+.js-boxloading::before {
+	content: "Loading...";
+	left: 0;
+	position: absolute;
+	text-align: center;
+	top: 50%;
+	width: 100%;
+}
+
+.box>div {
+	color: #9c9c9c;
+	padding: 0 13px 8px;
+	position: relative;
+	text-align: center;
+}
+
+.box>img {
+	max-height: 420px;
+	max-width: 100%;
+	position: relative;
+	vertical-align: bottom;
+}
+
+@media screen and (min-width: 480px) and (max-width: 919px) {
+	body {
+		width: 95%;
+	}
+	.boximage>a {
+		width: 20%;
+	}
+}
+
+@media screen and (max-width: 479px) {
+	body {
+		width: 95%;
+	}
+	.boximage>a {
+		width: 33.33%;
+	}
+}
+</style>
+</head>
+<body>
+	<div id="boximage" class="boximage">
+	
+		REPLACETEXT		
+
+		<div class="clear"></div>
+	</div>
+
+
+	<script>
+		(function() {
+			'use strict';
+			////////////////////////////////////////////////////////////////////////////////
+			// Get Next Element Sibling, Get Last Element Sibling
+
+			function getnextElementSibling(element) {
+				if (element.nextElementSibling) {
+					return element.nextElementSibling;
+				}
+
+				var current = element.nextSibling;
+				while (current && current.nodeType !== 1) {
+					current = current.nextSibling;
+				}
+				return current;
+			}
+
+			function getpreviousElementSibling(element) {
+				if (element.previousElementSibling) {
+					return element.previousElementSibling;
+				}
+
+				var current = element.previousSibling;
+				while (current && current.nodeType !== 1) {
+					current = current.previousSibling;
+				}
+				return current;
+			}
+
+			////////////////////////////////////////////////////////////////////////////////
+			// Class List functions
+
+			function addClass(element, string) {
+				if (element.classList) {
+					return element.classList.add(string);
+				}
+
+				var list = element.className.split(' '), i, notpresent = true;
+
+				for (i = 0; i < list.length; i++) {
+					if (list[i] === string) {
+						notpresent = false;
+						break;
+					}
+				}
+				if (notpresent) {
+					element.className += (element.className ? ' ' : '')
+							+ string;
+				}
+			}
+
+			function removeClass(element, string) {
+				if (element.classList) {
+					return element.classList.remove(string);
+				}
+
+				var list = element.className.split(' '), i;
+
+				element.className = '';
+
+				for (i = 0; i < list.length; i++) {
+					if (list[i] !== string) {
+						element.className += (element.className ? ' ' : '')
+								+ list[i];
+					}
+				}
+			}
+
+			function containsClass(element, string) {
+				if (element.classList) {
+					return element.classList.contains(string);
+				}
+
+				var list = element.className.split(' '), i, present = false;
+
+				for (i = 0; i < list.length; i++) {
+					if (list[i] === string) {
+						present = true;
+						break;
+					}
+				}
+				return present;
+			}
+
+			////////////////////////////////////////////////////////////////////////////////
+			// Image gallery
+
+			function boximage(idboximage, classbox, classactive) {
+				var list, i, box = document.createElement('div'), boxloading = 'js-boxloading';
+				box.className = classbox;
+
+				list = document.getElementById(idboximage)
+						.getElementsByTagName('a');
+				i = list.length;
+				while (i--) {
+					list[i].onclick = function() {
+
+						removeClass(this, classactive);
+
+						if (containsClass(getnextElementSibling(this), classbox)) {
+
+							box.parentNode.removeChild(box);
+
+						} else {
+
+							if ((box.parentNode !== null)
+									&& (box.parentNode.nodeName !== '#document-fragment')) {
+								removeClass(getpreviousElementSibling(box),
+										classactive);
+							}
+							addClass(this, classactive);
+
+							removeClass(box, boxloading);
+
+							box.innerHTML = '<div>'
+									+ this.getAttribute('title')
+									+ '</div><img src="'
+									+ this.getAttribute('href') + '">';
+
+							setTimeout(function() {
+								addClass(box, boxloading);
+							}, 500);
+
+							this.parentNode.insertBefore(box,
+									getnextElementSibling(this));
+
+							var this_height = this.getBoundingClientRect().height, box_height = box
+									.getBoundingClientRect().height, box_bottom = box
+									.getBoundingClientRect().bottom, client_height = document.documentElement.clientHeight;
+
+							if ((this.getBoundingClientRect().top < 0)
+									|| ((box_bottom > client_height) && ((this_height + box_height) > client_height))) {
+								this.scrollIntoView();
+							} else if ((box_bottom > client_height)
+									&& ((this_height + box_height) < client_height)) {
+								box.scrollIntoView(false);
+							}
+
+						}
+
+						var e = event || window.event;
+						if (e.preventDefault) {
+							e.preventDefault();
+						} else {
+							return false;
+						}
+					};
+				}
+			}
+
+			boximage('boximage', 'box', 'arrow');
+
+		}());
+	</script>
+</body>
+</html>

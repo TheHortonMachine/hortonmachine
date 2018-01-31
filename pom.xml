@@ -4,13 +4,15 @@
 
 
     <properties>
-		<gt.version>17.1</gt.version>
+		<hm.version>0.9.1-SNAPSHOT</hm.version>
+		<gt.version>18.0</gt.version>
         <!-- comes with h2gis 
             <jts-core-version>1.14.0</jts-core-version>
             <jts-io-version>1.14.0</jts-io-version>
         -->
 		<jaitools.version>1.3.1</jaitools.version>
 		<jiffle.version>0.2.1</jiffle.version>
+        <geoscript.version>1.10.0</geoscript.version>
 		<performRelease>false</performRelease>
 	</properties>
 
@@ -23,17 +25,14 @@
     <url>http://www.hortonmachine.org</url>
 
     <modules>
-	<module>oms3</module>
 	<module>dbs</module>
     <module>gears</module>
     <module>hmachine</module>
     <module>lesto</module>
     <module>modules</module>
     <module>gui</module>
-<!--REMONREL
 	<module>apps</module>
 	<module>gpserver</module>
- REMONREL-->
   </modules>
 
 	<issueManagement>
@@ -122,7 +121,16 @@
       <name>jgrasstools snapshots</name>
       <url>http://oss.sonatype.org/content/repositories/snapshots</url>
     </repository>
+   <repository>
+        <id>boundless</id>
+        <name>Boundless Maven Repository</name>
+        <url>https://repo.boundlessgeo.com/main</url>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
   </repositories>
+
 	<!-- Build configuration -->
     <build>
         <extensions>
