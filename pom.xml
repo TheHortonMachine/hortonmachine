@@ -31,8 +31,10 @@
     <module>lesto</module>
     <module>modules</module>
     <module>gui</module>
+<!--REMONREL
 	<module>apps</module>
 	<module>gpserver</module>
+ REMONREL-->
   </modules>
 
 	<issueManagement>
