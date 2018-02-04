@@ -40,7 +40,6 @@ container(consoleFrame) {
 
     build(contentPaneClass)
 
-	println toolBarClass
     build(toolBarClass)
 
     build(statusBarClass)
