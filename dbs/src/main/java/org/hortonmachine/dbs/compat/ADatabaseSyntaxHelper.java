@@ -66,7 +66,7 @@ public abstract class ADatabaseSyntaxHelper {
      * @param compatibilityDataTypeName the compat name, as for example {@link #COMPAT_TEXT};
      * @return the data type;
      */
-    public String of( String compatibilityDataTypeName ) {
+    public String ofCompat( String compatibilityDataTypeName ) {
         switch( compatibilityDataTypeName ) {
         case COMPAT_TEXT:
             return TEXT();
@@ -82,6 +82,29 @@ public abstract class ADatabaseSyntaxHelper {
             return CLOB();
         }
         throw new RuntimeException("No type for name: " + compatibilityDataTypeName);
+    }
+
+    /**
+     * Get the compatibility name by the db specific type.
+     * 
+     * @param dbSpecificType the db specific name, as for example DOUBLE;
+     * @return the compat data type;
+     */
+    public String ofDbType( String dbSpecificType ) {
+        if (dbSpecificType.equals(TEXT())) {
+            return COMPAT_TEXT;
+        } else if (dbSpecificType.equals(INTEGER())) {
+            return COMPAT_INT;
+        } else if (dbSpecificType.equals(LONG())) {
+            return COMPAT_LONG;
+        } else if (dbSpecificType.equals(REAL())) {
+            return COMPAT_REAL;
+        } else if (dbSpecificType.equals(BLOB())) {
+            return COMPAT_BLOB;
+        } else if (dbSpecificType.equals(CLOB())) {
+            return COMPAT_CLOB;
+        }
+        throw new RuntimeException("No type for name: " + dbSpecificType);
     }
 
     public abstract String PRIMARYKEY();
