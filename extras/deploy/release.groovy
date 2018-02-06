@@ -36,7 +36,7 @@ def alsoSources = false;
 def alsojavaDocs = false;
 // your maven repo path
 def mvnRepo = System.getProperty("user.home");
-def repo = "${mvnRepo}/.m2/repository/"
+def repo = "."; // necessary jars are copied in working folder, so no need to go on maven repo //"${mvnRepo}/.m2/repository/"
 println "Using maven repo in: ${repo}";
 def repoFile = new File(repo);
 if(!repoFile.exists()){
@@ -146,8 +146,8 @@ JGTMODULESCOPY: {
     (new AntBuilder()).copy( file : gpJar , tofile : gpCopyToFile )
 
     // tools.jar
-    def newToolsJar = new File(copyPathFile, "tools.jar");
-    new AntBuilder().copy ( file : toolsJar.absolutePath , tofile : newToolsJar.absolutePath )
+    //def newToolsJar = new File(copyPathFile, "tools.jar");
+    //new AntBuilder().copy ( file : toolsJar.absolutePath , tofile : newToolsJar.absolutePath )
 }
 
 def outputCatcher = new StringBuffer();
