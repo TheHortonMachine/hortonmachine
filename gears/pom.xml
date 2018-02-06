@@ -171,6 +171,10 @@
 			<version>${gt.version}</version>
 			<exclusions>
 				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+				<exclusion>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
 				</exclusion>
@@ -199,12 +203,6 @@
 		</dependency>
 
 		<!-- geopap -->
-		<dependency>
-			<groupId>org.xerial</groupId>
-			<artifactId>sqlite-jdbc</artifactId>
-			<version>3.8.11.2</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>

@@ -75,8 +75,32 @@
 
 			<exclusions>
 				<exclusion>
+					<groupId>com.h2database</groupId>
+					<artifactId>h2</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt-charts</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt-netcdf</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt-css</artifactId>
+				</exclusion>
+				<exclusion>
 					<groupId>no.ecc.vectortile</groupId>
 					<artifactId>java-vector-tile</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.jaitools</groupId>
+					<artifactId>jt-jiffleop</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.jaitools</groupId>
+					<artifactId>jt-jiffle-language</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

@@ -34,19 +34,18 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_STATUS;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.media.jai.JAI;
 import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.ROIShape;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.process.raster.RangeLookupProcess;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
+import it.geosolutions.jaiext.JAIExt;
 import it.geosolutions.jaiext.range.Range;
 import it.geosolutions.jaiext.range.RangeFactory;
 import it.geosolutions.jaiext.rlookup.RangeLookupTable;
@@ -94,15 +93,14 @@ public class OmsRangeLookup extends HMModel {
         if (!concatOr(outRaster == null, doReset)) {
             return;
         }
+        
+        JAIExt.initJAIEXT(true); // FIXME remove when the jaitools rangelookup is not pulled fro raster process anymore
 
         checkNull(inRaster, pRanges, pClasses);
 
         RenderedImage inRI = inRaster.getRenderedImage();
 
         RangeLookupTable.Builder<Double, Double> builder = new RangeLookupTable.Builder<Double, Double>();
-
-        // RangeLookupTable<Double, Double> table = new RangeLookupTable<Double,
-        // Double>(HMConstants.doubleNovalue);
 
         String[] rangesSplit = pRanges.trim().split(",");
         String[] classesSplit = pClasses.trim().split(",");
