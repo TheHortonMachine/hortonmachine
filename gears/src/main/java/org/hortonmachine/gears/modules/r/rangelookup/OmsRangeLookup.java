@@ -31,12 +31,25 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_P_CLASSE
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_P_RANGES_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_STATUS;
 
+import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.media.jai.JAI;
 import javax.media.jai.ParameterBlockJAI;
+import javax.media.jai.ROIShape;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.process.raster.RangeLookupProcess;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+
+import it.geosolutions.jaiext.range.Range;
+import it.geosolutions.jaiext.range.RangeFactory;
+import it.geosolutions.jaiext.rlookup.RangeLookupTable;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -48,14 +61,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.jaitools.media.jai.rangelookup.RangeLookupTable;
-import org.jaitools.numeric.Range;
 
 @Description(OMSRANGELOOKUP_DESCRIPTION)
 @Documentation(OMSRANGELOOKUP_DOCUMENTATION)
@@ -94,11 +99,10 @@ public class OmsRangeLookup extends HMModel {
 
         RenderedImage inRI = inRaster.getRenderedImage();
 
-        RangeLookupTable.Builder<Double, Double> builder =
-                new RangeLookupTable.Builder<Double, Double>();
-        
-        
-//        RangeLookupTable<Double, Double> table = new RangeLookupTable<Double, Double>(HMConstants.doubleNovalue);
+        RangeLookupTable.Builder<Double, Double> builder = new RangeLookupTable.Builder<Double, Double>();
+
+        // RangeLookupTable<Double, Double> table = new RangeLookupTable<Double,
+        // Double>(HMConstants.doubleNovalue);
 
         String[] rangesSplit = pRanges.trim().split(",");
         String[] classesSplit = pClasses.trim().split(",");
@@ -123,29 +127,40 @@ public class OmsRangeLookup extends HMModel {
 
             Double min = null;
             try {
-                min = Double.parseDouble(split[0]);
+                if (split[0].equals("null")) {
+                    min = Double.NEGATIVE_INFINITY;
+                } else {
+                    min = Double.parseDouble(split[0]);
+                }
             } catch (Exception e) {
                 // can be null
             }
             Double max = null;
             try {
-                max = Double.parseDouble(split[1]);
+                if (split[1].equals("null")) {
+                    max = Double.POSITIVE_INFINITY;
+                } else {
+                    max = Double.parseDouble(split[1]);
+                }
             } catch (Exception e) {
                 // can be null
             }
 
-            Range<Double> r = new Range<Double>(min, minIncluded, max, maxIncluded);
-            
+            Range r = RangeFactory.create(min, minIncluded, max, maxIncluded);
             builder.add(r, classNum);
         }
-        
+        // List<org.jaitools.numeric.Range> ranges;
+        // new RangeLookupProcess().execute(inRaster, 0, ranges, null);
         RangeLookupTable<Double, Double> table = builder.build();
 
-        ParameterBlockJAI pb = new ParameterBlockJAI("RangeLookup");
+        ROIShape roi = new ROIShape(new Rectangle(0, 0, inRI.getWidth(), inRI.getHeight()));
+
+        ParameterBlockJAI pb = new ParameterBlockJAI("RLookup");
         pb.setSource("source0", inRI);
         pb.setParameter("table", table);
-        pb.setParameter("default", HMConstants.doubleNovalue);
-        RenderedImage lookupImg = JAI.create("RangeLookup", pb);
+        pb.setParameter("roi", roi);
+        pb.setParameter("default", (Double) HMConstants.doubleNovalue);
+        RenderedImage lookupImg = JAI.create("RLookup", pb);
 
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
         outRaster = CoverageUtilities.buildCoverage("rangelookup", lookupImg, regionMap, inRaster.getCoordinateReferenceSystem());

@@ -54,7 +54,6 @@ public class TestZonalStats extends HMTestCase {
 
     }
 
-    @SuppressWarnings("nls")
     public void testZonalStats() throws Exception {
         OmsZonalStats zs = new OmsZonalStats();
         zs.pm = new DummyProgressMonitor();
@@ -75,6 +74,8 @@ public class TestZonalStats extends HMTestCase {
         assertEquals(4.82608695, avg, DELTA);
         Double var = (Double) feature.getAttribute(Variables.VAR);
         assertEquals(1.7958412098, var, DELTA);
+        Double sum = (Double) feature.getAttribute(Variables.SUM);
+        assertEquals(111, sum, DELTA);
         int activeCells = (Integer) feature.getAttribute(Variables.ACTCELLS);
         assertEquals(23, activeCells);
         int invalidCells = (Integer) feature.getAttribute(Variables.INVCELLS);

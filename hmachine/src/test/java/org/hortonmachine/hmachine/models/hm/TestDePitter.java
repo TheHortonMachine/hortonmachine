@@ -73,57 +73,57 @@ public class TestDePitter extends HMTestCase {
 //        egg.printTimePassedInMinutes(System.out);
 //
 //    }
-     public void testPitfiller() throws Exception {
-     double[][] elevationData = new double[][]{//
-     {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
-     {600, ND, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
-     {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
-     {400, 410, 650, 700, 750, 800, 850, 490, 450, 1500}, //
-     {450, 550, 430, 500, 600, 700, 800, 500, 450, 1500}, //
-     {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
-     {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
-     {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500} //
-     };
-     HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
-     CoordinateReferenceSystem crs = HMTestMaps.getCrs();
-     GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation",
-     elevationData, envelopeParams, crs, true);
-    
-     OmsDePitter pitfiller = new OmsDePitter();
-     pitfiller.inElev = elevationCoverage;
-     pitfiller.pm = pm;
-     pitfiller.process();
-    
-     GridCoverage2D pitfillerCoverage = pitfiller.outPit;
-     // printImage(pitfillerCoverage.getRenderedImage());
-     double[][] outNewPitData = new double[][]{ //
-     {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
-     {600, ND, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
-     {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
-     {400, 410, 650, 700, 750, 800, 850, 800.000002, 800.000004, 1500}, //
-     {450, 550, 430, 500, 600, 700, 800, 800.000002, 800.000004, 1500}, //
-     {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
-     {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
-     {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500} //
-     };
-     checkMatrixEqual(pitfillerCoverage.getRenderedImage(), outNewPitData, 0);
-    
-     int[][] newIntFlowData = new int[][]{ //
-     {NI, NI, NI, NI, NI, NI, NI, NI, NI, NI}, //
-     {NI, NI, NI, 6, 6, 6, 6, 6, 6, NI}, //
-     {NI, NI, NI, 6, 6, 6, 6, 7, 7, NI}, //
-     {NI, 5, 5, 7, 6, 6, 6, 6, 5, NI}, //
-     {NI, 3, 4, 5, 5, 5, 5, 5, 5, NI}, //
-     {NI, 2, 3, 3, 4, 4, 4, 3, 3, NI}, //
-     {NI, 4, 4, 4, 4, 4, 5, 4, 4, NI}, //
-     {NI, NI, NI, NI, NI, NI, NI, NI, NI, NI} //
-     };
-    
-     GridCoverage2D flowCoverage = pitfiller.outFlow;
-     // printImage(flowCoverage.getRenderedImage());
-     checkMatrixEqual(flowCoverage.getRenderedImage(), newIntFlowData);
-    
-     }
+//     public void testPitfiller() throws Exception {
+//     double[][] elevationData = new double[][]{//
+//     {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
+//     {600, ND, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
+//     {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
+//     {400, 410, 650, 700, 750, 800, 850, 490, 450, 1500}, //
+//     {450, 550, 430, 500, 600, 700, 800, 500, 450, 1500}, //
+//     {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
+//     {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
+//     {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500} //
+//     };
+//     HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//     CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+//     GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation",
+//     elevationData, envelopeParams, crs, true);
+//    
+//     OmsDePitter pitfiller = new OmsDePitter();
+//     pitfiller.inElev = elevationCoverage;
+//     pitfiller.pm = pm;
+//     pitfiller.process();
+//    
+//     GridCoverage2D pitfillerCoverage = pitfiller.outPit;
+//     // printImage(pitfillerCoverage.getRenderedImage());
+//     double[][] outNewPitData = new double[][]{ //
+//     {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
+//     {600, ND, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
+//     {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
+//     {400, 410, 650, 700, 750, 800, 850, 800.000002, 800.000004, 1500}, //
+//     {450, 550, 430, 500, 600, 700, 800, 800.000002, 800.000004, 1500}, //
+//     {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
+//     {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
+//     {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500} //
+//     };
+//     checkMatrixEqual(pitfillerCoverage.getRenderedImage(), outNewPitData, 0);
+//    
+//     int[][] newIntFlowData = new int[][]{ //
+//     {NI, NI, NI, NI, NI, NI, NI, NI, NI, NI}, //
+//     {NI, NI, NI, 6, 6, 6, 6, 6, 6, NI}, //
+//     {NI, NI, NI, 6, 6, 6, 6, 7, 7, NI}, //
+//     {NI, 5, 5, 7, 6, 6, 6, 6, 5, NI}, //
+//     {NI, 3, 4, 5, 5, 5, 5, 5, 5, NI}, //
+//     {NI, 2, 3, 3, 4, 4, 4, 3, 3, NI}, //
+//     {NI, 4, 4, 4, 4, 4, 5, 4, 4, NI}, //
+//     {NI, NI, NI, NI, NI, NI, NI, NI, NI, NI} //
+//     };
+//    
+//     GridCoverage2D flowCoverage = pitfiller.outFlow;
+//     // printImage(flowCoverage.getRenderedImage());
+//     checkMatrixEqual(flowCoverage.getRenderedImage(), newIntFlowData);
+//    
+//     }
 
     protected void checkMatrixEqualLimit( RenderedImage image, double[][] matrix, double delta ) {
         RectIter rectIter = RectIterFactory.create(image, null);

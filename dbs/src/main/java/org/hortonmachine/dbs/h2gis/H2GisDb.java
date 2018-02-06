@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.h2.tools.Server;
 import org.h2gis.ext.H2GISExtension;
@@ -487,7 +488,7 @@ public class H2GisDb extends ASpatialDb {
     }
 
     public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
-            int reprojectSrid ) throws Exception {
+            int reprojectSrid, String whereStr) throws Exception {
         QueryResult queryResult = new QueryResult();
 
         GeometryColumn gCol = null;
@@ -544,14 +545,24 @@ public class H2GisDb extends ASpatialDb {
         }
         sql += itemsWithComma;
         sql += " FROM " + tableName;
+        
+        List<String> whereStrings = new ArrayList<>();
         if (envelope != null) {
             double x1 = envelope.getMinX();
             double y1 = envelope.getMinY();
             double x2 = envelope.getMaxX();
             double y2 = envelope.getMaxY();
-            sql += " WHERE "; //
-            sql += getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
+            whereStrings.add(getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2));
         }
+        if (whereStr != null) {
+            whereStrings.add(whereStr);
+        }
+
+        if (whereStrings.size() > 0) {
+            sql += " WHERE "; //
+            sql += whereStrings.stream().collect(Collectors.joining(" AND "));
+        }
+
         if (limit > 0) {
             sql += " LIMIT " + limit;
         }

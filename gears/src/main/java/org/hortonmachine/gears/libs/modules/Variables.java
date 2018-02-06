@@ -80,6 +80,7 @@ public interface Variables {
     public String AVG = "avg";
     public String VAR = "var";
     public String SDEV = "sdev";
+    public String SUM = "sum";
     public String AVGABSDEV = "avgabsdev";
     public String ACTCELLS = "actcells";
     public String INVCELLS = "invcells";

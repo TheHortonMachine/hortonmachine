@@ -25,23 +25,21 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
+import static org.hortonmachine.gears.libs.modules.Variables.ACTCELLS;
+import static org.hortonmachine.gears.libs.modules.Variables.AVG;
+import static org.hortonmachine.gears.libs.modules.Variables.AVGABSDEV;
+import static org.hortonmachine.gears.libs.modules.Variables.INVCELLS;
+import static org.hortonmachine.gears.libs.modules.Variables.MAX;
+import static org.hortonmachine.gears.libs.modules.Variables.MIN;
+import static org.hortonmachine.gears.libs.modules.Variables.SDEV;
+import static org.hortonmachine.gears.libs.modules.Variables.VAR;
+import static org.hortonmachine.gears.libs.modules.Variables.SUM;
 
 import java.awt.geom.AffineTransform;
 import java.text.MessageFormat;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -73,6 +71,17 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 @Description("Calculate zonal stats.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
@@ -114,15 +123,6 @@ public class OmsZonalStats extends HMModel {
      */
     double[] tm_usertm_tactivecells = new double[3];
 
-    public static final String MIN = "min";
-    public static final String MAX = "max";
-    public static final String AVG = "avg";
-    public static final String VAR = "var";
-    public static final String SDEV = "sdev";
-    public static final String AVGABSDEV = "avgabsdev";
-    public static final String ACTCELLS = "actcells";
-    public static final String INVCELLS = "invcells";
-
     @Execute
     public void process() throws Exception {
         checkNull(inVector, inRaster);
@@ -160,8 +160,9 @@ public class OmsZonalStats extends HMModel {
                         polygonStats[2], //
                         polygonStats[3], //
                         polygonStats[4], //
-                        (int) polygonStats[5], //
-                        (int) polygonStats[6] //
+                        polygonStats[5], //
+                        (int) polygonStats[6], //
+                        (int) polygonStats[7] //
                 };
             } else {
                 values = new Object[]{geometry, //
@@ -171,8 +172,9 @@ public class OmsZonalStats extends HMModel {
                         polygonStats[3], //
                         polygonStats[4], //
                         polygonStats[5], //
-                        (int) polygonStats[6], //
-                        (int) polygonStats[7] //
+                        polygonStats[6], //
+                        (int) polygonStats[7], //
+                        (int) polygonStats[8] //
                 };
             }
 
@@ -229,6 +231,7 @@ public class OmsZonalStats extends HMModel {
         int passiveCellCount = 0;
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
+        double sum = 0.0;
 
         MathTransform gridToCRS2 = gridGeometry.getGridToCRS();
 
@@ -284,6 +287,7 @@ public class OmsZonalStats extends HMModel {
                                 }
                                 min = Math.min(min, v);
                                 max = Math.max(max, v);
+                                sum += v;
                                 values[activeCellCount] = v;
                                 activeCellCount++;
 
@@ -302,8 +306,8 @@ public class OmsZonalStats extends HMModel {
                                 throw new ModelsIOException(message, "ZonalStats");
                             }
                         } else {
-                            throw new ModelsIOException(MessageFormat.format(
-                                    "Found intersection with more than 2 points in: {0}/{1}", coords[0].x, coords[0].y),
+                            throw new ModelsIOException(MessageFormat
+                                    .format("Found intersection with more than 2 points in: {0}/{1}", coords[0].x, coords[0].y),
                                     "ZonalStats");
                         }
                     }
@@ -327,9 +331,9 @@ public class OmsZonalStats extends HMModel {
         double[] result;
         if (hasUserTotalMean) {
             double meanAbsoluteDeviation = meanAbsoluteDeviation(values, activeCellCount, tm_utm_tac[1]);
-            result = new double[]{min, max, mean, var, sdev, meanAbsoluteDeviation, activeCellCount, passiveCellCount};
+            result = new double[]{min, max, mean, var, sdev, sum, meanAbsoluteDeviation, activeCellCount, passiveCellCount};
         } else {
-            result = new double[]{min, max, mean, var, sdev, activeCellCount, passiveCellCount};
+            result = new double[]{min, max, mean, var, sdev, sum, activeCellCount, passiveCellCount};
         }
         return result;
     }
@@ -344,6 +348,7 @@ public class OmsZonalStats extends HMModel {
         b.add(AVG, Double.class);
         b.add(VAR, Double.class);
         b.add(SDEV, Double.class);
+        b.add(SUM, Double.class);
         if (hasUserTotalMean)
             b.add(AVGABSDEV, Double.class);
         b.add(ACTCELLS, Integer.class);

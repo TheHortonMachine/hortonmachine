@@ -106,7 +106,7 @@ public class RasterizedSpatialiteLayer extends BasicMercatorTiledImageLayer impl
             }
 
             DefaultFeatureCollection fc = SpatialDbsImportUtils.tableToFeatureFCollection(db, tableName, featureLimit,
-                    NwwUtilities.GPS_CRS_SRID);
+                    NwwUtilities.GPS_CRS_SRID, null);
             long t2 = System.currentTimeMillis();
             System.out.println("FINISHED READING: " + tableName + " -> " + ((t2 - t1) / 1000) + "sec");
             if (style == null) {

@@ -292,12 +292,13 @@ public class SpatialDbsImportUtils {
      * @param tableName the table to use.
      * @param featureLimit limit in feature or -1.
      * @param forceSrid a srid to force to or -1.
+     * @param whereStr an optional where condition string.
      * @return the extracted featurecollection.
      * @throws SQLException
      * @throws Exception
      */
     public static DefaultFeatureCollection tableToFeatureFCollection( ASpatialDb db, String tableName, int featureLimit,
-            int forceSrid ) throws SQLException, Exception {
+            int forceSrid, String whereStr ) throws SQLException, Exception {
         DefaultFeatureCollection fc = new DefaultFeatureCollection();
 
         GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
@@ -306,7 +307,7 @@ public class SpatialDbsImportUtils {
             forceSrid = geometryColumn.srid;
         }
         crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumn.srid);
-        QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit, forceSrid);
+        QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit, forceSrid, whereStr);
         int geometryIndex = tableRecords.geometryIndex;
         if (geometryIndex == -1) {
             throw new IllegalArgumentException("Not a geometric layer.");
@@ -319,7 +320,7 @@ public class SpatialDbsImportUtils {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(tableName);
         b.setCRS(crs);
-        
+
         for( int i = 0; i < names.size(); i++ ) {
             if (i == geometryIndex) {
                 Class< ? > geometryClass = sampleGeom.getClass();

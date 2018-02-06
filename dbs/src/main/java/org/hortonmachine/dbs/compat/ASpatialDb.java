@@ -224,16 +224,17 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      *            the table name.
      * @param envelope
      *            the envelope to check.
-     * @param limit
-     *            if > 0 a limit is set.
      * @param alsoPK_UID
      *            if <code>true</code>, also the PK_UID column is considered.
+     * @param limit
+     *            if > 0 a limit is set.
+     * @param reprojectSrid an optional srid to require reprojection (-1 is disabled).
+     * @param whereStr an optional where condition string to apply.
      * @return the list of found records.
-     * @throws SQLException
-     * @throws ParseException
+     * @throws Exception
      */
     public abstract QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
-            int reprojectSrid ) throws Exception;
+            int reprojectSrid , String whereStr) throws Exception;
 
     /**
      * Get the geometries of a table inside a given envelope.

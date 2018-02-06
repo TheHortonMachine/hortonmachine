@@ -17,29 +17,36 @@
  */
 package org.hortonmachine.gears.modules.v.contoursextractor;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_IN_COVERAGE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_OUT_GEODATA_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_P_INTERVAL_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_P_MAX_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_P_MIN_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_STATUS;
+import static org.hortonmachine.gears.libs.modules.HMConstants.VECTORPROCESSING;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_LABEL;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_LICENSE;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_NAME;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_STATUS;
 
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import javax.media.jai.JAI;
-import javax.media.jai.ParameterBlockJAI;
-import javax.media.jai.RenderedOp;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.process.raster.ContourProcess;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.metadata.spatial.PixelOrientation;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.util.AffineTransformation;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -52,22 +59,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.jaitools.media.jai.contour.ContourDescriptor;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.metadata.spatial.PixelOrientation;
-
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.util.AffineTransformation;
 
 @Description(OMSCONTOUREXTRACTOR_DESCRIPTION)
 @Documentation(OMSCONTOUREXTRACTOR_DOCUMENTATION)
@@ -99,7 +90,21 @@ public class OmsContourExtractor extends HMModel {
     @Out
     public SimpleFeatureCollection outGeodata = null;
 
-    @SuppressWarnings("unchecked")
+    public static final String OMSCONTOUREXTRACTOR_DESCRIPTION = "Module that extracts contour lines from a raster.";
+    public static final String OMSCONTOUREXTRACTOR_DOCUMENTATION = "OmsContourExtractor.html";
+    public static final String OMSCONTOUREXTRACTOR_KEYWORDS = "Raster, Vector";
+    public static final String OMSCONTOUREXTRACTOR_LABEL = VECTORPROCESSING;
+    public static final String OMSCONTOUREXTRACTOR_NAME = "contourextract";
+    public static final int OMSCONTOUREXTRACTOR_STATUS = 5;
+    public static final String OMSCONTOUREXTRACTOR_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSCONTOUREXTRACTOR_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSCONTOUREXTRACTOR_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSCONTOUREXTRACTOR_IN_COVERAGE_DESCRIPTION = "The raster on which to calculate the contours.";
+    public static final String OMSCONTOUREXTRACTOR_P_MIN_DESCRIPTION = "The minimum value for the contours.";
+    public static final String OMSCONTOUREXTRACTOR_P_MAX_DESCRIPTION = "The maximum value for the contours.";
+    public static final String OMSCONTOUREXTRACTOR_P_INTERVAL_DESCRIPTION = "The contours interval.";
+    public static final String OMSCONTOUREXTRACTOR_OUT_GEODATA_DESCRIPTION = "The generated contour lines vector.";
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outGeodata == null, doReset)) {
@@ -119,27 +124,21 @@ public class OmsContourExtractor extends HMModel {
             contourIntervals.add(level);
             pm.message("-> " + level);
         }
+        double[] levels = new double[contourIntervals.size()];
+        for( int i = 0; i < levels.length; i++ ) {
+            levels[i] = contourIntervals.get(i);
+        }
 
         pm.beginTask("Extracting contours...", IHMProgressMonitor.UNKNOWN);
-        ParameterBlockJAI pb = new ParameterBlockJAI("Contour");
-        pb.setSource("source0", inCoverage.getRenderedImage());
-        pb.setParameter("levels", contourIntervals);
-        RenderedOp dest = JAI.create("Contour", pb);
-        Collection<LineString> contours = (Collection<LineString>) dest.getProperty(ContourDescriptor.CONTOUR_PROPERTY_NAME);
-        pm.done();
-
+        ContourProcess contourProcess = new ContourProcess();
+        SimpleFeatureCollection contoursFC = contourProcess.execute(inCoverage, 0, levels, null, null, null, null, null);
         outGeodata = new DefaultFeatureCollection();
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("contours");
-        b.setCRS(inCoverage.getCoordinateReferenceSystem());
-        b.add("the_geom", LineString.class);
-        b.add("elevation", Double.class);
-        SimpleFeatureType type = b.buildFeatureType();
-        int id = 0;
 
+        List<Geometry> contours = FeatureUtilities.featureCollectionToGeometriesList(contoursFC, true, "value");
         final AffineTransformation jtsTransformation = new AffineTransformation(mt2D.getScaleX(), mt2D.getShearX(),
                 mt2D.getTranslateX(), mt2D.getShearY(), mt2D.getScaleY(), mt2D.getTranslateY());
-        for( LineString lineString : contours ) {
+        for( Geometry geom : contours ) {
+            LineString lineString = (LineString) geom;
             Object userData = lineString.getUserData();
             double elev = -1.0;
             if (userData instanceof Double) {
@@ -147,11 +146,10 @@ public class OmsContourExtractor extends HMModel {
                 lineString.setUserData(null);
             }
             lineString.apply(jtsTransformation);
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(contoursFC.getSchema());
             Object[] values = new Object[]{lineString, elev};
             builder.addAll(values);
-            SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + id);
-            id++;
+            SimpleFeature feature = builder.buildFeature(null);
             ((DefaultFeatureCollection) outGeodata).add(feature);
         }
 

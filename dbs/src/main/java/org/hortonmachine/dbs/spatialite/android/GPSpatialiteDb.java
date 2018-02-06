@@ -127,8 +127,8 @@ public class GPSpatialiteDb extends ASpatialDb {
     }
 
     public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
-            int reprojectSrid ) throws Exception {
-        return SpatialiteCommonMethods.getTableRecordsMapIn(this, tableName, envelope, alsoPK_UID, limit, reprojectSrid);
+            int reprojectSrid , String whereStr) throws Exception {
+        return SpatialiteCommonMethods.getTableRecordsMapIn(this, tableName, envelope, alsoPK_UID, limit, reprojectSrid, whereStr);
     }
 
     @Override
