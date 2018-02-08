@@ -76,8 +76,6 @@ public class H2Db extends ADb {
                 dbExists = true;
 
                 // also cleanup path
-                // tcp://localhost:9092//media/hydrologis/Samsung_T3/MEGARETI/SERVER/DATA/database_2017
-
                 int first = dbPath.indexOf('/');
                 int second = dbPath.indexOf('/', first + 1);
                 int third = dbPath.indexOf('/', second + 1);
