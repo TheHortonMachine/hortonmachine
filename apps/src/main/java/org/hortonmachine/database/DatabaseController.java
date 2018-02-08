@@ -1116,6 +1116,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             boolean hadError = false;
             try {
                 currentConnectedDatabase = _type.getSpatialDb();
+                currentConnectedDatabase.setCredentials(user, pwd);
                 currentConnectedDatabase.open(_urlString);
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 
