@@ -44,12 +44,14 @@ import org.hortonmachine.dbs.spatialite.hm.SpatialiteDb;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
@@ -303,16 +305,37 @@ public class SpatialDbsImportUtils {
 
         GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
         CoordinateReferenceSystem crs;
-        if (forceSrid == -1) {
-            forceSrid = geometryColumn.srid;
+        if (geometryColumn != null) {
+            if (forceSrid == -1) {
+                forceSrid = geometryColumn.srid;
+            }
+            crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumn.srid);
+        } else {
+            crs = CrsUtilities.getCrsFromEpsg("EPSG:" + forceSrid);
         }
-        crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumn.srid);
+
         QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit, forceSrid, whereStr);
-        int geometryIndex = tableRecords.geometryIndex;
-        if (geometryIndex == -1) {
-            throw new IllegalArgumentException("Not a geometric layer.");
+        if (tableRecords.data.size() == 0) {
+            return fc;
         }
-        Geometry sampleGeom = (Geometry) tableRecords.data.get(0)[geometryIndex];
+
+        int geometryIndex = tableRecords.geometryIndex;
+        int latIndex = -1;
+        int lonIndex = -1;
+        Geometry sampleGeom = null;
+        if (geometryIndex == -1) {
+            for( String fieldName : tableRecords.names ) {
+                if (fieldName.toLowerCase().startsWith("lat")) {
+                    latIndex = tableRecords.names.indexOf(fieldName);
+                } else if (fieldName.toLowerCase().startsWith("lon")) {
+                    lonIndex = tableRecords.names.indexOf(fieldName);
+                }
+            }
+            if (latIndex == -1 || lonIndex == -1)
+                throw new IllegalArgumentException("Not a geometric layer.");
+        } else {
+            sampleGeom = (Geometry) tableRecords.data.get(0)[geometryIndex];
+        }
 
         List<String> names = tableRecords.names;
         List<String> types = tableRecords.types;
@@ -321,8 +344,11 @@ public class SpatialDbsImportUtils {
         b.setName(tableName);
         b.setCRS(crs);
 
+        if (latIndex != -1 && lonIndex != -1) {
+            b.add("the_geom", Point.class);
+        }
         for( int i = 0; i < names.size(); i++ ) {
-            if (i == geometryIndex) {
+            if (geometryIndex != -1 && i == geometryIndex) {
                 Class< ? > geometryClass = sampleGeom.getClass();
                 b.add(geometryColumn.geometryColumnName, geometryClass);
                 continue;
@@ -356,9 +382,19 @@ public class SpatialDbsImportUtils {
         for( int i = 0; i < count; i++ ) {
             Object[] objects = tableRecords.data.get(i);
 
-            builder.addAll(objects);
-            SimpleFeature feature = builder.buildFeature(null);
+            if (latIndex != -1 && lonIndex != -1) {
+                double lat = ((Number) objects[latIndex]).doubleValue();
+                double lon = ((Number) objects[lonIndex]).doubleValue();
+                Point point = GeometryUtilities.gf().createPoint(new Coordinate(lon, lat));
+                Object[] newObjects = new Object[objects.length + 1];
+                System.arraycopy(objects, 0, newObjects, 1, objects.length);
+                newObjects[0] = point;
+                builder.addAll(newObjects);
+            } else {
+                builder.addAll(objects);
+            }
 
+            SimpleFeature feature = builder.buildFeature(null);
             fc.add(feature);
         }
         return fc;

@@ -41,4 +41,6 @@ public interface IHMConnection extends AutoCloseable {
     public Savepoint setSavepoint() throws Exception;
 
     public void rollback( Savepoint savepoint ) throws Exception;
+
+    public void rollback() throws Exception;
 }

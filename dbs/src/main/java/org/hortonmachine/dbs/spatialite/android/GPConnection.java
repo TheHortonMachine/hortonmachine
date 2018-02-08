@@ -87,4 +87,8 @@ public class GPConnection implements IHMConnection {
     public void rollback( Savepoint savepoint ) throws Exception {
     }
 
+    @Override
+    public void rollback() throws Exception {
+    }
+
 }

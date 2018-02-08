@@ -93,4 +93,9 @@ public class HMConnection implements IHMConnection {
         connection.rollback(savepoint);
     }
 
+    @Override
+    public void rollback() throws Exception {
+        connection.rollback();
+    }
+
 }

@@ -17,8 +17,6 @@
  */
 package org.hortonmachine.dbs.spatialite.hm;
 
-import java.sql.Savepoint;
-
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.ITransactionExecuter;
@@ -31,7 +29,6 @@ import org.hortonmachine.dbs.compat.ITransactionExecuter;
 public abstract class HMTransactionExecuter implements ITransactionExecuter {
 
     private ASpatialDb db;
-    private Savepoint savepoint;
     private boolean autoCommitEnabled;
 
     private IHMConnection conn;
@@ -42,15 +39,13 @@ public abstract class HMTransactionExecuter implements ITransactionExecuter {
 
     public void execute() throws Exception {
         conn = db.getConnection();
-        savepoint = conn.setSavepoint();
         autoCommitEnabled = conn.getAutoCommit();
         conn.setAutoCommit(false);
         try {
             executeInTransaction();
-
             conn.commit();
         } catch (Exception e) {
-            conn.rollback(savepoint);
+            conn.rollback();
             throw new Exception(e);
         } finally {
             conn.setAutoCommit(autoCommitEnabled);
