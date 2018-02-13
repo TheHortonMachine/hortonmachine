@@ -17,11 +17,13 @@
  */
 package org.hortonmachine.gui.utils.monitor;
 
+import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Random;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 
@@ -34,6 +36,10 @@ public abstract class HMProgressMonitorDialog implements PropertyChangeListener 
 
     protected ProgressMonitor progressMonitor;
     protected BackgroundTask task;
+    private Component parent;
+
+    protected StringBuilder finalInfoSb = new StringBuilder();
+    protected StringBuilder finalErrorSb = new StringBuilder();
 
     class BackgroundTask extends SwingWorker<Void, Void> {
         @Override
@@ -49,6 +55,14 @@ public abstract class HMProgressMonitorDialog implements PropertyChangeListener 
         @Override
         public void done() {
             progressMonitor.close();
+
+            if (finalErrorSb.length() > 0) {
+                JOptionPane.showMessageDialog(parent, finalErrorSb.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+            } else if (finalInfoSb.length() > 0) {
+                JOptionPane.showMessageDialog(parent, finalInfoSb.toString(), "INFO", JOptionPane.INFORMATION_MESSAGE);
+            }
+
+            postDoneInUi();
         }
     }
 
@@ -59,7 +73,8 @@ public abstract class HMProgressMonitorDialog implements PropertyChangeListener 
      * @param title the title of the monitor dialog.
      * @param workLoad the maximum work to do.
      */
-    public HMProgressMonitorDialog( JFrame parent, String title, int workLoad ) {
+    public HMProgressMonitorDialog( Component parent, String title, int workLoad ) {
+        this.parent = parent;
         progressMonitor = new ProgressMonitor(parent, title, "", 0, workLoad);
         progressMonitor.setProgress(0);
     }
@@ -78,19 +93,28 @@ public abstract class HMProgressMonitorDialog implements PropertyChangeListener 
      * 
      * <ul>
      * <li>update progress bar with <code>progressMonitor.setProgress(0);</code></li>
-     * <li>update not text with <code>firePropertyChange("progressText", "", "My message");</code></li>
+     * <li>update progress text with <code>setProgressText("My message");</code></li>
      * </ul>
      * 
      * @throws Exception
      */
     public abstract void processInBackground() throws Exception;
 
+    /**
+     * Execute something after the progress has finished in the UI thread.
+     */
+    public abstract void postDoneInUi();
+
     protected boolean isCancelled() {
         return task.isCancelled();
     }
 
-    protected void firePropertyChange( String propertyName, Object oldValue, Object newValue ) {
-        task.firePropertyChange(propertyName, oldValue, newValue);
+    public void setProgressText( String text ) {
+        task.firePropertyChange("progressText", "", text);
+    }
+
+    public void setProgress( int progress ) {
+        progressMonitor.setProgress(progress);
     }
 
     /**
@@ -141,11 +165,16 @@ public abstract class HMProgressMonitorDialog implements PropertyChangeListener 
                         // Make random progress.
                         progress += random.nextInt(10);
                         progressMonitor.setProgress(Math.min(progress, 100));
-                        firePropertyChange("progressText", "", "Blah: " + progress);
+                        setProgressText("Blah: " + progress);
                     }
                 } catch (InterruptedException ignore) {
                 }
 
+            }
+
+            @Override
+            public void postDoneInUi() {
+                JOptionPane.showMessageDialog(jframe, "DONE!", "INFO", JOptionPane.INFORMATION_MESSAGE);
             }
         };
         monitor.run();
