@@ -80,10 +80,6 @@
 				</exclusion>
 				<exclusion>
 					<groupId>org.geotools</groupId>
-					<artifactId>gt-charts</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.geotools</groupId>
 					<artifactId>gt-netcdf</artifactId>
 				</exclusion>
 				<exclusion>

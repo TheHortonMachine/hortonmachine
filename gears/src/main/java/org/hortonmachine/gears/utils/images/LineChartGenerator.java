@@ -85,8 +85,8 @@ public class LineChartGenerator {
     @SuppressWarnings("nls")
     public void dumpChart( File chartFile, boolean autoRange, boolean withLegend, int imageWidth, int imageHeight )
             throws IOException {
-        JFreeChart chart = ChartFactory.createXYLineChart(title, xLabel, yLabel, collection, PlotOrientation.VERTICAL,
-                withLegend, false, false);
+        JFreeChart chart = ChartFactory.createXYLineChart(title, xLabel, yLabel, collection, PlotOrientation.VERTICAL, withLegend,
+                false, false);
         XYPlot plot = (XYPlot) chart.getPlot();
         // plot.setDomainPannable(true);
         // plot.setRangePannable(true);
@@ -98,8 +98,9 @@ public class LineChartGenerator {
         if (autoRange) {
             double delta = (max - min) * 0.1;
             yAxis.setRange(min - delta, max + delta);
-            yAxis.setMinorTickCount(4);
-            yAxis.setMinorTickMarksVisible(true);
+            // TODO reactivate if newer jfree is used
+            // yAxis.setMinorTickCount(4);
+            // yAxis.setMinorTickMarksVisible(true);
         }
         // ValueAxis xAxis = plot.getDomainAxis();
         // xAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits(Locale.US));

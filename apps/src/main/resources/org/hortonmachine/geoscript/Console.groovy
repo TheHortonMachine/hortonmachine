@@ -82,7 +82,7 @@ import org.hortonmachine.geoscript.ConsoleView
  * @author Andrea Antonello - Geoscript and Hortonmachine integration
  */
 class Console implements CaretListener, HyperlinkListener, ComponentListener, FocusListener {
-	static String myTitle = 'Geoscript and Hortonmachine Groovy Console';
+	static String myTitle = 'Geoscript and Hortonmachine GroovyConsole';
 	static String myVersions = ' Geoscript Version 1.10\n Hortonmachine Version 0.9.1 \n Groovy Version '; 
 
 

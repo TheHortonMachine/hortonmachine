@@ -79,7 +79,7 @@ public class CategoryBoxplot implements IChart {
         if (chart == null) {
             createDataset();
             chart = ChartFactory.createBarChart(getTitle(),
-            // chart title
+                    // chart title
                     "Category",
                     // domain axis label
                     "Value",
@@ -94,14 +94,15 @@ public class CategoryBoxplot implements IChart {
                     // tooltips?
                     false
             // URLs?
-                    );
+            );
             CategoryPlot plot = (CategoryPlot) chart.getPlot();
             CategoryAxis rangeAxis = plot.getDomainAxis();
             rangeAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
             final BoxAndWhiskerRenderer renderer = new BoxAndWhiskerRenderer();
             renderer.setFillBox(true);
             renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
-            renderer.setMeanVisible(isMeanVisible);
+            // TODO reactivate if newer jfree is used
+            // renderer.setMeanVisible(isMeanVisible);
             plot.setRenderer(renderer);
         }
 
