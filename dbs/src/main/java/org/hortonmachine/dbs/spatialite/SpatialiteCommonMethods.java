@@ -23,7 +23,6 @@ import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
@@ -155,7 +154,7 @@ public class SpatialiteCommonMethods {
 
         if (whereStrings.size() > 0) {
             sql += " WHERE "; //
-            sql += whereStrings.stream().collect(Collectors.joining(" AND "));
+            sql += DbsUtilities.joinBySeparator(whereStrings, " AND ");
         }
 
         if (limit > 0) {
