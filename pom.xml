@@ -4,7 +4,6 @@
 
 
     <properties>
-		<hm.version>0.9.1-SNAPSHOT</hm.version>
 		<gt.version>18.0</gt.version>
         <!-- comes with h2gis 
             <jts-core-version>1.14.0</jts-core-version>

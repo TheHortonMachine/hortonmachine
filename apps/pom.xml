@@ -23,7 +23,7 @@
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gui</artifactId>
-			<version>${hm.version}</version>
+			<version>0.9.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
