@@ -4,13 +4,13 @@
 	<parent>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
-		<version>0.9.1</version>
+		<version>0.9.2-SNAPSHOT</version>
 	</parent>
 
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hm-gears</artifactId>
-	<version>0.9.1</version>
+	<version>0.9.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>HM Gears</name>
 
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-dbs</artifactId>
-			<version>0.9.1</version>
+			<version>0.9.2-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Java Advanced Imaging (JAI) <dependency> <groupId>javax.media</groupId> 
