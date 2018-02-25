@@ -4,12 +4,12 @@
   <parent>
     <groupId>org.hortonmachine</groupId>
     <artifactId>hortonmachine</artifactId>
-    <version>0.9.1-SNAPSHOT</version>
+    <version>0.9.1</version>
   </parent>
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hm-hmachine</artifactId>
-    <version>0.9.1-SNAPSHOT</version>    
+    <version>0.9.1</version>    
 	<packaging>jar</packaging>
 	<name>The Horton Machine modules</name>
 
@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gears</artifactId>
-			<version>0.9.1-SNAPSHOT</version>
+			<version>0.9.1</version>
 		</dependency>
 
 		<dependency>
