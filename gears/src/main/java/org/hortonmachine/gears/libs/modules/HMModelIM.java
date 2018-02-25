@@ -92,8 +92,8 @@ public abstract class HMModelIM extends HMModel {
 
         if (readers.size() == 0) {
             File propertiesFile = FileUtilities.substituteExtention(imageMosaicSource, "properties");
-            HashMap<String, String> propertiesMap = FileUtilities
-                    .readFileToHashMap(propertiesFile.getAbsolutePath(), null, false);
+            HashMap<String, String> propertiesMap = FileUtilities.readFileToHashMap(propertiesFile.getAbsolutePath(), null,
+                    false);
 
             String xyREs = propertiesMap.get("Levels");
             String[] split = xyREs.split(",");
@@ -195,7 +195,8 @@ public abstract class HMModelIM extends HMModel {
 
     }
 
-    private void processGeometryByTileCell( int count, Geometry boundGeometry ) throws IOException, TransformException, Exception {
+    private void processGeometryByTileCell( int count, Geometry boundGeometry )
+            throws IOException, TransformException, Exception {
         Envelope writeEnv = boundGeometry.getEnvelopeInternal();
 
         double writeEast = writeEnv.getMaxX();
@@ -387,7 +388,8 @@ public abstract class HMModelIM extends HMModel {
                 if (colorTable == null)
                     colorTable = EColorTables.extrainbow;
                 String name = outParentFolder.getName();
-                String style = RasterStyleUtilities.createStyleForColortable(colorTable.name(), min, max, null, 1.0);
+                String style = RasterStyleUtilities
+                        .styleToString(RasterStyleUtilities.createStyleForColortable(colorTable.name(), min, max, null, 1.0));
                 File styleFile = new File(outParentFolder, name + ".sld");
                 FileUtilities.writeFile(style, styleFile);
             }

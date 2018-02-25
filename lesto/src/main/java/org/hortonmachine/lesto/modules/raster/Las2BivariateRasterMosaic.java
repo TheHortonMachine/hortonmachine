@@ -108,7 +108,7 @@ public class Las2BivariateRasterMosaic extends HMModel {
     @Description("Buffer of influence for points interpolation in number of cells.")
     @In
     public int pBuffer = 2;
-    
+
     @Description("The impulse to use (if empty everything is used).")
     @In
     public Integer pImpulse = 1;
@@ -218,8 +218,8 @@ public class Las2BivariateRasterMosaic extends HMModel {
         im.process();
 
         String name = outFolderFile.getName();
-        String style = RasterStyleUtilities
-                .createStyleForColortable(EColorTables.extrainbow.name(), minValue, maxValue, null, 1.0);
+        String style = RasterStyleUtilities.styleToString(
+                RasterStyleUtilities.createStyleForColortable(EColorTables.extrainbow.name(), minValue, maxValue, null, 1.0));
         File styleFile = new File(outFolderFile, name + ".sld");
         FileUtilities.writeFile(style, styleFile);
 
