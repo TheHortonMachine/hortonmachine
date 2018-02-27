@@ -43,6 +43,7 @@ import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteDb;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -52,6 +53,7 @@ import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
@@ -288,7 +290,7 @@ public class SpatialDbsImportUtils {
     }
 
     /**
-     * get a table as featurecollection.
+     * Get a table as featurecollection.
      * 
      * @param db the database.
      * @param tableName the table to use.
@@ -398,5 +400,26 @@ public class SpatialDbsImportUtils {
             fc.add(feature);
         }
         return fc;
+    }
+
+    public static DefaultFeatureCollection tableGeomsToFeatureFCollection( ASpatialDb db, String tableName, int forceSrid,
+            String geomPrefix, String geomPostfix, String whereStr ) throws SQLException, Exception {
+
+        GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
+        CoordinateReferenceSystem crs;
+        if (geometryColumn != null) {
+            if (forceSrid == -1) {
+                forceSrid = geometryColumn.srid;
+            }
+            crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumn.srid);
+        } else {
+            crs = CrsUtilities.getCrsFromEpsg("EPSG:" + forceSrid);
+        }
+
+        List<Geometry> tableRecords = db.getGeometriesIn(tableName, (Envelope) null, geomPrefix, geomPostfix, whereStr);
+        SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(crs,
+                tableRecords.toArray(new Geometry[tableRecords.size()]));
+
+        return (DefaultFeatureCollection) fc;
     }
 }

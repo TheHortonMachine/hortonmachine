@@ -201,51 +201,83 @@ public class SpatialiteCommonMethods {
         }
     }
 
-    public static List<Geometry> getGeometriesIn( ASpatialDb db, String tableName, Envelope envelope )
-            throws Exception, ParseException {
-        List<Geometry> geoms = new ArrayList<Geometry>();
-
-        GeometryColumn gCol = db.getGeometryColumnsForTable(tableName);
-        String sql = "SELECT " + gCol.geometryColumnName + " FROM " + tableName;
-
-        if (envelope != null) {
-            double x1 = envelope.getMinX();
-            double y1 = envelope.getMinY();
-            double x2 = envelope.getMaxX();
-            double y2 = envelope.getMaxY();
-            sql += " WHERE " + db.getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
-        }
-        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
-        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                byte[] geomBytes = rs.getBytes(1);
-                Geometry geometry = wkbReader.read(geomBytes);
-                geoms.add(geometry);
-            }
-            return geoms;
-        }
-    }
-
-    public static List<Geometry> getGeometriesIn( ASpatialDb db, String tableName, Geometry intersectionGeometry )
-            throws Exception, ParseException {
-        List<Geometry> geoms = new ArrayList<Geometry>();
-
-        GeometryColumn gCol = db.getGeometryColumnsForTable(tableName);
-        String sql = "SELECT " + gCol.geometryColumnName + " FROM " + tableName;
-
-        if (intersectionGeometry != null) {
-            sql += " WHERE " + db.getSpatialindexGeometryWherePiece(tableName, null, intersectionGeometry);
-        }
-        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
-        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                byte[] geomBytes = rs.getBytes(1);
-                Geometry geometry = wkbReader.read(geomBytes);
-                geoms.add(geometry);
-            }
-            return geoms;
-        }
-    }
+//    public static List<Geometry> getGeometriesIn( ASpatialDb db, String tableName, Envelope envelope, String... prePostWhere )
+//            throws Exception, ParseException {
+//        List<Geometry> geoms = new ArrayList<Geometry>();
+//
+//        List<String> wheres = new ArrayList<>();
+//        String pre = "";
+//        String post = "";
+//        String where = "";
+//        if (prePostWhere != null) {
+//            pre = prePostWhere[0];
+//            post = prePostWhere[1];
+//            where = prePostWhere[2];
+//            wheres.add(where);
+//        }
+//
+//        GeometryColumn gCol = db.getGeometryColumnsForTable(tableName);
+//        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName;
+//
+//        if (envelope != null) {
+//            double x1 = envelope.getMinX();
+//            double y1 = envelope.getMinY();
+//            double x2 = envelope.getMaxX();
+//            double y2 = envelope.getMaxY();
+//            wheres.add(db.getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2));
+//        }
+//
+//        if (wheres.size() > 0) {
+//            sql += " WHERE " + DbsUtilities.joinBySeparator(wheres, " AND ");
+//        }
+//
+//        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+//        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+//            while( rs.next() ) {
+//                byte[] geomBytes = rs.getBytes(1);
+//                Geometry geometry = wkbReader.read(geomBytes);
+//                geoms.add(geometry);
+//            }
+//            return geoms;
+//        }
+//    }
+//
+//    public static List<Geometry> getGeometriesIn( ASpatialDb db, String tableName, Geometry intersectionGeometry,
+//            String... prePostWhere ) throws Exception, ParseException {
+//        List<Geometry> geoms = new ArrayList<Geometry>();
+//
+//        List<String> wheres = new ArrayList<>();
+//        String pre = "";
+//        String post = "";
+//        String where = "";
+//        if (prePostWhere != null) {
+//            pre = prePostWhere[0];
+//            post = prePostWhere[1];
+//            where = prePostWhere[2];
+//            wheres.add(where);
+//        }
+//
+//        GeometryColumn gCol = db.getGeometryColumnsForTable(tableName);
+//        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName;
+//
+//        if (intersectionGeometry != null) {
+//            wheres.add(db.getSpatialindexGeometryWherePiece(tableName, null, intersectionGeometry));
+//        }
+//
+//        if (wheres.size() > 0) {
+//            sql += " WHERE " + DbsUtilities.joinBySeparator(wheres, " AND ");
+//        }
+//
+//        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+//        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+//            while( rs.next() ) {
+//                byte[] geomBytes = rs.getBytes(1);
+//                Geometry geometry = wkbReader.read(geomBytes);
+//                geoms.add(geometry);
+//            }
+//            return geoms;
+//        }
+//    }
 
     public static GeometryColumn getGeometryColumnsForTable( IHMConnection connection, String tableName ) throws Exception {
         String attachedStr = "";

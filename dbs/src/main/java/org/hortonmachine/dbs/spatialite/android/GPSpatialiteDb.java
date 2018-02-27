@@ -127,8 +127,9 @@ public class GPSpatialiteDb extends ASpatialDb {
     }
 
     public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
-            int reprojectSrid , String whereStr) throws Exception {
-        return SpatialiteCommonMethods.getTableRecordsMapIn(this, tableName, envelope, alsoPK_UID, limit, reprojectSrid, whereStr);
+            int reprojectSrid, String whereStr ) throws Exception {
+        return SpatialiteCommonMethods.getTableRecordsMapIn(this, tableName, envelope, alsoPK_UID, limit, reprojectSrid,
+                whereStr);
     }
 
     @Override
@@ -295,14 +296,6 @@ public class GPSpatialiteDb extends ASpatialDb {
         }
     }
 
-    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws Exception {
-        return SpatialiteCommonMethods.getGeometriesIn(this, tableName, envelope);
-    }
-
-    public List<Geometry> getGeometriesIn( String tableName, Geometry intersectionGeometry ) throws Exception {
-        return SpatialiteCommonMethods.getGeometriesIn(this, tableName, intersectionGeometry);
-    }
-
     public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
         return SpatialiteCommonMethods.getGeojsonIn(this, tableName, fields, wherePiece, precision);
     }
@@ -316,7 +309,7 @@ public class GPSpatialiteDb extends ASpatialDb {
             throws Exception {
         addGeometryXYColumnAndIndex(tableName, geomColName, geomType, epsg, false);
     }
-    
+
     @Override
     public List<Index> getIndexes( String tableName ) throws Exception {
         return SpatialiteCommonMethods.getIndexes(this, tableName);

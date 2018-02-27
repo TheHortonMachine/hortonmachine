@@ -18,14 +18,15 @@
 package org.hortonmachine.dbs.compat;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.utils.DbsUtilities;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
 
 /**
  * Abstract spatial db class.
@@ -234,7 +235,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @throws Exception
      */
     public abstract QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
-            int reprojectSrid , String whereStr) throws Exception;
+            int reprojectSrid, String whereStr ) throws Exception;
 
     /**
      * Get the geometries of a table inside a given envelope.
@@ -243,22 +244,99 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      *            the table name.
      * @param envelope
      *            the envelope to check.
+     * @param prePostWhere an optional set of 3 parameters. The parameters are: a 
+     *          prefix wrapper for geom, a postfix for the same and a where string 
+     *          to apply. They all need to be existing if the parameter is passed.
      * @return The list of geometries intersecting the envelope.
      * @throws Exception
      */
-    public abstract List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws Exception;
+    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope, String... prePostWhere ) throws Exception {
+        List<Geometry> geoms = new ArrayList<Geometry>();
+        List<String> wheres = new ArrayList<>();
+        String pre = "";
+        String post = "";
+        String where = "";
+        if (prePostWhere != null && prePostWhere.length == 3) {
+            pre = prePostWhere[0];
+            post = prePostWhere[1];
+            where = prePostWhere[2];
+            wheres.add(where);
+        }
+
+        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
+        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName;
+
+        if (envelope != null) {
+            double x1 = envelope.getMinX();
+            double y1 = envelope.getMinY();
+            double x2 = envelope.getMaxX();
+            double y2 = envelope.getMaxY();
+            wheres.add(getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2));
+        }
+
+        if (wheres.size() > 0) {
+            sql += " WHERE " + DbsUtilities.joinBySeparator(wheres, " AND ");
+        }
+
+        IGeometryParser geometryParser = getType().getGeometryParser();
+        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+            while( rs.next() ) {
+                Geometry geometry = geometryParser.fromResultSet(rs, 1);
+                geoms.add(geometry);
+            }
+            return geoms;
+        }
+
+    }
 
     /**
      * Get the geometries of a table intersecting a given geometry.
      * 
      * @param tableName
      *            the table name.
-     * @param geometry
+     * @param intersectionGeometry
      *            the geometry to check.
+     * @param prePostWhere an optional set of 3 parameters. The parameters are: a 
+     *          prefix wrapper for geom, a postfix for the same and a where string 
+     *          to apply. They all need to be existing if the parameter is passed.
      * @return The list of geometries intersecting the geometry.
      * @throws Exception
      */
-    public abstract List<Geometry> getGeometriesIn( String tableName, Geometry geometry ) throws Exception;
+    public List<Geometry> getGeometriesIn( String tableName, Geometry intersectionGeometry, String... prePostWhere )
+            throws Exception {
+        List<Geometry> geoms = new ArrayList<Geometry>();
+
+        List<String> wheres = new ArrayList<>();
+        String pre = "";
+        String post = "";
+        String where = "";
+        if (prePostWhere != null && prePostWhere.length == 3) {
+            pre = prePostWhere[0];
+            post = prePostWhere[1];
+            where = prePostWhere[2];
+            wheres.add(where);
+        }
+        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
+        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName;
+
+        if (intersectionGeometry != null) {
+            wheres.add(getSpatialindexGeometryWherePiece(tableName, null, intersectionGeometry));
+        }
+
+        if (wheres.size() > 0) {
+            sql += " WHERE " + DbsUtilities.joinBySeparator(wheres, " AND ");
+        }
+
+        IGeometryParser geometryParser = getType().getGeometryParser();
+        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+            while( rs.next() ) {
+                Geometry geometry = geometryParser.fromResultSet(rs, 1);
+                geoms.add(geometry);
+            }
+            return geoms;
+        }
+
+    }
 
     /**
      * Get the geojson of a table inside a given envelope.

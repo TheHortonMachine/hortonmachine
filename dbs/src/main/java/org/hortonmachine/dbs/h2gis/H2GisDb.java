@@ -602,46 +602,6 @@ public class H2GisDb extends ASpatialDb {
         }
     }
 
-    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws Exception {
-        List<Geometry> geoms = new ArrayList<Geometry>();
-
-        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-        String sql = "SELECT " + gCol.geometryColumnName + " FROM " + tableName;
-
-        if (envelope != null) {
-            double x1 = envelope.getMinX();
-            double y1 = envelope.getMinY();
-            double x2 = envelope.getMaxX();
-            double y2 = envelope.getMaxY();
-            sql += " WHERE " + getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
-        }
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                Geometry geometry = (Geometry) rs.getObject(1);
-                geoms.add(geometry);
-            }
-            return geoms;
-        }
-    }
-
-    public List<Geometry> getGeometriesIn( String tableName, Geometry intersectionGeometry ) throws Exception {
-        List<Geometry> geoms = new ArrayList<Geometry>();
-
-        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-        String sql = "SELECT " + gCol.geometryColumnName + " FROM " + tableName;
-
-        if (intersectionGeometry != null) {
-            sql += " WHERE " + getSpatialindexGeometryWherePiece(tableName, null, intersectionGeometry);
-        }
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                Geometry geometry = (Geometry) rs.getObject(1);
-                geoms.add(geometry);
-            }
-            return geoms;
-        }
-    }
-
     public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
         if (precision == 0) {
             precision = 6;
