@@ -417,9 +417,13 @@ public class SpatialDbsImportUtils {
         }
 
         List<Geometry> tableRecords = db.getGeometriesIn(tableName, (Envelope) null, geomPrefix, geomPostfix, whereStr);
-        SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(crs,
-                tableRecords.toArray(new Geometry[tableRecords.size()]));
 
+        SimpleFeatureCollection fc;
+        if (tableRecords.size() > 0) {
+            fc = FeatureUtilities.featureCollectionFromGeometry(crs, tableRecords.toArray(new Geometry[tableRecords.size()]));
+        } else {
+            fc = new DefaultFeatureCollection();
+        }
         return (DefaultFeatureCollection) fc;
     }
 }
