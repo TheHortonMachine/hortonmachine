@@ -178,18 +178,4 @@ public class OmsRasterReprojector extends HMModel {
         pm.done();
 
     }
-
-    public static void main( String[] args ) throws Exception {
-        OmsRasterReprojector r = new OmsRasterReprojector();
-        r.inRaster = OmsRasterReader.readRaster("/home/hydrologis/data/gvsig_course/Module_15/Italy_DEM.tif");
-        // r.pInCode = "EPSG:4326";
-        r.pCode = "EPSG:32632";
-        // r.pXres = 1000.0;
-        // r.pYres = 1000.0;
-        r.process();
-
-        OmsRasterWriter.writeRaster("/home/hydrologis/data/gvsig_course/Module_15/Italy_DEM2_32632.tif", r.outRaster);
-
-    }
-
 }

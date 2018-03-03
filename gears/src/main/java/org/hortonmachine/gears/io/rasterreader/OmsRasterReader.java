@@ -71,6 +71,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 
+import javax.imageio.metadata.IIOMetadata;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import javax.media.jai.iterator.RandomIter;
@@ -80,6 +81,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
+import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.coverageio.gdal.BaseGDALGridCoverage2DReader;
 import org.geotools.coverageio.gdal.aig.AIGReader;
@@ -372,6 +374,10 @@ public class OmsRasterReader extends HMModel {
             geoTiffReader = new WorldImageReader(mapFile);
         } else {
             geoTiffReader = new GeoTiffReader(mapFile);
+            final GeoTiffIIOMetadataDecoder metadata =((GeoTiffReader) geoTiffReader).getMetadata();
+            if (metadata.hasNoData()){
+                fileNovalue  = metadata.getNoData();
+            }
         }
         originalEnvelope = geoTiffReader.getOriginalEnvelope();
         if (!doEnvelope) {

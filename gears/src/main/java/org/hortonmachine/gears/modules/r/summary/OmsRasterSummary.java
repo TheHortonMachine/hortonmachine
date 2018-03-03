@@ -37,6 +37,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.Variables;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.math.CoupledFieldsMoments;
@@ -133,6 +134,17 @@ public class OmsRasterSummary extends HMModel {
         if (!concatOr(outMin == null, doReset)) {
             return;
         }
+        
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
+        pm.message("Bounds and resolution");
+        pm.message("---------------------");
+        pm.message(regionMap.toStringJGT());
+        pm.message("");
+        pm.message("Coordinate Reference System");
+        pm.message("---------------------------");
+        pm.message(inRaster.getCoordinateReferenceSystem().toWKT());
+        pm.message("");
+        
 
         // TODO use the geotools bridge instead of jaitools:
         // http://svn.osgeo.org/geotools/trunk/modules/library/coverage/src/test/java/org/geotools/coverage/processing/operation/ZonalStasTest.java
