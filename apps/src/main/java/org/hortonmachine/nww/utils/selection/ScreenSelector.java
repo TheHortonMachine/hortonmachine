@@ -14,10 +14,10 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-
 import org.hortonmachine.dbs.log.Logger;
+
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
 
 import gov.nasa.worldwind.WWObjectImpl;
 import gov.nasa.worldwind.WorldWindow;

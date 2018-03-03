@@ -37,6 +37,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.gce.imagemosaic.ImageMosaicFormat;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.hortonmachine.dbs.compat.ASpatialDb;
@@ -83,6 +84,7 @@ import org.hortonmachine.nww.utils.selection.ObjectsOnScreenByBoxSelector;
 import org.hortonmachine.nww.utils.selection.SectorByBoxSelector;
 import org.joda.time.DateTime;
 import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
 
@@ -268,9 +270,15 @@ public class ToolsPanelController extends ToolsPanelView {
                 };
                 String fromClipboard = GuiUtilities.getFromClipboard();
                 WKTReader r = new WKTReader();
-                Geometry geometry = r.read(fromClipboard);
-
-                NwwUtilities.addGeometries(layer, geometry);
+                Geometry geometry = null;
+                try {
+                    geometry = r.read(fromClipboard);
+                    NwwUtilities.addGeometries(layer, geometry);
+                } catch (Exception e1) {
+                    GuiUtilities.showWarningMessage(wwjPanel, "WARNING",
+                            "The clipoboard content doesn't seem to be a WKT Geometry.");
+                    return;
+                }
 
                 wwjPanel.getWwd().getModel().getLayers().add(layer);
                 layerEventsListener.onLayerAdded(layer);
@@ -314,8 +322,8 @@ public class ToolsPanelController extends ToolsPanelView {
             }
         });
 
-        final ObjectsOnScreenByBoxSelector byBoxSelector = new ObjectsOnScreenByBoxSelector(wwjPanel.getWwd());
-        byBoxSelector.addListener(new ObjectsOnScreenByBoxSelector.IBoxScreenSelectionListener(){
+        final ObjectsOnScreenByBoxSelector selectByBoxSelector = new ObjectsOnScreenByBoxSelector(wwjPanel.getWwd());
+        selectByBoxSelector.addListener(new ObjectsOnScreenByBoxSelector.IBoxScreenSelectionListener(){
 
             @Override
             public void onSelectionFinished( Geometry selectedArea, List< ? > selectedObjs ) {
@@ -327,31 +335,36 @@ public class ToolsPanelController extends ToolsPanelView {
             // _infoButton.setSelected(false);
 
             if (_selectByBoxButton.isSelected()) {
-                byBoxSelector.enable();
+                selectByBoxSelector.enable();
                 CursorUtils.makeCrossHair(wwjPanel.getWwd());
             } else {
-                byBoxSelector.disable();
+                selectByBoxSelector.disable();
                 CursorUtils.makeDefault(wwjPanel.getWwd());
             }
         });
-        final SectorByBoxSelector zoomBoxSelector = new SectorByBoxSelector(wwjPanel.getWwd());
-        zoomBoxSelector.addListener(new SectorByBoxSelector.IBoxSelectionListener(){
 
+        final ObjectsOnScreenByBoxSelector zoomByBoxSelector = new ObjectsOnScreenByBoxSelector(wwjPanel.getWwd());
+        zoomByBoxSelector.addListener(new ObjectsOnScreenByBoxSelector.IBoxScreenSelectionListener(){
             @Override
-            public void onSelectionFinished( Sector selectedSector ) {
-                wwjPanel.goTo(selectedSector, false);
-                zoomBoxSelector.disable();
-                zoomBoxSelector.enable();
+            public void onSelectionFinished( Geometry selectedArea, List< ? > selectedObjs ) {
+                try {
+                    Sector sector = NwwUtilities
+                            .envelope2Sector(new ReferencedEnvelope(selectedArea.getEnvelopeInternal(), NwwUtilities.GPS_CRS));
+                    wwjPanel.goTo(sector, false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
             }
         });
         _zoomByBoxButton.addActionListener(e -> {
             // _infoButton.setSelected(false);
 
             if (_zoomByBoxButton.isSelected()) {
-                zoomBoxSelector.enable();
+                zoomByBoxSelector.enable();
                 CursorUtils.makeCrossHair(wwjPanel.getWwd());
             } else {
-                zoomBoxSelector.disable();
+                zoomByBoxSelector.disable();
                 CursorUtils.makeDefault(wwjPanel.getWwd());
             }
         });
@@ -462,10 +475,11 @@ public class ToolsPanelController extends ToolsPanelView {
             } else if (selectedFile.getName().endsWith(".shp")) {
                 // shp or image mosaic?
 
-                String parentFolderName = selectedFile.getParentFile().getName();
+                File parentFolder = selectedFile.getParentFile();
                 String fileName = FileUtilities.getNameWithoutExtention(selectedFile);
+                File imageMosaicPropertiesFile = new File(parentFolder, fileName + ".properties");
                 try {
-                    if (parentFolderName.equals(fileName)) {
+                    if (imageMosaicPropertiesFile.exists()) {
                         final ParameterValue<Color> inTransp = AbstractGridFormat.INPUT_TRANSPARENT_COLOR.createValue();
                         inTransp.setValue(Color.white);
                         final ParameterValue<Boolean> fading = ImageMosaicFormat.FADING.createValue();

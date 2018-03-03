@@ -27,17 +27,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.jogamp.jogl</groupId>
-			<artifactId>jogl-all</artifactId>
-			<version>2.1.5-01</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jogamp.gluegen</groupId>
-			<artifactId>gluegen-rt-main</artifactId>
-			<version>2.1.5-01</version>
-		</dependency>
-
-		<dependency>
 			<groupId>org.mapsforge</groupId>
 			<artifactId>mapsforge-core</artifactId>
 			<version>${mapsforge.version}</version>
@@ -62,11 +51,29 @@
 			<artifactId>mapsforge-themes</artifactId>
 			<version>${mapsforge.version}</version>
 		</dependency>
+		
+<!-- 				<dependency> -->
+<!-- 			<groupId>org.jogamp.jogl</groupId> -->
+<!-- 			<artifactId>jogl-all</artifactId> -->
+<!-- 			<version>2.1.5-01</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.jogamp.gluegen</groupId> -->
+<!-- 			<artifactId>gluegen-rt-main</artifactId> -->
+<!-- 			<version>2.1.5-01</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>gov.nasa</groupId> -->
+<!-- 			<artifactId>worldwind</artifactId> -->
+<!-- 			<version>2.1.X</version> -->
+<!-- 		</dependency> -->
+
 		<dependency>
-			<groupId>gov.nasa</groupId>
-			<artifactId>worldwind</artifactId>
-			<version>2.1.X</version>
+		    <groupId>com.github.pcmehlitz</groupId>
+		    <artifactId>worldwind-pcm</artifactId>
+		    <version>2.1.0.187</version>
 		</dependency>
+
 
 		<dependency>
 			<groupId>org.geoscript</groupId>
