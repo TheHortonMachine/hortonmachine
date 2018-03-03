@@ -370,26 +370,6 @@ public class GearsMessages {
     public static final String OMSID2VALUEARRAYREADER_FILE_NOVALUE_DESCRIPTION = "The file novalue.";
     public static final String OMSID2VALUEARRAYREADER_DATA_DESCRIPTION = "The read map of ids and values arrays.";
 
-    public static final String OMSRASTERREPROJECTOR_DESCRIPTION = "Module for raster reprojection.";
-    public static final String OMSRASTERREPROJECTOR_DOCUMENTATION = "";
-    public static final String OMSRASTERREPROJECTOR_KEYWORDS = "Crs, Reprojection, Raster, OmsRasterConverter, OmsRasterReader";
-    public static final String OMSRASTERREPROJECTOR_LABEL = RASTERPROCESSING;
-    public static final String OMSRASTERREPROJECTOR_NAME = "rreproject";
-    public static final int OMSRASTERREPROJECTOR_STATUS = 40;
-    public static final String OMSRASTERREPROJECTOR_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERREPROJECTOR_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERREPROJECTOR_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERREPROJECTOR_IN_RASTER_DESCRIPTION = "The raster that has to be reprojected.";
-    public static final String OMSRASTERREPROJECTOR_P_NORTH_DESCRIPTION = "The north bound of the region to consider";
-    public static final String OMSRASTERREPROJECTOR_P_SOUTH_DESCRIPTION = "The south bound of the region to consider";
-    public static final String OMSRASTERREPROJECTOR_P_WEST_DESCRIPTION = "The west bound of the region to consider";
-    public static final String OMSRASTERREPROJECTOR_P_EAST_DESCRIPTION = "The east bound of the region to consider";
-    public static final String OMSRASTERREPROJECTOR_P_ROWS_DESCRIPTION = "The rows of the region to consider";
-    public static final String OMSRASTERREPROJECTOR_P_COLS_DESCRIPTION = "The cols of the region to consider";
-    public static final String OMSRASTERREPROJECTOR_P_CODE_DESCRIPTION = "The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).";
-    public static final String OMSRASTERREPROJECTOR_P_INTERPOLATION_DESCRIPTION = "The interpolation type to use";
-    public static final String OMSRASTERREPROJECTOR_OUT_RASTER_DESCRIPTION = "The reprojected output raster.";
-
     public static final String OMSEIAREASREADER_DESCRIPTION = "Utility class for reading area data (for EICalculator) from csv files.";
     public static final String OMSEIAREASREADER_DOCUMENTATION = "";
     public static final String OMSEIAREASREADER_KEYWORDS = "IO, Reading";

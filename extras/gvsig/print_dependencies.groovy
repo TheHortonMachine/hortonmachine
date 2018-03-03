@@ -95,8 +95,17 @@ lista.each{
    def lineSplit = line.trim().split("\\s+");
    def dep = lineSplit[lineSplit.length-1];
    
-   if(dep.endsWith("jar"))
-      gvsigDepsList.add(dep);
+   if(dep.endsWith("jar")){
+      if(!dep.contains("junit")){
+          def added = gvsigDepsList.add(dep);
+          /*if(added){
+            println "ADDED: " + dep
+          } else {
+            println "NOT ADDED: " + dep
+          }
+            */
+      }
+   }
 }
 
 

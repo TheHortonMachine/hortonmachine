@@ -828,7 +828,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         }
         if (libsFile == null || !libsFile.exists() || !libsFile.isDirectory()) {
             Logger.INSTANCE.insertWarning("", "The libraries folder is missing or not properly set.");
-            libsFile = new File("/home/hydrologis/development/hortonmachine-git/extras/export/libs");
+            libsFile = new File("/home/hydrologis/development/hortonmachine-git/extras/deploy/libs");
             // System.exit(1);
         }
 
