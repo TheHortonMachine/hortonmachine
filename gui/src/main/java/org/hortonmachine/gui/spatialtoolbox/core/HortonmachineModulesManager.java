@@ -29,12 +29,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.hortonmachine.Modules;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.JGrassGears;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.hmachine.HortonMachine;
 import org.hortonmachine.lesto.Lesto;
+import org.hortonmachine.modules.Modules;
 
 import oms3.Access;
 import oms3.ComponentAccess;

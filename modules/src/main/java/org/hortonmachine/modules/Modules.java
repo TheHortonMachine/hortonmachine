@@ -1,4 +1,4 @@
-package org.hortonmachine;
+package org.hortonmachine.modules;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
