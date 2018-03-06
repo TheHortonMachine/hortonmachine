@@ -306,10 +306,13 @@ public class SpatialDbsImportUtils {
         DefaultFeatureCollection fc = new DefaultFeatureCollection();
 
         GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
+        CoordinateReferenceSystem forceCrs = null;
         CoordinateReferenceSystem crs;
         if (geometryColumn != null) {
             if (forceSrid == -1) {
                 forceSrid = geometryColumn.srid;
+            } else {
+                forceCrs = CrsUtilities.getCrsFromEpsg("EPSG:" + forceSrid);
             }
             crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumn.srid);
         } else {
@@ -344,7 +347,11 @@ public class SpatialDbsImportUtils {
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(tableName);
-        b.setCRS(crs);
+        if (forceCrs != null) {
+            b.setCRS(forceCrs);
+        } else {
+            b.setCRS(crs);
+        }
 
         if (latIndex != -1 && lonIndex != -1) {
             b.add("the_geom", Point.class);

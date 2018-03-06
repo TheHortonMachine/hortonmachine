@@ -257,10 +257,14 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         String post = "";
         String where = "";
         if (prePostWhere != null && prePostWhere.length == 3) {
-            pre = prePostWhere[0];
-            post = prePostWhere[1];
-            where = prePostWhere[2];
-            wheres.add(where);
+            if (prePostWhere[0] != null)
+                pre = prePostWhere[0];
+            if (prePostWhere[1] != null)
+                post = prePostWhere[1];
+            if (prePostWhere[2] != null) {
+                where = prePostWhere[2];
+                wheres.add(where);
+            }
         }
 
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
@@ -311,10 +315,14 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         String post = "";
         String where = "";
         if (prePostWhere != null && prePostWhere.length == 3) {
-            pre = prePostWhere[0];
-            post = prePostWhere[1];
-            where = prePostWhere[2];
-            wheres.add(where);
+            if (prePostWhere[0] != null)
+                pre = prePostWhere[0];
+            if (prePostWhere[1] != null)
+                post = prePostWhere[1];
+            if (prePostWhere[2] != null) {
+                where = prePostWhere[2];
+                wheres.add(where);
+            }
         }
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
         String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName;
