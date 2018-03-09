@@ -20,16 +20,35 @@ public class NewDbController extends NewDbView {
     private boolean isOk = false;
     private String remoteJdbcUrl;
     private boolean isRemote = false;
+    private String user;
+    private String pwd;
+    private String localPath;
+    private boolean allowRemoteConnectionForLocal;
 
-    public NewDbController( Window parent, GuiBridgeHandler guiBridge, boolean doOpen, String remoteJdbcUrl ) {
+    public NewDbController( Window parent, GuiBridgeHandler guiBridge, boolean doOpen, String localPath, String remoteJdbcUrl,
+            String user, String pwd, boolean allowRemoteConnectionForLocal ) {
         parentWindow = parent;
         this.guiBridge = guiBridge;
         this.doOpen = doOpen;
+        this.localPath = localPath;
         this.remoteJdbcUrl = remoteJdbcUrl;
+        this.allowRemoteConnectionForLocal = allowRemoteConnectionForLocal;
+
+        if (user == null) {
+            user = "sa";
+        }
+        if (pwd == null) {
+            pwd = "";
+        }
+        this.user = user;
+        this.pwd = pwd;
+
+        _connectRemoteCheck.setVisible(false);
+
         if (remoteJdbcUrl != null) {
             isRemote = true;
         }
-        setPreferredSize(new Dimension(800, 200));
+        setPreferredSize(new Dimension(800, 250));
         init();
     }
 
@@ -49,12 +68,7 @@ public class NewDbController extends NewDbView {
                 GuiUtilities.setLastPath(absolutePath);
                 _dbTextField.setText(absolutePath);
 
-                for( EDb edb : EDb.getSpatialTypesDesktop() ) {
-                    if (absolutePath.endsWith(edb.getExtension())) {
-                        _dbTypeCombo.setSelectedItem(edb);
-                        break;
-                    }
-                }
+                checkDbType(absolutePath);
 
             }
         });
@@ -69,8 +83,8 @@ public class NewDbController extends NewDbView {
             parentWindow.dispose();
         });
 
-        _userTextField.setText("sa");
-        _pwdTextField.setText("");
+        _userTextField.setText(user);
+        _pwdTextField.setText(pwd);
 
         _dbTypeCombo.setModel(new DefaultComboBoxModel<>(EDb.getSpatialTypesDesktop()));
         _dbTypeCombo.addActionListener(e -> {
@@ -85,8 +99,11 @@ public class NewDbController extends NewDbView {
         _extTextField.setEditable(false);
         _extTextField.setText(((EDb) _dbTypeCombo.getSelectedItem()).getExtension());
 
-        if (remoteJdbcUrl != null) {
+        if (remoteJdbcUrl != null && remoteJdbcUrl.trim().length() != 0) {
             _dbTextField.setText(remoteJdbcUrl);
+        } else if (localPath != null) {
+            _dbTextField.setText(localPath);
+            checkDbType(localPath);
         }
 
         if (isRemote) {
@@ -97,6 +114,19 @@ public class NewDbController extends NewDbView {
             _dbTypeLabel.setVisible(false);
             _extLabel.setVisible(false);
             _extTextField.setVisible(false);
+        }
+    }
+
+    private void checkDbType( String absolutePath ) {
+        for( EDb edb : EDb.getSpatialTypesDesktop() ) {
+            if (absolutePath.endsWith(edb.getExtension())) {
+                _dbTypeCombo.setSelectedItem(edb);
+
+                if (edb.supportsServerMode() && allowRemoteConnectionForLocal) {
+                    _connectRemoteCheck.setVisible(true);
+                }
+                break;
+            }
         }
     }
 
@@ -119,6 +149,10 @@ public class NewDbController extends NewDbView {
     public EDb getDbType() {
         EDb edb = (EDb) _dbTypeCombo.getSelectedItem();
         return edb;
+    }
+
+    public boolean connectInRemote() {
+        return _connectRemoteCheck.isSelected();
     }
 
 }

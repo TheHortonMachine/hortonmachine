@@ -256,7 +256,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             JDialog f = new JDialog();
             f.setModal(true);
-            NewDbController newDb = new NewDbController(f, guiBridge, false, null);
+            NewDbController newDb = new NewDbController(f, guiBridge, false, null, null, null, null, false);
             f.add(newDb, BorderLayout.CENTER);
             f.setTitle("Create new database");
             f.pack();
@@ -283,7 +283,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _connectDbButton.addActionListener(e -> {
             JDialog f = new JDialog();
             f.setModal(true);
-            NewDbController newDb = new NewDbController(f, guiBridge, true, null);
+
+            String lastPath = GuiUtilities.getPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, "");
+            String lastUser = GuiUtilities.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, "sa");
+            String lastPwd = GuiUtilities.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, "");
+            NewDbController newDb = new NewDbController(f, guiBridge, true, lastPath, null, lastUser, lastPwd, true);
             f.add(newDb, BorderLayout.CENTER);
             f.setTitle("Open database");
             f.pack();
@@ -297,7 +301,21 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 String user = newDb.getDbUser();
                 String pwd = newDb.getDbPwd();
                 EDb dbType = newDb.getDbType();
-                openDatabase(dbType, dbPath, user, pwd);
+                boolean connectInRemote = newDb.connectInRemote();
+
+                if (connectInRemote) {
+                    GuiUtilities.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, dbPath);
+                    dbPath = "jdbc:h2:tcp://localhost:9092/" + dbPath;
+                    GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, user);
+                    GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, pwd);
+                    openRemoteDatabase(dbPath, user, pwd);
+                } else {
+                    GuiUtilities.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, dbPath);
+                    GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, user);
+                    GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, pwd);
+                    openDatabase(dbType, dbPath, user, pwd);
+                }
+
             }
         });
 
@@ -313,7 +331,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             String lastPath = GuiUtilities.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_URL,
                     "jdbc:h2:tcp://localhost:9092/absolute_dbpath");
-            NewDbController newDb = new NewDbController(f, guiBridge, false, lastPath);
+            String lastUser = GuiUtilities.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, "sa");
+            String lastPwd = GuiUtilities.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, "");
+
+            NewDbController newDb = new NewDbController(f, guiBridge, false, null, lastPath, lastUser, lastPwd, false);
             f.add(newDb, BorderLayout.CENTER);
             f.setTitle("Connect to remote database");
             f.pack();
@@ -326,6 +347,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 String dbPath = newDb.getDbPath();
                 String user = newDb.getDbUser();
                 String pwd = newDb.getDbPwd();
+                GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, user);
+                GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, pwd);
                 openRemoteDatabase(dbPath, user, pwd);
             }
 

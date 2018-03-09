@@ -9,6 +9,7 @@ import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -32,6 +33,7 @@ public class NewDbView extends JPanel
    JComboBox _dbTypeCombo = new JComboBox();
    JLabel _extLabel = new JLabel();
    JTextField _extTextField = new JTextField();
+   JCheckBox _connectRemoteCheck = new JCheckBox();
 
    /**
     * Default constructor
@@ -123,7 +125,7 @@ public class NewDbView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:GROW(0.5),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(0.5)");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:GROW(0.5),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(0.5)");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -156,7 +158,7 @@ public class NewDbView extends JPanel
       _pwdTextField.setName("pwdTextField");
       jpanel1.add(_pwdTextField,cc.xywh(4,8,13,1));
 
-      jpanel1.add(createPanel1(),cc.xywh(2,11,18,1));
+      jpanel1.add(createPanel1(),cc.xywh(2,12,18,1));
       _dbTypeLabel.setName("dbTypeLabel");
       _dbTypeLabel.setText("Database Type");
       _dbTypeLabel.setHorizontalAlignment(JLabel.TRAILING);
@@ -172,7 +174,12 @@ public class NewDbView extends JPanel
       _extTextField.setName("extTextField");
       jpanel1.add(_extTextField,cc.xywh(13,4,4,1));
 
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12 });
+      _connectRemoteCheck.setActionCommand("connect in network mode? (port 9092)");
+      _connectRemoteCheck.setName("connectRemoteCheck");
+      _connectRemoteCheck.setText("connect in network mode? (port 9092)");
+      jpanel1.add(_connectRemoteCheck,cc.xywh(4,10,5,1));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13 });
       return jpanel1;
    }
 
