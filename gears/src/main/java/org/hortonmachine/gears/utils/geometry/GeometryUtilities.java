@@ -708,6 +708,32 @@ public class GeometryUtilities {
     }
 
     /**
+     * Scales a rectangle down to fit inside the given one, keeping the ratio.
+     * 
+     * @param rectToFitIn the fixed rectangle to fit in.
+     * @param toScale the rectangle to scale.
+     */
+    public static void scaleDownToFit( Rectangle2D rectToFitIn, Rectangle2D toScale ) {
+        double fitWidth = rectToFitIn.getWidth();
+        double fitHeight = rectToFitIn.getHeight();
+
+        double toScaleWidth = toScale.getWidth();
+        double toScaleHeight = toScale.getHeight();
+
+        if (toScaleWidth > fitWidth) {
+            double factor = toScaleWidth / fitWidth;
+            toScaleWidth = fitWidth;
+            toScaleHeight = toScaleHeight / factor;
+        }
+        if (toScaleHeight > fitHeight) {
+            double factor = toScaleHeight / fitHeight;
+            toScaleHeight = fitHeight;
+            toScaleWidth = toScaleWidth / factor;
+        }
+        toScale.setRect(0, 0, toScaleWidth, toScaleHeight);
+    }
+
+    /**
      * Calculates the coeffs of the plane equation: ax+by+cz+d=0 given 3 coordinates.
      * 
      * @param c1 coordinate 1.
@@ -958,8 +984,8 @@ public class GeometryUtilities {
     private static List<Polygon> makeArrows( LineString line ) {
         List<Polygon> polygons = new ArrayList<>();
         Coordinate[] coordinates = line.getCoordinates();
-        for( int i = 0; i < coordinates.length-1; i++ ) {
-            LineSegment ls = new LineSegment(coordinates[i], coordinates[i+1]);
+        for( int i = 0; i < coordinates.length - 1; i++ ) {
+            LineSegment ls = new LineSegment(coordinates[i], coordinates[i + 1]);
             double length = ls.getLength();
             double delta = length / 10.0;
             Coordinate c1 = ls.pointAlongOffset(0.3, delta);
