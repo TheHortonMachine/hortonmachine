@@ -92,6 +92,11 @@ public class GPSpatialiteDb extends ASpatialDb {
     }
 
     @Override
+    public String getJdbcUrlPre() {
+        throw new IllegalArgumentException("Android drivers do not support this method.");
+    }
+
+    @Override
     public void initSpatialMetadata( String options ) throws Exception {
         SpatialiteCommonMethods.initSpatialMetadata(this, options);
     }

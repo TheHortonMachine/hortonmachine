@@ -200,6 +200,11 @@ public class H2GisDb extends ASpatialDb {
         return dbExists;
     }
 
+    @Override
+    public String getJdbcUrlPre() {
+        return h2Db.getJdbcUrlPre();
+    }
+    
     public Connection getJdbcConnection() {
         return jdbcConn;
     }

@@ -84,6 +84,13 @@ public abstract class ADb implements AutoCloseable {
     }
 
     /**
+     * Get the jdbc url pre string for the database (ex.  jdbc:h2:).
+     * 
+     * @return the jdbc url pre string..
+     */
+    public abstract String getJdbcUrlPre();
+
+    /**
      * Get the original jdbc connection.
      * 
      * @return the jdbc connection.
@@ -154,25 +161,6 @@ public abstract class ADb implements AutoCloseable {
      * @return the fixed sql.
      */
     public abstract String checkSqlCompatibilityIssues( String sql );
-
-    /**
-     * Create a spatial index.
-     * 
-     * @param tableName the table name.
-     * @param geomColumnName the geometry column name.
-     * @throws Exception
-     */
-    public void createSpatialIndex( String tableName, String geomColumnName ) throws Exception {
-        if (geomColumnName == null) {
-            geomColumnName = "the_geom";
-        }
-        String realColumnName = getProperColumnNameCase(tableName, geomColumnName);
-        String realTableName = getProperTableNameCase(tableName);
-        String sql = "CREATE SPATIAL INDEX ON " + realTableName + "(" + realColumnName + ");";
-        try (IHMStatement stmt = mConn.createStatement()) {
-            stmt.execute(sql.toString());
-        }
-    }
 
     /**
      * Create an single column index.

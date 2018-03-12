@@ -156,6 +156,25 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
             double y2 ) throws Exception;
 
     /**
+     * Create a spatial index.
+     * 
+     * @param tableName the table name.
+     * @param geomColumnName the geometry column name.
+     * @throws Exception
+     */
+    public void createSpatialIndex( String tableName, String geomColumnName ) throws Exception {
+        if (geomColumnName == null) {
+            geomColumnName = "the_geom";
+        }
+        String realColumnName = getProperColumnNameCase(tableName, geomColumnName);
+        String realTableName = getProperTableNameCase(tableName);
+        String sql = "CREATE SPATIAL INDEX ON " + realTableName + "(" + realColumnName + ");";
+        try (IHMStatement stmt = mConn.createStatement()) {
+            stmt.execute(sql.toString());
+        }
+    }
+    
+    /**
      * Insert a geometry into a table.
      * 
      * @param tableName

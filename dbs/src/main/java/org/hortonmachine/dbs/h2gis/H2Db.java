@@ -40,6 +40,7 @@ import org.hortonmachine.dbs.spatialite.hm.HMConnection;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class H2Db extends ADb {
+    private static final String JDBC_URL_PRE = "jdbc:h2:";
     private Connection jdbcConn;
 
     static {
@@ -89,7 +90,7 @@ public class H2Db extends ADb {
             dbExists = false;
         }
 
-        String jdbcUrl = "jdbc:h2:" + dbPath;
+        String jdbcUrl = JDBC_URL_PRE + dbPath;
         if (user != null && password != null) {
             jdbcConn = DriverManager.getConnection(jdbcUrl, user, password);
         } else {
@@ -101,6 +102,11 @@ public class H2Db extends ADb {
             Logger.INSTANCE.insertDebug(null, "H2 Version: " + dbInfo[0] + "(" + dbPath + ")");
         }
         return dbExists;
+    }
+    
+    @Override
+    public String getJdbcUrlPre() {
+        return JDBC_URL_PRE;
     }
 
     public Connection getJdbcConnection() {

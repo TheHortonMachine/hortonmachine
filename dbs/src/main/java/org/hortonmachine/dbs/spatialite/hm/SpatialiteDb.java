@@ -146,6 +146,11 @@ public class SpatialiteDb extends ASpatialDb {
         return dbExists;
     }
 
+    @Override
+    public String getJdbcUrlPre() {
+        return sqliteDb.getJdbcUrlPre();
+    }
+    
     public Connection getJdbcConnection() {
         return sqliteDb.getJdbcConnection();
     }

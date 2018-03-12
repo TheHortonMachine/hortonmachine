@@ -43,6 +43,7 @@ import org.sqlite.SQLiteConfig;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SqliteDb extends ADb {
+    private static final String JDBC_URL_PRE = "jdbc:sqlite:";
     private Connection jdbcConn;
 
     static {
@@ -87,13 +88,18 @@ public class SqliteDb extends ADb {
             properties.setProperty("user", user);
             properties.setProperty("password", password);
         }
-        jdbcConn = DriverManager.getConnection("jdbc:sqlite:" + dbPath, properties);
+        jdbcConn = DriverManager.getConnection(JDBC_URL_PRE + dbPath, properties);
         mConn = new HMConnection(jdbcConn);
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
             Logger.INSTANCE.insertInfo(null, "SQLite Version: " + dbInfo[0]);
         }
         return dbExists;
+    }
+    
+    @Override
+    public String getJdbcUrlPre() {
+        return JDBC_URL_PRE;
     }
 
     public Connection getJdbcConnection() {
