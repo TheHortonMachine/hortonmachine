@@ -265,6 +265,8 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                             // TODO enable layers download
                             try {
                                 geopaparazziServer = new GeopaparazziServer(fPort, folderFile);
+                                // Uncomment to require authentication:
+                                //geopaparazziServer.enableBasicAuth("user", "geopap");
                                 geopaparazziServer.start();
                             } catch (Exception e) {
                                 Logger.INSTANCE.insertError("", "ERROR", e);
