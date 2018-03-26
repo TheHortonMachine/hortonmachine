@@ -22,7 +22,7 @@ public abstract class EmbeddedJspServer {
 
     protected Server _server;
     protected WebAppContext webapp;
-    protected ConstraintSecurityHandler security = null;
+    protected ConstraintSecurityHandler securityHandler = null;
 
     public EmbeddedJspServer( Integer port, String webappFolder ) {
         if (port == null) {
@@ -111,29 +111,28 @@ public abstract class EmbeddedJspServer {
         return ctx;
 
     }
-    
-    public void enableBasicAuth(String user, String password) {
-    	EditableHashLoginService loginService = new EditableHashLoginService();
+
+    public void enableBasicAuth( String user, String password ) {
+        EditableHashLoginService loginService = new EditableHashLoginService();
         loginService.addUser(user, password);
         _server.addBean(loginService);
-        security = new ConstraintSecurityHandler();
-        _server.setHandler(security);
+        securityHandler = new ConstraintSecurityHandler();
+        _server.setHandler(securityHandler);
         Constraint constraint = new Constraint();
         constraint.setName("auth");
         constraint.setAuthenticate(true);
-        constraint.setRoles(new String[] { EditableHashLoginService.DEFAULT_ROLE });
+        constraint.setRoles(new String[]{EditableHashLoginService.DEFAULT_ROLE});
         ConstraintMapping mapping = new ConstraintMapping();
         mapping.setPathSpec("/*");
         mapping.setConstraint(constraint);
-        security.setConstraintMappings(Collections.singletonList(mapping));
-        security.setAuthenticator(new BasicAuthenticator());
-        security.setLoginService(loginService);
-    }
-    
-    protected ConstraintSecurityHandler getContextSecurityHandler() {
-    	return security;
+        securityHandler.setConstraintMappings(Collections.singletonList(mapping));
+        securityHandler.setAuthenticator(new BasicAuthenticator());
+        securityHandler.setLoginService(loginService);
     }
 
+    protected ConstraintSecurityHandler getContextSecurityHandler() {
+        return securityHandler;
+    }
 
     public static void main( String[] args ) throws Exception {
         org.eclipse.jetty.util.log.Log.setLog(new DisabledLogging());
