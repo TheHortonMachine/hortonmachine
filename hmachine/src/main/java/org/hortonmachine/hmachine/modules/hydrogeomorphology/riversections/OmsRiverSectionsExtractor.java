@@ -22,17 +22,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
-
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
@@ -51,6 +40,17 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 @Description(OmsRiverSectionsExtractor.DESCRIPTION)
 @Author(name = OmsRiverSectionsExtractor.AUTHORNAMES, contact = OmsRiverSectionsExtractor.AUTHORCONTACTS)
@@ -212,22 +212,25 @@ public class OmsRiverSectionsExtractor extends HMModel {
 
     public static void main( String[] args ) throws Exception {
 
-        String base = "/home/hydrologis/lavori_tmp/2016_09_idro_calvello/shape/";
-        String baseRaster = "/home/hydrologis/lavori_tmp/2016_09_idro_calvello/test/";
+        String base = "D:\\lavori_tmp\\2018_idraulico_sadole\\sadole1D\\2018_04_11_data\\progetto_10\\";
+        String baseRaster = "D:\\Dropbox\\hydrologis\\lavori\\2018_projects\\02_idraulico_sadole\\dati_trent2D\\stato_progetto\\";
 
 
         OmsRiverSectionsExtractor ex = new OmsRiverSectionsExtractor();
-        ex.inElev = OmsRasterReader.readRaster(baseRaster + "dtm_chiusura_orig.asc");
-        ex.inRiver = OmsVectorReader.readVector(base + "calvello_net_idro_outlet.shp");
+        ex.inElev = OmsRasterReader.readRaster(baseRaster + "dtm_sadole_proj_09.asc");
+        ex.inRiver = OmsVectorReader.readVector(base + "net_final_slope_03.shp");
+//        ex.inSections = OmsVectorReader.readVector(base + "sadole_sections_progetto.shp");
+        ex.pSectionsWidth = 25.0;
+        ex.pSectionsIntervalDistance = 10.0;
 //        ex.inRiverPoints = OmsVectorReader.readVector(base + "net_point_slope.shp");
         ex.process();
         SimpleFeatureCollection outSections2 = ex.outSections;
         SimpleFeatureCollection outSectionsPoints2 = ex.outSectionPoints;
         SimpleFeatureCollection outRiverPoints2 = ex.outRiverPoints;
 
-        OmsVectorWriter.writeVector(base + "calvello_orig_sections.shp", outSections2);
-        OmsVectorWriter.writeVector(base + "calvello_orig_sectionpoints.shp", outSectionsPoints2);
-        OmsVectorWriter.writeVector(base + "calvello_orig_riverpoints.shp", outRiverPoints2);
+        OmsVectorWriter.writeVector(base + "sadole_sections_prj_10.shp", outSections2);
+        OmsVectorWriter.writeVector(base + "sadole_sectionpoints_prj_10.shp", outSectionsPoints2);
+        OmsVectorWriter.writeVector(base + "sadole_riverpoints_prj_10.shp", outRiverPoints2);
 
         // OmsRiverSectionsExtractor ex = new OmsRiverSectionsExtractor();
         // ex.inElev = OmsRasterReader.readRaster(base + "dtm_04.asc");

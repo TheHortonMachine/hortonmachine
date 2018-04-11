@@ -36,6 +36,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateArrays;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
@@ -125,16 +126,18 @@ public abstract class ARiverSectionsExtractor {
         sectionPointsCollection = new DefaultFeatureCollection();
         riverPointsCollection = new DefaultFeatureCollection();
 
-        int index = 0;
+        int index = riverPointsList.size();
         for( RiverPoint netPoint : riverPointsList ) {
             int sectionId = netPoint.getSectionId();
             if (sectionId == -1) {
-                sectionId = index;
+                sectionId = index--;
             }
             if (netPoint.hasSection) {
                 LineString sectionGeometry = netPoint.sectionGeometry;
 
                 Coordinate[] sectionCoordinates = sectionGeometry.getCoordinates();
+                CoordinateArrays.reverse(sectionCoordinates);
+                
                 LineString simpleSectionGeometry = gf.createLineString(
                         new Coordinate[]{sectionCoordinates[0], sectionCoordinates[sectionCoordinates.length - 1]});
 
@@ -166,7 +169,6 @@ public abstract class ARiverSectionsExtractor {
                 SimpleFeature riverFeature = riverBuilder.buildFeature(null);
                 ((DefaultFeatureCollection) riverPointsCollection).add(riverFeature);
             }
-            index++;
         }
     }
 
