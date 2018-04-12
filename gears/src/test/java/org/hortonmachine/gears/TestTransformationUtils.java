@@ -51,4 +51,22 @@ public class TestTransformationUtils extends HMTestCase {
         assertEquals(0, (int) transformed.x);
         assertEquals(4000, (int) transformed.y);
     }
+
+    public void testTransformationUtils3() throws Exception {
+        Envelope env = new Envelope(100, 200, 1000, 5000);
+        double newWidth = 50.0;
+        
+        Envelope scaled = TransformationUtils.scaleToWidth(env, newWidth);
+        assertEquals(100.0, scaled.getMinX());
+        assertEquals(1000.0, scaled.getMinY());
+        assertEquals(50.0, scaled.getWidth());
+        assertEquals(2000.0, scaled.getHeight());
+        
+        newWidth = 300.0;
+        scaled = TransformationUtils.scaleToWidth(env, newWidth);
+        assertEquals(100.0, scaled.getMinX());
+        assertEquals(1000.0, scaled.getMinY());
+        assertEquals(300.0, scaled.getWidth());
+        assertEquals(12000.0, scaled.getHeight());
+    }
 }

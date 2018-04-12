@@ -32,6 +32,13 @@ import com.vividsolutions.jts.geom.util.NoninvertibleTransformationException;
  */
 public class TransformationUtils {
 
+    /**
+     * Get the affine transform that brings from the world envelope to the rectangle. 
+     * 
+     * @param worldEnvelope the envelope.
+     * @param pixelRectangle the destination rectangle.
+     * @return the transform.
+     */
     public static AffineTransform getWorldToPixel( Envelope worldEnvelope, Rectangle pixelRectangle ) {
         double width = pixelRectangle.getWidth();
         double worldWidth = worldEnvelope.getWidth();
@@ -52,6 +59,13 @@ public class TransformationUtils {
         return getWorldToPixel(worldEnvelope, pixelRectangle).createInverse();
     }
 
+    /**
+     * Get the affine transform that brings from the world envelope to the rectangle. 
+     * 
+     * @param worldEnvelope the envelope.
+     * @param pixelRectangle the destination rectangle.
+     * @return the transform.
+     */
     public static AffineTransformation getWorldToRectangle( Envelope worldEnvelope, Rectangle pixelRectangle ) {
         int cols = (int) pixelRectangle.getWidth();
         int rows = (int) pixelRectangle.getHeight();
@@ -82,6 +96,23 @@ public class TransformationUtils {
     public static AffineTransformation getRectangleToWorld( Rectangle pixelRectangle, Envelope worldEnvelope )
             throws NoninvertibleTransformationException {
         return getWorldToRectangle(worldEnvelope, pixelRectangle).getInverse();
+    }
+
+    /**
+     * Scale an envelope to have a given width.
+     * 
+     * @param original the envelope.
+     * @param newWidth the new width to use.
+     * @return the scaled envelope placed in the original lower left corner position.
+     */
+    public static Envelope scaleToWidth( Envelope original, double newWidth ) {
+        double width = original.getWidth();
+        double factor = newWidth / width;
+
+        double newHeight = original.getHeight() * factor;
+
+        return new Envelope(original.getMinX(), original.getMinX() + newWidth, original.getMinY(),
+                original.getMinY() + newHeight);
     }
 
 }

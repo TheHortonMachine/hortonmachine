@@ -40,6 +40,8 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.time.EggClock;
 
+import com.vividsolutions.jts.geom.Envelope;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -144,11 +146,11 @@ public class Mapurl2MbtilesConverter extends HMModel {
                 String yStr = FileUtilities.getNameWithoutExtention(yFile);
                 int y = Integer.parseInt(yStr);
 
-                double[] wsen = mercator.TileLatLonBounds(x, y, z);
-                n = max(n, wsen[3]);
-                e = max(e, wsen[2]);
-                s = max(s, wsen[1]);
-                w = max(w, wsen[0]);
+                Envelope wsen = mercator.TileLatLonBounds(x, y, z);
+                n = max(n, wsen.getMaxY());
+                e = max(e, wsen.getMaxX());
+                s = max(s, wsen.getMinY());
+                w = max(w, wsen.getMinX());
 
                 try {
                     BufferedImage image = ImageIO.read(yFile);
