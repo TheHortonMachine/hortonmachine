@@ -40,6 +40,7 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.nww.layers.defaults.raster.OsmTilegenerator;
+import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.map.awt.graphics.AwtGraphicFactory;
 import org.mapsforge.map.controller.FrameBufferController;
 import org.mapsforge.map.datastore.MultiMapDataStore;
@@ -53,7 +54,9 @@ import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.reader.ReadBuffer;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
 import org.mapsforge.map.rendertheme.rule.RenderThemeFuture;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -109,7 +112,7 @@ public class Mapsforge2MbtilesConverter extends HMModel {
         if (pScaleFactor < 1)
             pScaleFactor = 1.5f;
 
-        if (datasetName == null) {
+        if (datasetName == null && roiFile != null) {
             datasetName = FileUtilities.getNameWithoutExtention(roiFile);
         }
 
@@ -117,19 +120,19 @@ public class Mapsforge2MbtilesConverter extends HMModel {
             maxZoomLimit = maxZoom;
 
         CoordinateReferenceSystem latLongCrs = DefaultGeographicCRS.WGS84;
-        SimpleFeatureCollection roiVector = getVector(roiFile.getAbsolutePath());
-        roiVector = new ReprojectFeatureResults(roiVector, latLongCrs);
-        List<Geometry> roiGeomList = FeatureUtilities.featureCollectionToGeometriesList(roiVector, true, null);
-        if (pRoiBuffer != null) {
-            roiGeomList = roiGeomList.stream().map(g -> g.buffer(pRoiBuffer)).collect(Collectors.toList());
+
+        ReferencedEnvelope llBounds = null;
+        if (roiFile != null) {
+            SimpleFeatureCollection roiVector = getVector(roiFile.getAbsolutePath());
+            roiVector = new ReprojectFeatureResults(roiVector, latLongCrs);
+            List<Geometry> roiGeomList = FeatureUtilities.featureCollectionToGeometriesList(roiVector, true, null);
+            if (pRoiBuffer != null) {
+                roiGeomList = roiGeomList.stream().map(g -> g.buffer(pRoiBuffer)).collect(Collectors.toList());
+            }
+            Geometry roiGeomUnion = CascadedPolygonUnion.union(roiGeomList);
+            preparedROI = PreparedGeometryFactory.prepare(roiGeomUnion);
+            llBounds = roiVector.getBounds();
         }
-        Geometry roiGeomUnion = CascadedPolygonUnion.union(roiGeomList);
-        preparedROI = PreparedGeometryFactory.prepare(roiGeomUnion);
-        ReferencedEnvelope llBounds = roiVector.getBounds();
-        // Geometry geom = roiGeomList.get(0);
-        // preparedROI = PreparedGeometryFactory.prepare(geom);
-        // ReferencedEnvelope llBounds = new ReferencedEnvelope(geom.getEnvelopeInternal(),
-        // latLongCrs);
 
         if (limitsFile != null) {
             SimpleFeatureCollection limitsVector = getVector(limitsFile.getAbsolutePath());
@@ -139,7 +142,10 @@ public class Mapsforge2MbtilesConverter extends HMModel {
             preparedLimits = PreparedGeometryFactory.prepare(limitsGeomUnion);
         }
 
-        OsmTilegenerator osmTilegenerator = getGenerator();
+        if (llBounds == null) {
+            llBounds = new ReferencedEnvelope(latLongCrs);
+        }
+        OsmTilegenerator osmTilegenerator = getGenerator(llBounds);
 
         format = "png";
 
@@ -151,15 +157,13 @@ public class Mapsforge2MbtilesConverter extends HMModel {
         Envelope totalBounds = new Envelope();
 
         // List<Runnable> generationList = new ArrayList<>();
+        double w = llBounds.getMinX();
+        double e = llBounds.getMaxX();
+        double s = llBounds.getMinY();
+        double n = llBounds.getMaxY();
 
         IntStream rangeStream = IntStream.rangeClosed(minZoom, maxZoomLimit);
         rangeStream.forEach(z -> {
-
-            double w = llBounds.getMinX();
-            double e = llBounds.getMaxX();
-            double s = llBounds.getMinY();
-            double n = llBounds.getMaxY();
-
             totalBounds.expandToInclude(w, s);
             totalBounds.expandToInclude(e, n);
 
@@ -186,7 +190,7 @@ public class Mapsforge2MbtilesConverter extends HMModel {
                     Envelope bb = gm.TileLatLonBounds(x, y, z);
                     // Envelope bb = MBTilesHelper.tile2boundingBox(x, y, z);
                     Polygon tilePolygon = GeometryUtilities.createPolygonFromEnvelope(bb);
-                    if (!preparedROI.intersects(tilePolygon)) {
+                    if (preparedROI != null && !preparedROI.intersects(tilePolygon)) {
                         ignoredIndex++;
                         continue;
                     }
@@ -238,7 +242,7 @@ public class Mapsforge2MbtilesConverter extends HMModel {
         mbtilesHelper.close();
     }
 
-    private OsmTilegenerator getGenerator() {
+    private OsmTilegenerator getGenerator( ReferencedEnvelope llBounds ) {
         MapWorkerPool.NUMBER_OF_THREADS = 4;
         // Map buffer size
         ReadBuffer.setMaximumBufferSize(6500000);
@@ -254,6 +258,11 @@ public class Mapsforge2MbtilesConverter extends HMModel {
         for( int i = 0; i < inMapFiles.length; i++ )
             mapDatabase.addMapDataStore(new MapFile(inMapFiles[i]), false, false);
 
+        if (llBounds != null) {
+            BoundingBox bb = mapDatabase.boundingBox();
+            llBounds.expandToInclude(new Envelope(bb.minLongitude, bb.maxLongitude, bb.minLatitude, bb.maxLatitude));
+        }
+
         InMemoryTileCache tileCache = new InMemoryTileCache(200);
         DatabaseRenderer renderer = new DatabaseRenderer(mapDatabase, AwtGraphicFactory.INSTANCE, tileCache,
                 new TileBasedLabelStore(tileCache.getCapacityFirstLevel()), true, true);
@@ -268,7 +277,7 @@ public class Mapsforge2MbtilesConverter extends HMModel {
 
     public static void main( String[] args ) throws Exception {
         File mapFile = new File("/home/hydrologis/data/italy.map");
-        File outFile = new File("/home/hydrologis/TMP/drivehome.mbtiles");
+        File outFile = new File("/home/hydrologis/TMP/italy7.mbtiles");
         File boundsFile = new File("/home/hydrologis/TMP/drivehome.shp");
         File limitsFile = new File("/home/hydrologis/TMP/drivehomelimits.shp");
         // File mapFile = new File(
@@ -282,13 +291,13 @@ public class Mapsforge2MbtilesConverter extends HMModel {
         Mapsforge2MbtilesConverter conv = new Mapsforge2MbtilesConverter();
         conv.inMapFiles = new File[]{mapFile};
         conv.mbtilesFile = outFile;
-        conv.roiFile = boundsFile;
-        conv.limitsFile = limitsFile;
-        conv.minZoom = 8;
-        conv.maxZoom = 14;
-        conv.maxZoomLimit = 18;
+        conv.roiFile = null;// boundsFile;
+        conv.limitsFile = null;// limitsFile;
+        conv.minZoom = 7;
+        conv.maxZoom = 7;
+        conv.maxZoomLimit = -1;
         conv.pRoiBuffer = null;
-        conv.datasetName = "testmbtiles";
+        conv.datasetName = "italy7";
 
         conv.process();
     }

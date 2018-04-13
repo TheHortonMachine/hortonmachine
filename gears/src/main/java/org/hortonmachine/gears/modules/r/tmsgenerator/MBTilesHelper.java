@@ -16,8 +16,6 @@ import java.sql.Statement;
 import javax.imageio.ImageIO;
 
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
-import org.geotools.coverage.grid.io.AbstractGridFormat;
-import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -249,6 +247,7 @@ public class MBTilesHelper implements AutoCloseable {
         batchStatement.setInt(1, z);
         batchStatement.setInt(2, x);
         batchStatement.setInt(3, y);
+
         batchStatement.setBytes(4, res);
         batchStatement.addBatch();
 
@@ -397,15 +396,6 @@ public class MBTilesHelper implements AutoCloseable {
 
         Envelope bb = new Envelope(west, east, south, north);
         return bb;
-    }
-
-    public static void main( String[] args ) throws IOException {
-        String ctp = "/home/hydrologis/data/CTP/trentino_ctp/ctp.shp";
-        File file = new File(ctp);
-        AbstractGridFormat format = GridFormatFinder.findFormat(file);
-        AbstractGridCoverage2DReader reader = format.getReader(file);
-        BufferedImage image = MBTilesHelper.readGridcoverageImageForTile(reader, 1, 1, 19, null);
-
     }
 
 }
