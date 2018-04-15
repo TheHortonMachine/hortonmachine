@@ -117,7 +117,7 @@ public class NwwPanel extends JPanel {
 
         logger.insertDebug("NwwPanel", "Create Model");
         Model model = (Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME);
-        this.getWwd().setModel(model);
+        wwd.setModel(model);
         long t3 = System.currentTimeMillis();
         logger.insertDebug("NwwPanel", "Create Model - DONE " + (t3 - t2) / 1000);
 
@@ -138,7 +138,7 @@ public class NwwPanel extends JPanel {
             long t4 = System.currentTimeMillis();
             logger.insertDebug("NwwPanel", "Remove and add layers - DONE " + (t4 - t3) / 1000);
         }
-        this.add((Component) this.getWwd(), BorderLayout.CENTER);
+        this.add((Component) wwd, BorderLayout.CENTER);
 
         if (withStatusBar) {
             this.statusBar = new StatusBar();
