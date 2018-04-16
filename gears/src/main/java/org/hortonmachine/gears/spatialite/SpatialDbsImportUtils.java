@@ -75,16 +75,19 @@ public class SpatialDbsImportUtils {
      * 
      * @param db the database to use.
      * @param shapeFile the shapefile to use.
+     * @param newTableName the new name of the table. If null, the shp name is used.
      * @return the name of the created table.
      * @throws Exception
      */
-    public static String createTableFromShp( ASpatialDb db, File shapeFile ) throws Exception {
+    public static String createTableFromShp( ASpatialDb db, File shapeFile, String newTableName ) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
         GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();
 
-        String shpName = FileUtilities.getNameWithoutExtention(shapeFile);
+        if (newTableName == null) {
+            newTableName = FileUtilities.getNameWithoutExtention(shapeFile);
+        }
 
         List<String> attrSql = new ArrayList<String>();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
@@ -132,8 +135,8 @@ public class SpatialDbsImportUtils {
 
             if (db instanceof SpatialiteDb) {
                 SpatialiteDb spatialiteDb = (SpatialiteDb) db;
-                spatialiteDb.createTable(shpName, attrSql.toArray(new String[0]));
-                spatialiteDb.addGeometryXYColumnAndIndex(shpName, null, typeString, codeFromCrs, false);
+                spatialiteDb.createTable(newTableName, attrSql.toArray(new String[0]));
+                spatialiteDb.addGeometryXYColumnAndIndex(newTableName, null, typeString, codeFromCrs, false);
             } else if (db instanceof H2GisDb) {
                 H2GisDb spatialiteDb = (H2GisDb) db;
                 String typeStringExtra = typeString;
@@ -141,15 +144,15 @@ public class SpatialDbsImportUtils {
                 String geomField = "the_geom";
                 attrSql.add(geomField + " " + typeStringExtra);
                 String[] array = attrSql.toArray(new String[0]);
-                spatialiteDb.createTable(shpName, array);
-                spatialiteDb.addSrid(shpName, codeFromCrs, geomField);
-                spatialiteDb.createSpatialIndex(shpName, geomField);
+                spatialiteDb.createTable(newTableName, array);
+                spatialiteDb.addSrid(newTableName, codeFromCrs, geomField);
+                spatialiteDb.createSpatialIndex(newTableName, geomField);
             }
         } else {
-            db.createTable(shpName, attrSql.toArray(new String[0]));
+            db.createTable(newTableName, attrSql.toArray(new String[0]));
         }
 
-        return shpName;
+        return newTableName;
     }
 
     /**

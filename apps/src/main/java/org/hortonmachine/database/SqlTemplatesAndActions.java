@@ -305,7 +305,14 @@ public class SqlTemplatesAndActions {
                     return;
                 }
                 try {
-                    SpatialDbsImportUtils.createTableFromShp(spatialiteViewer.currentConnectedDatabase, openFiles[0]);
+                    String nameWithoutExtention = FileUtilities.getNameWithoutExtention(openFiles[0]);
+
+                    String newTableName = GuiUtilities.showInputDialog(spatialiteViewer,
+                            "Set new table name (can't start with numbers)", nameWithoutExtention);
+                    if (newTableName.trim().length() == 0) {
+                        newTableName = null;
+                    }
+                    SpatialDbsImportUtils.createTableFromShp(spatialiteViewer.currentConnectedDatabase, openFiles[0], newTableName);
                     spatialiteViewer.refreshDatabaseTree();
                 } catch (Exception e1) {
                     logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
