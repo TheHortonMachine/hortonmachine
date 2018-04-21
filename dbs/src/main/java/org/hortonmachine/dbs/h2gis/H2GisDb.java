@@ -19,12 +19,10 @@ package org.hortonmachine.dbs.h2gis;
 
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.h2.tools.Server;
 import org.h2gis.ext.H2GISExtension;
 import org.h2gis.functions.factory.H2GISFunctions;
 import org.h2gis.utilities.SFSUtilities;
@@ -33,6 +31,7 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -60,7 +59,6 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class H2GisDb extends ASpatialDb {
-    private Connection jdbcConn;
     private H2Db h2Db;
     private boolean wasInitialized = false;
 
@@ -77,104 +75,10 @@ public class H2GisDb extends ASpatialDb {
         this.user = user;
         this.password = password;
     }
-
-    /**
-     * Start the server mode.
-     * 
-     * <p>This calls:
-     *<pre>
-     * Server server = Server.createTcpServer(
-     *     "-tcpPort", "9123", "-tcpAllowOthers").start();
-     * </pre>
-     * Supported options are:
-     * -tcpPort, -tcpSSL, -tcpPassword, -tcpAllowOthers, -tcpDaemon,
-     * -trace, -ifExists, -baseDir, -key.
-     * See the main method for details.
-     * <p>
-     * 
-     * @param port the optional port to use.
-     * @param doSSL if <code>true</code>, ssl is used.
-     * @param tcpPassword an optional tcp passowrd to use.
-     * @param ifExists is <code>true</code>, the database to connect to has to exist.
-     * @param baseDir an optional basedir into which it is allowed to connect.
-     * @return
-     * @throws SQLException
-     */
-    public static Server startTcpServerMode( String port, boolean doSSL, String tcpPassword, boolean ifExists, String baseDir )
-            throws SQLException {
-        List<String> params = new ArrayList<>();
-        params.add("-tcpAllowOthers");
-        params.add("-tcpPort");
-        if (port == null) {
-            port = "9123";
-        }
-        params.add(port);
-
-        if (doSSL) {
-            params.add("-tcpSSL");
-        }
-        if (tcpPassword != null) {
-            params.add("-tcpPassword");
-            params.add(tcpPassword);
-        }
-
-        if (ifExists) {
-            params.add("-ifExists");
-        }
-
-        if (baseDir != null) {
-            params.add("-baseDir");
-            params.add(baseDir);
-        }
-
-        Server server = Server.createTcpServer(params.toArray(new String[0])).start();
-        return server;
-    }
-
-    /**
-     * Start the web server mode.
-     * 
-     * @param port the optional port to use.
-     * @param doSSL if <code>true</code>, ssl is used.
-     * @param ifExists is <code>true</code>, the database to connect to has to exist.
-     * @param baseDir an optional basedir into which it is allowed to connect.
-     * @return
-     * @throws SQLException
-     */
-    public static Server startWebServerMode( String port, boolean doSSL, boolean ifExists, String baseDir ) throws SQLException {
-        List<String> params = new ArrayList<>();
-        params.add("-webAllowOthers");
-        if (port != null) {
-            params.add("-webPort");
-            params.add(port);
-        }
-
-        if (doSSL) {
-            params.add("-webSSL");
-        }
-
-        if (ifExists) {
-            params.add("-ifExists");
-        }
-
-        if (baseDir != null) {
-            params.add("-baseDir");
-            params.add(baseDir);
-        }
-
-        Server server = Server.createWebServer(params.toArray(new String[0])).start();
-        return server;
-    }
-
-    public static void main( String[] args ) throws Exception {
-        startTcpServerMode("9092", false, null, true, null);
-
-        // Server server = startWebServerMode("9092", true, true, null);
-        // server.stop();
-    }
-
+    
     public boolean open( String dbPath ) throws Exception {
         h2Db.setCredentials(user, password);
+        h2Db.setMakePooled(makePooled);
 
         if (dbPath != null && dbPath.endsWith(EDb.H2GIS.getExtension())) {
             dbPath = dbPath.substring(0, dbPath.length() - (EDb.H2GIS.getExtension().length() + 1));
@@ -184,12 +88,10 @@ public class H2GisDb extends ASpatialDb {
             wasInitialized = true;
         }
 
-        jdbcConn = SFSUtilities.wrapConnection(h2Db.getJdbcConnection());
         if (!dbExists)
             initSpatialMetadata(null);
 
         this.mDbPath = h2Db.getDatabasePath();
-        mConn = h2Db.getConnection();
         if (mPrintInfos) {
             if (!wasInitialized) {
                 initSpatialMetadata(null);
@@ -200,19 +102,28 @@ public class H2GisDb extends ASpatialDb {
         return dbExists;
     }
 
+    public void close() throws Exception {
+        h2Db.close();
+    }
+
     @Override
     public String getJdbcUrlPre() {
         return h2Db.getJdbcUrlPre();
     }
-    
-    public Connection getJdbcConnection() {
+
+    public Connection getJdbcConnection() throws Exception {
+        Connection jdbcConn = SFSUtilities.wrapConnection(h2Db.getJdbcConnection());
         return jdbcConn;
+    }
+
+    public IHMConnection getConnectionInternal() throws Exception {
+        return h2Db.getConnectionInternal();
     }
 
     @Override
     public void initSpatialMetadata( String options ) throws Exception {
         if (!wasInitialized) {
-            H2GISExtension.load(jdbcConn);
+            H2GISExtension.load(getJdbcConnection());
             wasInitialized = true;
         }
     }
@@ -253,32 +164,36 @@ public class H2GisDb extends ASpatialDb {
         String sql = "SELECT ST_XMin(ST_collect(" + geomFieldName + ")) , ST_YMin(ST_collect(" + geomFieldName + ")),"
                 + "ST_XMax(ST_collect(" + geomFieldName + ")), ST_YMax(ST_collect(" + geomFieldName + ")) " + "FROM " + tableName;
 
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                double minX = rs.getDouble(1);
-                double minY = rs.getDouble(2);
-                double maxX = rs.getDouble(3);
-                double maxY = rs.getDouble(4);
+        return execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    double minX = rs.getDouble(1);
+                    double minY = rs.getDouble(2);
+                    double maxX = rs.getDouble(3);
+                    double maxY = rs.getDouble(4);
 
-                Envelope env = new Envelope(minX, maxX, minY, maxY);
-                return env;
+                    Envelope env = new Envelope(minX, maxX, minY, maxY);
+                    return env;
+                }
+                return null;
             }
-            return null;
-        }
+        });
     }
 
     public String[] getDbInfo() throws Exception {
         // checking h2 version
         String sql = "SELECT H2VERSION(), H2GISVERSION();";
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            String[] info = new String[2];
-            while( rs.next() ) {
-                // read the result set
-                info[0] = rs.getString(1);
-                info[1] = rs.getString(2);
+        return execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                String[] info = new String[2];
+                while( rs.next() ) {
+                    // read the result set
+                    info[0] = rs.getString(1);
+                    info[1] = rs.getString(2);
+                }
+                return info;
             }
-            return info;
-        }
+        });
     }
 
     public void createSpatialTable( String tableName, int srid, String geometryFieldData, String[] fieldData,
@@ -300,9 +215,12 @@ public class H2GisDb extends ASpatialDb {
         }
         sb.append(")");
 
-        try (IHMStatement stmt = mConn.createStatement()) {
-            stmt.execute(sb.toString());
-        }
+        execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement()) {
+                stmt.execute(sb.toString());
+            }
+            return null;
+        });
 
         addSrid(tableName, String.valueOf(srid), null);
 
@@ -355,46 +273,49 @@ public class H2GisDb extends ASpatialDb {
     }
 
     public QueryResult getTableRecordsMapFromRawSql( String sql, int limit ) throws Exception {
-        QueryResult queryResult = new QueryResult();
+        return execOnConnection(connection -> {
+            QueryResult queryResult = new QueryResult();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
 
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql);) {
-
-            int geomIndex = -1;
-            IHMResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
-            for( int i = 1; i <= columnCount; i++ ) {
-                String columnName = rsmd.getColumnName(i);
-                queryResult.names.add(columnName);
-                String columnTypeName = rsmd.getColumnTypeName(i);
-                queryResult.types.add(columnTypeName);
-                if (columnTypeName.equalsIgnoreCase(H2GISFunctions.GEOMETRY_BASE_TYPE)) {
-                    geomIndex = i;
-                    queryResult.geometryIndex = i - 1;
-                }
-            }
-
-            int count = 0;
-            while( rs.next() ) {
-                Object[] rec = new Object[columnCount];
-                for( int j = 1; j <= columnCount; j++ ) {
-                    if (j == geomIndex) {
-                        Geometry geometry = (Geometry) rs.getObject(j);
-                        rec[j - 1] = geometry;
-                    } else {
-                        Object object = rs.getObject(j);
-                        if (object instanceof Clob) {
-                            object = rs.getString(j);
-                        }
-                        rec[j - 1] = object;
+                int geomIndex = -1;
+                IHMResultSetMetaData rsmd = rs.getMetaData();
+                int columnCount = rsmd.getColumnCount();
+                for( int i = 1; i <= columnCount; i++ ) {
+                    String columnName = rsmd.getColumnName(i);
+                    queryResult.names.add(columnName);
+                    String columnTypeName = rsmd.getColumnTypeName(i);
+                    queryResult.types.add(columnTypeName);
+                    if (columnTypeName.equalsIgnoreCase(H2GISFunctions.GEOMETRY_BASE_TYPE)) {
+                        geomIndex = i;
+                        queryResult.geometryIndex = i - 1;
                     }
                 }
-                queryResult.data.add(rec);
-                if (limit > 0 && ++count > (limit - 1)) {
-                    break;
+
+                int count = 0;
+                while( rs.next() ) {
+                    Object[] rec = new Object[columnCount];
+                    for( int j = 1; j <= columnCount; j++ ) {
+                        if (j == geomIndex) {
+                            Geometry geometry = (Geometry) rs.getObject(j);
+                            rec[j - 1] = geometry;
+                        } else {
+                            Object object = rs.getObject(j);
+                            if (object instanceof Clob) {
+                                object = rs.getString(j);
+                            }
+                            rec[j - 1] = object;
+                        }
+                    }
+                    queryResult.data.add(rec);
+                    if (limit > 0 && ++count > (limit - 1)) {
+                        break;
+                    }
                 }
+                return queryResult;
+
             }
-            return queryResult;
-        }
+        });
+
     }
 
     @Override
@@ -444,19 +365,22 @@ public class H2GisDb extends ASpatialDb {
                 + H2GisGeometryColumns.SRID + " from " //
                 + attachedStr + H2GisGeometryColumns.TABLENAME + " where Lower(" + H2GisGeometryColumns.F_TABLE_NAME + ")=Lower('"
                 + tableName + "')";
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) {
-                H2GisGeometryColumns gc = new H2GisGeometryColumns();
-                gc.tableName = rs.getString(1);
-                gc.geometryColumnName = rs.getString(2);
-                gc.geometryType = rs.getInt(3);
-                gc.coordinatesDimension = rs.getInt(4);
-                gc.srid = rs.getInt(5);
-                // gc.isSpatialIndexEnabled = rs.getInt(6);
-                return gc;
+
+        return execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    H2GisGeometryColumns gc = new H2GisGeometryColumns();
+                    gc.tableName = rs.getString(1);
+                    gc.geometryColumnName = rs.getString(2);
+                    gc.geometryType = rs.getInt(3);
+                    gc.coordinatesDimension = rs.getInt(4);
+                    gc.srid = rs.getInt(5);
+                    // gc.isSpatialIndexEnabled = rs.getInt(6);
+                    return gc;
+                }
+                return null;
             }
-            return null;
-        }
+        });
     }
 
     @Override
@@ -570,41 +494,46 @@ public class H2GisDb extends ASpatialDb {
         if (limit > 0) {
             sql += " LIMIT " + limit;
         }
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            IHMResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
+        String _sql = sql;
+        GeometryColumn _gCol = gCol;
+        return execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
+                IHMResultSetMetaData rsmd = rs.getMetaData();
+                int columnCount = rsmd.getColumnCount();
 
-            for( int i = 1; i <= columnCount; i++ ) {
-                String columnName = rsmd.getColumnName(i);
-                queryResult.names.add(columnName);
-                String columnTypeName = rsmd.getColumnTypeName(i);
-                queryResult.types.add(columnTypeName);
-                if (hasGeom && columnName.equals(gCol.geometryColumnName)) {
-                    queryResult.geometryIndex = i - 1;
-                }
-            }
-
-            long start = System.currentTimeMillis();
-            while( rs.next() ) {
-                Object[] rec = new Object[columnCount];
-                for( int j = 1; j <= columnCount; j++ ) {
-                    if (hasGeom && queryResult.geometryIndex == j - 1) {
-                        Geometry geometry = (Geometry) rs.getObject(j);
-                        rec[j - 1] = geometry;
-                    } else {
-                        Object object = rs.getObject(j);
-                        if (object instanceof Clob) {
-                            object = rs.getString(j);
-                        }
-                        rec[j - 1] = object;
+                for( int i = 1; i <= columnCount; i++ ) {
+                    String columnName = rsmd.getColumnName(i);
+                    queryResult.names.add(columnName);
+                    String columnTypeName = rsmd.getColumnTypeName(i);
+                    queryResult.types.add(columnTypeName);
+                    if (hasGeom && columnName.equals(_gCol.geometryColumnName)) {
+                        queryResult.geometryIndex = i - 1;
                     }
                 }
-                queryResult.data.add(rec);
+
+                long start = System.currentTimeMillis();
+                while( rs.next() ) {
+                    Object[] rec = new Object[columnCount];
+                    for( int j = 1; j <= columnCount; j++ ) {
+                        if (hasGeom && queryResult.geometryIndex == j - 1) {
+                            Geometry geometry = (Geometry) rs.getObject(j);
+                            rec[j - 1] = geometry;
+                        } else {
+                            Object object = rs.getObject(j);
+                            if (object instanceof Clob) {
+                                object = rs.getString(j);
+                            }
+                            rec[j - 1] = object;
+                        }
+                    }
+                    queryResult.data.add(rec);
+                }
+                long end = System.currentTimeMillis();
+                queryResult.queryTimeMillis = end - start;
+                return queryResult;
             }
-            long end = System.currentTimeMillis();
-            queryResult.queryTimeMillis = end - start;
-            return queryResult;
-        }
+        });
+
     }
 
     public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
@@ -641,13 +570,18 @@ public class H2GisDb extends ASpatialDb {
                 sql += " WHERE " + wherePiece;
             }
         }
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) {
-                String geoJson = rs.getString(1);
-                return geoJson;
+
+        String _sql = sql;
+        return execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
+                if (rs.next()) {
+                    String geoJson = rs.getString(1);
+                    return geoJson;
+                }
             }
-        }
-        return "";
+            return "";
+        });
+
     }
 
     public void addSrid( String tableName, String codeFromCrs, String geometryColumnName ) throws Exception {
@@ -658,7 +592,7 @@ public class H2GisDb extends ASpatialDb {
         String realTableName = getProperTableNameCase(tableName);
         TableLocation tableLocation = TableLocation.parse(realTableName);
         if (srid > 0) {
-            jdbcConn.createStatement().execute(
+            getJdbcConnection().createStatement().execute(
                     String.format("ALTER TABLE %s ADD CHECK ST_SRID(" + realName + ")=%d", tableLocation.toString(), srid));
         }
     }

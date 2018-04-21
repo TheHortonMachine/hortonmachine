@@ -85,8 +85,6 @@ public class SpatialiteCommonMethods {
 
     public static QueryResult getTableRecordsMapIn( ASpatialDb db, String tableName, Envelope envelope, boolean alsoPK_UID,
             int limit, int reprojectSrid, String whereStr ) throws Exception, ParseException {
-        QueryResult queryResult = new QueryResult();
-
         GeometryColumn gCol = null;
         try {
             gCol = db.getGeometryColumnsForTable(tableName);
@@ -161,123 +159,134 @@ public class SpatialiteCommonMethods {
             sql += " LIMIT " + limit;
         }
         SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
-        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            IHMResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
 
-            for( int i = 1; i <= columnCount; i++ ) {
-                String columnName = rsmd.getColumnName(i);
-                queryResult.names.add(columnName);
-                String columnTypeName = rsmd.getColumnTypeName(i);
-                queryResult.types.add(columnTypeName);
-                if (hasGeom && columnName.toLowerCase().equals(gCol.geometryColumnName.toLowerCase())) {
-                    queryResult.geometryIndex = i - 1;
-                }
-            }
+        String _sql = sql;
+        GeometryColumn _gCol = gCol;
+        return db.execOnConnection(connection -> {
+            QueryResult queryResult = new QueryResult();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
+                IHMResultSetMetaData rsmd = rs.getMetaData();
+                int columnCount = rsmd.getColumnCount();
 
-            long start = System.currentTimeMillis();
-            while( rs.next() ) {
-                Object[] rec = new Object[columnCount];
-                for( int j = 1; j <= columnCount; j++ ) {
-                    if (hasGeom && queryResult.geometryIndex == j - 1) {
-                        byte[] geomBytes = rs.getBytes(j);
-                        if (geomBytes != null) {
-                            Geometry geometry = wkbReader.read(geomBytes);
-                            rec[j - 1] = geometry;
-                        }
-                    } else {
-                        Object object = rs.getObject(j);
-                        if (object instanceof Clob) {
-                            object = rs.getString(j);
-                        }
-                        rec[j - 1] = object;
+                for( int i = 1; i <= columnCount; i++ ) {
+                    String columnName = rsmd.getColumnName(i);
+                    queryResult.names.add(columnName);
+                    String columnTypeName = rsmd.getColumnTypeName(i);
+                    queryResult.types.add(columnTypeName);
+                    if (hasGeom && columnName.toLowerCase().equals(_gCol.geometryColumnName.toLowerCase())) {
+                        queryResult.geometryIndex = i - 1;
                     }
                 }
-                queryResult.data.add(rec);
+
+                long start = System.currentTimeMillis();
+                while( rs.next() ) {
+                    Object[] rec = new Object[columnCount];
+                    for( int j = 1; j <= columnCount; j++ ) {
+                        if (hasGeom && queryResult.geometryIndex == j - 1) {
+                            byte[] geomBytes = rs.getBytes(j);
+                            if (geomBytes != null) {
+                                Geometry geometry = wkbReader.read(geomBytes);
+                                rec[j - 1] = geometry;
+                            }
+                        } else {
+                            Object object = rs.getObject(j);
+                            if (object instanceof Clob) {
+                                object = rs.getString(j);
+                            }
+                            rec[j - 1] = object;
+                        }
+                    }
+                    queryResult.data.add(rec);
+                }
+                long end = System.currentTimeMillis();
+                queryResult.queryTimeMillis = end - start;
+                return queryResult;
             }
-            long end = System.currentTimeMillis();
-            queryResult.queryTimeMillis = end - start;
-            return queryResult;
-        }
+        });
+
     }
 
-//    public static List<Geometry> getGeometriesIn( ASpatialDb db, String tableName, Envelope envelope, String... prePostWhere )
-//            throws Exception, ParseException {
-//        List<Geometry> geoms = new ArrayList<Geometry>();
-//
-//        List<String> wheres = new ArrayList<>();
-//        String pre = "";
-//        String post = "";
-//        String where = "";
-//        if (prePostWhere != null) {
-//            pre = prePostWhere[0];
-//            post = prePostWhere[1];
-//            where = prePostWhere[2];
-//            wheres.add(where);
-//        }
-//
-//        GeometryColumn gCol = db.getGeometryColumnsForTable(tableName);
-//        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName;
-//
-//        if (envelope != null) {
-//            double x1 = envelope.getMinX();
-//            double y1 = envelope.getMinY();
-//            double x2 = envelope.getMaxX();
-//            double y2 = envelope.getMaxY();
-//            wheres.add(db.getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2));
-//        }
-//
-//        if (wheres.size() > 0) {
-//            sql += " WHERE " + DbsUtilities.joinBySeparator(wheres, " AND ");
-//        }
-//
-//        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
-//        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-//            while( rs.next() ) {
-//                byte[] geomBytes = rs.getBytes(1);
-//                Geometry geometry = wkbReader.read(geomBytes);
-//                geoms.add(geometry);
-//            }
-//            return geoms;
-//        }
-//    }
-//
-//    public static List<Geometry> getGeometriesIn( ASpatialDb db, String tableName, Geometry intersectionGeometry,
-//            String... prePostWhere ) throws Exception, ParseException {
-//        List<Geometry> geoms = new ArrayList<Geometry>();
-//
-//        List<String> wheres = new ArrayList<>();
-//        String pre = "";
-//        String post = "";
-//        String where = "";
-//        if (prePostWhere != null) {
-//            pre = prePostWhere[0];
-//            post = prePostWhere[1];
-//            where = prePostWhere[2];
-//            wheres.add(where);
-//        }
-//
-//        GeometryColumn gCol = db.getGeometryColumnsForTable(tableName);
-//        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName;
-//
-//        if (intersectionGeometry != null) {
-//            wheres.add(db.getSpatialindexGeometryWherePiece(tableName, null, intersectionGeometry));
-//        }
-//
-//        if (wheres.size() > 0) {
-//            sql += " WHERE " + DbsUtilities.joinBySeparator(wheres, " AND ");
-//        }
-//
-//        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
-//        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-//            while( rs.next() ) {
-//                byte[] geomBytes = rs.getBytes(1);
-//                Geometry geometry = wkbReader.read(geomBytes);
-//                geoms.add(geometry);
-//            }
-//            return geoms;
-//        }
-//    }
+    // public static List<Geometry> getGeometriesIn( ASpatialDb db, String tableName, Envelope
+    // envelope, String... prePostWhere )
+    // throws Exception, ParseException {
+    // List<Geometry> geoms = new ArrayList<Geometry>();
+    //
+    // List<String> wheres = new ArrayList<>();
+    // String pre = "";
+    // String post = "";
+    // String where = "";
+    // if (prePostWhere != null) {
+    // pre = prePostWhere[0];
+    // post = prePostWhere[1];
+    // where = prePostWhere[2];
+    // wheres.add(where);
+    // }
+    //
+    // GeometryColumn gCol = db.getGeometryColumnsForTable(tableName);
+    // String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName;
+    //
+    // if (envelope != null) {
+    // double x1 = envelope.getMinX();
+    // double y1 = envelope.getMinY();
+    // double x2 = envelope.getMaxX();
+    // double y2 = envelope.getMaxY();
+    // wheres.add(db.getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2));
+    // }
+    //
+    // if (wheres.size() > 0) {
+    // sql += " WHERE " + DbsUtilities.joinBySeparator(wheres, " AND ");
+    // }
+    //
+    // SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+    // try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs =
+    // stmt.executeQuery(sql)) {
+    // while( rs.next() ) {
+    // byte[] geomBytes = rs.getBytes(1);
+    // Geometry geometry = wkbReader.read(geomBytes);
+    // geoms.add(geometry);
+    // }
+    // return geoms;
+    // }
+    // }
+    //
+    // public static List<Geometry> getGeometriesIn( ASpatialDb db, String tableName, Geometry
+    // intersectionGeometry,
+    // String... prePostWhere ) throws Exception, ParseException {
+    // List<Geometry> geoms = new ArrayList<Geometry>();
+    //
+    // List<String> wheres = new ArrayList<>();
+    // String pre = "";
+    // String post = "";
+    // String where = "";
+    // if (prePostWhere != null) {
+    // pre = prePostWhere[0];
+    // post = prePostWhere[1];
+    // where = prePostWhere[2];
+    // wheres.add(where);
+    // }
+    //
+    // GeometryColumn gCol = db.getGeometryColumnsForTable(tableName);
+    // String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName;
+    //
+    // if (intersectionGeometry != null) {
+    // wheres.add(db.getSpatialindexGeometryWherePiece(tableName, null, intersectionGeometry));
+    // }
+    //
+    // if (wheres.size() > 0) {
+    // sql += " WHERE " + DbsUtilities.joinBySeparator(wheres, " AND ");
+    // }
+    //
+    // SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+    // try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs =
+    // stmt.executeQuery(sql)) {
+    // while( rs.next() ) {
+    // byte[] geomBytes = rs.getBytes(1);
+    // Geometry geometry = wkbReader.read(geomBytes);
+    // geoms.add(geometry);
+    // }
+    // return geoms;
+    // }
+    // }
 
     public static GeometryColumn getGeometryColumnsForTable( IHMConnection connection, String tableName ) throws Exception {
         String attachedStr = "";
@@ -342,12 +351,17 @@ public class SpatialiteCommonMethods {
         if (options == null) {
             options = "";
         }
-        db.enableAutocommit(false);
         String sql = "SELECT InitSpatialMetadata(" + options + ")";
-        try (IHMStatement stmt = db.getConnection().createStatement()) {
-            stmt.execute(sql);
-        }
-        db.enableAutocommit(true);
+
+        db.execOnConnection(connection -> {
+            connection.enableAutocommit(false);
+            try (IHMStatement stmt = connection.createStatement()) {
+                stmt.execute(sql);
+            }
+            connection.enableAutocommit(true);
+            return null;
+        });
+
     }
 
     public static Envelope getTableBounds( ASpatialDb db, String tableName ) throws Exception {
@@ -357,19 +371,25 @@ public class SpatialiteCommonMethods {
             geomFieldName = gCol.geometryColumnName;
             String trySql = "SELECT extent_min_x, extent_min_y, extent_max_x, extent_max_y FROM vector_layers_statistics WHERE Lower(table_name)=Lower('"
                     + tableName + "') AND Lower(geometry_column)=Lower('" + geomFieldName + "')";
-            try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(trySql)) {
-                if (rs.next()) {
-                    double minX = rs.getDouble(1);
-                    double minY = rs.getDouble(2);
-                    double maxX = rs.getDouble(3);
-                    double maxY = rs.getDouble(4);
 
-                    Envelope env = new Envelope(minX, maxX, minY, maxY);
-                    if (env.getWidth() != 0.0 && env.getHeight() != 0.0) {
-                        return env;
+            Envelope resEnv = db.execOnConnection(connection -> {
+                try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(trySql)) {
+                    if (rs.next()) {
+                        double minX = rs.getDouble(1);
+                        double minY = rs.getDouble(2);
+                        double maxX = rs.getDouble(3);
+                        double maxY = rs.getDouble(4);
+
+                        Envelope env = new Envelope(minX, maxX, minY, maxY);
+                        if (env.getWidth() != 0.0 && env.getHeight() != 0.0) {
+                            return env;
+                        }
                     }
+                    return null;
                 }
-            }
+            });
+            if (resEnv != null)
+                return resEnv;
         } else {
             // try geometry if virtual table
             geomFieldName = "geometry";
@@ -381,18 +401,20 @@ public class SpatialiteCommonMethods {
                 + "Max(MbrMaxX(" + geomFieldName + ")) AS max_x, Max(MbrMaxY(" + geomFieldName + ")) AS max_y " + "FROM "
                 + tableName;
 
-        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                double minX = rs.getDouble(1);
-                double minY = rs.getDouble(2);
-                double maxX = rs.getDouble(3);
-                double maxY = rs.getDouble(4);
+        return db.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    double minX = rs.getDouble(1);
+                    double minY = rs.getDouble(2);
+                    double maxX = rs.getDouble(3);
+                    double maxY = rs.getDouble(4);
 
-                Envelope env = new Envelope(minX, maxX, minY, maxY);
-                return env;
+                    Envelope env = new Envelope(minX, maxX, minY, maxY);
+                    return env;
+                }
+                return null;
             }
-            return null;
-        }
+        });
     }
 
     public static String getSpatialindexBBoxWherePiece( ASpatialDb db, String tableName, String alias, double x1, double y1,
@@ -477,16 +499,23 @@ public class SpatialiteCommonMethods {
             geomColName = ASpatialDb.DEFAULT_GEOM_FIELD_NAME;
         }
 
-        try (IHMStatement stmt = db.getConnection().createStatement()) {
-            String sql = "SELECT AddGeometryColumn('" + tableName + "','" + geomColName + "', " + epsgStr + ", '" + geomTypeStr
-                    + "', 'XY')";
-            stmt.execute(sql);
-
-            if (!avoidIndex) {
-                sql = "SELECT CreateSpatialIndex('" + tableName + "', '" + geomColName + "');";
+        String _geomColName = geomColName;
+        String _epsgStr = epsgStr;
+        String _geomTypeStr = geomTypeStr;
+        db.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement()) {
+                String sql = "SELECT AddGeometryColumn('" + tableName + "','" + _geomColName + "', " + _epsgStr + ", '"
+                        + _geomTypeStr + "', 'XY')";
                 stmt.execute(sql);
+
+                if (!avoidIndex) {
+                    sql = "SELECT CreateSpatialIndex('" + tableName + "', '" + _geomColName + "');";
+                    stmt.execute(sql);
+                }
             }
-        }
+            return null;
+        });
+
     }
 
     public static void createSpatialTable( ASpatialDb db, String tableName, int tableSrid, String geometryFieldData,
@@ -511,9 +540,13 @@ public class SpatialiteCommonMethods {
         String sql = sb.toString();
         sql = checkCompatibilityIssues(sql);
 
-        try (IHMStatement stmt = db.getConnection().createStatement()) {
-            stmt.execute(sql);
-        }
+        String _sql = sql;
+        db.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement()) {
+                stmt.execute(_sql);
+            }
+            return null;
+        });
 
         String[] split = geometryFieldData.trim().split("\\s+");
         String geomColName = split[0];
@@ -556,76 +589,86 @@ public class SpatialiteCommonMethods {
                 sql += " WHERE " + wherePiece;
             }
         }
-        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) {
-                String geoJson = rs.getString(1);
-                return geoJson;
+
+        String _sql = sql;
+        return db.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
+                if (rs.next()) {
+                    String geoJson = rs.getString(1);
+                    return geoJson;
+                }
             }
-        }
-        return "";
+            return "";
+        });
     }
 
     public static ETableType getTableType( ADb db, String tableName ) throws Exception {
         String sql = "SELECT type, sql FROM sqlite_master WHERE Lower(tbl_name)=Lower('" + tableName + "')";
-        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) {
-                String typeStr = rs.getString(1);
-                String sqlStr = rs.getString(2);
-                ETableType type = ETableType.fromType(typeStr);
-                if (type == ETableType.TABLE) {
-                    // check if it is virtual shp
-                    if (sqlStr.contains("USING VirtualShape")) {
-                        return ETableType.EXTERNAL;
+
+        return db.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    String typeStr = rs.getString(1);
+                    String sqlStr = rs.getString(2);
+                    ETableType type = ETableType.fromType(typeStr);
+                    if (type == ETableType.TABLE) {
+                        // check if it is virtual shp
+                        if (sqlStr.contains("USING VirtualShape")) {
+                            return ETableType.EXTERNAL;
+                        }
                     }
+                    return type;
                 }
-                return type;
             }
-        }
-        return ETableType.OTHER;
+            return ETableType.OTHER;
+        });
+
     }
 
     public static List<Index> getIndexes( ADb db, String tableName ) throws Exception {
         String sql = "SELECT name, sql FROM sqlite_master WHERE type='index' and tbl_name='" + tableName + "'";
 
-        List<Index> indexes = new ArrayList<Index>();
-        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                Index index = new Index();
+        return db.execOnConnection(connection -> {
+            List<Index> indexes = new ArrayList<Index>();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    Index index = new Index();
 
-                String indexName = rs.getString(1);
+                    String indexName = rs.getString(1);
 
-                index.table = tableName;
-                index.name = indexName;
+                    index.table = tableName;
+                    index.name = indexName;
 
-                String createSql = rs.getString(2);
-                if (createSql != null) {
-                    String lower = createSql.toLowerCase();
-                    if (lower.startsWith("create index") || lower.startsWith("create unique index")) {
-                        String[] split = createSql.split("\\(|\\)");
-                        String columns = split[1];
-                        String[] colSplit = columns.split(",");
-                        for( String col : colSplit ) {
-                            col = col.trim();
-                            if (col.length() > 0) {
-                                index.columns.add(col);
+                    String createSql = rs.getString(2);
+                    if (createSql != null) {
+                        String lower = createSql.toLowerCase();
+                        if (lower.startsWith("create index") || lower.startsWith("create unique index")) {
+                            String[] split = createSql.split("\\(|\\)");
+                            String columns = split[1];
+                            String[] colSplit = columns.split(",");
+                            for( String col : colSplit ) {
+                                col = col.trim();
+                                if (col.length() > 0) {
+                                    index.columns.add(col);
+                                }
                             }
-                        }
 
-                        if (lower.startsWith("create unique index")) {
-                            index.isUnique = true;
-                        }
+                            if (lower.startsWith("create unique index")) {
+                                index.isUnique = true;
+                            }
 
-                        indexes.add(index);
+                            indexes.add(index);
+                        }
                     }
                 }
-            }
-            return indexes;
-        } catch (SQLException e) {
-            if (e.getMessage().contains("query does not return ResultSet")) {
                 return indexes;
-            } else {
-                throw e;
+            } catch (SQLException e) {
+                if (e.getMessage().contains("query does not return ResultSet")) {
+                    return indexes;
+                } else {
+                    throw e;
+                }
             }
-        }
+        });
     }
 }

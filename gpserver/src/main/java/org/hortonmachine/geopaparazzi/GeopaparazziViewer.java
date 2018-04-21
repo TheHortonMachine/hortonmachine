@@ -82,21 +82,21 @@ public class GeopaparazziViewer extends GeopaparazziController {
 
     private BufferedImage readImageToBufferedImage( long imageId, File dbFile, boolean doOriginalSize )
             throws Exception, SQLException {
-        BufferedImage bufferedImage = null;
+
         try (SqliteDb db = new SqliteDb()) {
             db.open(dbFile.getAbsolutePath());
-            IHMConnection connection = db.getConnection();
-            byte[] imageData = DaoImages.getImageData(connection, imageId);
-            InputStream imageStream = null;
-            try {
-                imageStream = new ByteArrayInputStream(imageData);
-                bufferedImage = createImage(imageStream, doOriginalSize);
-
-            } catch (Exception e) {
-                logger.insertError("GeopaparazziViewer", "error", e);
-            }
+            return db.execOnConnection(connection -> {
+                byte[] imageData = DaoImages.getImageData(connection, imageId);
+                InputStream imageStream = null;
+                try {
+                    imageStream = new ByteArrayInputStream(imageData);
+                    return createImage(imageStream, doOriginalSize);
+                } catch (Exception e) {
+                    logger.insertError("GeopaparazziViewer", "error", e);
+                    return null;
+                }
+            });
         }
-        return bufferedImage;
     }
 
     private static BufferedImage createImage( InputStream inputStream, boolean doOriginalSize ) throws Exception {

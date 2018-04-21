@@ -266,7 +266,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                             try {
                                 geopaparazziServer = new GeopaparazziServer(fPort, folderFile);
                                 // Uncomment to require authentication:
-                                //geopaparazziServer.enableBasicAuth("user", "geopap");
+                                // geopaparazziServer.enableBasicAuth("user", "geopap");
                                 geopaparazziServer.start();
                             } catch (Exception e) {
                                 Logger.INSTANCE.insertError("", "ERROR", e);
@@ -409,22 +409,26 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         for( File geopapDatabaseFile : projectFiles ) {
             try (SqliteDb db = new SqliteDb()) {
                 db.open(geopapDatabaseFile.getAbsolutePath());
-                IHMConnection connection = db.getConnection();
-                String projectInfo = GeopaparazziUtilities.getProjectInfo(connection, true);
-                ProjectInfo info = new ProjectInfo();
-                info.databaseFile = geopapDatabaseFile;
-                info.fileName = geopapDatabaseFile.getName();
-                info.metadata = projectInfo;
 
-                List<org.hortonmachine.gears.io.geopaparazzi.geopap4.Image> imagesList = DaoImages.getImagesList(connection);
-                info.images = imagesList.toArray(new org.hortonmachine.gears.io.geopaparazzi.geopap4.Image[0]);
+                ProjectInfo resInfo = db.execOnConnection(connection -> {
+                    String projectInfo = GeopaparazziUtilities.getProjectInfo(connection, true);
+                    ProjectInfo info = new ProjectInfo();
+                    info.databaseFile = geopapDatabaseFile;
+                    info.fileName = geopapDatabaseFile.getName();
+                    info.metadata = projectInfo;
 
-                List<Note> notesList = DaoNotes.getNotesList(connection, null);
-                info.notes = notesList;
+                    List<org.hortonmachine.gears.io.geopaparazzi.geopap4.Image> imagesList = DaoImages.getImagesList(connection);
+                    info.images = imagesList.toArray(new org.hortonmachine.gears.io.geopaparazzi.geopap4.Image[0]);
 
-                List<GpsLog> logsList = DaoGpsLog.getLogsList(connection);
-                info.logs = logsList;
-                infoList.add(info);
+                    List<Note> notesList = DaoNotes.getNotesList(connection, null);
+                    info.notes = notesList;
+
+                    List<GpsLog> logsList = DaoGpsLog.getLogsList(connection);
+                    info.logs = logsList;
+                    return info;
+                });
+
+                infoList.add(resInfo);
             }
         }
         return infoList;
@@ -838,93 +842,98 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
     private void loadGpsLogChart( GpsLog log, File dbFile ) throws Exception {
         try (SqliteDb db = new SqliteDb()) {
             db.open(dbFile.getAbsolutePath());
-            IHMConnection connection = db.getConnection();
 
-            log.points.clear();
-            DaoGpsLog.collectDataForLog(connection, log);
+            db.execOnConnection(connection -> {
+                log.points.clear();
+                DaoGpsLog.collectDataForLog(connection, log);
 
-            String logName = log.text;
-            int size = log.points.size();
+                String logName = log.text;
+                int size = log.points.size();
 
-            List<Coordinate> coords = new ArrayList<>();
-            double runningDistance = 0;
-            for( int i = 0; i < size - 1; i++ ) {
-                GpsPoint p1 = log.points.get(i);
-                GpsPoint p2 = log.points.get(i + 1);
-                double lon1 = p1.lon;
-                double lat1 = p1.lat;
-                double altim1 = p1.altim;
-                double lon2 = p2.lon;
-                double lat2 = p2.lat;
-                double altim2 = p2.altim;
+                List<Coordinate> coords = new ArrayList<>();
+                double runningDistance = 0;
+                for( int i = 0; i < size - 1; i++ ) {
+                    GpsPoint p1 = log.points.get(i);
+                    GpsPoint p2 = log.points.get(i + 1);
+                    double lon1 = p1.lon;
+                    double lat1 = p1.lat;
+                    double altim1 = p1.altim;
+                    double lon2 = p2.lon;
+                    double lat2 = p2.lat;
+                    double altim2 = p2.altim;
 
-                double distance = NwwUtilities.computeDistance(lat1, lon1, lat2, lon2);
-                runningDistance += distance;
+                    double distance = NwwUtilities.computeDistance(lat1, lon1, lat2, lon2);
+                    runningDistance += distance;
 
-                if (i == 0) {
-                    coords.add(new Coordinate(0.0, altim1));
+                    if (i == 0) {
+                        coords.add(new Coordinate(0.0, altim1));
+                    }
+                    coords.add(new Coordinate(runningDistance, altim2));
                 }
-                coords.add(new Coordinate(runningDistance, altim2));
-            }
 
-            LineString lineString = GeometryUtilities.gf().createLineString(coords.toArray(new Coordinate[0]));
+                LineString lineString = GeometryUtilities.gf().createLineString(coords.toArray(new Coordinate[0]));
 
-            int lookAhead = 20;
-            if (lookAhead > coords.size()) {
-                lookAhead = 3;
-            }
-            double slide = 1;
-            FeatureSlidingAverage fsaElev = new FeatureSlidingAverage(lineString);
-            List<Coordinate> smoothedElev = fsaElev.smooth(lookAhead, false, slide);
-            if (smoothedElev == null) {
-                smoothedElev = coords;
-            }
-            double[] xProfile = new double[smoothedElev.size()];
-            double[] yProfile = new double[smoothedElev.size()];
-            for( int i = 0; i < xProfile.length; i++ ) {
-                Coordinate c = smoothedElev.get(i);
-                xProfile[i] = c.x;
-                yProfile[i] = c.y;
-            }
+                int lookAhead = 20;
+                if (lookAhead > coords.size()) {
+                    lookAhead = 3;
+                }
+                double slide = 1;
+                FeatureSlidingAverage fsaElev = new FeatureSlidingAverage(lineString);
+                List<Coordinate> smoothedElev = fsaElev.smooth(lookAhead, false, slide);
+                if (smoothedElev == null) {
+                    smoothedElev = coords;
+                }
+                double[] xProfile = new double[smoothedElev.size()];
+                double[] yProfile = new double[smoothedElev.size()];
+                for( int i = 0; i < xProfile.length; i++ ) {
+                    Coordinate c = smoothedElev.get(i);
+                    xProfile[i] = c.x;
+                    yProfile[i] = c.y;
+                }
 
-            Scatter scatterProfile = new Scatter("Profile " + logName);
-            scatterProfile.addSeries("profile", xProfile, yProfile);
-            scatterProfile.setShowLines(true);
-            String colorQuery = "select " //
-                    + GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_COLOR.getFieldName() + " from " + TABLE_GPSLOG_PROPERTIES
-                    + " where " + //
-                    GpsLogsPropertiesTableFields.COLUMN_LOGID.getFieldName() + " = " + log.id;
+                Scatter scatterProfile = new Scatter("Profile " + logName);
+                scatterProfile.addSeries("profile", xProfile, yProfile);
+                scatterProfile.setShowLines(true);
+                String colorQuery = "select " //
+                        + GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_COLOR.getFieldName() + " from " + TABLE_GPSLOG_PROPERTIES
+                        + " where " + //
+                GpsLogsPropertiesTableFields.COLUMN_LOGID.getFieldName() + " = " + log.id;
 
-            String colorStr = RED_HEXA;
-            try (IHMStatement newStatement = connection.createStatement();
-                    IHMResultSet result = newStatement.executeQuery(colorQuery);) {
-                newStatement.setQueryTimeout(30);
+                String colorStr = RED_HEXA;
+                try (IHMStatement newStatement = connection.createStatement();
+                        IHMResultSet result = newStatement.executeQuery(colorQuery);) {
+                    newStatement.setQueryTimeout(30);
 
-                if (result.next()) {
-                    colorStr = result.getString(1);
-                    if (colorStr.equalsIgnoreCase("red")) {
+                    if (result.next()) {
+                        colorStr = result.getString(1);
+                        if (colorStr.equalsIgnoreCase("red")) {
+                            colorStr = RED_HEXA;
+                        }
+                    }
+                    if (colorStr == null || colorStr.length() == 0) {
                         colorStr = RED_HEXA;
                     }
                 }
-                if (colorStr == null || colorStr.length() == 0) {
-                    colorStr = RED_HEXA;
+
+                Color color = Color.RED;
+                try {
+                    color = Color.decode(colorStr);
+                } catch (Exception e) {
+                    // ignore Logger.INSTANCE.insertError("","Could not convert color: " + colorStr,
+                    // e);
                 }
-            }
 
-            Color color = Color.RED;
-            try {
-                color = Color.decode(colorStr);
-            } catch (Exception e) {
-                // ignore Logger.INSTANCE.insertError("","Could not convert color: " + colorStr, e);
-            }
+                scatterProfile.setColors(new Color[]{color});
+                scatterProfile.setXLabel("progressive distance [m]");
+                scatterProfile.setYLabel("elevation [m]");
+                JFreeChart chart = scatterProfile.getChart();
+                ChartPanel chartPanel = new ChartPanel(chart, true);
 
-            scatterProfile.setColors(new Color[]{color});
-            scatterProfile.setXLabel("progressive distance [m]");
-            scatterProfile.setYLabel("elevation [m]");
-            JFreeChart chart = scatterProfile.getChart();
-            ChartPanel chartPanel = new ChartPanel(chart, true);
+                _chartHolder.add(chartPanel, BorderLayout.CENTER);
 
-            _chartHolder.add(chartPanel, BorderLayout.CENTER);
+                return null;
+            });
+
         }
     }
 
@@ -1112,47 +1121,50 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         LinkedHashMap<String, String> metadataMap = new LinkedHashMap<>();
         try (SqliteDb db = new SqliteDb()) {
             db.open(currentSelectedProject.databaseFile.getAbsolutePath());
-            IHMConnection connection = db.getConnection();
-            String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
-                    MetadataTableFields.COLUMN_VALUE.getFieldName() + " from " + TABLE_METADATA;
-            try (IHMStatement statement = connection.createStatement(); IHMResultSet rs = statement.executeQuery(sql);) {
-                statement.setQueryTimeout(30); // set timeout to 30 sec.
 
-                while( rs.next() ) {
-                    String key = rs.getString(MetadataTableFields.COLUMN_KEY.getFieldName());
-                    String value = rs.getString(MetadataTableFields.COLUMN_VALUE.getFieldName());
-                    if (!key.endsWith("ts")) {
-                        // timestamps can't be changed
-                        metadataMap.put(key, value);
-                    }
-                }
-            }
-
-            String title = "Edit Project Info";
-            String[] labels = metadataMap.keySet().toArray(new String[0]);
-            String[] defaultValues = metadataMap.values().toArray(new String[0]);
-            String[] result = GuiUtilities.showMultiInputDialog(this, title, labels, defaultValues, null);
-
-            if (result != null) {
-                try (IHMStatement statement = connection.createStatement();) {
+            db.execOnConnection(connection -> {
+                String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
+                MetadataTableFields.COLUMN_VALUE.getFieldName() + " from " + TABLE_METADATA;
+                try (IHMStatement statement = connection.createStatement(); IHMResultSet rs = statement.executeQuery(sql);) {
                     statement.setQueryTimeout(30); // set timeout to 30 sec.
 
-                    for( int i = 0; i < labels.length; i++ ) {
-                        String key = labels[i];
-                        String textData = result[i];
-                        if (textData == null) {
-                            textData = "";
+                    while( rs.next() ) {
+                        String key = rs.getString(MetadataTableFields.COLUMN_KEY.getFieldName());
+                        String value = rs.getString(MetadataTableFields.COLUMN_VALUE.getFieldName());
+                        if (!key.endsWith("ts")) {
+                            // timestamps can't be changed
+                            metadataMap.put(key, value);
                         }
-                        textData = ASpatialDb.escapeSql(textData);
-                        String query = "update " + TABLE_METADATA + " set value='" + textData + "'  where key='" + key + "';";
-
-                        statement.executeUpdate(query);
                     }
                 }
-                String projectInfo = GeopaparazziUtilities.getProjectInfo(connection, true);
-                currentSelectedProject.metadata = projectInfo;
-                selectProjectInfo(currentSelectedProject);
-            }
+
+                String title = "Edit Project Info";
+                String[] labels = metadataMap.keySet().toArray(new String[0]);
+                String[] defaultValues = metadataMap.values().toArray(new String[0]);
+                String[] result = GuiUtilities.showMultiInputDialog(this, title, labels, defaultValues, null);
+
+                if (result != null) {
+                    try (IHMStatement statement = connection.createStatement();) {
+                        statement.setQueryTimeout(30); // set timeout to 30 sec.
+
+                        for( int i = 0; i < labels.length; i++ ) {
+                            String key = labels[i];
+                            String textData = result[i];
+                            if (textData == null) {
+                                textData = "";
+                            }
+                            textData = ASpatialDb.escapeSql(textData);
+                            String query = "update " + TABLE_METADATA + " set value='" + textData + "'  where key='" + key + "';";
+
+                            statement.executeUpdate(query);
+                        }
+                    }
+                    String projectInfo = GeopaparazziUtilities.getProjectInfo(connection, true);
+                    currentSelectedProject.metadata = projectInfo;
+                    selectProjectInfo(currentSelectedProject);
+                }
+                return null;
+            });
 
         }
     }

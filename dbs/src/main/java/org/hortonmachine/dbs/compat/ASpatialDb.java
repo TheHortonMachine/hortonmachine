@@ -169,11 +169,16 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         String realColumnName = getProperColumnNameCase(tableName, geomColumnName);
         String realTableName = getProperTableNameCase(tableName);
         String sql = "CREATE SPATIAL INDEX ON " + realTableName + "(" + realColumnName + ");";
-        try (IHMStatement stmt = mConn.createStatement()) {
-            stmt.execute(sql.toString());
-        }
+
+        execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement()) {
+                stmt.execute(sql.toString());
+            }
+            return null;
+        });
+
     }
-    
+
     /**
      * Insert a geometry into a table.
      * 
@@ -193,10 +198,15 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
 
         GeometryColumn gc = getGeometryColumnsForTable(tableName);
         String sql = "INSERT INTO " + tableName + " (" + gc.geometryColumnName + ") VALUES (ST_GeomFromText(?, " + epsgStr + "))";
-        try (IHMPreparedStatement pStmt = mConn.prepareStatement(sql)) {
-            pStmt.setString(1, geometry.toText());
-            pStmt.executeUpdate();
-        }
+
+        execOnConnection(connection -> {
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
+                pStmt.setString(1, geometry.toText());
+                pStmt.executeUpdate();
+            }
+            return null;
+        });
+
     }
 
     /**
@@ -301,15 +311,17 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
             sql += " WHERE " + DbsUtilities.joinBySeparator(wheres, " AND ");
         }
 
+        String _sql = sql;
         IGeometryParser geometryParser = getType().getGeometryParser();
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                Geometry geometry = geometryParser.fromResultSet(rs, 1);
-                geoms.add(geometry);
+        return execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
+                while( rs.next() ) {
+                    Geometry geometry = geometryParser.fromResultSet(rs, 1);
+                    geoms.add(geometry);
+                }
+                return geoms;
             }
-            return geoms;
-        }
-
+        });
     }
 
     /**
@@ -355,13 +367,16 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         }
 
         IGeometryParser geometryParser = getType().getGeometryParser();
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                Geometry geometry = geometryParser.fromResultSet(rs, 1);
-                geoms.add(geometry);
+        String _sql = sql;
+        return execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
+                while( rs.next() ) {
+                    Geometry geometry = geometryParser.fromResultSet(rs, 1);
+                    geoms.add(geometry);
+                }
+                return geoms;
             }
-            return geoms;
-        }
+        });
 
     }
 

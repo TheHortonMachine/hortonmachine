@@ -43,7 +43,6 @@ import com.vividsolutions.jts.geom.Polygon;
 public class RL2CoverageHandler {
 
     private ASpatialDb mSpatialiteDb;
-    private IHMConnection mConn;
     private String mTargetEpsg;
     private String mTableName;
     private RasterCoverage rasterCoverage;
@@ -54,7 +53,6 @@ public class RL2CoverageHandler {
         this.mTableName = rasterCoverage.coverage_name;
         mTargetEpsg = String.valueOf(rasterCoverage.srid);
 
-        mConn = mSpatialiteDb.getConnection();
     }
 
     public RasterCoverage getRasterCoverage() {
@@ -89,18 +87,20 @@ public class RL2CoverageHandler {
                     + height + ", 'default', 'image/png', '#ffffff', 0, 80, 1 )";
         }
 
-        try (IHMStatement stmt = mConn.createStatement()) {
-            IHMResultSet resultSet = stmt.executeQuery(sql);
-            if (resultSet.next()) {
-                byte[] bytes = resultSet.getBytes(1);
-                if (bytes == null) {
-                    return null;
+        return mSpatialiteDb.execOnConnection(mConn -> {
+            try (IHMStatement stmt = mConn.createStatement()) {
+                IHMResultSet resultSet = stmt.executeQuery(sql);
+                if (resultSet.next()) {
+                    byte[] bytes = resultSet.getBytes(1);
+                    if (bytes == null) {
+                        return null;
+                    }
+                    BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));
+                    return image;
                 }
-                BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));
-                return image;
             }
-        }
-        return null;
+            return null;
+        });
     }
 
     public BufferedImage getRL2ImageForTile( int x, int y, int zoom, int tileSize ) throws Exception {

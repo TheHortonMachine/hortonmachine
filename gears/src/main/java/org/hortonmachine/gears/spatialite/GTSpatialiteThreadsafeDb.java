@@ -52,38 +52,48 @@ public class GTSpatialiteThreadsafeDb extends SpatialiteThreadsafeDb {
 
         String trySql = "SELECT extent_min_x, extent_min_y, extent_max_x, extent_max_y FROM vector_layers_statistics WHERE table_name='"
                 + tableName + "' AND geometry_column='" + geomFieldName + "'";
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(trySql)) {
-            if (rs.next()) {
-                double minX = rs.getDouble(1);
-                double minY = rs.getDouble(2);
-                double maxX = rs.getDouble(3);
-                double maxY = rs.getDouble(4);
 
-                ReferencedEnvelope env = new ReferencedEnvelope(minX, maxX, minY, maxY, crs);
-                if (env.getWidth() != 0.0 && env.getHeight() != 0.0) {
-                    return env;
+        ReferencedEnvelope resEnv = execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(trySql)) {
+                if (rs.next()) {
+                    double minX = rs.getDouble(1);
+                    double minY = rs.getDouble(2);
+                    double maxX = rs.getDouble(3);
+                    double maxY = rs.getDouble(4);
+
+                    ReferencedEnvelope env = new ReferencedEnvelope(minX, maxX, minY, maxY, crs);
+                    if (env.getWidth() != 0.0 && env.getHeight() != 0.0) {
+                        return env;
+                    }
                 }
+                return null;
             }
-        }
+        });
 
+        if (resEnv != null) {
+            return resEnv;
+        }
         // OR DO FULL GEOMETRIES SCAN
 
         String sql = "SELECT Min(MbrMinX(" + geomFieldName + ")) AS min_x, Min(MbrMinY(" + geomFieldName + ")) AS min_y,"
                 + "Max(MbrMaxX(" + geomFieldName + ")) AS max_x, Max(MbrMaxY(" + geomFieldName + ")) AS max_y " + "FROM "
                 + tableName;
 
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                double minX = rs.getDouble(1);
-                double minY = rs.getDouble(2);
-                double maxX = rs.getDouble(3);
-                double maxY = rs.getDouble(4);
+        return execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    double minX = rs.getDouble(1);
+                    double minY = rs.getDouble(2);
+                    double maxX = rs.getDouble(3);
+                    double maxY = rs.getDouble(4);
 
-                ReferencedEnvelope env = new ReferencedEnvelope(minX, maxX, minY, maxY, crs);
-                return env;
+                    ReferencedEnvelope env = new ReferencedEnvelope(minX, maxX, minY, maxY, crs);
+                    return env;
+                }
+                return null;
             }
-            return null;
-        }
+        });
+
     }
 
     /**
@@ -94,41 +104,46 @@ public class GTSpatialiteThreadsafeDb extends SpatialiteThreadsafeDb {
      * @throws Exception 
      */
     public void executeSqlFile( File file, int chunks, boolean eachLineAnSql ) throws Exception {
-        boolean autoCommit = mConn.getAutoCommit();
-        mConn.setAutoCommit(false);
+        execOnConnection(mConn -> {
+            boolean autoCommit = mConn.getAutoCommit();
+            mConn.setAutoCommit(false);
 
-        Predicate<String> validSqlLine = s -> s.length() != 0 //
-                && !s.startsWith("BEGIN") //
-                && !s.startsWith("COMMIT") //
-        ;
-        Predicate<String> commentPredicate = s -> !s.startsWith("--");
+            Predicate<String> validSqlLine = s -> s.length() != 0 //
+                    && !s.startsWith("BEGIN") //
+                    && !s.startsWith("COMMIT") //
+            ;
+            Predicate<String> commentPredicate = s -> !s.startsWith("--");
 
-        try (IHMStatement pStmt = mConn.createStatement()) {
-            final int[] counter = {1};
-            Stream<String> linesStream = null;
-            if (eachLineAnSql) {
-                linesStream = Files.lines(Paths.get(file.getAbsolutePath())).map(s -> s.trim()).filter(commentPredicate)
-                        .filter(validSqlLine);
-            } else {
-                linesStream = Arrays.stream(Files.lines(Paths.get(file.getAbsolutePath())).filter(commentPredicate)
-                        .collect(Collectors.joining()).split(";")).filter(validSqlLine);
-            }
-
-            Consumer<String> executeAction = s -> {
-                try {
-                    pStmt.executeUpdate(s);
-                    counter[0]++;
-                    if (counter[0] % chunks == 0) {
-                        mConn.commit();
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+            try (IHMStatement pStmt = mConn.createStatement()) {
+                final int[] counter = {1};
+                Stream<String> linesStream = null;
+                if (eachLineAnSql) {
+                    linesStream = Files.lines(Paths.get(file.getAbsolutePath())).map(s -> s.trim()).filter(commentPredicate)
+                            .filter(validSqlLine);
+                } else {
+                    linesStream = Arrays.stream(Files.lines(Paths.get(file.getAbsolutePath())).filter(commentPredicate)
+                            .collect(Collectors.joining()).split(";")).filter(validSqlLine);
                 }
-            };
-            linesStream.forEach(executeAction);
-            mConn.commit();
-        }
-        mConn.setAutoCommit(autoCommit);
+
+                Consumer<String> executeAction = s -> {
+                    try {
+                        pStmt.executeUpdate(s);
+                        counter[0]++;
+                        if (counter[0] % chunks == 0) {
+                            mConn.commit();
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                };
+                linesStream.forEach(executeAction);
+                mConn.commit();
+            }
+            mConn.setAutoCommit(autoCommit);
+
+            return null;
+        });
+
     }
 
 }

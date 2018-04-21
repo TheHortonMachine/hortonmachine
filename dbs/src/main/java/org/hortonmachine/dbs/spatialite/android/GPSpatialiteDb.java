@@ -27,6 +27,7 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -49,6 +50,7 @@ import jsqlite.Database;
  */
 public class GPSpatialiteDb extends ASpatialDb {
     private SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+    private GPConnection mConn;
 
     @Override
     public EDb getType() {
@@ -87,8 +89,18 @@ public class GPSpatialiteDb extends ASpatialDb {
     }
 
     @Override
+    public void close() throws Exception {
+        mConn.close();
+    }
+
+    @Override
     public Connection getJdbcConnection() {
         throw new IllegalArgumentException("Android drivers do not support this method.");
+    }
+
+    @Override
+    protected IHMConnection getConnectionInternal() throws Exception {
+        return mConn;
     }
 
     @Override

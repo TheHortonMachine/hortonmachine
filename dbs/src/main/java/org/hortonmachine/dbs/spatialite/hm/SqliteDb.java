@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
+import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -43,12 +44,14 @@ import org.sqlite.SQLiteConfig;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SqliteDb extends ADb {
+    private static final String DRIVER_CLASS = "org.sqlite.JDBC";
     private static final String JDBC_URL_PRE = "jdbc:sqlite:";
     private Connection jdbcConn;
+    private HMConnection mConn;
 
     static {
         try {
-            Class.forName("org.sqlite.JDBC");
+            Class.forName(DRIVER_CLASS);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -89,14 +92,14 @@ public class SqliteDb extends ADb {
             properties.setProperty("password", password);
         }
         jdbcConn = DriverManager.getConnection(JDBC_URL_PRE + dbPath, properties);
-        mConn = new HMConnection(jdbcConn);
+        mConn = new HMConnection(jdbcConn, false);
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
             Logger.INSTANCE.insertInfo(null, "SQLite Version: " + dbInfo[0]);
         }
         return dbExists;
     }
-    
+
     @Override
     public String getJdbcUrlPre() {
         return JDBC_URL_PRE;
@@ -104,6 +107,19 @@ public class SqliteDb extends ADb {
 
     public Connection getJdbcConnection() {
         return jdbcConn;
+    }
+
+    public IHMConnection getConnectionInternal() throws Exception {
+        return mConn;
+    }
+
+    public void close() throws Exception {
+        if (mConn != null) {
+            mConn.setAutoCommit(false);
+            mConn.commit();
+            mConn.close();
+            mConn = null;
+        }
     }
 
     public String[] getDbInfo() throws Exception {
@@ -270,7 +286,5 @@ public class SqliteDb extends ADb {
     public List<Index> getIndexes( String tableName ) throws Exception {
         return SpatialiteCommonMethods.getIndexes(this, tableName);
     }
-
-    
 
 }

@@ -1,16 +1,17 @@
 package org.hortonmachine.dbs;
 
-import static org.hortonmachine.dbs.TestUtilities.*;
+import static org.hortonmachine.dbs.TestUtilities.MPOLY_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.createGeomTables;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.List;
 
-import org.h2.jdbc.JdbcSQLException;
 import org.h2.tools.Server;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.h2gis.H2GisDb;
+import org.hortonmachine.dbs.h2gis.H2GisServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,7 +33,7 @@ public class TestH2GisServer_WithDatabasePwd {
     @BeforeClass
     public static void createDb() throws Exception {
         String tempDir = System.getProperty("java.io.tmpdir");
-        server = H2GisDb.startTcpServerMode("9093", false, null, true, tempDir);
+        server = H2GisServer.startTcpServerMode("9093", false, null, true, tempDir);
 
         dbPath = tempDir + File.separator + "jgt-dbs-testspatialdbsserverpwdmain" + EDb.H2GIS.getExtensionOnCreation();
         TestUtilities.deletePrevious(tempDir, dbPath, EDb.H2GIS);
@@ -48,12 +49,13 @@ public class TestH2GisServer_WithDatabasePwd {
     @AfterClass
     public static void closeDb() throws Exception {
         if (server != null) {
+            Thread.sleep(1000);
             server.stop();
             new File(dbPath + "." + EDb.H2GIS.getExtension()).delete();
         }
     }
 
-    @Test(expected = JdbcSQLException.class)
+    @Test(expected = SQLException.class)
     public void testGetGeometriesFromServerWithoutPwd() throws Exception {
         connect(false);
     }
@@ -69,6 +71,10 @@ public class TestH2GisServer_WithDatabasePwd {
         try (ASpatialDb db = EDb.H2GIS.getSpatialDb()) {
             if (withDbPwd) {
                 db.setCredentials("dbuser", "dbpwd");
+            } else {
+                // to avoid slow test when pooling
+                // we force single connection
+                db.setMakePooled(false);
             }
             db.open(tcpServerUrl);
             db.initSpatialMetadata("'WGS84'");

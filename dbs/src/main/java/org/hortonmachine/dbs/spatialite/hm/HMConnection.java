@@ -35,9 +35,11 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 public class HMConnection implements IHMConnection {
 
     private Connection connection;
+    private boolean closeOnRelease;
 
-    public HMConnection( Connection connection ) {
+    public HMConnection( Connection connection, boolean closeOnRelease ) {
         this.connection = connection;
+        this.closeOnRelease = closeOnRelease;
     }
 
     public Connection getOriginalConnection() {
@@ -62,7 +64,7 @@ public class HMConnection implements IHMConnection {
         IHMPreparedStatement preparedStatement = new HMPreparedStatement(tmp);
         return preparedStatement;
     }
-    
+
     @Override
     public void close() throws Exception {
         connection.close();
@@ -96,6 +98,24 @@ public class HMConnection implements IHMConnection {
     @Override
     public void rollback() throws Exception {
         connection.rollback();
+    }
+
+    public void enableAutocommit( boolean enable ) throws Exception {
+        boolean autoCommitEnabled = getAutoCommit();
+        if (enable && !autoCommitEnabled) {
+            // do enable if not already enabled
+            setAutoCommit(true);
+        } else if (!enable && autoCommitEnabled) {
+            // disable if not already disabled
+            setAutoCommit(false);
+        }
+    }
+
+    @Override
+    public void release() throws Exception {
+        if (closeOnRelease) {
+            connection.close();
+        }
     }
 
 }

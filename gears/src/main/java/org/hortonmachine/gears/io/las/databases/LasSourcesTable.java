@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
-import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -92,25 +91,27 @@ public class LasSourcesTable {
                 + COLUMN_MAXINTENSITY + //
                 ") VALUES (ST_GeomFromText(?, " + srid + "),?,?,?,?,?,?,?,?)";
 
-        IHMConnection conn = db.getConnection();
-        try (IHMPreparedStatement pStmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pStmt.setString(1, polygon.toText());
-            pStmt.setString(2, name);
-            pStmt.setDouble(3, resolution);
-            pStmt.setDouble(4, factor);
-            pStmt.setInt(5, levels);
-            pStmt.setDouble(6, minElev);
-            pStmt.setDouble(7, maxElev);
-            pStmt.setDouble(8, minIntens);
-            pStmt.setDouble(9, maxIntens);
+        return db.execOnConnection(connection -> {
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                pStmt.setString(1, polygon.toText());
+                pStmt.setString(2, name);
+                pStmt.setDouble(3, resolution);
+                pStmt.setDouble(4, factor);
+                pStmt.setInt(5, levels);
+                pStmt.setDouble(6, minElev);
+                pStmt.setDouble(7, maxElev);
+                pStmt.setDouble(8, minIntens);
+                pStmt.setDouble(9, maxIntens);
 
-            pStmt.executeUpdate();
-            ResultSet rs = pStmt.getGeneratedKeys();
-            rs.next();
-            long generatedId = rs.getLong(1);
+                pStmt.executeUpdate();
+                ResultSet rs = pStmt.getGeneratedKeys();
+                rs.next();
+                long generatedId = rs.getLong(1);
 
-            return generatedId;
-        }
+                return generatedId;
+            }
+        });
+
     }
 
     /**
@@ -143,29 +144,31 @@ public class LasSourcesTable {
                 + "," + COLUMN_LEVELS + "," + COLUMN_MINZ + "," + COLUMN_MAXZ + "," + COLUMN_MININTENSITY + ","
                 + COLUMN_MAXINTENSITY + " FROM " + TABLENAME;
 
-        IHMConnection conn = db.getConnection();
-        try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                LasSource lasSource = new LasSource();
-                int i = 1;
-                Geometry geometry = db.getGeometryFromResultSet(rs, i++);
-                if (geometry instanceof Polygon) {
-                    Polygon polygon = (Polygon) geometry;
-                    lasSource.polygon = polygon;
-                    lasSource.id = rs.getLong(i++);
-                    lasSource.name = rs.getString(i++);
-                    lasSource.resolution = rs.getDouble(i++);
-                    lasSource.levelFactor = rs.getDouble(i++);
-                    lasSource.levels = rs.getInt(i++);
-                    lasSource.minElev = rs.getDouble(i++);
-                    lasSource.maxElev = rs.getDouble(i++);
-                    lasSource.minIntens = rs.getDouble(i++);
-                    lasSource.maxIntens = rs.getDouble(i++);
-                    sources.add(lasSource);
+        return db.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    LasSource lasSource = new LasSource();
+                    int i = 1;
+                    Geometry geometry = db.getGeometryFromResultSet(rs, i++);
+                    if (geometry instanceof Polygon) {
+                        Polygon polygon = (Polygon) geometry;
+                        lasSource.polygon = polygon;
+                        lasSource.id = rs.getLong(i++);
+                        lasSource.name = rs.getString(i++);
+                        lasSource.resolution = rs.getDouble(i++);
+                        lasSource.levelFactor = rs.getDouble(i++);
+                        lasSource.levels = rs.getInt(i++);
+                        lasSource.minElev = rs.getDouble(i++);
+                        lasSource.maxElev = rs.getDouble(i++);
+                        lasSource.minIntens = rs.getDouble(i++);
+                        lasSource.maxIntens = rs.getDouble(i++);
+                        sources.add(lasSource);
+                    }
                 }
+                return sources;
             }
-            return sources;
-        }
+        });
+
     }
 
     /**

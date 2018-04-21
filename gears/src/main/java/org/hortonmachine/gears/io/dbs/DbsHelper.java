@@ -87,78 +87,82 @@ public class DbsHelper {
             simpleSql += " where " + where;
         }
 
-        DefaultFeatureCollection fc = new DefaultFeatureCollection();
-        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(simpleSql)) {
-            IHMResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
-            int geometryIndex = -1;
+        String _simpleSql = simpleSql;
+        return db.execOnConnection(connection -> {
+            DefaultFeatureCollection fc = new DefaultFeatureCollection();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_simpleSql)) {
+                IHMResultSetMetaData rsmd = rs.getMetaData();
+                int columnCount = rsmd.getColumnCount();
+                int geometryIndex = -1;
 
-            CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumns.srid);
-            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-            if (name != null)
-                b.setName(name);
-            b.setCRS(crs);
+                CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumns.srid);
+                SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+                if (name != null)
+                    b.setName(name);
+                b.setCRS(crs);
 
-            for( int i = 1; i <= columnCount; i++ ) {
-                String columnTypeName = rsmd.getColumnTypeName(i);
-                String columnName = rsmd.getColumnName(i);
-                if (geomColumnName.equalsIgnoreCase(columnName) || ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
-                    geometryIndex = i;
+                for( int i = 1; i <= columnCount; i++ ) {
+                    String columnTypeName = rsmd.getColumnTypeName(i);
+                    String columnName = rsmd.getColumnName(i);
+                    if (geomColumnName.equalsIgnoreCase(columnName) || ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
+                        geometryIndex = i;
 
-                    if (rs.next()) {
-                        Geometry geometry = db.getGeometryFromResultSet(rs, geometryIndex);
-                        b.add("the_geom", geometry.getClass());
-                    }
+                        if (rs.next()) {
+                            Geometry geometry = db.getGeometryFromResultSet(rs, geometryIndex);
+                            b.add("the_geom", geometry.getClass());
+                        }
 
-                } else {
-                    // Class< ? > forName = Class.forName(columnClassName);
-                    switch( columnTypeName ) {
-                    case "INTEGER":
-                        b.add(columnName, Integer.class);
-                        break;
-                    case "DOUBLE":
-                    case "FLOAT":
-                    case "REAL":
-                        b.add(columnName, Double.class);
-                        break;
-                    case "DATE":
-                        b.add(columnName, Date.class);
-                        break;
-                    case "TEXT":
-                    default:
-                        b.add(columnName, String.class);
-                        break;
-                    }
-                }
-            }
-
-            SimpleFeatureType type = b.buildFeatureType();
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-            do {
-
-                try {
-                    Object[] values = new Object[columnCount];
-                    for( int j = 1; j <= columnCount; j++ ) {
-                        if (j == geometryIndex) {
-                            Geometry geometry = db.getGeometryFromResultSet(rs, j);
-                            values[j - 1] = geometry;
-                        } else {
-                            Object object = rs.getObject(j);
-                            if (object != null) {
-                                values[j - 1] = object;
-                            }
+                    } else {
+                        // Class< ? > forName = Class.forName(columnClassName);
+                        switch( columnTypeName ) {
+                        case "INTEGER":
+                            b.add(columnName, Integer.class);
+                            break;
+                        case "DOUBLE":
+                        case "FLOAT":
+                        case "REAL":
+                            b.add(columnName, Double.class);
+                            break;
+                        case "DATE":
+                            b.add(columnName, Date.class);
+                            break;
+                        case "TEXT":
+                        default:
+                            b.add(columnName, String.class);
+                            break;
                         }
                     }
-                    builder.addAll(values);
-                    SimpleFeature feature = builder.buildFeature(null);
-                    fc.add(feature);
-                } catch (Exception e) {
-                    logger.insertError("DbsHelper", "ERROR", e);
                 }
-            } while( rs.next() );
 
-        }
-        return fc;
+                SimpleFeatureType type = b.buildFeatureType();
+                SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+                do {
+
+                    try {
+                        Object[] values = new Object[columnCount];
+                        for( int j = 1; j <= columnCount; j++ ) {
+                            if (j == geometryIndex) {
+                                Geometry geometry = db.getGeometryFromResultSet(rs, j);
+                                values[j - 1] = geometry;
+                            } else {
+                                Object object = rs.getObject(j);
+                                if (object != null) {
+                                    values[j - 1] = object;
+                                }
+                            }
+                        }
+                        builder.addAll(values);
+                        SimpleFeature feature = builder.buildFeature(null);
+                        fc.add(feature);
+                    } catch (Exception e) {
+                        logger.insertError("DbsHelper", "ERROR", e);
+                    }
+                } while( rs.next() );
+
+            }
+            return fc;
+        });
+
     }
 
 }

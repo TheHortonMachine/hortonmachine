@@ -70,11 +70,11 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
 import org.hortonmachine.gears.io.geopaparazzi.forms.Utilities;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog;
+import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
+import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsPoint;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.Image;
-import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
-import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsPoint;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTableFields;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -82,7 +82,6 @@ import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.utils.StringUtilities;
 import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.gears.utils.files.FileUtilities;
@@ -198,24 +197,28 @@ public class OmsGeopaparazzi4Converter extends HMModel {
         try (SqliteDb db = new SqliteDb()) {
             db.open(geopapDatabaseFile.getAbsolutePath());
 
-            IHMConnection connection = db.getConnection();
-            projectInfo(connection, outputFolderFile);
+            db.execOnConnection(connection -> {
+                projectInfo(connection, outputFolderFile);
 
-            /*
-             * import notes as shapefile
-             */
-            if (doNotes) {
-                simpleNotesToShapefile(connection, outputFolderFile, pm);
-                complexNotesToShapefile(connection, outputFolderFile, pm);
-            }
-            /*
-             * import gps logs as shapefiles, once as lines and once as points
-             */
-            gpsLogToShapefiles(connection, outputFolderFile, pm);
-            /*
-             * import media as point shapefile, containing the path
-             */
-            mediaToShapeFile(connection, mediaFolderFile, pm);
+                /*
+                 * import notes as shapefile
+                 */
+                if (doNotes) {
+                    simpleNotesToShapefile(connection, outputFolderFile, pm);
+                    complexNotesToShapefile(connection, outputFolderFile, pm);
+                }
+                /*
+                 * import gps logs as shapefiles, once as lines and once as points
+                 */
+                gpsLogToShapefiles(connection, outputFolderFile, pm);
+                /*
+                 * import media as point shapefile, containing the path
+                 */
+                mediaToShapeFile(connection, mediaFolderFile, pm);
+
+                return null;
+            });
+
         }
 
     }
@@ -974,25 +977,6 @@ public class OmsGeopaparazzi4Converter extends HMModel {
 
         try (OutputStream outStream = new FileOutputStream(newImageFile)) {
             outStream.write(imageData);
-        }
-    }
-
-    public static void main( String[] args ) throws Exception {
-        try (SqliteDb db = new SqliteDb()) {
-            db.open("/home/hydrologis/TMP/geopaparazzi_20140819_misonet.gpap");
-
-            IHMConnection connection = db.getConnection();
-
-            List<String> layerNamesList = GeopaparazziUtilities.getLayerNamesList(connection);
-            for( String layer : layerNamesList ) {
-                System.out.println(layer);
-            }
-
-            SimpleFeatureCollection simple = simpleNotes2featurecollection(connection, new LogProgressMonitor());
-            System.out.println("simple: " + simple.size());
-            SimpleFeatureCollection examples = complexNote2featurecollection("examples", connection, new LogProgressMonitor());
-            System.out.println("exam: " + examples.size());
-
         }
     }
 

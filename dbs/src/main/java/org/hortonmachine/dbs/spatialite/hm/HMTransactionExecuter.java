@@ -18,7 +18,6 @@
 package org.hortonmachine.dbs.spatialite.hm;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
-import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.ITransactionExecuter;
 
 /**
@@ -31,25 +30,25 @@ public abstract class HMTransactionExecuter implements ITransactionExecuter {
     private ASpatialDb db;
     private boolean autoCommitEnabled;
 
-    private IHMConnection conn;
-
     public HMTransactionExecuter( ASpatialDb db ) {
         this.db = db;
     }
 
     public void execute() throws Exception {
-        conn = db.getConnection();
-        autoCommitEnabled = conn.getAutoCommit();
-        conn.setAutoCommit(false);
-        try {
-            executeInTransaction();
-            conn.commit();
-        } catch (Exception e) {
-            conn.rollback();
-            throw new Exception(e);
-        } finally {
-            conn.setAutoCommit(autoCommitEnabled);
-        }
+        db.execOnConnection(conn ->{
+            autoCommitEnabled = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+            try {
+                executeInTransaction();
+                conn.commit();
+                return null;
+            } catch (Exception e) {
+                conn.rollback();
+                throw new Exception(e);
+            } finally {
+                conn.setAutoCommit(autoCommitEnabled);
+            }
+        });
     }
 
 }

@@ -30,6 +30,7 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -58,6 +59,8 @@ public class SpatialiteDb extends ASpatialDb {
 
     private SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
 
+    private IHMConnection mConn;
+
     public SpatialiteDb() {
         sqliteDb = new SqliteDb();
     }
@@ -76,7 +79,7 @@ public class SpatialiteDb extends ASpatialDb {
         sqliteDb.setCredentials(user, password);
         boolean dbExists = sqliteDb.open(dbPath);
         this.mDbPath = sqliteDb.getDatabasePath();
-        mConn = sqliteDb.getConnection();
+        mConn = sqliteDb.getConnectionInternal();
         try (IHMStatement stmt = mConn.createStatement()) {
             // set timeout to 30 sec.
             stmt.setQueryTimeout(30);
@@ -153,6 +156,15 @@ public class SpatialiteDb extends ASpatialDb {
     
     public Connection getJdbcConnection() {
         return sqliteDb.getJdbcConnection();
+    }
+    
+    @Override
+    protected IHMConnection getConnectionInternal() throws Exception {
+        return mConn;
+    }
+    
+    public void close() throws Exception {
+        sqliteDb.close();
     }
 
     @Override

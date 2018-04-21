@@ -17,7 +17,10 @@
  */
 package org.hortonmachine.dbs.compat;
 
+import java.sql.SQLException;
 import java.sql.Savepoint;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * Interface wrapping db connections.
@@ -32,6 +35,16 @@ public interface IHMConnection extends AutoCloseable {
 
     public void setAutoCommit( boolean b ) throws Exception;
 
+    /**
+     * Toggle autocommit mode.
+     * 
+     * @param enable
+     *            if <code>true</code>, autocommit is enabled if not already
+     *            enabled. Vice versa if <code>false</code>.
+     * @throws SQLException
+     */
+    public void enableAutocommit( boolean enable ) throws Exception;
+
     public void commit() throws Exception;
 
     public IHMPreparedStatement prepareStatement( String sql ) throws Exception;
@@ -43,4 +56,13 @@ public interface IHMConnection extends AutoCloseable {
     public void rollback( Savepoint savepoint ) throws Exception;
 
     public void rollback() throws Exception;
+
+    
+    /**
+     * Release this connection, if pooled. If single connection, this should do nothing.
+     * 
+     * @throws Exception 
+     */
+    public void release() throws Exception;
+    
 }

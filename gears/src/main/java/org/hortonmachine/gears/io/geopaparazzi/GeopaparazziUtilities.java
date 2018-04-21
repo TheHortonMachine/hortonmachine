@@ -99,7 +99,9 @@ public class GeopaparazziUtilities {
         for( File geopapDatabaseFile : projectFiles ) {
             try (SqliteDb db = new SqliteDb()) {
                 db.open(geopapDatabaseFile.getAbsolutePath());
-                HashMap<String, String> projectInfo = getProjectMetadata(db.getConnection());
+                HashMap<String, String> projectInfo = db.execOnConnection(connection -> {
+                    return getProjectMetadata(connection);
+                });
                 infoList.add(projectInfo);
             }
         }

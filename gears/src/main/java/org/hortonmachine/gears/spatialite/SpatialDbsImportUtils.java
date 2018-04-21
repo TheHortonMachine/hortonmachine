@@ -34,7 +34,6 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
-import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
@@ -226,70 +225,72 @@ public class SpatialDbsImportUtils {
         qMarks = qMarks.substring(1);
         String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
 
-        IHMConnection conn = db.getConnection();
-        try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
-            int count = 0;
-            pm.beginTask("Adding data to batch import...", featureCount);
-            try {
-                while( featureIterator.hasNext() ) {
-                    SimpleFeature f = (SimpleFeature) featureIterator.next();
-                    for( int i = 0; i < attrNames.size(); i++ ) {
-                        Object object = f.getAttribute(attrNames.get(i));
-                        if (object == null) {
-                            continue;
+        return db.execOnConnection(conn -> {
+            try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
+                int count = 0;
+                pm.beginTask("Adding data to batch import...", featureCount);
+                try {
+                    while( featureIterator.hasNext() ) {
+                        SimpleFeature f = (SimpleFeature) featureIterator.next();
+                        for( int i = 0; i < attrNames.size(); i++ ) {
+                            Object object = f.getAttribute(attrNames.get(i));
+                            if (object == null) {
+                                continue;
+                            }
+                            int iPlus = i + 1;
+                            if (object instanceof Double) {
+                                pStmt.setDouble(iPlus, (Double) object);
+                            } else if (object instanceof Float) {
+                                pStmt.setFloat(iPlus, (Float) object);
+                            } else if (object instanceof Integer) {
+                                pStmt.setInt(iPlus, (Integer) object);
+                            } else if (object instanceof String) {
+                                pStmt.setString(iPlus, (String) object);
+                            } else if (object instanceof Geometry) {
+                                pStmt.setString(iPlus, ((Geometry) object).toText());
+                            } else if (object instanceof Clob) {
+                                String string = ((Clob) object).toString();
+                                pStmt.setString(iPlus, string);
+                            } else {
+                                pStmt.setString(iPlus, object.toString());
+                            }
                         }
-                        int iPlus = i + 1;
-                        if (object instanceof Double) {
-                            pStmt.setDouble(iPlus, (Double) object);
-                        } else if (object instanceof Float) {
-                            pStmt.setFloat(iPlus, (Float) object);
-                        } else if (object instanceof Integer) {
-                            pStmt.setInt(iPlus, (Integer) object);
-                        } else if (object instanceof String) {
-                            pStmt.setString(iPlus, (String) object);
-                        } else if (object instanceof Geometry) {
-                            pStmt.setString(iPlus, ((Geometry) object).toText());
-                        } else if (object instanceof Clob) {
-                            String string = ((Clob) object).toString();
-                            pStmt.setString(iPlus, string);
-                        } else {
-                            pStmt.setString(iPlus, object.toString());
-                        }
-                    }
-                    pStmt.addBatch();
+                        pStmt.addBatch();
 
-                    count++;
-                    if (limit > 0 && count >= limit) {
-                        break;
+                        count++;
+                        if (limit > 0 && count >= limit) {
+                            break;
+                        }
+                        pm.worked(1);
                     }
-                    pm.worked(1);
+                } catch (Exception e) {
+                    logger.insertError("SpatialDbsImportUtils", "error", e);
+                } finally {
+                    pm.done();
+                    featureIterator.close();
                 }
-            } catch (Exception e) {
-                logger.insertError("SpatialDbsImportUtils", "error", e);
-            } finally {
-                pm.done();
-                featureIterator.close();
+
+                try {
+                    pm.beginTask("Execute batch import of " + featureCount + " features...", IHMProgressMonitor.UNKNOWN);
+                    pStmt.executeBatch();
+                } catch (Exception e) {
+                    logger.insertError("SpatialDbsImportUtils", "error", e);
+                } finally {
+                    pm.done();
+                }
+
             }
 
-            try {
-                pm.beginTask("Execute batch import of " + featureCount + " features...", IHMProgressMonitor.UNKNOWN);
-                pStmt.executeBatch();
-            } catch (Exception e) {
-                logger.insertError("SpatialDbsImportUtils", "error", e);
-            } finally {
-                pm.done();
+            try (IHMStatement pStmt = conn.createStatement()) {
+                try {
+                    pStmt.executeQuery("Select updateLayerStatistics();");
+                } catch (Exception e) {
+                    // ignore
+                }
             }
+            return noErrors;
+        });
 
-        }
-
-        try (IHMStatement pStmt = conn.createStatement()) {
-            try {
-                pStmt.executeQuery("Select updateLayerStatistics();");
-            } catch (Exception e) {
-                // ignore
-            }
-        }
-        return noErrors;
     }
 
     /**

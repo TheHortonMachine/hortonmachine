@@ -37,7 +37,7 @@ public class GPConnection implements IHMConnection {
 
     private Database database;
 
-    public GPConnection(Database database) {
+    public GPConnection( Database database ) {
         this.database = database;
     }
 
@@ -51,13 +51,13 @@ public class GPConnection implements IHMConnection {
     }
 
     @Override
-    public IHMPreparedStatement prepareStatement(String sql) throws Exception {
+    public IHMPreparedStatement prepareStatement( String sql ) throws Exception {
         IHMPreparedStatement preparedStatement = new GPPreparedStatement(database, sql);
         return preparedStatement;
     }
 
     @Override
-    public IHMPreparedStatement prepareStatement(String sql, int returnGeneratedKeys) throws SQLException {
+    public IHMPreparedStatement prepareStatement( String sql, int returnGeneratedKeys ) throws SQLException {
         throw new RuntimeException("Function not supported: prepareStatement()");
     }
 
@@ -71,7 +71,7 @@ public class GPConnection implements IHMConnection {
     }
 
     @Override
-    public void setAutoCommit(boolean b) throws SQLException {
+    public void setAutoCommit( boolean b ) throws SQLException {
     }
 
     @Override
@@ -89,6 +89,13 @@ public class GPConnection implements IHMConnection {
 
     @Override
     public void rollback() throws Exception {
+    }
+
+    public void enableAutocommit( boolean enable ) throws Exception {
+    }
+
+    @Override
+    public void release() throws Exception {
     }
 
 }
