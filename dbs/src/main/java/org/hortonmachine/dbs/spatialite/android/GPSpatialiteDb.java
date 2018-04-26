@@ -27,6 +27,7 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.IDbVisitor;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
@@ -330,6 +331,11 @@ public class GPSpatialiteDb extends ASpatialDb {
     @Override
     public List<Index> getIndexes( String tableName ) throws Exception {
         return SpatialiteCommonMethods.getIndexes(this, tableName);
+    }
+
+    @Override
+    public void accept( IDbVisitor visitor ) {
+        // not supported
     }
 
 }

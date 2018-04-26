@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
+import org.hortonmachine.dbs.compat.IDbVisitor;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
@@ -285,6 +286,11 @@ public class SqliteDb extends ADb {
     @Override
     public List<Index> getIndexes( String tableName ) throws Exception {
         return SpatialiteCommonMethods.getIndexes(this, tableName);
+    }
+
+    @Override
+    public void accept( IDbVisitor visitor ) throws Exception {
+        visitor.visit(jdbcConn);
     }
 
 }

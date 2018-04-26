@@ -31,6 +31,7 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.IDbVisitor;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
@@ -595,6 +596,11 @@ public class H2GisDb extends ASpatialDb {
             getJdbcConnection().createStatement().execute(
                     String.format("ALTER TABLE %s ADD CHECK ST_SRID(" + realName + ")=%d", tableLocation.toString(), srid));
         }
+    }
+    
+    @Override
+    public void accept( IDbVisitor visitor ) throws Exception {
+        h2Db.accept(visitor);
     }
 
 }

@@ -30,6 +30,7 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.IDbVisitor;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
@@ -153,16 +154,16 @@ public class SpatialiteDb extends ASpatialDb {
     public String getJdbcUrlPre() {
         return sqliteDb.getJdbcUrlPre();
     }
-    
+
     public Connection getJdbcConnection() {
         return sqliteDb.getJdbcConnection();
     }
-    
+
     @Override
     protected IHMConnection getConnectionInternal() throws Exception {
         return mConn;
     }
-    
+
     public void close() throws Exception {
         sqliteDb.close();
     }
@@ -464,6 +465,11 @@ public class SpatialiteDb extends ASpatialDb {
     @Override
     public List<Index> getIndexes( String tableName ) throws Exception {
         return sqliteDb.getIndexes(tableName);
+    }
+
+    @Override
+    public void accept( IDbVisitor visitor ) throws Exception {
+        sqliteDb.accept(visitor);
     }
 
 }

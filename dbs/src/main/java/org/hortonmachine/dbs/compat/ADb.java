@@ -36,7 +36,7 @@ import org.hortonmachine.dbs.utils.HMConnectionConsumer;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public abstract class ADb implements AutoCloseable {
+public abstract class ADb implements AutoCloseable, IVisitableDb {
 
     protected String mDbPath;
 
