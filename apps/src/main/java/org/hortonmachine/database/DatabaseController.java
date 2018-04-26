@@ -988,11 +988,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 currentConnectedDatabase.initSpatialMetadata(null);
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 
-                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-
                 if (databaseTreeCellRenderer != null) {
                     databaseTreeCellRenderer.setDb(currentConnectedDatabase);
                 }
+                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
+
 
                 layoutTree(dbLevel, false);
             } catch (Exception e) {
@@ -1075,10 +1075,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 }
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 
-                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
                 if (databaseTreeCellRenderer != null) {
                     databaseTreeCellRenderer.setDb(currentConnectedDatabase);
                 }
+                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
 
                 layoutTree(dbLevel, true);
                 setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
@@ -1143,6 +1143,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 currentConnectedDatabase.open(_urlString);
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 
+                if (databaseTreeCellRenderer != null) {
+                    databaseTreeCellRenderer.setDb(currentConnectedDatabase);
+                }
                 DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
 
                 layoutTree(dbLevel, true);
