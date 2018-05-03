@@ -35,4 +35,9 @@ public interface IGeometryParser {
      * @throws Exception 
      */
     Geometry fromResultSet( IHMResultSet rs, int index ) throws Exception;
+
+    Geometry fromSqlObject( Object object) throws Exception;
+    
+    Object toSqlObject(Geometry geometry)  throws Exception;
+    
 }

@@ -67,10 +67,6 @@ public class SpatialiteCommonMethods {
         return true;
     }
 
-    public static void main( String[] args ) throws Exception {
-        System.out.println(isSqliteFile(new File("/tmp/jgt-dbs-testdbsmain.sqlite")));
-    }
-
     /**
      * Check for compatibility issues with other databases.
      * 

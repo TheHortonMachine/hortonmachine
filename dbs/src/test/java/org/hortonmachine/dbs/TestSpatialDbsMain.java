@@ -1,6 +1,14 @@
 package org.hortonmachine.dbs;
 
-import static org.hortonmachine.dbs.TestUtilities.*;
+import static org.hortonmachine.dbs.TestUtilities.GEOMCOLL_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.LINES_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.MLINES_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.MPOINTS_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.MPOLY_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.POINTS_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.POLY_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.arr;
+import static org.hortonmachine.dbs.TestUtilities.createGeomTables;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -68,14 +76,14 @@ public class TestSpatialDbsMain {
                     + " MULTIPOINT ((6.8 42.5), (6.8 41.4), (6.6 40.2)))";
             String[] geomCollectionInserts = new String[]{//
                     "INSERT INTO " + GEOMCOLL_TABLE
-                            + " (id, name, temperature, the_geom) VALUES(1, 'Tscherms', 36.0, ST_GeomFromText('" + gCollWKT
-                            + "', 4326));", //
+                    + " (id, name, temperature, the_geom) VALUES(?, ?, ?, ST_GeomFromText(?, 4326));", //
             };
+            Object[] values = {1,"Tscherms", 36.0, gCollWKT};
 
             db.createSpatialTable(GEOMCOLL_TABLE, 4326, "the_geom GEOMETRYCOLLECTION",
                     arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"));
             for( String insert : geomCollectionInserts ) {
-                db.executeInsertUpdateDeleteSql(insert);
+                db.executeInsertUpdateDeletePreparedSql(insert, values);
             }
             db.executeInsertUpdateDeleteSql("SELECT UpdateLayerStatistics();");
         }

@@ -24,12 +24,28 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class SpatialiteGeometryParser implements IGeometryParser {
     SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+    SpatialiteWKBWriter wkbWriter = new SpatialiteWKBWriter();
 
     @Override
     public Geometry fromResultSet( IHMResultSet rs, int index ) throws Exception {
         byte[] geomBytes = rs.getBytes(index);
         Geometry geometry = wkbReader.read(geomBytes);
         return geometry;
+    }
+
+    @Override
+    public Geometry fromSqlObject( Object geomObject ) throws Exception {
+        if (geomObject instanceof byte[]) {
+            byte[] geomBytes = (byte[]) geomObject;
+            Geometry geometry = wkbReader.read(geomBytes);
+            return geometry;
+        }
+        throw new IllegalArgumentException("Geom object needs to be a byte array.");
+    }
+
+    @Override
+    public Object toSqlObject( Geometry geometry ) throws Exception {
+        return wkbWriter.write(geometry);
     }
 
 }

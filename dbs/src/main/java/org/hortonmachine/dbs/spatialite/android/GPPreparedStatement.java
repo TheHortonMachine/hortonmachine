@@ -99,6 +99,11 @@ public class GPPreparedStatement implements IHMPreparedStatement {
     public void setBytes( int index, byte[] value ) throws Exception {
         preparedStmt.bind(index, value);
     }
+    
+    @Override
+    public void setBlob( int index, byte[] value ) throws Exception {
+        preparedStmt.bind(index, value);
+    }
 
     @Override
     public void setShort( int index, short value ) throws Exception {
