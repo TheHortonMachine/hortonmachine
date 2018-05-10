@@ -76,7 +76,7 @@ public class H2GisDb extends ASpatialDb {
         this.user = user;
         this.password = password;
     }
-    
+
     public boolean open( String dbPath ) throws Exception {
         h2Db.setCredentials(user, password);
         h2Db.setMakePooled(makePooled);
@@ -359,6 +359,19 @@ public class H2GisDb extends ASpatialDb {
 
         // int srid = SFSUtilities.getSRID(jdbcConn, new TableLocation(tableName));
 
+        String indexSql = "SELECT " + H2GisGeometryColumns.INDEX_TABLENAME_FIELD + " FROM " + H2GisGeometryColumns.INDEX_TABLENAME
+                + " where " + H2GisGeometryColumns.INDEX_TYPE_NAME + "='SPATIAL INDEX'";
+        List<String> tablesWithIndex = new ArrayList<>();
+        execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(indexSql)) {
+                while( rs.next() ) {
+                    String name = rs.getString(1);
+                    tablesWithIndex.add(name);
+                }
+                return null;
+            }
+        });
+
         String sql = "select " + H2GisGeometryColumns.F_TABLE_NAME + ", " //
                 + H2GisGeometryColumns.F_GEOMETRY_COLUMN + ", " //
                 + H2GisGeometryColumns.GEOMETRY_TYPE + "," //
@@ -371,12 +384,16 @@ public class H2GisDb extends ASpatialDb {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 if (rs.next()) {
                     H2GisGeometryColumns gc = new H2GisGeometryColumns();
-                    gc.tableName = rs.getString(1);
+                    String name = rs.getString(1);
+                    gc.tableName = name;
                     gc.geometryColumnName = rs.getString(2);
                     gc.geometryType = rs.getInt(3);
                     gc.coordinatesDimension = rs.getInt(4);
                     gc.srid = rs.getInt(5);
-                    // gc.isSpatialIndexEnabled = rs.getInt(6);
+
+                    if (tablesWithIndex.contains(name)) {
+                        gc.isSpatialIndexEnabled = 1;
+                    }
                     return gc;
                 }
                 return null;
@@ -597,7 +614,7 @@ public class H2GisDb extends ASpatialDb {
                     String.format("ALTER TABLE %s ADD CHECK ST_SRID(" + realName + ")=%d", tableLocation.toString(), srid));
         }
     }
-    
+
     @Override
     public void accept( IDbVisitor visitor ) throws Exception {
         h2Db.accept(visitor);

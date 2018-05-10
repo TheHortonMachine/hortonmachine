@@ -233,7 +233,7 @@ public enum Logger implements ILogDb {
 
     private String getTag( String tag ) {
         if (tag != null) {
-            tag += tag + ":: ";
+            tag = tag + ":: ";
         } else {
             tag = EMPTY;
         }
