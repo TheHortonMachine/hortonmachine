@@ -257,7 +257,9 @@ public class OmsGeopaparazzi4Converter extends HMModel {
 
             SimpleFeatureCollection collection = entry.getValue();
 
-            File outFile = new File(outputFolderFile, "notes_" + name + ".shp");
+            String fileName = "notes_" + name + ".shp";
+            fileName = FileUtilities.getSafeFileName(fileName);
+            File outFile = new File(outputFolderFile, fileName);
             if (outFile.exists()) {
                 File[] listFiles = outputFolderFile.listFiles();
                 List<String> fileNames = new ArrayList<>();
