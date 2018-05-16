@@ -17,12 +17,16 @@
  */
 package org.hortonmachine.gears.io.dbs;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
@@ -97,39 +101,49 @@ public class DbsHelper {
 
                 CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumns.srid);
                 SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+
+                String _name = "shpexport";
                 if (name != null)
-                    b.setName(name);
+                    _name = name;
+                b.setName(_name);
                 b.setCRS(crs);
+
+                EDb eDb = db.getType();
+                ADatabaseSyntaxHelper syntaxHelper = eDb.getDatabaseSyntaxHelper();
 
                 for( int i = 1; i <= columnCount; i++ ) {
                     String columnTypeName = rsmd.getColumnTypeName(i);
                     String columnName = rsmd.getColumnName(i);
                     if (geomColumnName.equalsIgnoreCase(columnName) || ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
                         geometryIndex = i;
-
                         if (rs.next()) {
                             Geometry geometry = db.getGeometryFromResultSet(rs, geometryIndex);
                             b.add("the_geom", geometry.getClass());
+                            break;
                         }
-
-                    } else {
-                        // Class< ? > forName = Class.forName(columnClassName);
-                        switch( columnTypeName ) {
-                        case "INTEGER":
+                    }
+                }
+                for( int i = 1; i <= columnCount; i++ ) {
+                    String columnTypeName = rsmd.getColumnTypeName(i);
+                    String columnName = rsmd.getColumnName(i);
+                    if (i != geometryIndex) {
+                        if (columnName.toLowerCase().equals("id")) {
+                            columnName = "origid";
+                        }
+                        if (columnName.length() > 9) {
+                            columnName = columnName.substring(0, 9);
+                        }
+                        if ("INTEGER".equals(columnTypeName) || syntaxHelper.INTEGER().equals(columnTypeName)) {
                             b.add(columnName, Integer.class);
-                            break;
-                        case "DOUBLE":
-                        case "FLOAT":
-                        case "REAL":
+                        } else if (syntaxHelper.LONG().equals(columnTypeName)) {
+                            b.add(columnName, Long.class);
+                        } else if ("DOUBLE".equals(columnTypeName) || "FLOAT".equals(columnTypeName)
+                                || syntaxHelper.REAL().equals(columnTypeName)) {
                             b.add(columnName, Double.class);
-                            break;
-                        case "DATE":
+                        } else if ("DATE".equals(columnTypeName)) {
                             b.add(columnName, Date.class);
-                            break;
-                        case "TEXT":
-                        default:
+                        } else if (syntaxHelper.TEXT().equals(columnTypeName) || true) {
                             b.add(columnName, String.class);
-                            break;
                         }
                     }
                 }
@@ -137,18 +151,15 @@ public class DbsHelper {
                 SimpleFeatureType type = b.buildFeatureType();
                 SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
                 do {
-
                     try {
-                        Object[] values = new Object[columnCount];
+                        List<Object> values = new ArrayList<>();
+                        Geometry geometry = db.getGeometryFromResultSet(rs, geometryIndex);
+                        values.add(geometry);
+
                         for( int j = 1; j <= columnCount; j++ ) {
-                            if (j == geometryIndex) {
-                                Geometry geometry = db.getGeometryFromResultSet(rs, j);
-                                values[j - 1] = geometry;
-                            } else {
+                            if (j != geometryIndex) {
                                 Object object = rs.getObject(j);
-                                if (object != null) {
-                                    values[j - 1] = object;
-                                }
+                                values.add(object);
                             }
                         }
                         builder.addAll(values);

@@ -991,7 +991,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 }
                 DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
 
-
                 layoutTree(dbLevel, false);
             } catch (Exception e) {
                 currentConnectedDatabase = null;
@@ -1335,23 +1334,17 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         if (sqlText.trim().length() == 0) {
             return false;
         }
-        if (currentConnectedDatabase instanceof GTSpatialiteThreadsafeDb) {
-            try {
-                pm.beginTask("Run query: " + sqlText + "\ninto shapefile: " + selectedFile, IHMProgressMonitor.UNKNOWN);
-                DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(null, currentConnectedDatabase, sqlText,
-                        null);
-                OmsVectorWriter.writeVector(selectedFile.getAbsolutePath(), fc);
-                addQueryToHistoryCombo(sqlText);
-            } catch (Exception e1) {
-                String localizedMessage = e1.getLocalizedMessage();
-                hasError = true;
-                pm.errorMessage("An error occurred: " + localizedMessage);
-            } finally {
-                pm.done();
-            }
-        } else {
-            guiBridge.messageDialog("WARNING", "This operation is not yet supported for this database type.",
-                    JOptionPane.WARNING_MESSAGE);
+        try {
+            pm.beginTask("Run query: " + sqlText + "\ninto shapefile: " + selectedFile, IHMProgressMonitor.UNKNOWN);
+            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(null, currentConnectedDatabase, sqlText, null);
+            OmsVectorWriter.writeVector(selectedFile.getAbsolutePath(), fc);
+            addQueryToHistoryCombo(sqlText);
+        } catch (Exception e1) {
+            String localizedMessage = e1.getLocalizedMessage();
+            hasError = true;
+            pm.errorMessage("An error occurred: " + localizedMessage);
+        } finally {
+            pm.done();
         }
         return hasError;
     }
