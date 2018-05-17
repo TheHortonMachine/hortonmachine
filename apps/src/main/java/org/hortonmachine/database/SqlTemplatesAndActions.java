@@ -569,6 +569,7 @@ public class SqlTemplatesAndActions {
 
     public Action getSaveConnectionAction( DatabaseViewer databaseViewer ) {
         return new AbstractAction("Save Connection"){
+            @SuppressWarnings("unchecked")
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
@@ -582,13 +583,13 @@ public class SqlTemplatesAndActions {
                     byte[] savedDbs = GuiUtilities.getPreference(HM_SAVED_DATABASES, new byte[0]);
                     List<ConnectionData> connectionDataList = new ArrayList<>();
                     try {
-                        connectionDataList = convertFromBytes(savedDbs);
+                        connectionDataList = (List<ConnectionData>) convertFromBytes(savedDbs);
                     } catch (Exception e1) {
                         e1.printStackTrace();
                     }
                     connectionDataList.add(connectionData);
-                    connectionDataList.sort(( cd1, cd2 ) -> cd1.connectionLabel.compareTo(cd2.connectionLabel));
-                    byte[] inBytes = convertConnectionDataToBytes(connectionDataList);
+                    
+                    byte[] inBytes = convertObjectToBytes(connectionDataList);
                     GuiUtilities.setPreference(HM_SAVED_DATABASES, inBytes);
                 } catch (Exception e1) {
                     e1.printStackTrace();
@@ -597,17 +598,16 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public byte[] convertConnectionDataToBytes( List<ConnectionData> connectionDataList ) throws IOException {
+    public static byte[] convertObjectToBytes( Object object ) throws IOException {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream(); ObjectOutput out = new ObjectOutputStream(bos)) {
-            out.writeObject(connectionDataList);
+            out.writeObject(object);
             return bos.toByteArray();
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public static List<ConnectionData> convertFromBytes( byte[] bytes ) throws Exception {
+    public static Object convertFromBytes( byte[] bytes ) throws Exception {
         try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes); ObjectInput in = new ObjectInputStream(bis)) {
-            return (List<ConnectionData>) in.readObject();
+            return in.readObject();
         }
     }
 }

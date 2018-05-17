@@ -100,6 +100,7 @@ import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
+import org.joda.time.DateTime;
 import org.hortonmachine.gui.utils.ImageCache;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -114,6 +115,8 @@ import com.vividsolutions.jts.io.WKTReader;
  *
  */
 public abstract class DatabaseController extends DatabaseView implements IOnCloseListener {
+    private static final String HM_SAVED_QUERIES = "HM_SAVED_QUERIES";
+
     private static final long serialVersionUID = 1L;
 
     // private static final String SHAPEFILE_IMPORT = "import shapefile in selected table";
@@ -637,6 +640,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _clearSqlEditorbutton.addActionListener(e -> {
             currentSqlEditorArea.setText("");
         });
+
+        addSqlAreaContextMenu();
     }
 
     protected abstract void setViewQueryButton( JButton _viewQueryButton, Dimension preferredButtonSize,
@@ -662,6 +667,144 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         });
     }
 
+    @SuppressWarnings("unchecked")
+    private void addSqlAreaContextMenu() {
+        JPopupMenu popupMenu = new JPopupMenu();
+        popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
+        popupMenu.addPopupMenuListener(new PopupMenuListener(){
+
+            @Override
+            public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
+                @SuppressWarnings("serial")
+                AbstractAction loadAction = new AbstractAction("Load saved query"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        try {
+                            byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
+                            List<SqlData> sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
+                            if (sqlDataList.size() == 0) {
+                                GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved queries available.");
+                            } else {
+                                Map<String, SqlData> collect = sqlDataList.stream()
+                                        .collect(Collectors.toMap(c -> c.name, Function.identity()));
+                                String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Query",
+                                        "Select the query to load", collect.keySet().toArray(new String[0]));
+                                if (selected != null && selected.length() > 0) {
+                                    SqlData sqlData = collect.get(selected);
+                                    if (sqlData != null) {
+                                        addTextToQueryEditor(sqlData.sql);
+                                    }
+                                }
+
+                            }
+                        } catch (Exception e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
+                    }
+                };
+                @SuppressWarnings("serial")
+                AbstractAction saveAction = new AbstractAction("Save current query"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        try {
+                            byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
+                            List<SqlData> sqlDataList = new ArrayList<>();
+                            if (savedQueries.length != 0) {
+                                sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
+                            }
+
+                            String sql = currentSqlEditorArea.getText();
+                            String newName = GuiUtilities.showInputDialog(DatabaseController.this,
+                                    "Enter a name for the saved query",
+                                    "query " + new DateTime().toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSS));
+
+                            if (newName == null || newName.trim().length() == 0) {
+                                return;
+                            }
+
+                            SqlData sd = new SqlData();
+                            sd.name = newName;
+                            sd.sql = sql;
+                            sqlDataList.add(sd);
+
+                            byte[] bytesToSave = SqlTemplatesAndActions.convertObjectToBytes(sqlDataList);
+                            GuiUtilities.setPreference(HM_SAVED_QUERIES, bytesToSave);
+
+                        } catch (Exception e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
+                    }
+
+                };
+                @SuppressWarnings("serial")
+                AbstractAction removeAction = new AbstractAction("Remove a query from saved"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        try {
+                            byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
+                            List<SqlData> sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
+                            if (sqlDataList.size() == 0) {
+                                GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved queries available.");
+                            } else {
+                                Map<String, SqlData> collect = sqlDataList.stream()
+                                        .collect(Collectors.toMap(c -> c.name, Function.identity()));
+                                String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Query",
+                                        "Select the query to remove", collect.keySet().toArray(new String[0]));
+                                if (selected != null && selected.length() > 0) {
+                                    sqlDataList.removeIf(sd -> {
+                                        if (sd.name == null)
+                                            return true;
+                                        return sd.name.equals(selected);
+                                    });
+                                    byte[] bytesToSave = SqlTemplatesAndActions.convertObjectToBytes(sqlDataList);
+                                    GuiUtilities.setPreference(HM_SAVED_QUERIES, bytesToSave);
+                                }
+
+                            }
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+
+                };
+                JMenuItem item = new JMenuItem(saveAction);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                popupMenu.add(item);
+                item = new JMenuItem(loadAction);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                popupMenu.add(item);
+                item = new JMenuItem(removeAction);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                popupMenu.add(item);
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) {
+                popupMenu.removeAll();
+            }
+
+            @Override
+            public void popupMenuCanceled( PopupMenuEvent e ) {
+                popupMenu.removeAll();
+            }
+        });
+
+        currentSqlEditorArea.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked( MouseEvent e ) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    int row = _databaseTree.getClosestRowForLocation(e.getX(), e.getY());
+                    _databaseTree.setSelectionRow(row);
+                    popupMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
+
+            }
+        });
+
+    }
+    @SuppressWarnings("unchecked")
     private void addJtreeContextMenu() {
         JPopupMenu popupMenu = new JPopupMenu();
         popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
@@ -712,7 +855,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved connections available.");
                             } else {
                                 try {
-                                    List<ConnectionData> connectionDataList = SqlTemplatesAndActions.convertFromBytes(savedDbs);
+                                    List<ConnectionData> connectionDataList = (List<ConnectionData>) SqlTemplatesAndActions
+                                            .convertFromBytes(savedDbs);
                                     Map<String, ConnectionData> collect = connectionDataList.stream()
                                             .collect(Collectors.toMap(c -> c.connectionLabel, Function.identity()));
                                     String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Connection",
@@ -725,7 +869,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                     }
 
                                 } catch (Exception e1) {
-                                    // TODO Auto-generated catch block
                                     e1.printStackTrace();
                                 }
                             }
@@ -770,12 +913,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 AbstractAction action = new AbstractAction("Open from saved Connection"){
                     @Override
                     public void actionPerformed( ActionEvent e ) {
-                        byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
-                        if (savedDbs.length == 0) {
-                            GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved connections available.");
-                        } else {
-                            try {
-                                List<ConnectionData> connectionDataList = SqlTemplatesAndActions.convertFromBytes(savedDbs);
+                        try {
+                            byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
+                            List<ConnectionData> connectionDataList = (List<ConnectionData>) SqlTemplatesAndActions
+                                    .convertFromBytes(savedDbs);
+                            if (connectionDataList.size() == 0) {
+                                GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved connections available.");
+                            } else {
                                 Map<String, ConnectionData> collect = connectionDataList.stream()
                                         .collect(Collectors.toMap(c -> c.connectionLabel, Function.identity()));
                                 String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Connection",
@@ -787,14 +931,46 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                     }
                                 }
 
-                            } catch (Exception e1) {
-                                // TODO Auto-generated catch block
-                                e1.printStackTrace();
                             }
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
                         }
                     }
                 };
                 JMenuItem item = new JMenuItem(action);
+                popupMenuConnectButton.add(item);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                AbstractAction removeAction = new AbstractAction("Remove from saved Connection"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        try {
+                            byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
+                            List<ConnectionData> connectionDataList = (List<ConnectionData>) SqlTemplatesAndActions
+                                    .convertFromBytes(savedDbs);
+                            if (connectionDataList.size() == 0) {
+                                GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved connections available.");
+                            } else {
+                                Map<String, ConnectionData> collect = connectionDataList.stream()
+                                        .collect(Collectors.toMap(c -> c.connectionLabel, Function.identity()));
+                                String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Connection",
+                                        "Select the connection to remove", collect.keySet().toArray(new String[0]));
+                                if (selected != null && selected.length() > 0) {
+                                    connectionDataList.removeIf(cd -> {
+                                        if (cd.connectionLabel == null)
+                                            return true;
+                                        return cd.connectionLabel.equals(selected);
+                                    });
+                                    byte[] bytesToSave = SqlTemplatesAndActions.convertObjectToBytes(connectionDataList);
+                                    GuiUtilities.setPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, bytesToSave);
+                                }
+
+                            }
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                };
+                item = new JMenuItem(removeAction);
                 popupMenuConnectButton.add(item);
                 item.setHorizontalTextPosition(JMenuItem.RIGHT);
             }
