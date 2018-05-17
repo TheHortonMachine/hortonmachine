@@ -18,7 +18,15 @@
 package org.hortonmachine.database;
 
 import java.awt.event.ActionEvent;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -26,7 +34,9 @@ import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ASqlTemplates;
+import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
@@ -39,6 +49,7 @@ import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
+import org.joda.time.DateTime;
 
 /**
  * Simple queries templates.
@@ -48,6 +59,7 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 @SuppressWarnings("serial")
 public class SqlTemplatesAndActions {
 
+    public static final String HM_SAVED_DATABASES = "HM-SAVED-DATABASES";
     private ASqlTemplates sqlTemplates;
 
     public SqlTemplatesAndActions( EDb dbType ) throws Exception {
@@ -312,7 +324,8 @@ public class SqlTemplatesAndActions {
                     if (newTableName.trim().length() == 0) {
                         newTableName = null;
                     }
-                    SpatialDbsImportUtils.createTableFromShp(spatialiteViewer.currentConnectedDatabase, openFiles[0], newTableName);
+                    SpatialDbsImportUtils.createTableFromShp(spatialiteViewer.currentConnectedDatabase, openFiles[0],
+                            newTableName);
                     spatialiteViewer.refreshDatabaseTree();
                 } catch (Exception e1) {
                     logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
@@ -552,5 +565,49 @@ public class SqlTemplatesAndActions {
 
             }
         };
+    }
+
+    public Action getSaveConnectionAction( DatabaseViewer databaseViewer ) {
+        return new AbstractAction("Save Connection"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                try {
+                    ASpatialDb db = databaseViewer.currentConnectedDatabase;
+                    ConnectionData connectionData = db.getConnectionData();
+
+                    String newName = GuiUtilities.showInputDialog(databaseViewer, "Enter a name for the saved connection",
+                            "db connection " + new DateTime().toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSS));
+                    connectionData.connectionLabel = newName;
+                    
+                    byte[] savedDbs = GuiUtilities.getPreference(HM_SAVED_DATABASES, new byte[0]);
+                    List<ConnectionData> connectionDataList = new ArrayList<>();
+                    try {
+                        connectionDataList = convertFromBytes(savedDbs);
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+                    connectionDataList.add(connectionData);
+                    connectionDataList.sort(( cd1, cd2 ) -> cd1.connectionLabel.compareTo(cd2.connectionLabel));
+                    byte[] inBytes = convertConnectionDataToBytes(connectionDataList);
+                    GuiUtilities.setPreference(HM_SAVED_DATABASES, inBytes);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            }
+        };
+    }
+
+    public byte[] convertConnectionDataToBytes( List<ConnectionData> connectionDataList ) throws IOException {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream(); ObjectOutput out = new ObjectOutputStream(bos)) {
+            out.writeObject(connectionDataList);
+            return bos.toByteArray();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<ConnectionData> convertFromBytes( byte[] bytes ) throws Exception {
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes); ObjectInput in = new ObjectInputStream(bis)) {
+            return (List<ConnectionData>) in.readObject();
+        }
     }
 }

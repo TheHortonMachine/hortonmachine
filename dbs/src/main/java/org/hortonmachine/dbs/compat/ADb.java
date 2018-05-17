@@ -81,6 +81,28 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
     public abstract boolean open( String dbPath ) throws Exception;
 
     /**
+     * Open the connection to a database.
+     * 
+     * <b>Make sure the connection object is created here.</b>
+     * 
+     * @param dbPath
+     *            the database path. If <code>null</code>, an in-memory db is
+     *            created.
+     * @param user the user to use.
+     * @param password the passord to use.
+     * @return <code>true</code> if the database did already exist.
+     * @throws Exception
+     */
+    public abstract boolean open( String dbPath, String user, String password ) throws Exception;
+    
+    /**
+     * Getter for the {@link ConnectionData} that can be used to connect to the database.
+     * 
+     * @return the connection data.
+     */
+    public abstract ConnectionData getConnectionData();
+
+    /**
      * Set credentials if supported.
      * 
      * <p>To be called before the {@link #open(String)} method.</p>

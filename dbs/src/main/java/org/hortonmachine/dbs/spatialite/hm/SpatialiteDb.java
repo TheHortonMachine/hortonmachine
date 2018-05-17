@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
@@ -76,9 +77,23 @@ public class SpatialiteDb extends ASpatialDb {
         this.password = password;
     }
 
+    @Override
+    public ConnectionData getConnectionData() {
+        return sqliteDb.getConnectionData();
+    }
+
+    @Override
+    public boolean open( String dbPath, String user, String password ) throws Exception {
+        setCredentials(user, password);
+        return open(dbPath);
+    }
+
     public boolean open( String dbPath ) throws Exception {
         sqliteDb.setCredentials(user, password);
         boolean dbExists = sqliteDb.open(dbPath);
+
+        sqliteDb.getConnectionData().dbType = getType().getCode();
+
         this.mDbPath = sqliteDb.getDatabasePath();
         mConn = sqliteDb.getConnectionInternal();
         try (IHMStatement stmt = mConn.createStatement()) {

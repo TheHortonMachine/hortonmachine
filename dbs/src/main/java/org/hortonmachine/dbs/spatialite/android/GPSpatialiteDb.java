@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
@@ -52,18 +53,34 @@ import jsqlite.Database;
 public class GPSpatialiteDb extends ASpatialDb {
     private SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
     private GPConnection mConn;
+    private ConnectionData connectionData;
 
     @Override
     public EDb getType() {
-        return EDb.SPATIALITE;
+        return EDb.SPATIALITE4ANDROID;
     }
 
     public void setCredentials( String user, String password ) {
         // not supported on android
     }
+    
+    @Override
+    public boolean open( String dbPath, String user, String password ) throws Exception {
+        return open(dbPath);
+    }
+    
+    @Override
+    public ConnectionData getConnectionData() {
+        return connectionData;
+    }
 
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;
+        
+        connectionData = new ConnectionData();
+        connectionData.connectionLabel = dbPath;
+        connectionData.connectionUrl = new String(dbPath);
+        connectionData.dbType = getType().getCode();
 
         boolean dbExists = false;
         File dbFile = new File(dbPath);

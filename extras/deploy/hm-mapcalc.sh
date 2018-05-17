@@ -1,3 +1,4 @@
+#!/bin/bash
  #
  # This file is part of HortonMachine (http://www.hortonmachine.org)
  # (C) HydroloGIS - www.hydrologis.com 

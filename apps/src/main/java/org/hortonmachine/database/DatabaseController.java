@@ -33,6 +33,9 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -73,6 +76,7 @@ import org.h2.jdbc.JdbcSQLException;
 import org.hortonmachine.database.tree.DatabaseTreeCellRenderer;
 import org.hortonmachine.database.tree.DatabaseTreeModel;
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
@@ -698,6 +702,38 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             popupMenu.add(new JSeparator());
                         }
                     }
+                } else {
+                    @SuppressWarnings("serial")
+                    AbstractAction action = new AbstractAction("Save Connection"){
+                        @Override
+                        public void actionPerformed( ActionEvent e ) {
+                            byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
+                            if (savedDbs.length == 0) {
+                                GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved connections available.");
+                            } else {
+                                try {
+                                    List<ConnectionData> connectionDataList = SqlTemplatesAndActions.convertFromBytes(savedDbs);
+                                    Map<String, ConnectionData> collect = connectionDataList.stream()
+                                            .collect(Collectors.toMap(c -> c.connectionLabel, Function.identity()));
+                                    String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Connection",
+                                            "Select the connection to use", collect.keySet().toArray(new String[0]));
+                                    if (selected != null && selected.length() > 0) {
+                                        ConnectionData connectionData = collect.get(selected);
+                                        if (connectionData != null) {
+                                            openDatabase(connectionData);
+                                        }
+                                    }
+
+                                } catch (Exception e1) {
+                                    // TODO Auto-generated catch block
+                                    e1.printStackTrace();
+                                }
+                            }
+                        }
+                    };
+                    JMenuItem item = new JMenuItem(action);
+                    popupMenu.add(item);
+                    item.setHorizontalTextPosition(JMenuItem.RIGHT);
                 }
             }
 
@@ -719,6 +755,67 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     int row = _databaseTree.getClosestRowForLocation(e.getX(), e.getY());
                     _databaseTree.setSelectionRow(row);
                     popupMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
+
+            }
+        });
+
+        JPopupMenu popupMenuConnectButton = new JPopupMenu();
+        popupMenuConnectButton.setBorder(new BevelBorder(BevelBorder.RAISED));
+        popupMenuConnectButton.addPopupMenuListener(new PopupMenuListener(){
+
+            @Override
+            public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
+                @SuppressWarnings("serial")
+                AbstractAction action = new AbstractAction("Open from saved Connection"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
+                        if (savedDbs.length == 0) {
+                            GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved connections available.");
+                        } else {
+                            try {
+                                List<ConnectionData> connectionDataList = SqlTemplatesAndActions.convertFromBytes(savedDbs);
+                                Map<String, ConnectionData> collect = connectionDataList.stream()
+                                        .collect(Collectors.toMap(c -> c.connectionLabel, Function.identity()));
+                                String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Connection",
+                                        "Select the connection to use", collect.keySet().toArray(new String[0]));
+                                if (selected != null && selected.length() > 0) {
+                                    ConnectionData connectionData = collect.get(selected);
+                                    if (connectionData != null) {
+                                        openDatabase(connectionData);
+                                    }
+                                }
+
+                            } catch (Exception e1) {
+                                // TODO Auto-generated catch block
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
+                };
+                JMenuItem item = new JMenuItem(action);
+                popupMenuConnectButton.add(item);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) {
+                popupMenuConnectButton.removeAll();
+            }
+
+            @Override
+            public void popupMenuCanceled( PopupMenuEvent e ) {
+                popupMenuConnectButton.removeAll();
+            }
+        });
+        _connectDbButton.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked( MouseEvent e ) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    int row = _databaseTree.getClosestRowForLocation(e.getX(), e.getY());
+                    _databaseTree.setSelectionRow(row);
+                    popupMenuConnectButton.show(e.getComponent(), e.getX(), e.getY());
                 }
 
             }
@@ -1138,6 +1235,55 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 currentConnectedDatabase = _type.getSpatialDb();
                 currentConnectedDatabase.setCredentials(user, pwd);
                 currentConnectedDatabase.open(_urlString);
+                sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
+
+                if (databaseTreeCellRenderer != null) {
+                    databaseTreeCellRenderer.setDb(currentConnectedDatabase);
+                }
+                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
+
+                layoutTree(dbLevel, true);
+                setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
+            } catch (Exception e) {
+                currentConnectedDatabase = null;
+                Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
+                hadError = true;
+            } finally {
+                logConsole.finishProcess();
+                logConsole.stopLogging();
+                if (!hadError) {
+                    logConsole.setVisible(false);
+                    window.dispose();
+                }
+            }
+        }).start();
+
+    }
+
+    protected void openDatabase( ConnectionData connectionData ) {
+        try {
+            closeCurrentDb(true);
+        } catch (Exception e1) {
+            Logger.INSTANCE.insertError("", "Error closing the database...", e1);
+        }
+
+        final LogConsoleController logConsole = new LogConsoleController(null);
+        pm = logConsole.getProgressMonitor();
+        Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
+        Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
+        JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+
+        new Thread(() -> {
+            logConsole.beginProcess("Open database");
+            boolean hadError = false;
+            try {
+
+                EDb type = EDb.forCode(connectionData.dbType);
+                currentConnectedDatabase = type.getSpatialDb();
+                if (connectionData.user != null) {
+                    currentConnectedDatabase.setCredentials(connectionData.user, connectionData.password);
+                }
+                currentConnectedDatabase.open(connectionData.connectionUrl);
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
 
                 if (databaseTreeCellRenderer != null) {

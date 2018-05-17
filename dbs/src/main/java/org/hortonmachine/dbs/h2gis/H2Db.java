@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.hortonmachine.dbs.compat.ADb;
+import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.IDbVisitor;
@@ -56,6 +57,7 @@ public class H2Db extends ADb {
      * Connection source used in pooled mode.
      */
     private ComboPooledDataSource comboPooledDataSource;
+    private ConnectionData connectionData;
 
     static {
         try {
@@ -74,9 +76,27 @@ public class H2Db extends ADb {
         this.user = user;
         this.password = password;
     }
+    
+    @Override
+    public ConnectionData getConnectionData() {
+        return connectionData;
+    }
+    
+    @Override
+    public boolean open( String dbPath, String user, String password ) throws Exception {
+        setCredentials(user, password);
+        return open(dbPath);
+    }
 
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;
+        
+        connectionData = new ConnectionData();
+        connectionData.connectionLabel = dbPath;
+        connectionData.connectionUrl = new String(dbPath);
+        connectionData.user = user;
+        connectionData.password = password;
+        connectionData.dbType = getType().getCode();
 
         boolean dbExists = false;
         if (dbPath != null) {

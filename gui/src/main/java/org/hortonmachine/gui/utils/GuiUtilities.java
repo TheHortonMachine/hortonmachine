@@ -135,6 +135,12 @@ public class GuiUtilities {
         return split;
     }
 
+    public static byte[] getPreference( String preferenceKey, byte[] defaultValue ) {
+        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
+        byte[] preference = preferences.getByteArray(preferenceKey, defaultValue);
+        return preference;
+    }
+
     /**
      * Set a preference.
      * 
@@ -152,19 +158,28 @@ public class GuiUtilities {
         }
     }
 
+    public static void setPreference( String preferenceKey, byte[] value ) {
+        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
+        if (value != null) {
+            preferences.putByteArray(preferenceKey, value);
+        } else {
+            preferences.remove(preferenceKey);
+        }
+    }
+
     public static void setPreference( String preferenceKey, String[] valuesArray ) {
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
         if (valuesArray != null) {
             int maxLength = Preferences.MAX_VALUE_LENGTH;
             String arrayToString = Stream.of(valuesArray).collect(Collectors.joining(PREF_STRING_SEPARATORS));
-            
+
             // remove from last if it is too large
-            int remIndex = valuesArray.length-1;
+            int remIndex = valuesArray.length - 1;
             while( arrayToString.length() > maxLength ) {
                 valuesArray[remIndex--] = "";
                 arrayToString = Stream.of(valuesArray).collect(Collectors.joining(PREF_STRING_SEPARATORS));
             }
-            
+
             preferences.put(preferenceKey, arrayToString);
         } else {
             preferences.remove(preferenceKey);
@@ -218,8 +233,10 @@ public class GuiUtilities {
      *            the labels to set.
      * @param defaultValues
      *            a set of default values.
+     * @param fields2ValuesMap a map that allows to set combos for the various options.
      * @return the result inserted by the user.
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static String[] showMultiInputDialog( Component parentComponent, String title, String[] labels, String[] defaultValues,
             HashMap<String, String[]> fields2ValuesMap ) {
         Component[] valuesFields = new Component[labels.length];
@@ -336,6 +353,10 @@ public class GuiUtilities {
         frame.addWindowListener(exitListener);
     }
 
+    public static void showInfoMessage( Component parentComponent, String message ) {
+        showInfoMessage(parentComponent, null, message);
+    }
+
     public static void showInfoMessage( Component parentComponent, String title, String message ) {
         if (title == null) {
             title = "INFO";
@@ -343,11 +364,19 @@ public class GuiUtilities {
         JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.INFORMATION_MESSAGE);
     }
 
+    public static void showWarningMessage( Component parentComponent, String message ) {
+        showWarningMessage(parentComponent, null, message);
+    }
+
     public static void showWarningMessage( Component parentComponent, String title, String message ) {
         if (title == null) {
             title = "WARNING";
         }
         JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.WARNING_MESSAGE);
+    }
+
+    public static void showErrorMessage( Component parentComponent, String message ) {
+        showErrorMessage(parentComponent, null, message);
     }
 
     public static void showErrorMessage( Component parentComponent, String title, String message ) {

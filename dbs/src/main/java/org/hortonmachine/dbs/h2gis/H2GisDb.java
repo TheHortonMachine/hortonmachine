@@ -28,6 +28,7 @@ import org.h2gis.functions.factory.H2GISFunctions;
 import org.h2gis.utilities.SFSUtilities;
 import org.h2gis.utilities.TableLocation;
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
@@ -76,6 +77,17 @@ public class H2GisDb extends ASpatialDb {
         this.user = user;
         this.password = password;
     }
+    
+    @Override
+    public ConnectionData getConnectionData() {
+        return h2Db.getConnectionData();
+    }
+    
+    @Override
+    public boolean open( String dbPath, String user, String password ) throws Exception {
+        setCredentials(user, password);
+        return open(dbPath);
+    }
 
     public boolean open( String dbPath ) throws Exception {
         h2Db.setCredentials(user, password);
@@ -88,6 +100,7 @@ public class H2GisDb extends ASpatialDb {
         if (dbExists) {
             wasInitialized = true;
         }
+        h2Db.getConnectionData().dbType = getType().getCode();
 
         if (!dbExists)
             initSpatialMetadata(null);
