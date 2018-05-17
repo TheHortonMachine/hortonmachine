@@ -682,13 +682,17 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         try {
                             byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
                             List<SqlData> sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
+                            sqlDataList.removeIf(sd -> sd.name == null);
                             if (sqlDataList.size() == 0) {
                                 GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved queries available.");
                             } else {
+                                sqlDataList.sort(( sd1, sd2 ) -> sd1.name.compareTo(sd2.name));
                                 Map<String, SqlData> collect = sqlDataList.stream()
                                         .collect(Collectors.toMap(c -> c.name, Function.identity()));
+                                
+                                List<String> names = sqlDataList.stream().map(sd->sd.name).collect(Collectors.toList());
                                 String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Query",
-                                        "Select the query to load", collect.keySet().toArray(new String[0]));
+                                        "Select the query to load", names.toArray(new String[0]));
                                 if (selected != null && selected.length() > 0) {
                                     SqlData sqlData = collect.get(selected);
                                     if (sqlData != null) {
@@ -698,7 +702,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
                             }
                         } catch (Exception e1) {
-                            // TODO Auto-generated catch block
                             e1.printStackTrace();
                         }
                     }
@@ -745,13 +748,14 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         try {
                             byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
                             List<SqlData> sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
+                            sqlDataList.removeIf(sd -> sd.name == null);
                             if (sqlDataList.size() == 0) {
                                 GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved queries available.");
                             } else {
-                                Map<String, SqlData> collect = sqlDataList.stream()
-                                        .collect(Collectors.toMap(c -> c.name, Function.identity()));
+                                sqlDataList.sort(( sd1, sd2 ) -> sd1.name.compareTo(sd2.name));
+                                List<String> names = sqlDataList.stream().map(sd->sd.name).collect(Collectors.toList());
                                 String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Query",
-                                        "Select the query to remove", collect.keySet().toArray(new String[0]));
+                                        "Select the query to remove", names.toArray(new String[0]));
                                 if (selected != null && selected.length() > 0) {
                                     sqlDataList.removeIf(sd -> {
                                         if (sd.name == null)
@@ -917,13 +921,18 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
                             List<ConnectionData> connectionDataList = (List<ConnectionData>) SqlTemplatesAndActions
                                     .convertFromBytes(savedDbs);
+                            connectionDataList.removeIf(c -> c.connectionLabel == null);
                             if (connectionDataList.size() == 0) {
                                 GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved connections available.");
                             } else {
+                                connectionDataList.sort(( c1, c2 ) -> c1.connectionLabel.compareTo(c2.connectionLabel));
                                 Map<String, ConnectionData> collect = connectionDataList.stream()
                                         .collect(Collectors.toMap(c -> c.connectionLabel, Function.identity()));
+
+                                List<String> labels = connectionDataList.stream().map(c -> c.connectionLabel)
+                                        .collect(Collectors.toList());
                                 String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Connection",
-                                        "Select the connection to use", collect.keySet().toArray(new String[0]));
+                                        "Select the connection to use", labels.toArray(new String[0]));
                                 if (selected != null && selected.length() > 0) {
                                     ConnectionData connectionData = collect.get(selected);
                                     if (connectionData != null) {
@@ -947,13 +956,15 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
                             List<ConnectionData> connectionDataList = (List<ConnectionData>) SqlTemplatesAndActions
                                     .convertFromBytes(savedDbs);
+                            connectionDataList.removeIf(c -> c.connectionLabel == null);
                             if (connectionDataList.size() == 0) {
                                 GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved connections available.");
                             } else {
-                                Map<String, ConnectionData> collect = connectionDataList.stream()
-                                        .collect(Collectors.toMap(c -> c.connectionLabel, Function.identity()));
+                                connectionDataList.sort(( c1, c2 ) -> c1.connectionLabel.compareTo(c2.connectionLabel));
+                                List<String> labels = connectionDataList.stream().map(c -> c.connectionLabel)
+                                        .collect(Collectors.toList());
                                 String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Connection",
-                                        "Select the connection to remove", collect.keySet().toArray(new String[0]));
+                                        "Select the connection to remove", labels.toArray(new String[0]));
                                 if (selected != null && selected.length() > 0) {
                                     connectionDataList.removeIf(cd -> {
                                         if (cd.connectionLabel == null)
