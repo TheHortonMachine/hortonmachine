@@ -34,6 +34,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -682,15 +684,18 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         try {
                             byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
                             List<SqlData> sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
-                            sqlDataList.removeIf(sd -> sd.name == null);
+
+                            Set<String> checkSet = new TreeSet<>();
+                            sqlDataList.removeIf(sd -> sd.name == null || !checkSet.add(sd.name));
+
                             if (sqlDataList.size() == 0) {
                                 GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved queries available.");
                             } else {
                                 sqlDataList.sort(( sd1, sd2 ) -> sd1.name.compareTo(sd2.name));
                                 Map<String, SqlData> collect = sqlDataList.stream()
                                         .collect(Collectors.toMap(c -> c.name, Function.identity()));
-                                
-                                List<String> names = sqlDataList.stream().map(sd->sd.name).collect(Collectors.toList());
+
+                                List<String> names = sqlDataList.stream().map(sd -> sd.name).collect(Collectors.toList());
                                 String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Query",
                                         "Select the query to load", names.toArray(new String[0]));
                                 if (selected != null && selected.length() > 0) {
@@ -725,6 +730,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             if (newName == null || newName.trim().length() == 0) {
                                 return;
                             }
+                            sqlDataList.removeIf(sd -> sd.name == newName);
 
                             SqlData sd = new SqlData();
                             sd.name = newName;
@@ -748,12 +754,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         try {
                             byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
                             List<SqlData> sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
-                            sqlDataList.removeIf(sd -> sd.name == null);
+                            Set<String> checkSet = new TreeSet<>();
+                            sqlDataList.removeIf(sd -> sd.name == null || !checkSet.add(sd.name));
                             if (sqlDataList.size() == 0) {
                                 GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved queries available.");
                             } else {
                                 sqlDataList.sort(( sd1, sd2 ) -> sd1.name.compareTo(sd2.name));
-                                List<String> names = sqlDataList.stream().map(sd->sd.name).collect(Collectors.toList());
+                                List<String> names = sqlDataList.stream().map(sd -> sd.name).collect(Collectors.toList());
                                 String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Query",
                                         "Select the query to remove", names.toArray(new String[0]));
                                 if (selected != null && selected.length() > 0) {
