@@ -34,4 +34,9 @@ public class H2GisGeometryColumns extends GeometryColumn{
     public static final String SRID = "srid";
     public static final String SPATIAL_INDEX_ENABLED = "spatial_index_enabled";
 
+    // index
+    public static final String INDEX_TABLENAME = "INFORMATION_SCHEMA.INDEXES";
+    public static final String INDEX_TABLENAME_FIELD = "TABLE_NAME";
+    public static final String INDEX_TYPE_NAME = "INDEX_TYPE_NAME";
+    
 }

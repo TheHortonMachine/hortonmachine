@@ -226,68 +226,71 @@ public class Spatialite2H2gis implements AutoCloseable {
             String qmStr = qmSb.substring(1);
             String prepared = "insert into " + tableName + " (" + namesStr + ") values (" + qmStr + ");";
 
-            String emptyGeomStr = null;
-            try (IHMPreparedStatement stmt = h2gis.getConnection().prepareStatement(prepared)) {
-                for( Object[] objects : queryResult.data ) {
-                    for( int i = 0; i < objects.length; i++ ) {
-                        if (i == geometryIndex) {
-                            if (objects[i] == null) {
+            GeometryColumn _gCol = gCol;
+            h2gis.execOnConnection(connection -> {
+                String emptyGeomStr = null;
+                try (IHMPreparedStatement stmt = connection.prepareStatement(prepared)) {
+                    for( Object[] objects : queryResult.data ) {
+                        for( int i = 0; i < objects.length; i++ ) {
+                            if (i == geometryIndex) {
+                                if (objects[i] == null) {
 
-                                if (emptyGeomStr == null) {
-                                    int geometryType = gCol.geometryType;
-                                    ESpatialiteGeometryType gType = ESpatialiteGeometryType.forValue(geometryType);
-                                    if (gType.isLine()) {
-                                        if (gType.isMulti()) {
-                                            emptyGeomStr = gf.createLineString((CoordinateSequence) null).toText();
-                                        } else {
-                                            emptyGeomStr = gf.createMultiLineString(null).toText();
-                                        }
-                                    } else if (gType.isPoint()) {
-                                        if (gType.isMulti()) {
-                                            emptyGeomStr = gf.createMultiPoint((CoordinateSequence) null).toText();
-                                        } else {
-                                            emptyGeomStr = gf.createPoint((Coordinate) null).toText();
-                                        }
-                                    } else if (gType.isPolygon()) {
-                                        if (gType.isMulti()) {
-                                            emptyGeomStr = gf.createMultiPolygon(null).toText();
-                                        } else {
-                                            emptyGeomStr = gf.createPolygon((CoordinateSequence) null).toText();
+                                    if (emptyGeomStr == null) {
+                                        int geometryType = _gCol.geometryType;
+                                        ESpatialiteGeometryType gType = ESpatialiteGeometryType.forValue(geometryType);
+                                        if (gType.isLine()) {
+                                            if (gType.isMulti()) {
+                                                emptyGeomStr = gf.createLineString((CoordinateSequence) null).toText();
+                                            } else {
+                                                emptyGeomStr = gf.createMultiLineString(null).toText();
+                                            }
+                                        } else if (gType.isPoint()) {
+                                            if (gType.isMulti()) {
+                                                emptyGeomStr = gf.createMultiPoint((CoordinateSequence) null).toText();
+                                            } else {
+                                                emptyGeomStr = gf.createPoint((Coordinate) null).toText();
+                                            }
+                                        } else if (gType.isPolygon()) {
+                                            if (gType.isMulti()) {
+                                                emptyGeomStr = gf.createMultiPolygon(null).toText();
+                                            } else {
+                                                emptyGeomStr = gf.createPolygon((CoordinateSequence) null).toText();
+                                            }
                                         }
                                     }
+                                    stmt.setString(i + 1, emptyGeomStr);
+                                } else {
+                                    stmt.setString(i + 1, (String) objects[i].toString());
                                 }
-                                stmt.setString(i + 1, emptyGeomStr);
+                            } else if (objects[i] == null) {
+                                stmt.setObject(i + 1, null);
+                            } else if (objects[i] instanceof Boolean) {
+                                stmt.setBoolean(i + 1, (boolean) objects[i]);
+                            } else if (objects[i] instanceof byte[]) {
+                                stmt.setBytes(i + 1, (byte[]) objects[i]);
+                            } else if (objects[i] instanceof Double) {
+                                stmt.setDouble(i + 1, (double) objects[i]);
+                            } else if (objects[i] instanceof Float) {
+                                stmt.setFloat(i + 1, (float) objects[i]);
+                            } else if (objects[i] instanceof Integer) {
+                                stmt.setInt(i + 1, (int) objects[i]);
+                            } else if (objects[i] instanceof Long) {
+                                stmt.setLong(i + 1, (long) objects[i]);
+                            } else if (objects[i] instanceof Short) {
+                                stmt.setShort(i + 1, (short) objects[i]);
+                            } else if (objects[i] instanceof String) {
+                                stmt.setString(i + 1, (String) objects[i]);
                             } else {
-                                stmt.setString(i + 1, (String) objects[i].toString());
+                                stmt.setObject(i + 1, objects[i]);
                             }
-                        } else if (objects[i] == null) {
-                            stmt.setObject(i + 1, null);
-                        } else if (objects[i] instanceof Boolean) {
-                            stmt.setBoolean(i + 1, (boolean) objects[i]);
-                        } else if (objects[i] instanceof byte[]) {
-                            stmt.setBytes(i + 1, (byte[]) objects[i]);
-                        } else if (objects[i] instanceof Double) {
-                            stmt.setDouble(i + 1, (double) objects[i]);
-                        } else if (objects[i] instanceof Float) {
-                            stmt.setFloat(i + 1, (float) objects[i]);
-                        } else if (objects[i] instanceof Integer) {
-                            stmt.setInt(i + 1, (int) objects[i]);
-                        } else if (objects[i] instanceof Long) {
-                            stmt.setLong(i + 1, (long) objects[i]);
-                        } else if (objects[i] instanceof Short) {
-                            stmt.setShort(i + 1, (short) objects[i]);
-                        } else if (objects[i] instanceof String) {
-                            stmt.setString(i + 1, (String) objects[i]);
-                        } else {
-                            stmt.setObject(i + 1, objects[i]);
                         }
+                        stmt.addBatch();
                     }
-                    stmt.addBatch();
+                    int[] executeUpdate = stmt.executeBatch();
                 }
-                int[] executeUpdate = stmt.executeBatch();
-            }
-
-            System.out.println("Done.");
+                System.out.println("Done.");
+                return null;
+            });
 
         }
 
@@ -296,37 +299,43 @@ public class Spatialite2H2gis implements AutoCloseable {
     public static String getTableSql( ADb db, String tableName ) throws Exception {
         String sql = "SELECT sql FROM sqlite_master WHERE type='table' and tbl_name='" + tableName + "'";
 
-        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) {
-                return rs.getString(1);
+        return db.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    return rs.getString(1);
+                }
+                return null;
+            } catch (SQLException e) {
+                throw e;
             }
-            return null;
-        } catch (SQLException e) {
-            throw e;
-        }
+        });
+
     }
 
     public static List<String> getIndexSqls( ADb db, String tableName ) throws Exception {
         String sql = "SELECT sql FROM sqlite_master WHERE type='index' and tbl_name='" + tableName + "'";
 
-        try (IHMStatement stmt = db.getConnection().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            List<String> indexSqls = new ArrayList<>();
-            while( rs.next() ) {
-                indexSqls.add(rs.getString(1));
+        return db.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                List<String> indexSqls = new ArrayList<>();
+                while( rs.next() ) {
+                    indexSqls.add(rs.getString(1));
+                }
+                return indexSqls;
+            } catch (SQLException e) {
+                throw e;
             }
-            return indexSqls;
-        } catch (SQLException e) {
-            throw e;
-        }
+        });
+
     }
 
-//    public static void main( String[] args ) throws Exception {
-//        String sp = "";
-//        String h2g = "" + EDb.H2GIS.getExtensionOnCreation();
-//        try (Spatialite2H2gis s2h = new Spatialite2H2gis(sp, h2g)) {
-//            s2h.generateSchema();
-//            s2h.copyData();
-//        }
-//    }
+    // public static void main( String[] args ) throws Exception {
+    // String sp = "";
+    // String h2g = "" + EDb.H2GIS.getExtensionOnCreation();
+    // try (Spatialite2H2gis s2h = new Spatialite2H2gis(sp, h2g)) {
+    // s2h.generateSchema();
+    // s2h.copyData();
+    // }
+    // }
 
 }

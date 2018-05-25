@@ -23,10 +23,14 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.hortonmachine.dbs.compat.ADb;
+import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
+import org.hortonmachine.dbs.compat.IDbVisitor;
+import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
@@ -34,17 +38,30 @@ import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.hm.HMConnection;
 
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
 /**
  * An H2 database.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class H2Db extends ADb {
-    private Connection jdbcConn;
+    private static final String DRIVER_CLASS = "org.h2.Driver";
+    private static final String JDBC_URL_PRE = "jdbc:h2:";
+    /**
+     * Connection use in non pooled mode.
+     */
+    private Connection singleJdbcConn;
+
+    /**
+     * Connection source used in pooled mode.
+     */
+    private ComboPooledDataSource comboPooledDataSource;
+    private ConnectionData connectionData;
 
     static {
         try {
-            Class.forName("org.h2.Driver");
+            Class.forName(DRIVER_CLASS);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -59,9 +76,27 @@ public class H2Db extends ADb {
         this.user = user;
         this.password = password;
     }
+    
+    @Override
+    public ConnectionData getConnectionData() {
+        return connectionData;
+    }
+    
+    @Override
+    public boolean open( String dbPath, String user, String password ) throws Exception {
+        setCredentials(user, password);
+        return open(dbPath);
+    }
 
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;
+        
+        connectionData = new ConnectionData();
+        connectionData.connectionLabel = dbPath;
+        connectionData.connectionUrl = new String(dbPath);
+        connectionData.user = user;
+        connectionData.password = password;
+        connectionData.dbType = getType().getCode();
 
         boolean dbExists = false;
         if (dbPath != null) {
@@ -74,19 +109,56 @@ public class H2Db extends ADb {
             if (dbPath.toLowerCase().startsWith("tcp")) {
                 // no way to check, assume it exists
                 dbExists = true;
+
+                // also cleanup path
+                int first = dbPath.indexOf('/');
+                int second = dbPath.indexOf('/', first + 1);
+                int third = dbPath.indexOf('/', second + 1);
+                int lastSlash = dbPath.indexOf('/', third + 1);
+                if (lastSlash != -1) {
+                    mDbPath = dbPath.substring(lastSlash, dbPath.length());
+                }
             }
         } else {
             dbPath = "mem:syntax";
             dbExists = false;
         }
 
-        String jdbcUrl = "jdbc:h2:" + dbPath;
-        if (user != null && password != null) {
-            jdbcConn = DriverManager.getConnection(jdbcUrl, user, password);
+        String jdbcUrl = JDBC_URL_PRE + dbPath;
+
+        if (makePooled) {
+            Properties p = new Properties(System.getProperties());
+            p.put("com.mchange.v2.log.MLog", "com.mchange.v2.log.FallbackMLog");
+            p.put("com.mchange.v2.log.FallbackMLog.DEFAULT_CUTOFF_LEVEL", "OFF"); // Off or any
+                                                                                  // other level
+            System.setProperties(p);
+
+            comboPooledDataSource = new ComboPooledDataSource();
+            comboPooledDataSource.setDriverClass(DRIVER_CLASS);
+            comboPooledDataSource.setJdbcUrl(jdbcUrl);
+            if (user != null && password != null) {
+                comboPooledDataSource.setUser(user);
+                comboPooledDataSource.setPassword(password);
+            }
+            comboPooledDataSource.setInitialPoolSize(10);
+            comboPooledDataSource.setMinPoolSize(5);
+            comboPooledDataSource.setAcquireIncrement(5);
+            comboPooledDataSource.setMaxPoolSize(30);
+            comboPooledDataSource.setMaxStatements(100);
+
+            // comboPooledDataSource.setCheckoutTimeout(2000);
+            comboPooledDataSource.setAcquireRetryAttempts(1);
+            // comboPooledDataSource.setBreakAfterAcquireFailure(false);
+            // TODO remove after debug
+            // comboPooledDataSource.setUnreturnedConnectionTimeout(180);
+
         } else {
-            jdbcConn = DriverManager.getConnection(jdbcUrl);
+            if (user != null && password != null) {
+                singleJdbcConn = DriverManager.getConnection(jdbcUrl, user, password);
+            } else {
+                singleJdbcConn = DriverManager.getConnection(jdbcUrl);
+            }
         }
-        mConn = new HMConnection(jdbcConn);
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
             Logger.INSTANCE.insertDebug(null, "H2 Version: " + dbInfo[0] + "(" + dbPath + ")");
@@ -94,8 +166,42 @@ public class H2Db extends ADb {
         return dbExists;
     }
 
-    public Connection getJdbcConnection() {
-        return jdbcConn;
+    public Connection getJdbcConnection() throws Exception {
+        if (makePooled) {
+            if (comboPooledDataSource == null) {
+                return null;
+            }
+            return comboPooledDataSource.getConnection();
+        } else {
+            return singleJdbcConn;
+        }
+    }
+
+    public IHMConnection getConnectionInternal() throws Exception {
+        Connection jdbcConnection = getJdbcConnection();
+        if (jdbcConnection == null) {
+            return null;
+        }
+        return new HMConnection(jdbcConnection, makePooled);
+    }
+
+    public void close() throws Exception {
+        if (!makePooled) {
+            if (singleJdbcConn != null) {
+                singleJdbcConn.setAutoCommit(false);
+                singleJdbcConn.commit();
+                singleJdbcConn.close();
+                singleJdbcConn = null;
+            }
+        } else if (comboPooledDataSource != null) {
+            comboPooledDataSource.close();
+            comboPooledDataSource = null;
+        }
+    }
+
+    @Override
+    public String getJdbcUrlPre() {
+        return JDBC_URL_PRE;
     }
 
     @Override
@@ -116,14 +222,16 @@ public class H2Db extends ADb {
     public String[] getDbInfo() throws Exception {
         // checking h2 version
         String sql = "SELECT H2VERSION();";
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            String[] info = new String[1];
-            while( rs.next() ) {
-                // read the result set
-                info[0] = rs.getString(1);
+        return execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                String[] info = new String[1];
+                while( rs.next() ) {
+                    // read the result set
+                    info[0] = rs.getString(1);
+                }
+                return info;
             }
-            return info;
-        }
+        });
     }
 
     public String checkSqlCompatibilityIssues( String sql ) {
@@ -146,45 +254,52 @@ public class H2Db extends ADb {
         }
         String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL'"
                 + orderBy;
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                String tabelName = rs.getString(1);
-                tableNames.add(tabelName);
+
+        return execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    String tabelName = rs.getString(1);
+                    tableNames.add(tabelName);
+                }
+                return tableNames;
             }
-            return tableNames;
-        }
+        });
     }
 
     @Override
     public boolean hasTable( String tableName ) throws Exception {
         String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL'";
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                String name = rs.getString(1);
-                if (name.equalsIgnoreCase(tableName)) {
-                    return true;
+        return execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    String name = rs.getString(1);
+                    if (name.equalsIgnoreCase(tableName)) {
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
-        }
+        });
     }
 
     public ETableType getTableType( String tableName ) throws Exception {
         String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + tableName + "')";
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+        return execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
 
-            ETableType type = null;
-            while( rs.next() ) {
-                String typeStr = rs.getString(1);
-                ETableType tmp = ETableType.fromType(typeStr);
-                if (type == null || type == ETableType.OTHER) {
-                    type = tmp;
+                ETableType type = null;
+                while( rs.next() ) {
+                    String typeStr = rs.getString(1);
+                    ETableType tmp = ETableType.fromType(typeStr);
+                    if (type == null || type == ETableType.OTHER) {
+                        type = tmp;
+                    }
                 }
+                if (type != null)
+                    return type;
             }
-            if (type != null)
-                return type;
-        }
-        return ETableType.OTHER;
+            return ETableType.OTHER;
+        });
     }
 
     @Override
@@ -195,47 +310,53 @@ public class H2Db extends ADb {
         String pkSql = "select c.COLUMN_NAME from information_schema.columns c , information_schema.indexes i"
                 + " where  upper(c.table_name) = '" + tableNameUpper + "' and upper(i.table_name) = '" + tableNameUpper + "'"
                 + " and c.COLUMN_NAME=i.COLUMN_NAME and i.PRIMARY_KEY = true";
-        String pkName = null;
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(pkSql)) {
-            if (rs.next()) {
-                pkName = rs.getString(1);
+        String pkName = execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(pkSql)) {
+                if (rs.next()) {
+                    return rs.getString(1);
+                }
+                return null;
             }
-        }
+        });
 
-        List<String[]> colInfo = new ArrayList<>();
         String sql = "select COLUMN_NAME, TYPE_NAME from information_schema.columns where upper(table_name) = '" + tableNameUpper
                 + "' and TABLE_SCHEMA != 'INFORMATION_SCHEMA'";
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                String colName = rs.getString(1);
-                String typeName = rs.getString(2);
-                String pk = "0";
-                if (pkName != null && colName.equals(pkName)) {
-                    pk = "1";
+        return execOnConnection(connection -> {
+            List<String[]> colInfo = new ArrayList<>();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    String colName = rs.getString(1);
+                    String typeName = rs.getString(2);
+                    String pk = "0";
+                    if (pkName != null && colName.equals(pkName)) {
+                        pk = "1";
+                    }
+                    colInfo.add(new String[]{colName, typeName, pk});
                 }
-                colInfo.add(new String[]{colName, typeName, pk});
+                return colInfo;
             }
-            return colInfo;
-        }
+        });
     }
 
     @Override
     public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
-        List<ForeignKey> fKeys = new ArrayList<ForeignKey>();
 
         String sql = "SELECT PKTABLE_NAME, PKCOLUMN_NAME, FKCOLUMN_NAME FROM INFORMATION_SCHEMA.CROSS_REFERENCES where upper(FKTABLE_NAME)='"
                 + tableName.toUpperCase() + "'";
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                ForeignKey fKey = new ForeignKey();
-                fKey.fromTable = tableName;
-                fKey.toTable = rs.getString(1);
-                fKey.to = rs.getString(2);
-                fKey.from = rs.getString(3);
-                fKeys.add(fKey);
+        return execOnConnection(connection -> {
+            List<ForeignKey> fKeys = new ArrayList<ForeignKey>();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    ForeignKey fKey = new ForeignKey();
+                    fKey.fromTable = tableName;
+                    fKey.toTable = rs.getString(1);
+                    fKey.to = rs.getString(2);
+                    fKey.from = rs.getString(3);
+                    fKeys.add(fKey);
+                }
             }
-        }
-        return fKeys;
+            return fKeys;
+        });
     }
 
     @Override
@@ -244,44 +365,53 @@ public class H2Db extends ADb {
         String sql = "SELECT INDEX_NAME, sql FROM information_schema.indexes where upper(TABLE_NAME)='" + tableName.toUpperCase()
                 + "'";
 
-        List<Index> indexes = new ArrayList<Index>();
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                Index index = new Index();
+        return execOnConnection(connection -> {
+            List<Index> indexes = new ArrayList<Index>();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    Index index = new Index();
 
-                String indexName = rs.getString(1);
+                    String indexName = rs.getString(1);
 
-                index.table = tableName;
-                index.name = indexName;
+                    index.table = tableName;
+                    index.name = indexName;
 
-                String createSql = rs.getString(2);
-                String lower = createSql.toLowerCase();
-                if (lower.startsWith("create index") || lower.startsWith("create unique index")) {
-                    String[] split = createSql.split("\\(|\\)");
-                    String columns = split[1];
-                    String[] colSplit = columns.split(",");
-                    for( String col : colSplit ) {
-                        col = col.trim();
-                        if (col.length() > 0) {
-                            index.columns.add(col);
+                    String createSql = rs.getString(2);
+                    String lower = createSql.toLowerCase();
+                    if (lower.startsWith("create index") || lower.startsWith("create unique index")) {
+                        String[] split = createSql.split("\\(|\\)");
+                        String columns = split[1];
+                        String[] colSplit = columns.split(",");
+                        for( String col : colSplit ) {
+                            col = col.trim();
+                            if (col.length() > 0) {
+                                index.columns.add(col);
+                            }
                         }
-                    }
 
-                    if (lower.startsWith("create unique index")) {
-                        index.isUnique = true;
-                    }
+                        if (lower.startsWith("create unique index")) {
+                            index.isUnique = true;
+                        }
 
-                    indexes.add(index);
+                        indexes.add(index);
+                    }
+                }
+                return indexes;
+            } catch (SQLException e) {
+                if (e.getMessage().contains("query does not return ResultSet")) {
+                    return indexes;
+                } else {
+                    throw e;
                 }
             }
-            return indexes;
-        } catch (SQLException e) {
-            if (e.getMessage().contains("query does not return ResultSet")) {
-                return indexes;
-            } else {
-                throw e;
-            }
-        }
+        });
+
+    }
+
+    @Override
+    public void accept( IDbVisitor visitor ) throws Exception {
+        visitor.visit(comboPooledDataSource);
+        visitor.visit(singleJdbcConn);
     }
 
 }

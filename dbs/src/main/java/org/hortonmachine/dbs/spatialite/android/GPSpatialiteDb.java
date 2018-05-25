@@ -24,9 +24,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.IDbVisitor;
+import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -49,18 +52,35 @@ import jsqlite.Database;
  */
 public class GPSpatialiteDb extends ASpatialDb {
     private SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+    private GPConnection mConn;
+    private ConnectionData connectionData;
 
     @Override
     public EDb getType() {
-        return EDb.SPATIALITE;
+        return EDb.SPATIALITE4ANDROID;
     }
 
     public void setCredentials( String user, String password ) {
         // not supported on android
     }
+    
+    @Override
+    public boolean open( String dbPath, String user, String password ) throws Exception {
+        return open(dbPath);
+    }
+    
+    @Override
+    public ConnectionData getConnectionData() {
+        return connectionData;
+    }
 
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;
+        
+        connectionData = new ConnectionData();
+        connectionData.connectionLabel = dbPath;
+        connectionData.connectionUrl = new String(dbPath);
+        connectionData.dbType = getType().getCode();
 
         boolean dbExists = false;
         File dbFile = new File(dbPath);
@@ -87,7 +107,22 @@ public class GPSpatialiteDb extends ASpatialDb {
     }
 
     @Override
+    public void close() throws Exception {
+        mConn.close();
+    }
+
+    @Override
     public Connection getJdbcConnection() {
+        throw new IllegalArgumentException("Android drivers do not support this method.");
+    }
+
+    @Override
+    protected IHMConnection getConnectionInternal() throws Exception {
+        return mConn;
+    }
+
+    @Override
+    public String getJdbcUrlPre() {
         throw new IllegalArgumentException("Android drivers do not support this method.");
     }
 
@@ -127,8 +162,9 @@ public class GPSpatialiteDb extends ASpatialDb {
     }
 
     public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
-            int reprojectSrid ) throws Exception {
-        return SpatialiteCommonMethods.getTableRecordsMapIn(this, tableName, envelope, alsoPK_UID, limit, reprojectSrid);
+            int reprojectSrid, String whereStr ) throws Exception {
+        return SpatialiteCommonMethods.getTableRecordsMapIn(this, tableName, envelope, alsoPK_UID, limit, reprojectSrid,
+                whereStr);
     }
 
     @Override
@@ -295,14 +331,6 @@ public class GPSpatialiteDb extends ASpatialDb {
         }
     }
 
-    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws Exception {
-        return SpatialiteCommonMethods.getGeometriesIn(this, tableName, envelope);
-    }
-
-    public List<Geometry> getGeometriesIn( String tableName, Geometry intersectionGeometry ) throws Exception {
-        return SpatialiteCommonMethods.getGeometriesIn(this, tableName, intersectionGeometry);
-    }
-
     public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
         return SpatialiteCommonMethods.getGeojsonIn(this, tableName, fields, wherePiece, precision);
     }
@@ -316,10 +344,15 @@ public class GPSpatialiteDb extends ASpatialDb {
             throws Exception {
         addGeometryXYColumnAndIndex(tableName, geomColName, geomType, epsg, false);
     }
-    
+
     @Override
     public List<Index> getIndexes( String tableName ) throws Exception {
         return SpatialiteCommonMethods.getIndexes(this, tableName);
+    }
+
+    @Override
+    public void accept( IDbVisitor visitor ) {
+        // not supported
     }
 
 }

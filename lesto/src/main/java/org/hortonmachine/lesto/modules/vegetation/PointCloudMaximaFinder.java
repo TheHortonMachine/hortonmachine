@@ -21,23 +21,26 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
-import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.*;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.DESCR;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.KEYWORDS;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.LABEL;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.NAME;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.doDynamicRadius_DESCR;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.doProcess;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.inDsmDtmDiff_DESCR;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.inDtm_DESCR;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.inLas_DESCR;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.inRoi_DESCR;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.outTops_DESCR;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.pClass_DESCR;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.pElevDiffThres_DESCR;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.pMaxRadius_DESCR;
+import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.pThreshold_DESCR;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -59,6 +62,17 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description(DESCR)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
@@ -86,8 +100,9 @@ public class PointCloudMaximaFinder extends HMModel {
     public String inRoi;
 
     @Description(inDsmDtmDiff_DESCR)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
-    public GridCoverage2D inDsmDtmDiff;
+    public String inDsmDtmDiff;
 
     @Description(pMaxRadius_DESCR)
     @In
@@ -140,15 +155,16 @@ public class PointCloudMaximaFinder extends HMModel {
 
         DsmDtmDiffHelper helper = null;
         if (inDsmDtmDiff != null) {
+            GridCoverage2D inDsmDtmDiffGC = getRaster(inDsmDtmDiff);
             helper = new DsmDtmDiffHelper();
             helper.pElevDiffThres = pElevDiffThres;
-            helper.gridGeometry = inDsmDtmDiff.getGridGeometry();
-            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDsmDtmDiff);
+            helper.gridGeometry = inDsmDtmDiffGC.getGridGeometry();
+            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDsmDtmDiffGC);
             helper.cols = regionMap.getCols();
             helper.rows = regionMap.getRows();
             helper.xres = regionMap.getXres();
             helper.yres = regionMap.getYres();
-            helper.dsmDtmDiffIter = CoverageUtilities.getRandomIterator(inDsmDtmDiff);
+            helper.dsmDtmDiffIter = CoverageUtilities.getRandomIterator(inDsmDtmDiffGC);
         }
 
         try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inLas), inDtmGC, pThreshold, crs)) {

@@ -3,9 +3,13 @@ package org.hortonmachine.geopaparazzi;
 import java.io.File;
 import java.util.logging.Logger;
 
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.hortonmachine.geopaparazzi.simpleserver.DisabledLogging;
@@ -51,6 +55,7 @@ public class GeopaparazziServer extends EmbeddedJspServer {
     protected void doPreStart() {
         ContextHandler welcomeContext = new ContextHandler("/");
         welcomeContext.setContextPath("/");
+        
         welcomeContext.setHandler(new WelcomeHandler(gpapProjectsFolder));
 
         ContextHandler projectsListContext = new ContextHandler("/stage_gplist_download");
@@ -64,9 +69,12 @@ public class GeopaparazziServer extends EmbeddedJspServer {
 
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         contexts.setHandlers(new Handler[]{welcomeContext, projectDownloadContext, projectUploadContext, projectsListContext});
-
-        _server.setHandler(contexts);
-
+        if (getContextSecurityHandler() != null) {
+        	getContextSecurityHandler().setHandler(contexts);	
+        }
+        else {
+        	_server.setHandler(contexts);
+        }
     }
 
     public static void main( String[] args ) throws Exception {
@@ -76,6 +84,8 @@ public class GeopaparazziServer extends EmbeddedJspServer {
         // File dataFolder = new File("/home/hydrologis/data/");
 
         GeopaparazziServer jspServer = new GeopaparazziServer(8081, gpapProjectsFolder);
+        // Uncomment to require authentication
+        jspServer.enableBasicAuth("user", "geopap");
         jspServer.start();
     }
 }

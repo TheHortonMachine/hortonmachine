@@ -52,7 +52,7 @@ public class LasElevationHandler extends HMModel {
     @In
     public String inFile;
 
-    @Description("A dtm raster to use for the ellevation normlization.")
+    @Description("A dtm raster to use for the elevation normlization.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm;

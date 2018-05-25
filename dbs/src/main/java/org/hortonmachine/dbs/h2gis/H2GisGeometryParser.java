@@ -30,4 +30,17 @@ public class H2GisGeometryParser implements IGeometryParser {
         return geometry;
     }
 
+    @Override
+    public Geometry fromSqlObject( Object geomObject ) throws Exception {
+        if (geomObject instanceof Geometry) {
+            return (Geometry) geomObject;
+        }
+        throw new IllegalArgumentException("Geom object needs to be a JTS geometry.");
+    }
+
+    @Override
+    public Object toSqlObject( Geometry geometry ) throws Exception {
+        return geometry;
+    }
+
 }

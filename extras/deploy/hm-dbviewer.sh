@@ -1,3 +1,4 @@
+#!/bin/bash
  #
  # This file is part of HortonMachine (http://www.hortonmachine.org)
  # (C) HydroloGIS - www.hydrologis.com 
@@ -19,4 +20,5 @@
 MEM="-Xmx4g"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR=`dirname "$0"`
 java $MEM -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.database.DatabaseViewer $1

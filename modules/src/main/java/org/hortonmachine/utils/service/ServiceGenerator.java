@@ -26,8 +26,8 @@ import java.util.Map.Entry;
 import java.util.List;
 import java.util.Set;
 
-import org.hortonmachine.Modules;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.modules.Modules;
 
 /**
  * Class that generates the service file.

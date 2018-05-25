@@ -1,16 +1,17 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
-		<version>0.9.1-SNAPSHOT</version>
+		<version>0.9.2-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hm-apps</artifactId>
-	<version>0.9.1-SNAPSHOT</version>
+	<version>0.9.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>HM Small Applications Components</name>
 
@@ -19,39 +20,12 @@
 	</properties>
 
 	<dependencies>
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.python</groupId> -->
-<!-- 			<artifactId>jython-standalone</artifactId> -->
-<!-- 			<version>2.7.1b3</version> -->
-<!-- 		</dependency> -->
-
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gui</artifactId>
-			<version>0.9.1-SNAPSHOT</version>
+			<version>0.9.2-SNAPSHOT</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.jogamp.jogl</groupId>
-			<artifactId>jogl-all</artifactId>
-			<version>2.1.5-01</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jogamp.gluegen</groupId>
-			<artifactId>gluegen-rt-main</artifactId>
-			<version>2.1.5-01</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.mapsforge</groupId>
-			<artifactId>mapsforge-core</artifactId>
-			<version>${mapsforge.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mapsforge</groupId>
-			<artifactId>mapsforge-map</artifactId>
-			<version>${mapsforge.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>org.mapsforge</groupId>
 			<artifactId>mapsforge-map-awt</artifactId>
@@ -59,18 +33,72 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mapsforge</groupId>
-			<artifactId>mapsforge-map-reader</artifactId>
-			<version>${mapsforge.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mapsforge</groupId>
 			<artifactId>mapsforge-themes</artifactId>
 			<version>${mapsforge.version}</version>
 		</dependency>
+		
+<!-- 				<dependency> -->
+<!-- 			<groupId>org.jogamp.jogl</groupId> -->
+<!-- 			<artifactId>jogl-all</artifactId> -->
+<!-- 			<version>2.1.5-01</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.jogamp.gluegen</groupId> -->
+<!-- 			<artifactId>gluegen-rt-main</artifactId> -->
+<!-- 			<version>2.1.5-01</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>gov.nasa</groupId> -->
+<!-- 			<artifactId>worldwind</artifactId> -->
+<!-- 			<version>2.1.X</version> -->
+<!-- 		</dependency> -->
+
 		<dependency>
-			<groupId>gov.nasa</groupId>
-			<artifactId>worldwind</artifactId>
-			<version>2.1.X</version>
+		    <groupId>com.github.pcmehlitz</groupId>
+		    <artifactId>worldwind-pcm</artifactId>
+		    <version>2.1.0.187</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.geoscript</groupId>
+			<artifactId>geoscript-groovy</artifactId>
+			<version>${geoscript.version}</version>
+
+			<exclusions>
+				<exclusion>
+					<groupId>com.h2database</groupId>
+					<artifactId>h2</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt-netcdf</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt-css</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>no.ecc.vectortile</groupId>
+					<artifactId>java-vector-tile</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.jaitools</groupId>
+					<artifactId>jt-jiffleop</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.jaitools</groupId>
+					<artifactId>jt-jiffle-language</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.xerial</groupId>
+					<artifactId>sqlite-jdbc</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools.jdbc</groupId>
+					<artifactId>gt-jdbc-spatialite</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 	</dependencies>

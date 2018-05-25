@@ -1,12 +1,20 @@
 package org.hortonmachine.geopaparazzi.simpleserver;
 
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.jasper.servlet.JspServlet;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.LoginService;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.util.security.Credential;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 public abstract class EmbeddedJspServer {
@@ -14,6 +22,7 @@ public abstract class EmbeddedJspServer {
 
     protected Server _server;
     protected WebAppContext webapp;
+    protected ConstraintSecurityHandler securityHandler = null;
 
     public EmbeddedJspServer( Integer port, String webappFolder ) {
         if (port == null) {
@@ -101,6 +110,28 @@ public abstract class EmbeddedJspServer {
                 "org.eclipse.jetty.annotations.AnnotationConfiguration");
         return ctx;
 
+    }
+
+    public void enableBasicAuth( String user, String password ) {
+        EditableHashLoginService loginService = new EditableHashLoginService();
+        loginService.addUser(user, password);
+        _server.addBean(loginService);
+        securityHandler = new ConstraintSecurityHandler();
+        _server.setHandler(securityHandler);
+        Constraint constraint = new Constraint();
+        constraint.setName("auth");
+        constraint.setAuthenticate(true);
+        constraint.setRoles(new String[]{EditableHashLoginService.DEFAULT_ROLE});
+        ConstraintMapping mapping = new ConstraintMapping();
+        mapping.setPathSpec("/*");
+        mapping.setConstraint(constraint);
+        securityHandler.setConstraintMappings(Collections.singletonList(mapping));
+        securityHandler.setAuthenticator(new BasicAuthenticator());
+        securityHandler.setLoginService(loginService);
+    }
+
+    protected ConstraintSecurityHandler getContextSecurityHandler() {
+        return securityHandler;
     }
 
     public static void main( String[] args ) throws Exception {

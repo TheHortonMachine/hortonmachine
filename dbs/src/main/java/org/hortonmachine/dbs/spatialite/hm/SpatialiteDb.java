@@ -27,9 +27,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.IDbVisitor;
+import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -58,6 +61,8 @@ public class SpatialiteDb extends ASpatialDb {
 
     private SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
 
+    private IHMConnection mConn;
+
     public SpatialiteDb() {
         sqliteDb = new SqliteDb();
     }
@@ -72,11 +77,25 @@ public class SpatialiteDb extends ASpatialDb {
         this.password = password;
     }
 
+    @Override
+    public ConnectionData getConnectionData() {
+        return sqliteDb.getConnectionData();
+    }
+
+    @Override
+    public boolean open( String dbPath, String user, String password ) throws Exception {
+        setCredentials(user, password);
+        return open(dbPath);
+    }
+
     public boolean open( String dbPath ) throws Exception {
         sqliteDb.setCredentials(user, password);
         boolean dbExists = sqliteDb.open(dbPath);
+
+        sqliteDb.getConnectionData().dbType = getType().getCode();
+
         this.mDbPath = sqliteDb.getDatabasePath();
-        mConn = sqliteDb.getConnection();
+        mConn = sqliteDb.getConnectionInternal();
         try (IHMStatement stmt = mConn.createStatement()) {
             // set timeout to 30 sec.
             stmt.setQueryTimeout(30);
@@ -146,8 +165,22 @@ public class SpatialiteDb extends ASpatialDb {
         return dbExists;
     }
 
+    @Override
+    public String getJdbcUrlPre() {
+        return sqliteDb.getJdbcUrlPre();
+    }
+
     public Connection getJdbcConnection() {
         return sqliteDb.getJdbcConnection();
+    }
+
+    @Override
+    protected IHMConnection getConnectionInternal() throws Exception {
+        return mConn;
+    }
+
+    public void close() throws Exception {
+        sqliteDb.close();
     }
 
     @Override
@@ -185,8 +218,9 @@ public class SpatialiteDb extends ASpatialDb {
     }
 
     public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
-            int reprojectSrid ) throws Exception {
-        return SpatialiteCommonMethods.getTableRecordsMapIn(this, tableName, envelope, alsoPK_UID, limit, reprojectSrid);
+            int reprojectSrid, String whereStr ) throws Exception {
+        return SpatialiteCommonMethods.getTableRecordsMapIn(this, tableName, envelope, alsoPK_UID, limit, reprojectSrid,
+                whereStr);
     }
 
     @Override
@@ -255,14 +289,6 @@ public class SpatialiteDb extends ASpatialDb {
     @Override
     public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
         return sqliteDb.getForeignKeys(tableName);
-    }
-
-    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope ) throws Exception {
-        return SpatialiteCommonMethods.getGeometriesIn(this, tableName, envelope);
-    }
-
-    public List<Geometry> getGeometriesIn( String tableName, Geometry intersectionGeometry ) throws Exception {
-        return SpatialiteCommonMethods.getGeometriesIn(this, tableName, intersectionGeometry);
     }
 
     public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
@@ -454,6 +480,11 @@ public class SpatialiteDb extends ASpatialDb {
     @Override
     public List<Index> getIndexes( String tableName ) throws Exception {
         return sqliteDb.getIndexes(tableName);
+    }
+
+    @Override
+    public void accept( IDbVisitor visitor ) throws Exception {
+        sqliteDb.accept(visitor);
     }
 
 }

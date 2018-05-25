@@ -27,10 +27,13 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.GeodeticCalculator;
+import org.geotools.referencing.crs.AbstractSingleCRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.operation.MathTransform;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -48,6 +51,24 @@ public class CrsUtilities {
     public static final int WGS84_SRID = 4326;
 
     public static final ReferencedEnvelope WORLD = new ReferencedEnvelope(-180, 180, -90, 90, WGS84);
+
+    /**
+     * Checks if a crs is valid, i.e. if it is not a wildcard default one.
+     * 
+     * @param crs the crs to check.
+     */
+    public static boolean isCrsValid( CoordinateReferenceSystem crs ) {
+        if (crs instanceof AbstractSingleCRS) {
+            AbstractSingleCRS aCrs = (AbstractSingleCRS) crs;
+            Datum datum = aCrs.getDatum();
+            ReferenceIdentifier name = datum.getName();
+            String code = name.getCode();
+            if (code.equalsIgnoreCase("Unknown")) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * Fill the prj file with the actual map projection.

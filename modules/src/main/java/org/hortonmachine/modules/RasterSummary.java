@@ -17,24 +17,24 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_DO_HISTOGRAM_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_IN_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_CB_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_MAX_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_MEAN_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_MIN_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_RANGE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_SUM_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_OUT_S_DEV_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_P_BINS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERSUMMARY_STATUS;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_DO_HISTOGRAM_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_IN_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_LABEL;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_LICENSE;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_NAME;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_OUT_CB_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_OUT_MAX_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_OUT_MEAN_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_OUT_MIN_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_OUT_RANGE_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_OUT_SUM_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_OUT_S_DEV_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_P_BINS_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;

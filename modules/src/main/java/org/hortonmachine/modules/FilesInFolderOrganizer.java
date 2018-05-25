@@ -29,8 +29,10 @@ import static org.hortonmachine.modules.FilesInFolderOrganizer.FilesInFolderOrga
 
 import java.io.File;
 import java.io.FileFilter;
-import java.nio.file.Path;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -38,13 +40,11 @@ import java.util.TreeMap;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.files.FileTraversal;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -55,7 +55,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -99,6 +98,8 @@ public class FilesInFolderOrganizer extends HMModel {
     public static final String FilesInFolderOrganizer_OUT_FOLDER_DESCRIPTION = "The output folder";
     public static final String FilesInFolderOrganizer_FILE_FILTER_DESCRIPTION = "An optional file filter (used when developing).";
     public static final String FilesInFolderOrganizer_doCountOnly_DESCRIPTION = "Only count the files it would copy and exit";
+
+    private boolean doMonthNames = true;
 
     @Initialize
     public void initProcess() {
@@ -169,6 +170,45 @@ public class FilesInFolderOrganizer extends HMModel {
             TreeMap<String, TreeMap<String, List<String>>> monthsMap = yearEntry.getValue();
             for( Entry<String, TreeMap<String, List<String>>> monthEntry : monthsMap.entrySet() ) {
                 String month = monthEntry.getKey();
+                if (doMonthNames)
+                    switch( month ) {
+                    case "01":
+                        month += "_january";
+                        break;
+                    case "02":
+                        month += "_february";
+                        break;
+                    case "03":
+                        month += "_march";
+                        break;
+                    case "04":
+                        month += "_april";
+                        break;
+                    case "05":
+                        month += "_may";
+                        break;
+                    case "06":
+                        month += "_june";
+                        break;
+                    case "07":
+                        month += "_july";
+                        break;
+                    case "08":
+                        month += "_august";
+                        break;
+                    case "09":
+                        month += "_september";
+                        break;
+                    case "10":
+                        month += "_october";
+                        break;
+                    case "11":
+                        month += "_november";
+                        break;
+                    case "12":
+                        month += "_december";
+                        break;
+                    }
                 TreeMap<String, List<String>> daysMap = monthEntry.getValue();
                 for( Entry<String, List<String>> dayEntry : daysMap.entrySet() ) {
                     String day = dayEntry.getKey();
@@ -206,12 +246,100 @@ public class FilesInFolderOrganizer extends HMModel {
         pm.done();
     }
 
+    public static void createImageGallery( String basePath ) throws IOException {
+
+        InputStream htmlStream = FilesInFolderOrganizer.class.getResourceAsStream("/gallery.html");
+        String htmlString = FileUtilities.readInputStreamToString(htmlStream);
+
+        File baseFile = new File(basePath);
+        File[] yearsFolderFiles = baseFile.listFiles((FileFilter) file -> {
+            String yearName = file.getName();
+            try {
+                Integer.parseInt(yearName);
+            } catch (Exception e) {
+                return false;
+            }
+            return file.isDirectory();
+        });
+
+        StringBuilder sb = new StringBuilder();
+        for( File yearFolder : yearsFolderFiles ) {
+            String year = yearFolder.getName();
+            sb.append("<h1>Year: " + year + "</h1>\n");
+
+            File[] monthsFolderFiles = yearFolder.listFiles((FileFilter) file -> {
+                String monthName = file.getName();
+                try {
+                    String monthNum = monthName.substring(0, 2);
+                    Integer.parseInt(monthNum);
+                } catch (Exception e) {
+                    return false;
+                }
+                return file.isDirectory();
+            });
+            
+            Arrays.sort(monthsFolderFiles);
+
+            for( File monthFolder : monthsFolderFiles ) {
+                String month = monthFolder.getName();
+                sb.append("<h2>Month: " + month + "</h2>\n");
+
+                File[] daysFolderFiles = monthFolder.listFiles((FileFilter) file -> {
+                    String dayName = file.getName();
+                    try {
+                        Integer.parseInt(dayName);
+                    } catch (Exception e) {
+                        return false;
+                    }
+                    return file.isDirectory();
+                });
+                
+                Arrays.sort(daysFolderFiles);
+
+                for( File dayFolder : daysFolderFiles ) {
+                    String day = dayFolder.getName();
+                    sb.append("<h3>Day: " + day + "</h3>\n");
+
+                    File[] imageFiles = dayFolder.listFiles((FileFilter) file -> {
+                        String imageName = file.getName();
+                        return file.isFile() && imageName.toLowerCase().endsWith("jpg");
+                    });
+                    
+                    Arrays.sort(imageFiles);
+
+                    for( File imageFile : imageFiles ) {
+                        String imageName = imageFile.getName();
+                        String path = "./" + year + "/" + month + "/" + day + "/" + imageName;
+                        sb.append("<a title=\"" + imageName + "\"");
+                        sb.append(" href=\"" + path + "\">");
+                        sb.append("<img alt=\"\"");
+                        sb.append("src=\"" + path + "\" width=\"30%\" height=\"30%\" />");
+                        sb.append("</a>\n");
+                    }
+
+                }
+
+            }
+
+            break;
+        }
+
+        htmlString = htmlString.replaceFirst("REPLACETEXT", sb.toString());
+
+        FileUtilities.writeFile(htmlString, new File(basePath + File.separator + "gallery.html"));
+
+    }
+
     public static void main( String[] args ) throws Exception {
-        FilesInFolderOrganizer fo = new FilesInFolderOrganizer();
-        fo.inFolder = "/home/hydrologis/Dropbox/Camera Uploads/";
-        fo.inOutputFolder = "/home/hydrologis/Dropbox/cas/FOTO/";
-        fo.doCountOnly = false;
-        fo.process();
+        String outputFoler = "/home/hydrologis/Dropbox/cas/FOTO/";
+
+       createImageGallery(outputFoler);
+        
+//        FilesInFolderOrganizer fo = new FilesInFolderOrganizer();
+//        fo.inFolder = "/home/hydrologis/Dropbox/Camera Uploads/";
+//        fo.inOutputFolder = outputFoler;
+//        fo.doCountOnly = false;
+//        fo.process();
     }
 
 }

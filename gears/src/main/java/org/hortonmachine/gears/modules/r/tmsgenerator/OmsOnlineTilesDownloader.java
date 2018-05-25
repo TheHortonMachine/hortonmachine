@@ -194,13 +194,9 @@ public class OmsOnlineTilesDownloader extends HMModel {
                 for( int j = startYTile; j <= endYTile; j++ ) {
                     tileNum++;
 
-                    double[] bounds = mercator.TileLatLonBounds(i, j, z);
-                    double west = bounds[0];
-                    double south = bounds[1];
-                    double east = bounds[2];
-                    double north = bounds[3];
+                    Envelope bounds = mercator.TileLatLonBounds(i, j, z);
 
-                    ReferencedEnvelope tmpBounds = new ReferencedEnvelope(west, east, south, north, latLongCrs);
+                    ReferencedEnvelope tmpBounds = new ReferencedEnvelope(bounds, latLongCrs);
                     levelBounds.expandToInclude(tmpBounds);
 
                     if (!doDryrun) {

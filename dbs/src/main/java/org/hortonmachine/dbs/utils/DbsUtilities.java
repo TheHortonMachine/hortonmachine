@@ -79,6 +79,25 @@ public class DbsUtilities {
     }
 
     /**
+     * Join a list of strings by string.
+     * 
+     * @param items the list of strings.
+     * @param separator the separator to use.
+     * @return the resulting string.
+     */
+    public static String joinBySeparator( List<String> items, String separator ) {
+        int size = items.size();
+        if (size == 0) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder(items.get(0));
+        for( int i = 1; i < size; i++ ) {
+            sb.append(separator).append(items.get(i));
+        }
+        return sb.toString();
+    }
+
+    /**
      * Create a polygon using an envelope.
      * 
      * @param env the envelope to use.
@@ -166,7 +185,7 @@ public class DbsUtilities {
         query += " FROM " + tableName + " " + letter;
         return query;
     }
-    
+
     /**
      * Returns the name of the file without the extension.
      * <p/>

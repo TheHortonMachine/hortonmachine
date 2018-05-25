@@ -40,7 +40,7 @@ import org.hortonmachine.gui.console.ConsoleMessageFilter;
 import org.hortonmachine.gui.console.ELogStyle;
 import org.hortonmachine.gui.console.IProcessListener;
 
-import oms3.CLI;
+import groovy.ui.GroovyMain;
 
 /**
  * Executor of OMS scripts.
@@ -97,45 +97,55 @@ public class StageScriptExecutor {
         /*
          * get libraries
          */
-        File[] jarFiles = jgtLibsFolder.listFiles(new FilenameFilter(){
+        // File[] jarFiles = jgtLibsFolder.listFiles(new FilenameFilter(){
+        // public boolean accept( File dir, String name ) {
+        // return name.endsWith("jar");
+        // }
+        // });
+        //
+        // if (jarFiles == null) {
+        // jarFiles = new File[0];
+        // }
+        //
+        // Arrays.sort(jarFiles, new Comparator<File>(){
+        // public int compare( File o1, File o2 ) {
+        // if (o1.getName().startsWith("jgt-oms") && o2.getName().startsWith("jgt-")) {
+        // return -1;
+        // }
+        // if (o2.getName().startsWith("jgt-oms") && o1.getName().startsWith("jgt-")) {
+        // return 1;
+        // }
+        // if (o1.getName().startsWith("jgt-") && !o2.getName().startsWith("jgt-")) {
+        // return 1;
+        // }
+        // if (o2.getName().startsWith("jgt-") && !o1.getName().startsWith("jgt-")) {
+        // return -1;
+        // }
+        // return 0;
+        // }
+        // });
+        //
+        // StringBuilder cpBuilder = new StringBuilder();
+        // for( int i = 0; i < jarFiles.length; i++ ) {
+        // if (i == 0) {
+        // cpBuilder.append(jarFiles[i].getAbsolutePath());
+        // } else {
+        // cpBuilder.append(File.pathSeparator).append(jarFiles[i].getAbsolutePath());
+        // }
+        // }
+        // String classpathJars = "\"" + cpBuilder.toString() + File.pathSeparator + ".\"";
+
+        File[] groovyJarFiles = jgtLibsFolder.listFiles(new FilenameFilter(){
             public boolean accept( File dir, String name ) {
-                return name.endsWith("jar");
+                return name.toLowerCase().contains("groovy-all");
             }
         });
-        
-        if (jarFiles == null) {
-            jarFiles = new File[0];
+        if (groovyJarFiles.length == 1 && groovyJarFiles[0] != null) {
+            String classpathJars = "\"" + groovyJarFiles[0].getAbsolutePath() + File.pathSeparator
+                    + jgtLibsFolder.getAbsolutePath() + "/*" + File.pathSeparator + ".\"";
+            classPath = classpathJars;
         }
 
-        Arrays.sort(jarFiles, new Comparator<File>(){
-            public int compare( File o1, File o2 ) {
-                if (o1.getName().startsWith("jgt-oms") && o2.getName().startsWith("jgt-")) {
-                    return -1;
-                }
-                if (o2.getName().startsWith("jgt-oms") && o1.getName().startsWith("jgt-")) {
-                    return 1;
-                }
-                if (o1.getName().startsWith("jgt-") && !o2.getName().startsWith("jgt-")) {
-                    return 1;
-                }
-                if (o2.getName().startsWith("jgt-") && !o1.getName().startsWith("jgt-")) {
-                    return -1;
-                }
-                return 0;
-            }
-        });
-
-        StringBuilder cpBuilder = new StringBuilder();
-        for( int i = 0; i < jarFiles.length; i++ ) {
-            if (i == 0) {
-                cpBuilder.append(jarFiles[i].getAbsolutePath());
-            } else {
-                cpBuilder.append(File.pathSeparator).append(jarFiles[i].getAbsolutePath());
-            }
-        }
-
-        String classpathJars = "\"" + cpBuilder.toString() + File.pathSeparator + ".\"";
-        classPath = classpathJars;
     }
 
     /**
@@ -161,7 +171,7 @@ public class StageScriptExecutor {
         if (!scriptFile.exists()) {
             // if the file doesn't exist, it is a script, let's put it into a
             // file
-            scriptFile = File.createTempFile("omsbox_script_", ".oms");
+            scriptFile = File.createTempFile("hm_script_", ".groovy");
             BufferedWriter bw = null;
             try {
                 bw = new BufferedWriter(new FileWriter(scriptFile));
@@ -217,12 +227,12 @@ public class StageScriptExecutor {
         // all the arguments
         arguments.add("-cp");
         arguments.add(classPath);
-        arguments.add(CLI.class.getCanonicalName());
-        if (loggerLevelGui.equals(SpatialToolboxConstants.LOGLEVEL_GUI_ON)) {
-            arguments.add("-l");
-            arguments.add("FINEST");
-        }
-        arguments.add("-r");
+        arguments.add(GroovyMain.class.getCanonicalName());
+        // if (loggerLevelGui.equals(SpatialToolboxConstants.LOGLEVEL_GUI_ON)) {
+        // arguments.add("-l");
+        // arguments.add("FINEST");
+        // }
+        // arguments.add("-r");
         arguments.add(scriptFile.getAbsolutePath());
 
         // String tmpScriptFilesDir = System.getProperty("java.io.tmpdir");

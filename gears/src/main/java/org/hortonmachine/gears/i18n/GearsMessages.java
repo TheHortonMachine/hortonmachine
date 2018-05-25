@@ -370,26 +370,6 @@ public class GearsMessages {
     public static final String OMSID2VALUEARRAYREADER_FILE_NOVALUE_DESCRIPTION = "The file novalue.";
     public static final String OMSID2VALUEARRAYREADER_DATA_DESCRIPTION = "The read map of ids and values arrays.";
 
-    public static final String OMSRASTERREPROJECTOR_DESCRIPTION = "Module for raster reprojection.";
-    public static final String OMSRASTERREPROJECTOR_DOCUMENTATION = "";
-    public static final String OMSRASTERREPROJECTOR_KEYWORDS = "Crs, Reprojection, Raster, OmsRasterConverter, OmsRasterReader";
-    public static final String OMSRASTERREPROJECTOR_LABEL = RASTERPROCESSING;
-    public static final String OMSRASTERREPROJECTOR_NAME = "rreproject";
-    public static final int OMSRASTERREPROJECTOR_STATUS = 40;
-    public static final String OMSRASTERREPROJECTOR_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERREPROJECTOR_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERREPROJECTOR_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERREPROJECTOR_IN_RASTER_DESCRIPTION = "The raster that has to be reprojected.";
-    public static final String OMSRASTERREPROJECTOR_P_NORTH_DESCRIPTION = "The north bound of the region to consider";
-    public static final String OMSRASTERREPROJECTOR_P_SOUTH_DESCRIPTION = "The south bound of the region to consider";
-    public static final String OMSRASTERREPROJECTOR_P_WEST_DESCRIPTION = "The west bound of the region to consider";
-    public static final String OMSRASTERREPROJECTOR_P_EAST_DESCRIPTION = "The east bound of the region to consider";
-    public static final String OMSRASTERREPROJECTOR_P_ROWS_DESCRIPTION = "The rows of the region to consider";
-    public static final String OMSRASTERREPROJECTOR_P_COLS_DESCRIPTION = "The cols of the region to consider";
-    public static final String OMSRASTERREPROJECTOR_P_CODE_DESCRIPTION = "The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).";
-    public static final String OMSRASTERREPROJECTOR_P_INTERPOLATION_DESCRIPTION = "The interpolation type to use";
-    public static final String OMSRASTERREPROJECTOR_OUT_RASTER_DESCRIPTION = "The reprojected output raster.";
-
     public static final String OMSEIAREASREADER_DESCRIPTION = "Utility class for reading area data (for EICalculator) from csv files.";
     public static final String OMSEIAREASREADER_DOCUMENTATION = "";
     public static final String OMSEIAREASREADER_KEYWORDS = "IO, Reading";
@@ -918,26 +898,6 @@ public class GearsMessages {
     public static final String OMSVECTORCLIPPER_P_MAX_THREADS_DESCRIPTION = "Max threads to use (default 1)";
     public static final String OMSVECTORCLIPPER_OUT_MAP_DESCRIPTION = "The resulting vector map.";
 
-    public static final String OMSRASTERSUMMARY_DESCRIPTION = "Calculate a summary of the map with base statistics.";
-    public static final String OMSRASTERSUMMARY_DOCUMENTATION = "OmsRasterSummary.html";
-    public static final String OMSRASTERSUMMARY_KEYWORDS = "Statistics, Raster, OmsMapcalc";
-    public static final String OMSRASTERSUMMARY_LABEL = RASTERPROCESSING;
-    public static final String OMSRASTERSUMMARY_NAME = "rsummary";
-    public static final int OMSRASTERSUMMARY_STATUS = 40;
-    public static final String OMSRASTERSUMMARY_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERSUMMARY_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERSUMMARY_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERSUMMARY_IN_RASTER_DESCRIPTION = "The map to analize.";
-    public static final String OMSRASTERSUMMARY_P_BINS_DESCRIPTION = "The number of bins for the histogram (default = 100).";
-    public static final String OMSRASTERSUMMARY_DO_HISTOGRAM_DESCRIPTION = "Flag that defines if the histogram should be done also (default = false).";
-    public static final String OMSRASTERSUMMARY_OUT_MIN_DESCRIPTION = "The min value.";
-    public static final String OMSRASTERSUMMARY_OUT_MAX_DESCRIPTION = "The max value.";
-    public static final String OMSRASTERSUMMARY_OUT_MEAN_DESCRIPTION = "The mean value.";
-    public static final String OMSRASTERSUMMARY_OUT_S_DEV_DESCRIPTION = "The standard deviation value.";
-    public static final String OMSRASTERSUMMARY_OUT_RANGE_DESCRIPTION = "The range value.";
-    public static final String OMSRASTERSUMMARY_OUT_SUM_DESCRIPTION = "The sum value.";
-    public static final String OMSRASTERSUMMARY_OUT_CB_DESCRIPTION = "The histogram.";
-
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_DESCRIPTION = "Utility class for converting from 'id1 value1[]' to 'id1 value1' by averaging.";
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_DOCUMENTATION = "";
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_KEYWORDS = "IO, Reading";
@@ -1065,21 +1025,6 @@ public class GearsMessages {
     public static final String EXIFGPSWRITER_P_ALTITUDE_DESCRIPTION = "The altidude in meters to add to the exif tags.";
     public static final String EXIFGPSWRITER_DO_NORTH_DESCRIPTION = "Switch to define if latitude is northern or southern hemisphere (default is true, i.e northern).";
     public static final String EXIFGPSWRITER_DO_EAST_DESCRIPTION = "Switch to define if longitude is eastern or western part (default is true, i.e eastern).";
-
-    public static final String OMSCONTOUREXTRACTOR_DESCRIPTION = "Module that extracts contour lines from a raster.";
-    public static final String OMSCONTOUREXTRACTOR_DOCUMENTATION = "OmsContourExtractor.html";
-    public static final String OMSCONTOUREXTRACTOR_KEYWORDS = "Raster, Vector";
-    public static final String OMSCONTOUREXTRACTOR_LABEL = VECTORPROCESSING;
-    public static final String OMSCONTOUREXTRACTOR_NAME = "contourextract";
-    public static final int OMSCONTOUREXTRACTOR_STATUS = 5;
-    public static final String OMSCONTOUREXTRACTOR_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSCONTOUREXTRACTOR_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSCONTOUREXTRACTOR_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSCONTOUREXTRACTOR_IN_COVERAGE_DESCRIPTION = "The raster on which to calculate the contours.";
-    public static final String OMSCONTOUREXTRACTOR_P_MIN_DESCRIPTION = "The minimum value for the contours.";
-    public static final String OMSCONTOUREXTRACTOR_P_MAX_DESCRIPTION = "The maximum value for the contours.";
-    public static final String OMSCONTOUREXTRACTOR_P_INTERVAL_DESCRIPTION = "The contours interval.";
-    public static final String OMSCONTOUREXTRACTOR_OUT_GEODATA_DESCRIPTION = "The generated contour lines vector.";
 
     public static final String OMSCSVMATRIXREADER_DESCRIPTION = "Utility class for reading data from a OMS formatted csv file to a double matrix (dates are saved as longs).";
     public static final String OMSCSVMATRIXREADER_DOCUMENTATION = "";

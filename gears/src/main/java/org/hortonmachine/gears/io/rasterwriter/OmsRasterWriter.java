@@ -88,10 +88,11 @@ public class OmsRasterWriter extends HMModel {
     @In
     public String file = null;
 
-
     @Execute
     public void process() throws Exception {
-        checkNull(inRaster);
+        if (inRaster == null) {
+            return;
+        }
 
         if (inRaster.getName().toString().equals("dummy")) {
             pm.message("WARNING: Not writing dummy raster to file.");
@@ -107,8 +108,8 @@ public class OmsRasterWriter extends HMModel {
         } else if (CoverageUtilities.isGrass(file)) {
             pType = GRASS;
         } else
-            throw new ModelsIllegalargumentException("Can't recognize the data format. Supported are: asc, tiff, grass.", this
-                    .getClass().getSimpleName(), pm);
+            throw new ModelsIllegalargumentException("Can't recognize the data format. Supported are: asc, tiff, grass.",
+                    this.getClass().getSimpleName(), pm);
 
         File mapFile = new File(file);
         try {
@@ -121,7 +122,8 @@ public class OmsRasterWriter extends HMModel {
             } else if (pType.equals(GRASS)) {
                 writeGrass(mapFile);
             } else {
-                throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName(), pm);
+                throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName(),
+                        pm);
             }
         } finally {
             pm.done();

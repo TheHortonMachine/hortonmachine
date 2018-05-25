@@ -154,7 +154,7 @@ public class SpatialitePolygonLayer extends RenderableLayer implements NwwVector
 
             try {
                 QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit,
-                        NwwUtilities.GPS_CRS_SRID);
+                        NwwUtilities.GPS_CRS_SRID, null);
                 int count = tableRecords.data.size();
                 List<String> names = tableRecords.names;
                 for( int i = 0; i < count; i++ ) {

@@ -17,6 +17,9 @@
  */
 package org.hortonmachine.nww.layers.defaults.raster;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -53,11 +56,14 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
 
     private static final int TILESIZE = 256;
 
+    protected static final boolean DEBUG = true;
+    protected static final boolean DEBUG_ALSO_WITHOUT_IMAGE = false;
+
     private File mbtilesFile;
 
     private Coordinate centerCoordinate;
 
-    public MBTilesNwwLayer(File mbtilesFile) throws Exception {
+    public MBTilesNwwLayer( File mbtilesFile ) throws Exception {
         super(makeLevels(mbtilesFile, getTilegenerator(mbtilesFile)));
         this.mbtilesFile = mbtilesFile;
         this.layerName = FileUtilities.getNameWithoutExtention(mbtilesFile);
@@ -65,7 +71,7 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
 
     }
 
-    private static MBTilesHelper getTilegenerator(File mbtilesFile) {
+    private static MBTilesHelper getTilegenerator( File mbtilesFile ) {
         MBTilesHelper mbTilesHelper = new MBTilesHelper();
         try {
             mbTilesHelper.open(mbtilesFile);
@@ -76,7 +82,7 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
         return mbTilesHelper;
     }
 
-    private static LevelSet makeLevels(File mbtilesFile, MBTilesHelper mbtilesHelper) throws MalformedURLException {
+    private static LevelSet makeLevels( File mbtilesFile, MBTilesHelper mbtilesHelper ) throws MalformedURLException {
         AVList params = new AVListImpl();
         String cacheRelativePath = "mbtiles/" + mbtilesFile.getName() + "-tiles";
 
@@ -108,9 +114,9 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
         if (!cacheFolder.exists()) {
             cacheFolder.mkdirs();
         }
-        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder() {
+        params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder(){
 
-            public URL getURL(Tile tile, String altImageFormat) throws MalformedURLException {
+            public URL getURL( Tile tile, String altImageFormat ) throws MalformedURLException {
                 int zoom = tile.getLevelNumber() + 3;
                 int x = tile.getColumn();
                 int y = tile.getRow();
@@ -132,7 +138,18 @@ public class MBTilesNwwLayer extends BasicMercatorTiledImageLayer implements Nww
                     File imgFile = new File(tileImageFolderFile, sb.toString());
                     if (!imgFile.exists()) {
                         BufferedImage bImg = mbtilesHelper.getTile(x, y, zoom);
-
+                        if (DEBUG) {
+                            if (bImg == null && DEBUG_ALSO_WITHOUT_IMAGE) {
+                                bImg = new BufferedImage(TILESIZE, TILESIZE, BufferedImage.TYPE_INT_ARGB);
+                            }
+                            if (bImg != null) {
+                                Graphics2D g2d = (Graphics2D) bImg.getGraphics();
+                                g2d.setColor(Color.black);
+                                g2d.drawRect(0, 0, TILESIZE, TILESIZE);
+                                g2d.drawString(zoom + "/" + x + "/" + y, 3, TILESIZE / 2);
+                                g2d.dispose();
+                            }
+                        }
                         if (bImg != null) {
                             ImageIO.write(bImg, _imageFormat, imgFile);
                         } else {

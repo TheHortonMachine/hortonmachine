@@ -12,7 +12,6 @@ import java.awt.Dimension;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gui.utils.GuiUtilities;
@@ -78,16 +77,9 @@ public class SimpleNwwViewer {
             nwwFrame.setTitle(appName + ": map view");
             nwwFrame.setIconImage(icon.getImage());
 
-            nwwFrame.setDefaultCloseOperation(onCloseAction);
-            java.awt.EventQueue.invokeLater(new Runnable(){
-
-                public void run() {
-                    nwwFrame.setVisible(true);
-                }
-            });
-            JPanel mapPanel = new JPanel(new BorderLayout());
-            mapPanel.add(nwwComponent, BorderLayout.CENTER);
-            nwwFrame.getContentPane().add(mapPanel, BorderLayout.CENTER);
+//            JPanel mapPanel = new JPanel(new BorderLayout());
+//            mapPanel.add(nwwComponent, BorderLayout.CENTER);
+            nwwFrame.getContentPane().add(nwwComponent, BorderLayout.CENTER);
             nwwFrame.setResizable(true);
             nwwFrame.setPreferredSize(new Dimension(800, 800));
             nwwFrame.pack();
@@ -97,7 +89,6 @@ public class SimpleNwwViewer {
                 final JFrame layersFrame = new JFrame();
                 layersFrame.setTitle(appName + ": layers view");
                 layersFrame.setIconImage(icon.getImage());
-                layersFrame.setDefaultCloseOperation(onCloseAction);
                 java.awt.EventQueue.invokeLater(new Runnable(){
 
                     public void run() {
@@ -112,7 +103,6 @@ public class SimpleNwwViewer {
                 final JFrame toolsFrame = new JFrame();
                 toolsFrame.setTitle(appName + ": tools view");
                 toolsFrame.setIconImage(icon.getImage());
-                toolsFrame.setDefaultCloseOperation(onCloseAction);
                 java.awt.EventQueue.invokeLater(new Runnable(){
 
                     public void run() {
@@ -124,7 +114,18 @@ public class SimpleNwwViewer {
                 toolsFrame.setPreferredSize(new Dimension(400, 400));
                 toolsFrame.setLocation(0, 510);
                 toolsFrame.pack();
+                
+                toolsFrame.setDefaultCloseOperation(onCloseAction);
+                layersFrame.setDefaultCloseOperation(onCloseAction);
             }
+            
+            nwwFrame.setDefaultCloseOperation(onCloseAction);
+
+            java.awt.EventQueue.invokeLater(new Runnable(){
+                public void run() {
+                    nwwFrame.setVisible(true);
+                }
+            });
             return toolsPanel;
         } catch (Exception e) {
             Logging.logger().log(java.util.logging.Level.SEVERE, "Exception at application start", e);

@@ -15,21 +15,17 @@ import java.sql.Statement;
 
 import javax.imageio.ImageIO;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
-import org.geotools.coverage.grid.io.AbstractGridFormat;
-import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.utils.images.ImageUtilities;
-import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 
 public class MBTilesHelper implements AutoCloseable {
 
@@ -55,15 +51,15 @@ public class MBTilesHelper implements AutoCloseable {
     public final static String COL_TILES_TILE_DATA = "tile_data";
 
     public final static String SELECTQUERY = "SELECT " + COL_TILES_TILE_DATA + " from " + TABLE_TILES + " where "
-        + COL_TILES_ZOOM_LEVEL + "=? AND " + COL_TILES_TILE_COLUMN + "=? AND " + COL_TILES_TILE_ROW + "=?";
+            + COL_TILES_ZOOM_LEVEL + "=? AND " + COL_TILES_TILE_COLUMN + "=? AND " + COL_TILES_TILE_ROW + "=?";
 
     private final static String CREATE_TILES = //
-        "CREATE TABLE " + TABLE_TILES + "( " + //
-            COL_TILES_ZOOM_LEVEL + " INTEGER, " + //
-            COL_TILES_TILE_COLUMN + " INTEGER, " + //
-            COL_TILES_TILE_ROW + " INTEGER, " + //
-            COL_TILES_TILE_DATA + " BLOB" + //
-            ")";
+            "CREATE TABLE " + TABLE_TILES + "( " + //
+                    COL_TILES_ZOOM_LEVEL + " INTEGER, " + //
+                    COL_TILES_TILE_COLUMN + " INTEGER, " + //
+                    COL_TILES_TILE_ROW + " INTEGER, " + //
+                    COL_TILES_TILE_DATA + " BLOB" + //
+                    ")";
 
     // TABLE METADATA (name TEXT, value TEXT);
     public final static String TABLE_METADATA = "metadata";
@@ -71,22 +67,21 @@ public class MBTilesHelper implements AutoCloseable {
     public final static String COL_METADATA_VALUE = "value";
 
     private final static String CREATE_METADATA = //
-        "CREATE TABLE " + TABLE_METADATA + "( " + //
-            COL_METADATA_NAME + " TEXT, " + //
-            COL_METADATA_VALUE + " TEXT " + //
-            ")";
+            "CREATE TABLE " + TABLE_METADATA + "( " + //
+                    COL_METADATA_NAME + " TEXT, " + //
+                    COL_METADATA_VALUE + " TEXT " + //
+                    ")";
 
     private final static String SELECT_BOUNDS = //
-        "select " + COL_METADATA_VALUE + " from " + TABLE_METADATA + " where " + COL_METADATA_NAME + "='bounds'";
+            "select " + COL_METADATA_VALUE + " from " + TABLE_METADATA + " where " + COL_METADATA_NAME + "='bounds'";
 
     private final static String SELECT_IMAGEFORMAT = //
-        "select " + COL_METADATA_VALUE + " from " + TABLE_METADATA + " where " + COL_METADATA_NAME + "='format'";
+            "select " + COL_METADATA_VALUE + " from " + TABLE_METADATA + " where " + COL_METADATA_NAME + "='format'";
 
     // INDEXES on Metadata and Tiles tables
-    private final static String INDEX_TILES = "CREATE UNIQUE INDEX tile_index ON " + TABLE_TILES + " ("
-        + COL_TILES_ZOOM_LEVEL + ", " + COL_TILES_TILE_COLUMN + ", " + COL_TILES_TILE_ROW + ")";
-    private final static String INDEX_METADATA =
-        "CREATE UNIQUE INDEX name ON " + TABLE_METADATA + "( " + COL_METADATA_NAME + ")";
+    private final static String INDEX_TILES = "CREATE UNIQUE INDEX tile_index ON " + TABLE_TILES + " (" + COL_TILES_ZOOM_LEVEL
+            + ", " + COL_TILES_TILE_COLUMN + ", " + COL_TILES_TILE_ROW + ")";
+    private final static String INDEX_METADATA = "CREATE UNIQUE INDEX name ON " + TABLE_METADATA + "( " + COL_METADATA_NAME + ")";
 
     private Connection connection;
 
@@ -94,7 +89,26 @@ public class MBTilesHelper implements AutoCloseable {
 
     private String imageFormat;
 
-    public void open(File dbFile) throws SQLException {
+    private PreparedStatement batchStatement;
+
+    private String insertTileSql;
+
+    public MBTilesHelper() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("INSERT INTO " + TABLE_TILES + " ");
+        sb.append("(");
+        sb.append(COL_TILES_ZOOM_LEVEL);
+        sb.append(",");
+        sb.append(COL_TILES_TILE_COLUMN);
+        sb.append(",");
+        sb.append(COL_TILES_TILE_ROW);
+        sb.append(",");
+        sb.append(COL_TILES_TILE_DATA);
+        sb.append(") values (?,?,?,?)");
+        insertTileSql = sb.toString();
+    }
+
+    public void open( File dbFile ) throws SQLException {
         // create a database connection
         connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
     }
@@ -109,7 +123,7 @@ public class MBTilesHelper implements AutoCloseable {
         }
     }
 
-    public void createTables(boolean makeIndexes) throws SQLException {
+    public void createTables( boolean makeIndexes ) throws SQLException {
         try (Statement statement = connection.createStatement()) {
             statement.addBatch("DROP TABLE IF EXISTS " + TABLE_TILES);
             statement.addBatch("DROP TABLE IF EXISTS " + TABLE_METADATA);
@@ -133,8 +147,8 @@ public class MBTilesHelper implements AutoCloseable {
         connection.commit();
     }
 
-    public void fillMetadata(float n, float s, float w, float e, String name, String format, int minZoom, int maxZoom)
-        throws SQLException {
+    public void fillMetadata( float n, float s, float w, float e, String name, String format, int minZoom, int maxZoom )
+            throws SQLException {
         // type = baselayer
         // version = 1.1
         // descritpion = name
@@ -164,7 +178,7 @@ public class MBTilesHelper implements AutoCloseable {
 
     }
 
-    private String toMetadataQuery(String key, String value) {
+    private String toMetadataQuery( String key, String value ) {
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO " + TABLE_METADATA + " ");
         sb.append("(");
@@ -180,7 +194,7 @@ public class MBTilesHelper implements AutoCloseable {
         return query;
     }
 
-    public synchronized void addTile(int x, int y, int z, BufferedImage image, String format) throws Exception {
+    public synchronized void addTile( int x, int y, int z, BufferedImage image, String format ) throws Exception {
         addedTiles++;
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -218,6 +232,37 @@ public class MBTilesHelper implements AutoCloseable {
         }
     }
 
+    public synchronized void addTileBatch( int x, int y, int z, BufferedImage image, String format, boolean sendBatch )
+            throws Exception {
+        addedTiles++;
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, format, baos);
+        byte[] res = baos.toByteArray();
+
+        if (batchStatement == null) {
+            batchStatement = connection.prepareStatement(insertTileSql);
+        }
+
+        batchStatement.setInt(1, z);
+        batchStatement.setInt(2, x);
+        batchStatement.setInt(3, y);
+
+        batchStatement.setBytes(4, res);
+        batchStatement.addBatch();
+
+        if (sendBatch) {
+            batchStatement.executeBatch();
+        }
+    }
+    public void triggerLastBatch() {
+        try {
+            if (batchStatement != null)
+                batchStatement.executeBatch();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * Get a Tile image from the database.
      * 
@@ -227,7 +272,7 @@ public class MBTilesHelper implements AutoCloseable {
      * @return
      * @throws Exception
      */
-    public BufferedImage getTile(int x, int y, int z) throws Exception {
+    public BufferedImage getTile( int x, int y, int z ) throws Exception {
         try (PreparedStatement statement = connection.prepareStatement(SELECTQUERY)) {
             statement.setInt(1, z);
             statement.setInt(2, x);
@@ -258,8 +303,8 @@ public class MBTilesHelper implements AutoCloseable {
             if (resultSet.next()) {
                 String boundsWSEN = resultSet.getString(1);
                 String[] split = boundsWSEN.split(",");
-                double[] bounds = { Double.parseDouble(split[0]), Double.parseDouble(split[1]),
-                    Double.parseDouble(split[2]), Double.parseDouble(split[3]) };
+                double[] bounds = {Double.parseDouble(split[0]), Double.parseDouble(split[1]), Double.parseDouble(split[2]),
+                        Double.parseDouble(split[3])};
 
                 return bounds;
             }
@@ -293,8 +338,8 @@ public class MBTilesHelper implements AutoCloseable {
      * @return the image.
      * @throws IOException 
      */
-    public static BufferedImage readGridcoverageImageForTile(AbstractGridCoverage2DReader reader, int x, int y,
-        int zoom, CoordinateReferenceSystem resampleCrs) throws IOException {
+    public static BufferedImage readGridcoverageImageForTile( AbstractGridCoverage2DReader reader, int x, int y, int zoom,
+            CoordinateReferenceSystem resampleCrs ) throws IOException {
         double north = tile2lat(y, zoom);
         double south = tile2lat(y + 1, zoom);
         double west = tile2lon(x, zoom);
@@ -313,27 +358,44 @@ public class MBTilesHelper implements AutoCloseable {
             e.printStackTrace();
         }
 
-        BufferedImage image =
-            ImageUtilities.imageFromReader(reader, TILESIZE, TILESIZE, ll.x, ur.x, ll.y, ur.y, resampleCrs);
+        BufferedImage image = ImageUtilities.imageFromReader(reader, TILESIZE, TILESIZE, ll.x, ur.x, ll.y, ur.y, resampleCrs);
         return image;
     }
 
-    public static double tile2lon(int x, int z) {
+    public static double tile2lon( int x, int z ) {
         return x / Math.pow(2.0, z) * 360.0 - 180.0;
     }
 
-    public static double tile2lat(int y, int z) {
+    public static double tile2lat( int y, int z ) {
         double n = Math.PI - (2.0 * Math.PI * y) / Math.pow(2.0, z);
         return Math.toDegrees(Math.atan(Math.sinh(n)));
     }
 
-    public static void main(String[] args) throws IOException {
-        String ctp = "/home/hydrologis/data/CTP/trentino_ctp/ctp.shp";
-        File file = new File(ctp);
-        AbstractGridFormat format = GridFormatFinder.findFormat(file);
-        AbstractGridCoverage2DReader reader = format.getReader(file);
-        BufferedImage image = MBTilesHelper.readGridcoverageImageForTile(reader, 1, 1, 19, null);
+    public static int[] getTileXY( final double lat, final double lon, final int zoom ) {
+        int xtile = (int) Math.floor((lon + 180) / 360 * (1 << zoom));
+        int ytile = (int) Math.floor(
+                (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2 * (1 << zoom));
+        if (xtile < 0)
+            xtile = 0;
+        if (xtile >= (1 << zoom))
+            xtile = ((1 << zoom) - 1);
+        if (ytile < 0)
+            ytile = 0;
+        if (ytile >= (1 << zoom))
+            ytile = ((1 << zoom) - 1);
 
+        ytile = (int) ((Math.pow(2, zoom) - 1) - ytile);
+        return new int[]{xtile, ytile};
+    }
+
+    public static Envelope tile2boundingBox( final int x, final int y, final int zoom ) {
+        double north = MBTilesHelper.tile2lat(y, zoom);
+        double south = MBTilesHelper.tile2lat(y + 1, zoom);
+        double west = MBTilesHelper.tile2lon(x, zoom);
+        double east = MBTilesHelper.tile2lon(x + 1, zoom);
+
+        Envelope bb = new Envelope(west, east, south, north);
+        return bb;
     }
 
 }

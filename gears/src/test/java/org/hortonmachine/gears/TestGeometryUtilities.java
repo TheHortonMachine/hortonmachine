@@ -310,6 +310,25 @@ public class TestGeometryUtilities extends HMTestCase {
         assertEquals(-10, (int) r22.getY());
     }
 
+    public void testRectangleFitter() {
+        Rectangle2D r1 = new Rectangle2D.Double(0, 0, 100, 50);
+        Rectangle2D r2 = new Rectangle2D.Double(0, 0, 10, 10);
+
+        GeometryUtilities.scaleDownToFit(r1, r2);
+        assertEquals(10, (int) r2.getWidth());
+        assertEquals(0, (int) r2.getX());
+        assertEquals(10, (int) r2.getHeight());
+        assertEquals(0, (int) r2.getY());
+
+        r2 = new Rectangle2D.Double(0, 0, 1000, 1000);
+        GeometryUtilities.scaleDownToFit(r1, r2);
+        assertEquals(50, (int) r2.getWidth());
+        assertEquals(0, (int) r2.getX());
+        assertEquals(50, (int) r2.getHeight());
+        assertEquals(0, (int) r2.getY());
+
+    }
+
     public void testPlaneCoeffs() {
         Coordinate c1 = new Coordinate(1, 2, -2);
         Coordinate c2 = new Coordinate(3, -2, 1);

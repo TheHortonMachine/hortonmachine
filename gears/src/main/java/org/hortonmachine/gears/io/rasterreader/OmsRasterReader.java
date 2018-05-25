@@ -71,6 +71,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 
+import javax.imageio.metadata.IIOMetadata;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import javax.media.jai.iterator.RandomIter;
@@ -80,6 +81,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
+import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.coverageio.gdal.BaseGDALGridCoverage2DReader;
 import org.geotools.coverageio.gdal.aig.AIGReader;
@@ -100,6 +102,7 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
@@ -258,8 +261,8 @@ public class OmsRasterReader extends HMModel {
             pType = GRASS;
         } else
             throw new ModelsIllegalargumentException(
-                    "Can't recognize the data format. Supported are: asc, tiff, jpg, png, grass.", this.getClass()
-                            .getSimpleName(), pm);
+                    "Can't recognize the data format. Supported are: asc, tiff, jpg, png, grass.",
+                    this.getClass().getSimpleName(), pm);
 
         File mapFile = new File(file);
         try {
@@ -278,7 +281,14 @@ public class OmsRasterReader extends HMModel {
             } else if (pType.equals(GRASS)) {
                 readGrass(mapFile);
             } else {
-                throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName(), pm);
+                throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName(),
+                        pm);
+            }
+
+            boolean crsValid = CrsUtilities.isCrsValid(outRaster.getCoordinateReferenceSystem());
+            if (!crsValid) {
+                pm.errorMessage(
+                        "The read CRS doesn't seem to be valid. This could lead to unexpected results. Consider adding a .prj file with the proper CRS definition if none is present.");
             }
         } finally {
             pm.done();
@@ -296,8 +306,8 @@ public class OmsRasterReader extends HMModel {
         double e = readRegion.getEast();
 
         Envelope env = readRegion.getEnvelope();
-        originalEnvelope = new GeneralEnvelope(new ReferencedEnvelope(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY(),
-                crs));
+        originalEnvelope = new GeneralEnvelope(
+                new ReferencedEnvelope(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY(), crs));
 
         // if bounds supplied, use them as region
         if (pBounds != null) {
@@ -364,6 +374,10 @@ public class OmsRasterReader extends HMModel {
             geoTiffReader = new WorldImageReader(mapFile);
         } else {
             geoTiffReader = new GeoTiffReader(mapFile);
+            final GeoTiffIIOMetadataDecoder metadata =((GeoTiffReader) geoTiffReader).getMetadata();
+            if (metadata.hasNoData()){
+                fileNovalue  = metadata.getNoData();
+            }
         }
         originalEnvelope = geoTiffReader.getOriginalEnvelope();
         if (!doEnvelope) {
@@ -468,7 +482,8 @@ public class OmsRasterReader extends HMModel {
             for( int r = 0; r < height; r++ ) {
                 for( int c = 0; c < width; c++ ) {
                     double value = readIter.getSampleDouble(c + minX, r + minY, 0);
-                    if (isNovalue(value) || value == internalFileNovalue || value == -Float.MAX_VALUE || value == Float.MAX_VALUE) {
+                    if (isNovalue(value) || value == internalFileNovalue || value == -Float.MAX_VALUE
+                            || value == Float.MAX_VALUE) {
                         tmpIter.setSample(c, r, 0, internalGeodataNovalue);
                     } else {
                         tmpIter.setSample(c, r, 0, value);

@@ -292,6 +292,7 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
         addIfNotNull(actions, sqlTemplatesAndActions.getRefreshDatabaseAction(guiBridge, this));
         actions.add(null);
         addIfNotNull(actions, sqlTemplatesAndActions.getCopyDatabasePathAction(this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getSaveConnectionAction(this));
         actions.add(null);
         addIfNotNull(actions, sqlTemplatesAndActions.getCreateTableFromShapefileSchemaAction(guiBridge, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getAttachShapefileAction(guiBridge, this));

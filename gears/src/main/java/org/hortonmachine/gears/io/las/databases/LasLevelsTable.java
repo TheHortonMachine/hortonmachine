@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
-import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -76,7 +75,7 @@ public class LasLevelsTable {
                     COLUMN_MIN_INTENSITY + " INTEGER", //
                     COLUMN_MAX_INTENSITY + " INTEGER" //
             };
-            
+
             db.createSpatialTable(tablename, srid, COLUMN_GEOM + " POLYGON", creates, null, avoidIndex);
 
             db.createIndex(tablename, COLUMN_SOURCE_ID, false);
@@ -107,21 +106,24 @@ public class LasLevelsTable {
                 COLUMN_MAX_INTENSITY + //
                 ") VALUES (ST_GeomFromText(?, " + srid + "),?,?,?,?,?,?,?)";
 
-        IHMConnection conn = db.getConnection();
-        try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
-            int i = 1;
-            pStmt.setString(i++, level.polygon.toText());
-            pStmt.setLong(i++, level.sourceId);
-            pStmt.setDouble(i++, level.avgElev);
-            pStmt.setDouble(i++, level.minElev);
-            pStmt.setDouble(i++, level.maxElev);
+        db.execOnConnection(conn -> {
+            try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
+                int i = 1;
+                pStmt.setString(i++, level.polygon.toText());
+                pStmt.setLong(i++, level.sourceId);
+                pStmt.setDouble(i++, level.avgElev);
+                pStmt.setDouble(i++, level.minElev);
+                pStmt.setDouble(i++, level.maxElev);
 
-            pStmt.setShort(i++, level.avgIntensity);
-            pStmt.setShort(i++, level.minIntensity);
-            pStmt.setShort(i++, level.maxIntensity);
+                pStmt.setShort(i++, level.avgIntensity);
+                pStmt.setShort(i++, level.minIntensity);
+                pStmt.setShort(i++, level.maxIntensity);
 
-            pStmt.executeUpdate();
-        }
+                pStmt.executeUpdate();
+            }
+            return null;
+        });
+
     }
 
     public static void insertLasLevels( ASpatialDb db, int srid, List<LasLevel> levels ) throws Exception {
@@ -139,27 +141,30 @@ public class LasLevelsTable {
                 COLUMN_MAX_INTENSITY + //
                 ") VALUES (ST_GeomFromText(?, " + srid + "),?,?,?,?,?,?,?)";
 
-        IHMConnection conn = db.getConnection();
-        boolean autoCommit = conn.getAutoCommit();
-        conn.setAutoCommit(false);
-        try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
-            for( LasLevel level : levels ) {
-                int i = 1;
-                pStmt.setString(i++, level.polygon.toText());
-                pStmt.setLong(i++, level.sourceId);
-                pStmt.setDouble(i++, level.avgElev);
-                pStmt.setDouble(i++, level.minElev);
-                pStmt.setDouble(i++, level.maxElev);
+        db.execOnConnection(conn -> {
+            boolean autoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+            try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
+                for( LasLevel level : levels ) {
+                    int i = 1;
+                    pStmt.setString(i++, level.polygon.toText());
+                    pStmt.setLong(i++, level.sourceId);
+                    pStmt.setDouble(i++, level.avgElev);
+                    pStmt.setDouble(i++, level.minElev);
+                    pStmt.setDouble(i++, level.maxElev);
 
-                pStmt.setShort(i++, level.avgIntensity);
-                pStmt.setShort(i++, level.minIntensity);
-                pStmt.setShort(i++, level.maxIntensity);
-                pStmt.addBatch();
+                    pStmt.setShort(i++, level.avgIntensity);
+                    pStmt.setShort(i++, level.minIntensity);
+                    pStmt.setShort(i++, level.maxIntensity);
+                    pStmt.addBatch();
+                }
+                pStmt.executeBatch();
+                conn.commit();
+                conn.setAutoCommit(autoCommit);
             }
-            pStmt.executeBatch();
-            conn.commit();
-            conn.setAutoCommit(autoCommit);
-        }
+            return null;
+        });
+
     }
 
     /**
@@ -192,29 +197,32 @@ public class LasLevelsTable {
             sql += " WHERE " + db.getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
         }
 
-        IHMConnection conn = db.getConnection();
-        try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                LasLevel lasLevel = new LasLevel();
-                lasLevel.level = levelNum;
-                int i = 1;
-                Geometry geometry = db.getGeometryFromResultSet(rs, i++);
-                if (geometry instanceof Polygon) {
-                    Polygon polygon = (Polygon) geometry;
-                    lasLevel.polygon = polygon;
-                    lasLevel.id = rs.getLong(i++);
-                    lasLevel.sourceId = rs.getLong(i++);
-                    lasLevel.avgElev = rs.getDouble(i++);
-                    lasLevel.minElev = rs.getDouble(i++);
-                    lasLevel.maxElev = rs.getDouble(i++);
-                    lasLevel.avgIntensity = rs.getShort(i++);
-                    lasLevel.minIntensity = rs.getShort(i++);
-                    lasLevel.maxIntensity = rs.getShort(i++);
-                    lasLevels.add(lasLevel);
+        String _sql = sql;
+        return db.execOnConnection(conn -> {
+            try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
+                while( rs.next() ) {
+                    LasLevel lasLevel = new LasLevel();
+                    lasLevel.level = levelNum;
+                    int i = 1;
+                    Geometry geometry = db.getGeometryFromResultSet(rs, i++);
+                    if (geometry instanceof Polygon) {
+                        Polygon polygon = (Polygon) geometry;
+                        lasLevel.polygon = polygon;
+                        lasLevel.id = rs.getLong(i++);
+                        lasLevel.sourceId = rs.getLong(i++);
+                        lasLevel.avgElev = rs.getDouble(i++);
+                        lasLevel.minElev = rs.getDouble(i++);
+                        lasLevel.maxElev = rs.getDouble(i++);
+                        lasLevel.avgIntensity = rs.getShort(i++);
+                        lasLevel.minIntensity = rs.getShort(i++);
+                        lasLevel.maxIntensity = rs.getShort(i++);
+                        lasLevels.add(lasLevel);
+                    }
                 }
+                return lasLevels;
             }
-            return lasLevels;
-        }
+        });
+
     }
 
     /**
@@ -243,29 +251,32 @@ public class LasLevelsTable {
             sql += " WHERE " + db.getSpatialindexGeometryWherePiece(tableName, null, geometry);
         }
 
-        IHMConnection conn = db.getConnection();
-        try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                LasLevel lasLevel = new LasLevel();
-                lasLevel.level = levelNum;
-                int i = 1;
-                Geometry tmpGeometry = db.getGeometryFromResultSet(rs, i++);
-                if (tmpGeometry instanceof Polygon) {
-                    Polygon polygon = (Polygon) tmpGeometry;
-                    lasLevel.polygon = polygon;
-                    lasLevel.id = rs.getLong(i++);
-                    lasLevel.sourceId = rs.getLong(i++);
-                    lasLevel.avgElev = rs.getDouble(i++);
-                    lasLevel.minElev = rs.getDouble(i++);
-                    lasLevel.maxElev = rs.getDouble(i++);
-                    lasLevel.avgIntensity = rs.getShort(i++);
-                    lasLevel.minIntensity = rs.getShort(i++);
-                    lasLevel.maxIntensity = rs.getShort(i++);
-                    lasLevels.add(lasLevel);
+        String _sql = sql;
+        return db.execOnConnection(conn -> {
+            try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
+                while( rs.next() ) {
+                    LasLevel lasLevel = new LasLevel();
+                    lasLevel.level = levelNum;
+                    int i = 1;
+                    Geometry tmpGeometry = db.getGeometryFromResultSet(rs, i++);
+                    if (tmpGeometry instanceof Polygon) {
+                        Polygon polygon = (Polygon) tmpGeometry;
+                        lasLevel.polygon = polygon;
+                        lasLevel.id = rs.getLong(i++);
+                        lasLevel.sourceId = rs.getLong(i++);
+                        lasLevel.avgElev = rs.getDouble(i++);
+                        lasLevel.minElev = rs.getDouble(i++);
+                        lasLevel.maxElev = rs.getDouble(i++);
+                        lasLevel.avgIntensity = rs.getShort(i++);
+                        lasLevel.minIntensity = rs.getShort(i++);
+                        lasLevel.maxIntensity = rs.getShort(i++);
+                        lasLevels.add(lasLevel);
+                    }
                 }
+                return lasLevels;
             }
-            return lasLevels;
-        }
+        });
+
     }
 
 }

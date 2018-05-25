@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -50,8 +49,6 @@ public class LogDb implements AutoCloseable, ILogDb {
 
     private ADb logDb;
 
-    private IHMConnection mConn;
-
     public LogDb() throws Exception {
         this(EDb.SQLITE);
     }
@@ -62,7 +59,6 @@ public class LogDb implements AutoCloseable, ILogDb {
 
     public boolean open( String dbPath ) throws Exception {
         boolean open = logDb.open(dbPath);
-        mConn = logDb.getConnection();
         if (!open) {
             createTable();
             createIndexes();
@@ -92,9 +88,12 @@ public class LogDb implements AutoCloseable, ILogDb {
             sb.append(");");
 
             String sql = logDb.checkSqlCompatibilityIssues(sb.toString());
-            try (IHMStatement stmt = mConn.createStatement()) {
-                stmt.execute(sql);
-            }
+            logDb.execOnConnection(connection -> {
+                try (IHMStatement stmt = connection.createStatement()) {
+                    stmt.execute(sql);
+                }
+                return null;
+            });
 
         }
     }
@@ -132,8 +131,8 @@ public class LogDb implements AutoCloseable, ILogDb {
                 " (" + getInsertFieldsString() + //
                 ") VALUES (?,?,?,?)";
 
-        if (mConn != null)
-            try (IHMPreparedStatement pStmt = mConn.prepareStatement(sql)) {
+        logDb.execOnConnection(connection -> {
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
                 int i = 1;
                 pStmt.setLong(i++, message.ts);
                 pStmt.setLong(i++, message.type);
@@ -142,27 +141,29 @@ public class LogDb implements AutoCloseable, ILogDb {
 
                 pStmt.executeUpdate();
             }
+            return null;
+        });
         return true;
     }
 
     @Override
-    public boolean insert( EMessageType type, String tag, String msg ) throws Exception {
-        if (tag == null) {
-            tag = "";
-        }
+    public boolean insert( EMessageType type, final String tag, String msg ) throws Exception {
         // the id is generated
         String sql = "INSERT INTO " + TABLE_MESSAGES + //
                 " (" + getInsertFieldsString() + //
                 ") VALUES (?,?,?,?)";
-        if (mConn != null)
-            try (IHMPreparedStatement pStmt = mConn.prepareStatement(sql)) {
+
+        logDb.execOnConnection(connection -> {
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
                 int i = 1;
                 pStmt.setLong(i++, new Date().getTime());
                 pStmt.setLong(i++, type.getCode());
-                pStmt.setString(i++, tag);
+                pStmt.setString(i++, tag == null ? "" : tag);
                 pStmt.setString(i++, msg);
                 pStmt.executeUpdate();
             }
+            return null;
+        });
         return true;
     }
 
@@ -188,9 +189,6 @@ public class LogDb implements AutoCloseable, ILogDb {
 
     @Override
     public boolean insertError( String tag, String msg, Throwable t ) throws Exception {
-        if (tag == null) {
-            tag = "";
-        }
         // the id is generated
         String sql = "INSERT INTO " + TABLE_MESSAGES + //
                 " (" + getInsertFieldsString() + //
@@ -205,16 +203,18 @@ public class LogDb implements AutoCloseable, ILogDb {
         }
 
         msg += printStackTrace;
-
-        if (mConn != null)
-            try (IHMPreparedStatement pStmt = mConn.prepareStatement(sql)) {
+        final String _msg = msg;
+        logDb.execOnConnection(connection -> {
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
                 int i = 1;
                 pStmt.setLong(i++, new Date().getTime());
                 pStmt.setLong(i++, EMessageType.ERROR.getCode());
-                pStmt.setString(i++, tag);
-                pStmt.setString(i++, msg);
+                pStmt.setString(i++, tag == null ? "" : tag);
+                pStmt.setString(i++, _msg);
                 pStmt.executeUpdate();
             }
+            return null;
+        });
         return true;
     }
 
@@ -224,13 +224,15 @@ public class LogDb implements AutoCloseable, ILogDb {
         String sql = "select " + getQueryFieldsString() + " from " + tableName;
 
         List<Message> messages = new ArrayList<Message>();
-        if (mConn != null)
-            try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql);) {
+        logDb.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql);) {
                 while( rs.next() ) {
                     Message event = resultSetToItem(rs);
                     messages.add(event);
                 }
             }
+            return null;
+        });
         return messages;
     }
 
@@ -278,14 +280,17 @@ public class LogDb implements AutoCloseable, ILogDb {
             sql += " limit " + limit;
         }
 
+        String _sql = sql;
         List<Message> messages = new ArrayList<Message>();
-        if (mConn != null)
-            try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql);) {
+        logDb.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql);) {
                 while( rs.next() ) {
                     Message event = resultSetToItem(rs);
                     messages.add(event);
                 }
             }
+            return null;
+        });
         return messages;
     }
 
@@ -302,10 +307,12 @@ public class LogDb implements AutoCloseable, ILogDb {
 
     @Override
     public void clearTable() throws Exception {
-        if (mConn != null)
-            try (IHMStatement stmt = mConn.createStatement()) {
+        logDb.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement()) {
                 stmt.execute("delete from " + TABLE_MESSAGES);
             }
+            return null;
+        });
     }
 
     @Override

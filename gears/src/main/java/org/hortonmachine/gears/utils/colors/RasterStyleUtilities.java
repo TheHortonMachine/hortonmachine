@@ -71,7 +71,7 @@ public class RasterStyleUtilities {
         double runningValue = min;
 
         ColorMap colorMap = sf.createColorMap();
-        
+
         // add -9999 as novalue first
         Expression whiteColorExpr = sB.colorExpression(Color.white);
         Expression novalExpr = sB.literalExpression(-9999);
@@ -82,7 +82,7 @@ public class RasterStyleUtilities {
         novalueEntry.setOpacity(zeroOpacityExpr);
         colorMap.addColorMapEntry(novalueEntry);
 
-        // add other stuff 
+        // add other stuff
         for( int i = 0; i < colors.length - 1; i++ ) {
             Color fromColor = colors[i];
             Color toColor = colors[i + 1];
@@ -121,7 +121,7 @@ public class RasterStyleUtilities {
             }
             // i++;
         }
-        
+
         rasterSym.setColorMap(colorMap);
 
         /*
@@ -131,6 +131,11 @@ public class RasterStyleUtilities {
 
         Style newStyle = SLD.wrapSymbolizers(rasterSym);
         return newStyle;
+    }
+
+    public static Style createStyleForColortable( String colorTableName, double min, double max, double opacity )
+            throws Exception {
+        return createStyleForColortable(colorTableName, min, max, null, opacity);
     }
 
     /**
@@ -145,12 +150,12 @@ public class RasterStyleUtilities {
      * @return the style.
      * @throws Exception
      */
-    public static String createStyleForColortable( String colorTableName, double min, double max, double[] values, double opacity )
+    public static Style createStyleForColortable( String colorTableName, double min, double max, double[] values, double opacity )
             throws Exception {
 
         List<Color> colorList = new ArrayList<Color>();
         String tableString = new DefaultTables().getTableString(colorTableName);
-        if (tableString==null){
+        if (tableString == null) {
             return null;
         }
         String[] split = tableString.split("\n");
@@ -214,7 +219,12 @@ public class RasterStyleUtilities {
             }
         }
 
-        return createRasterStyleString(min, max, values, colorsArray, opacity);
+        return createRasterStyle(min, max, values, colorsArray, opacity);
+    }
+
+    public static String styleToString( Style style ) throws Exception {
+        String styleStr = SldUtilities.styleToString(style);
+        return styleStr;
     }
 
     public static void main( String[] args ) throws Exception {
@@ -222,13 +232,13 @@ public class RasterStyleUtilities {
         // String createStyleForColortable = createStyleForColortable("aspect", 0.0, 360.0, null,
         // 0.5);
         // System.out.println(createStyleForColortable);
-         String createStyleForColortable = createStyleForColortable(EColorTables.extrainbow.name(),
-         73.835, 144.889, null, 0.8);
-         System.out.println(createStyleForColortable);
+        String createStyleForColortable = styleToString(
+                createStyleForColortable(EColorTables.elev.name(), 73.835, 144.889, 0.8));
+        System.out.println(createStyleForColortable);
         // String createStyleForColortable = createStyleForColortable(DefaultTables.SLOPE, 0.0,
         // 0.9656, null, 1.0);
         // System.out.println(createStyleForColortable);
-//        String createStyleForColortable = createStyleForColortable("flow", 0, 0, null, 1);
-//        System.out.println(createStyleForColortable);
+        // String createStyleForColortable = createStyleForColortable("flow", 0, 0, null, 1);
+        // System.out.println(createStyleForColortable);
     }
 }

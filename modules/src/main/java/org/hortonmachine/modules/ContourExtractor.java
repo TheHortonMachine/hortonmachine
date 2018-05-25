@@ -17,19 +17,19 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_IN_COVERAGE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_OUT_GEODATA_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_P_INTERVAL_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_P_MAX_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_P_MIN_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_STATUS;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_IN_COVERAGE_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_LABEL;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_LICENSE;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_NAME;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_OUT_GEODATA_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_P_INTERVAL_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_P_MAX_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_P_MIN_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;

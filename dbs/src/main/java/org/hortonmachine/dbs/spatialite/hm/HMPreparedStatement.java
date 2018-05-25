@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.dbs.spatialite.hm;
 
+import java.io.ByteArrayInputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -84,6 +85,11 @@ public class HMPreparedStatement implements IHMPreparedStatement {
     @Override
     public void setBytes( int index, byte[] value ) throws Exception {
         preparedStatement.setBytes(index, value);
+    }
+
+    @Override
+    public void setBlob( int index, byte[] value ) throws Exception {
+        preparedStatement.setBlob(index, new ByteArrayInputStream(value));
     }
 
     @Override

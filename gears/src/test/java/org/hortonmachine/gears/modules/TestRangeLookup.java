@@ -26,6 +26,8 @@ import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import it.geosolutions.jaiext.JAIExt;
+
 /**
  * Test for {@link OmsRangeLookup}
  * 

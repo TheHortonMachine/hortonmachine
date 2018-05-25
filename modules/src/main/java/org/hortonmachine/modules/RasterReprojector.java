@@ -17,27 +17,23 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_IN_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_CODE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_COLS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_EAST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_INTERPOLATION_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_NORTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_ROWS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_SOUTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_P_WEST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_STATUS;
 import static org.hortonmachine.gears.libs.modules.Variables.BICUBIC;
 import static org.hortonmachine.gears.libs.modules.Variables.BILINEAR;
 import static org.hortonmachine.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_IN_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_LABEL;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_LICENSE;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_NAME;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_OUT_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_P_INTERPOLATION_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_P_OUTCODE_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_P_XRES_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_P_YRES_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -68,37 +64,17 @@ public class RasterReprojector extends HMModel {
     @In
     public String inRaster;
 
-    @Description(OMSRASTERREPROJECTOR_P_NORTH_DESCRIPTION)
-    @UI(HMConstants.PROCESS_NORTH_UI_HINT)
-    @In
-    public Double pNorth = null;
-
-    @Description(OMSRASTERREPROJECTOR_P_SOUTH_DESCRIPTION)
-    @UI(HMConstants.PROCESS_SOUTH_UI_HINT)
-    @In
-    public Double pSouth = null;
-
-    @Description(OMSRASTERREPROJECTOR_P_WEST_DESCRIPTION)
-    @UI(HMConstants.PROCESS_WEST_UI_HINT)
-    @In
-    public Double pWest = null;
-
-    @Description(OMSRASTERREPROJECTOR_P_EAST_DESCRIPTION)
-    @UI(HMConstants.PROCESS_EAST_UI_HINT)
-    @In
-    public Double pEast = null;
-
-    @Description(OMSRASTERREPROJECTOR_P_ROWS_DESCRIPTION)
-    @UI(HMConstants.PROCESS_ROWS_UI_HINT)
-    @In
-    public Integer pRows = null;
-
-    @Description(OMSRASTERREPROJECTOR_P_COLS_DESCRIPTION)
+    @Description(OMSRASTERREPROJECTOR_P_XRES_DESCRIPTION)
     @UI(HMConstants.PROCESS_COLS_UI_HINT)
     @In
-    public Integer pCols = null;
+    public Double pXres = null;
 
-    @Description(OMSRASTERREPROJECTOR_P_CODE_DESCRIPTION)
+    @Description(OMSRASTERREPROJECTOR_P_YRES_DESCRIPTION)
+    @UI(HMConstants.PROCESS_ROWS_UI_HINT)
+    @In
+    public Double pYres = null;
+
+    @Description(OMSRASTERREPROJECTOR_P_OUTCODE_DESCRIPTION)
     @UI(HMConstants.CRS_UI_HINT)
     @In
     public String pCode;
@@ -117,12 +93,8 @@ public class RasterReprojector extends HMModel {
     public void process() throws Exception {
         OmsRasterReprojector rasterreprojector = new OmsRasterReprojector();
         rasterreprojector.inRaster = getRaster(inRaster);
-        rasterreprojector.pNorth = pNorth;
-        rasterreprojector.pSouth = pSouth;
-        rasterreprojector.pWest = pWest;
-        rasterreprojector.pEast = pEast;
-        rasterreprojector.pRows = pRows;
-        rasterreprojector.pCols = pCols;
+        rasterreprojector.pXres = pXres;
+        rasterreprojector.pYres = pYres;
         rasterreprojector.pCode = pCode;
         rasterreprojector.pInterpolation = pInterpolation;
         rasterreprojector.pm = pm;

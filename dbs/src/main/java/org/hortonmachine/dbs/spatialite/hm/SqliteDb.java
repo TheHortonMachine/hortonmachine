@@ -26,8 +26,11 @@ import java.util.List;
 import java.util.Properties;
 
 import org.hortonmachine.dbs.compat.ADb;
+import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
+import org.hortonmachine.dbs.compat.IDbVisitor;
+import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -43,11 +46,15 @@ import org.sqlite.SQLiteConfig;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SqliteDb extends ADb {
+    private static final String DRIVER_CLASS = "org.sqlite.JDBC";
+    private static final String JDBC_URL_PRE = "jdbc:sqlite:";
     private Connection jdbcConn;
+    private HMConnection mConn;
+    private ConnectionData connectionData;
 
     static {
         try {
-            Class.forName("org.sqlite.JDBC");
+            Class.forName(DRIVER_CLASS);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -62,9 +69,27 @@ public class SqliteDb extends ADb {
         this.user = user;
         this.password = password;
     }
+    
+    @Override
+    public ConnectionData getConnectionData() {
+        return connectionData;
+    }
 
+    @Override
+    public boolean open( String dbPath, String user, String password ) throws Exception {
+        setCredentials(user, password);
+        return open(dbPath);
+    }
+    
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;
+        
+        connectionData = new ConnectionData();
+        connectionData.connectionLabel = dbPath;
+        connectionData.connectionUrl = new String(dbPath);
+        connectionData.user = user;
+        connectionData.password = password;
+        connectionData.dbType = getType().getCode();
 
         boolean dbExists = false;
         if (dbPath != null) {
@@ -87,8 +112,8 @@ public class SqliteDb extends ADb {
             properties.setProperty("user", user);
             properties.setProperty("password", password);
         }
-        jdbcConn = DriverManager.getConnection("jdbc:sqlite:" + dbPath, properties);
-        mConn = new HMConnection(jdbcConn);
+        jdbcConn = DriverManager.getConnection(JDBC_URL_PRE + dbPath, properties);
+        mConn = new HMConnection(jdbcConn, false);
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
             Logger.INSTANCE.insertInfo(null, "SQLite Version: " + dbInfo[0]);
@@ -96,8 +121,26 @@ public class SqliteDb extends ADb {
         return dbExists;
     }
 
+    @Override
+    public String getJdbcUrlPre() {
+        return JDBC_URL_PRE;
+    }
+
     public Connection getJdbcConnection() {
         return jdbcConn;
+    }
+
+    public IHMConnection getConnectionInternal() throws Exception {
+        return mConn;
+    }
+
+    public void close() throws Exception {
+        if (mConn != null) {
+            mConn.setAutoCommit(false);
+            mConn.commit();
+            mConn.close();
+            mConn = null;
+        }
     }
 
     public String[] getDbInfo() throws Exception {
@@ -265,6 +308,9 @@ public class SqliteDb extends ADb {
         return SpatialiteCommonMethods.getIndexes(this, tableName);
     }
 
-    
+    @Override
+    public void accept( IDbVisitor visitor ) throws Exception {
+        visitor.visit(jdbcConn);
+    }
 
 }

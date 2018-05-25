@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
-import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -121,32 +120,35 @@ public class LasCellsTable {
                 COLUMN_COLORS_BLOB + //
                 ") VALUES (ST_GeomFromText(?, " + srid + "),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-        IHMConnection conn = db.getConnection();
-        try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
-            int i = 1;
-            pStmt.setString(i++, cell.polygon.toText());
-            pStmt.setLong(i++, cell.sourceId);
-            pStmt.setInt(i++, cell.pointsCount);
-            pStmt.setDouble(i++, cell.avgElev);
-            pStmt.setDouble(i++, cell.minElev);
-            pStmt.setDouble(i++, cell.maxElev);
-            pStmt.setBytes(i++, cell.xyzs);
+        db.execOnConnection(connection -> {
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
+                int i = 1;
+                pStmt.setString(i++, cell.polygon.toText());
+                pStmt.setLong(i++, cell.sourceId);
+                pStmt.setInt(i++, cell.pointsCount);
+                pStmt.setDouble(i++, cell.avgElev);
+                pStmt.setDouble(i++, cell.minElev);
+                pStmt.setDouble(i++, cell.maxElev);
+                pStmt.setBytes(i++, cell.xyzs);
 
-            pStmt.setShort(i++, cell.avgIntensity);
-            pStmt.setShort(i++, cell.minIntensity);
-            pStmt.setShort(i++, cell.maxIntensity);
-            pStmt.setBytes(i++, cell.intensitiesClassifications);
+                pStmt.setShort(i++, cell.avgIntensity);
+                pStmt.setShort(i++, cell.minIntensity);
+                pStmt.setShort(i++, cell.maxIntensity);
+                pStmt.setBytes(i++, cell.intensitiesClassifications);
 
-            pStmt.setBytes(i++, cell.returns);
+                pStmt.setBytes(i++, cell.returns);
 
-            pStmt.setDouble(i++, cell.minGpsTime);
-            pStmt.setDouble(i++, cell.maxGpsTime);
-            pStmt.setBytes(i++, cell.gpsTimes);
+                pStmt.setDouble(i++, cell.minGpsTime);
+                pStmt.setDouble(i++, cell.maxGpsTime);
+                pStmt.setBytes(i++, cell.gpsTimes);
 
-            pStmt.setBytes(i++, cell.colors);
+                pStmt.setBytes(i++, cell.colors);
 
-            pStmt.executeUpdate();
-        }
+                pStmt.executeUpdate();
+            }
+            return null;
+        });
+
     }
 
     public static void insertLasCells( ASpatialDb db, int srid, List<LasCell> cells ) throws Exception {
@@ -170,38 +172,41 @@ public class LasCellsTable {
                 COLUMN_COLORS_BLOB + //
                 ") VALUES (ST_GeomFromText(?, " + srid + "),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-        IHMConnection conn = db.getConnection();
-        boolean autoCommit = conn.getAutoCommit();
-        conn.setAutoCommit(false);
-        try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
-            for( LasCell cell : cells ) {
-                int i = 1;
-                pStmt.setString(i++, cell.polygon.toText());
-                pStmt.setLong(i++, cell.sourceId);
-                pStmt.setInt(i++, cell.pointsCount);
-                pStmt.setDouble(i++, cell.avgElev);
-                pStmt.setDouble(i++, cell.minElev);
-                pStmt.setDouble(i++, cell.maxElev);
-                pStmt.setBytes(i++, cell.xyzs);
+        db.execOnConnection(conn -> {
+            boolean autoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+            try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
+                for( LasCell cell : cells ) {
+                    int i = 1;
+                    pStmt.setString(i++, cell.polygon.toText());
+                    pStmt.setLong(i++, cell.sourceId);
+                    pStmt.setInt(i++, cell.pointsCount);
+                    pStmt.setDouble(i++, cell.avgElev);
+                    pStmt.setDouble(i++, cell.minElev);
+                    pStmt.setDouble(i++, cell.maxElev);
+                    pStmt.setBytes(i++, cell.xyzs);
 
-                pStmt.setShort(i++, cell.avgIntensity);
-                pStmt.setShort(i++, cell.minIntensity);
-                pStmt.setShort(i++, cell.maxIntensity);
-                pStmt.setBytes(i++, cell.intensitiesClassifications);
+                    pStmt.setShort(i++, cell.avgIntensity);
+                    pStmt.setShort(i++, cell.minIntensity);
+                    pStmt.setShort(i++, cell.maxIntensity);
+                    pStmt.setBytes(i++, cell.intensitiesClassifications);
 
-                pStmt.setBytes(i++, cell.returns);
+                    pStmt.setBytes(i++, cell.returns);
 
-                pStmt.setDouble(i++, cell.minGpsTime);
-                pStmt.setDouble(i++, cell.maxGpsTime);
-                pStmt.setBytes(i++, cell.gpsTimes);
+                    pStmt.setDouble(i++, cell.minGpsTime);
+                    pStmt.setDouble(i++, cell.maxGpsTime);
+                    pStmt.setBytes(i++, cell.gpsTimes);
 
-                pStmt.setBytes(i++, cell.colors);
-                pStmt.addBatch();
+                    pStmt.setBytes(i++, cell.colors);
+                    pStmt.addBatch();
+                }
+                pStmt.executeBatch();
+                conn.commit();
+                conn.setAutoCommit(autoCommit);
             }
-            pStmt.executeBatch();
-            conn.commit();
-            conn.setAutoCommit(autoCommit);
-        }
+            return null;
+        });
+
     }
 
     /**
@@ -262,14 +267,17 @@ public class LasCellsTable {
             sql += " LIMIT " + limitTo;
         }
 
-        IHMConnection conn = db.getConnection();
-        try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                LasCell lasCell = resultSetToCell(db, doPosition, doIntensity, doReturns, doTime, doColor, rs);
-                lasCells.add(lasCell);
+        String _sql = sql;
+        return db.execOnConnection(conn -> {
+            try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
+                while( rs.next() ) {
+                    LasCell lasCell = resultSetToCell(db, doPosition, doIntensity, doReturns, doTime, doColor, rs);
+                    lasCells.add(lasCell);
+                }
+                return lasCells;
             }
-            return lasCells;
-        }
+        });
+
     }
 
     /**
@@ -318,14 +326,17 @@ public class LasCellsTable {
             sql += " WHERE " + db.getSpatialindexGeometryWherePiece(TABLENAME, null, geometry);
         }
 
-        IHMConnection conn = db.getConnection();
-        try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                LasCell lasCell = resultSetToCell(db, doPosition, doIntensity, doReturns, doTime, doColor, rs);
-                lasCells.add(lasCell);
+        String _sql = sql;
+        return db.execOnConnection(conn -> {
+            try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
+                while( rs.next() ) {
+                    LasCell lasCell = resultSetToCell(db, doPosition, doIntensity, doReturns, doTime, doColor, rs);
+                    lasCells.add(lasCell);
+                }
+                return lasCells;
             }
-            return lasCells;
-        }
+        });
+
     }
 
     /**
@@ -371,14 +382,16 @@ public class LasCellsTable {
         sql += " FROM " + TABLENAME;
         sql += " WHERE " + COLUMN_SOURCE_ID + "=" + sourceId;
 
-        IHMConnection conn = db.getConnection();
-        try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                LasCell lasCell = resultSetToCell(db, doPosition, doIntensity, doReturns, doTime, doColor, rs);
-                lasCells.add(lasCell);
+        String _sql = sql;
+        return db.execOnConnection(conn -> {
+            try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
+                while( rs.next() ) {
+                    LasCell lasCell = resultSetToCell(db, doPosition, doIntensity, doReturns, doTime, doColor, rs);
+                    lasCells.add(lasCell);
+                }
+                return lasCells;
             }
-            return lasCells;
-        }
+        });
     }
 
     private static LasCell resultSetToCell( ASpatialDb db, boolean doPosition, boolean doIntensity, boolean doReturns,

@@ -34,6 +34,9 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.exceptions.ModelsUserCancelException;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
+import org.hortonmachine.gears.utils.CrsUtilities;
+import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.GeometryFactory;
 
@@ -82,8 +85,8 @@ public class HMModel {
     }
 
     @Description(//
-    en = PROGRESS_MONITOR_EN, //
-    it = PROGRESS_MONITOR_EN//
+            en = PROGRESS_MONITOR_EN, //
+            it = PROGRESS_MONITOR_EN//
     )
     @In
     public IHMProgressMonitor pm = new LogProgressMonitor();
@@ -166,35 +169,36 @@ public class HMModel {
         }
     }
 
-//    public Map<String, Object> execute( Map<String, Object> input, ProgressListener monitor ) throws ProcessException {
-//        // the geotools monitor is wrapped into the internal progress monitor
-//        GeotoolsProgressMonitorAdapter pm = new GeotoolsProgressMonitorAdapter(monitor);
-//        input.put("pm", pm); //$NON-NLS-1$
-//        // set the inputs to the model
-//        ComponentAccess.setInputData(input, this, null);
-//
-//        // trigger execution of the module
-//        ComponentAccess.callAnnotated(this, Initialize.class, true);
-//        ComponentAccess.callAnnotated(this, Execute.class, false);
-//        ComponentAccess.callAnnotated(this, Finalize.class, true);
-//
-//        // get the results
-//        ComponentAccess cA = new ComponentAccess(this);
-//        Collection<Access> outputs = cA.outputs();
-//
-//        // and put them into the output map
-//        HashMap<String, Object> outputMap = new HashMap<String, Object>();
-//        for( Access access : outputs ) {
-//            try {
-//                String fieldName = access.getField().getName();
-//                Object fieldValue = access.getFieldValue();
-//                outputMap.put(fieldName, fieldValue);
-//            } catch (Exception e) {
-//                throw new ProcessException(e.getLocalizedMessage());
-//            }
-//        }
-//        return outputMap;
-//    }
+    // public Map<String, Object> execute( Map<String, Object> input, ProgressListener monitor )
+    // throws ProcessException {
+    // // the geotools monitor is wrapped into the internal progress monitor
+    // GeotoolsProgressMonitorAdapter pm = new GeotoolsProgressMonitorAdapter(monitor);
+    // input.put("pm", pm); //$NON-NLS-1$
+    // // set the inputs to the model
+    // ComponentAccess.setInputData(input, this, null);
+    //
+    // // trigger execution of the module
+    // ComponentAccess.callAnnotated(this, Initialize.class, true);
+    // ComponentAccess.callAnnotated(this, Execute.class, false);
+    // ComponentAccess.callAnnotated(this, Finalize.class, true);
+    //
+    // // get the results
+    // ComponentAccess cA = new ComponentAccess(this);
+    // Collection<Access> outputs = cA.outputs();
+    //
+    // // and put them into the output map
+    // HashMap<String, Object> outputMap = new HashMap<String, Object>();
+    // for( Access access : outputs ) {
+    // try {
+    // String fieldName = access.getField().getName();
+    // Object fieldValue = access.getFieldValue();
+    // outputMap.put(fieldName, fieldValue);
+    // } catch (Exception e) {
+    // throw new ProcessException(e.getLocalizedMessage());
+    // }
+    // }
+    // return outputMap;
+    // }
 
     /**
      * Utility method to concatenate conditions with or.

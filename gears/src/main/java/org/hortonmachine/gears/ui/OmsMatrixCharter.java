@@ -55,6 +55,26 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.title.TextTitle;
+import org.jfree.data.xy.XYBarDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.ApplicationFrame;
+import org.jfree.ui.RefineryUtilities;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -66,27 +86,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.files.FileUtilities;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.StandardXYBarPainter;
-import org.jfree.chart.renderer.xy.XYBarRenderer;
-import org.jfree.chart.renderer.xy.XYItemRenderer;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.chart.title.TextTitle;
-import org.jfree.data.xy.XYBarDataset;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.ApplicationFrame;
-import org.jfree.ui.RefineryUtilities;
 
 @Description(OMSMATRIXCHARTER_DESCRIPTION)
 @Documentation(OMSMATRIXCHARTER_DOCUMENTATION)
@@ -291,8 +290,9 @@ public class OmsMatrixCharter extends HMModel {
         yAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
         double delta = (max - min) * 0.1;
         yAxis.setRange(min, max + delta);
-        yAxis.setMinorTickCount(4);
-        yAxis.setMinorTickMarksVisible(true);
+        // TODO reactivate if newer jfree is used
+        // yAxis.setMinorTickCount(4);
+        // yAxis.setMinorTickMarksVisible(true);
         if (inFormats != null && inFormats.length > 0 && inFormats[1].trim().length() > 0) {
             yAxis.setNumberFormatOverride(new DecimalFormat(inFormats[1]));
         }
@@ -307,8 +307,9 @@ public class OmsMatrixCharter extends HMModel {
 
         XYBarRenderer renderer = (XYBarRenderer) plot.getRenderer();
         renderer.setDrawBarOutline(false);
-        renderer.setBarPainter(new StandardXYBarPainter());
-        renderer.setShadowVisible(false);
+        // TODO reactivate if newer jfree is used
+        // renderer.setBarPainter(new StandardXYBarPainter());
+        // renderer.setShadowVisible(false);
 
         if (inColors != null) {
             String[] colorSplit = inColors.split(";");
@@ -366,8 +367,9 @@ public class OmsMatrixCharter extends HMModel {
         yAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
         double delta = (max - min) * 0.1;
         yAxis.setRange(min, max + delta);
-        yAxis.setMinorTickCount(4);
-        yAxis.setMinorTickMarksVisible(true);
+        // TODO reactivate if newer jfree is used
+        // yAxis.setMinorTickCount(4);
+        // yAxis.setMinorTickMarksVisible(true);
         if (inFormats != null && inFormats.length > 1 && inFormats[1].trim().length() > 0) {
             yAxis.setNumberFormatOverride(new DecimalFormat(inFormats[1]));
         }

@@ -1,6 +1,8 @@
 package org.hortonmachine.gears.modules.r.tmsgenerator;
 import java.util.Arrays;
 
+import com.vividsolutions.jts.geom.Envelope;
+
 /**
  *    Copyright (C) 2009, 2010 
  *    State of California,
@@ -219,14 +221,14 @@ public class GlobalMercator {
         int[] p = metersToPixelsUp(mx, my, zoom);
         return pixelsToTileUp(p[0], p[1]);
     }
-    
+
     public int[] metersToPixelsUp( double mx, double my, int zoom ) {
         double res = Resolution(zoom);
         int px = (int) Math.ceil((mx + originShift) / res);
         int py = (int) Math.ceil((my + originShift) / res);
         return new int[]{px, py};
     }
-    
+
     public int[] pixelsToTileUp( int px, int py ) {
         int tx = (int) Math.ceil(px / ((double) tileSize) - 1);
         int ty = (int) Math.ceil(py / ((double) tileSize) - 1);
@@ -237,14 +239,14 @@ public class GlobalMercator {
         int[] p = metersToPixelsDown(mx, my, zoom);
         return pixelsToTileDown(p[0], p[1]);
     }
-    
+
     public int[] metersToPixelsDown( double mx, double my, int zoom ) {
         double res = Resolution(zoom);
         int px = (int) Math.floor((mx + originShift) / res);
         int py = (int) Math.floor((my + originShift) / res);
         return new int[]{px, py};
     }
-    
+
     public int[] pixelsToTileDown( int px, int py ) {
         int tx = (int) Math.floor(px / ((double) tileSize) - 1);
         int ty = (int) Math.floor(py / ((double) tileSize) - 1);
@@ -257,7 +259,7 @@ public class GlobalMercator {
      * @param tx
      * @param ty
      * @param zoom
-     * @return
+     * @return the array of [w, s, e, n] 
      */
     public double[] TileBounds( int tx, int ty, int zoom ) {
         double[] min = PixelsToMeters(tx * tileSize, ty * tileSize, zoom);
@@ -270,12 +272,13 @@ public class GlobalMercator {
     /**
      * Returns bounds of the given tile in latitude/longitude using WGS84 datum
      * 
+     * return the array of [w, s, e, n]
      */
-    public double[] TileLatLonBounds( int tx, int ty, int zoom ) {
-        double[] bounds = TileBounds(tx, ty, zoom);
-        double[] mins = MetersToLatLon(bounds[0], bounds[1]);
-        double[] maxs = MetersToLatLon(bounds[2], bounds[3]);
-        return new double[]{mins[0], mins[1], maxs[0], maxs[1]};
+    public Envelope TileLatLonBounds( int tx, int ty, int zoom ) {
+        double[] wsenBounds = TileBounds(tx, ty, zoom);
+        double[] sw = MetersToLatLon(wsenBounds[0], wsenBounds[1]);
+        double[] ne = MetersToLatLon(wsenBounds[2], wsenBounds[3]);
+        return new Envelope(sw[1], ne[1], sw[0], ne[0]);
     }
 
     /**
@@ -365,12 +368,12 @@ public class GlobalMercator {
 
     public static void main( String[] args ) {
         int[][] TMS = {//
-        {0, 1, 1},//
-                {16, 20, 5},//
+                {0, 1, 1}, //
+                {16, 20, 5}, //
                 {8930, 10684, 14},//
         };
         int[][] GOOGLE = {//
-        {0, 0, 1}, //
+                {0, 0, 1}, //
                 {16, 11, 5}, //
                 {8930, 5699, 14},//
         };

@@ -1,6 +1,14 @@
 package org.hortonmachine.dbs;
 
-import static org.hortonmachine.dbs.TestUtilities.*;
+import static org.hortonmachine.dbs.TestUtilities.GEOMCOLL_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.LINES_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.MLINES_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.MPOINTS_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.MPOLY_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.POINTS_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.POLY_TABLE;
+import static org.hortonmachine.dbs.TestUtilities.arr;
+import static org.hortonmachine.dbs.TestUtilities.createGeomTables;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -15,12 +23,15 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ISpatialTableNames;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
+import org.hortonmachine.dbs.spatialite.SpatialiteWKBWriter;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 /**
@@ -65,14 +76,14 @@ public class TestSpatialDbsMain {
                     + " MULTIPOINT ((6.8 42.5), (6.8 41.4), (6.6 40.2)))";
             String[] geomCollectionInserts = new String[]{//
                     "INSERT INTO " + GEOMCOLL_TABLE
-                            + " (id, name, temperature, the_geom) VALUES(1, 'Tscherms', 36.0, ST_GeomFromText('" + gCollWKT
-                            + "', 4326));", //
+                    + " (id, name, temperature, the_geom) VALUES(?, ?, ?, ST_GeomFromText(?, 4326));", //
             };
+            Object[] values = {1,"Tscherms", 36.0, gCollWKT};
 
             db.createSpatialTable(GEOMCOLL_TABLE, 4326, "the_geom GEOMETRYCOLLECTION",
                     arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"));
             for( String insert : geomCollectionInserts ) {
-                db.executeInsertUpdateDeleteSql(insert);
+                db.executeInsertUpdateDeletePreparedSql(insert, values);
             }
             db.executeInsertUpdateDeleteSql("SELECT UpdateLayerStatistics();");
         }
@@ -239,6 +250,37 @@ public class TestSpatialDbsMain {
         geoJson = db.getGeojsonIn(POINTS_TABLE, new String[]{"id"}, "id=1", 6);
         geoJson = geoJson.replaceAll("\\s+", "");
         assertEquals(expected, geoJson);
+    }
+
+    @Test
+    public void testSpatialiteWKBReadWrite() throws Exception {
+        String polygonStr = "POLYGON ((71 70, 40 70, 40 40, 5 40, 5 15, 15 15, 15 4, 50 4, 71 70))";
+        Geometry geom = new WKTReader().read(polygonStr);
+        checkReadWrite(geom);
+
+        String gCollWKT = "GEOMETRYCOLLECTION (" //
+                + " POLYGON ((10 42, 11.9 42, 11.9 40, 10 40, 10 42)), "
+                + " POLYGON ((11.1 43.2, 11.3 41.3, 13.9 41, 13.8 43.2, 11.1 43.2)), "
+                + " LINESTRING (11.3 44.3, 8.3 41.4, 11.4 38.1, 14.9 41.3), " //
+                + " POINT (12.7 44.2), " //
+                + " POINT (15.1 43.3), " //
+                + " POINT (15 40.4), " //
+                + " POINT (13.2 38.4), "
+                + " MULTIPOLYGON (((6.9 45.9, 8.4 45.9, 8.4 44.3, 6.9 44.3, 6.9 45.9)), ((9.1 46.3, 10.8 46.3, 10.8 44.6, 9.1 44.6, 9.1 46.3))), "
+                + " MULTILINESTRING ((7.4 42.6, 7.4 39, 8.6 38.5), (8 40.3, 9.5 38.6, 8.4 37.5)), "
+                + " MULTIPOINT ((6.8 42.5), (6.8 41.4), (6.6 40.2)))";
+        geom = new WKTReader().read(gCollWKT);
+        checkReadWrite(geom);
+
+    }
+
+    private void checkReadWrite( Geometry geom ) throws ParseException {
+        SpatialiteWKBWriter w = new SpatialiteWKBWriter();
+        byte[] geomBytes = w.write(geom);
+        SpatialiteWKBReader r = new SpatialiteWKBReader();
+        Geometry readGeom = r.read(geomBytes);
+
+        assertTrue(readGeom.equalsExact(geom));
     }
 
 }

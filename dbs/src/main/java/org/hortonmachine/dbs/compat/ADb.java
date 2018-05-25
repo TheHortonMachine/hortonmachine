@@ -28,6 +28,7 @@ import java.util.List;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.utils.HMConnectionConsumer;
 
 /**
  * Abstract non spatial db class.
@@ -35,15 +36,17 @@ import org.hortonmachine.dbs.compat.objects.QueryResult;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public abstract class ADb implements AutoCloseable {
-
-    protected IHMConnection mConn = null;
+public abstract class ADb implements AutoCloseable, IVisitableDb {
 
     protected String mDbPath;
 
-    protected String user = "sa";
-    protected String password = "";
+    protected String user = null;
+    protected String password = null;
 
+    /**
+     * Defines if the connection should be pooled. True by default.
+     */
+    protected boolean makePooled = true;
     public boolean mPrintInfos = true;
 
     /**
@@ -52,6 +55,17 @@ public abstract class ADb implements AutoCloseable {
      * @return the database type.
      */
     public abstract EDb getType();
+
+    /**
+     * Set the pooled behavior.
+     * 
+     * <p>To be called before the {@link #open(String)} method.</p>
+     * 
+     * @param makePooled if false, the connection will not be pooled.
+     */
+    public void setMakePooled( boolean makePooled ) {
+        this.makePooled = makePooled;
+    }
 
     /**
      * Open the connection to a database.
@@ -65,6 +79,28 @@ public abstract class ADb implements AutoCloseable {
      * @throws Exception
      */
     public abstract boolean open( String dbPath ) throws Exception;
+
+    /**
+     * Open the connection to a database.
+     * 
+     * <b>Make sure the connection object is created here.</b>
+     * 
+     * @param dbPath
+     *            the database path. If <code>null</code>, an in-memory db is
+     *            created.
+     * @param user the user to use.
+     * @param password the passord to use.
+     * @return <code>true</code> if the database did already exist.
+     * @throws Exception
+     */
+    public abstract boolean open( String dbPath, String user, String password ) throws Exception;
+    
+    /**
+     * Getter for the {@link ConnectionData} that can be used to connect to the database.
+     * 
+     * @return the connection data.
+     */
+    public abstract ConnectionData getConnectionData();
 
     /**
      * Set credentials if supported.
@@ -84,30 +120,25 @@ public abstract class ADb implements AutoCloseable {
     }
 
     /**
+     * Get the jdbc url pre string for the database (ex.  jdbc:h2:).
+     * 
+     * @return the jdbc url pre string..
+     */
+    public abstract String getJdbcUrlPre();
+
+    /**
      * Get the original jdbc connection.
      * 
      * @return the jdbc connection.
+     * @throws Exception 
      */
-    public abstract Connection getJdbcConnection();
+    protected abstract Connection getJdbcConnection() throws Exception;
 
     /**
-     * Toggle autocommit mode.
-     * 
-     * @param enable
-     *            if <code>true</code>, autocommit is enabled if not already
-     *            enabled. Vice versa if <code>false</code>.
-     * @throws SQLException
+     * @return the connection to the database.
+     * @throws Exception 
      */
-    public void enableAutocommit( boolean enable ) throws Exception {
-        boolean autoCommitEnabled = mConn.getAutoCommit();
-        if (enable && !autoCommitEnabled) {
-            // do enable if not already enabled
-            mConn.setAutoCommit(true);
-        } else if (!enable && autoCommitEnabled) {
-            // disable if not already disabled
-            mConn.setAutoCommit(false);
-        }
-    }
+    protected abstract IHMConnection getConnectionInternal() throws Exception;
 
     /**
      * Get database infos.
@@ -116,6 +147,24 @@ public abstract class ADb implements AutoCloseable {
      * @throws SQLException
      */
     public abstract String[] getDbInfo() throws Exception;
+
+    /**
+     * Execute an operation on a datrabase connection. This handles proper releasing of the connection.
+     * 
+     * @param consumer the operation to perform.
+     * @throws Exception
+     */
+    public <T> T execOnConnection( HMConnectionConsumer<IHMConnection, Exception, T> consumer ) throws Exception {
+        IHMConnection connection = getConnectionInternal();
+        if (connection == null) {
+            return null;
+        }
+        try {
+            return consumer.execOnConnection(connection);
+        } finally {
+            connection.release();
+        }
+    }
 
     /**
      * Create a new table.
@@ -139,12 +188,14 @@ public abstract class ADb implements AutoCloseable {
         }
         sb.append(")");
 
-        String sql = sb.toString();
-        sql = checkSqlCompatibilityIssues(sql);
+        String sql = checkSqlCompatibilityIssues(sb.toString());
 
-        try (IHMStatement stmt = mConn.createStatement()) {
-            stmt.execute(sql);
-        }
+        execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement()) {
+                stmt.execute(sql);
+            }
+            return null;
+        });
     }
 
     /**
@@ -154,25 +205,6 @@ public abstract class ADb implements AutoCloseable {
      * @return the fixed sql.
      */
     public abstract String checkSqlCompatibilityIssues( String sql );
-
-    /**
-     * Create a spatial index.
-     * 
-     * @param tableName the table name.
-     * @param geomColumnName the geometry column name.
-     * @throws Exception
-     */
-    public void createSpatialIndex( String tableName, String geomColumnName ) throws Exception {
-        if (geomColumnName == null) {
-            geomColumnName = "the_geom";
-        }
-        String realColumnName = getProperColumnNameCase(tableName, geomColumnName);
-        String realTableName = getProperTableNameCase(tableName);
-        String sql = "CREATE SPATIAL INDEX ON " + realTableName + "(" + realColumnName + ");";
-        try (IHMStatement stmt = mConn.createStatement()) {
-            stmt.execute(sql.toString());
-        }
-    }
 
     /**
      * Create an single column index.
@@ -187,16 +219,20 @@ public abstract class ADb implements AutoCloseable {
      */
     public void createIndex( String tableName, String column, boolean isUnique ) throws Exception {
         String sql = getIndexSql(tableName, column, isUnique);
-        try (IHMStatement stmt = mConn.createStatement()) {
-            stmt.executeUpdate(sql);
-        } catch (SQLException e) {
-            String message = e.getMessage();
-            if (message.contains("index") && message.contains("already exists")) {
-                logWarn(message);
-            } else {
-                e.printStackTrace();
+
+        execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement()) {
+                stmt.executeUpdate(sql);
+            } catch (SQLException e) {
+                String message = e.getMessage();
+                if (message.contains("index") && message.contains("already exists")) {
+                    logWarn(message);
+                } else {
+                    e.printStackTrace();
+                }
             }
-        }
+            return null;
+        });
     }
 
     /**
@@ -292,13 +328,15 @@ public abstract class ADb implements AutoCloseable {
      */
     public long getCount( String tableName ) throws Exception {
         String sql = "select count(*) from " + tableName;
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                long count = rs.getLong(1);
-                return count;
+        Long count = execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
             }
-            return -1;
-        }
+            return -1l;
+        });
+        return count;
     }
 
     /**
@@ -312,33 +350,36 @@ public abstract class ADb implements AutoCloseable {
      * @throws Exception
      */
     public QueryResult getTableRecordsMapFromRawSql( String sql, int limit ) throws Exception {
-        QueryResult queryResult = new QueryResult();
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            IHMResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
-            for( int i = 1; i <= columnCount; i++ ) {
-                String columnName = rsmd.getColumnName(i);
-                queryResult.names.add(columnName);
-                String columnTypeName = rsmd.getColumnTypeName(i);
-                queryResult.types.add(columnTypeName);
-            }
-            long start = System.currentTimeMillis();
-            int count = 0;
-            while( rs.next() ) {
-                Object[] rec = new Object[columnCount];
-                for( int j = 1; j <= columnCount; j++ ) {
-                    Object object = rs.getObject(j);
-                    rec[j - 1] = object;
+        QueryResult queryResult = execOnConnection(connection -> {
+            QueryResult res = new QueryResult();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                IHMResultSetMetaData rsmd = rs.getMetaData();
+                int columnCount = rsmd.getColumnCount();
+                for( int i = 1; i <= columnCount; i++ ) {
+                    String columnName = rsmd.getColumnName(i);
+                    res.names.add(columnName);
+                    String columnTypeName = rsmd.getColumnTypeName(i);
+                    res.types.add(columnTypeName);
                 }
-                queryResult.data.add(rec);
-                if (limit > 0 && ++count > (limit - 1)) {
-                    break;
+                long start = System.currentTimeMillis();
+                int count = 0;
+                while( rs.next() ) {
+                    Object[] rec = new Object[columnCount];
+                    for( int j = 1; j <= columnCount; j++ ) {
+                        Object object = rs.getObject(j);
+                        rec[j - 1] = object;
+                    }
+                    res.data.add(rec);
+                    if (limit > 0 && ++count > (limit - 1)) {
+                        break;
+                    }
                 }
+                long end = System.currentTimeMillis();
+                res.queryTimeMillis = end - start;
             }
-            long end = System.currentTimeMillis();
-            queryResult.queryTimeMillis = end - start;
-            return queryResult;
-        }
+            return res;
+        });
+        return queryResult;
     }
 
     /**
@@ -356,32 +397,35 @@ public abstract class ADb implements AutoCloseable {
      */
     public void runRawSqlToCsv( String sql, File csvFile, boolean doHeader, String separator ) throws Exception {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {
-            try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-                IHMResultSetMetaData rsmd = rs.getMetaData();
-                int columnCount = rsmd.getColumnCount();
-                for( int i = 1; i <= columnCount; i++ ) {
-                    if (i > 1) {
-                        bw.write(separator);
-                    }
-                    String columnName = rsmd.getColumnName(i);
-                    bw.write(columnName);
-                }
-                bw.write("\n");
-                while( rs.next() ) {
-                    for( int j = 1; j <= columnCount; j++ ) {
-                        if (j > 1) {
+            execOnConnection(connection -> {
+                try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                    IHMResultSetMetaData rsmd = rs.getMetaData();
+                    int columnCount = rsmd.getColumnCount();
+                    for( int i = 1; i <= columnCount; i++ ) {
+                        if (i > 1) {
                             bw.write(separator);
                         }
-                        Object object = rs.getObject(j);
-                        if (object != null) {
-                            bw.write(object.toString());
-                        } else {
-                            bw.write("");
-                        }
+                        String columnName = rsmd.getColumnName(i);
+                        bw.write(columnName);
                     }
                     bw.write("\n");
+                    while( rs.next() ) {
+                        for( int j = 1; j <= columnCount; j++ ) {
+                            if (j > 1) {
+                                bw.write(separator);
+                            }
+                            Object object = rs.getObject(j);
+                            if (object != null) {
+                                bw.write(object.toString());
+                            } else {
+                                bw.write("");
+                            }
+                        }
+                        bw.write("\n");
+                    }
                 }
-            }
+                return null;
+            });
         }
     }
 
@@ -394,53 +438,40 @@ public abstract class ADb implements AutoCloseable {
      * @throws Exception
      */
     public int executeInsertUpdateDeleteSql( String sql ) throws Exception {
-        try (IHMStatement stmt = mConn.createStatement()) {
-            int executeUpdate = stmt.executeUpdate(sql);
-            return executeUpdate;
-        }
+        return execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement()) {
+                return stmt.executeUpdate(sql);
+            }
+        });
     }
 
     public int executeInsertUpdateDeletePreparedSql( String sql, Object[] objects ) throws Exception {
-        try (IHMPreparedStatement stmt = mConn.prepareStatement(sql)) {
-            for( int i = 0; i < objects.length; i++ ) {
-                if (objects[i] instanceof Boolean) {
-                    stmt.setBoolean(i + 1, (boolean) objects[i]);
-                } else if (objects[i] instanceof byte[]) {
-                    stmt.setBytes(i + 1, (byte[]) objects[i]);
-                } else if (objects[i] instanceof Double) {
-                    stmt.setDouble(i + 1, (double) objects[i]);
-                } else if (objects[i] instanceof Float) {
-                    stmt.setFloat(i + 1, (float) objects[i]);
-                } else if (objects[i] instanceof Integer) {
-                    stmt.setInt(i + 1, (int) objects[i]);
-                } else if (objects[i] instanceof Long) {
-                    stmt.setLong(i + 1, (long) objects[i]);
-                } else if (objects[i] instanceof Short) {
-                    stmt.setShort(i + 1, (short) objects[i]);
-                } else if (objects[i] instanceof String) {
-                    stmt.setString(i + 1, (String) objects[i]);
-                } else {
-                    stmt.setString(i + 1, objects[i].toString());
+        return execOnConnection(connection -> {
+            try (IHMPreparedStatement stmt = connection.prepareStatement(sql)) {
+                for( int i = 0; i < objects.length; i++ ) {
+                    if (objects[i] instanceof Boolean) {
+                        stmt.setBoolean(i + 1, (boolean) objects[i]);
+                    } else if (objects[i] instanceof byte[]) {
+                        stmt.setBytes(i + 1, (byte[]) objects[i]);
+                    } else if (objects[i] instanceof Double) {
+                        stmt.setDouble(i + 1, (double) objects[i]);
+                    } else if (objects[i] instanceof Float) {
+                        stmt.setFloat(i + 1, (float) objects[i]);
+                    } else if (objects[i] instanceof Integer) {
+                        stmt.setInt(i + 1, (int) objects[i]);
+                    } else if (objects[i] instanceof Long) {
+                        stmt.setLong(i + 1, (long) objects[i]);
+                    } else if (objects[i] instanceof Short) {
+                        stmt.setShort(i + 1, (short) objects[i]);
+                    } else if (objects[i] instanceof String) {
+                        stmt.setString(i + 1, (String) objects[i]);
+                    } else {
+                        stmt.setString(i + 1, objects[i].toString());
+                    }
                 }
+                return stmt.executeUpdate();
             }
-            int executeUpdate = stmt.executeUpdate();
-            return executeUpdate;
-        }
-    }
-
-    /**
-     * @return the connection to the database.
-     */
-    public IHMConnection getConnection() {
-        return mConn;
-    }
-
-    public void close() throws Exception {
-        if (mConn != null) {
-            mConn.setAutoCommit(false);
-            mConn.commit();
-            mConn.close();
-        }
+        });
     }
 
     /**
