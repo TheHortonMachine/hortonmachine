@@ -92,17 +92,21 @@ import org.hortonmachine.dbs.utils.CommonQueries;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMFileFilter;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.hortonmachine.gears.ui.HMMapframe;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.joda.time.DateTime;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.hortonmachine.gui.utils.ImageCache;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -669,7 +673,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         });
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"serial","unchecked"})
     private void addSqlAreaContextMenu() {
         JPopupMenu popupMenu = new JPopupMenu();
         popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
@@ -677,7 +681,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             @Override
             public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
-                @SuppressWarnings("serial")
                 AbstractAction loadAction = new AbstractAction("Load saved query"){
                     @Override
                     public void actionPerformed( ActionEvent e ) {
@@ -711,7 +714,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         }
                     }
                 };
-                @SuppressWarnings("serial")
                 AbstractAction saveAction = new AbstractAction("Save current query"){
                     @Override
                     public void actionPerformed( ActionEvent e ) {
@@ -747,7 +749,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     }
 
                 };
-                @SuppressWarnings("serial")
+                
                 AbstractAction removeAction = new AbstractAction("Remove a query from saved"){
                     @Override
                     public void actionPerformed( ActionEvent e ) {
@@ -780,6 +782,78 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     }
 
                 };
+
+                AbstractAction exportAction = new AbstractAction("Export saved queries"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        try {
+                            byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
+                            List<SqlData> sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
+
+                            JSONArray queriesArray = new JSONArray();
+                            for( SqlData sqlData : sqlDataList ) {
+                                JSONObject item = new JSONObject();
+                                item.put(sqlData.name, sqlData.sql);
+                                queriesArray.put(item);
+                            }
+
+                            String jsonString = queriesArray.toString(2);
+                            File[] files = guiBridge.showSaveFileDialog("Select queries json to create",
+                                    GuiUtilities.getLastFile(), new HMFileFilter("JSON Files", new String[]{"json"}));
+                            if (files != null && files.length > 0) {
+                                String absolutePath = files[0].getAbsolutePath();
+                                GuiUtilities.setLastPath(absolutePath);
+                                FileUtilities.writeFile(jsonString, files[0]);
+                            }
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                };
+
+                AbstractAction importAction = new AbstractAction("Import saved queries"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        try {
+                            File[] files = guiBridge.showOpenFileDialog("Select queries json to import",
+                                    GuiUtilities.getLastFile(), new HMFileFilter("JSON Files", new String[]{"json"}));
+                            if (files != null && files.length > 0) {
+                                String absolutePath = files[0].getAbsolutePath();
+                                GuiUtilities.setLastPath(absolutePath);
+
+                                byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
+                                List<SqlData> sqlDataList = new ArrayList<>();
+                                if (savedQueries.length != 0) {
+                                    sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
+                                }
+
+                                String json = FileUtilities.readFile(files[0]);
+                                JSONArray queriesArray = new JSONArray(json);
+
+                                for( int i = 0; i < queriesArray.length(); i++ ) {
+                                    JSONObject jsonObject = queriesArray.getJSONObject(i);
+                                    String[] names = JSONObject.getNames(jsonObject);
+                                    for( String name : names ) {
+                                        boolean hasAlready = sqlDataList.stream().anyMatch(sd -> sd.name.equals(name));
+                                        if (!hasAlready) {
+                                            SqlData newSqlData = new SqlData();
+                                            newSqlData.name = name;
+                                            newSqlData.sql = jsonObject.getString(name);
+                                            sqlDataList.add(newSqlData);
+                                        }
+                                    }
+                                }
+
+                                byte[] bytesToSave = SqlTemplatesAndActions.convertObjectToBytes(sqlDataList);
+                                GuiUtilities.setPreference(HM_SAVED_QUERIES, bytesToSave);
+
+                            }
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                };
+
                 JMenuItem item = new JMenuItem(saveAction);
                 item.setHorizontalTextPosition(JMenuItem.RIGHT);
                 popupMenu.add(item);
@@ -787,6 +861,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 item.setHorizontalTextPosition(JMenuItem.RIGHT);
                 popupMenu.add(item);
                 item = new JMenuItem(removeAction);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                popupMenu.add(item);
+                popupMenu.addSeparator();
+                item = new JMenuItem(exportAction);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                popupMenu.add(item);
+                item = new JMenuItem(importAction);
                 item.setHorizontalTextPosition(JMenuItem.RIGHT);
                 popupMenu.add(item);
             }
