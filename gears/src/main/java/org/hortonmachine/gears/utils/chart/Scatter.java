@@ -36,7 +36,6 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.general.Series;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.Layer;
 import org.jfree.ui.TextAnchor;
 
 /**
@@ -83,6 +82,10 @@ public class Scatter implements IChart {
         for( int i = 0; i < x.length; i++ ) {
             series.add(x[i], y[i]);
         }
+        dataset.addSeries(series);
+    }
+
+    public void addSeries( XYSeries series ) {
         dataset.addSeries(series);
     }
 

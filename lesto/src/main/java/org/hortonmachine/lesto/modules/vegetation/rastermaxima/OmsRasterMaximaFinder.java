@@ -141,7 +141,7 @@ public class OmsRasterMaximaFinder extends HMModel {
     public static final String OMSMAXIMAFINDER_LABEL = HMConstants.LESTO + "/vegetation";
     public static final String OMSMAXIMAFINDER_NAME = "rastermaximafinder";
     public static final int OMSMAXIMAFINDER_STATUS = 5;
-    public static final String inGeodata_DESCRIPTION = "The input coverage.";
+    public static final String inGeodata_DESCRIPTION = "The input CHM.";
     public static final String pThreshold_DESCRIPTION = "Threshold on maxima. Only maxima higher than the threshold are kept.";
     public static final String pMode_DESCRIPTION = "Processing mode.";
     public static final String pPercent_DESCRIPTION = "Percentage to apply to the maxima window to downsize it (default is 60%).";

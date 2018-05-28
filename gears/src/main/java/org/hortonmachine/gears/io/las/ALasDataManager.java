@@ -28,6 +28,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
+import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.gears.io.las.core.LasRecord;
 import org.hortonmachine.gears.io.las.index.LasIndexer;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
@@ -77,6 +78,15 @@ public abstract class ALasDataManager implements AutoCloseable {
         } else if (lcName.equals(LasIndexer.INDEX_LASFOLDER)) {
             return new LasFolderIndexDataManager(dataFile, inDem, elevThreshold, inCrs);
         } else {
+            try {
+                EDb edb = EDb.fromFileDesktop(dataFile);
+                if (edb != null && edb.isSpatial()) {
+                    return new DatabaseLasDataManager(dataFile, inDem, elevThreshold, inCrs);
+                }
+            } catch (Exception e) {
+                // ignore, will be handled
+            }
+
             throw new IllegalArgumentException("Can only read .las and " + LasIndexer.INDEX_LASFOLDER + " files.");
         }
     }

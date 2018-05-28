@@ -32,7 +32,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.imageio.ImageIO;
 import javax.media.jai.iterator.WritableRandomIter;
@@ -54,6 +56,7 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.hortonmachine.gears.io.las.ALasDataManager;
 import org.hortonmachine.gears.io.las.core.LasRecord;
+import org.hortonmachine.gears.io.las.databases.LasSource;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -62,6 +65,7 @@ import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
+import org.jfree.data.xy.XYSeries;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -80,11 +84,6 @@ public class LasSlicer extends HMModel {
     @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas = null;
-
-    @Description("DTM path for normalization.")
-    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
-    @In
-    public String inDtm = null;
 
     @Description("The slicing interval.")
     @In
@@ -111,11 +110,18 @@ public class LasSlicer extends HMModel {
     @Unit("m")
     public double pResolution = 0.5;
 
+    private WritableRandomIter outIter;
+
+    private GridGeometry2D gridGeometry;
+
+    private WritableRaster outWR;
+
+    private boolean doRaster = true;
+
     @Execute
     public void process() throws Exception {
         checkNull(inLas);
 
-        boolean doRaster = true;
         if (pMode.equals("chart")) {
             doRaster = false;
         }
@@ -127,9 +133,7 @@ public class LasSlicer extends HMModel {
             throw new ModelsIOException("Can't create folder: " + outputFolder, this);
         }
 
-        GridCoverage2D dtm = getRaster(inDtm);
-
-        try (ALasDataManager dataManager = ALasDataManager.getDataManager(lasFile, dtm, pGroundThreshold, null)) {
+        try (ALasDataManager dataManager = ALasDataManager.getDataManager(lasFile, null, pGroundThreshold, null)) {
             dataManager.open();
             ReferencedEnvelope3D dataEnvelope = dataManager.getEnvelope3D();
             CoordinateReferenceSystem crs = dataEnvelope.getCoordinateReferenceSystem();
@@ -145,116 +149,109 @@ public class LasSlicer extends HMModel {
             double yDelta = maxY - minY;
             int chartWidth = 1600;
             int chartHeigth = (int) (chartWidth * yDelta / xDelta);
-            pm.message("Generating charts of " + chartWidth + "x" + chartHeigth);
+            if (!doRaster)
+                pm.message("Generating charts of " + chartWidth + "x" + chartHeigth);
 
             double[] xRange = NumericsUtilities.range2Bins(minX, maxX, 3.0, false);
             double[] yRange = NumericsUtilities.range2Bins(minY, maxY, 3.0, false);
 
-            int tilesNum = xRange.length * yRange.length;
-            int tilesCount = 0;
-            LinkedHashMap<String, List<LasRecord>> recordsMap = new LinkedHashMap<>();
-            pm.beginTask("Producing slices...", (xRange.length - 1));
-            for( int x = 0; x < xRange.length - 1; x++ ) {
-                for( int y = 0; y < yRange.length - 1; y++ ) {
-                    tilesCount++;
-                    Envelope env = new Envelope(xRange[x], xRange[x + 1], yRange[y], yRange[y + 1]);
-                    Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(env);
-                    List<LasRecord> pointsInGeometry = dataManager.getPointsInGeometry(polygon, true);
-
-                    pm.message("Points in tile " + x + "/" + y + "(" + tilesCount + " of " + tilesNum + "): "
-                            + pointsInGeometry.size());
-                    if (pointsInGeometry.size() == 0) {
-                        continue;
+            for( double z = minZ + pInterval; z < maxZ; z = z + pInterval ) {
+                double low = z - pThickness / 2.0;
+                double high = z + pThickness / 2.0;
+                Predicate< ? super LasRecord> checkHeight = p -> {
+                    if (p.z > low && p.z <= high) {
+                        return true;
                     }
-                    for( double z = minZ + pInterval; z < maxZ; z = z + pInterval ) {
-                        String key = String.valueOf(z);
-                        List<LasRecord> pointsInSlice = recordsMap.get(key);
-                        if (pointsInSlice == null) {
-                            pointsInSlice = new ArrayList<LasRecord>();
-                            recordsMap.put(key, pointsInSlice);
+                    return false;
+                };
+
+                XYSeries xySeries = new XYSeries("planimetry");
+                pm.beginTask("Working on slice of elevation " + z, (xRange.length - 1));
+                for( int x = 0; x < xRange.length - 1; x++ ) {
+                    for( int y = 0; y < yRange.length - 1; y++ ) {
+                        Envelope currentTileEnvelope = new Envelope(xRange[x], xRange[x + 1], yRange[y], yRange[y + 1]);
+                        Polygon currentTilePolygon = GeometryUtilities.createPolygonFromEnvelope(currentTileEnvelope);
+                        List<LasRecord> pointsInCurrentTile = dataManager.getPointsInGeometry(currentTilePolygon, true);
+                        if (pointsInCurrentTile.size() == 0) {
+                            continue;
                         }
-                        double height = z - minZ;
-                        double low = height - pThickness / 2.0;
-                        double high = height + pThickness / 2.0;
-                        List<LasRecord> pointsInHeightRange = ALasDataManager.getPointsInHeightRange(pointsInGeometry, low, high);
-                        if (pointsInHeightRange.size() > 0) {
-                            pointsInSlice.addAll(pointsInHeightRange);
-                            // pm.message("Added points: " + pointsInHeightRange.size());
-                            if (!doRaster)
-                                chartPoints(outputFolder, height, pointsInSlice, chartWidth, chartHeigth, minX, maxX, minY, maxY);
+
+                        // double miz = Double.POSITIVE_INFINITY;
+                        // double maz = Double.NEGATIVE_INFINITY;
+                        // for( LasRecord lr : pointsInCurrentTile ) {
+                        // miz = Math.min(miz, lr.groundElevation);
+                        // maz = Math.max(maz, lr.groundElevation);
+                        // }
+                        // System.out.println(miz + "/" + maz + " -> " + low + "/" + high);
+
+                        double _z = z;
+                        if (doRaster) {
+                            pointsInCurrentTile.parallelStream().filter(checkHeight).forEach(p -> {
+                                if (outIter == null) {
+                                    int rows = (int) round((maxY - minY) / pResolution);
+                                    int cols = (int) round((maxX - minX) / pResolution);
+                                    gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(maxY, minY, maxX, minX, cols,
+                                            rows, crs);
+                                    outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null,
+                                            HMConstants.doubleNovalue);
+                                    outIter = CoverageUtilities.getWritableRandomIterator(outWR);
+                                }
+                                Point point = new Point();
+                                CoverageUtilities.colRowFromCoordinate(new Coordinate(p.x, p.y), gridGeometry, point);
+                                outIter.setSample(point.x, point.y, 0, _z);
+                            });
+                        } else {
+                            pointsInCurrentTile.stream().filter(checkHeight).forEach(p -> {
+                                try {
+                                    xySeries.add(p.x, p.y);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            });
                         }
+
                     }
-                }
-                pm.worked(1);
-            }
-            pm.done();
-
-            if (doRaster) {
-                Set<Entry<String, List<LasRecord>>> entrySet = recordsMap.entrySet();
-                int size = entrySet.size();
-                pm.beginTask("Generating rasters...", size);
-                for( Entry<String, List<LasRecord>> entry : entrySet ) {
-                    double z = Double.parseDouble(entry.getKey());
-                    double height = z - minZ;
-                    List<LasRecord> points = entry.getValue();
-
-                    dumpRaster(outputFolder, height, points, pResolution, minX, maxX, minY, maxY, crs);
                     pm.worked(1);
                 }
                 pm.done();
+                if (doRaster && outIter != null) {
+                    outIter.done();
+                    File rasterFile = new File(outputFolder, "slice_" + z + ".asc");
+                    RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometry);
+                    GridCoverage2D outRaster = CoverageUtilities.buildCoverage(rasterFile.getName(), outWR, regionMap, crs);
+                    dumpRaster(outRaster, rasterFile.getAbsolutePath());
+                    outIter = null;
+                } else {
+                    int size = xySeries.getItemCount();
+                    if (size > 0) {
+                        File chartFile = new File(outputFolder, "slice_" + z + ".png");
+                        pm.message("Generate chart with points: " + size);
+                        Scatter scatterPlanim = new Scatter("Slice " + z);
+                        scatterPlanim.addSeries(xySeries);
+                        scatterPlanim.setShowLines(false);
+                        scatterPlanim.setXLabel("longitude");
+                        scatterPlanim.setYLabel("latitude");
+                        scatterPlanim.setXRange(minX, maxX);
+                        scatterPlanim.setYRange(minY, maxY);
+                        BufferedImage imagePlanim = scatterPlanim.getImage(chartWidth, chartHeigth);
+                        ImageIO.write(imagePlanim, "png", chartFile);
+                    } else {
+                        pm.message("No points in slice.");
+                    }
+                }
+
             }
 
         }
     }
 
-    private void dumpRaster( File outputFolder, double height, List<LasRecord> points, double resolution, double minX,
-            double maxX, double minY, double maxY, CoordinateReferenceSystem crs ) throws Exception {
-
-        File rasterFile = new File(outputFolder, "slice_" + height + ".asc");
-
-        int rows = (int) round((maxY - minY) / resolution);
-        int cols = (int) round((maxX - minX) / resolution);
-
-        GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(maxY, minY, maxX, minX, cols, rows, crs);
-        RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometry);
-
-        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
-        WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
-
-        Point point = new Point();
-        for( LasRecord dot : points ) {
-            CoverageUtilities.colRowFromCoordinate(new Coordinate(dot.x, dot.y), gridGeometry, point);
-            outIter.setSample(point.x, point.y, 0, height);
-        }
-        outIter.done();
-
-        GridCoverage2D outRaster = CoverageUtilities.buildCoverage(rasterFile.getName(), outWR, regionMap, crs);
-        dumpRaster(outRaster, rasterFile.getAbsolutePath());
-    }
-
-    private void chartPoints( File chartFolder, double z, List<LasRecord> pointsInSlice, int width, int height, double minX,
-            double maxX, double minY, double maxY ) throws IOException {
-        File chartFile = new File(chartFolder, "slice_" + z + ".png");
-
-        int size = pointsInSlice.size();
-        double[] xPlanim = new double[size];
-        double[] yPlanim = new double[size];
-        for( int i = 0; i < size; i++ ) {
-            LasRecord dot = pointsInSlice.get(i);
-            xPlanim[i] = dot.x;
-            yPlanim[i] = dot.y;
-        }
-
-        Scatter scatterPlanim = new Scatter("Slice " + z);
-        scatterPlanim.addSeries("planimetry", xPlanim, yPlanim);
-        scatterPlanim.setShowLines(false);
-        scatterPlanim.setXLabel("longitude");
-        scatterPlanim.setYLabel("latitude");
-        scatterPlanim.setXRange(minX, maxX);
-        scatterPlanim.setYRange(minY, maxY);
-        BufferedImage imagePlanim = scatterPlanim.getImage(width, height);
-        ImageIO.write(imagePlanim, "png", chartFile);
-
+    public static void main( String[] args ) throws Exception {
+        LasSlicer ls = new LasSlicer();
+        ls.inLas = "/media/hydrologis/Samsung_T3/UNIBZ/monticolo_tls/monticolo2018_point_cloud_02.sqlite";
+        ls.pInterval = 0.5;
+        ls.pThickness = 0.5;
+        ls.pMode = "raster";
+        ls.process();
     }
 
 }

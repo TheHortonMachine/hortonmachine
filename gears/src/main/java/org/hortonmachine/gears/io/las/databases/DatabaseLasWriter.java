@@ -739,17 +739,12 @@ public class DatabaseLasWriter extends HMModel {
         EggClock egg = new EggClock("DATABASE**************** ", "");
         egg.startAndPrint(System.out);
         DatabaseLasWriter w = new DatabaseLasWriter();
-        w.pDbType = EDb.H2GIS.name();
-        w.inFolder = "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/las/";
-        w.inDatabasePath = "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/las_h2gis.mv.db";
-        w.process();
-
-        egg.printTimePassedInSeconds(System.out);
-        
         w = new DatabaseLasWriter();
         w.pDbType = EDb.SPATIALITE.name();
-        w.inFolder = "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/las/";
-        w.inDatabasePath = "/media/hydrologis/Samsung_T3/UNIBZ/aurina_spatialite/las_spatialite.sqlite";
+        w.pLevels = 4;
+        w.pCellsize = 1;
+        w.inFolder = "/media/hydrologis/Samsung_T3/UNIBZ/monticolo_tls";
+        w.inDatabasePath = "/media/hydrologis/Samsung_T3/UNIBZ/monticolo_tls/monticolo2018_point_cloud_02.sqlite";
         w.process();
 
         egg.printTimePassedInSeconds(System.out);
