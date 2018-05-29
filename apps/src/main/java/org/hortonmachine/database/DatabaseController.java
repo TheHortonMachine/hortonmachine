@@ -104,10 +104,10 @@ import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
+import org.hortonmachine.gui.utils.ImageCache;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.hortonmachine.gui.utils.ImageCache;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
@@ -121,6 +121,7 @@ import com.vividsolutions.jts.io.WKTReader;
  *
  */
 public abstract class DatabaseController extends DatabaseView implements IOnCloseListener {
+    private static final String NO_SAVED_CONNECTIONS_AVAILABLE = "No saved connections available.";
     private static final String HM_SAVED_QUERIES = "HM_SAVED_QUERIES";
 
     private static final long serialVersionUID = 1L;
@@ -181,7 +182,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         init();
     }
 
-    @SuppressWarnings({"serial"})
     private void init() {
 
         String[] oldSqlCommandsArray = GuiUtilities.getPreference("HM_OLD_SQL_COMMANDS", new String[0]);
@@ -673,7 +673,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         });
     }
 
-    @SuppressWarnings({"serial","unchecked"})
+    @SuppressWarnings({"serial", "unchecked"})
     private void addSqlAreaContextMenu() {
         JPopupMenu popupMenu = new JPopupMenu();
         popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
@@ -710,7 +710,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
                             }
                         } catch (Exception e1) {
-                            e1.printStackTrace();
+                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
                         }
                     }
                 };
@@ -743,13 +743,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             GuiUtilities.setPreference(HM_SAVED_QUERIES, bytesToSave);
 
                         } catch (Exception e1) {
-                            // TODO Auto-generated catch block
-                            e1.printStackTrace();
+                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
                         }
                     }
 
                 };
-                
+
                 AbstractAction removeAction = new AbstractAction("Remove a query from saved"){
                     @Override
                     public void actionPerformed( ActionEvent e ) {
@@ -777,7 +776,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
                             }
                         } catch (Exception e1) {
-                            e1.printStackTrace();
+                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
                         }
                     }
 
@@ -806,7 +805,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 FileUtilities.writeFile(jsonString, files[0]);
                             }
                         } catch (Exception e1) {
-                            e1.printStackTrace();
+                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
                         }
                     }
                 };
@@ -849,7 +848,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
                             }
                         } catch (Exception e1) {
-                            e1.printStackTrace();
+                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
                         }
                     }
                 };
@@ -896,7 +895,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         });
 
     }
-    @SuppressWarnings("unchecked")
+
     private void addJtreeContextMenu() {
         JPopupMenu popupMenu = new JPopupMenu();
         popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
@@ -937,38 +936,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             popupMenu.add(new JSeparator());
                         }
                     }
-                } else {
-                    @SuppressWarnings("serial")
-                    AbstractAction action = new AbstractAction("Save Connection"){
-                        @Override
-                        public void actionPerformed( ActionEvent e ) {
-                            byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
-                            if (savedDbs.length == 0) {
-                                GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved connections available.");
-                            } else {
-                                try {
-                                    List<ConnectionData> connectionDataList = (List<ConnectionData>) SqlTemplatesAndActions
-                                            .convertFromBytes(savedDbs);
-                                    Map<String, ConnectionData> collect = connectionDataList.stream()
-                                            .collect(Collectors.toMap(c -> c.connectionLabel, Function.identity()));
-                                    String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Connection",
-                                            "Select the connection to use", collect.keySet().toArray(new String[0]));
-                                    if (selected != null && selected.length() > 0) {
-                                        ConnectionData connectionData = collect.get(selected);
-                                        if (connectionData != null) {
-                                            openDatabase(connectionData);
-                                        }
-                                    }
-
-                                } catch (Exception e1) {
-                                    e1.printStackTrace();
-                                }
-                            }
-                        }
-                    };
-                    JMenuItem item = new JMenuItem(action);
-                    popupMenu.add(item);
-                    item.setHorizontalTextPosition(JMenuItem.RIGHT);
                 }
             }
 
@@ -995,14 +962,18 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
         });
 
+        addConnectButtonContextMenu();
+    }
+
+    @SuppressWarnings({"unchecked", "serial"})
+    private void addConnectButtonContextMenu() {
         JPopupMenu popupMenuConnectButton = new JPopupMenu();
         popupMenuConnectButton.setBorder(new BevelBorder(BevelBorder.RAISED));
         popupMenuConnectButton.addPopupMenuListener(new PopupMenuListener(){
 
             @Override
             public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
-                @SuppressWarnings("serial")
-                AbstractAction action = new AbstractAction("Open from saved Connection"){
+                AbstractAction loadConnectionAction = new AbstractAction("Load from saved Connection"){
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         try {
@@ -1011,7 +982,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                     .convertFromBytes(savedDbs);
                             connectionDataList.removeIf(c -> c.connectionLabel == null);
                             if (connectionDataList.size() == 0) {
-                                GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved connections available.");
+                                GuiUtilities.showWarningMessage(DatabaseController.this, null, NO_SAVED_CONNECTIONS_AVAILABLE);
                             } else {
                                 connectionDataList.sort(( c1, c2 ) -> c1.connectionLabel.compareTo(c2.connectionLabel));
                                 Map<String, ConnectionData> collect = connectionDataList.stream()
@@ -1030,13 +1001,38 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
                             }
                         } catch (Exception e1) {
-                            e1.printStackTrace();
+                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
                         }
                     }
                 };
-                JMenuItem item = new JMenuItem(action);
-                popupMenuConnectButton.add(item);
-                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                AbstractAction saveConnectionAction = new AbstractAction("Save Connection"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
+                        if (savedDbs.length == 0) {
+                            GuiUtilities.showWarningMessage(DatabaseController.this, null, NO_SAVED_CONNECTIONS_AVAILABLE);
+                        } else {
+                            try {
+                                List<ConnectionData> connectionDataList = (List<ConnectionData>) SqlTemplatesAndActions
+                                        .convertFromBytes(savedDbs);
+                                Map<String, ConnectionData> collect = connectionDataList.stream()
+                                        .collect(Collectors.toMap(c -> c.connectionLabel, Function.identity()));
+                                String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Connection",
+                                        "Select the connection to use", collect.keySet().toArray(new String[0]));
+                                if (selected != null && selected.length() > 0) {
+                                    ConnectionData connectionData = collect.get(selected);
+                                    if (connectionData != null) {
+                                        openDatabase(connectionData);
+                                    }
+                                }
+
+                            } catch (Exception e1) {
+                                GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
+                            }
+                        }
+                    }
+                };
+
                 AbstractAction removeAction = new AbstractAction("Remove from saved Connection"){
                     @Override
                     public void actionPerformed( ActionEvent e ) {
@@ -1046,7 +1042,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                     .convertFromBytes(savedDbs);
                             connectionDataList.removeIf(c -> c.connectionLabel == null);
                             if (connectionDataList.size() == 0) {
-                                GuiUtilities.showWarningMessage(DatabaseController.this, null, "No saved connections available.");
+                                GuiUtilities.showWarningMessage(DatabaseController.this, null, NO_SAVED_CONNECTIONS_AVAILABLE);
                             } else {
                                 connectionDataList.sort(( c1, c2 ) -> c1.connectionLabel.compareTo(c2.connectionLabel));
                                 List<String> labels = connectionDataList.stream().map(c -> c.connectionLabel)
@@ -1065,11 +1061,119 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
                             }
                         } catch (Exception e1) {
+                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
+                        }
+                    }
+                };
+
+                AbstractAction exportAction = new AbstractAction("Export saved connections"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        try {
+                            byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
+                            if (savedDbs.length == 0) {
+                                GuiUtilities.showWarningMessage(DatabaseController.this, null, NO_SAVED_CONNECTIONS_AVAILABLE);
+                            } else {
+                                List<ConnectionData> connectionDataList = (List<ConnectionData>) SqlTemplatesAndActions
+                                        .convertFromBytes(savedDbs);
+                                if (connectionDataList.size() > 0) {
+                                    JSONArray queriesArray = new JSONArray();
+                                    for( ConnectionData connData : connectionDataList ) {
+                                        if (connData.connectionLabel != null && connData.connectionLabel.length() != 0) {
+                                            JSONObject item = new JSONObject();
+                                            item.put("type", connData.dbType);
+                                            item.put("label", connData.connectionLabel);
+                                            item.put("url", connData.connectionUrl);
+                                            item.put("user", connData.user);
+                                            item.put("pwd", connData.password);
+                                            queriesArray.put(item);
+                                        }
+                                    }
+                                    String jsonString = queriesArray.toString(2);
+                                    File[] files = guiBridge.showSaveFileDialog("Select connections json to create",
+                                            GuiUtilities.getLastFile(), new HMFileFilter("JSON Files", new String[]{"json"}));
+                                    if (files != null && files.length > 0) {
+                                        String absolutePath = files[0].getAbsolutePath();
+                                        GuiUtilities.setLastPath(absolutePath);
+                                        FileUtilities.writeFile(jsonString, files[0]);
+                                    }
+                                } else {
+                                    GuiUtilities.showWarningMessage(DatabaseController.this, null,
+                                            NO_SAVED_CONNECTIONS_AVAILABLE);
+                                }
+                            }
+                        } catch (Exception e1) {
+                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
                             e1.printStackTrace();
                         }
                     }
                 };
+
+                AbstractAction importAction = new AbstractAction("Import saved connections"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        try {
+                            File[] files = guiBridge.showOpenFileDialog("Select connections json to import",
+                                    GuiUtilities.getLastFile(), new HMFileFilter("JSON Files", new String[]{"json"}));
+                            if (files != null && files.length > 0) {
+                                String absolutePath = files[0].getAbsolutePath();
+                                GuiUtilities.setLastPath(absolutePath);
+
+                                byte[] savedConnections = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES,
+                                        new byte[0]);
+                                List<ConnectionData> connectionsDataList = new ArrayList<>();
+                                if (savedConnections.length != 0) {
+                                    connectionsDataList = (List<ConnectionData>) SqlTemplatesAndActions
+                                            .convertFromBytes(savedConnections);
+                                }
+
+                                String json = FileUtilities.readFile(files[0]);
+                                JSONArray queriesArray = new JSONArray(json);
+
+                                for( int i = 0; i < queriesArray.length(); i++ ) {
+                                    JSONObject jsonObject = queriesArray.getJSONObject(i);
+                                    if (jsonObject.has("label")) {
+                                        String label = jsonObject.getString("label");
+
+                                        boolean hasAlready = connectionsDataList.stream().anyMatch(sd -> sd != null
+                                                && sd.connectionLabel != null && sd.connectionLabel.equals(label));
+                                        if (!hasAlready) {
+                                            ConnectionData newConnectionData = new ConnectionData();
+                                            newConnectionData.dbType = jsonObject.getInt("type");
+                                            newConnectionData.connectionLabel = label;
+                                            newConnectionData.connectionUrl = jsonObject.getString("url");
+                                            newConnectionData.user = jsonObject.getString("user");
+                                            newConnectionData.password = jsonObject.getString("pwd");
+                                            connectionsDataList.add(newConnectionData);
+                                        }
+                                    }
+
+                                }
+
+                                byte[] bytesToSave = SqlTemplatesAndActions.convertObjectToBytes(connectionsDataList);
+                                GuiUtilities.setPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, bytesToSave);
+
+                            }
+                        } catch (Exception e1) {
+                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
+                        }
+                    }
+                };
+
+                JMenuItem item = new JMenuItem(loadConnectionAction);
+                popupMenuConnectButton.add(item);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                item = new JMenuItem(saveConnectionAction);
+                popupMenuConnectButton.add(item);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
                 item = new JMenuItem(removeAction);
+                popupMenuConnectButton.add(item);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                popupMenuConnectButton.addSeparator();
+                item = new JMenuItem(exportAction);
+                popupMenuConnectButton.add(item);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                item = new JMenuItem(importAction);
                 popupMenuConnectButton.add(item);
                 item.setHorizontalTextPosition(JMenuItem.RIGHT);
             }
