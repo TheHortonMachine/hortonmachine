@@ -279,6 +279,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
             if (script.indexOf(mapName) != -1) {
                 String path = entry.getValue();
                 mc.append("_mapcalc.inRaster" + inputCount + " =\"\"\"");
+                path = FileUtilities.replaceBackSlashesWithSlashes(path);
                 mc.append(path);
                 mc.append("\"\"\";\n");
                 inputCount++;
