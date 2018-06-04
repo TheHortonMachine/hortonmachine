@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.lesto.modules.vegetation;
+package org.hortonmachine.modules;
 import static org.hortonmachine.lesto.modules.vegetation.OmsGeomorphonMaximaFinder.inDSM_DESC;
 import static org.hortonmachine.lesto.modules.vegetation.OmsGeomorphonMaximaFinder.inDTM_DESC;
 import static org.hortonmachine.lesto.modules.vegetation.OmsGeomorphonMaximaFinder.outMaxima_DESC;
@@ -28,6 +28,7 @@ import static org.hortonmachine.lesto.modules.vegetation.OmsGeomorphonMaximaFind
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.lesto.modules.vegetation.OmsGeomorphonMaximaFinder;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

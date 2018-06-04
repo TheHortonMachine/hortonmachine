@@ -1221,22 +1221,6 @@ public class GearsMessages {
     public static final String OMSIMAGEMOSAICCREATOR_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSIMAGEMOSAICCREATOR_IN_FOLDER_DESCRIPTION = "The folder containing the images to mosaic.";
 
-    public static final String OMSPROFILE_DESCRIPTION = "Module creating profiles over rasters.";
-    public static final String OMSPROFILE_DOCUMENTATION = "";
-    public static final String OMSPROFILE_KEYWORDS = "OmsProfile, Raster";
-    public static final String OMSPROFILE_LABEL = RASTERPROCESSING;
-    public static final String OMSPROFILE_NAME = "profile";
-    public static final int OMSPROFILE_STATUS = 5;
-    public static final String OMSPROFILE_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSPROFILE_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSPROFILE_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSPROFILE_IN_RASTER_DESCRIPTION = "The raster map to use for the profile";
-    public static final String OMSPROFILE_IN_COORDINATES_DESCRIPTION = "Comma separated list of easting,northing coordinates to trace the profile on (optional).";
-    public static final String OMSPROFILE_IN_VECTOR_DESCRIPTION = "Line vector map to use to trace the profile on (optional).";
-    public static final String OMSPROFILE_F_LINE_ID_DESCRIPTION = "The id of the line to use for the name of the profile output file name (used in case of inVector use).";
-    public static final String OMSPROFILE_OUT_FOLDER_DESCRIPTION = "The folder in which to place the output profiles if multiple (used in case of inVector use).";
-    public static final String OMSPROFILE_OUT_PROFILE_DESCRIPTION = "The output profile for the last line read (contains progressive, elevation, x, y).";
-
     public static final String OMSEIALTIMETRYREADER_DESCRIPTION = "Utility class for reading altimetry data from csv files.";
     public static final String OMSEIALTIMETRYREADER_DOCUMENTATION = "";
     public static final String OMSEIALTIMETRYREADER_KEYWORDS = "IO, Reading";

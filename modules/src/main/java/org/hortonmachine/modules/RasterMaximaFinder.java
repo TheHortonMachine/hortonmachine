@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.lesto.modules.vegetation;
+package org.hortonmachine.modules;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

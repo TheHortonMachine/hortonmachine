@@ -17,21 +17,7 @@
  */
 package org.hortonmachine.gears.modules.r.profile;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_F_LINE_ID_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_IN_COORDINATES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_IN_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_OUT_FOLDER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_OUT_PROFILE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_STATUS;
+import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -63,14 +49,14 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-@Description(OMSPROFILE_DESCRIPTION)
-@Documentation(OMSPROFILE_DOCUMENTATION)
-@Author(name = OMSPROFILE_AUTHORNAMES, contact = OMSPROFILE_AUTHORCONTACTS)
-@Keywords(OMSPROFILE_KEYWORDS)
-@Label(OMSPROFILE_LABEL)
-@Name(OMSPROFILE_NAME)
-@Status(OMSPROFILE_STATUS)
-@License(OMSPROFILE_LICENSE)
+@Description(OmsProfile.OMSPROFILE_DESCRIPTION)
+@Documentation(OmsProfile.OMSPROFILE_DOCUMENTATION)
+@Author(name = OmsProfile.OMSPROFILE_AUTHORNAMES, contact = OmsProfile.OMSPROFILE_AUTHORCONTACTS)
+@Keywords(OmsProfile.OMSPROFILE_KEYWORDS)
+@Label(OmsProfile.OMSPROFILE_LABEL)
+@Name(OmsProfile.OMSPROFILE_NAME)
+@Status(OmsProfile.OMSPROFILE_STATUS)
+@License(OmsProfile.OMSPROFILE_LICENSE)
 public class OmsProfile extends HMModel {
 
     @Description(OMSPROFILE_IN_RASTER_DESCRIPTION)
@@ -96,6 +82,23 @@ public class OmsProfile extends HMModel {
     @Description(OMSPROFILE_OUT_PROFILE_DESCRIPTION)
     @Out
     public double[][] outProfile;
+    
+    public static final String OMSPROFILE_DESCRIPTION = "Module creating profiles over rasters.";
+    public static final String OMSPROFILE_DOCUMENTATION = "";
+    public static final String OMSPROFILE_KEYWORDS = "OmsProfile, Raster";
+    public static final String OMSPROFILE_LABEL = RASTERPROCESSING;
+    public static final String OMSPROFILE_NAME = "profile";
+    public static final int OMSPROFILE_STATUS = 5;
+    public static final String OMSPROFILE_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSPROFILE_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSPROFILE_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSPROFILE_IN_RASTER_DESCRIPTION = "The raster map to use for the profile";
+    public static final String OMSPROFILE_IN_COORDINATES_DESCRIPTION = "Comma separated list of easting,northing coordinates to trace the profile on (optional).";
+    public static final String OMSPROFILE_IN_VECTOR_DESCRIPTION = "Line vector map to use to trace the profile on (optional).";
+    public static final String OMSPROFILE_F_LINE_ID_DESCRIPTION = "The id of the line to use for the name of the profile output file name (used in case of inVector use).";
+    public static final String OMSPROFILE_OUT_FOLDER_DESCRIPTION = "The folder in which to place the output profiles if multiple (used in case of inVector use).";
+    public static final String OMSPROFILE_OUT_PROFILE_DESCRIPTION = "The output profile for the last line read (contains progressive, elevation, x, y).";
+
 
     @Execute
     public void process() throws Exception {

@@ -17,20 +17,7 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_F_LINE_ID_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_IN_COORDINATES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_IN_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_OUT_FOLDER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_OUT_PROFILE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROFILE_STATUS;
+import static org.hortonmachine.gears.modules.r.profile.OmsProfile.*;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;

@@ -21,11 +21,9 @@ org.hortonmachine.lesto.modules.utilities.LasSlicer
 org.hortonmachine.lesto.modules.utilities.LasTranslator
 org.hortonmachine.lesto.modules.vector.LasChmTriangulation
 org.hortonmachine.lesto.modules.vector.LasShapeVectorizer
-org.hortonmachine.lesto.modules.vegetation.GeomorphonMaximaFinder
 org.hortonmachine.lesto.modules.vegetation.OmsGeomorphonMaximaFinder
 org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder
 org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinderStream
 org.hortonmachine.lesto.modules.vegetation.PointCloudMaximaFinder
-org.hortonmachine.lesto.modules.vegetation.RasterMaximaFinder
 org.hortonmachine.lesto.modules.vegetation.WatershedAlgorithm
 org.hortonmachine.lesto.modules.vegetation.rastermaxima.OmsRasterMaximaFinder
