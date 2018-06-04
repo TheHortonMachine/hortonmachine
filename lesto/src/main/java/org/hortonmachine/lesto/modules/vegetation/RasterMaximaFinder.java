@@ -82,6 +82,15 @@ public class RasterMaximaFinder extends HMModel {
     @Unit("m")
     @In
     public double pBorderDistanceThres = -1.0;
+    
+    @Description(OmsRasterMaximaFinder.pTopBufferThres_DESCRIPTION)
+    @Unit("m")
+    @In
+    public double pTopBufferThres = 5.0;
+
+    @Description(OmsRasterMaximaFinder.pTopBufferThresCellCount_DESCRIPTION)
+    @In
+    public int pTopBufferThresCellCount = 2;
 
     @Description(OmsRasterMaximaFinder.outMaxima_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -104,6 +113,8 @@ public class RasterMaximaFinder extends HMModel {
         maxFinder.pMaxRadius = pMaxRadius;
         maxFinder.doCircular = doCircular;
         maxFinder.pBorderDistanceThres = pBorderDistanceThres;
+        maxFinder.pTopBufferThres = pTopBufferThres;
+        maxFinder.pTopBufferThresCellCount = pTopBufferThresCellCount;
         maxFinder.process();
         dumpVector(maxFinder.outMaxima, outMaxima);
         dumpVector(maxFinder.outCircles, outCircles);

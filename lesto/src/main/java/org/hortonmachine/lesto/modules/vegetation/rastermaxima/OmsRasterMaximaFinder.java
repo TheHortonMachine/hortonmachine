@@ -116,12 +116,12 @@ public class OmsRasterMaximaFinder extends HMModel {
     @In
     public double pBorderDistanceThres = -1.0;
 
-    @Description("Top buffer threshold")
+    @Description(pTopBufferThres_DESCRIPTION)
     @Unit("m")
     @In
     public double pTopBufferThres = 5.0;
 
-    @Description("Top buffer threshold cell count")
+    @Description(pTopBufferThresCellCount_DESCRIPTION)
     @In
     public int pTopBufferThresCellCount = 2;
 
@@ -151,6 +151,8 @@ public class OmsRasterMaximaFinder extends HMModel {
     public static final String pSize_DESCRIPTION = "The windows size in cells to use for custom mode(default is 3).";
     public static final String outMaxima_DESCRIPTION = "The maxima vector.";
     public static final String outCircles_DESCRIPTION = "The maxima related areas vector.";
+    public static final String pTopBufferThresCellCount_DESCRIPTION = "Top buffer threshold cell count";
+    public static final String pTopBufferThres_DESCRIPTION = "Top buffer threshold";
     // PARAMETERS DOCS END
 
     private DecimalFormat formatter = new DecimalFormat("0.0");

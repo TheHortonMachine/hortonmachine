@@ -337,7 +337,7 @@ public class ParametersPanel extends JPanel implements MouseListener {
             if (!onlyNumbers) {
                 textField = new JTextField();
             } else {
-                NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.getDefault());
+                NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.US); // always use dot as comma
                 DecimalFormat decimalFormat = (DecimalFormat) numberFormat;
                 decimalFormat.setGroupingUsed(false);
                 textField = new JFormattedTextField(decimalFormat);
