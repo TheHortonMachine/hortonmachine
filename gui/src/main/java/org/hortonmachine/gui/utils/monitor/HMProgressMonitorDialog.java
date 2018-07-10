@@ -30,6 +30,8 @@ import javax.swing.SwingWorker;
 /**
  * A progress dialog for long background jobs.
  * 
+ * 
+ * @deprecated Use {@link ActionWithProgress} if possible. 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public abstract class HMProgressMonitorDialog implements PropertyChangeListener {

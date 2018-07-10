@@ -303,7 +303,7 @@ public class OmsGeopaparazzi4Converter extends HMModel {
 
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
 
-        pm.beginTask("Processing simple notes...", -1);
+        pm.beginTask("Processing notes...", -1);
         SimpleFeatureCollection newCollection = new DefaultFeatureCollection();
 
         try (IHMStatement statement = connection.createStatement(); IHMResultSet rs = statement.executeQuery(sql);) {
