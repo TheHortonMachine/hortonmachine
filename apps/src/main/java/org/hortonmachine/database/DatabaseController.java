@@ -1005,33 +1005,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         }
                     }
                 };
-                AbstractAction saveConnectionAction = new AbstractAction("Save Connection"){
-                    @Override
-                    public void actionPerformed( ActionEvent e ) {
-                        byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
-                        if (savedDbs.length == 0) {
-                            GuiUtilities.showWarningMessage(DatabaseController.this, null, NO_SAVED_CONNECTIONS_AVAILABLE);
-                        } else {
-                            try {
-                                List<ConnectionData> connectionDataList = (List<ConnectionData>) SqlTemplatesAndActions
-                                        .convertFromBytes(savedDbs);
-                                Map<String, ConnectionData> collect = connectionDataList.stream()
-                                        .collect(Collectors.toMap(c -> c.connectionLabel, Function.identity()));
-                                String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Connection",
-                                        "Select the connection to use", collect.keySet().toArray(new String[0]));
-                                if (selected != null && selected.length() > 0) {
-                                    ConnectionData connectionData = collect.get(selected);
-                                    if (connectionData != null) {
-                                        openDatabase(connectionData);
-                                    }
-                                }
-
-                            } catch (Exception e1) {
-                                GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
-                            }
-                        }
-                    }
-                };
 
                 AbstractAction removeAction = new AbstractAction("Remove from saved Connection"){
                     @Override
@@ -1161,9 +1134,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 };
 
                 JMenuItem item = new JMenuItem(loadConnectionAction);
-                popupMenuConnectButton.add(item);
-                item.setHorizontalTextPosition(JMenuItem.RIGHT);
-                item = new JMenuItem(saveConnectionAction);
                 popupMenuConnectButton.add(item);
                 item.setHorizontalTextPosition(JMenuItem.RIGHT);
                 item = new JMenuItem(removeAction);
