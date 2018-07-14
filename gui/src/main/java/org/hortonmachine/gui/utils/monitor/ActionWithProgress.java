@@ -19,6 +19,8 @@ package org.hortonmachine.gui.utils.monitor;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 
@@ -35,6 +37,8 @@ public abstract class ActionWithProgress extends AbstractAction {
     private boolean indeterminate;
     private String progressTitle;
 
+    protected List<AbstractAction> connectedActions = new ArrayList<>();
+
     /**
      * Constructor.
      * 
@@ -50,9 +54,17 @@ public abstract class ActionWithProgress extends AbstractAction {
         this.indeterminate = indeterminate;
     }
 
+    public void addConnectedAction( AbstractAction action ) {
+        if (!connectedActions.contains(action))
+            connectedActions.add(action);
+    }
+
     @Override
     public void actionPerformed( ActionEvent event ) {
         setEnabled(false);
+        for( AbstractAction abstractAction : connectedActions ) {
+            abstractAction.setEnabled(false);
+        }
         new Thread(() -> {
             ProgressMonitor monitor = null;
             try {
@@ -66,6 +78,9 @@ public abstract class ActionWithProgress extends AbstractAction {
                 onError(e);
             } finally {
                 setEnabled(true);
+                for( AbstractAction abstractAction : connectedActions ) {
+                    abstractAction.setEnabled(true);
+                }
                 // to ensure that progress dlg is closed in case of any exception
                 if (monitor != null && monitor.getCurrent() != monitor.getTotal())
                     monitor.setCurrent(null, monitor.getTotal());
