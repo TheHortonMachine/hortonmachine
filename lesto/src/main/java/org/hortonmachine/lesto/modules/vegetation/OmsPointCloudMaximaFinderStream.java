@@ -149,8 +149,8 @@ public class OmsPointCloudMaximaFinderStream extends HMModel {
         int rowPerRadius = (int) Math.ceil(pMaxRadius / pBaseGridResolution);
 
         pm.beginTask("Grow maxima regions...", rows);
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double centerValue = outWR.getSampleDouble(c, r, 0);
                 if (HMConstants.isNovalue(centerValue)) {
                     continue;

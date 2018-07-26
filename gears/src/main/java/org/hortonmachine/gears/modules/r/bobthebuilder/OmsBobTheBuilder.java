@@ -206,8 +206,7 @@ public class OmsBobTheBuilder extends HMModel {
         GridGeometry2D gridGeometry = inRaster.getGridGeometry();
         RandomIter elevIter = CoverageUtilities.getRandomIterator(inRaster);
 
-        WritableRaster outputWR = CoverageUtilities
-                .createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
+        WritableRaster outputWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
         WritableRandomIter outputIter = RandomIterFactory.createWritable(outputWR, null);
 
         DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
@@ -232,8 +231,8 @@ public class OmsBobTheBuilder extends HMModel {
         final GridCoordinates2D gridCoord = new GridCoordinates2D();
         RandomIter rasterizedIter = CoverageUtilities.getRandomIterator(outRasterized);
         pm.beginTask("Interpolating...", cols);
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double probValue = rasterizedIter.getSampleDouble(c, r, 0);
                 if (isNovalue(probValue)) {
                     continue;
@@ -249,8 +248,8 @@ public class OmsBobTheBuilder extends HMModel {
         pm.done();
 
         pm.beginTask("Merging with original raster...", cols);
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double interpolatedValue = outputIter.getSampleDouble(c, r, 0);
                 double rasterValue = elevIter.getSampleDouble(c, r, 0);
                 if (isNovalue(interpolatedValue)) {

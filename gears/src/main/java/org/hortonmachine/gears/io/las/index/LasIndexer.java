@@ -137,8 +137,8 @@ public class LasIndexer extends HMModel {
             if (pCode != null)
                 crs = CrsUtilities.getCrsFromEpsg(pCode, null);
         } catch (Exception e1) {
-            throw new ModelsIllegalargumentException("An error occurred while reading the projection definition: "
-                    + e1.getLocalizedMessage(), this);
+            throw new ModelsIllegalargumentException(
+                    "An error occurred while reading the projection definition: " + e1.getLocalizedMessage(), this);
         }
 
         pm.message("Las files to be added to the index:");
@@ -340,8 +340,8 @@ public class LasIndexer extends HMModel {
                     pm.message("Write and index new las...");
                 }
                 long pointCount = 0;
-                for( int c = 0; c < cols; c++ ) {
-                    for( int r = 0; r < rows; r++ ) {
+                for( int r = 0; r < rows; r++ ) {
+                    for( int c = 0; c < cols; c++ ) {
                         List<LasRecord> dotsList = dotOnMatrix[c][r];
                         if (dotsList == null || dotsList.size() == 0) {
                             continue;
@@ -437,6 +437,5 @@ public class LasIndexer extends HMModel {
             raf.write(bytes);
         }
     }
-
 
 }

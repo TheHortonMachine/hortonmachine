@@ -97,12 +97,12 @@ public class OmsRasterValueRounder extends HMModel {
         RandomIter inRasterIter = CoverageUtilities.getRandomIterator(inRaster);
         WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
 
-        pm.beginTask("Rounding data...", cols);
-        for( int c = 0; c < cols; c++ ) {
+        pm.beginTask("Rounding data...", rows);
+        for( int r = 0; r < rows; r++ ) {
             if (isCanceled(pm)) {
                 return;
             }
-            for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double value = inRasterIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(value)) {
                     String formatted = formatter.format(value);

@@ -172,13 +172,13 @@ public class OmsLeastCostFlowDirections extends HMModel {
         orderedNodes = new TreeSet<GridNode>(new GridNodeElevationToLeastComparator());
         assignedFlowsMap = new BitMatrix(cols, rows);
 
-        pm.beginTask("Check for potential outlets...", cols);
+        pm.beginTask("Check for potential outlets...", rows);
         int nonValidCellsNum = 0;
-        for( int c = 0; c < cols; c++ ) {
+        for( int r = 0; r < rows; r++ ) {
             if (isCanceled(pm)) {
                 return;
             }
-            for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r);
                 if (!node.isValid()) {
                     nonValidCellsNum++;

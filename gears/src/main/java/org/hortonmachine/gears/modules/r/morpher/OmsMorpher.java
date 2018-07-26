@@ -153,8 +153,8 @@ public class OmsMorpher extends HMModel {
         int[][] kernel = MorpherHelp.getSquareKernelMatrix(kernelArray);
 
         pm.beginTask("Perform dilation...", cols);
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 GridNode node = new GridNode(inIter, cols, rows, xres, yres, c, r);
                 if (!node.isValid()) {
                     double[][] nodeNeighbours = node.getWindow(kernel.length, false);
@@ -215,8 +215,8 @@ public class OmsMorpher extends HMModel {
         int[][] kernel = MorpherHelp.getSquareKernelMatrix(kernelArray);
 
         pm.beginTask("Perform erosion...", cols);
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 GridNode node = new GridNode(inIter, cols, rows, xres, yres, c, r);
                 if (node.isValid()) {
                     double[][] nodeNeighbours = node.getWindow(kernel.length, false);
@@ -341,8 +341,8 @@ public class OmsMorpher extends HMModel {
 
     private static void clearRaster( RegionMap regionMap, WritableRaster outWR ) {
         // clear raster
-        for( int c = 0; c < regionMap.getCols(); c++ ) {
-            for( int r = 0; r < regionMap.getRows(); r++ ) {
+        for( int r = 0; r < regionMap.getRows(); r++ ) {
+            for( int c = 0; c < regionMap.getCols(); c++ ) {
                 outWR.setSample(c, r, 0, doubleNovalue);
             }
         }
@@ -365,8 +365,8 @@ public class OmsMorpher extends HMModel {
 
     public static BinaryFast toBinaryFast( int cols, int rows, WritableRandomIter inIter ) {
         int[][] data = new int[cols][rows];
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double value = inIter.getSampleDouble(c, r, 0);
                 data[c][r] = BinaryFast.BACKGROUND;
                 if (isNovalue(value)) {

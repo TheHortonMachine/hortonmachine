@@ -176,8 +176,8 @@ public class OmsSurfaceInterpolator extends HMModel {
             pm.beginTask("Indexing control points...", cols);
             RandomIter inIter = CoverageUtilities.getRandomIterator(inGrid);
             int count = 0;
-            for( int c = 0; c < cols; c++ ) {
-                for( int r = 0; r < rows; r++ ) {
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
                     double value = inIter.getSampleDouble(c, r, 0);
                     if (!HMConstants.isNovalue(value)) {
                         Coordinate coordinate = CoverageUtilities.coordinateFromColRow(c, r, gridGeometry);
@@ -200,8 +200,7 @@ public class OmsSurfaceInterpolator extends HMModel {
             interpolator = new TPSInterpolator(pBuffer);
         }
 
-        WritableRaster interpolatedWR = CoverageUtilities.createWritableRaster(cols, rows, null, null,
-                HMConstants.doubleNovalue);
+        WritableRaster interpolatedWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
         final WritableRandomIter interpolatedIter = RandomIterFactory.createWritable(interpolatedWR, null);
 
         boolean doMultiThread = pMaxThreads > 1;
@@ -262,12 +261,12 @@ public class OmsSurfaceInterpolator extends HMModel {
                     currentCoord.x = coord[0];
                     currentCoord.y = coord[1];
 
-                    final Envelope env = new Envelope(currentCoord.x - pBuffer, currentCoord.x + pBuffer, currentCoord.y
-                            - pBuffer, currentCoord.y + pBuffer);
+                    final Envelope env = new Envelope(currentCoord.x - pBuffer, currentCoord.x + pBuffer,
+                            currentCoord.y - pBuffer, currentCoord.y + pBuffer);
 
                     @SuppressWarnings("unchecked")
                     final List<Coordinate> result = tree.query(env);
-                    // System.out.println(row + "/" + c + "  = " + result.size());
+                    // System.out.println(row + "/" + c + " = " + result.size());
 
                     // we need at least 3 points
                     if (result.size() < 4) {

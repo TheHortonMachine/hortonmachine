@@ -152,8 +152,8 @@ public class LasHeightDistribution extends HMModel {
                 ReferencedEnvelope refEnvelope = new ReferencedEnvelope(geomEnvelope, crs);
                 Envelope2D tileEnvelope = new Envelope2D(refEnvelope);
                 WritableRaster[] tmpWrH = new WritableRaster[1];
-                GridCoverage2D tmp = CoverageUtilities
-                        .createSubCoverageFromTemplate(inDemGC, tileEnvelope, doubleNovalue, tmpWrH);
+                GridCoverage2D tmp = CoverageUtilities.createSubCoverageFromTemplate(inDemGC, tileEnvelope, doubleNovalue,
+                        tmpWrH);
                 RegionMap tileRegionMap = CoverageUtilities.getRegionParamsFromGridCoverage(tmp);
                 GridGeometry2D tileGridGeometry = tmp.getGridGeometry();
 
@@ -227,8 +227,8 @@ public class LasHeightDistribution extends HMModel {
                 double[] gridValue = new double[1];
                 int cols = tileRegionMap.getCols();
                 int rows = tileRegionMap.getRows();
-                for( int c = 0; c < cols; c++ ) {
-                    for( int r = 0; r < rows; r++ ) {
+                for( int r = 0; r < rows; r++ ) {
+                    for( int c = 0; c < cols; c++ ) {
                         int value = 0;
                         GridCoordinates2D gridPosition = new GridCoordinates2D(c, r);
                         for( int j = 0; j < rangeCoverages.size(); j++ ) {
@@ -261,8 +261,8 @@ public class LasHeightDistribution extends HMModel {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(outCatsGC);
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double value = finalIter.getSampleDouble(c, r, 0);
                 if (isNovalue(value)) {
                     finalIter.setSample(c, r, 0, 0.0);
@@ -286,8 +286,8 @@ public class LasHeightDistribution extends HMModel {
         int valid2 = 0;
         int overlapping = 0;
 
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double v1 = cov1Iter.getSampleDouble(c, r, 0);
                 double v2 = cov2Iter.getSampleDouble(c, r, 0);
 

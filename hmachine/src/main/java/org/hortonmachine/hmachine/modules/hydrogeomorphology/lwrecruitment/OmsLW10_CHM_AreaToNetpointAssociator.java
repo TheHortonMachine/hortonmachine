@@ -186,8 +186,8 @@ public class OmsLW10_CHM_AreaToNetpointAssociator extends HMModel {
         HashMap<Integer, DescriptiveStatistics> standBasin2ValueMap = new HashMap<Integer, DescriptiveStatistics>();
 
         pm.beginTask("Calculating vegetation stats.", cols);
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double netnumDouble = netnumBasinsIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(netnumDouble)) {
                     Integer netNum = (int) netnumDouble;

@@ -109,8 +109,8 @@ public class OmsH2cd extends HMModel {
         WritableRaster h2cdWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, 0.0);
         WritableRandomIter h2cdIter = RandomIterFactory.createWritable(h2cdWR, null);
 
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double value = netIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(value))
                     flowIter.setSample(c, r, 0, 10.0);

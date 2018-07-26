@@ -254,8 +254,8 @@ public class AdaptiveTinFilter extends HMModel {
         // pm.beginTask("Generating dem...", regionMap.getCols() *
         // regionMap.getRows());
         ThreadedRunnable tRun = new ThreadedRunnable(getDefaultThreadsNum(), null);
-        for( int c = 0; c < regionMap.getCols(); c++ ) {
-            for( int r = 0; r < regionMap.getRows(); r++ ) {
+        for( int r = 0; r < regionMap.getRows(); r++ ) {
+            for( int c = 0; c < regionMap.getCols(); c++ ) {
                 final int col = c;
                 final int row = r;
                 tRun.executeRunnable(new Runnable(){

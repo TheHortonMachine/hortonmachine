@@ -159,12 +159,12 @@ public class OmsRasterGenerator extends HMModel {
         WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
 
         Random random = new Random();
-        pm.beginTask("Generating raster...", cols);
-        for( int c = 0; c < cols; c++ ) {
+        pm.beginTask("Generating raster...", rows);
+        for( int r = 0; r < rows; r++ ) {
             if (isCanceled(pm)) {
                 return;
             }
-            for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double value = pValue;
                 if (doRandom) {
                     value = pOffset + pScale * random.nextDouble();

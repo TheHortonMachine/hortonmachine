@@ -141,13 +141,12 @@ public class OmsDebrisTriggerCnr extends HMModel {
         RenderedImage gradientTanRI = gradientCoverageTan.getRenderedImage();
         RandomIter gradientTanIter = RandomIterFactory.create(gradientTanRI, null);
 
-        WritableRaster outputWR = CoverageUtilities
-                .createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
+        WritableRaster outputWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
         WritableRandomIter outputIter = RandomIterFactory.createWritable(outputWR, null);
 
         pm.beginTask("Extracting trigger points...", cols);
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double net = netIter.getSampleDouble(c, r, 0);
 
                 // all only along the network

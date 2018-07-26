@@ -136,8 +136,8 @@ public class OmsKernelDensity extends HMModel {
         float[] kernelData = kernel.getKernelData();
 
         pm.beginTask("Estimating kernel density...", cols - 2 * pRadius);
-        for( int c = pRadius; c < cols - pRadius; c++ ) {
-            for( int r = pRadius; r < rows - pRadius; r++ ) {
+        for( int r = pRadius; r < rows - pRadius; r++ ) {
+            for( int c = pRadius; c < cols - pRadius; c++ ) {
                 double inputValue = inIter.getSampleDouble(c, r, 0);
                 if (isNovalue(inputValue)) {
                     continue;
@@ -164,8 +164,8 @@ public class OmsKernelDensity extends HMModel {
         pm.done();
 
         pm.beginTask("Finalizing...", cols);
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double outputValue = outIter.getSampleDouble(c, r, 0);
                 if (isNovalue(outputValue)) {
                     outIter.setSample(c, r, 0, 0.0);

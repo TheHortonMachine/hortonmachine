@@ -108,8 +108,8 @@ public class OmsSlope extends HMModel {
         WritableRaster slopeWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
         pm.beginTask(msg.message("slope.calculating"), nCols);
-        for( int c = 0; c < nCols; c++ ) {
-            for( int r = 0; r < nRows; r++ ) {
+        for( int r = 0; r < nRows; r++ ) {
+            for( int c = 0; c < nCols; c++ ) {
                 double flowValue = flowIter.getSampleDouble(c, r, 0);
                 GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
                 double value = calculateSlope(node, flowValue);

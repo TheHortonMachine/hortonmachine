@@ -310,8 +310,8 @@ public class OmsDebrisFlow extends HMModel {
              * check if the max area is flooded
              */
             int floodedCellNum = 0;
-            for( int c = 0; c < cols; c++ ) {
-                for( int r = 0; r < rows; r++ ) {
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
                     double value = probIter.getSampleDouble(c, r, 0);
                     if (isNovalue(value)) {
                         continue;
@@ -329,8 +329,8 @@ public class OmsDebrisFlow extends HMModel {
 
         double probSum = 0.0;
         double validCells = 0.0;
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double prob = probIter.getSampleDouble(c, r, 0);
                 if (isNovalue(prob)) {
                     continue;
@@ -351,8 +351,8 @@ public class OmsDebrisFlow extends HMModel {
         WritableRaster depoWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
         WritableRandomIter depoIter = RandomIterFactory.createWritable(depoWR, null);
 
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double probValue = probIter.getSampleDouble(c, r, 0);
                 if (isNovalue(probValue)) {
                     continue;

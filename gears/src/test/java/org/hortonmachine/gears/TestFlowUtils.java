@@ -169,8 +169,8 @@ public class TestFlowUtils extends HMTestCase {
 
     public void testElevationSort() throws Exception {
         TreeSet<GridNode> set = new TreeSet<GridNode>(new GridNodeElevationToLeastComparator());
-        for( int c = 0; c < nCols; c++ ) {
-            for( int r = 0; r < nRows; r++ ) {
+        for( int r = 0; r < nRows; r++ ) {
+            for( int c = 0; c < nCols; c++ ) {
                 GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
                 if (node.isValid()) {
                     boolean added = set.add(node);

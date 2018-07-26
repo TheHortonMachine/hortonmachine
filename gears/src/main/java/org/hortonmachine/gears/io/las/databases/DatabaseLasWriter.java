@@ -381,8 +381,8 @@ public class DatabaseLasWriter extends HMModel {
                 pm.beginTask("Write las data...", cols * rows);
             else
                 pm.message("Write las data...");
-            for( int c = 0; c < cols; c++ ) {
-                for( int r = 0; r < rows; r++ ) {
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
                     List<LasRecord> dotsList = dotOnMatrixXY[c][r];
 
                     Coordinate coord = CoverageUtilities.coordinateFromColRow(c, r, gridGeometry);

@@ -121,8 +121,8 @@ public class LasOnRasterMapper extends HMModel {
         final int newRows = (int) round((north - south) / pYres);
         int newCols = (int) round((east - west) / pXres);
 
-        final GridGeometry2D newGridGeometry2D = CoverageUtilities.gridGeometryFromRegionValues(north, south, east, west,
-                newCols, newRows, crs);
+        final GridGeometry2D newGridGeometry2D = CoverageUtilities.gridGeometryFromRegionValues(north, south, east, west, newCols,
+                newRows, crs);
         RegionMap newRegionMap = CoverageUtilities.gridGeometry2RegionParamsMap(newGridGeometry2D);
         final WritableRaster newWR = CoverageUtilities.createWritableRaster(newCols, newRows, null, null,
                 HMConstants.doubleNovalue);
@@ -185,8 +185,8 @@ public class LasOnRasterMapper extends HMModel {
             int rows = outRegionMap.getRows();
 
             final Point p = new Point();
-            for( int c = 0; c < cols; c++ ) {
-                for( int r = 0; r < rows; r++ ) {
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
                     Coordinate coordinate = CoverageUtilities.coordinateFromColRow(c, r, outGridGeometry);
                     CoverageUtilities.colRowFromCoordinate(coordinate, dtmGridGeometry, p);
                     double dtmValue = dtmIter.getSampleDouble(p.x, p.y, 0);

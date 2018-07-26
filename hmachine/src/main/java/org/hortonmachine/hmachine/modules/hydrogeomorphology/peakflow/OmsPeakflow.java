@@ -122,7 +122,7 @@ public class OmsPeakflow extends HMModel {
     @Description(OMSPEAKFLOW_outDischarge_DESCRIPTION)
     @Out
     public HashMap<DateTime, double[]> outDischarge;
-    
+
     public static final String OMSPEAKFLOW_DESCRIPTION = "The OmsPeakflow semidistributed hydrologic model.";
     public static final String OMSPEAKFLOW_DOCUMENTATION = "OmsPeakflow.html";
     public static final String OMSPEAKFLOW_KEYWORDS = "OmsPeakflow, Discharge, Hydrologic, OmsCb, RescaledDistance";
@@ -143,7 +143,6 @@ public class OmsPeakflow extends HMModel {
     public static final String OMSPEAKFLOW_inRescaledsub_DESCRIPTION = "The map of sub-superficial rescaled distance.";
     public static final String OMSPEAKFLOW_inRainfall_DESCRIPTION = "The sorted hasmap of rainfall data per timestep.";
     public static final String OMSPEAKFLOW_outDischarge_DESCRIPTION = "The sorted hashmap of peakflow output per timestep.";
-
 
     public double outputStepArg = 100;
 
@@ -357,8 +356,8 @@ public class OmsPeakflow extends HMModel {
                 outDischarge.put(tmpDate, value);
             }
         } else {
-            throw new ModelsIllegalargumentException("Statistic and real rain are implemented only.", this.getClass()
-                    .getSimpleName(), pm);
+            throw new ModelsIllegalargumentException("Statistic and real rain are implemented only.",
+                    this.getClass().getSimpleName(), pm);
         }
 
         /*
@@ -377,8 +376,8 @@ public class OmsPeakflow extends HMModel {
 
     private void processWithSaturation( GridCoverage2D sat, WritableRaster supRescaledWR, WritableRaster subRescaledWR ) {
         RandomIter satIter = CoverageUtilities.getRandomIterator(sat);
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double saturation = satIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(saturation)) {
                     if (subRescaledWR != null) {
@@ -419,8 +418,8 @@ public class OmsPeakflow extends HMModel {
         RenderedImage topindexRI = inTopindex.getRenderedImage();
         RandomIter topindexIter = RandomIterFactory.create(topindexRI, null);
 
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double topindex = topindexIter.getSampleDouble(c, r, 0);
                 if (topindex >= topindexThreshold) {
                     if (subRescaledWR != null) {

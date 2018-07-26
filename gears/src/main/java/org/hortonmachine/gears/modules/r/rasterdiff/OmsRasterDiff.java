@@ -107,8 +107,8 @@ public class OmsRasterDiff extends HMModel {
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         pm.beginTask("Subtracting raster...", cols);
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double r1 = r1Iter.getSampleDouble(c, r, 0);
                 double r2 = r2Iter.getSampleDouble(c, r, 0);
                 double diff;
@@ -133,11 +133,11 @@ public class OmsRasterDiff extends HMModel {
             pm.worked(1);
         }
         pm.done();
-        
+
         r1Iter.done();
         r2Iter.done();
         outIter.done();
-        
+
         outRaster = CoverageUtilities.buildCoverage("corrected", outWR, regionMap, inRaster1.getCoordinateReferenceSystem());
     }
 

@@ -274,8 +274,8 @@ public class Las2BivariateRasterMosaic extends HMModel {
                     env.getMaxX(), env.getMinX(), newCols, newRows, crs);
 
             ArrayList<LasRecord>[][] lasMatrix = new ArrayList[newCols][newRows];
-            for( int c = 0; c < newCols; c++ ) {
-                for( int r = 0; r < newRows; r++ ) {
+            for( int r = 0; r < newRows; r++ ) {
+                for( int c = 0; c < newCols; c++ ) {
                     ArrayList<LasRecord> item = new ArrayList<LasRecord>();
                     lasMatrix[c][r] = item;
                 }

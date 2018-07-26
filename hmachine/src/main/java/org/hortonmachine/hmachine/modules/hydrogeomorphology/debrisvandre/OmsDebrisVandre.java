@@ -269,8 +269,8 @@ public class OmsDebrisVandre extends HMModel {
          * FIXME the common paths are extracted many times, not good
          */
         pm.beginTask("Extracting paths...", cols);
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 double netflowValue = flowIter.getSampleDouble(c, r, 0);
                 if (isNovalue(netflowValue)) {
                     continue;
@@ -402,7 +402,8 @@ public class OmsDebrisVandre extends HMModel {
                                         deltaElevWithDegreeLessThanTogglePoint = 0.0;
                                         lengthWithDegreeLessThanTogglePoint = 0.0;
                                         wasBetweenSlopes = false;
-                                        // pm.message("--> RE-ENTERING IN STEEP PART AFTER BETWEEN SLOPES CONDITION");
+                                        // pm.message("--> RE-ENTERING IN STEEP PART AFTER BETWEEN
+                                        // SLOPES CONDITION");
                                     }
                                 } else if (slopeValue <= minDegrees) {
                                     /*
@@ -500,8 +501,8 @@ public class OmsDebrisVandre extends HMModel {
             /*
              * make volume
              */
-            for( int c = 0; c < cols; c++ ) {
-                for( int r = 0; r < rows; r++ ) {
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
                     double value = outSoilIter.getSampleDouble(c, r, 0);
                     if (isNovalue(value)) {
                         continue;
@@ -608,8 +609,8 @@ public class OmsDebrisVandre extends HMModel {
             if (!isNovalue(net)) {
                 // first move to the next point
                 if (!ModelsEngine.go_downstream(flowDirColRow, tmpFlowValue))
-                    throw new ModelsIllegalargumentException("Unable to go downstream [col/row]: " + flowDirColRow[0] + "/"
-                            + flowDirColRow[1], this, pm);
+                    throw new ModelsIllegalargumentException(
+                            "Unable to go downstream [col/row]: " + flowDirColRow[0] + "/" + flowDirColRow[1], this, pm);
                 tmpFlowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
                 while( !isNovalue(tmpFlowValue) && tmpFlowValue != 10 ) {
                     double cumulated = outSoilIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
@@ -620,8 +621,8 @@ public class OmsDebrisVandre extends HMModel {
                     outSoilIter.setSample(flowDirColRow[0], flowDirColRow[1], 0, newCumulated);
 
                     if (!ModelsEngine.go_downstream(flowDirColRow, tmpFlowValue))
-                        throw new ModelsIllegalargumentException("Unable to go downstream [col/row]: " + flowDirColRow[0] + "/"
-                                + flowDirColRow[1], this, pm);
+                        throw new ModelsIllegalargumentException(
+                                "Unable to go downstream [col/row]: " + flowDirColRow[0] + "/" + flowDirColRow[1], this, pm);
                     tmpFlowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
                 }
 
@@ -657,7 +658,6 @@ public class OmsDebrisVandre extends HMModel {
         return true;
     }
 
-    @SuppressWarnings("nls")
     private SimpleFeatureType createTriggersType() {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("indexedtriggers");
@@ -668,7 +668,6 @@ public class OmsDebrisVandre extends HMModel {
         return type;
     }
 
-    @SuppressWarnings("nls")
     private SimpleFeatureType createPathType() {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("debrispaths");
