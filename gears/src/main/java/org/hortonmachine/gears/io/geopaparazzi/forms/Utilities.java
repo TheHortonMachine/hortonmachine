@@ -19,6 +19,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemBoolean;
@@ -56,6 +57,22 @@ public class Utilities {
     public static final String TAG_READONLY = "readonly";
     public static final String TAG_SIZE = "size";
     public static final String TAG_URL = "url";
+    public static final String TAG_LABEL = "label";
+    
+    /**
+     * Type for pictures element.
+     */
+    public static final String TYPE_PICTURES = "pictures";
+
+    /**
+     * Type for pictures element.
+     */
+    public static final String TYPE_SKETCH = "sketch";
+
+    /**
+     * Type for map element.
+     */
+    public static final String TYPE_MAP = "map";
 
     public static void properties2Mainframe( MainFrame mainFrame, File templateFile ) throws Exception {
         List<String> templateLinesList = FileUtilities.readFileToLinesList(templateFile);
@@ -183,6 +200,57 @@ public class Utilities {
             return formItemsArray;
         }
         return null;
+    }
+    
+    /**
+     * Get the images paths out of a form string.
+     *
+     * @param formString the form.
+     * @return the list of images paths.
+     * @throws Exception if something goes wrong.
+     */
+    public static List<String> getImageIds( String formString ) throws Exception {
+        List<String> imageIds = new ArrayList<String>();
+        if (formString != null && formString.length() > 0) {
+            JSONObject sectionObject = new JSONObject(formString);
+            List<String> formsNames = Utilities.getFormNames4Section(sectionObject);
+            for( String formName : formsNames ) {
+                JSONObject form4Name = Utilities.getForm4Name(formName, sectionObject);
+                JSONArray formItems = Utilities.getFormItems(form4Name);
+                for( int i = 0; i < formItems.length(); i++ ) {
+                    JSONObject formItem = formItems.getJSONObject(i);
+                    if (!formItem.has(Utilities.TAG_KEY)) {
+                        continue;
+                    }
+
+                    String type = formItem.getString(Utilities.TAG_TYPE);
+                    String value = "";
+                    if (formItem.has(Utilities.TAG_VALUE))
+                        value = formItem.getString(Utilities.TAG_VALUE);
+
+                    if (type.equals(Utilities.TYPE_PICTURES)) {
+                        if (value.trim().length() == 0) {
+                            continue;
+                        }
+                        String[] imageSplit = value.split(";");
+                        Collections.addAll(imageIds, imageSplit);
+                    } else if (type.equals(Utilities.TYPE_MAP)) {
+                        if (value.trim().length() == 0) {
+                            continue;
+                        }
+                        String image = value.trim();
+                        imageIds.add(image);
+                    } else if (type.equals(Utilities.TYPE_SKETCH)) {
+                        if (value.trim().length() == 0) {
+                            continue;
+                        }
+                        String[] imageSplit = value.split(";");
+                        Collections.addAll(imageIds, imageSplit);
+                    }
+                }
+            }
+        }
+        return imageIds;
     }
 
 }
