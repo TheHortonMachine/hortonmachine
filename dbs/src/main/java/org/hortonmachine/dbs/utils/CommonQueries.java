@@ -50,8 +50,7 @@ import com.vividsolutions.jts.geom.LineString;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class CommonQueries {
-    
-    
+
     public static final LinkedHashMap<String, String> templatesMap = new LinkedHashMap<String, String>();
     static {
         templatesMap.put("simple select", "select * from TABLENAME");
@@ -68,14 +67,17 @@ public class CommonQueries {
                 "SELECT intersection(t1.the_geom, buffer(t2.the_geom, 100)) as the_geom FROM table1 t1, table2 t2\n"
                         + "where (\nintersects (t1.the_geom, buffer(t2.the_geom, 100))=1\n"
                         + "AND t1.ROWID IN (\nSELECT ROWID FROM SpatialIndex\nWHERE f_table_name='table1' AND search_frame=buffer(t2.the_geom, 100)\n))");
-        templatesMap.put("create new spatial table from select", "create table newtablename as SELECT * FROM tablename;\n" + 
-                "SELECT RecoverGeometryColumn('newtablename', 'geometry',  4326, 'LINESTRING', 'XY');\n" + 
-                "SELECT CreateSpatialIndex('newtablename', 'geometry');");
-        templatesMap.put("aggregate and merge lines", "select column, ST_LineMerge(geometry) from tablename\n" + 
-                "where column like 'pattern%' group by column");
-        
+        templatesMap.put("create new spatial table from select",
+                "create table newtablename as SELECT * FROM tablename;\n"
+                        + "SELECT RecoverGeometryColumn('newtablename', 'geometry',  4326, 'LINESTRING', 'XY');\n"
+                        + "SELECT CreateSpatialIndex('newtablename', 'geometry');");
+        templatesMap.put("aggregate and merge lines",
+                "select column, ST_LineMerge(geometry) from tablename\n" + "where column like 'pattern%' group by column");
+        templatesMap.put("count with case",
+                "select count(case when WORKFIELD is null then 1 else null end ) as nonworked, count(case when WORKFIELD is null then null else 1 end ) as worked from TABLENAME order by FIELD asc");
+
     }
-    
+
     /**
      * Calculates the GeodesicLength between to points.
      * 
@@ -86,8 +88,7 @@ public class CommonQueries {
      * @return the distance.
      * @throws Exception
      */
-    public static double getDistanceBetween( IHMConnection connection, Coordinate p1, Coordinate p2, int srid )
-            throws Exception {
+    public static double getDistanceBetween( IHMConnection connection, Coordinate p1, Coordinate p2, int srid ) throws Exception {
         if (srid < 0) {
             srid = 4326;
         }

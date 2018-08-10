@@ -59,6 +59,8 @@ public class Utilities {
     public static final String TAG_URL = "url";
     public static final String TAG_LABEL = "label";
     
+    public static final String IMAGES_SEPARATOR = ";";
+    
     /**
      * Type for pictures element.
      */
