@@ -686,8 +686,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     public void actionPerformed( ActionEvent e ) {
                         try {
                             byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
-                            List<SqlData> sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
-
+                            List<SqlData> sqlDataList;
+                            if (savedQueries.length == 0) {
+                                sqlDataList = new ArrayList<>();
+                            } else {
+                                sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
+                            }
                             Set<String> checkSet = new TreeSet<>();
                             sqlDataList.removeIf(sd -> sd.name == null || !checkSet.add(sd.name));
 
@@ -743,7 +747,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             GuiUtilities.setPreference(HM_SAVED_QUERIES, bytesToSave);
 
                         } catch (Exception e1) {
-                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
+                            e1.printStackTrace();
+                            // GuiUtilities.showErrorMessage(DatabaseController.this,
+                            // e1.getMessage());
                         }
                     }
 
@@ -978,8 +984,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     public void actionPerformed( ActionEvent e ) {
                         try {
                             byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
-                            List<ConnectionData> connectionDataList = (List<ConnectionData>) SqlTemplatesAndActions
-                                    .convertFromBytes(savedDbs);
+                            List<ConnectionData> connectionDataList;
+                            if (savedDbs.length > 0) {
+                                connectionDataList = (List<ConnectionData>) SqlTemplatesAndActions.convertFromBytes(savedDbs);
+                            } else {
+                                connectionDataList = new ArrayList<>();
+                            }
                             connectionDataList.removeIf(c -> c.connectionLabel == null);
                             if (connectionDataList.size() == 0) {
                                 GuiUtilities.showWarningMessage(DatabaseController.this, null, NO_SAVED_CONNECTIONS_AVAILABLE);

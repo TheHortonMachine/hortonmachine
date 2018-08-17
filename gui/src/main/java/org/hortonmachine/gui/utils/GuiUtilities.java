@@ -48,6 +48,7 @@ import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
+import org.hortonmachine.dbs.log.PreferencesDb;
 import org.hortonmachine.gears.utils.OsCheck;
 import org.hortonmachine.gears.utils.OsCheck.OSType;
 
@@ -60,6 +61,14 @@ public class GuiUtilities {
 
     public static final String LAST_PATH = "KEY_LAST_PATH";
     public static final String PREF_STRING_SEPARATORS = "@@@@";
+
+    private static PreferencesDb preferencesDb;
+    static {
+        preferencesDb = PreferencesDb.INSTANCE;
+        if (!preferencesDb.isValid()) {
+            preferencesDb = null;
+        }
+    }
 
     public static interface IOnCloseListener {
         public void onClose();
@@ -123,12 +132,18 @@ public class GuiUtilities {
      * @return the string preference asked.
      */
     public static String getPreference( String preferenceKey, String defaultValue ) {
+        if (preferencesDb != null) {
+            return preferencesDb.getPreference(preferenceKey, defaultValue);
+        }
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
         String preference = preferences.get(preferenceKey, defaultValue);
         return preference;
     }
 
     public static String[] getPreference( String preferenceKey, String[] defaultValue ) {
+        if (preferencesDb != null) {
+            return preferencesDb.getPreference(preferenceKey, defaultValue);
+        }
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
         String preference = preferences.get(preferenceKey, "");
         String[] split = preference.split(PREF_STRING_SEPARATORS);
@@ -136,6 +151,9 @@ public class GuiUtilities {
     }
 
     public static byte[] getPreference( String preferenceKey, byte[] defaultValue ) {
+        if (preferencesDb != null) {
+            return preferencesDb.getPreference(preferenceKey, defaultValue);
+        }
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
         byte[] preference = preferences.getByteArray(preferenceKey, defaultValue);
         return preference;
@@ -150,6 +168,11 @@ public class GuiUtilities {
      *            the value to set.
      */
     public static void setPreference( String preferenceKey, String value ) {
+        if (preferencesDb != null) {
+            preferencesDb.setPreference(preferenceKey, value);
+            return;
+        }
+
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
         if (value != null) {
             preferences.put(preferenceKey, value);
@@ -159,6 +182,10 @@ public class GuiUtilities {
     }
 
     public static void setPreference( String preferenceKey, byte[] value ) {
+        if (preferencesDb != null) {
+            preferencesDb.setPreference(preferenceKey, value);
+            return;
+        }
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
         if (value != null) {
             preferences.putByteArray(preferenceKey, value);
@@ -168,6 +195,10 @@ public class GuiUtilities {
     }
 
     public static void setPreference( String preferenceKey, String[] valuesArray ) {
+        if (preferencesDb != null) {
+            preferencesDb.setPreference(preferenceKey, valuesArray);
+            return;
+        }
         Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
         if (valuesArray != null) {
             int maxLength = Preferences.MAX_VALUE_LENGTH;
