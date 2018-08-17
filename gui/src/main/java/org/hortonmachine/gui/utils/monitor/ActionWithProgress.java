@@ -72,18 +72,17 @@ public abstract class ActionWithProgress extends AbstractAction {
                 monitor.start(progressTitle);
 
                 backGroundWork(monitor);
-
-                postWork();
-            } catch (Exception e) {
-                onError(e);
-            } finally {
+                // to ensure that progress dlg is closed in case of any exception
+                if (monitor != null && monitor.getCurrent() != monitor.getTotal())
+                    monitor.setCurrent(null, monitor.getTotal());
                 setEnabled(true);
                 for( AbstractAction abstractAction : connectedActions ) {
                     abstractAction.setEnabled(true);
                 }
-                // to ensure that progress dlg is closed in case of any exception
-                if (monitor != null && monitor.getCurrent() != monitor.getTotal())
-                    monitor.setCurrent(null, monitor.getTotal());
+
+                postWork();
+            } catch (Exception e) {
+                onError(e);
             }
         }).start();
     }
@@ -94,7 +93,7 @@ public abstract class ActionWithProgress extends AbstractAction {
      * @param monitor the monitor that can be used to update the user.
      * @throws Exception
      */
-    public abstract void backGroundWork( ProgressMonitor monitor ) throws Exception;
+    public abstract void backGroundWork( ProgressMonitor monitor );
 
     /**
      * This is run once the heavy work is done and the button of the action has been enabled again.
