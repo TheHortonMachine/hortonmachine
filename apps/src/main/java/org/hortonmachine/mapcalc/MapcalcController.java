@@ -41,6 +41,7 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 
 public class MapcalcController extends MapcalcView implements IOnCloseListener {
+    private static final long serialVersionUID = 1L;
     private static final String MAPCALC_HISTORY_KEY = "MAPCALC_HISTORY_KEY";
     private GuiBridgeHandler guiBridge;
     private JTextPane _functionArea;
@@ -54,12 +55,12 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
     public MapcalcController( GuiBridgeHandler gBridge, boolean manualAdd ) {
         this.guiBridge = gBridge;
         this.manualAdd = manualAdd;
-        
+
         HashMap<String, String> prefsMapTmp = guiBridge.getSpatialToolboxPreferencesMap();
         if (prefsMapTmp != null) {
             prefsMap = (HashMap) prefsMapTmp;
         }
-        
+
         setPreferredSize(new Dimension(900, 600));
         init();
     }
@@ -101,6 +102,8 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
                         String absolutePath = file.getAbsolutePath();
                         GuiUtilities.setLastPath(absolutePath);
                         String name = FileUtilities.getNameWithoutExtention(file);
+                        
+                        absolutePath = FileUtilities.replaceBackSlashesWithSlashes(absolutePath);
                         loadNewMap(name, absolutePath);
                     }
                 }
@@ -108,13 +111,18 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         } else {
             _manualAddFileLayout.removeAll();
             _addMapFromComboButton.addActionListener(( e ) -> {
-                String layerName = _layerCombo.getSelectedItem().toString();
-                File file = getFileForLayerName(layerName);
-                if (file != null) {
-                    String absolutePath = file.getAbsolutePath();
-                    GuiUtilities.setLastPath(absolutePath);
-                    String name = FileUtilities.getNameWithoutExtention(file);
-                    loadNewMap(name, absolutePath);
+                Object selectedItem = _layerCombo.getSelectedItem();
+                if (selectedItem != null) {
+                    String layerName = selectedItem.toString();
+                    File file = getFileForLayerName(layerName);
+                    if (file != null) {
+                        String absolutePath = file.getAbsolutePath();
+                        GuiUtilities.setLastPath(absolutePath);
+                        String name = FileUtilities.getNameWithoutExtention(file);
+                        
+                        absolutePath = FileUtilities.replaceBackSlashesWithSlashes(absolutePath);
+                        loadNewMap(name, absolutePath);
+                    }
                 }
             });
         }
@@ -126,6 +134,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
                 for( File file : files ) {
                     String absolutePath = file.getAbsolutePath();
                     GuiUtilities.setLastPath(absolutePath);
+                    absolutePath = FileUtilities.replaceBackSlashesWithSlashes(absolutePath);
                     _outputPathText.setText(absolutePath);
                 }
             }
@@ -159,7 +168,6 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
             try {
                 runModuleInNewJVM(logConsole, script, resultPath, name2PathMap);
             } catch (Exception e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
 
@@ -231,8 +239,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
             String selectedItem = (String) _historyCombo.getSelectedItem();
             addTextToFunctionArea(selectedItem);
         });
-        
-        
+
         boolean doDebug = false;
         String debugStr = prefsMap.get(GuiBridgeHandler.DEBUG_KEY);
         if (debugStr != null && debugStr.trim().length() > 0) {
@@ -246,12 +253,12 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
             heapStr = SpatialToolboxConstants.HEAPLEVELS[0];
         }
         _heapCombo.setSelectedItem(heapStr);
-        
-        _debugCheckbox.addActionListener(e->{
+
+        _debugCheckbox.addActionListener(e -> {
             prefsMap.put(GuiBridgeHandler.DEBUG_KEY, _debugCheckbox.isSelected() + "");
             guiBridge.setSpatialToolboxPreferencesMap(prefsMap);
         });
-        _heapCombo.addActionListener(e->{
+        _heapCombo.addActionListener(e -> {
             String ramLevel = _heapCombo.getSelectedItem().toString();
             prefsMap.put(GuiBridgeHandler.HEAP_KEY, ramLevel);
             guiBridge.setSpatialToolboxPreferencesMap(prefsMap);
@@ -416,7 +423,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         prefsMap.put(GuiBridgeHandler.DEBUG_KEY, _debugCheckbox.isSelected() + "");
         prefsMap.put(GuiBridgeHandler.HEAP_KEY, ramLevel);
         guiBridge.setSpatialToolboxPreferencesMap(prefsMap);
-        
+
         GuiUtilities.setPreference(MAPCALC_HISTORY_KEY, historyList.toArray(new String[0]));
     }
 
@@ -426,7 +433,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
 
     public static void main( String[] args ) {
         GuiUtilities.setDefaultLookAndFeel();
-        
+
         File libsFile = null;
         try {
             String libsPath = args[0];
