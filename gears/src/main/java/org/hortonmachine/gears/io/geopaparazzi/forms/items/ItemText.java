@@ -23,6 +23,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class ItemText implements Item {
+    public static final String TYPE = "string";
 
     private String description;
     private boolean isMandatory;
@@ -54,8 +55,7 @@ public class ItemText implements Item {
 
         if (isLabel)
             sb.append("             \"islabel\": \"").append("true").append("\",\n");
-        String type = "string";
-        sb.append("             \"type\": \"").append(type).append("\",\n");
+        sb.append("             \"type\": \"").append(TYPE).append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();

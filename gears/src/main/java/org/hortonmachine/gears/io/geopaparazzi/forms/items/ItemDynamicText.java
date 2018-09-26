@@ -23,6 +23,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class ItemDynamicText implements Item {
+    public static final String TYPE = "dynamicstring";
 
     private String description;
     private boolean isMandatory;
@@ -30,7 +31,7 @@ public class ItemDynamicText implements Item {
     private boolean isLabel;
     private String key;
 
-    public ItemDynamicText(String key, String description, String defaultValue, boolean isMandatory, boolean isLabel ) {
+    public ItemDynamicText( String key, String description, String defaultValue, boolean isMandatory, boolean isLabel ) {
         this.key = key;
         this.isLabel = isLabel;
         if (defaultValue == null) {
@@ -47,16 +48,15 @@ public class ItemDynamicText implements Item {
         if (key != null && key.trim().length() > 0) {
             sb.append("             \"key\": \"").append(key).append("\",\n");
             sb.append("             \"label\": \"").append(description).append("\",\n");
-        }else{
+        } else {
             sb.append("             \"key\": \"").append(description).append("\",\n");
         }
-        
+
         sb.append("             \"value\": \"").append(defaultValue).append("\",\n");
 
         if (isLabel)
             sb.append("             \"islabel\": \"").append("true").append("\",\n");
-        String type = "dynamicstring";
-        sb.append("             \"type\": \"").append(type).append("\",\n");
+        sb.append("             \"type\": \"").append(TYPE).append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();

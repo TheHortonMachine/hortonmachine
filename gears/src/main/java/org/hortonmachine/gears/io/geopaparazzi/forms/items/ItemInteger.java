@@ -24,6 +24,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
  */
 public class ItemInteger implements Item {
 
+    public static final String TYPE = "integer";
     private String description;
     private boolean isMandatory;
     private String defaultValueStr;
@@ -59,7 +60,7 @@ public class ItemInteger implements Item {
         sb.append("             \"value\": \"").append(defaultValueStr).append("\",\n");
         if (isLabel)
             sb.append("             \"islabel\": \"").append("true").append("\",\n");
-        sb.append("             \"type\": \"").append("integer").append("\",\n");
+        sb.append("             \"type\": \"").append(TYPE).append("\",\n");
         if (range != null && rangeInclusiveness != null) {
             String rangeString = getRangeString(range, rangeInclusiveness);
             sb.append("             " + rangeString + ",\n");

@@ -24,6 +24,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
  */
 public class ItemBoolean implements Item {
 
+    public static final String TYPE = "boolean";
     private String description;
     private String defaultValue;
     private boolean isMandatory;
@@ -56,7 +57,7 @@ public class ItemBoolean implements Item {
             sb.append("             \"key\": \"").append(description).append("\",\n");
         }
         sb.append("             \"value\": \"").append(defaultValue).append("\",\n");
-        sb.append("             \"type\": \"").append("boolean").append("\",\n");
+        sb.append("             \"type\": \"").append(TYPE).append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();

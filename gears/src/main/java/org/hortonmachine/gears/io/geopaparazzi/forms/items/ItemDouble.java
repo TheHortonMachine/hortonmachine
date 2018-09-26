@@ -24,6 +24,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
  */
 public class ItemDouble implements Item {
 
+    public static final String TYPE = "double";
     private String description;
     private boolean isMandatory;
     private String defaultValueStr;
@@ -68,7 +69,7 @@ public class ItemDouble implements Item {
         sb.append("             \"value\": \"").append(defaultValueStr).append("\",\n");
         if (isLabel)
             sb.append("             \"islabel\": \"").append("true").append("\",\n");
-        sb.append("             \"type\": \"").append("double").append("\",\n");
+        sb.append("             \"type\": \"").append(TYPE).append("\",\n");
         if (range != null && rangeInclusiveness != null) {
             String rangeString = getRangeString(range, rangeInclusiveness);
             sb.append("             " + rangeString + ",\n");

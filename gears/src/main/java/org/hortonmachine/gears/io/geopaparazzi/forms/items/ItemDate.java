@@ -27,6 +27,7 @@ import java.util.Date;
  */
 public class ItemDate implements Item {
 
+    public static final String TYPE = "date";
     private String description;
     private boolean isMandatory;
     private String defaultValueStr;
@@ -55,7 +56,7 @@ public class ItemDate implements Item {
             sb.append("             \"key\": \"").append(description).append("\",\n");
         }
         sb.append("             \"value\": \"").append(defaultValueStr).append("\",\n");
-        sb.append("             \"type\": \"").append("date").append("\",\n");
+        sb.append("             \"type\": \"").append(TYPE).append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();

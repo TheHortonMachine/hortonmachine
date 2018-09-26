@@ -32,6 +32,7 @@ import java.util.Set;
  */
 public class ItemOneToManyConnectedCombo implements Item {
 
+    public static final String TYPE = "onetomanystringcombo";
     private String description;
     private boolean isMandatory;
     private String defaultValue;
@@ -92,7 +93,7 @@ public class ItemOneToManyConnectedCombo implements Item {
         sb.append(substring).append("\n");
         sb.append("             },\n");
         sb.append("             \"value\": \"").append(defaultValue).append("\",\n");
-        sb.append("             \"type\": \"").append("onetomanystringcombo").append("\",\n");
+        sb.append("             \"type\": \"").append(TYPE).append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();

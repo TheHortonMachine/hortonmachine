@@ -24,6 +24,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
  */
 public class ItemPicture implements Item {
 
+    public static final String TYPE = "pictures";
     private String description;
     private boolean isMandatory;
     private String defaultValueStr;
@@ -46,11 +47,11 @@ public class ItemPicture implements Item {
         if (key != null && key.trim().length() > 0) {
             sb.append("             \"key\": \"").append(key).append("\",\n");
             sb.append("             \"label\": \"").append(description).append("\",\n");
-        }else{
+        } else {
             sb.append("             \"key\": \"").append(description).append("\",\n");
         }
         sb.append("             \"value\": \"").append(defaultValueStr).append("\",\n");
-        sb.append("             \"type\": \"").append("pictures").append("\",\n");
+        sb.append("             \"type\": \"").append(TYPE).append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();

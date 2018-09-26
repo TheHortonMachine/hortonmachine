@@ -24,6 +24,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
  */
 public class ItemCombo implements Item{
 
+    public static final String TYPE = "stringcombo";
     private String description;
     private boolean isMandatory;
     private String defaultValue;
@@ -64,7 +65,7 @@ public class ItemCombo implements Item{
         sb.append("                 ]\n");
         sb.append("             },\n");
         sb.append("             \"value\": \"").append(defaultValue).append("\",\n");
-        sb.append("             \"type\": \"").append("stringcombo").append("\",\n");
+        sb.append("             \"type\": \"").append(TYPE).append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();

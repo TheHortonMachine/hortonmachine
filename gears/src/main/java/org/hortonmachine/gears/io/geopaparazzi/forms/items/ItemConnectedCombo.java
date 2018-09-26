@@ -32,6 +32,7 @@ import java.util.Set;
  */
 public class ItemConnectedCombo implements Item {
 
+    public static final String TYPE = "connectedstringcombo";
     private String description;
     private boolean isMandatory;
     private String defaultValue;
@@ -81,7 +82,7 @@ public class ItemConnectedCombo implements Item {
         sb.append(substring).append("\n");
         sb.append("             },\n");
         sb.append("             \"value\": \"").append(defaultValue).append("\",\n");
-        sb.append("             \"type\": \"").append("connectedstringcombo").append("\",\n");
+        sb.append("             \"type\": \"").append(TYPE).append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();

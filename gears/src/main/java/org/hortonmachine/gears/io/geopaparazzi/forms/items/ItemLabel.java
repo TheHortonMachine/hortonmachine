@@ -24,6 +24,8 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
  */
 public class ItemLabel implements Item{
 
+    public static final String TYPE = "label";
+    public static final String TYPE_WITHLINE = "labelwithline";
     private String description;
     private int size;
     private boolean doLine;
@@ -40,7 +42,7 @@ public class ItemLabel implements Item{
         // sb.append("             \"key\": \"").append(description).append("\",\n");
         sb.append("             \"value\": \"").append(description).append("\",\n");
         sb.append("             \"size\": \"").append(size).append("\",\n");
-        sb.append("             \"type\": \"").append(doLine ? "labelwithline" : "label").append("\"\n");
+        sb.append("             \"type\": \"").append(doLine ? TYPE_WITHLINE : TYPE).append("\"\n");
         sb.append("        }\n");
         return sb.toString();
     }

@@ -18,8 +18,10 @@
 package org.hortonmachine.gears.io.geopaparazzi.forms;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemBoolean;
@@ -38,7 +40,7 @@ import org.json.JSONObject;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class Utilities {
-    
+
     public static final String ATTR_SECTIONNAME = "sectionname";
     public static final String ATTR_SECTIONOBJECTSTR = "sectionobjectstr";
     public static final String ATTR_FORMS = "forms";
@@ -58,9 +60,9 @@ public class Utilities {
     public static final String TAG_SIZE = "size";
     public static final String TAG_URL = "url";
     public static final String TAG_LABEL = "label";
-    
+
     public static final String IMAGES_SEPARATOR = ";";
-    
+
     /**
      * Type for pictures element.
      */
@@ -75,6 +77,22 @@ public class Utilities {
      * Type for map element.
      */
     public static final String TYPE_MAP = "map";
+
+    public static LinkedHashMap<String, JSONObject> getSectionFromFile( String formPath ) throws IOException {
+        String formString = FileUtilities.readFile(formPath);
+        return getSectionsFromJsonString(formString);
+    }
+
+    public static LinkedHashMap<String, JSONObject> getSectionsFromJsonString( String formJsonString ) {
+        LinkedHashMap<String, JSONObject> map = new LinkedHashMap<>();
+        JSONArray mainArray = new JSONArray(formJsonString);
+        for( int i = 0; i < mainArray.length(); i++ ) {
+            JSONObject sectionObject = mainArray.getJSONObject(i);
+            String sectionName = sectionObject.getString(Utilities.ATTR_SECTIONNAME);
+            map.put(sectionName, sectionObject);
+        }
+        return map;
+    }
 
     public static void properties2Mainframe( MainFrame mainFrame, File templateFile ) throws Exception {
         List<String> templateLinesList = FileUtilities.readFileToLinesList(templateFile);
@@ -152,7 +170,7 @@ public class Utilities {
             }
         }
     }
-    
+
     public static List<String> getFormNames4Section( JSONObject section ) throws JSONException {
         List<String> names = new ArrayList<String>();
         JSONArray jsonArray = section.getJSONArray(ATTR_FORMS);
@@ -183,7 +201,7 @@ public class Utilities {
         }
         return null;
     }
-    
+
     /**
      * Utility method to get the formitems of a form object.
      * 
@@ -203,7 +221,7 @@ public class Utilities {
         }
         return null;
     }
-    
+
     /**
      * Get the images paths out of a form string.
      *

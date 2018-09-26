@@ -24,6 +24,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
  */
 public class ItemSketch implements Item {
 
+    public static final String TYPE = "sketch";
     private String description;
     private boolean isMandatory;
     private String defaultValueStr;
@@ -50,7 +51,7 @@ public class ItemSketch implements Item {
             sb.append("             \"key\": \"").append(description).append("\",\n");
         }
         sb.append("             \"value\": \"").append(defaultValueStr).append("\",\n");
-        sb.append("             \"type\": \"").append("sketch").append("\",\n");
+        sb.append("             \"type\": \"").append(TYPE).append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();
