@@ -25,6 +25,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
 public class ItemCombo implements Item{
 
     public static final String TYPE = "stringcombo";
+    public static final String MULTI_TYPE = "multistringcombo";
     private String description;
     private boolean isMandatory;
     private String defaultValue;
