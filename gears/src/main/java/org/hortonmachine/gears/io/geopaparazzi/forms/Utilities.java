@@ -20,7 +20,9 @@ package org.hortonmachine.gears.io.geopaparazzi.forms;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -273,4 +275,19 @@ public class Utilities {
         return imageIds;
     }
 
+    
+    /**
+     * Create the forms root json object from the map of sections json objects.
+     * 
+     * @param sectionsMap the json sections map.
+     * @return the root object that can be dumped to file through the toString method.
+     */
+    public static JSONArray formsRootFromSectionsMap( HashMap<String, JSONObject> sectionsMap ) {
+        JSONArray rootArray = new JSONArray();
+        Collection<JSONObject> objects = sectionsMap.values();
+        for( JSONObject jsonObject : objects ) {
+            rootArray.put(jsonObject);
+        }
+        return rootArray;
+    }
 }

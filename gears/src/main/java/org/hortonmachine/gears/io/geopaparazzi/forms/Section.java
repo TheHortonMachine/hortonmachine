@@ -54,7 +54,10 @@ public class Section {
         for( Form form : formList ) {
             tmp.append(",\n").append(form.toString());
         }
-        sb.append(tmp.substring(1));
+        String sub = "";
+        if (tmp.length() > 0)
+            sub = tmp.substring(1);
+        sb.append(sub);
         sb.append(getPost());
         return sb.toString();
     }

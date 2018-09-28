@@ -51,7 +51,10 @@ public class Form {
         for( Item item : itemsList ) {
             tmp.append(",\n").append(item.toString());
         }
-        sb.append(tmp.substring(1));
+        String sub = "";
+        if (tmp.length() > 0)
+            sub = tmp.substring(1);
+        sb.append(sub);
         sb.append(getPost());
         return sb.toString();
     }
