@@ -204,6 +204,22 @@ public class Utilities {
         return null;
     }
 
+    public static void removeFormFromSection( String formName, JSONObject section ) throws JSONException {
+        JSONArray jsonArray = section.getJSONArray(ATTR_FORMS);
+        if (jsonArray != null && jsonArray.length() > 0) {
+            for( int i = 0; i < jsonArray.length(); i++ ) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                if (jsonObject.has(ATTR_FORMNAME)) {
+                    String tmpFormName = jsonObject.getString(ATTR_FORMNAME);
+                    if (tmpFormName.equals(formName)) {
+                        jsonArray.remove(i);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Utility method to get the formitems of a form object.
      * 
