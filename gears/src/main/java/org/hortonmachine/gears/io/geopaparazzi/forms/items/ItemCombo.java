@@ -22,7 +22,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class ItemCombo implements Item{
+public class ItemCombo implements Item {
 
     public static final String TYPE = "stringcombo";
     public static final String MULTI_TYPE = "multistringcombo";
@@ -31,10 +31,13 @@ public class ItemCombo implements Item{
     private String defaultValue;
     private String[] items;
     private String key;
+    private boolean isMulti;
 
-    public ItemCombo( String key, String description, String[] items, String defaultValue, boolean isMandatory ) {
+    public ItemCombo( String key, String description, String[] items, String defaultValue, boolean isMulti,
+            boolean isMandatory ) {
         this.key = key;
         this.items = items;
+        this.isMulti = isMulti;
         if (defaultValue == null) {
             defaultValue = "";
         }
@@ -49,7 +52,7 @@ public class ItemCombo implements Item{
         if (key != null && key.trim().length() > 0) {
             sb.append("             \"key\": \"").append(key).append("\",\n");
             sb.append("             \"label\": \"").append(description).append("\",\n");
-        }else{
+        } else {
             sb.append("             \"key\": \"").append(description).append("\",\n");
         }
         sb.append("             \"values\": {\n");
@@ -66,12 +69,12 @@ public class ItemCombo implements Item{
         sb.append("                 ]\n");
         sb.append("             },\n");
         sb.append("             \"value\": \"").append(defaultValue).append("\",\n");
-        sb.append("             \"type\": \"").append(TYPE).append("\",\n");
+        sb.append("             \"type\": \"").append(isMulti ? MULTI_TYPE : TYPE).append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();
     }
-    
+
     @Override
     public String getKey() {
         return description;
@@ -81,7 +84,7 @@ public class ItemCombo implements Item{
     public void setValue( String value ) {
         defaultValue = value;
     }
-    
+
     @Override
     public String getValue() {
         return defaultValue;

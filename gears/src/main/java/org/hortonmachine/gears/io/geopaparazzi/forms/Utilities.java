@@ -28,9 +28,19 @@ import java.util.List;
 
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemBoolean;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemCombo;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemConnectedCombo;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemDate;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemDouble;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemDynamicText;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemInteger;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemLabel;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemMap;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemOneToManyConnectedCombo;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemPicture;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemSketch;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemText;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemTextArea;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemTime;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -79,6 +89,25 @@ public class Utilities {
      * Type for map element.
      */
     public static final String TYPE_MAP = "map";
+
+    public static final String[] ITEM_NAMES = {//
+            ItemLabel.TYPE, //
+            ItemLabel.TYPE_WITHLINE, //
+            ItemBoolean.TYPE, //
+            ItemCombo.TYPE, //
+            ItemCombo.MULTI_TYPE, //
+            ItemDate.TYPE, //
+            ItemTime.TYPE, //
+            ItemInteger.TYPE, //
+            ItemDouble.TYPE, //
+            ItemDynamicText.TYPE, //
+            ItemPicture.TYPE, //
+            ItemSketch.TYPE, //
+            ItemMap.TYPE, //
+            ItemText.TYPE, //
+            ItemConnectedCombo.TYPE, //
+            ItemOneToManyConnectedCombo.TYPE//
+    };
 
     public static LinkedHashMap<String, JSONObject> getSectionFromFile( String formPath ) throws IOException {
         String formString = FileUtilities.readFile(formPath);
@@ -150,7 +179,7 @@ public class Utilities {
                     itemsSplit[j] = itemsSplit[j].trim();
                 }
 
-                ItemCombo combo = new ItemCombo(null, field, itemsSplit, value, Boolean.parseBoolean(mandatory));
+                ItemCombo combo = new ItemCombo(null, field, itemsSplit, value, false, Boolean.parseBoolean(mandatory));
                 currentForm.addItem(combo);
             } else if (type.equals("checkbox")) {
                 String field = split[1].trim();
@@ -291,7 +320,6 @@ public class Utilities {
         return imageIds;
     }
 
-    
     /**
      * Create the forms root json object from the map of sections json objects.
      * 

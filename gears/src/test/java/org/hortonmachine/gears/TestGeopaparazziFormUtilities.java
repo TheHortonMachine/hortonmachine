@@ -75,7 +75,7 @@ public class TestGeopaparazziFormUtilities extends HMTestCase {
         Form combosForm = new Form("combos");
         section.addForms(combosForm);
         String[] comboItems = {"choice 1", "choice 2", "choice 3", "choice 4", "choice 5"};
-        ItemCombo simpleCombo = new ItemCombo(null, "a single choice combo", comboItems, null, false);
+        ItemCombo simpleCombo = new ItemCombo(null, "a single choice combo", comboItems, null, false, false);
         combosForm.addItem(simpleCombo);
 
         String[] comboItems1 = {"choice 1 of 1", "choice 2 of 1", "choice 3 of 1", "choice 4 of 1", "choice 5 of 1"};
