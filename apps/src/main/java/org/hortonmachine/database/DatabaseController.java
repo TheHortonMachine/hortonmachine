@@ -32,6 +32,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -411,10 +412,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _templatesButton.setIcon(ImageCache.getInstance().getImage(ImageCache.TEMPLATE));
         _templatesButton.addActionListener(e -> {
             try {
-                String[] sqlTemplates = CommonQueries.templatesMap.keySet().toArray(new String[0]);
+                LinkedHashMap<String, String> templatesMap = CommonQueries.getTemplatesMap(currentConnectedDatabase.getType());
+                String[] sqlTemplates = templatesMap.keySet().toArray(new String[0]);
                 String selected = GuiUtilities.showComboDialog(this, "TEMPLATES", "", sqlTemplates);
                 if (selected != null) {
-                    String sql = CommonQueries.templatesMap.get(selected);
+                    String sql = templatesMap.get(selected);
                     addTextToQueryEditor(sql);
                 }
             } catch (Exception e1) {

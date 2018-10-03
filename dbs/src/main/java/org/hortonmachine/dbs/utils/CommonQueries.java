@@ -17,8 +17,12 @@
  */
 package org.hortonmachine.dbs.utils;
 
+import java.io.File;
 import java.util.LinkedHashMap;
 
+import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
+import org.hortonmachine.dbs.compat.ASqlTemplates;
+import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -51,31 +55,90 @@ import com.vividsolutions.jts.geom.LineString;
  */
 public class CommonQueries {
 
-    public static final LinkedHashMap<String, String> templatesMap = new LinkedHashMap<String, String>();
-    static {
+    public static LinkedHashMap<String, String> getTemplatesMap( EDb dbType ) {
+        LinkedHashMap<String, String> templatesMap = new LinkedHashMap<String, String>();
         templatesMap.put("simple select", "select * from TABLENAME");
-        templatesMap.put("geometry select", "select the_geom from TABLENAME");
         templatesMap.put("where select", "select * from TABLENAME where FIELD > VALUE");
         templatesMap.put("limited select", "select * from TABLENAME limit 10");
         templatesMap.put("sorted select", "select * from TABLENAME order by FIELD asc");
-        templatesMap.put("unix epoch timestamp select", "strftime('%Y-%m-%d %H:%M:%S', timestampcolumn / 1000, 'unixepoch')");
-        templatesMap.put("unix epoch timestamp where select",
-                "select * from TABLENAME where longtimestamp >= cast(strftime('%s','YYYY-MM-YY HH:mm:ss') as long)*1000");
-        templatesMap.put("spatial index geom intersection part",
-                "AND table1.ROWID IN (\nSELECT ROWID FROM SpatialIndex\nWHERE f_table_name='table2' AND search_frame=table2Geom)");
-        templatesMap.put("create intersection of table1 with buffer of table2",
-                "SELECT intersection(t1.the_geom, buffer(t2.the_geom, 100)) as the_geom FROM table1 t1, table2 t2\n"
-                        + "where (\nintersects (t1.the_geom, buffer(t2.the_geom, 100))=1\n"
-                        + "AND t1.ROWID IN (\nSELECT ROWID FROM SpatialIndex\nWHERE f_table_name='table1' AND search_frame=buffer(t2.the_geom, 100)\n))");
-        templatesMap.put("create new spatial table from select",
-                "create table newtablename as SELECT * FROM tablename;\n"
-                        + "SELECT RecoverGeometryColumn('newtablename', 'geometry',  4326, 'LINESTRING', 'XY');\n"
-                        + "SELECT CreateSpatialIndex('newtablename', 'geometry');");
-        templatesMap.put("aggregate and merge lines",
-                "select column, ST_LineMerge(geometry) from tablename\n" + "where column like 'pattern%' group by column");
+        templatesMap.put("add column", "alter table TABLENAME add column NEWCOLUMN COLUMNTYPE");
         templatesMap.put("count with case",
-                "select count(case when WORKFIELD is null then 1 else null end ) as nonworked, count(case when WORKFIELD is null then null else 1 end ) as worked from TABLENAME order by FIELD asc");
+                "select count(case when COLUMN is null then 1 else null end ) as NULLCOUNT, count(case when COLUMN is null then null else 1 end ) as NONNULLCOUNT from TABLENAME order by COLUMN asc");
 
+        try {
+            ASqlTemplates sqlTemplates = dbType.getSqlTemplates();
+
+            String formatTimeSyntax = sqlTemplates.getFormatTimeSyntax("timestampcolumn", "YYYY-MM-YY HH:mm:ss");
+            templatesMap.put("timestamp select", "select " + formatTimeSyntax + " from TABLENAME");
+
+            String attachShapefile = sqlTemplates.attachShapefile(new File("/path/to/file.shp"));
+            templatesMap.put("attach shapefile", attachShapefile);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        switch( dbType ) {
+        case SQLITE:
+            templatesMap.put("unix epoch timestamp where select",
+                    "select * from TABLENAME where longtimestamp >= cast(strftime('%s','YYYY-MM-YY HH:mm:ss') as long)*1000");
+            break;
+        case H2:
+
+            break;
+
+        default:
+            break;
+        }
+
+        if (dbType.isSpatial()) {
+            templatesMap.put("geometry select", "select the_geom from TABLENAME");
+            templatesMap.put("aggregate and merge lines",
+                    "select column, ST_LineMerge(geometry) from tablename\n" + "where column like 'pattern%' group by column");
+
+            switch( dbType ) {
+            case SPATIALITE:
+                templatesMap.put("spatial index geom intersection part",
+                        "AND table1.ROWID IN (\nSELECT ROWID FROM SpatialIndex\nWHERE f_table_name='table2' AND search_frame=table2Geom)");
+
+                templatesMap.put("create intersection of table1 with buffer of table2",
+                        "SELECT intersection(t1.the_geom, buffer(t2.the_geom, 100)) as the_geom FROM table1 t1, table2 t2\n"
+                                + "where (\nintersects (t1.the_geom, buffer(t2.the_geom, 100))=1\n"
+                                + "AND t1.ROWID IN (\nSELECT ROWID FROM SpatialIndex\nWHERE f_table_name='table1' AND search_frame=buffer(t2.the_geom, 100)\n))");
+
+                templatesMap.put("create new spatial table from select",
+                        "create table newtablename as SELECT * FROM tablename;\n"
+                                + "SELECT RecoverGeometryColumn('newtablename', 'geometry',  4326, 'LINESTRING', 'XY');\n"
+                                + "SELECT CreateSpatialIndex('newtablename', 'geometry');");
+                break;
+            case H2GIS:
+                templatesMap.put("create intersection of table1 with buffer of table2",
+                        "SELECT intersection(t1.the_geom, buffer(t2.the_geom, 100)) as the_geom FROM table1 t1, table2 t2\n"
+                                + "where (\nintersects (t1.the_geom, buffer(t2.the_geom, 100))=1");
+                templatesMap.put("create new spatial table from select", "CREATE TABLE newtablename as SELECT * FROM tablename;\n"
+                        + "CREATE SPATIAL INDEX myspatialindex ON newtablename(the_geom);");
+                break;
+
+            default:
+                break;
+            }
+        }
+
+//        templatesMap.put("unix epoch timestamp select", "strftime('%Y-%m-%d %H:%M:%S', timestampcolumn / 1000, 'unixepoch')");
+//        templatesMap.put("unix epoch timestamp where select",
+//                "select * from TABLENAME where longtimestamp >= cast(strftime('%s','YYYY-MM-YY HH:mm:ss') as long)*1000");
+
+//        templatesMap.put("spatial index geom intersection part",
+//                "AND table1.ROWID IN (\nSELECT ROWID FROM SpatialIndex\nWHERE f_table_name='table2' AND search_frame=table2Geom)");
+//        templatesMap.put("create intersection of table1 with buffer of table2",
+//                "SELECT intersection(t1.the_geom, buffer(t2.the_geom, 100)) as the_geom FROM table1 t1, table2 t2\n"
+//                        + "where (\nintersects (t1.the_geom, buffer(t2.the_geom, 100))=1\n"
+//                        + "AND t1.ROWID IN (\nSELECT ROWID FROM SpatialIndex\nWHERE f_table_name='table1' AND search_frame=buffer(t2.the_geom, 100)\n))");
+//        templatesMap.put("create new spatial table from select",
+//                "create table newtablename as SELECT * FROM tablename;\n"
+//                        + "SELECT RecoverGeometryColumn('newtablename', 'geometry',  4326, 'LINESTRING', 'XY');\n"
+//                        + "SELECT CreateSpatialIndex('newtablename', 'geometry');");
+
+        return templatesMap;
     }
 
     /**
