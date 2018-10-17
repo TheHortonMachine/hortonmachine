@@ -94,7 +94,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @throws Exception
      */
     public abstract boolean open( String dbPath, String user, String password ) throws Exception;
-    
+
     /**
      * Getter for the {@link ConnectionData} that can be used to connect to the database.
      * 
@@ -113,6 +113,10 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
     public abstract void setCredentials( String user, String password );
 
     /**
+     * Returns the path to the database. 
+     * 
+     * <p>In case of non file based databases, this will be the part after the {@link #getJdbcUrlPre()}.
+     * 
      * @return the path to the database.
      */
     public String getDatabasePath() {

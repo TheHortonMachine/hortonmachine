@@ -15,26 +15,54 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.dbs.compat;
+package org.hortonmachine.dbs.postgis;
+
+import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 
 /**
- * Different table types.
+ * Non spatial data types and small syntax for the h2 db.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public enum ETableType {
-    OTHER, TABLE, VIEW, EXTERNAL;
+public class PGNonSpatialDataType extends ADatabaseSyntaxHelper {
 
-    public static ETableType fromType( String typeStr ) {
-        if (typeStr.equalsIgnoreCase("table")) {
-            return ETableType.TABLE;
-        } else if (typeStr.equalsIgnoreCase("base table")) {
-            return ETableType.TABLE;
-        } else if (typeStr.equalsIgnoreCase("view")) {
-            return ETableType.VIEW;
-        } else if (typeStr.equalsIgnoreCase("external")) {
-            return ETableType.EXTERNAL;
-        }
-        return ETableType.OTHER;
+    public String TEXT() {
+        return "TEXT";
     }
+
+    public String INTEGER() {
+        return "INTEGER";
+    }
+
+    public String LONG() {
+        return "BIGINT";
+    }
+
+    public String REAL() {
+        return "REAL";
+    }
+
+    public String BLOB() {
+        return "bytea";
+    }
+
+    public String CLOB() {
+        return "TEXT";
+    }
+
+    @Override
+    public String PRIMARYKEY() {
+        return "PRIMARY KEY";
+    }
+
+    @Override
+    public String AUTOINCREMENT() {
+        return "SERIAL";
+    }
+
+    @Override
+    public String MAKEPOINT2D() {
+        return "ST_MakePoint";
+    }
+
 }

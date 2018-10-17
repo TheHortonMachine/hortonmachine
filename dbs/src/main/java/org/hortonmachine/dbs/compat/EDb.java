@@ -20,6 +20,7 @@ package org.hortonmachine.dbs.compat;
 import java.io.File;
 
 import org.hortonmachine.dbs.h2gis.H2NonSpatialDataType;
+import org.hortonmachine.dbs.postgis.PGNonSpatialDataType;
 import org.hortonmachine.dbs.h2gis.H2GisGeometryParser;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryParser;
@@ -41,7 +42,13 @@ public enum EDb {
     H2GIS(3, "", "mv.db", "org.hortonmachine.dbs.h2gis.H2GisDb", true, "org.hortonmachine.dbs.h2gis.H2GisSqlTemplates",
             "jdbc:h2:", true, true, false, true), //
     SPATIALITE4ANDROID(4, ".sqlite", "sqlite", "org.hortonmachine.dbs.spatialite.android.GPSpatialiteDb", true,
-            "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "", false, false, true, false); //
+            "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "", false, false, true, false), //
+    POSTGRES(5, null, null, "org.hortonmachine.dbs.postgis.PGDb", false, "org.hortonmachine.dbs.postgis.PGSqlTemplates",
+            "jdbc:postgresql:", true, true, false, true), //
+    POSTGIS(6, null, null, "org.hortonmachine.dbs.postgis.PostgisDb", true, "org.hortonmachine.dbs.postgis.PostgisSqlTemplates",
+            "jdbc:postgresql:", true, true, false, true)
+
+    ; //
 
     private int _code;
     private String _extensionOnCreation;
@@ -73,10 +80,10 @@ public enum EDb {
     }
 
     public static EDb[] getSpatialTypesDesktop() {
-        return new EDb[]{SPATIALITE, H2GIS};
+        return new EDb[]{SPATIALITE, H2GIS, POSTGIS};
     }
 
-    public static EDb[] getSpatialTypesDesktopMobile() {
+    public static EDb[] getSpatialTypesMobile() {
         return new EDb[]{SPATIALITE4ANDROID};
     }
 
@@ -190,7 +197,7 @@ public enum EDb {
     public static EDb fromFileNameDesktop( String name ) {
         EDb tmpNonspatial = null;
         for( EDb edb : values() ) {
-            if (name.toLowerCase().endsWith(edb.getExtension()) && edb.supportsDesktop()) {
+            if (edb.supportsDesktop() && name.toLowerCase().endsWith(edb.getExtension())) {
                 if (edb.isSpatial()) {
                     return edb;
                 } else {
@@ -235,6 +242,9 @@ public enum EDb {
         case H2:
         case H2GIS:
             return new H2NonSpatialDataType();
+        case POSTGRES:
+        case POSTGIS:
+            return new PGNonSpatialDataType();
         case SQLITE:
         case SPATIALITE:
         case SPATIALITE4ANDROID:

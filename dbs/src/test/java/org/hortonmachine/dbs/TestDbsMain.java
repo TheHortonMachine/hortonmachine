@@ -10,6 +10,7 @@ import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
+import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -22,21 +23,30 @@ public class TestDbsMain {
 
     private static final String TABLE1 = "table1";
     private static final String TABLE2 = "table2";
-    private static final EDb DB_TYPE = DatabaseTypeForTests.DB_TYPE;
+    private static final EDb DB_TYPE = EDb.POSTGRES;// DatabaseTypeForTests.DB_TYPE;
 
     private static ADb db;
 
     @BeforeClass
     public static void createDb() throws Exception {
-        String tempDir = System.getProperty("java.io.tmpdir");
-        String dbPath = tempDir + File.separator + "jgt-dbs-testdbsmain" + DB_TYPE.getExtensionOnCreation();
-        TestUtilities.deletePrevious(tempDir, dbPath, DB_TYPE);
 
         ADatabaseSyntaxHelper dt = DB_TYPE.getDatabaseSyntaxHelper();
+        if (DB_TYPE.supportsServerMode()) {
+            db = DB_TYPE.getDb();
+            db.setCredentials("test", "test");
+            db.open("localhost:5432/test");
+        } else {
+            String tempDir = System.getProperty("java.io.tmpdir");
+            String dbPath = tempDir + File.separator + "jgt-dbs-testdbsmain" + DB_TYPE.getExtensionOnCreation();
+            TestUtilities.deletePrevious(tempDir, dbPath, DB_TYPE);
 
-        db = DB_TYPE.getDb();
-        db.open(dbPath);
+            db = DB_TYPE.getDb();
+            db.open(dbPath);
+        }
 
+        if (db.hasTable(TABLE1)) {
+            db.executeInsertUpdateDeleteSql("drop table " + TABLE1 + " cascade");
+        }
         db.createTable(TABLE1, "id " + dt.INTEGER() + " PRIMARY KEY", "name " + dt.TEXT(), "temperature " + dt.REAL());
         String[] inserts = {//
                 "INSERT INTO " + TABLE1 + " VALUES(1, 'Tscherms', 36.0);", //
@@ -46,7 +56,9 @@ public class TestDbsMain {
         for( String insert : inserts ) {
             db.executeInsertUpdateDeleteSql(insert);
         }
-
+        if (db.hasTable(TABLE2)) {
+            db.executeInsertUpdateDeleteSql("drop table " + TABLE2);
+        }
         db.createTable(TABLE2, "id " + dt.INTEGER() + " PRIMARY KEY", "table1id " + dt.INTEGER(),
                 "FOREIGN KEY (table1id) REFERENCES " + TABLE1 + "(id)");
         inserts = new String[]{//
@@ -64,7 +76,9 @@ public class TestDbsMain {
     public static void closeDb() throws Exception {
         if (db != null) {
             db.close();
-            new File(db.getDatabasePath() + "." + DB_TYPE.getExtension()).delete();
+            if (!DB_TYPE.supportsServerMode()) {
+                new File(db.getDatabasePath() + "." + DB_TYPE.getExtension()).delete();
+            }
         }
     }
 
@@ -88,9 +102,12 @@ public class TestDbsMain {
         assertEquals(0, foreignKeys.size());
         foreignKeys = db.getForeignKeys(TABLE2);
         assertEquals(1, foreignKeys.size());
-        // for( ForeignKey foreignKey : foreignKeys ) {
-        // System.out.println(foreignKey);
-        // }
+
+        List<Index> indexes = db.getIndexes(TABLE1);
+        assertEquals(1, indexes.size());
+        indexes = db.getIndexes(TABLE2);
+        assertEquals(1, indexes.size());
+
     }
 
     @Test
