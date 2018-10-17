@@ -23,23 +23,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.h2gis.functions.factory.H2GISFunctions;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IDbVisitor;
-import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
+import org.hortonmachine.dbs.compat.ISpatialTableNames;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
+import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.EGeometryType;
 import org.postgresql.PGConnection;
@@ -342,37 +342,41 @@ public class PostgisDb extends ASpatialDb {
     @Override
     public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
         List<String> tableNames = getTables(doOrder);
-        HashMap<String, List<String>> tablesMap = H2GisTableNames.getTablesSorted(tableNames, doOrder);
+        HashMap<String, List<String>> tablesMap = new HashMap<>();
+        // TODO fix from H2GisTableNames.getTablesSorted(tableNames, doOrder);
+        tablesMap.put(ISpatialTableNames.USERDATA, tableNames);
         return tablesMap;
     }
 
     public QueryResult getTableRecordsMapFromRawSql( String sql, int limit ) throws Exception {
         return execOnConnection(connection -> {
             QueryResult queryResult = new QueryResult();
-            IGeometryParser geometryParser = getType().getGeometryParser();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-
-                int geomIndex = -1;
                 IHMResultSetMetaData rsmd = rs.getMetaData();
                 int columnCount = rsmd.getColumnCount();
+                int geometryIndex = -1;
                 for( int i = 1; i <= columnCount; i++ ) {
                     String columnName = rsmd.getColumnName(i);
                     queryResult.names.add(columnName);
                     String columnTypeName = rsmd.getColumnTypeName(i);
                     queryResult.types.add(columnTypeName);
-                    if (columnTypeName.equalsIgnoreCase(H2GISFunctions.GEOMETRY_BASE_TYPE)) {
-                        geomIndex = i;
+                    if (ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
+                        geometryIndex = i;
                         queryResult.geometryIndex = i - 1;
                     }
                 }
-
                 int count = 0;
+                SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+                long start = System.currentTimeMillis();
                 while( rs.next() ) {
                     Object[] rec = new Object[columnCount];
                     for( int j = 1; j <= columnCount; j++ ) {
-                        if (j == geomIndex) {
-                            Geometry geom = geometryParser.fromResultSet(rs, j);
-                            rec[j - 1] = geom;
+                        if (j == geometryIndex) {
+                            byte[] geomBytes = rs.getBytes(j);
+                            if (geomBytes != null) {
+                                Geometry geometry = wkbReader.read(geomBytes);
+                                rec[j - 1] = geometry;
+                            }
                         } else {
                             Object object = rs.getObject(j);
                             if (object instanceof Clob) {
@@ -386,8 +390,9 @@ public class PostgisDb extends ASpatialDb {
                         break;
                     }
                 }
+                long end = System.currentTimeMillis();
+                queryResult.queryTimeMillis = end - start;
                 return queryResult;
-
             }
         });
 
