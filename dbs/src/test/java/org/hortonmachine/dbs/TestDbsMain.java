@@ -23,7 +23,7 @@ public class TestDbsMain {
 
     private static final String TABLE1 = "table1";
     private static final String TABLE2 = "table2";
-    private static final EDb DB_TYPE = EDb.POSTGRES;// DatabaseTypeForTests.DB_TYPE;
+    private static final EDb DB_TYPE = DatabaseTypeForTests.DB_TYPE;
 
     private static ADb db;
 
@@ -31,18 +31,12 @@ public class TestDbsMain {
     public static void createDb() throws Exception {
 
         ADatabaseSyntaxHelper dt = DB_TYPE.getDatabaseSyntaxHelper();
-        if (DB_TYPE.supportsServerMode()) {
-            db = DB_TYPE.getDb();
-            db.setCredentials("test", "test");
-            db.open("localhost:5432/test");
-        } else {
-            String tempDir = System.getProperty("java.io.tmpdir");
-            String dbPath = tempDir + File.separator + "jgt-dbs-testdbsmain" + DB_TYPE.getExtensionOnCreation();
-            TestUtilities.deletePrevious(tempDir, dbPath, DB_TYPE);
+        String tempDir = System.getProperty("java.io.tmpdir");
+        String dbPath = tempDir + File.separator + "jgt-dbs-testdbsmain" + DB_TYPE.getExtensionOnCreation();
+        TestUtilities.deletePrevious(tempDir, dbPath, DB_TYPE);
 
-            db = DB_TYPE.getDb();
-            db.open(dbPath);
-        }
+        db = DB_TYPE.getDb();
+        db.open(dbPath);
 
         if (db.hasTable(TABLE1)) {
             db.executeInsertUpdateDeleteSql("drop table " + TABLE1 + " cascade");

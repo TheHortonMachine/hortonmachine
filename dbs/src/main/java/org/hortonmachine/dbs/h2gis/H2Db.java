@@ -76,12 +76,12 @@ public class H2Db extends ADb {
         this.user = user;
         this.password = password;
     }
-    
+
     @Override
     public ConnectionData getConnectionData() {
         return connectionData;
     }
-    
+
     @Override
     public boolean open( String dbPath, String user, String password ) throws Exception {
         setCredentials(user, password);
@@ -90,7 +90,7 @@ public class H2Db extends ADb {
 
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;
-        
+
         connectionData = new ConnectionData();
         connectionData.connectionLabel = dbPath;
         connectionData.connectionUrl = new String(dbPath);
@@ -378,7 +378,9 @@ public class H2Db extends ADb {
 
                     String createSql = rs.getString(2);
                     String lower = createSql.toLowerCase();
-                    if (lower.startsWith("create index") || lower.startsWith("create unique index")) {
+                    if (lower.contains("constraint_index")) {
+                        continue;
+                    } else if (lower.startsWith("create index") || lower.startsWith("create unique index")) {
                         String[] split = createSql.split("\\(|\\)");
                         String columns = split[1];
                         String[] colSplit = columns.split(",");
@@ -393,8 +395,8 @@ public class H2Db extends ADb {
                             index.isUnique = true;
                         }
 
-                        indexes.add(index);
                     }
+                    indexes.add(index);
                 }
                 return indexes;
             } catch (SQLException e) {
