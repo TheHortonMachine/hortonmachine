@@ -139,7 +139,7 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
                     }
                 }
                 break;
-            case LINE:
+            case LINESTRING:
                 if (labelPlacement instanceof LinePlacement) {
                     linePlacement = (LinePlacement) labelPlacement;
                     if (linePlacement != null) {
@@ -230,7 +230,7 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
                 textSymbolizer.setLabelPlacement(pointPlacement);
             }
             break;
-        case LINE:
+        case LINESTRING:
             if (linePlacement == null) {
                 linePlacement = sb.createLinePlacement(0.0);
                 textSymbolizer.setLabelPlacement(linePlacement);

@@ -110,8 +110,8 @@ public class SimpleStyleUtilities {
                     simpleStyle.strokeColor = Color.decode(checkColor(polygonSymbolizerWrapper.getStrokeColor()));
                     simpleStyle.strokeWidth = Double.parseDouble(checkNumeric(polygonSymbolizerWrapper.getStrokeWidth()));
                     break;
-                case LINE:
-                case MULTILINE:
+                case LINESTRING:
+                case MULTILINESTRING:
                     LineSymbolizerWrapper lineSymbolizerWrapper = ruleWrapper.getGeometrySymbolizersWrapper()
                             .adapt(LineSymbolizerWrapper.class);
 

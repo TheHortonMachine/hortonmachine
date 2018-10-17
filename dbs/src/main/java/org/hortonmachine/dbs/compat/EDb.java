@@ -21,6 +21,8 @@ import java.io.File;
 
 import org.hortonmachine.dbs.h2gis.H2NonSpatialDataType;
 import org.hortonmachine.dbs.postgis.PGNonSpatialDataType;
+import org.hortonmachine.dbs.postgis.PostgisGeometryColumns;
+import org.hortonmachine.dbs.postgis.PostgisGeometryParser;
 import org.hortonmachine.dbs.h2gis.H2GisGeometryParser;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryParser;
@@ -180,6 +182,8 @@ public enum EDb {
         switch( this ) {
         case H2GIS:
             return new H2GisGeometryParser();
+        case POSTGIS:
+            return new PostgisGeometryParser();
         case SPATIALITE:
         case SPATIALITE4ANDROID:
             return new SpatialiteGeometryParser();

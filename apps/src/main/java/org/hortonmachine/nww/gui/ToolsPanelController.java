@@ -645,7 +645,7 @@ public class ToolsPanelController extends ToolsPanelView {
                         featureStore, field2ValuesMap);
                 featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
-                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, EGeometryType.LINE);
+                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, EGeometryType.LINESTRING);
                 if (style != null) {
                     featureCollectionLinesLayer.setStyle(style);
                 }

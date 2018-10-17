@@ -94,8 +94,8 @@ public class OmsIntersectionFinder extends HMModel {
 
         EGeometryType geometryType = EGeometryType.forGeometryType(inMap.getSchema().getGeometryDescriptor().getType());
         switch( geometryType ) {
-        case LINE:
-        case MULTILINE:
+        case LINESTRING:
+        case MULTILINESTRING:
             intersectLines();
             break;
         case POLYGON:

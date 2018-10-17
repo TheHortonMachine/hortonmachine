@@ -249,8 +249,8 @@ public class FeatureMate {
             // reset prepared geometry
             preparedGeometry = null;
             break;
-        case LINE:
-        case MULTILINE:
+        case LINESTRING:
+        case MULTILINESTRING:
             // do nothing, is already line
             break;
         default:
@@ -270,8 +270,8 @@ public class FeatureMate {
         switch( geometryType ) {
         case MULTIPOLYGON:
         case POLYGON:
-        case LINE:
-        case MULTILINE:
+        case LINESTRING:
+        case MULTILINESTRING:
             // convert to line
             Coordinate[] tmpCoords = geometry.getCoordinates();
             geometry = GeometryUtilities.gf().createMultiPoint(tmpCoords);

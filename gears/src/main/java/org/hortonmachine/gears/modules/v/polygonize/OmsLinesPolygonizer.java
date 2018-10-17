@@ -102,8 +102,8 @@ public class OmsLinesPolygonizer extends HMModel {
 
         EGeometryType geometryType = EGeometryType.forGeometryDescriptor(inMap.getSchema().getGeometryDescriptor());
         switch( geometryType ) {
-        case LINE:
-        case MULTILINE:
+        case LINESTRING:
+        case MULTILINESTRING:
             break;
         default:
             throw new ModelsIllegalargumentException("The module only works with line layers.", this, pm);

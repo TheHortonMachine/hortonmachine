@@ -74,8 +74,8 @@ public class SpatialiteCommonMethods {
      * @return the fixed sql.
      */
     public static String checkCompatibilityIssues( String sql ) {
-        sql = sql.replaceAll("AUTO_INCREMENT", "AUTOINCREMENT");
         sql = sql.replaceAll("LONG PRIMARY KEY AUTOINCREMENT", "INTEGER PRIMARY KEY AUTOINCREMENT");
+        sql = sql.replaceAll("AUTO_INCREMENT", "AUTOINCREMENT");
         return sql;
     }
 

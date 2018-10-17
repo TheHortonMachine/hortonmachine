@@ -257,8 +257,8 @@ public class OmsMapsViewer extends HMModel {
                     style.setName("points");
                 }
                 break;
-            case MULTILINE:
-            case LINE:
+            case MULTILINESTRING:
+            case LINESTRING:
                 if (style == null) {
                     Stroke lineStroke = sf.createStroke(ff.literal(Color.RED), ff.literal(2));
 

@@ -16,12 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.hortonmachine.gears.utils.geometry;
+package org.hortonmachine.dbs.utils;
 
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
-import org.opengis.feature.type.GeometryDescriptor;
 
-import com.vividsolutions.jts.geom.*;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * Geometry types used by the utility.
@@ -128,42 +134,6 @@ public enum EGeometryType {
         }
     }
 
-    /**
-     * Returns the {@link EGeometryType} for a given {@link org.opengis.feature.type.GeometryType}.
-     * 
-     * @param geometryType the geometry type to check.
-     * @return the type.
-     */
-    public static EGeometryType forGeometryType( org.opengis.feature.type.GeometryType geometryType ) {
-        Class< ? > binding = geometryType.getBinding();
-
-        if (binding == LineString.class) {
-            return EGeometryType.LINESTRING;
-        } else if (binding == MultiLineString.class) {
-            return EGeometryType.MULTILINESTRING;
-        } else if (binding == Point.class) {
-            return EGeometryType.POINT;
-        } else if (binding == MultiPoint.class) {
-            return EGeometryType.MULTIPOINT;
-        } else if (binding == Polygon.class) {
-            return EGeometryType.POLYGON;
-        } else if (binding == MultiPolygon.class) {
-            return EGeometryType.MULTIPOLYGON;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Returns the {@link EGeometryType} for a given {@link GeometryDescriptor}.
-     * 
-     * @param geometryDescriptor the geometry descriptor to check.
-     * @return the type.
-     */
-    public static EGeometryType forGeometryDescriptor( GeometryDescriptor geometryDescriptor ) {
-        return forGeometryType(geometryDescriptor.getType());
-    }
-
     public static EGeometryType forWktName( String wktName ) {
         if (wktName.equalsIgnoreCase(POINT.name())) {
             return POINT;
@@ -197,21 +167,6 @@ public enum EGeometryType {
     }
 
     /**
-     * Checks if the given {@link GeometryDescriptor} is for {@link LineString} (or {@link MultiLineString}) geometry.
-     * 
-     * @param geometryDescriptor the descriptor.
-     * @return <code>true</code> if there are points in there.
-     */
-    public static boolean isLine( GeometryDescriptor geometryDescriptor ) {
-        org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
-        Class< ? > binding = type.getBinding();
-        if (binding == MultiLineString.class || binding == LineString.class) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Checks if the given geometry is a {@link Polygon} (or {@link MultiPolygon}) geometry.
      * 
      * @param geometry the geometry to check.
@@ -225,21 +180,6 @@ public enum EGeometryType {
     }
 
     /**
-     * Checks if the given {@link GeometryDescriptor} is for {@link Polygon} (or {@link MultiPolygon}) geometry.
-     * 
-     * @param geometryDescriptor the descriptor.
-     * @return <code>true</code> if there are polygons in there.
-     */
-    public static boolean isPolygon( GeometryDescriptor geometryDescriptor ) {
-        org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
-        Class< ? > binding = type.getBinding();
-        if (binding == MultiPolygon.class || binding == Polygon.class) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Checks if the given geometry is a {@link Point} (or {@link MultiPoint}) geometry.
      * 
      * @param geometry the geometry to check.
@@ -247,21 +187,6 @@ public enum EGeometryType {
      */
     public static boolean isPoint( Geometry geometry ) {
         if (geometry instanceof Point || geometry instanceof MultiPoint) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the given {@link GeometryDescriptor} is for {@link Point} (or {@link MultiPoint}) geometry.
-     * 
-     * @param geometryDescriptor the descriptor.
-     * @return <code>true</code> if there are points in there.
-     */
-    public static boolean isPoint( GeometryDescriptor geometryDescriptor ) {
-        org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
-        Class< ? > binding = type.getBinding();
-        if (binding == MultiPoint.class || binding == Point.class) {
             return true;
         }
         return false;

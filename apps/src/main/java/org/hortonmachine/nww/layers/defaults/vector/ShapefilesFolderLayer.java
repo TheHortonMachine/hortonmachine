@@ -135,7 +135,7 @@ public class ShapefilesFolderLayer extends RenderableLayer implements NwwLayer {
                         Material strokeMaterial = Material.BLACK;
                         double strokeWidth = 2;
                         BasicShapeAttributes shapeAttributes = new BasicShapeAttributes();
-                        SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), EGeometryType.LINE);
+                        SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), EGeometryType.LINESTRING);
                         if (style != null) {
                             strokeMaterial = new Material(style.strokeColor);
                             strokeWidth = style.strokeWidth;

@@ -92,7 +92,7 @@ public class RuleWrapper {
         if (symbolizer instanceof PointSymbolizer) {
             return EGeometryType.POINT;
         } else if (symbolizer instanceof LineSymbolizer) {
-            return EGeometryType.LINE;
+            return EGeometryType.LINESTRING;
         } else if (symbolizer instanceof PolygonSymbolizer) {
             return EGeometryType.POLYGON;
         } else if (symbolizer instanceof RasterSymbolizer) {
