@@ -27,6 +27,7 @@ import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBWriter;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vividsolutions.jts.geom.Envelope;
@@ -37,7 +38,7 @@ import com.vividsolutions.jts.io.WKTReader;
 /**
  * Main tests for spatial dbs
  */
-public class TestPostgisDbsMain {
+@Ignore public class TestPostgisDbsMain {
 
     /**
      * The db type to test (set to h2gis for online tests).

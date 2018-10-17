@@ -14,12 +14,13 @@ import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Main tests for normal dbs
  */
-public class TestPostgresDbsMain {
+@Ignore public class TestPostgresDbsMain {
 
     private static final String TABLE1 = "table1";
     private static final String TABLE2 = "table2";
