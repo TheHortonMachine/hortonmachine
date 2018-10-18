@@ -28,6 +28,7 @@ import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -110,6 +111,7 @@ public class DbsHelper {
 
                 EDb eDb = db.getType();
                 ADatabaseSyntaxHelper syntaxHelper = eDb.getDatabaseSyntaxHelper();
+                IGeometryParser gp = eDb.getGeometryParser();
 
                 for( int i = 1; i <= columnCount; i++ ) {
                     String columnTypeName = rsmd.getColumnTypeName(i);
@@ -117,7 +119,7 @@ public class DbsHelper {
                     if (geomColumnName.equalsIgnoreCase(columnName) || ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
                         geometryIndex = i;
                         if (rs.next()) {
-                            Geometry geometry = db.getGeometryFromResultSet(rs, geometryIndex);
+                            Geometry geometry = gp.fromResultSet(rs, geometryIndex);
                             b.add("the_geom", geometry.getClass());
                             break;
                         }
@@ -153,7 +155,7 @@ public class DbsHelper {
                 do {
                     try {
                         List<Object> values = new ArrayList<>();
-                        Geometry geometry = db.getGeometryFromResultSet(rs, geometryIndex);
+                        Geometry geometry = gp.fromResultSet(rs, geometryIndex);
                         values.add(geometry);
 
                         for( int j = 1; j <= columnCount; j++ ) {

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -268,10 +269,11 @@ public class LasCellsTable {
         }
 
         String _sql = sql;
+        IGeometryParser gp = db.getType().getGeometryParser();
         return db.execOnConnection(conn -> {
             try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
                 while( rs.next() ) {
-                    LasCell lasCell = resultSetToCell(db, doPosition, doIntensity, doReturns, doTime, doColor, rs);
+                    LasCell lasCell = resultSetToCell(db, gp, doPosition, doIntensity, doReturns, doTime, doColor, rs);
                     lasCells.add(lasCell);
                 }
                 return lasCells;
@@ -327,10 +329,11 @@ public class LasCellsTable {
         }
 
         String _sql = sql;
+        IGeometryParser gp = db.getType().getGeometryParser();
         return db.execOnConnection(conn -> {
             try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
                 while( rs.next() ) {
-                    LasCell lasCell = resultSetToCell(db, doPosition, doIntensity, doReturns, doTime, doColor, rs);
+                    LasCell lasCell = resultSetToCell(db, gp, doPosition, doIntensity, doReturns, doTime, doColor, rs);
                     lasCells.add(lasCell);
                 }
                 return lasCells;
@@ -383,10 +386,11 @@ public class LasCellsTable {
         sql += " WHERE " + COLUMN_SOURCE_ID + "=" + sourceId;
 
         String _sql = sql;
+        IGeometryParser gp = db.getType().getGeometryParser();
         return db.execOnConnection(conn -> {
             try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
                 while( rs.next() ) {
-                    LasCell lasCell = resultSetToCell(db, doPosition, doIntensity, doReturns, doTime, doColor, rs);
+                    LasCell lasCell = resultSetToCell(db, gp, doPosition, doIntensity, doReturns, doTime, doColor, rs);
                     lasCells.add(lasCell);
                 }
                 return lasCells;
@@ -394,12 +398,13 @@ public class LasCellsTable {
         });
     }
 
-    private static LasCell resultSetToCell( ASpatialDb db, boolean doPosition, boolean doIntensity, boolean doReturns,
-            boolean doTime, boolean doColor, IHMResultSet rs ) throws Exception, ParseException {
+    private static LasCell resultSetToCell( ASpatialDb db, IGeometryParser geometryParser, boolean doPosition,
+            boolean doIntensity, boolean doReturns, boolean doTime, boolean doColor, IHMResultSet rs )
+            throws Exception, ParseException {
         LasCell lasCell = new LasCell();
         int i = 1;
 
-        Geometry tmpGeometry = db.getGeometryFromResultSet(rs, i++);
+        Geometry tmpGeometry = geometryParser.fromResultSet(rs, i++);
         if (tmpGeometry instanceof Polygon) {
             Polygon polygon = (Polygon) tmpGeometry;
             lasCell.polygon = polygon;

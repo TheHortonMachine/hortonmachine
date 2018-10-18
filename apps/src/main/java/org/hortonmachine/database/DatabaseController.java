@@ -142,7 +142,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private static final String RUN_QUERY_TOOLTIP = "run the query in the SQL Editor";
     private static final String RUN_QUERY_TO_FILE_TOOLTIP = "run the query in the SQL Editor and store result in file";
     private static final String RUN_QUERY_TO_SHAPEFILE_TOOLTIP = "run the query in the SQL Editor and store result in a shapefile";
-    protected static final String VIEW_QUERY_TOOLTIP = "run spatial query and view the result in the 3D viewer";
+    protected static final String VIEW_QUERY_TOOLTIP = "run spatial query and view the result in the geometry viewer";
     // private static final String SQL_EDITOR = "SQL Editor";
     private static final String CLEAR_SQL_EDITOR = "clear SQL editor";
     // private static final String DATA_VIEWER = "Data viewer";

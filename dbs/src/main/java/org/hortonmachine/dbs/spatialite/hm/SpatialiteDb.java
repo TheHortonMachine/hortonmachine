@@ -238,16 +238,6 @@ public class SpatialiteDb extends ASpatialDb {
         Logger.INSTANCE.insertDebug(null, message);
     }
 
-    @Override
-    public Geometry getGeometryFromResultSet( IHMResultSet resultSet, int position ) throws Exception {
-        byte[] geomBytes = resultSet.getBytes(position);
-        if (geomBytes != null) {
-            Geometry geometry = wkbReader.read(geomBytes);
-            return geometry;
-        }
-        return null;
-    }
-
     public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
         List<String> tableNames = getTables(doOrder);
         HashMap<String, List<String>> tablesMap = SpatialiteTableNames.getTablesSorted(tableNames, doOrder);

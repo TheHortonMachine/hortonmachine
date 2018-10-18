@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -145,11 +146,12 @@ public class LasSourcesTable {
                 + COLUMN_MAXINTENSITY + " FROM " + TABLENAME;
 
         return db.execOnConnection(connection -> {
+            IGeometryParser gp = db.getType().getGeometryParser();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {
                     LasSource lasSource = new LasSource();
                     int i = 1;
-                    Geometry geometry = db.getGeometryFromResultSet(rs, i++);
+                    Geometry geometry = gp.fromResultSet(rs, i++);
                     if (geometry instanceof Polygon) {
                         Polygon polygon = (Polygon) geometry;
                         lasSource.polygon = polygon;

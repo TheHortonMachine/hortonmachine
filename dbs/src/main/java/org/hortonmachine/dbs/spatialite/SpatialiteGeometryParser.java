@@ -29,8 +29,11 @@ public class SpatialiteGeometryParser implements IGeometryParser {
     @Override
     public Geometry fromResultSet( IHMResultSet rs, int index ) throws Exception {
         byte[] geomBytes = rs.getBytes(index);
-        Geometry geometry = wkbReader.read(geomBytes);
-        return geometry;
+        if (geomBytes != null) {
+            Geometry geometry = wkbReader.read(geomBytes);
+            return geometry;
+        }
+        return null;
     }
 
     @Override

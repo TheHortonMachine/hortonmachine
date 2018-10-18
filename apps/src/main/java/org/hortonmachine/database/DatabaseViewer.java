@@ -118,12 +118,12 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
             return false;
         }
         try {
-            pm.beginTask("Run query: " + sqlText, IHMProgressMonitor.UNKNOWN);
-            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(title, currentConnectedDatabase, sqlText, null);
-            ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
             if (toolsPanelController == null) {
                 openNww();
             }
+            pm.beginTask("Run query: " + sqlText, IHMProgressMonitor.UNKNOWN);
+            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(title, currentConnectedDatabase, sqlText, null);
+            ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
 
             if (toolsPanelController != null) {
                 if (title == null) {
@@ -136,6 +136,7 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
         } catch (Exception e1) {
             String localizedMessage = e1.getLocalizedMessage();
             hasError = true;
+            e1.printStackTrace();
             pm.errorMessage("An error occurred: " + localizedMessage);
         } finally {
             pm.done();
@@ -243,6 +244,7 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
             });
         } catch (Exception e) {
             Logging.logger().log(java.util.logging.Level.SEVERE, "Exception at application start", e);
+            throw e;
         }
     }
 

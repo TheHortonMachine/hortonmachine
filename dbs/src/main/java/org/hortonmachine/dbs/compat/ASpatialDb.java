@@ -410,16 +410,6 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
     protected abstract void logDebug( String message );
 
     /**
-     * Extract the geometry from a resultset.
-     * 
-     * @param resultSet the resultset to get the {@link Geometry} from.
-     * @param position the position of the geometry object in the resultset.
-     * @return the extracted geometry.
-     * @throws Exception 
-     */
-    public abstract Geometry getGeometryFromResultSet( IHMResultSet resultSet, int position ) throws Exception;
-
-    /**
      * Run a generic sql string (also multiline).
      * 
      * @param sql the sql to run.

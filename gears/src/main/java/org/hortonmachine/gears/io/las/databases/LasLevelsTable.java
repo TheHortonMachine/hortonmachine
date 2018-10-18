@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -198,13 +199,14 @@ public class LasLevelsTable {
         }
 
         String _sql = sql;
+        IGeometryParser gp = db.getType().getGeometryParser();
         return db.execOnConnection(conn -> {
             try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
                 while( rs.next() ) {
                     LasLevel lasLevel = new LasLevel();
                     lasLevel.level = levelNum;
                     int i = 1;
-                    Geometry geometry = db.getGeometryFromResultSet(rs, i++);
+                    Geometry geometry = gp.fromResultSet(rs, i++);
                     if (geometry instanceof Polygon) {
                         Polygon polygon = (Polygon) geometry;
                         lasLevel.polygon = polygon;
@@ -252,13 +254,14 @@ public class LasLevelsTable {
         }
 
         String _sql = sql;
+        IGeometryParser gp = db.getType().getGeometryParser();
         return db.execOnConnection(conn -> {
             try (IHMStatement stmt = conn.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
                 while( rs.next() ) {
                     LasLevel lasLevel = new LasLevel();
                     lasLevel.level = levelNum;
                     int i = 1;
-                    Geometry tmpGeometry = db.getGeometryFromResultSet(rs, i++);
+                    Geometry tmpGeometry = gp.fromResultSet(rs, i++);
                     if (tmpGeometry instanceof Polygon) {
                         Polygon polygon = (Polygon) tmpGeometry;
                         lasLevel.polygon = polygon;

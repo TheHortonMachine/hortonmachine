@@ -71,8 +71,9 @@ public class NwwPanel extends JPanel {
     private double lastElevation = Double.NaN;
 
     public static Component createNwwPanel( boolean useWwGlCanvas, boolean withStatusBar, boolean removeDefaultLayers ) {
+        Component component = null;
         try {
-            return new NwwPanel(useWwGlCanvas, withStatusBar, removeDefaultLayers);
+            component = new NwwPanel(useWwGlCanvas, withStatusBar, removeDefaultLayers);
         } catch (UnsatisfiedLinkError ule) {
             logger.insertError("NwwPanel", "error", ule);
             String msg = "<html><b><font color=red size=+1>";
@@ -83,12 +84,13 @@ public class NwwPanel extends JPanel {
             JLabel errorLabel = new JLabel(msg);
             Border paddingBorder = BorderFactory.createEmptyBorder(10, 10, 10, 10);
             errorLabel.setBorder(paddingBorder);
-            return errorLabel;
+            component = errorLabel;
         } catch (Exception e) {
+            e.printStackTrace();
             logger.insertError("NwwPanel", "error", e);
         }
 
-        return null;
+        return component;
     }
 
     public static Component createNwwPanel( boolean useWwGlCanvas ) {

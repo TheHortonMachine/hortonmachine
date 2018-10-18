@@ -29,6 +29,7 @@ import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBWriter;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vividsolutions.jts.geom.Envelope;
@@ -39,7 +40,7 @@ import com.vividsolutions.jts.io.WKTReader;
 /**
  * Main tests for spatial dbs
  */
-//@Ignore 
+@Ignore
 public class TestPostgisDbsMain {
 
     /**
@@ -57,6 +58,7 @@ public class TestPostgisDbsMain {
         db.open("localhost:5432/test");
         db.initSpatialMetadata("'WGS84'");
 
+        removePgGeometryTables(db);
         createGeomTables(db);
 
         tablesCount = 6;
@@ -97,7 +99,7 @@ public class TestPostgisDbsMain {
         }
     }
 
-    private static void removePgGeometryTables( ASpatialDb db ) throws Exception {
+    private static void removePgGeometryTables( ASpatialDb db ) {
         removeIfExists(db, MPOLY_TABLE);
         removeIfExists(db, POLY_TABLE);
         removeIfExists(db, MPOINTS_TABLE);
@@ -106,23 +108,27 @@ public class TestPostgisDbsMain {
         removeIfExists(db, LINES_TABLE);
     }
 
-    private static void removeIfExists( ASpatialDb db, String tableName ) throws Exception {
-        if (db.hasTable(tableName)) {
-            try {
-                db.execOnConnection(connection -> {
-                    String sql = db.getType().getSqlTemplates().discardGeometryColumn(tableName, "the_geom");
-                    try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-                        if (rs.next()) {
-                            String tabelName = rs.getString(1);
-                            System.out.println(tabelName);
+    private static void removeIfExists( ASpatialDb db, String tableName ) {
+        try {
+            if (db.hasTable(tableName)) {
+                try {
+                    db.execOnConnection(connection -> {
+                        String sql = db.getType().getSqlTemplates().discardGeometryColumn(tableName, "the_geom");
+                        try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                            if (rs.next()) {
+                                String tabelName = rs.getString(1);
+                                System.out.println(tabelName);
+                            }
+                            return "";
                         }
-                        return "";
-                    }
-                });
-            } catch (Exception e) {
+                    });
+                } catch (Exception e) {
+                }
+                String sql = db.getType().getSqlTemplates().dropTable(tableName, null);
+                db.executeInsertUpdateDeleteSql(sql);
             }
-            String sql = db.getType().getSqlTemplates().dropTable(tableName, null);
-            db.executeInsertUpdateDeleteSql(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

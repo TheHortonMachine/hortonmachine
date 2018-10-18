@@ -99,6 +99,7 @@ public class PostgisSqlTemplates extends ASqlTemplates {
 
     @Override
     public String dropTable( String tableName, String geometryColumnName ) {
+//        String query = "select DropGeometryTable('" + tableName + "')";
         String query = discardGeometryColumn(tableName, geometryColumnName) + ";\n";
         query += "drop table if exists " + tableName + " cascade;";
         return query;

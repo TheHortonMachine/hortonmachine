@@ -20,7 +20,7 @@ import org.junit.Test;
 /**
  * Main tests for normal dbs
  */
-//@Ignore 
+@Ignore 
 public class TestPostgresDbsMain {
 
     private static final String TABLE1 = "table1";

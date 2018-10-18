@@ -182,7 +182,6 @@ public class GPSpatialiteDb extends ASpatialDb {
         // Log.d("SpatialiteDb", message);
     }
 
-    @Override
     public Geometry getGeometryFromResultSet( IHMResultSet resultSet, int position ) throws Exception {
         byte[] geomBytes = resultSet.getBytes(position);
         Geometry geometry = wkbReader.read(geomBytes);
