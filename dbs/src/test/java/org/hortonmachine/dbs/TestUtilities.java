@@ -58,13 +58,6 @@ public class TestUtilities {
 
         ADatabaseSyntaxHelper dt = db.getType().getDatabaseSyntaxHelper();
 
-        removeIfExists(db, MPOLY_TABLE);
-        removeIfExists(db, POLY_TABLE);
-        removeIfExists(db, MPOINTS_TABLE);
-        removeIfExists(db, POINTS_TABLE);
-        removeIfExists(db, MLINES_TABLE);
-        removeIfExists(db, LINES_TABLE);
-
         db.createSpatialTable(MPOLY_TABLE, 4326, "the_geom MULTIPOLYGON",
                 arr("id " + dt.INTEGER() + " PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"));
         db.createSpatialTable(POLY_TABLE, 4326, "the_geom POLYGON",
@@ -97,25 +90,6 @@ public class TestUtilities {
         }
         for( String insert : linesInserts ) {
             db.executeInsertUpdateDeleteSql(insert);
-        }
-    }
-
-    private static void removeIfExists( ASpatialDb db, String tableName ) throws Exception {
-        if (db.hasTable(tableName)) {
-            try {
-                db.execOnConnection(connection -> {
-                    String sql = "select DropGeometryColumn('public','" + tableName + "', 'the_geom')";
-                    try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-                        if (rs.next()) {
-                            String tabelName = rs.getString(1);
-                            System.out.println(tabelName);
-                        }
-                        return "";
-                    }
-                });
-            } catch (Exception e) {
-            }
-            db.executeInsertUpdateDeleteSql("drop table " + tableName + " cascade");
         }
     }
 

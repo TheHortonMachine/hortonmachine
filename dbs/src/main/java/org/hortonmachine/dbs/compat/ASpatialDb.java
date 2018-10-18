@@ -330,7 +330,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @param tableName
      *            the table name.
      * @param intersectionGeometry
-     *            the geometry to check.
+     *            the geometry to check, assumed in the same srid of the table geometry.
      * @param prePostWhere an optional set of 3 parameters. The parameters are: a 
      *          prefix wrapper for geom, a postfix for the same and a where string 
      *          to apply. They all need to be existing if the parameter is passed.
@@ -359,6 +359,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName;
 
         if (intersectionGeometry != null) {
+            intersectionGeometry.setSRID(gCol.srid);
             wheres.add(getSpatialindexGeometryWherePiece(tableName, null, intersectionGeometry));
         }
 

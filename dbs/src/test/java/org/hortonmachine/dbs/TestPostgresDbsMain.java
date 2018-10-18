@@ -20,7 +20,8 @@ import org.junit.Test;
 /**
  * Main tests for normal dbs
  */
-@Ignore public class TestPostgresDbsMain {
+//@Ignore 
+public class TestPostgresDbsMain {
 
     private static final String TABLE1 = "table1";
     private static final String TABLE2 = "table2";
@@ -36,9 +37,6 @@ import org.junit.Test;
         db.setCredentials("test", "test");
         db.open("localhost:5432/test");
 
-        if (db.hasTable(TABLE1)) {
-            db.executeInsertUpdateDeleteSql("drop table " + TABLE1 + " cascade");
-        }
         db.createTable(TABLE1, "id " + dt.INTEGER() + " PRIMARY KEY", "name " + dt.TEXT(), "temperature " + dt.REAL());
         String[] inserts = {//
                 "INSERT INTO " + TABLE1 + " VALUES(1, 'Tscherms', 36.0);", //
@@ -47,9 +45,6 @@ import org.junit.Test;
         };
         for( String insert : inserts ) {
             db.executeInsertUpdateDeleteSql(insert);
-        }
-        if (db.hasTable(TABLE2)) {
-            db.executeInsertUpdateDeleteSql("drop table " + TABLE2);
         }
         db.createTable(TABLE2, "id " + dt.INTEGER() + " PRIMARY KEY", "table1id " + dt.INTEGER(),
                 "FOREIGN KEY (table1id) REFERENCES " + TABLE1 + "(id)");
@@ -66,11 +61,14 @@ import org.junit.Test;
 
     @AfterClass
     public static void closeDb() throws Exception {
+        if (db.hasTable(TABLE1)) {
+            db.executeInsertUpdateDeleteSql("drop table " + TABLE1 + " cascade");
+        }
+        if (db.hasTable(TABLE2)) {
+            db.executeInsertUpdateDeleteSql("drop table " + TABLE2);
+        }
         if (db != null) {
             db.close();
-            if (!DB_TYPE.supportsServerMode()) {
-                new File(db.getDatabasePath() + "." + DB_TYPE.getExtension()).delete();
-            }
         }
     }
 

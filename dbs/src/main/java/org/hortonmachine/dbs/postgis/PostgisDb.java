@@ -24,11 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.ASqlTemplates;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IDbVisitor;
+import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
@@ -64,9 +66,15 @@ import com.vividsolutions.jts.geom.Polygon;
 public class PostgisDb extends ASpatialDb {
     private PGDb pgDb;
     private boolean wasInitialized = false;
+    private ASqlTemplates sqlTemplates;
 
     public PostgisDb() {
         pgDb = new PGDb();
+        try {
+            sqlTemplates = getType().getSqlTemplates();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -285,13 +293,11 @@ public class PostgisDb extends ASpatialDb {
         String _geomTypeStr = geomTypeStr;
         pgDb.execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement()) {
-                String sql = "SELECT AddGeometryColumn('" + tableName + "','" + _geomColName + "', " + _epsgStr + ", '"
-                        + _geomTypeStr + "', 2)";
+                String sql = sqlTemplates.addGeometryColumn(tableName, _geomColName, _epsgStr, _geomTypeStr, "2");
                 stmt.execute(sql);
 
                 if (!avoidIndex) {
-                    sql = "CREATE INDEX " + tableName + "__" + _geomColName + "_spx ON " + tableName + " USING GIST ("
-                            + _geomColName + ");";
+                    sql = sqlTemplates.createSpatialIndex(tableName, _geomColName);
                     stmt.execute(sql);
                 }
             }
@@ -343,12 +349,13 @@ public class PostgisDb extends ASpatialDb {
     public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
         List<String> tableNames = getTables(doOrder);
         HashMap<String, List<String>> tablesMap = new HashMap<>();
-        // TODO fix from H2GisTableNames.getTablesSorted(tableNames, doOrder);
+        // TODO fix
         tablesMap.put(ISpatialTableNames.USERDATA, tableNames);
         return tablesMap;
     }
 
     public QueryResult getTableRecordsMapFromRawSql( String sql, int limit ) throws Exception {
+        IGeometryParser gp = getType().getGeometryParser();
         return execOnConnection(connection -> {
             QueryResult queryResult = new QueryResult();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
@@ -366,15 +373,13 @@ public class PostgisDb extends ASpatialDb {
                     }
                 }
                 int count = 0;
-                SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
                 long start = System.currentTimeMillis();
                 while( rs.next() ) {
                     Object[] rec = new Object[columnCount];
                     for( int j = 1; j <= columnCount; j++ ) {
                         if (j == geometryIndex) {
-                            byte[] geomBytes = rs.getBytes(j);
-                            if (geomBytes != null) {
-                                Geometry geometry = wkbReader.read(geomBytes);
+                            Geometry geometry = gp.fromResultSet(rs, j);
+                            if (geometry != null) {
                                 rec[j - 1] = geometry;
                             }
                         } else {
@@ -475,11 +480,12 @@ public class PostgisDb extends ASpatialDb {
         } else {
             alias = alias + ".";
         }
-
+        int srid = geometry.getSRID();
         Envelope envelopeInternal = geometry.getEnvelopeInternal();
         Polygon bounds = DbsUtilities.createPolygonFromEnvelope(envelopeInternal);
-        String sql = alias + gCol.geometryColumnName + " && ST_GeomFromText('" + bounds.toText() + "') AND ST_Intersects(" + alias
-                + gCol.geometryColumnName + ",ST_GeomFromText('" + geometry.toText() + "'))";
+        String sql = alias + gCol.geometryColumnName + " && ST_GeomFromText('" + bounds.toText() + "'," + srid
+                + ") AND ST_Intersects(" + alias + gCol.geometryColumnName + ",ST_GeomFromText('" + geometry.toText() + "',"
+                + srid + "))";
         return sql;
     }
 
@@ -488,13 +494,15 @@ public class PostgisDb extends ASpatialDb {
             throws Exception {
         Polygon bounds = DbsUtilities.createPolygonFromBounds(x1, y1, x2, y2);
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
+        int srid = gCol.srid;
         if (alias == null) {
             alias = "";
         } else {
             alias = alias + ".";
         }
-        String sql = alias + gCol.geometryColumnName + " && ST_GeomFromText('" + bounds.toText() + "') AND ST_Intersects(" + alias
-                + gCol.geometryColumnName + ",ST_GeomFromText('" + bounds.toText() + "'))";
+        String sql = alias + gCol.geometryColumnName + " && ST_GeomFromText('" + bounds.toText() + "', " + srid
+                + ") AND ST_Intersects(" + alias + gCol.geometryColumnName + ",ST_GeomFromText('" + bounds.toText() + "'," + srid
+                + "))";
         return sql;
 
     }
@@ -634,7 +642,7 @@ public class PostgisDb extends ASpatialDb {
             }
         } else {
             sql = "SELECT '{\"type\":\"FeatureCollection\",\"features\":['"
-                    + " || group_concat('{\"type\":\"Feature\",\"geometry\":' || ST_AsGeoJson(" + gCol.geometryColumnName
+                    + " || string_agg('{\"type\":\"Feature\",\"geometry\":' || ST_AsGeoJson(" + gCol.geometryColumnName
                     + ") || ',\"properties\": {' || ";
             List<String> fieldsList = new ArrayList<>();
             for( String field : fields ) {
@@ -648,7 +656,7 @@ public class PostgisDb extends ASpatialDb {
                 }
                 sb.append("\n").append(fieldsList.get(i));
             }
-            sql += sb.toString() + " || '}}') || ']}'";
+            sql += sb.toString() + " || '}}', ',') || ']}'";
             sql += " FROM " + tableName;
             if (wherePiece != null) {
                 sql += " WHERE " + wherePiece;

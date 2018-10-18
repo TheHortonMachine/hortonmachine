@@ -32,9 +32,13 @@ public class PostgisGeometryParser implements IGeometryParser {
 
     @Override
     public Geometry fromResultSet( IHMResultSet rs, int index ) throws Exception {
-        PGgeometry pgGeometry = (PGgeometry) rs.getObject(index);
-        Geometry geometry = getGeom(pgGeometry);
-        return geometry;
+        Object object = rs.getObject(index);
+        if (object instanceof PGgeometry) {
+            PGgeometry pgGeometry = (PGgeometry) object;
+            Geometry geometry = getGeom(pgGeometry);
+            return geometry;
+        }
+        return null;
     }
 
     private Geometry getGeom( PGgeometry pgGeometry ) throws SQLException, ParseException {
@@ -56,7 +60,8 @@ public class PostgisGeometryParser implements IGeometryParser {
 
     @Override
     public Object toSqlObject( Geometry geometry ) throws Exception {
-        return geometry;
+        org.postgis.Geometry pgGeometry = PGgeometry.geomFromString(geometry.toText());
+        return pgGeometry;
     }
 
 }
