@@ -118,7 +118,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getRecoverGeometryAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        if (sqlTemplates.hasAddGeometryColumn()) {
+        if (sqlTemplates.hasRecoverGeometryColumn()) {
             String title = "Recover geometry column";
             return new AbstractAction(title){
                 @Override
@@ -172,7 +172,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getCheckSpatialIndexAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        if (sqlTemplates.hasAddGeometryColumn()) {
+        if (sqlTemplates.hasRecoverSpatialIndex()) {
             return new AbstractAction("Check spatial index"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
@@ -189,7 +189,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getRecoverSpatialIndexAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        if (sqlTemplates.hasAddGeometryColumn()) {
+        if (sqlTemplates.hasRecoverSpatialIndex()) {
             return new AbstractAction("Recover spatial index"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
@@ -205,7 +205,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getDisableSpatialIndexAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        if (sqlTemplates.hasAddGeometryColumn()) {
+        if (sqlTemplates.hasRecoverSpatialIndex()) {
             return new AbstractAction("Disable spatial index"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
@@ -336,29 +336,33 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getAttachShapefileAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Attach readonly shapefile"){
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile(),
-                        HMConstants.vectorFileFilter);
-                if (openFiles != null && openFiles.length > 0) {
+        if (sqlTemplates.hasAttachShapefile()) {
+            return new AbstractAction("Attach readonly shapefile"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile(),
+                            HMConstants.vectorFileFilter);
+                    if (openFiles != null && openFiles.length > 0) {
+                        try {
+                            GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
+                        } catch (Exception e1) {
+                            logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
+                        }
+                    } else {
+                        return;
+                    }
                     try {
-                        GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
+                        String query = sqlTemplates.attachShapefile(openFiles[0]);
+                        spatialiteViewer.addTextToQueryEditor(query);
                     } catch (Exception e1) {
                         logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
                     }
-                } else {
-                    return;
-                }
-                try {
-                    String query = sqlTemplates.attachShapefile(openFiles[0]);
-                    spatialiteViewer.addTextToQueryEditor(query);
-                } catch (Exception e1) {
-                    logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
-                }
 
-            }
-        };
+                }
+            };
+        } else {
+            return null;
+        }
     }
 
     public Action getSelectAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
@@ -512,7 +516,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getUpdateLayerStats( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
-        if (sqlTemplates.hasAddGeometryColumn()) {
+        if (sqlTemplates.hasRecoverGeometryColumn()) {
             return new AbstractAction("Update Layer Statistics"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
@@ -579,7 +583,7 @@ public class SqlTemplatesAndActions {
                     String newName = GuiUtilities.showInputDialog(databaseViewer, "Enter a name for the saved connection",
                             "db connection " + new DateTime().toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSS));
                     connectionData.connectionLabel = newName;
-                    
+
                     byte[] savedDbs = GuiUtilities.getPreference(HM_SAVED_DATABASES, new byte[0]);
                     List<ConnectionData> connectionDataList = new ArrayList<>();
                     try {
@@ -588,7 +592,7 @@ public class SqlTemplatesAndActions {
                         e1.printStackTrace();
                     }
                     connectionDataList.add(connectionData);
-                    
+
                     byte[] inBytes = convertObjectToBytes(connectionDataList);
                     GuiUtilities.setPreference(HM_SAVED_DATABASES, inBytes);
                 } catch (Exception e1) {

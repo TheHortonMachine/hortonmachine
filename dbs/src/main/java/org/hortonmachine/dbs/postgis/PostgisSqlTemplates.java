@@ -37,6 +37,21 @@ public class PostgisSqlTemplates extends ASqlTemplates {
     }
 
     @Override
+    public boolean hasRecoverGeometryColumn() {
+        return false;
+    }
+
+    @Override
+    public boolean hasAttachShapefile() {
+        return false;
+    }
+
+    @Override
+    public boolean hasRecoverSpatialIndex() {
+        return false;
+    }
+
+    @Override
     public String addGeometryColumn( String tableName, String columnName, String srid, String geomType, String dimension ) {
         String sql = "SELECT AddGeometryColumn('" + tableName + "','" + columnName + "', " + srid + ", '" + geomType + "', "
                 + dimension + ")";
@@ -84,22 +99,21 @@ public class PostgisSqlTemplates extends ASqlTemplates {
 
     @Override
     public String dropTable( String tableName, String geometryColumnName ) {
-        String query = "drop table if exists " + tableName + " cascade;";
+        String query = discardGeometryColumn(tableName, geometryColumnName) + ";\n";
+        query += "drop table if exists " + tableName + " cascade;";
         return query;
     }
 
     @Override
     public String reprojectTable( TableLevel table, ASpatialDb db, ColumnLevel geometryColumn, String tableName,
             String newTableName, String newSrid ) throws Exception {
-        // TODO
         String letter = tableName.substring(0, 1);
         String columnName = letter + "." + geometryColumn.columnName;
         String query = DbsUtilities.getSelectQuery(db, table, false);
-        query = query.replaceFirst(columnName, "ST_Transform(" + columnName + ", " + newSrid + ")");
+        query = query.replaceFirst(columnName,
+                "ST_Transform(" + columnName + ", " + newSrid + ")::geometry(" + geometryColumn.columnType + "," + newSrid + ")");
         query = "create table " + newTableName + " as " + query + ";\n";
 
-        query += addGeometryColumn(newTableName, geometryColumn.columnName, newSrid, geometryColumn.columnType,
-                String.valueOf(geometryColumn.geomColumn.coordinatesDimension));
         return query;
     }
 
@@ -115,11 +129,19 @@ public class PostgisSqlTemplates extends ASqlTemplates {
 
     @Override
     public String getFormatTimeSyntax( String timestampField, String formatPattern ) {
-        String pattern = "YYYY-MM-dd HH:mm:ss";
+        String pattern = "%Y-%m-%d %H:%M:%S";
         if (formatPattern != null) {
             pattern = formatPattern;
+            // supported for now YYYY-dd-MM HH:mm:ss
+            pattern = pattern.replaceAll("YYYY", "%Y");
+            pattern = pattern.replaceAll("dd", "%d");
+            pattern = pattern.replaceAll("MM", "%m");
+            pattern = pattern.replaceAll("HH", "%H");
+            pattern = pattern.replaceAll("mm", "%M");
+            pattern = pattern.replaceAll("ss", "%S");
         }
-        String sql = "FORMATDATETIME( DATEADD('SECOND', " + timestampField + "/1000, DATE '1970-01-01'),'" + pattern + "')";
+
+        String sql = "strftime('" + pattern + "'," + timestampField + " / 1000, 'unixepoch')";
         return sql;
     }
 }

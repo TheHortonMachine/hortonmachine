@@ -27,6 +27,7 @@ import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.compat.objects.TypeLevel;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
+import org.hortonmachine.dbs.utils.EGeometryType;
 import org.hortonmachine.gui.utils.ImageCache;
 
 /**
@@ -58,10 +59,16 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
             if (db != null) {
                 switch( db.getType() ) {
                 case H2GIS:
+                case H2:
                     setIcon(ImageCache.getInstance().getImage(ImageCache.H2GIS32));
                     break;
                 case SPATIALITE:
+                case SQLITE:
                     setIcon(ImageCache.getInstance().getImage(ImageCache.SPATIALITE32));
+                    break;
+                case POSTGIS:
+                case POSTGRES:
+                    setIcon(ImageCache.getInstance().getImage(ImageCache.POSTGIS32));
                     break;
                 default:
                     setIcon(ImageCache.getInstance().getImage(ImageCache.DATABASE));
@@ -95,47 +102,29 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
             ColumnLevel columnLevel = (ColumnLevel) value;
             if (columnLevel.isPK) {
                 setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_PRIMARYKEY));
-            } else if (columnLevel.index != null) {
-                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_INDEX));
-            } else if (columnLevel.references != null) {
-                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_FK));
             } else if (columnLevel.geomColumn != null) {
-                ESpatialiteGeometryType gType = ESpatialiteGeometryType.forValue(columnLevel.geomColumn.geometryType);
+                EGeometryType gType = EGeometryType.fromSpatialiteCode(columnLevel.geomColumn.geometryType);
                 switch( gType ) {
-                case POINT_XY:
-                case POINT_XYM:
-                case POINT_XYZ:
-                case POINT_XYZM:
-                case MULTIPOINT_XY:
-                case MULTIPOINT_XYM:
-                case MULTIPOINT_XYZ:
-                case MULTIPOINT_XYZM:
+                case POINT:
+                case MULTIPOINT:
                     setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POINT));
                     break;
-                case LINESTRING_XY:
-                case LINESTRING_XYM:
-                case LINESTRING_XYZ:
-                case LINESTRING_XYZM:
-                case MULTILINESTRING_XY:
-                case MULTILINESTRING_XYM:
-                case MULTILINESTRING_XYZ:
-                case MULTILINESTRING_XYZM:
+                case LINESTRING:
+                case MULTILINESTRING:
                     setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_LINE));
                     break;
-                case POLYGON_XY:
-                case POLYGON_XYM:
-                case POLYGON_XYZ:
-                case POLYGON_XYZM:
-                case MULTIPOLYGON_XY:
-                case MULTIPOLYGON_XYM:
-                case MULTIPOLYGON_XYZ:
-                case MULTIPOLYGON_XYZM:
+                case POLYGON:
+                case MULTIPOLYGON:
                     setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POLYGON));
                     break;
                 default:
                     setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
                     break;
                 }
+            } else if (columnLevel.index != null) {
+                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_INDEX));
+            } else if (columnLevel.references != null) {
+                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_FK));
             } else {
                 setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
             }

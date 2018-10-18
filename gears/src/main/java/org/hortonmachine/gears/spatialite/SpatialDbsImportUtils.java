@@ -32,6 +32,7 @@ import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
@@ -39,6 +40,8 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.dbs.postgis.PostgisDb;
+import org.hortonmachine.dbs.postgis.PostgisGeometryColumns;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteDb;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
@@ -88,6 +91,8 @@ public class SpatialDbsImportUtils {
             newTableName = FileUtilities.getNameWithoutExtention(shapeFile);
         }
 
+        ADatabaseSyntaxHelper dsh = db.getType().getDatabaseSyntaxHelper();
+
         List<String> attrSql = new ArrayList<String>();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
         for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
@@ -99,13 +104,13 @@ public class SpatialDbsImportUtils {
             }
             Class< ? > binding = attributeDescriptor.getType().getBinding();
             if (binding.isAssignableFrom(Double.class) || binding.isAssignableFrom(Float.class)) {
-                attrSql.add(attrName + " REAL");
+                attrSql.add(attrName + " " + dsh.REAL());
             } else if (binding.isAssignableFrom(Long.class) || binding.isAssignableFrom(Integer.class)) {
-                attrSql.add(attrName + " INTEGER");
+                attrSql.add(attrName + " " + dsh.INTEGER());
             } else if (binding.isAssignableFrom(String.class)) {
-                attrSql.add(attrName + " TEXT");
+                attrSql.add(attrName + " " + dsh.TEXT());
             } else {
-                attrSql.add(attrName + " TEXT");
+                attrSql.add(attrName + " " + dsh.TEXT());
             }
         }
 
@@ -136,6 +141,10 @@ public class SpatialDbsImportUtils {
                 SpatialiteDb spatialiteDb = (SpatialiteDb) db;
                 spatialiteDb.createTable(newTableName, attrSql.toArray(new String[0]));
                 spatialiteDb.addGeometryXYColumnAndIndex(newTableName, null, typeString, codeFromCrs, false);
+            } else if (db instanceof PostgisDb) {
+                PostgisDb postgisDb = (PostgisDb) db;
+                postgisDb.createTable(newTableName, attrSql.toArray(new String[0]));
+                postgisDb.addGeometryXYColumnAndIndex(newTableName, null, typeString, codeFromCrs, false);
             } else if (db instanceof H2GisDb) {
                 H2GisDb spatialiteDb = (H2GisDb) db;
                 String typeStringExtra = typeString;
@@ -244,6 +253,8 @@ public class SpatialDbsImportUtils {
                                 pStmt.setFloat(iPlus, (Float) object);
                             } else if (object instanceof Integer) {
                                 pStmt.setInt(iPlus, (Integer) object);
+                            } else if (object instanceof Long) {
+                                pStmt.setLong(iPlus, (Long) object);
                             } else if (object instanceof String) {
                                 pStmt.setString(iPlus, (String) object);
                             } else if (object instanceof Geometry) {
@@ -272,7 +283,8 @@ public class SpatialDbsImportUtils {
 
                 try {
                     pm.beginTask("Execute batch import of " + featureCount + " features...", IHMProgressMonitor.UNKNOWN);
-                    pStmt.executeBatch();
+                    int[] executeBatch = pStmt.executeBatch();
+                    pm.message("Inserted records: " + executeBatch.length);
                 } catch (Exception e) {
                     logger.insertError("SpatialDbsImportUtils", "error", e);
                 } finally {

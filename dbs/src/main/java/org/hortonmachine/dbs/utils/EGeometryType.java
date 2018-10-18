@@ -40,6 +40,7 @@ public enum EGeometryType {
     POLYGON(Polygon.class, MultiPolygon.class), //
     MULTIPOLYGON(MultiPolygon.class, MultiPolygon.class), //
     GEOMETRYCOLLECTION(GeometryCollection.class, GeometryCollection.class), //
+    GEOMETRY(Geometry.class, Geometry.class), //
     UNKNOWN(null, null);
 
     private Class< ? > clazz;
@@ -73,6 +74,8 @@ public enum EGeometryType {
             return MULTIPOLYGON;
         } else if (GEOMETRYCOLLECTION.getClazz().isAssignableFrom(clazz)) {
             return GEOMETRYCOLLECTION;
+        } else if (GEOMETRY.getClazz().isAssignableFrom(clazz)) {
+            return GEOMETRY;
         } else {
             return null;
         }
@@ -130,7 +133,7 @@ public enum EGeometryType {
         } else if (geometry instanceof GeometryCollection) {
             return EGeometryType.GEOMETRYCOLLECTION;
         } else {
-            return null;
+            return EGeometryType.GEOMETRY;
         }
     }
 
@@ -149,6 +152,8 @@ public enum EGeometryType {
             return MULTIPOLYGON;
         } else if (wktName.equalsIgnoreCase(GEOMETRYCOLLECTION.name())) {
             return GEOMETRYCOLLECTION;
+        } else if (wktName.equalsIgnoreCase(GEOMETRY.name())) {
+            return GEOMETRY;
         }
         return UNKNOWN;
     }
@@ -190,6 +195,95 @@ public enum EGeometryType {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Returns the base geometry type for a spatialite geometries types.
+     * 
+     * @param value the code.
+     * @return the type.
+     */
+    public static EGeometryType fromSpatialiteCode( int value ) {
+
+        switch( value ) {
+        case 0:
+            return GEOMETRY;
+        case 1:
+            return POINT;
+        case 2:
+            return LINESTRING;
+        case 3:
+            return POLYGON;
+        case 4:
+            return MULTIPOINT;
+        case 5:
+            return MULTILINESTRING;
+        case 6:
+            return MULTIPOLYGON;
+        case 7:
+            return GEOMETRYCOLLECTION;
+        /*
+         * XYZ
+         */
+        case 1000:
+            return GEOMETRY;
+        case 1001:
+            return POINT;
+        case 1002:
+            return LINESTRING;
+        case 1003:
+            return POLYGON;
+        case 1004:
+            return MULTIPOINT;
+        case 1005:
+            return MULTILINESTRING;
+        case 1006:
+            return MULTIPOLYGON;
+        case 1007:
+            return GEOMETRYCOLLECTION;
+        /*
+         * XYM
+         */
+        case 2000:
+            return GEOMETRY;
+        case 2001:
+            return POINT;
+        case 2002:
+            return LINESTRING;
+        case 2003:
+            return POLYGON;
+        case 2004:
+            return MULTIPOINT;
+        case 2005:
+            return MULTILINESTRING;
+        case 2006:
+            return MULTIPOLYGON;
+        case 2007:
+            return GEOMETRYCOLLECTION;
+        /*
+         * XYZM
+         */
+        case 3000:
+            return GEOMETRY;
+        case 3001:
+            return POINT;
+        case 3002:
+            return LINESTRING;
+        case 3003:
+            return POLYGON;
+        case 3004:
+            return MULTIPOINT;
+        case 3005:
+            return MULTILINESTRING;
+        case 3006:
+            return MULTIPOLYGON;
+        case 3007:
+            return GEOMETRYCOLLECTION;
+        default:
+            break;
+        }
+        return null;
+
     }
 
     public ESpatialiteGeometryType toSpatialiteGeometryType() {

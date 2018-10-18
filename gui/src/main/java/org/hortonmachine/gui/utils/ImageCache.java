@@ -102,6 +102,7 @@ public class ImageCache {
 
     public static final String SPATIALITE32 = "spatialite32.png";
     public static final String H2GIS32 = "h2gis32.png";
+    public static final String POSTGIS32 = "postgis32.png";
     
     private static ImageCache imageCache;
 

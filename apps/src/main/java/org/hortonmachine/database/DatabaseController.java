@@ -1562,6 +1562,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         EDb type = null;
         if (urlString.trim().startsWith(EDb.H2GIS.getJdbcPrefix())) {
             type = EDb.H2GIS;
+        } else if (urlString.trim().startsWith(EDb.POSTGIS.getJdbcPrefix())) {
+            type = EDb.POSTGIS;
         }
         // for( EDb edb : EDb.values() ) {
         // if (urlString.trim().startsWith(edb.getJdbcPrefix())) {
@@ -1573,7 +1575,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         // }
 
         if (type == null) {
-            guiBridge.messageDialog("Only H2GIS databases are supported in remote connection.", "ERROR",
+            guiBridge.messageDialog("Only H2GIS and Postgis databases are supported in remote connection.", "ERROR",
                     JOptionPane.WARNING_MESSAGE);
             return;
         }

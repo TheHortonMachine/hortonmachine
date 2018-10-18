@@ -25,7 +25,9 @@ import java.util.List;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.EGeometryType;
 
 /**
  * Class representing a db level.
@@ -62,6 +64,9 @@ public class DbLevel {
             TypeLevel typeLevel = new TypeLevel();
             typeLevel.typeName = typeName;
             List<String> tablesList = currentDatabaseTablesMap.get(typeName);
+            if (tablesList == null) {
+                continue;
+            }
             for( String tableName : tablesList ) {
                 TableLevel tableLevel = new TableLevel();
                 tableLevel.parent = dbLevel;
@@ -109,6 +114,12 @@ public class DbLevel {
                     columnLevel.isPK = columnPk.equals("1") ? true : false;
                     if (geometryColumns != null && columnName.equalsIgnoreCase(geometryColumns.geometryColumnName)) {
                         columnLevel.geomColumn = geometryColumns;
+                        if (columnType.equals("USER-DEFINED")) {
+                            EGeometryType guessedType = EGeometryType.fromSpatialiteCode(geometryColumns.geometryType);
+                            if (guessedType != null) {
+                                columnLevel.columnType = guessedType.name();
+                            }
+                        }
                     }
                     for( ForeignKey fKey : foreignKeys ) {
                         if (fKey.from.equals(columnName)) {

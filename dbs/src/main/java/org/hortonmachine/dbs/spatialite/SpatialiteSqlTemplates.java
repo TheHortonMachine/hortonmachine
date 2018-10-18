@@ -35,6 +35,21 @@ public class SpatialiteSqlTemplates extends ASqlTemplates {
     public boolean hasAddGeometryColumn() {
         return true;
     }
+    
+    @Override
+    public boolean hasRecoverGeometryColumn() {
+        return true;
+    }
+
+    @Override
+    public boolean hasAttachShapefile() {
+        return true;
+    }
+    
+    @Override
+    public boolean hasRecoverSpatialIndex() {
+        return true;
+    }
 
     @Override
     public String addGeometryColumn( String tableName, String columnName, String srid, String geomType, String dimension ) {

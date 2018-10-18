@@ -146,6 +146,7 @@ public class PostgisDb extends ASpatialDb {
             Connection jdbcConnection = getJdbcConnection();
 
             if (jdbcConnection instanceof PGConnection) {
+                // FIXME how to enter in pooled mode
                 PGConnection pgconn = (PGConnection) jdbcConnection;
                 pgconn.addDataType("geometry", (Class< ? extends PGobject>) Class.forName("org.postgis.PGgeometry"));
                 pgconn.addDataType("box3d", (Class< ? extends PGobject>) Class.forName("org.postgis.PGbox3d"));
@@ -604,11 +605,12 @@ public class PostgisDb extends ASpatialDb {
                 }
 
                 long start = System.currentTimeMillis();
+                IGeometryParser gp = getType().getGeometryParser();
                 while( rs.next() ) {
                     Object[] rec = new Object[columnCount];
                     for( int j = 1; j <= columnCount; j++ ) {
                         if (hasGeom && queryResult.geometryIndex == j - 1) {
-                            Geometry geometry = (Geometry) rs.getObject(j);
+                            Geometry geometry = gp.fromResultSet(rs, j);
                             rec[j - 1] = geometry;
                         } else {
                             Object object = rs.getObject(j);

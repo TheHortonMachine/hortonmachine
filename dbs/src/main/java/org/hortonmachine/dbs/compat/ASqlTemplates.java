@@ -41,6 +41,12 @@ public abstract class ASqlTemplates {
 
     public abstract boolean hasAddGeometryColumn();
 
+    public abstract boolean hasRecoverGeometryColumn();
+
+    public abstract boolean hasRecoverSpatialIndex();
+
+    public abstract boolean hasAttachShapefile();
+
     public abstract String addGeometryColumn( String tableName, String columnName, String srid, String geomType,
             String dimension );
 

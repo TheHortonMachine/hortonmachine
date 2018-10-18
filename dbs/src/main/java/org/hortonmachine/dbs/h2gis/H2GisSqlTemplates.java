@@ -35,6 +35,21 @@ public class H2GisSqlTemplates extends ASqlTemplates {
     public boolean hasAddGeometryColumn() {
         return false;
     }
+    
+    @Override
+    public boolean hasRecoverGeometryColumn() {
+        return false;
+    }
+
+    @Override
+    public boolean hasAttachShapefile() {
+        return true;
+    }
+    
+    @Override
+    public boolean hasRecoverSpatialIndex() {
+        return false;
+    }
 
     @Override
     public String addGeometryColumn( String tableName, String columnName, String srid, String geomType, String dimension ) {
@@ -123,4 +138,6 @@ public class H2GisSqlTemplates extends ASqlTemplates {
         String sql = "FORMATDATETIME( DATEADD('SECOND', " + timestampField + "/1000, DATE '1970-01-01'),'" + pattern + "')";
         return sql;
     }
+
+
 }
