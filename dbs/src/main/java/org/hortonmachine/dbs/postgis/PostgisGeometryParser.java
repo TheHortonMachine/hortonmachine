@@ -45,6 +45,12 @@ public class PostgisGeometryParser implements IGeometryParser {
         String wkt = pgGeometry.toString();
         String[] splitSRID = PGgeometry.splitSRID(wkt);
         Geometry geometry = wktReader.read(splitSRID[1]);
+        try {
+            int srid = Integer.parseInt(splitSRID[0].substring(5));
+            geometry.setSRID(srid);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return geometry;
     }
 
@@ -61,6 +67,7 @@ public class PostgisGeometryParser implements IGeometryParser {
     @Override
     public Object toSqlObject( Geometry geometry ) throws Exception {
         org.postgis.Geometry pgGeometry = PGgeometry.geomFromString(geometry.toText());
+        pgGeometry.srid = geometry.getSRID();
         return pgGeometry;
     }
 

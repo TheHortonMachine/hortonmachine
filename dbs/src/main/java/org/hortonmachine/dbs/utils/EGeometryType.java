@@ -77,7 +77,7 @@ public enum EGeometryType {
         } else if (GEOMETRY.getClazz().isAssignableFrom(clazz)) {
             return GEOMETRY;
         } else {
-            return null;
+            return UNKNOWN;
         }
     }
 
@@ -282,7 +282,7 @@ public enum EGeometryType {
         default:
             break;
         }
-        return null;
+        return UNKNOWN;
 
     }
 
