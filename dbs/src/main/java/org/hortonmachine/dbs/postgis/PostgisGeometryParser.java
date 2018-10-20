@@ -41,7 +41,7 @@ public class PostgisGeometryParser implements IGeometryParser {
         return null;
     }
 
-    private Geometry getGeom( PGgeometry pgGeometry ) throws SQLException, ParseException {
+    private synchronized Geometry getGeom( PGgeometry pgGeometry ) throws SQLException, ParseException {
         String wkt = pgGeometry.toString();
         String[] splitSRID = PGgeometry.splitSRID(wkt);
         Geometry geometry = wktReader.read(splitSRID[1]);

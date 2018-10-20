@@ -134,15 +134,17 @@ public class PostgisSqlTemplates extends ASqlTemplates {
         if (formatPattern != null) {
             pattern = formatPattern;
             // supported for now YYYY-dd-MM HH:mm:ss
-            pattern = pattern.replaceAll("YYYY", "%Y");
-            pattern = pattern.replaceAll("dd", "%d");
-            pattern = pattern.replaceAll("MM", "%m");
-            pattern = pattern.replaceAll("HH", "%H");
-            pattern = pattern.replaceAll("mm", "%M");
-            pattern = pattern.replaceAll("ss", "%S");
+            pattern = pattern.replaceAll("YYYY", "YYYY");
+            pattern = pattern.replaceAll("dd", "DD");
+            pattern = pattern.replaceAll("mm", "MI");// minutes before month
+            pattern = pattern.replaceAll("MM", "mm");
+            pattern = pattern.replaceAll("HH", "HH");
+            pattern = pattern.replaceAll("ss", "SS");
         }
 
-        String sql = "strftime('" + pattern + "'," + timestampField + " / 1000, 'unixepoch')";
+        String sql = "to_char(TIMESTAMP 'epoch' + " + timestampField + "/1000 * interval '1 second', '" + pattern + "')";
+        // with timezone to_char(to_timestamp(system_ts/1000), 'YYYY-mm-DD HH:MI:SS')
+
         return sql;
     }
 }
