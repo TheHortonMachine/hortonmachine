@@ -49,10 +49,10 @@
     <module>gears</module>
     <module>hmachine</module>
     <module>lesto</module>
-    <module>modules</module>
+    <!--<module>modules</module>
     <module>gui</module>
 	<module>apps</module>
-	<module>gpserver</module>
+	<module>gpserver</module>-->
   </modules>
 
 	<issueManagement>

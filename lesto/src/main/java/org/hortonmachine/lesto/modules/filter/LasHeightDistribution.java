@@ -62,8 +62,8 @@ import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 
 @Description("Module that analyzes the height distribution of a las file and categorizes the forest type.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")

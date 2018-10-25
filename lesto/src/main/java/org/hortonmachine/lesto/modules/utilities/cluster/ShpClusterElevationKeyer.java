@@ -18,7 +18,7 @@
 package org.hortonmachine.lesto.modules.utilities.cluster;
 import org.hortonmachine.gears.utils.clustering.GvmSimpleKeyer;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 /**
  * @author Andrea Antonello (www.hydrologis.com)
  *

@@ -21,7 +21,7 @@ import static org.hortonmachine.gears.utils.geometry.GeometryUtilities.distance3
 
 import java.util.Comparator;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * A comparator for 3d distance from a given coordinate.

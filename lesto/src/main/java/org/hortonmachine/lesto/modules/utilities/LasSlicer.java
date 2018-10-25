@@ -68,9 +68,9 @@ import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.jfree.data.xy.XYSeries;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Polygon;
 
 @Description("Creates vertical slices of a las file. The resulting raster will have the slice height value as valid pixel value.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)

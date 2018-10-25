@@ -59,9 +59,9 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.DsmDtmDiffHelper;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Polygon;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
