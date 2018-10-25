@@ -109,7 +109,7 @@ import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

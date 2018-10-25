@@ -89,9 +89,9 @@ import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
 @Description(OMSRASTERTRANSFORMER_DESCRIPTION)
 @Documentation(OMSRASTERTRANSFORMER_DOCUMENTATION)

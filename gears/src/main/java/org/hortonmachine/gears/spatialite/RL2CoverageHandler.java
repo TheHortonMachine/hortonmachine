@@ -31,9 +31,9 @@ import org.hortonmachine.dbs.spatialite.RasterCoverage;
 import org.hortonmachine.gears.modules.r.tmsgenerator.MBTilesHelper;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
 
 /**
  * Handler for a RL2 coverage.
@@ -112,7 +112,7 @@ public class RL2CoverageHandler {
         Coordinate ll = new Coordinate(westLL, southLL);
         Coordinate ur = new Coordinate(eastLL, northLL);
 
-        Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(new com.vividsolutions.jts.geom.Envelope(ll, ur));
+        Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(new org.locationtech.jts.geom.Envelope(ll, ur));
         BufferedImage image = getRL2Image(polygon, "4326", tileSize, tileSize);
         return image;
     }

@@ -25,15 +25,15 @@ package org.hortonmachine.gears.io.dxfdwg.libs.dxf;
 //
 //package fr.michaelm.jump.drivers.dxf;
 //
-//import com.vividsolutions.jts.geom.*;
+//import org.locationtech.jts.geom.*;
 //
-//import com.vividsolutions.jump.feature.*;
-//import com.vividsolutions.jump.io.JUMPWriter;
-//import com.vividsolutions.jump.io.DriverProperties;
-//import com.vividsolutions.jump.io.IllegalParametersException;
-//import com.vividsolutions.jump.io.CompressedFile;
-//import com.vividsolutions.jts.algorithm.CGAlgorithms;
-//import com.vividsolutions.jts.algorithm.RobustCGAlgorithms;
+//import org.locationtech.jump.feature.*;
+//import org.locationtech.jump.io.JUMPWriter;
+//import org.locationtech.jump.io.DriverProperties;
+//import org.locationtech.jump.io.IllegalParametersException;
+//import org.locationtech.jump.io.CompressedFile;
+//import org.locationtech.jts.algorithm.CGAlgorithms;
+//import org.locationtech.jts.algorithm.RobustCGAlgorithms;
 //
 //import java.io.*;
 //import java.net.URL;

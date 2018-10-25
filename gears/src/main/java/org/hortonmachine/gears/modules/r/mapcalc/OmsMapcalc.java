@@ -58,13 +58,17 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.jaitools.imageutils.ImageUtils;
-import org.jaitools.jiffle.Jiffle;
-import org.jaitools.jiffle.runtime.AffineCoordinateTransform;
-import org.jaitools.jiffle.runtime.CoordinateTransform;
-import org.jaitools.jiffle.runtime.JiffleDirectRuntime;
-import org.jaitools.jiffle.runtime.JiffleExecutor;
-import org.jaitools.jiffle.runtime.JiffleExecutorResult;
-import org.jaitools.jiffle.runtime.JiffleProgressListener;
+import it.geosolutions.jaiext.jiffle.Jiffle;
+import it.geosolutions.jaiext.jiffle.runtime.AffineCoordinateTransform;
+import it.geosolutions.jaiext.jiffle.runtime.CoordinateTransform;
+import it.geosolutions.jaiext.jiffle.runtime.JiffleDirectRuntime;
+import it.geosolutions.jaiext.jiffle.runtime.JiffleEvent;
+import it.geosolutions.jaiext.jiffle.runtime.JiffleEventListener;
+import it.geosolutions.jaiext.jiffle.runtime.JiffleExecutor;
+import it.geosolutions.jaiext.jiffle.runtime.JiffleExecutorResult;
+import it.geosolutions.jaiext.jiffle.runtime.JiffleProgressListener;
+import it.geosolutions.jaiext.jiffle.runtime.NullProgressListener;
+
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description(OMSMAPCALC_DESCRIPTION)
@@ -151,54 +155,67 @@ public class OmsMapcalc extends HMModel {
         String destName = jiffleRuntime.getDestinationVarNames()[0];
         WritableRenderedImage destImg = ImageUtils.createConstantImage(nCols, nRows, 0d);
         jiffleRuntime.setDestinationImage(destName, destImg, jiffleCRS);
+        
+        jiffleRuntime.evaluateAll(new NullProgressListener());
+        
+        outRaster = CoverageUtilities.buildCoverage(destName, destImg, regionParameters, crs);
 
-        // create the executor
-        JiffleExecutor executor = new JiffleExecutor();
-        WaitingListener listener = new WaitingListener();
-        executor.addEventListener(listener);
-        listener.setNumTasks(1);
+//        // create the executor
+//        JiffleExecutor executor = new JiffleExecutor();
+//        JiffleEventListener listener = new JiffleEventListener(){
+//            
+//            @Override
+//            public void onFailureEvent( JiffleEvent event ) {
+//             
+//            }
+//            
+//            @Override
+//            public void onCompletionEvent( JiffleEvent event ) {
+//                JiffleExecutorResult result = event.getResult();
+//                Map<String, RenderedImage> imgMap = result.getImages();
+//                RenderedImage destImage = imgMap.get(destName);
+//                outRaster = CoverageUtilities.buildCoverage(destName, destImage, regionParameters, crs);
+//                executor.shutdown();
+//            }
+//        };
+//        executor.addEventListener(listener);
+//
+//        executor.submit(jiffleRuntime, new JiffleProgressListener(){
+//            private long count = 0;
+//            public void update( long done ) {
+//                if (count == done) {
+//                    pm.worked(1);
+//                    count = count + updateInterval;
+//                }
+//            }
+//
+//            public void start() {
+//                pm.beginTask("Processing maps...", (int) totalCount);
+//            }
+//
+//            public void setUpdateInterval( double propPixels ) {
+//            }
+//
+//            public void setUpdateInterval( long numPixels ) {
+//            }
+//
+//            public void setTaskSize( long numPixels ) {
+//                count = updateInterval;
+//            }
+//
+//            public long getUpdateInterval() {
+//                if (updateInterval == 0) {
+//                    return 1;
+//                }
+//                return updateInterval;
+//            }
+//
+//            public void finish() {
+//                pm.done();
+//            }
+//        });
 
-        executor.submit(jiffleRuntime, new JiffleProgressListener(){
-            private long count = 0;
-            public void update( long done ) {
-                if (count == done) {
-                    pm.worked(1);
-                    count = count + updateInterval;
-                }
-            }
 
-            public void start() {
-                pm.beginTask("Processing maps...", (int) totalCount);
-            }
-
-            public void setUpdateInterval( double propPixels ) {
-            }
-
-            public void setUpdateInterval( long numPixels ) {
-            }
-
-            public void setTaskSize( long numPixels ) {
-                count = updateInterval;
-            }
-
-            public long getUpdateInterval() {
-                if (updateInterval == 0) {
-                    return 1;
-                }
-                return updateInterval;
-            }
-
-            public void finish() {
-                pm.done();
-            }
-        });
-        listener.await();
-
-        JiffleExecutorResult result = listener.getResults().get(0);
-        Map<String, RenderedImage> imgMap = result.getImages();
-        RenderedImage destImage = imgMap.get(destName);
-        outRaster = CoverageUtilities.buildCoverage(destName, destImage, regionParameters, crs);
-        executor.shutdown();
     }
 
     private static CoordinateTransform getTransform( Rectangle2D worldBounds, Rectangle imageBounds ) {

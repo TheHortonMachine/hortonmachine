@@ -21,9 +21,9 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.util.AffineTransformation;
-import com.vividsolutions.jts.geom.util.NoninvertibleTransformationException;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.util.AffineTransformation;
+import org.locationtech.jts.geom.util.NoninvertibleTransformationException;
 
 /**
  * Utils to do transformations.

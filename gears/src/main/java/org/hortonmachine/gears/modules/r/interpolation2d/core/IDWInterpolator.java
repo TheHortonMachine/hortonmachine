@@ -19,7 +19,7 @@ package org.hortonmachine.gears.modules.r.interpolation2d.core;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * Implementation of IDW Interpolation.

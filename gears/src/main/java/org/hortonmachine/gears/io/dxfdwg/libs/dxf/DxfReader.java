@@ -25,7 +25,7 @@ package org.hortonmachine.gears.io.dxfdwg.libs.dxf;
 //
 //package fr.michaelm.jump.drivers.dxf;
 //
-//import com.vividsolutions.jts.geom.*;
+//import org.locationtech.jts.geom.*;
 //
 //import java.io.File;
 //import java.io.FileOutputStream;

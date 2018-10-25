@@ -54,10 +54,10 @@ import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.jaitools.jts.LineSmoother;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
 
 @Description(OMSLINESMOOTHERJAITOOLS_DESCRIPTION)
 @Documentation(OMSLINESMOOTHERJAITOOLS_DOCUMENTATION)

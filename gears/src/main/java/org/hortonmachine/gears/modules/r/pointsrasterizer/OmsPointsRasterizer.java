@@ -53,8 +53,8 @@ import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

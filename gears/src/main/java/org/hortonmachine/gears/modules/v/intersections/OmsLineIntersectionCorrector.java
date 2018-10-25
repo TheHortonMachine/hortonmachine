@@ -67,19 +67,19 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineSegment;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.MultiLineString;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.prep.PreparedGeometry;
-import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
-import com.vividsolutions.jts.operation.linemerge.LineSequencer;
-import com.vividsolutions.jts.operation.overlay.snap.GeometrySnapper;
-import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineSegment;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.locationtech.jts.operation.linemerge.LineSequencer;
+import org.locationtech.jts.operation.overlay.snap.GeometrySnapper;
+import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 
 @Description(OMSLINEINTERSECTIONCORRECTOR_DESCRIPTION)
 @Documentation(OMSLINEINTERSECTIONCORRECTOR_DOCUMENTATION)

@@ -28,14 +28,14 @@ package org.hortonmachine.gears.io.dxfdwg.libs.dxf;
 //import java.util.Arrays;
 //import java.util.Collection;
 //
-//import com.vividsolutions.jump.feature.FeatureCollection;
-//import com.vividsolutions.jump.io.DriverProperties;
-//import com.vividsolutions.jump.io.datasource.StandardReaderWriterFileDataSource;
-//import com.vividsolutions.jump.util.Block;
-//import com.vividsolutions.jump.util.CollectionUtil;
-//import com.vividsolutions.jump.util.LangUtil;
-//import com.vividsolutions.jump.workbench.datasource.GMLDataSourceQueryChooserInstaller;
-//import com.vividsolutions.jump.workbench.datasource.InstallStandardDataSourceQueryChoosersPlugIn;
+//import org.locationtech.jump.feature.FeatureCollection;
+//import org.locationtech.jump.io.DriverProperties;
+//import org.locationtech.jump.io.datasource.StandardReaderWriterFileDataSource;
+//import org.locationtech.jump.util.Block;
+//import org.locationtech.jump.util.CollectionUtil;
+//import org.locationtech.jump.util.LangUtil;
+//import org.locationtech.jump.workbench.datasource.GMLDataSourceQueryChooserInstaller;
+//import org.locationtech.jump.workbench.datasource.InstallStandardDataSourceQueryChoosersPlugIn;
 //
 ///**
 // * DXF driver containg a DXFReader and a DXFWriter.

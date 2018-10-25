@@ -20,7 +20,7 @@ package org.hortonmachine.gears.utils.math.interpolation.splines;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * This is adapted from: http://www.cse.unsw.edu.au/~lambert/splines/natcubic.html

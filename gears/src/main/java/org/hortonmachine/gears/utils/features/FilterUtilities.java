@@ -23,7 +23,7 @@ import org.geotools.filter.text.ecql.ECQL;
 import org.opengis.filter.Filter;
 import org.opengis.geometry.BoundingBox;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * Helper class for simple filter constructions.

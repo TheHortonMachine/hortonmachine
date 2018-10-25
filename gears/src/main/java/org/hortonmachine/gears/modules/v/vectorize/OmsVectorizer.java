@@ -87,10 +87,10 @@ import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.util.AffineTransformation;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.util.AffineTransformation;
 
 @Description(OMSVECTORIZER_DESCRIPTION)
 @Documentation(OMSVECTORIZER_DOCUMENTATION)
@@ -235,7 +235,7 @@ public class OmsVectorizer extends HMModel {
 
             area = polygon.getArea();
             double perim = polygon.getLength();
-            com.vividsolutions.jts.geom.Point centroid = polygon.getCentroid();
+            org.locationtech.jts.geom.Point centroid = polygon.getCentroid();
             Coordinate centroidCoord = centroid.getCoordinate();
             Object[] values = new Object[]{polygon, featureIndex, tmpValue, area, perim, centroidCoord.x, centroidCoord.y};
             builder.addAll(values);

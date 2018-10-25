@@ -7,9 +7,9 @@ import java.awt.geom.Point2D;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.TransformationUtils;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.util.AffineTransformation;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.util.AffineTransformation;
 
 /**
  * Test transformations.

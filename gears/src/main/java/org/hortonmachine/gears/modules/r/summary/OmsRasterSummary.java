@@ -43,7 +43,7 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.math.CoupledFieldsMoments;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Polygon;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

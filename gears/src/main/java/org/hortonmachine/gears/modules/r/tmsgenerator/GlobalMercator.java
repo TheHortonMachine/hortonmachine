@@ -1,7 +1,7 @@
 package org.hortonmachine.gears.modules.r.tmsgenerator;
 import java.util.Arrays;
 
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  *    Copyright (C) 2009, 2010 

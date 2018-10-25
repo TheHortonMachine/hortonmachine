@@ -25,7 +25,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * A point representing a position in a raster profile.

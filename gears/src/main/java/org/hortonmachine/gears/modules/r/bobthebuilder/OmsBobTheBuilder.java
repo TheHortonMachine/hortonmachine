@@ -78,12 +78,12 @@ import org.hortonmachine.gears.utils.features.FeatureMate;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.opengis.geometry.DirectPosition;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.prep.PreparedGeometry;
-import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 
 @Description(OMSBOBTHEBUILDER_DESCRIPTION)
 @Documentation(OMSBOBTHEBUILDER_DOCUMENTATION)

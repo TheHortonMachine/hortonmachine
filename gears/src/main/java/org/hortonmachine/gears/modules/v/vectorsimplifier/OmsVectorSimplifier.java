@@ -54,11 +54,11 @@ import org.hortonmachine.gears.utils.features.FeatureGeometrySubstitutor;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
-import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
+import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 
 @Description(OMSVECTORSIMPLIFIER_DESCRIPTION)
 @Documentation(OMSVECTORSIMPLIFIER_DOCUMENTATION)

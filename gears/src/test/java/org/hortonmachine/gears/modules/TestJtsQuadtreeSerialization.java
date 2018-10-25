@@ -26,10 +26,10 @@ import java.util.List;
 
 import org.hortonmachine.gears.utils.HMTestCase;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.index.quadtree.Quadtree;
-import com.vividsolutions.jts.io.WKTReader;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.index.quadtree.Quadtree;
+import org.locationtech.jts.io.WKTReader;
 
 /**
  * Test {@link Quadtree} serialization.

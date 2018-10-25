@@ -34,8 +34,8 @@ package org.hortonmachine.gears.modules;
 //import org.opengis.feature.simple.SimpleFeature;
 //import org.opengis.referencing.crs.CoordinateReferenceSystem;
 //
-//import com.vividsolutions.jts.geom.Coordinate;
-//import com.vividsolutions.jts.geom.Geometry;
+//import org.locationtech.jts.geom.Coordinate;
+//import org.locationtech.jts.geom.Geometry;
 ///**
 // * Test for the reprojection modules.
 // * 

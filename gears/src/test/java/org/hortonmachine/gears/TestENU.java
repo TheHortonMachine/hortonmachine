@@ -6,7 +6,7 @@ import org.hortonmachine.gears.utils.ENU;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.math.matrixes.MatrixException;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * Test ENU.

@@ -23,7 +23,7 @@ import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * A wrapper for {@link SimpleFeature}s so that they are sorted by a numeric field.

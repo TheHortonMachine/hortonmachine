@@ -40,7 +40,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * This is a brute force hack to get at least for GRASS rasters the 
@@ -89,7 +89,7 @@ public class GrassLegacyGridCoverage2D extends GridCoverage2D {
     }
 
     public Envelope getEnvelope() {
-        com.vividsolutions.jts.geom.Envelope envelope = window.getEnvelope();
+        org.locationtech.jts.geom.Envelope envelope = window.getEnvelope();
         Envelope env = new ReferencedEnvelope(envelope, jgCrs);
         return env;
     }

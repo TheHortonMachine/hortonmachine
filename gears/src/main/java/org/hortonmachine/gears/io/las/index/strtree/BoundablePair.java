@@ -17,18 +17,18 @@
  */
 package org.hortonmachine.gears.io.las.index.strtree;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.index.strtree.AbstractNode;
-import com.vividsolutions.jts.index.strtree.Boundable;
-import com.vividsolutions.jts.index.strtree.ItemBoundable;
-import com.vividsolutions.jts.index.strtree.ItemDistance;
-import com.vividsolutions.jts.util.PriorityQueue;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.index.strtree.AbstractNode;
+import org.locationtech.jts.index.strtree.Boundable;
+import org.locationtech.jts.index.strtree.ItemBoundable;
+import org.locationtech.jts.index.strtree.ItemDistance;
+import org.locationtech.jts.util.PriorityQueue;
 
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * A pair of {@link com.vividsolutions.jts.index.strtree.Boundable}s, whose leaf items
+ * A pair of {@link org.locationtech.jts.index.strtree.Boundable}s, whose leaf items
  * support a distance metric between them.
  * Used to compute the distance between the members,
  * and to expand a member relative to the other
@@ -55,7 +55,7 @@ class BoundablePair implements Comparable {
     }
 
     /**
-     * Gets one of the member {@link com.vividsolutions.jts.index.strtree.Boundable}s in the pair
+     * Gets one of the member {@link org.locationtech.jts.index.strtree.Boundable}s in the pair
      * (indexed by [0, 1]).
      *
      * @param i the index of the member to return (0 or 1)
@@ -68,11 +68,11 @@ class BoundablePair implements Comparable {
     }
 
     /**
-     * Computes the distance between the {@link com.vividsolutions.jts.index.strtree.Boundable}s in this pair.
+     * Computes the distance between the {@link org.locationtech.jts.index.strtree.Boundable}s in this pair.
      * The boundables are either composites or leaves.
      * If either is composite, the distance is computed as the minimum distance
      * between the bounds.
-     * If both are leaves, the distance is computed by {@link #itemDistance(com.vividsolutions.jts.index.strtree.ItemBoundable, com.vividsolutions.jts.index.strtree.ItemBoundable)}.
+     * If both are leaves, the distance is computed by {@link #itemDistance(org.locationtech.jts.index.strtree.ItemBoundable, org.locationtech.jts.index.strtree.ItemBoundable)}.
      * 
      * @return
      */

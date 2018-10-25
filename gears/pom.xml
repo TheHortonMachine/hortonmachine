@@ -22,12 +22,15 @@
 			<version>0.9.2-SNAPSHOT</version>
 		</dependency>
 
-		<!-- Java Advanced Imaging (JAI) <dependency> <groupId>javax.media</groupId> 
-			<artifactId>jai_core</artifactId> <version>1.1.3</version> </dependency> 
-			<dependency> <groupId>javax.media</groupId> <artifactId>jai_codec</artifactId> 
-			<version>1.1.3</version> </dependency> <dependency> <groupId>javax.media</groupId> 
-			<artifactId>jai_imageio</artifactId> <version>1.1</version> </dependency> -->
-		<!-- other stuff -->
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+		</dependency>
+
+        <dependency>
+          <groupId>jfree</groupId>
+          <artifactId>eastwood</artifactId>
+        </dependency>
 
 		<dependency>
 			<groupId>org.scannotation</groupId>
@@ -57,178 +60,95 @@
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-referencing</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-epsg-hsql</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-epsg-extension</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-data</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-shapefile</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-property</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-coverage</artifactId>
-			<version>${gt.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.jaitools</groupId>
-					<artifactId>jt-utils</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.jaitools</groupId>
-					<artifactId>jt-zonalstats</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-geotiff</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-arcgrid</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>org.geotools</groupId> -->
-		<!-- <artifactId>gt-process</artifactId> -->
-		<!-- <version>${gt.version}</version> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-graph</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>org.geotools.jdbc</groupId> -->
-		<!-- <artifactId>gt-jdbc-h2</artifactId> -->
-		<!-- <version>${gt.version}</version> -->
-		<!-- <exclusions> -->
-		<!-- <exclusion> -->
-		<!-- <groupId>net.sourceforge.hatbox</groupId> -->
-		<!-- <artifactId>hatbox</artifactId> -->
-		<!-- </exclusion> -->
-		<!-- </exclusions> -->
-		<!-- </dependency> -->
-		<dependency>
-			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
-			<version>2.9.4</version>
-		</dependency>
-		<!-- <dependency> <groupId>com.vividsolutions</groupId> <artifactId>jts</artifactId> 
-			<version>${jts.version}</version> </dependency> -->
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-swing</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-imageio-ext-gdal</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-process-raster</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-grassraster</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-grid</artifactId>
-			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-imagemosaic</artifactId>
-			<version>${gt.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-wms</artifactId>
-			<version>${gt.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jaitools</groupId>
-			<artifactId>jt-jiffle-language</artifactId>
-			<version>${jiffle.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.jaitools</groupId>
-					<artifactId>jt-utils</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-geojson</artifactId>
-			<version>${gt.version}</version>
+		</dependency>
+
+		<dependency>
+            <groupId>it.geosolutions.jaiext.jiffle</groupId>
+            <artifactId>jt-jiffle-op</artifactId>
 		</dependency>
 
 		<!-- geopap -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20140107</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
-			<version>3.6.1</version>
 		</dependency>
 
-		<dependency>
-			<groupId>jfree</groupId>
-			<artifactId>jfreechart</artifactId>
-			<version>1.0.10</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-			<version>2.4.12</version>
-		</dependency>
 		<dependency>
 			<groupId>net.java.dev.jna</groupId>
 			<artifactId>jna</artifactId>
-			<version>4.1.0</version>
 		</dependency>
 
 	</dependencies>

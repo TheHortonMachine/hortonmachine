@@ -60,9 +60,9 @@ import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.operation.polygonize.Polygonizer;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.operation.polygonize.Polygonizer;
 
 @Description(OMSLINESPOLYGONIZER_DESCRIPTION)
 @Documentation(OMSLINESPOLYGONIZER_DOCUMENTATION)

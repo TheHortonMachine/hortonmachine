@@ -23,9 +23,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.RandomAccessFile;
 
-import com.vividsolutions.jts.JTSVersion;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.index.strtree.STRtree;
+import org.locationtech.jts.JTSVersion;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.index.strtree.STRtree;
 
 /**
  * Reader for the Sort-Tile-Recursive disk index.

@@ -21,7 +21,7 @@ package org.hortonmachine.gears.utils.geometry;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.opengis.feature.type.GeometryDescriptor;
 
-import com.vividsolutions.jts.geom.*;
+import org.locationtech.jts.geom.*;
 
 /**
  * Geometry types used by the utility.

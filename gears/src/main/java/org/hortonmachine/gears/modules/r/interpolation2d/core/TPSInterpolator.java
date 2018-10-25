@@ -20,7 +20,7 @@ package org.hortonmachine.gears.modules.r.interpolation2d.core;
 import org.geotools.referencing.operation.matrix.GeneralMatrix;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * Implementation of TPS Interpolation based on thin plate spline (TPS) algorithm

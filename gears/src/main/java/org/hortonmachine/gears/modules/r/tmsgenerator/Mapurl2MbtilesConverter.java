@@ -40,7 +40,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.time.EggClock;
 
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

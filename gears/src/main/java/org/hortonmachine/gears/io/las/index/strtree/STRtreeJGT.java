@@ -18,12 +18,12 @@
 
 package org.hortonmachine.gears.io.las.index.strtree;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.index.ItemVisitor;
-import com.vividsolutions.jts.index.SpatialIndex;
-import com.vividsolutions.jts.index.strtree.*;
-import com.vividsolutions.jts.util.Assert;
-import com.vividsolutions.jts.util.PriorityQueue;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.index.ItemVisitor;
+import org.locationtech.jts.index.SpatialIndex;
+import org.locationtech.jts.index.strtree.*;
+import org.locationtech.jts.util.Assert;
+import org.locationtech.jts.util.PriorityQueue;
 
 import java.io.Serializable;
 import java.util.*;
@@ -214,12 +214,12 @@ public class STRtreeJGT extends AbstractSTRtree implements SpatialIndex, Seriali
     }
 
     /**
-     * Queries the tree and returns {@link com.vividsolutions.jts.index.strtree.ItemBoundable}s instead of only the values.
+     * Queries the tree and returns {@link org.locationtech.jts.index.strtree.ItemBoundable}s instead of only the values.
      *
      *  <p>Also builds the tree, if necessary.</p>
      *
      * @param searchBounds the bounds to search for.
-     * @return the list of {@link com.vividsolutions.jts.index.strtree.ItemBoundable}s.
+     * @return the list of {@link org.locationtech.jts.index.strtree.ItemBoundable}s.
      */
     public List queryBoundables( Object searchBounds ) {
         build();
@@ -275,7 +275,7 @@ public class STRtreeJGT extends AbstractSTRtree implements SpatialIndex, Seriali
 
     /**
      * Finds the two nearest items in the tree,
-     * using {@link com.vividsolutions.jts.index.strtree.ItemDistance} as the distance metric.
+     * using {@link org.locationtech.jts.index.strtree.ItemDistance} as the distance metric.
      * A Branch-and-Bound tree traversal algorithm is used
      * to provide an efficient search.
      *
@@ -289,7 +289,7 @@ public class STRtreeJGT extends AbstractSTRtree implements SpatialIndex, Seriali
 
     /**
      * Finds the item in this tree which is nearest to the given {@link Object},
-     * using {@link com.vividsolutions.jts.index.strtree.ItemDistance} as the distance metric.
+     * using {@link org.locationtech.jts.index.strtree.ItemDistance} as the distance metric.
      * A Branch-and-Bound tree traversal algorithm is used
      * to provide an efficient search.
      * <p>
@@ -312,7 +312,7 @@ public class STRtreeJGT extends AbstractSTRtree implements SpatialIndex, Seriali
     /**
      * Finds the two nearest items from this tree
      * and another tree,
-     * using {@link com.vividsolutions.jts.index.strtree.ItemDistance} as the distance metric.
+     * using {@link org.locationtech.jts.index.strtree.ItemDistance} as the distance metric.
      * A Branch-and-Bound tree traversal algorithm is used
      * to provide an efficient search.
      * The result value is a pair of items, 

@@ -34,9 +34,9 @@ import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

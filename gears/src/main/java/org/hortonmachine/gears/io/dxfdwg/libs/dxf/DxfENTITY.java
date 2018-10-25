@@ -24,8 +24,8 @@
 
 package org.hortonmachine.gears.io.dxfdwg.libs.dxf;
 
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.PrecisionModel;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.PrecisionModel;
 
 /**
  * A DXF ENTITY is equivalent to a JUMP feature. This class is the parent class

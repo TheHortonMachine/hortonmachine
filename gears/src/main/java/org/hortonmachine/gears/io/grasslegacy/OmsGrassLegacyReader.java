@@ -58,7 +58,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 @Description(OMSGRASSLEGACYREADER_DESCRIPTION)
 @Author(name = OMSGRASSLEGACYREADER_AUTHORNAMES, contact = OMSGRASSLEGACYREADER_AUTHORCONTACTS)

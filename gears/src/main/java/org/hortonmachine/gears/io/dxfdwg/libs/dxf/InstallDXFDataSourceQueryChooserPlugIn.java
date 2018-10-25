@@ -27,18 +27,18 @@ package org.hortonmachine.gears.io.dxfdwg.libs.dxf;
 //
 //import javax.swing.JFileChooser;
 //
-//import com.vividsolutions.jts.util.Assert;
-//import com.vividsolutions.jump.workbench.datasource.InstallStandardDataSourceQueryChoosersPlugIn;
-//import com.vividsolutions.jump.util.Blackboard;
-//import com.vividsolutions.jump.workbench.plugin.AbstractPlugIn;
-//import com.vividsolutions.jump.workbench.plugin.PlugInContext;
-//import com.vividsolutions.jump.workbench.ui.GUIUtil;
-//import com.vividsolutions.jump.io.JUMPWriter;
-//import com.vividsolutions.jump.io.JUMPReader;
-//import com.vividsolutions.jump.workbench.datasource.LoadFileDataSourceQueryChooser;
-//import com.vividsolutions.jump.workbench.datasource.SaveFileDataSourceQueryChooser;
-//import com.vividsolutions.jump.workbench.datasource.DataSourceQueryChooserManager;
-//import com.vividsolutions.jump.workbench.WorkbenchContext;
+//import org.locationtech.jts.util.Assert;
+//import org.locationtech.jump.workbench.datasource.InstallStandardDataSourceQueryChoosersPlugIn;
+//import org.locationtech.jump.util.Blackboard;
+//import org.locationtech.jump.workbench.plugin.AbstractPlugIn;
+//import org.locationtech.jump.workbench.plugin.PlugInContext;
+//import org.locationtech.jump.workbench.ui.GUIUtil;
+//import org.locationtech.jump.io.JUMPWriter;
+//import org.locationtech.jump.io.JUMPReader;
+//import org.locationtech.jump.workbench.datasource.LoadFileDataSourceQueryChooser;
+//import org.locationtech.jump.workbench.datasource.SaveFileDataSourceQueryChooser;
+//import org.locationtech.jump.workbench.datasource.DataSourceQueryChooserManager;
+//import org.locationtech.jump.workbench.WorkbenchContext;
 //
 //
 ///**

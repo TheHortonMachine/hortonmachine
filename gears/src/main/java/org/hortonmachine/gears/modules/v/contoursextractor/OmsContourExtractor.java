@@ -44,9 +44,9 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.metadata.spatial.PixelOrientation;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.util.AffineTransformation;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.util.AffineTransformation;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

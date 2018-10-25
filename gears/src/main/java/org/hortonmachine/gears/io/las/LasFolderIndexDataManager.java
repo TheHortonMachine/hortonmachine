@@ -44,14 +44,14 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.prep.PreparedGeometry;
-import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
-import com.vividsolutions.jts.index.strtree.AbstractSTRtree;
-import com.vividsolutions.jts.index.strtree.ItemBoundable;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.locationtech.jts.index.strtree.AbstractSTRtree;
+import org.locationtech.jts.index.strtree.ItemBoundable;
 
 /**
  * A class that manages las folder data.
@@ -132,7 +132,7 @@ class LasFolderIndexDataManager extends ALasDataManager implements AutoCloseable
     /**
      * Get points inside a given geometry boundary.
      *
-     * @param checkGeom the {@link com.vividsolutions.jts.geom.Geometry} to use to check.
+     * @param checkGeom the {@link org.locationtech.jts.geom.Geometry} to use to check.
      * @param doOnlyEnvelope check for the geom envelope instead of a intersection with it.
      * @return the list of points contained in the supplied geometry.
      * @throws Exception
@@ -221,7 +221,7 @@ class LasFolderIndexDataManager extends ALasDataManager implements AutoCloseable
     /**
      * Retrieve all the trees envelopes that intersect the geometry.
      *
-     * @param checkGeom the {@link com.vividsolutions.jts.geom.Geometry} to use to check.
+     * @param checkGeom the {@link org.locationtech.jts.geom.Geometry} to use to check.
      * @param doOnlyEnvelope check for the geom envelope instead of a intersection with it.
      * @param minMaxZ an array to be filled with the min and max z to be used as style.
      * @return the list of envelopes contained in the supplied geometry.

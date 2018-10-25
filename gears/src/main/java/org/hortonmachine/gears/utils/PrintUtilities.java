@@ -29,9 +29,9 @@ import org.geotools.geometry.Envelope2D;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
 /**
  * Utility class to print data out.
@@ -163,17 +163,17 @@ public class PrintUtilities {
      * Print the envelope as WKT.
      * 
      * @param env
-     *            the {@link com.vividsolutions.jts.geom.Envelope}.
+     *            the {@link org.locationtech.jts.geom.Envelope}.
      * @return the WKT string.
      */
-    public static String envelope2WKT(com.vividsolutions.jts.geom.Envelope env) {
+    public static String envelope2WKT(org.locationtech.jts.geom.Envelope env) {
         GeometryFactory gf = GeometryUtilities.gf();
         Geometry geometry = gf.toGeometry(env);
         return geometry.toText();
     }
 
-    public static com.vividsolutions.jts.geom.Envelope envelope2D2Envelope(Envelope2D envelope2d) {
-        com.vividsolutions.jts.geom.Envelope jtsEnv = new com.vividsolutions.jts.geom.Envelope(envelope2d.getMinX(),
+    public static org.locationtech.jts.geom.Envelope envelope2D2Envelope(Envelope2D envelope2d) {
+        org.locationtech.jts.geom.Envelope jtsEnv = new org.locationtech.jts.geom.Envelope(envelope2d.getMinX(),
                 envelope2d.getMaxX(), envelope2d.getMinY(), envelope2d.getMaxY());
         return jtsEnv;
     }

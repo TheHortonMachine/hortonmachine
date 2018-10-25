@@ -37,12 +37,12 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 
 /**
  * Abstract las data manager class.
@@ -132,7 +132,7 @@ public abstract class ALasDataManager implements AutoCloseable {
     /**
      * Get points inside a given geometry boundary.
      *
-     * @param checkGeom the {@link com.vividsolutions.jts.geom.Geometry} to use to check.
+     * @param checkGeom the {@link org.locationtech.jts.geom.Geometry} to use to check.
      * @param doOnlyEnvelope check for the geom envelope instead of a intersection with it.
      * @return the list of points contained in the supplied geometry.
      * @throws Exception
@@ -142,7 +142,7 @@ public abstract class ALasDataManager implements AutoCloseable {
     /**
      * Retrieve all the trees envelopes that intersect the geometry.
      *
-     * @param checkGeom the {@link com.vividsolutions.jts.geom.Geometry} to use to check.
+     * @param checkGeom the {@link org.locationtech.jts.geom.Geometry} to use to check.
      * @param doOnlyEnvelope check for the geom envelope instead of a intersection with it.
      * @param minMaxZ an array to be filled with the min and max z to be used as style.
      * @return the list of envelopes contained in the supplied geometry.
@@ -192,7 +192,7 @@ public abstract class ALasDataManager implements AutoCloseable {
      *
      * <p>an elev attribute is added with the max elev contained in the envelope.
      *
-     * @param checkGeom the {@link com.vividsolutions.jts.geom.Geometry} to use to check.
+     * @param checkGeom the {@link org.locationtech.jts.geom.Geometry} to use to check.
      * @param doOnlyEnvelope check for the geom envelope instead of a intersection with it.
      * @param minMaxZI an array to be filled with the [minz,maxz, minintensity, maxintensity] to be used as style.
      * @param doPoints if <code>true</code>, create points instead of polygons.

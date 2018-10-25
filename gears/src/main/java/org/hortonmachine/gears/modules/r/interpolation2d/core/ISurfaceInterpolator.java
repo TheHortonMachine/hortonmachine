@@ -17,7 +17,7 @@
  */
 package org.hortonmachine.gears.modules.r.interpolation2d.core;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * Simple interface for surface interpolation.

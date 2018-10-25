@@ -38,7 +38,7 @@ import org.hortonmachine.gears.utils.CrsUtilities;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.GeometryFactory;
 
 import oms3.annotations.Description;
 import oms3.annotations.In;

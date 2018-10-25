@@ -17,7 +17,7 @@
  */
 package org.hortonmachine.gears.io.las.databases;
 
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Polygon;
 
 /**
  * A cell of las data.

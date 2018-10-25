@@ -35,7 +35,7 @@
  */
 package org.hortonmachine.gears.io.las.index;
 
-import com.vividsolutions.jts.geom.*;
+import org.locationtech.jts.geom.*;
 import oms3.annotations.*;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;

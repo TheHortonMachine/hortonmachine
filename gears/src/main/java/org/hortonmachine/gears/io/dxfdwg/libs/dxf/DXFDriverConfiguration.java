@@ -25,8 +25,8 @@ package org.hortonmachine.gears.io.dxfdwg.libs.dxf;
 //
 //package fr.michaelm.jump.drivers.dxf;
 //
-//import com.vividsolutions.jump.workbench.plugin.Extension;
-//import com.vividsolutions.jump.workbench.plugin.PlugInContext;
+//import org.locationtech.jump.workbench.plugin.Extension;
+//import org.locationtech.jump.workbench.plugin.PlugInContext;
 //
 ///**
 // * This is the entry class to declare the dxf driver to JUMP.
