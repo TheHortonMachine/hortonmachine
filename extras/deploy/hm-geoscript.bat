@@ -18,6 +18,6 @@
 setlocal
 
 set MEM="-Xmx2g"
-java %MEM% -cp ".\libs\*" org.hortonmachine.geoscript.GeoscriptConsole
+java %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -cp ".\libs\*" org.hortonmachine.geoscript.GeoscriptConsole
 
 endlocal

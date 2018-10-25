@@ -18,6 +18,6 @@
 setlocal
 
 set MEM="-Xmx2g"
-java %MEM% -Djava.library.path=.\natives\ -cp ".\libs\*" org.hortonmachine.geopaparazzi.GeopaparazziViewer
+java %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path=.\natives\ -cp ".\libs\*" org.hortonmachine.geopaparazzi.GeopaparazziViewer
 
 endlocal

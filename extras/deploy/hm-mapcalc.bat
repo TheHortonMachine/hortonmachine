@@ -18,6 +18,6 @@
 setlocal
 
 set MEM="-Xmx1g"
-java %MEM% -cp ".\libs\*" org.hortonmachine.mapcalc.MapcalcController
+java %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -cp ".\libs\*" org.hortonmachine.mapcalc.MapcalcController
 
 endlocal
