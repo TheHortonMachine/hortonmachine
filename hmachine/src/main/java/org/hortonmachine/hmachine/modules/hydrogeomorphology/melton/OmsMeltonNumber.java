@@ -59,7 +59,7 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.AttributeType;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 @Description(OMSMELTONNUMBER_DESCRIPTION)
 @Author(name = OMSMELTONNUMBER_AUTHORNAMES, contact = OMSMELTONNUMBER_AUTHORCONTACTS)

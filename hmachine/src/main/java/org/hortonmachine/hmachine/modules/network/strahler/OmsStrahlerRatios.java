@@ -60,8 +60,8 @@ import org.hortonmachine.gears.utils.features.FeatureMate;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsWateroutlet;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 @Description(OMSSTRAHLERRATIOS_DESCRIPTION)
 @Author(name = OMSSTRAHLERRATIOS_AUTHORNAMES, contact = OMSSTRAHLERRATIOS_AUTHORCONTACTS)

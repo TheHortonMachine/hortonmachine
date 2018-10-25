@@ -34,7 +34,7 @@ import org.hortonmachine.hmachine.utils.HMTestMaps;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * Test for {@link OmsGeomorphon}

@@ -33,11 +33,11 @@ import org.hortonmachine.gears.utils.features.FeatureMate;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.lwrecruitment.LWFields;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.linearref.LengthIndexedLine;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.linearref.LengthIndexedLine;
 
 /**
  * An extractor of geometries from dtm through features for Hecras.

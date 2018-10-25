@@ -68,8 +68,8 @@ import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeature
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
 
 @Description(OMSEPANETPROJECTFILESGENERATOR_DESCRIPTION)
 @Author(name = OMSEPANETPROJECTFILESGENERATOR_AUTHORNAMES, contact = OMSEPANETPROJECTFILESGENERATOR_AUTHORCONTACTS)

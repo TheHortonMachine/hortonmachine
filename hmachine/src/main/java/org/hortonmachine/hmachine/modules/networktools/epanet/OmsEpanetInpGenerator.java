@@ -77,8 +77,8 @@ import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeature
 import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Valves;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 @Description(OMSEPANETINPGENERATOR_DESCRIPTION)
 @Author(name = OMSEPANETINPGENERATOR_AUTHORNAMES, contact = OMSEPANETINPGENERATOR_AUTHORCONTACTS)

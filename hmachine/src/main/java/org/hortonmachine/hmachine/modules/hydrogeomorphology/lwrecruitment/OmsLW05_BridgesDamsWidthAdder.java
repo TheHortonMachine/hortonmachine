@@ -42,9 +42,9 @@ import org.hortonmachine.gears.utils.features.FilterUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.index.strtree.STRtree;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.index.strtree.STRtree;
 
 @Description(OmsLW05_BridgesDamsWidthAdder.DESCRIPTION)
 @Author(name = OmsLW05_BridgesDamsWidthAdder.AUTHORS, contact = OmsLW05_BridgesDamsWidthAdder.CONTACTS)

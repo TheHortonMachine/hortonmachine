@@ -45,7 +45,7 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.riversections.River
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.riversections.RiverPoint;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 @Description(OmsSaintGeo.DESCRIPTION)
 @Author(name = OmsSaintGeo.AUTHORNAMES, contact = OmsSaintGeo.AUTHORCONTACTS)

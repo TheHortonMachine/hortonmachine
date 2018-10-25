@@ -23,7 +23,7 @@ import java.util.TreeMap;
 
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * @author Sivia Franceschi (www.hydrologis.com)

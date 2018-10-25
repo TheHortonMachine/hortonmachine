@@ -37,9 +37,9 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 
 @Description(OmsLW01_ChannelPolygonMerger.DESCRIPTION)
 @Author(name = OmsLW01_ChannelPolygonMerger.AUTHORS, contact = OmsLW01_ChannelPolygonMerger.CONTACTS)
