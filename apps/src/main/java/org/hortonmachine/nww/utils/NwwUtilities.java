@@ -27,11 +27,11 @@ import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
 
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.WorldWind;
@@ -386,12 +386,12 @@ public class NwwUtilities {
         int mElevationMode = WorldWind.CLAMP_TO_GROUND;
         for( int i = 0; i < geometry.getNumGeometries(); i++ ) {
             Geometry geometryN = geometry.getGeometryN(i);
-            if (geometryN instanceof com.vividsolutions.jts.geom.Polygon) {
+            if (geometryN instanceof org.locationtech.jts.geom.Polygon) {
                 Coordinate[] coordinates = geometryN.getCoordinates();
                 int numVertices = coordinates.length;
                 if (numVertices < 4)
                     continue;
-                com.vividsolutions.jts.geom.Polygon poly = (com.vividsolutions.jts.geom.Polygon) geometryN;
+                org.locationtech.jts.geom.Polygon poly = (org.locationtech.jts.geom.Polygon) geometryN;
 
                 Polygon polygon = new Polygon();
 

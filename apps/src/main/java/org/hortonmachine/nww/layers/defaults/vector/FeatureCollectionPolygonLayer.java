@@ -34,9 +34,9 @@ import org.hortonmachine.nww.shapes.FeatureStoreInfo;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Position;
@@ -200,8 +200,8 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
             int numGeometries = geometry.getNumGeometries();
             for( int i = 0; i < numGeometries; i++ ) {
                 Geometry geometryN = geometry.getGeometryN(i);
-                if (geometryN instanceof com.vividsolutions.jts.geom.Polygon) {
-                    com.vividsolutions.jts.geom.Polygon poly = (com.vividsolutions.jts.geom.Polygon) geometryN;
+                if (geometryN instanceof org.locationtech.jts.geom.Polygon) {
+                    org.locationtech.jts.geom.Polygon poly = (org.locationtech.jts.geom.Polygon) geometryN;
 
                     FeatureExtrudedPolygon extrudedPolygon = new FeatureExtrudedPolygon(featureStoreInfo);
                     extrudedPolygon.setFeature(polygonAreaFeature);
@@ -286,8 +286,8 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
         int numGeometries = geometry.getNumGeometries();
         for( int i = 0; i < numGeometries; i++ ) {
             Geometry geometryN = geometry.getGeometryN(i);
-            if (geometryN instanceof com.vividsolutions.jts.geom.Polygon) {
-                com.vividsolutions.jts.geom.Polygon poly = (com.vividsolutions.jts.geom.Polygon) geometryN;
+            if (geometryN instanceof org.locationtech.jts.geom.Polygon) {
+                org.locationtech.jts.geom.Polygon poly = (org.locationtech.jts.geom.Polygon) geometryN;
 
                 FeaturePolygon polygon = new FeaturePolygon(featureStoreInfo);
                 polygon.setFeature(polygonAreaFeature);

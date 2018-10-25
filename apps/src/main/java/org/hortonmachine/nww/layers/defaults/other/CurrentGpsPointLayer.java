@@ -22,7 +22,7 @@ import java.util.ArrayList;
 
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Position;

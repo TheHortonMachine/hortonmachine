@@ -17,7 +17,7 @@
  */
 package org.hortonmachine.nww.layers.defaults;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * Common interface for layers.

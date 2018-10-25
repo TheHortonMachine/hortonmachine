@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.hortonmachine.nww.utils.NwwUtilities;
 
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.Point;
 
 import gov.nasa.worldwind.WorldWindow;
 

@@ -37,8 +37,8 @@ import org.hortonmachine.nww.utils.cache.CacheUtils;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Polygon;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
@@ -162,7 +162,7 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
                 Coordinate ll = new Coordinate(w, s);
                 Coordinate ur = new Coordinate(e, n);
 
-                Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(new com.vividsolutions.jts.geom.Envelope(ll, ur));
+                Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(new org.locationtech.jts.geom.Envelope(ll, ur));
 
                 try {
                     File imgFile;

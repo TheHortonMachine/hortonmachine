@@ -34,9 +34,9 @@ import org.hortonmachine.nww.shapes.InfoExtrudedPolygon;
 import org.hortonmachine.nww.shapes.InfoPolygon;
 import org.hortonmachine.nww.utils.NwwUtilities;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Position;
@@ -215,8 +215,8 @@ public class SpatialitePolygonLayer extends RenderableLayer implements NwwVector
                 int numGeometries = geometry.getNumGeometries();
                 for( int i = 0; i < numGeometries; i++ ) {
                     Geometry geometryN = geometry.getGeometryN(i);
-                    if (geometryN instanceof com.vividsolutions.jts.geom.Polygon) {
-                        com.vividsolutions.jts.geom.Polygon poly = (com.vividsolutions.jts.geom.Polygon) geometryN;
+                    if (geometryN instanceof org.locationtech.jts.geom.Polygon) {
+                        org.locationtech.jts.geom.Polygon poly = (org.locationtech.jts.geom.Polygon) geometryN;
 
                         InfoExtrudedPolygon extrudedPolygon = new InfoExtrudedPolygon();
                         extrudedPolygon.setInfo(info);
@@ -297,8 +297,8 @@ public class SpatialitePolygonLayer extends RenderableLayer implements NwwVector
             int numGeometries = geometry.getNumGeometries();
             for( int i = 0; i < numGeometries; i++ ) {
                 Geometry geometryN = geometry.getGeometryN(i);
-                if (geometryN instanceof com.vividsolutions.jts.geom.Polygon) {
-                    com.vividsolutions.jts.geom.Polygon poly = (com.vividsolutions.jts.geom.Polygon) geometryN;
+                if (geometryN instanceof org.locationtech.jts.geom.Polygon) {
+                    org.locationtech.jts.geom.Polygon poly = (org.locationtech.jts.geom.Polygon) geometryN;
 
                     InfoPolygon polygon = new InfoPolygon();
                     polygon.setInfo(info);

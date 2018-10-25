@@ -25,7 +25,7 @@ import javax.swing.ImageIcon;
 import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * Zoom to layer action.

@@ -31,9 +31,9 @@ import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.layers.defaults.other.CurrentGpsPointLayer;
 import org.hortonmachine.nww.layers.defaults.other.SimplePointsLayer;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
 
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.WorldWindow;

@@ -31,9 +31,9 @@ import org.hortonmachine.nww.layers.defaults.other.MarkerLayer;
 import org.hortonmachine.nww.shapes.InfoPoint;
 import org.hortonmachine.nww.utils.NwwUtilities;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.Material;

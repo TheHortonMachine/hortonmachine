@@ -50,7 +50,7 @@ import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * A simple raster wrapper for scripting environment.
