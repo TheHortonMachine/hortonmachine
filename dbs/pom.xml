@@ -23,7 +23,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.orbisgis</groupId>
-			<artifactId>h2gis-ext</artifactId>
+			<artifactId>h2gis</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.postgis</groupId>

@@ -20,7 +20,7 @@ package org.hortonmachine.dbs.h2gis;
 import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 public class H2GisGeometryParser implements IGeometryParser {
 

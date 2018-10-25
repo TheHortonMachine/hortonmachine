@@ -47,9 +47,9 @@ import org.hortonmachine.dbs.utils.EGeometryType;
 import org.postgresql.PGConnection;
 import org.postgresql.util.PGobject;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
 
 /**
  * A spatialite database.

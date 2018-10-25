@@ -20,7 +20,7 @@ package org.hortonmachine.dbs.spatialite;
 import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 public class SpatialiteGeometryParser implements IGeometryParser {
     SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();

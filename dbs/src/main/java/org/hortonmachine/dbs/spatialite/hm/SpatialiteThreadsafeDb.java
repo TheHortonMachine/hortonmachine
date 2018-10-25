@@ -20,7 +20,7 @@ package org.hortonmachine.dbs.spatialite.hm;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * A threadsafe spatialite database in which writing is blocking.

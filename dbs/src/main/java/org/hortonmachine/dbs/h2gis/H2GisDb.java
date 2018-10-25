@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.h2gis.ext.H2GISExtension;
 import org.h2gis.functions.factory.H2GISFunctions;
 import org.h2gis.utilities.SFSUtilities;
 import org.h2gis.utilities.TableLocation;
@@ -43,9 +42,9 @@ import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
 
 /**
  * A spatialite database.
@@ -137,7 +136,7 @@ public class H2GisDb extends ASpatialDb {
     @Override
     public void initSpatialMetadata( String options ) throws Exception {
         if (!wasInitialized) {
-            H2GISExtension.load(getJdbcConnection());
+            H2GISFunctions.load(getJdbcConnection());
             wasInitialized = true;
         }
     }

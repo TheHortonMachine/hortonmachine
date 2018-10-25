@@ -20,7 +20,7 @@ package org.hortonmachine.dbs.compat.objects;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * A simple table info.

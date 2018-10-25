@@ -27,8 +27,8 @@ import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
  * (C) HydroloGIS - www.hydrologis.com 
@@ -46,7 +46,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import com.vividsolutions.jts.geom.LineString;
+import org.locationtech.jts.geom.LineString;
 
 /**
  * A simple utils class to collect common db queries as functions.
