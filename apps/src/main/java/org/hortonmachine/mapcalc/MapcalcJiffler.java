@@ -12,7 +12,7 @@ import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.jaitools.jiffle.JiffleBuilder;
+import it.geosolutions.jaiext.jiffle.JiffleBuilder;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public class MapcalcJiffler {
