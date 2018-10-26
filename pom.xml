@@ -747,6 +747,24 @@
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+            </manifest>
+            <manifestEntries>
+              <Project-Version>${project.version}</Project-Version>
+              <Git-Revision>${build.commit.id}</Git-Revision>
+              <Build-Timestamp>${build.timestamp}</Build-Timestamp>
+              <Automatic-Module-Name>${moduleIdentifier}</Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.0.2</version>
@@ -807,6 +825,40 @@
 					</rules>
 				</configuration>
 			</plugin>
+     <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>remove_gt_from_modulename</id>
+            <goals>
+              <goal>regex-property</goal>
+            </goals>
+            <configuration>
+              <name>moduleIdentifierStep1</name>
+              <value>${project.groupId}.${project.artifactId}</value>
+              <regex>hm-</regex>
+              <replacement></replacement>
+              <failIfNoMatch>false</failIfNoMatch>
+            </configuration>
+          </execution>
+          <execution>
+            <id>remove_dashes_from_modulename</id>
+            <goals>
+              <goal>regex-property</goal>
+            </goals>
+            <configuration>
+              <name>moduleIdentifier</name>
+              <value>${moduleIdentifierStep1}</value>
+              <regex>-</regex>
+              <replacement>_</replacement>
+              <failIfNoMatch>false</failIfNoMatch>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
 		</plugins>
 	</build>
 
