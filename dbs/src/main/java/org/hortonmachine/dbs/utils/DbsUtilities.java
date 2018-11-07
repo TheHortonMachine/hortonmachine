@@ -20,14 +20,21 @@ package org.hortonmachine.dbs.utils;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
+import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.IGeometryParser;
+import org.hortonmachine.dbs.compat.IHMResultSet;
+import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
@@ -204,5 +211,61 @@ public class DbsUtilities {
         }
         name = name.substring(0, lastDot);
         return name;
+    }
+
+    /**
+     * Quick method to convert a query to a map.
+     * 
+     * @param db the db to use.
+     * @param sql the query to run. It has to have at least 2 parameters. The first will be used as key, the second as value.
+     * @param optionalType can be null. Optional parameter in case one needs a {@link TreeMap} or something the like.
+     * @return the map of values from the query.
+     * @throws Exception
+     */
+    public static Map<String, String> queryToMap( ADb db, String sql, Map<String, String> optionalType ) throws Exception {
+        Map<String, String> map = optionalType;
+        if (map == null) {
+            map = new HashMap<>();
+        }
+        Map<String, String> _map = map;
+        return db.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    String key = rs.getObject(1).toString();
+                    String value = rs.getObject(2).toString();
+                    _map.put(key, value);
+                }
+                return _map;
+            }
+        });
+    }
+
+    /**
+     * Quick method to convert a query to a map with geometry values.
+     * 
+     * @param db the db to use.
+     * @param sql the query to run. It has to have at least 2 parameters, of which the second has to be a geometry field. The first will be used as key, the second as value.
+     * @param optionalType can be null. Optional parameter in case one needs a {@link TreeMap} or something the like.
+     * @return the map of values from the query.
+     * @throws Exception
+     */
+    public static Map<String, Geometry> queryToGeomMap( ADb db, String sql, Map<String, Geometry> optionalType )
+            throws Exception {
+        Map<String, Geometry> map = optionalType;
+        if (map == null) {
+            map = new HashMap<>();
+        }
+        IGeometryParser gp = db.getType().getGeometryParser();
+        Map<String, Geometry> _map = map;
+        return db.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    String key = rs.getObject(1).toString();
+                    Geometry geometry = gp.fromResultSet(rs, 2);
+                    _map.put(key, geometry);
+                }
+                return _map;
+            }
+        });
     }
 }

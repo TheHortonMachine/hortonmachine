@@ -117,6 +117,9 @@ public class CommonQueries {
                 templatesMap.put("create new spatial table from select", "CREATE TABLE newtablename as SELECT * FROM tablename;\n"
                         + "CREATE SPATIAL INDEX myspatialindex ON newtablename(the_geom);");
                 break;
+            case POSTGIS:
+                templatesMap.put("reproject table", "ALTER TABLE tableName ALTER COLUMN the_geom\n  TYPE Geometry(geomtype, toSrid) \n  USING ST_Transform(the_geom, toSrid);");
+                break;
 
             default:
                 break;
