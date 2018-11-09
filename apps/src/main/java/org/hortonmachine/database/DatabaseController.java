@@ -109,7 +109,6 @@ import org.hortonmachine.gui.utils.ImageCache;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
@@ -1728,6 +1727,24 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             if (isSelectOrPragma(sql)) {
                                 QueryResult queryResult = currentConnectedDatabase.getTableRecordsMapFromRawSql(sql, limit);
                                 loadDataViewer(queryResult);
+//   TODO                         } else if (sql.toLowerCase().startsWith("copy ")) {
+//                                EDb type = currentConnectedDatabase.getType();
+//                                if (type == EDb.POSTGIS
+//                                        || type == EDb.POSTGRES) {
+//                                    currentConnectedDatabase.execOnConnection(connection -> {
+////                                        try (IHMStatement stmt = connection.createStatement()) {
+////                                            return stmt.executeUpdate(sql);
+////                                        }
+//                                        Connection originalConnection = ((HMConnection)connection).getOriginalConnection();
+//                                        if (originalConnection instanceof PgConnection) {
+//                                            PgConnection pgConnection = (PgConnection) originalConnection;
+//                                            
+//                                            CopyManager copyManager = new CopyManager(pgConnection);
+////                                            copyManager.copyIn(sqlText);
+//                                        }
+//                                        return "";
+//                                    });
+//                                }
                             } else {
                                 long start = System.currentTimeMillis();
                                 int resultCode = currentConnectedDatabase.executeInsertUpdateDeleteSql(sql);

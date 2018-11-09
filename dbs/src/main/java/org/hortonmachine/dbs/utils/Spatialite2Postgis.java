@@ -36,10 +36,8 @@ import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
-import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.postgis.PostgisDb;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -61,13 +59,19 @@ public class Spatialite2Postgis implements AutoCloseable {
 
     private GeometryFactory gf = new GeometryFactory();
 
+    public static void main( String[] args ) throws Exception {
+        try (Spatialite2Postgis conv = new Spatialite2Postgis("path/to.sqlite", "localhost:5432/database", "", "")) {
+            conv.generateSchema();
+            conv.copyData();
+        }
+    }
 
-    public Spatialite2Postgis( String spatialitePath, String postgisUrl ) throws Exception {
+    public Spatialite2Postgis( String spatialitePath, String postgisUrl, String user, String pwd ) throws Exception {
         spatialite = EDb.SPATIALITE.getSpatialDb();
         spatialite.open(spatialitePath);
 
+        postgis.setCredentials(user, pwd);
         postgis = (PostgisDb) EDb.POSTGIS.getSpatialDb();
-        postgis.setCredentials("god", "god");
         postgis.open(postgisUrl);
         postgis.initSpatialMetadata(null);
     }
@@ -346,6 +350,5 @@ public class Spatialite2Postgis implements AutoCloseable {
         });
 
     }
-
 
 }
