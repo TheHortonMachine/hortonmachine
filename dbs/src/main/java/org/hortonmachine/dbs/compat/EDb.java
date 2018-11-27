@@ -45,9 +45,9 @@ public enum EDb {
             "jdbc:h2:", true, true, false, true), //
     SPATIALITE4ANDROID(4, ".sqlite", "sqlite", "org.hortonmachine.dbs.spatialite.android.GPSpatialiteDb", true,
             "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "", false, false, true, false), //
-    POSTGRES(5, null, null, "org.hortonmachine.dbs.postgis.PGDb", false, "org.hortonmachine.dbs.postgis.PGSqlTemplates",
+    POSTGRES(5, "", "", "org.hortonmachine.dbs.postgis.PGDb", false, "org.hortonmachine.dbs.postgis.PGSqlTemplates",
             "jdbc:postgresql://", true, true, false, true), //
-    POSTGIS(6, null, null, "org.hortonmachine.dbs.postgis.PostgisDb", true, "org.hortonmachine.dbs.postgis.PostgisSqlTemplates",
+    POSTGIS(6, "", "", "org.hortonmachine.dbs.postgis.PostgisDb", true, "org.hortonmachine.dbs.postgis.PostgisSqlTemplates",
             "jdbc:postgresql://", true, true, false, true)
 
     ; //

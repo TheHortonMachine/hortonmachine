@@ -27,7 +27,6 @@
 		<gt.version>20.0</gt.version>
 		<groovy.version>2.4.15</groovy.version>
 		<geoscript.version>1.12.0</geoscript.version>
-		<postgis.version>2.2.1</postgis.version>
 		<c3p0.version>0.9.5.2</c3p0.version>
 		<h2gis.version>1.5.0-SNAPSHOT</h2gis.version>
 		<sqlitejdbc.version>3.8.11.2</sqlitejdbc.version>
@@ -45,6 +44,8 @@
 		<fork.javac>true</fork.javac>
 		<javac.maxHeapSize>256M</javac.maxHeapSize>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<postgis.version>2.3.0</postgis.version>
 		<postgresql.jdbc.version>42.2.5</postgresql.jdbc.version>
 
 		<performRelease>false</performRelease>
