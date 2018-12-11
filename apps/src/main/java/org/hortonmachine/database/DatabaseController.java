@@ -996,7 +996,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 GuiUtilities.showWarningMessage(DatabaseController.this, null, NO_SAVED_CONNECTIONS_AVAILABLE);
                             } else {
                                 connectionDataList.sort(( c1, c2 ) -> c1.connectionLabel.compareTo(c2.connectionLabel));
-                                Map<String, ConnectionData> collect = connectionDataList.stream()
+                                Map<String, ConnectionData> collect = connectionDataList.stream().distinct()
                                         .collect(Collectors.toMap(c -> c.connectionLabel, Function.identity()));
 
                                 List<String> labels = connectionDataList.stream().map(c -> c.connectionLabel)

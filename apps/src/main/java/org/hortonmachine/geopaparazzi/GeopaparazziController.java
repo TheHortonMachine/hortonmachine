@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.geopaparazzi.simpleserver;
+package org.hortonmachine.geopaparazzi;
 
 import static org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOGS;
 import static org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.TABLE_GPSLOG_DATA;
@@ -49,7 +49,6 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTextPane;
@@ -72,7 +71,6 @@ import javax.swing.tree.TreePath;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.compat.ASpatialDb;
-import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.log.Logger;
@@ -95,7 +93,6 @@ import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.modules.v.smoothing.FeatureSlidingAverage;
 import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.hortonmachine.geopaparazzi.GeopaparazziServer;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
@@ -104,7 +101,6 @@ import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.LineString;
@@ -147,8 +143,6 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
     private NwwPanel wwjPanel;
 
     private ProjectInfo currentLoadedProject;
-
-    private GeopaparazziServer geopaparazziServer;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public GeopaparazziController( GuiBridgeHandler guiBridge ) {
@@ -233,56 +227,6 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 }
 
                 layoutTree(filtered, false);
-            }
-        });
-
-        _httpServerButton.setIcon(ImageCache.getInstance().getImage(ImageCache.BROWSER));
-        _httpServerButton.setText("");
-        _httpServerButton.setPreferredSize(preferredButtonSize);
-        _httpServerButton.setToolTipText("Start/stop a simple http server to connect Geopaparazzi to.");
-        _httpServerButton.addActionListener(e -> {
-            if (_httpServerButton.isSelected()) {
-                String folderPath = _projectsFolderTextfield.getText();
-                File folderFile = new File(folderPath);
-                if (folderFile.exists() && folderFile.isDirectory()) {
-                    int port = 8080;
-                    try {
-                        String portChosen = JOptionPane.showInputDialog("Server port to use", "8080");
-                        if (portChosen == null) {
-                            _httpServerButton.setSelected(false);
-                            return;
-                        }
-                        port = Integer.parseInt(portChosen);
-                    } catch (NumberFormatException e1) {
-                        _httpServerButton.setSelected(false);
-                        GuiUtilities.showWarningMessage(this, null, "The port has to be a valid integer.");
-                        return;
-                    }
-
-                    final int fPort = port;
-                    new Thread(new Runnable(){
-                        public void run() {
-                            // TODO enable layers download
-                            try {
-                                geopaparazziServer = new GeopaparazziServer(fPort, folderFile);
-                                // Uncomment to require authentication:
-                                // geopaparazziServer.enableBasicAuth("user", "geopap");
-                                geopaparazziServer.start();
-                            } catch (Exception e) {
-                                Logger.INSTANCE.insertError("", "ERROR", e);
-                            }
-                        }
-                    }).start();
-                } else {
-                    _httpServerButton.setSelected(false);
-                    GuiUtilities.showWarningMessage(this, null, "The supplied projects folder doesn't exist.");
-                }
-            } else {
-                // stop server
-                if (geopaparazziServer != null) {
-                    geopaparazziServer.stop();
-                    geopaparazziServer = null;
-                }
             }
         });
 
@@ -725,10 +669,6 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                 guiBridge.setGeopaparazziProjectViewerPreferencesMap(prefsMap);
             }
 
-            // stop server
-            if (geopaparazziServer != null) {
-                geopaparazziServer.stop();
-            }
         } catch (Exception e) {
             Logger.INSTANCE.insertError("", "Error", e);
         }

@@ -1,24 +1,24 @@
-package org.hortonmachine.geopaparazzi.simpleserver;
+package org.hortonmachine.geopaparazzi;
 
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
+
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.border.TitledBorder;
+
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 
 public class GeopaparazziView extends JPanel
@@ -31,7 +31,6 @@ public class GeopaparazziView extends JPanel
    JPanel _chartHolderFrame = new JPanel();
    JPanel _chartHolder = new JPanel();
    JButton _loadFolderButton = new JButton();
-   JToggleButton _httpServerButton = new JToggleButton();
    JPanel _nwwHolderFrame = new JPanel();
    JPanel _nwwHolder = new JPanel();
    JCheckBox _useGpsElevationsCheckbox = new JCheckBox();
@@ -130,7 +129,7 @@ public class GeopaparazziView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.4),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.6),FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(1.0),CENTER:2DLU:NONE,FILL:DEFAULT:GROW(0.5),FILL:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.4),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.6),FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,FILL:DEFAULT:GROW(1.0),CENTER:2DLU:NONE,FILL:DEFAULT:GROW(0.5),FILL:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -153,32 +152,27 @@ public class GeopaparazziView extends JPanel
       _filterTextfield.setName("filterTextfield");
       jpanel1.add(_filterTextfield,cc.xy(5,4));
 
-      jpanel1.add(createchartHolderFrame(),cc.xywh(7,8,7,1));
+      jpanel1.add(createchartHolderFrame(),cc.xywh(7,8,5,1));
       _loadFolderButton.setActionCommand("Load");
       _loadFolderButton.setName("loadFolderButton");
       _loadFolderButton.setText("Load");
       jpanel1.add(_loadFolderButton,cc.xy(11,2));
 
-      _httpServerButton.setActionCommand("HTTP");
-      _httpServerButton.setName("httpServerButton");
-      _httpServerButton.setText("HTTP");
-      jpanel1.add(_httpServerButton,cc.xy(13,2));
-
-      jpanel1.add(createnwwHolderFrame(),cc.xywh(7,6,7,1));
+      jpanel1.add(createnwwHolderFrame(),cc.xywh(7,6,5,1));
       _useGpsElevationsCheckbox.setActionCommand("use GPS elevations for logs");
       _useGpsElevationsCheckbox.setName("useGpsElevationsCheckbox");
       _useGpsElevationsCheckbox.setText("use GPS elevations for logs");
-      jpanel1.add(_useGpsElevationsCheckbox,cc.xywh(7,4,7,1));
+      jpanel1.add(_useGpsElevationsCheckbox,cc.xywh(7,4,5,1));
 
       jpanel1.add(createleftPanel(),cc.xywh(2,6,4,3));
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14 },new int[]{ 1,2,3,4,5,6,7,8,9 });
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12 },new int[]{ 1,2,3,4,5,6,7,8,9 });
       return jpanel1;
    }
 
    public JPanel createchartHolderFrame()
    {
       _chartHolderFrame.setName("chartHolderFrame");
-      TitledBorder titledborder1 = new TitledBorder(null,"Charts",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
+      TitledBorder titledborder1 = new TitledBorder(null,"Charts",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       _chartHolderFrame.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
@@ -194,7 +188,7 @@ public class GeopaparazziView extends JPanel
    public JPanel createnwwHolderFrame()
    {
       _nwwHolderFrame.setName("nwwHolderFrame");
-      TitledBorder titledborder1 = new TitledBorder(null,"Viewer",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
+      TitledBorder titledborder1 = new TitledBorder(null,"Viewer",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       _nwwHolderFrame.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
@@ -223,7 +217,7 @@ public class GeopaparazziView extends JPanel
    public JPanel createdatabaseTreeView()
    {
       _databaseTreeView.setName("databaseTreeView");
-      TitledBorder titledborder1 = new TitledBorder(null,"Projects",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
+      TitledBorder titledborder1 = new TitledBorder(null,"Projects",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       _databaseTreeView.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
@@ -243,7 +237,7 @@ public class GeopaparazziView extends JPanel
    public JPanel createPanel1()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Info",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
+      TitledBorder titledborder1 = new TitledBorder(null,"Info",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();

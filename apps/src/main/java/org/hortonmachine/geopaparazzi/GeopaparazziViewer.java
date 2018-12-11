@@ -36,15 +36,12 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
-import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.Image;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.Note;
-import org.hortonmachine.geopaparazzi.simpleserver.GeopaparazziController;
-import org.hortonmachine.geopaparazzi.simpleserver.ProjectInfo;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
