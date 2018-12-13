@@ -375,5 +375,10 @@ public abstract class SymbolizerWrapper {
     public String getyOffset() {
         return yOffset;
     }
+    
+    @Override
+    public String toString() {
+        return symbolizer.getClass().getSimpleName();
+    }
 
 }

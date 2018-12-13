@@ -271,5 +271,10 @@ public class RuleWrapper {
     // Filter filter = (Filter) parser.parse(xml);
     // rule.setFilter(filter);
     // }
+    
+    @Override
+    public String toString() {
+        return name;
+    }
 
 }

@@ -123,5 +123,10 @@ public class FeatureTypeStyleWrapper {
             Collections.swap(rulesWrapperList, src, dest);
         }
     }
+    
+    @Override
+    public String toString() {
+        return name;
+    }
 
 }
