@@ -64,5 +64,9 @@ public class H2NonSpatialDataType extends ADatabaseSyntaxHelper {
     public String MAKEPOINT2D() {
         return "ST_MakePoint";
     }
+    
+    public String LONG_PRIMARYKEY_AUTOINCREMENT() {
+        return LONG() + " " + PRIMARYKEY() + " " + AUTOINCREMENT();
+    }
 
 }

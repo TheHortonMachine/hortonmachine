@@ -112,9 +112,7 @@ public abstract class ADatabaseSyntaxHelper {
     /**
      * @return the string used to define the primary key as long and with autoincrement.
      */
-    public String LONG_PRIMARYKEY_AUTOINCREMENT() {
-        return LONG() + " " + PRIMARYKEY() + " " + AUTOINCREMENT();
-    }
+    public abstract String LONG_PRIMARYKEY_AUTOINCREMENT();
 
     public abstract String AUTOINCREMENT();
 

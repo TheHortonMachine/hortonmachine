@@ -64,4 +64,8 @@ public class SqliteNonSpatialDataType extends ADatabaseSyntaxHelper {
     public String MAKEPOINT2D() {
         return "MakePoint";
     }
+    
+    public String LONG_PRIMARYKEY_AUTOINCREMENT() {
+        return LONG() + " " + PRIMARYKEY() + " " + AUTOINCREMENT();
+    }
 }

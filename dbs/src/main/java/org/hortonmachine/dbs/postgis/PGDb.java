@@ -19,7 +19,9 @@ package org.hortonmachine.dbs.postgis;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -423,6 +425,38 @@ public class PGDb extends ADb {
     public void accept( IDbVisitor visitor ) throws Exception {
         visitor.visit(comboPooledDataSource);
         visitor.visit(singleJdbcConn);
+    }
+
+    /**
+     * Get the list of databases.
+     * 
+     * @param host the host.
+     * @param port the port.
+     * @param existingDb an existing db to lean on. If null, "postgres" will be used.
+     * @param user optional user.
+     * @param pwd optional pwd.
+     * @return the list of available databases.
+     * @throws Exception
+     */
+    public static List<String> getDatabases( String host, String port, String existingDb, String user, String pwd )
+            throws Exception {
+        if (existingDb == null) {
+            existingDb = "postgres";
+        }
+        String url = JDBC_URL_PRE + host + ":" + port + "/" + existingDb;
+        try (Connection connection = DriverManager.getConnection(url, user, pwd)) {
+
+            String sql = "SELECT datname FROM pg_database WHERE datistemplate = false;";
+
+            List<String> dbs = new ArrayList<>();
+            try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    String dbName = rs.getString(1);
+                    dbs.add(dbName);
+                }
+                return dbs;
+            }
+        }
     }
 
 }

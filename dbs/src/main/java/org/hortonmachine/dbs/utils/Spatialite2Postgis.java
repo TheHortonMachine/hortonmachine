@@ -70,8 +70,8 @@ public class Spatialite2Postgis implements AutoCloseable {
         spatialite = EDb.SPATIALITE.getSpatialDb();
         spatialite.open(spatialitePath);
 
-        postgis.setCredentials(user, pwd);
         postgis = (PostgisDb) EDb.POSTGIS.getSpatialDb();
+        postgis.setCredentials(user, pwd);
         postgis.open(postgisUrl);
         postgis.initSpatialMetadata(null);
     }
@@ -87,6 +87,14 @@ public class Spatialite2Postgis implements AutoCloseable {
         postgis.close();
     }
 
+    public PostgisDb getPostgisDb() {
+        return postgis;
+    }
+    
+    public ASpatialDb getSpatialiteDb() {
+        return spatialite;
+    }
+    
     public void generateSchema() throws Exception {
 
         List<TableLevel> tablesList = getTables();

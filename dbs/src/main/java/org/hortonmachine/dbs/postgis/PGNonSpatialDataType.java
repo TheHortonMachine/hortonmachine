@@ -65,4 +65,8 @@ public class PGNonSpatialDataType extends ADatabaseSyntaxHelper {
         return "ST_MakePoint";
     }
 
+    public String LONG_PRIMARYKEY_AUTOINCREMENT() {
+        return AUTOINCREMENT() + " " + PRIMARYKEY();
+    }
+
 }
