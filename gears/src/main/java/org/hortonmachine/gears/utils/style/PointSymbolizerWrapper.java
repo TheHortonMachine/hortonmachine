@@ -1,6 +1,6 @@
 package org.hortonmachine.gears.utils.style;
 
-import static org.hortonmachine.gears.utils.style.Utilities.*;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.*;
 
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -64,7 +64,7 @@ public class PointSymbolizerWrapper extends SymbolizerWrapper {
             rotation = DEFAULT_ROTATION;
         }
         // offset
-        Point2D offset = Utilities.getOffset(pointSymbolizer);
+        Point2D offset = StyleUtilities.getOffset(pointSymbolizer);
         if (offset != null) {
             xOffset = String.valueOf(offset.getX());
             yOffset = String.valueOf(offset.getY());

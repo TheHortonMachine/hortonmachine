@@ -53,10 +53,10 @@ public class SimpleStyleUtilities {
      * @return
      */
     public static Style createSimpleLineStyle( Color color, float width ) {
-        FeatureTypeStyle featureTypeStyle = Utilities.sf.createFeatureTypeStyle();
+        FeatureTypeStyle featureTypeStyle = StyleUtilities.sf.createFeatureTypeStyle();
         featureTypeStyle.rules().add(createSimpleLineRule(color, width));
 
-        Style style = Utilities.sf.createStyle();
+        Style style = StyleUtilities.sf.createStyle();
         style.featureTypeStyles().add(featureTypeStyle);
 
         return style;
@@ -72,11 +72,11 @@ public class SimpleStyleUtilities {
      * @return the rule.
      */
     public static Rule createSimpleLineRule( Color color, float width ) {
-        LineSymbolizer lineSymbolizer = Utilities.sf.createLineSymbolizer();
-        lineSymbolizer.setStroke(Utilities.sf.createStroke(
-                Utilities.ff.literal("#" + Integer.toHexString(color.getRGB() & 0xffffff)), Utilities.ff.literal(width)));
+        LineSymbolizer lineSymbolizer = StyleUtilities.sf.createLineSymbolizer();
+        lineSymbolizer.setStroke(StyleUtilities.sf.createStroke(
+                StyleUtilities.ff.literal("#" + Integer.toHexString(color.getRGB() & 0xffffff)), StyleUtilities.ff.literal(width)));
 
-        Rule rule = Utilities.sf.createRule();
+        Rule rule = StyleUtilities.sf.createRule();
         rule.setName("New rule");
         rule.symbolizers().add(lineSymbolizer);
 

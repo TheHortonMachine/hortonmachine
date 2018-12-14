@@ -1,6 +1,6 @@
 package org.hortonmachine.gears.utils.style;
 
-import static org.hortonmachine.gears.utils.style.Utilities.*;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.*;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -302,7 +302,7 @@ public abstract class SymbolizerWrapper {
         throws MalformedURLException {
         URL url = null;
         File f = new File(externalGraphicPath);
-        String format = Utilities.getFormat(externalGraphicPath);
+        String format = StyleUtilities.getFormat(externalGraphicPath);
         if (!f.exists()) {
             if (externalGraphicPath.startsWith("http://") || externalGraphicPath.startsWith("file:")) { //$NON-NLS-1$ //$NON-NLS-2$
                 url = new URL(externalGraphicPath);
@@ -352,7 +352,7 @@ public abstract class SymbolizerWrapper {
     public void setOffset(String xOffset, String yOffset) {
         this.xOffset = xOffset;
         this.yOffset = yOffset;
-        Utilities.setOffset(symbolizer, xOffset + "," + yOffset); //$NON-NLS-1$
+        StyleUtilities.setOffset(symbolizer, xOffset + "," + yOffset); //$NON-NLS-1$
     }
 
     public void setOffset(String offset) {

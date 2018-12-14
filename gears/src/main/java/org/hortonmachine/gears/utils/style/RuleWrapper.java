@@ -1,6 +1,6 @@
 package org.hortonmachine.gears.utils.style;
 
-import static org.hortonmachine.gears.utils.style.Utilities.*;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.*;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -10,6 +10,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -25,9 +27,13 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.style.FeatureTypeStyleWrapper;
+import org.hortonmachine.gears.utils.style.LineSymbolizerWrapper;
+import org.hortonmachine.gears.utils.style.PointSymbolizerWrapper;
+import org.hortonmachine.gears.utils.style.PolygonSymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.RuleWrapper;
 import org.hortonmachine.gears.utils.style.StyleWrapper;
 import org.hortonmachine.gears.utils.style.SymbolizerWrapper;
+import org.hortonmachine.gears.utils.style.TextSymbolizerWrapper;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
@@ -37,13 +43,17 @@ import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-public class MainController extends MainView implements IOnCloseListener {
+public class MainController extends MainView implements IOnCloseListener, TreeSelectionListener {
+    public static final int COLOR_IMAGE_SIZE = 15;
+
     private MapContent mapContent;
     private List<SimpleFeature> currentFeaturesList;
     private int currentFeatureIndex = 0;
     private FeatureLayer currentFeaturesLayer;
     private JMapPane mapPane;
     private StyleWrapper styleWrapper;
+
+    private String[] featureCollectionFieldNames;
 
     /**
     * Default constructor
@@ -55,6 +65,7 @@ public class MainController extends MainView implements IOnCloseListener {
 
     private void init() {
         _rulesTree.setModel(new DefaultTreeModel(null));
+        _stylePanel.setLayout(new BorderLayout());
 
         mapContent = new MapContent();
 
@@ -69,6 +80,7 @@ public class MainController extends MainView implements IOnCloseListener {
         }
         final String desc = sb.substring(1);
 
+        _filepathField.setEditable(false);
         _browseButton.addActionListener(e -> {
 
             JFileChooser fileChooser = new JFileChooser();
@@ -102,37 +114,41 @@ public class MainController extends MainView implements IOnCloseListener {
                 File[] selectedFiles = fileChooser.getSelectedFiles();
                 if (selectedFiles != null && selectedFiles.length > 0) {
                     GuiUtilities.setLastPath(selectedFiles[0].getAbsolutePath());
-                    if (selectedFiles.length == 1) {
-
-                        try {
-                            if (currentFeaturesLayer != null) {
-                                mapContent.removeLayer(currentFeaturesLayer);
-                            }
-
-                            SimpleFeatureCollection currentFeatureCollection = VectorReader
-                                    .readVector(selectedFiles[0].getAbsolutePath());
-                            currentFeaturesList = FeatureUtilities.featureCollectionToList(currentFeatureCollection);
-
-                            CoordinateReferenceSystem currentCRS = currentFeatureCollection.getSchema()
-                                    .getCoordinateReferenceSystem();
-                            mapContent.getViewport().setCoordinateReferenceSystem(currentCRS);
-
-                            Style style = SldUtilities.getStyleFromFile(selectedFiles[0]);
-
-                            currentFeaturesLayer = new FeatureLayer(currentFeatureCollection, style);
-                            mapContent.addLayer(currentFeaturesLayer);
-
-                            styleWrapper = new StyleWrapper(style);
-
-                            loadFeatureCollection();
-                            reloadGroupsAndRules();
-                        } catch (IOException e1) {
-
-                            // TODO Auto-generated catch block
-                            e1.printStackTrace();
+                    _filepathField.setText(selectedFiles[0].getAbsolutePath());
+                    try {
+                        if (currentFeaturesLayer != null) {
+                            mapContent.removeLayer(currentFeaturesLayer);
                         }
 
+                        SimpleFeatureCollection currentFeatureCollection = VectorReader
+                                .readVector(selectedFiles[0].getAbsolutePath());
+
+                        featureCollectionFieldNames = FeatureUtilities.featureCollectionFieldNames(currentFeatureCollection);
+                        currentFeaturesList = FeatureUtilities.featureCollectionToList(currentFeatureCollection);
+
+                        CoordinateReferenceSystem currentCRS = currentFeatureCollection.getSchema()
+                                .getCoordinateReferenceSystem();
+                        mapContent.getViewport().setCoordinateReferenceSystem(currentCRS);
+
+                        Style style = SldUtilities.getStyleFromFile(selectedFiles[0]);
+
+                        currentFeaturesLayer = new FeatureLayer(currentFeatureCollection, style);
+                        mapContent.addLayer(currentFeaturesLayer);
+
+                        styleWrapper = new StyleWrapper(style);
+
+                        loadFeatureCollection();
+                        reloadGroupsAndRules();
+
+                        _stylePanel.removeAll();
+                        _stylePanel.revalidate();
+                        _stylePanel.repaint();
+                    } catch (IOException e1) {
+
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
                     }
+
                 }
             }
         });
@@ -177,6 +193,10 @@ public class MainController extends MainView implements IOnCloseListener {
         }
 
         _rulesTree.setModel(model);
+        for( int i = 0; i < _rulesTree.getRowCount(); i++ ) {
+            _rulesTree.expandRow(i);
+        }
+        _rulesTree.addTreeSelectionListener(this);
     }
 
     private void loadFeatureCollection() {
@@ -225,6 +245,40 @@ public class MainController extends MainView implements IOnCloseListener {
 
         GuiUtilities.addClosingListener(frame, controller);
 
+    }
+
+    @Override
+    public void valueChanged( TreeSelectionEvent e ) {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) _rulesTree.getLastSelectedPathComponent();
+
+        if (node == null)
+            return;
+        _stylePanel.removeAll();
+
+        Object nodeInfo = node.getUserObject();
+        if (node.isLeaf()) {
+            if (nodeInfo instanceof PolygonSymbolizerWrapper) {
+                PolygonSymbolizerWrapper symbolizerWrapper = (PolygonSymbolizerWrapper) nodeInfo;
+                _stylePanel.add(new PolygonSymbolizerController(symbolizerWrapper, this), BorderLayout.CENTER);
+            } else if (nodeInfo instanceof LineSymbolizerWrapper) {
+                LineSymbolizerWrapper symbolizerWrapper = (LineSymbolizerWrapper) nodeInfo;
+                _stylePanel.add(new LineSymbolizerController(symbolizerWrapper, this), BorderLayout.CENTER);
+            } else if (nodeInfo instanceof PointSymbolizerWrapper) {
+                PointSymbolizerWrapper symbolizerWrapper = (PointSymbolizerWrapper) nodeInfo;
+                _stylePanel.add(new PointMarkSymbolizerController(symbolizerWrapper, this), BorderLayout.CENTER);
+            } else if (nodeInfo instanceof TextSymbolizerWrapper) {
+                TextSymbolizerWrapper symbolizerWrapper = (TextSymbolizerWrapper) nodeInfo;
+                _stylePanel.add(new TextSymbolizerController(symbolizerWrapper, featureCollectionFieldNames, this),
+                        BorderLayout.CENTER);
+            }
+        }
+        _stylePanel.revalidate();
+        _stylePanel.repaint();
+    }
+
+    public void applyStyle() {
+        Style style = styleWrapper.getStyle();
+        currentFeaturesLayer.setStyle(style);
     }
 
 }

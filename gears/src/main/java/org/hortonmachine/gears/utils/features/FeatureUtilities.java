@@ -960,6 +960,18 @@ public class FeatureUtilities {
         return attributes;
     }
 
+    public static String[] featureCollectionFieldNames( SimpleFeatureCollection feature ) {
+        List<String> names = new ArrayList<>();
+        List<AttributeDescriptor> attributeDescriptors = feature.getSchema().getAttributeDescriptors();
+        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+            if (!(attributeDescriptor instanceof GeometryDescriptor)) {
+                String fieldName = attributeDescriptor.getLocalName();
+                names.add(fieldName);
+            }
+        }
+        return names.toArray(new String[0]);
+    }
+
     /**
      * Utility to convert a featurecollection to a queryresult format.
      * 

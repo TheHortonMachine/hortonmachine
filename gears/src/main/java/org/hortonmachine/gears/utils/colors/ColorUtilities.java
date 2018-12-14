@@ -60,7 +60,7 @@ public class ColorUtilities {
      * @param color the color to convert.
      * @return the hex.
      */
-    public static String asHex( Color color ) {
+    public static String asHexWithAlpha( Color color ) {
         int r = color.getRed();
         int g = color.getGreen();
         int b = color.getBlue();
@@ -69,7 +69,38 @@ public class ColorUtilities {
         String hex = String.format("#%02x%02x%02x%02x", r, g, b, a);
         return hex;
     }
-    
+
+    /**
+     * Convert a color to its hex representation.
+     * 
+     * @param color the color to convert.
+     * @return the hex.
+     */
+    public static String asHex( Color color ) {
+        int r = color.getRed();
+        int g = color.getGreen();
+        int b = color.getBlue();
+
+        String hex = String.format("#%02x%02x%02x", r, g, b);
+        return hex;
+    }
+
+    /**
+     * Convert hex color to Color.
+     * 
+     * @return the Color object. 
+     */
+    public static Color fromHex( String hex ) {
+        int index = 0;
+        if (hex.startsWith("#")) {
+            index = 1;
+        }
+        String r = hex.substring(index, index + 2);
+        String g = hex.substring(index + 2, index + 4);
+        String b = hex.substring(index + 4, index + 6);
+        return new Color(Integer.valueOf(r, 16), Integer.valueOf(g, 16), Integer.valueOf(b, 16));
+    }
+
     /**
      * Add alpha to a color.
      * 

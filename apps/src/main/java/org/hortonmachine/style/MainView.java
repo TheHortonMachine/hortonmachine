@@ -23,9 +23,11 @@ import com.jgoodies.forms.layout.FormLayout;
 public class MainView extends JPanel
 {
    JTextField _filepathField = new JTextField();
-   JButton _browseButton = new JButton();
-   JPanel _stylePanelSpace = new JPanel();
    JTree _rulesTree = new JTree();
+   JButton _browseButton = new JButton();
+   JButton _saveButton = new JButton();
+   JPanel _stylePanelSpace = new JPanel();
+   JPanel _stylePanel = new JPanel();
    JButton _addGroupButton = new JButton();
    JButton _addRuleButton = new JButton();
    JButton _deleteButton = new JButton();
@@ -126,19 +128,13 @@ public class MainView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.5),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.5),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
       _filepathField.setName("filepathField");
       jpanel1.add(_filepathField,cc.xywh(2,2,5,1));
 
-      _browseButton.setActionCommand("...");
-      _browseButton.setName("browseButton");
-      _browseButton.setText("...");
-      jpanel1.add(_browseButton,cc.xy(8,2));
-
-      jpanel1.add(createstylePanelSpace(),cc.xywh(10,2,10,18));
       _rulesTree.setName("rulesTree");
       TitledBorder titledborder1 = new TitledBorder(null,"Groups and Rules",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       _rulesTree.setBorder(titledborder1);
@@ -146,12 +142,23 @@ public class MainView extends JPanel
       jscrollpane1.setViewportView(_rulesTree);
       jscrollpane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
       jscrollpane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-      jpanel1.add(jscrollpane1,cc.xywh(2,4,7,6));
+      jpanel1.add(jscrollpane1,cc.xywh(2,4,9,6));
 
-      jpanel1.add(createPanel1(),cc.xywh(2,11,7,1));
-      jpanel1.add(createPanel2(),cc.xywh(2,19,7,1));
-      jpanel1.add(createmapPaneHolder(),cc.xywh(2,13,7,5));
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 });
+      _browseButton.setActionCommand("...");
+      _browseButton.setName("browseButton");
+      _browseButton.setText("...");
+      jpanel1.add(_browseButton,cc.xy(8,2));
+
+      _saveButton.setActionCommand("save");
+      _saveButton.setName("saveButton");
+      _saveButton.setText("save");
+      jpanel1.add(_saveButton,cc.xy(10,2));
+
+      jpanel1.add(createstylePanelSpace(),cc.xywh(12,2,10,18));
+      jpanel1.add(createPanel1(),cc.xywh(2,11,9,1));
+      jpanel1.add(createPanel2(),cc.xywh(2,19,9,1));
+      jpanel1.add(createmapPaneHolder(),cc.xywh(2,13,9,5));
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 });
       return jpanel1;
    }
 
@@ -162,7 +169,10 @@ public class MainView extends JPanel
       CellConstraints cc = new CellConstraints();
       _stylePanelSpace.setLayout(formlayout1);
 
-      addFillComponents(_stylePanelSpace,new int[]{ 1 },new int[]{ 1 });
+      _stylePanel.setName("stylePanel");
+      _stylePanelSpace.add(_stylePanel,cc.xy(1,1));
+
+      addFillComponents(_stylePanelSpace,new int[0],new int[0]);
       return _stylePanelSpace;
    }
 

@@ -1,6 +1,6 @@
 package org.hortonmachine.gears.utils.style;
 
-import static org.hortonmachine.gears.utils.style.Utilities.*;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.*;
 
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -40,12 +40,12 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
     protected PointSymbolizerWrapper endPointStyle;
     protected PointSymbolizerWrapper startPointStyle;
 
-    public LineSymbolizerWrapper(PolygonSymbolizer polygonSymbolizer, RuleWrapper parent) {
+    public LineSymbolizerWrapper( PolygonSymbolizer polygonSymbolizer, RuleWrapper parent ) {
         super(polygonSymbolizer, parent);
         initEndPointSymbolizers();
     }
 
-    public LineSymbolizerWrapper(Symbolizer symbolizer, RuleWrapper parent) {
+    public LineSymbolizerWrapper( Symbolizer symbolizer, RuleWrapper parent ) {
         super(symbolizer, parent);
 
         initEndPointSymbolizers();
@@ -117,7 +117,7 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
     }
 
     private void initEndPointSymbolizers() {
-        for (Symbolizer x : super.getParent().getRule().getSymbolizers()) {
+        for( Symbolizer x : super.getParent().getRule().getSymbolizers() ) {
             if (x instanceof PointSymbolizer) {
                 PointSymbolizer pnt = (PointSymbolizer) x;
                 Expression ex = pnt.getGeometry();
@@ -127,7 +127,7 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
                     GraphicalSymbol gs = pnt.getGraphic().graphicalSymbols().get(0);
                     if (gs instanceof Mark) {
                         String name = ((Mark) gs).getWellKnownName().evaluate(null, String.class);
-                        if (Utilities.lineEndStyles.values().contains(name)) {
+                        if (StyleUtilities.lineEndStyles.values().contains(name)) {
                             if (endpnt) {
                                 endPointStyle = new PointSymbolizerWrapper(pnt, super.getParent());
                             } else if (startpnt) {
@@ -148,16 +148,16 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
         return startPointStyle;
     }
 
-    public void setEndPointStyle(String geomName, String wkgName, String size, String color) {
+    public void setEndPointStyle( String geomName, String wkgName, String size, String color ) {
         endPointStyle = updateEndpointStyle(geomName, endPointStyle, wkgName, size, color, false);
     }
 
-    public void setStartPointStyle(String geomName, String wkgName, String size, String color) {
+    public void setStartPointStyle( String geomName, String wkgName, String size, String color ) {
         startPointStyle = updateEndpointStyle(geomName, startPointStyle, wkgName, size, color, true);
     }
 
-    private PointSymbolizerWrapper updateEndpointStyle(String geomName, PointSymbolizerWrapper wrapper, String wkgName,
-        String size, String color, boolean isStart) {
+    private PointSymbolizerWrapper updateEndpointStyle( String geomName, PointSymbolizerWrapper wrapper, String wkgName,
+            String size, String color, boolean isStart ) {
         if (wkgName == null || wkgName.length() == 0) {
             if (wrapper != null) {
                 getParent().getRule().symbolizers().remove(wrapper.getSymbolizer());
@@ -168,7 +168,10 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
             PointSymbolizer p = sf.createPointSymbolizer();
             if (isStart) {
                 p.setGeometry(ff.function("startPoint", ff.property(geomName))); //$NON-NLS-1$
-                p.getGraphic().setRotation(ff.add(ff.function("startAngle", ff.property(geomName)), ff.literal(-180))); //rotate start 180 degrees //$NON-NLS-1$
+                p.getGraphic().setRotation(ff.add(ff.function("startAngle", ff.property(geomName)), ff.literal(-180))); // rotate //$NON-NLS-1$
+                                                                                                                        // start
+                                                                                                                        // 180
+                                                                                                                        // degrees
             } else {
                 p.setGeometry(ff.function("endPoint", ff.property(geomName))); //$NON-NLS-1$
                 p.getGraphic().setRotation(ff.function("endAngle", ff.property(geomName))); //$NON-NLS-1$
@@ -195,7 +198,7 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
         return strokeGraphicStroke;
     }
 
-    public void setStrokeGraphicStroke(Graphic strokeGraphicStroke) {
+    public void setStrokeGraphicStroke( Graphic strokeGraphicStroke ) {
         this.strokeGraphicStroke = strokeGraphicStroke;
         if (hasStroke) {
             checkStrokeExists();
@@ -205,7 +208,7 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
     }
 
     // ///// GETTERS/SETTERS
-    public void setHasStroke(boolean hasStroke) {
+    public void setHasStroke( boolean hasStroke ) {
         this.hasStroke = hasStroke;
         if (hasStroke) {
             checkStrokeExists();
@@ -231,7 +234,7 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setStrokeWidth(String strokeWidth, boolean isProperty) {
+    public void setStrokeWidth( String strokeWidth, boolean isProperty ) {
         this.strokeWidth = strokeWidth;
         if (hasStroke) {
             checkStrokeExists();
@@ -243,7 +246,7 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setStrokeColor(String strokeColor, boolean isProperty) {
+    public void setStrokeColor( String strokeColor, boolean isProperty ) {
         this.strokeColor = strokeColor;
         if (hasStroke) {
             checkStrokeExists();
@@ -257,7 +260,7 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setStrokeOpacity(String strokeOpacity, boolean isProperty) {
+    public void setStrokeOpacity( String strokeOpacity, boolean isProperty ) {
         this.strokeOpacity = strokeOpacity;
         if (hasStroke) {
             checkStrokeExists();
@@ -267,7 +270,7 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
                 stroke.setOpacity(ff.literal(strokeOpacity));
             }
 
-            //update end point styles if applicable
+            // update end point styles if applicable
             if (endPointStyle != null) {
                 endPointStyle.setStrokeOpacity(strokeOpacity, isProperty);
                 endPointStyle.setFillOpacity(strokeOpacity, isProperty);
@@ -279,16 +282,20 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setDash(String dash) {
+    public void setDash( String dash ) {
         this.dash = dash;
         if (hasStroke) {
             checkStrokeExists();
-            float[] dashArray = Utilities.getDash(dash);
-            stroke.setDashArray(dashArray);
+            float[] dashArray = StyleUtilities.getDash(dash);
+            if (dashArray == null) {
+                stroke.dashArray().clear();
+            } else {
+                stroke.setDashArray(dashArray);
+            }
         }
     }
 
-    public void setDashOffset(String dashOffset) {
+    public void setDashOffset( String dashOffset ) {
         this.dashOffset = dashOffset;
         if (hasStroke) {
             checkStrokeExists();
@@ -298,7 +305,7 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setLineCap(String lineCap) {
+    public void setLineCap( String lineCap ) {
         this.lineCap = lineCap;
         if (hasStroke) {
             checkStrokeExists();
@@ -306,7 +313,7 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setLineJoin(String lineJoin) {
+    public void setLineJoin( String lineJoin ) {
         this.lineJoin = lineJoin;
         if (hasStroke) {
             checkStrokeExists();

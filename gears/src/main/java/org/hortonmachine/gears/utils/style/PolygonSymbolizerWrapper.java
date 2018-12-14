@@ -1,6 +1,6 @@
 package org.hortonmachine.gears.utils.style;
 
-import static org.hortonmachine.gears.utils.style.Utilities.*;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.*;
 
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -84,7 +84,7 @@ public class PolygonSymbolizerWrapper extends LineSymbolizerWrapper {
             // dash
             float[] dashArray = stroke.getDashArray();
             if (dashArray != null) {
-                dash = Utilities.getDashString(dashArray);
+                dash = StyleUtilities.getDashString(dashArray);
             } else {
                 dash = ""; //$NON-NLS-1$
             }

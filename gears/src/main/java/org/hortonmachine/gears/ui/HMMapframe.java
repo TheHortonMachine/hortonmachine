@@ -25,7 +25,7 @@ import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.styling.Style;
 import org.geotools.swing.JMapFrame;
-import org.hortonmachine.gears.utils.style.Utilities;
+import org.hortonmachine.gears.utils.style.StyleUtilities;
 
 /**
  * A simple map frame where layers can be set or added with default styles.
@@ -76,7 +76,7 @@ public class HMMapframe extends JMapFrame {
     }
 
     private FeatureLayer makeFeatureLayer( SimpleFeatureCollection featureCollection ) {
-        Style style = Utilities.createDefaultStyle(featureCollection);
+        Style style = StyleUtilities.createDefaultStyle(featureCollection);
         FeatureLayer fl = new FeatureLayer(featureCollection, style);
         return fl;
     }

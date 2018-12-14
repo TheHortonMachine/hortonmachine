@@ -52,7 +52,7 @@ import org.opengis.style.GraphicalSymbol;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 @SuppressWarnings("nls")
-public class Utilities {
+public class StyleUtilities {
 
     public static final String NONE = "- none -";
 
@@ -561,14 +561,14 @@ public class Utilities {
      * @param wellKnownMarkName the name of the new mark.
      */
     public static void substituteMark( Rule rule, String wellKnownMarkName ) {
-        PointSymbolizer pointSymbolizer = Utilities.pointSymbolizerFromRule(rule);
+        PointSymbolizer pointSymbolizer = StyleUtilities.pointSymbolizerFromRule(rule);
         Mark oldMark = SLD.mark(pointSymbolizer);
 
         Graphic graphic = SLD.graphic(pointSymbolizer);
         graphic.graphicalSymbols().clear();
 
-        Mark mark = Utilities.sf.createMark();
-        mark.setWellKnownName(Utilities.ff.literal(wellKnownMarkName));
+        Mark mark = StyleUtilities.sf.createMark();
+        mark.setWellKnownName(StyleUtilities.ff.literal(wellKnownMarkName));
         if (oldMark != null) {
             mark.setFill(oldMark.getFill());
             mark.setStroke(oldMark.getStroke());
@@ -600,7 +600,7 @@ public class Utilities {
             }
         }
 
-        PointSymbolizer pointSymbolizer = Utilities.pointSymbolizerFromRule(rule);
+        PointSymbolizer pointSymbolizer = StyleUtilities.pointSymbolizerFromRule(rule);
         Graphic graphic = SLD.graphic(pointSymbolizer);
         graphic.graphicalSymbols().clear();
         ExternalGraphic exGraphic = sf.createExternalGraphic(externalGraphicsUrl, format);
@@ -652,7 +652,7 @@ public class Utilities {
      * @param newSize the new size.
      */
     public static void changeMarkSize( Rule rule, int newSize ) {
-        PointSymbolizer pointSymbolizer = Utilities.pointSymbolizerFromRule(rule);
+        PointSymbolizer pointSymbolizer = StyleUtilities.pointSymbolizerFromRule(rule);
         Graphic graphic = SLD.graphic(pointSymbolizer);
         graphic.setSize(ff.literal(newSize));
         // Mark oldMark = SLDs.mark(pointSymbolizer);
@@ -667,7 +667,7 @@ public class Utilities {
      * @param newRotation the new rotation value in degrees.
      */
     public static void changeRotation( Rule rule, int newRotation ) {
-        PointSymbolizer pointSymbolizer = Utilities.pointSymbolizerFromRule(rule);
+        PointSymbolizer pointSymbolizer = StyleUtilities.pointSymbolizerFromRule(rule);
         Graphic graphic = SLD.graphic(pointSymbolizer);
         graphic.setRotation(ff.literal(newRotation));
         // Mark oldMark = SLDs.mark(pointSymbolizer);
@@ -855,9 +855,9 @@ public class Utilities {
      * @return the new style created.
      */
     public static Style rulesToStyle( List<Rule> rules, String name, boolean oneFeaturetypestylePerRule ) {
-        Style namedStyle = Utilities.sf.createStyle();
+        Style namedStyle = StyleUtilities.sf.createStyle();
         if (!oneFeaturetypestylePerRule) {
-            FeatureTypeStyle featureTypeStyle = Utilities.sf.createFeatureTypeStyle();
+            FeatureTypeStyle featureTypeStyle = StyleUtilities.sf.createFeatureTypeStyle();
             List<Rule> currentRules = featureTypeStyle.rules();
             for( int i = 0; i < rules.size(); i++ ) {
                 Rule rule = rules.get(i);
@@ -866,7 +866,7 @@ public class Utilities {
             namedStyle.featureTypeStyles().add(featureTypeStyle);
         } else {
             for( int i = 0; i < rules.size(); i++ ) {
-                FeatureTypeStyle featureTypeStyle = Utilities.sf.createFeatureTypeStyle();
+                FeatureTypeStyle featureTypeStyle = StyleUtilities.sf.createFeatureTypeStyle();
                 Rule rule = rules.get(i);
                 featureTypeStyle.rules().add(rule);
                 namedStyle.featureTypeStyles().add(featureTypeStyle);

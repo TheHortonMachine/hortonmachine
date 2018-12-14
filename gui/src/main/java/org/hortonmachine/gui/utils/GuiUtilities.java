@@ -18,9 +18,11 @@
 package org.hortonmachine.gui.utils;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -29,6 +31,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -37,6 +40,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -415,6 +420,25 @@ public class GuiUtilities {
             title = "ERROR";
         }
         JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.ERROR_MESSAGE);
+    }
+
+    /**
+     * Create an image to make a color button.
+     * 
+     * @param button the button.
+     * @param color the color to set.
+     * @param size the optional size of the image.
+     */
+    public static void colorButton( JButton button, Color color, Integer size ) {
+        if (size == null)
+            size = 15;
+        BufferedImage bi = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
+        Graphics2D gr = (Graphics2D) bi.getGraphics();
+        gr.setColor(color);
+        gr.fillRect(0, 0, size, size);
+        gr.dispose();
+
+        button.setIcon(new ImageIcon(bi));
     }
 
 }
