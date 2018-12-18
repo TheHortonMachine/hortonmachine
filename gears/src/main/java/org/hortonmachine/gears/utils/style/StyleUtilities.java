@@ -316,14 +316,18 @@ public class StyleUtilities {
      */
     public static Style createDefaultStyle( SimpleFeatureCollection featureCollection ) {
         GeometryDescriptor geometryDescriptor = featureCollection.getSchema().getGeometryDescriptor();
+        Style style = null;
         if (EGeometryType.isPoint(geometryDescriptor)) {
-            return createDefaultPointStyle();
+            style = createDefaultPointStyle();
         } else if (EGeometryType.isLine(geometryDescriptor)) {
-            return createDefaultLineStyle();
+            style = createDefaultLineStyle();
         } else if (EGeometryType.isPolygon(geometryDescriptor)) {
-            return createDefaultPolygonStyle();
+            style = createDefaultPolygonStyle();
         }
-        return null;
+        if (style != null) {
+            style.setName(featureCollection.getSchema().getTypeName());
+        }
+        return style;
     }
 
     /**

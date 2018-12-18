@@ -30,6 +30,7 @@ public class MainView extends JPanel
    JPanel _stylePanel = new JPanel();
    JButton _previousButton = new JButton();
    JButton _nextButton = new JButton();
+   JButton _allButton = new JButton();
    JPanel _mapPaneHolder = new JPanel();
 
    /**
@@ -172,7 +173,7 @@ public class MainView extends JPanel
    public JPanel createPanel1()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -184,9 +185,14 @@ public class MainView extends JPanel
       _nextButton.setActionCommand("next");
       _nextButton.setName("nextButton");
       _nextButton.setText("next");
-      jpanel1.add(_nextButton,cc.xy(3,1));
+      jpanel1.add(_nextButton,cc.xy(5,1));
 
-      addFillComponents(jpanel1,new int[]{ 2 },new int[0]);
+      _allButton.setActionCommand("all");
+      _allButton.setName("allButton");
+      _allButton.setText("all");
+      jpanel1.add(_allButton,cc.xy(3,1));
+
+      addFillComponents(jpanel1,new int[]{ 2,4 },new int[0]);
       return jpanel1;
    }
 

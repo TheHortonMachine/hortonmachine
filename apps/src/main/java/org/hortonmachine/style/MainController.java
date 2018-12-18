@@ -82,6 +82,8 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
     private File selectedFile;
 
+    private SimpleFeatureCollection currentFeatureCollection;
+
     /**
     * Default constructor
     */
@@ -150,8 +152,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                             mapContent.removeLayer(currentFeaturesLayer);
                         }
 
-                        SimpleFeatureCollection currentFeatureCollection = VectorReader
-                                .readVector(selectedFile.getAbsolutePath());
+                        currentFeatureCollection = VectorReader.readVector(selectedFile.getAbsolutePath());
 
                         geometryDescriptor = currentFeatureCollection.getSchema().getGeometryDescriptor();
 
@@ -163,13 +164,16 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                         mapContent.getViewport().setCoordinateReferenceSystem(currentCRS);
 
                         Style style = SldUtilities.getStyleFromFile(selectedFile);
+                        if (style == null) {
+                            style = StyleUtilities.createDefaultStyle(currentFeatureCollection);
+                        }
 
                         currentFeaturesLayer = new FeatureLayer(currentFeatureCollection, style);
                         mapContent.addLayer(currentFeaturesLayer);
 
                         styleWrapper = new StyleWrapper(style);
 
-                        loadFeatureCollection();
+                        zoomToFeature();
                         reloadGroupsAndRules();
 
                         _stylePanel.removeAll();
@@ -187,11 +191,14 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
         _nextButton.addActionListener(e -> {
             currentFeatureIndex++;
-            loadFeatureCollection();
+            zoomToFeature();
         });
         _previousButton.addActionListener(e -> {
             currentFeatureIndex--;
-            loadFeatureCollection();
+            zoomToFeature();
+        });
+        _allButton.addActionListener(e -> {
+            zoomToAll();
         });
 
         _saveButton.addActionListener(e -> {
@@ -315,7 +322,14 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
     }
 
-    private void loadFeatureCollection() {
+    private void zoomToAll() {
+        if (currentFeatureCollection != null) {
+            ReferencedEnvelope bounds = currentFeatureCollection.getBounds();
+            mapPane.setDisplayArea(bounds);
+        }
+    }
+
+    private void zoomToFeature() {
         if (currentFeaturesList != null) {
             int size = currentFeaturesList.size();
             if (currentFeatureIndex < 0) {
@@ -440,6 +454,27 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             JMenuItem item = new JMenuItem(action);
             popupMenu.add(item);
             item.setHorizontalTextPosition(JMenuItem.RIGHT);
+
+            List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = styleWrapper.getFeatureTypeStylesWrapperList();
+            int ftIndex = featureTypeStylesWrapperList.indexOf(currentSelectedFSW);
+            int ftSize = featureTypeStylesWrapperList.size();
+            if (ftSize > 1 && ftIndex > 0) {
+                action = new AbstractAction("Move up"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        int from = ftIndex;
+                        int to = ftIndex - 1;
+                        if (to >= 0) {
+                            styleWrapper.swap(from, to);
+                            reloadGroupsAndRules();
+                        }
+
+                    }
+                };
+                item = new JMenuItem(action);
+                popupMenu.add(item);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+            }
 
             popupMenu.add(new JSeparator());
 

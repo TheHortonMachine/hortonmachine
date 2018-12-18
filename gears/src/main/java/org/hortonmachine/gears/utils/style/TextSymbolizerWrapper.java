@@ -148,7 +148,7 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
                             initialGap = initialGapExpression.evaluate(null, String.class);
 
                         Expression perpendicularOffsetExpression = linePlacement.getPerpendicularOffset();
-                        if (perpendicularOffset != null)
+                        if (perpendicularOffsetExpression != null)
                             perpendicularOffset = perpendicularOffsetExpression.evaluate(null, String.class);
                     }
                 }
@@ -158,38 +158,38 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
             }
         }
 
-        // /*
-        // * vendoroptions
-        // */
-        // Map<String, String> vendorOptions = textSymbolizer.getOptions();
-        // Set<Entry<String, String>> entrySet = vendorOptions.entrySet();
-        // for( Entry<String, String> entry : entrySet ) {
-        // String key = entry.getKey();
-        // String value = entry.getValue();
-        //
-        // switch( VendorOptions.toVendorOption(key) ) {
-        // case VENDOROPTION_MAXDISPLACEMENT:
-        // maxDisplacementVO = value;
-        // break;
-        // case VENDOROPTION_REPEAT:
-        // repeatVO = value;
-        // break;
-        // case VENDOROPTION_AUTOWRAP:
-        // autoWrapVO = value;
-        // break;
-        // case VENDOROPTION_SPACEAROUND:
-        // spaceAroundVO = value;
-        // break;
-        // case VENDOROPTION_FOLLOWLINE:
-        // followLineVO = value;
-        // break;
-        // case VENDOROPTION_MAXANGLEDELTA:
-        // maxAngleDeltaVO = value;
-        // break;
-        // default:
-        // break;
-        // }
-        // }
+        /*
+        * vendoroptions
+        */
+        Map<String, String> vendorOptions = textSymbolizer.getOptions();
+        Set<Entry<String, String>> entrySet = vendorOptions.entrySet();
+        for( Entry<String, String> entry : entrySet ) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            switch( VendorOptions.toVendorOption(key) ) {
+            case VENDOROPTION_MAXDISPLACEMENT:
+                maxDisplacementVO = value;
+                break;
+            case VENDOROPTION_REPEAT:
+                repeatVO = value;
+                break;
+            case VENDOROPTION_AUTOWRAP:
+                autoWrapVO = value;
+                break;
+            case VENDOROPTION_SPACEAROUND:
+                spaceAroundVO = value;
+                break;
+            case VENDOROPTION_FOLLOWLINE:
+                followLineVO = value;
+                break;
+            case VENDOROPTION_MAXANGLEDELTA:
+                maxAngleDeltaVO = value;
+                break;
+            default:
+                break;
+            }
+        }
     }
 
     private void checkFontExists() {
