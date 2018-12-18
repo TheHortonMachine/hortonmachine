@@ -13,6 +13,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import com.jgoodies.forms.layout.CellConstraints;
@@ -44,6 +45,22 @@ public class TextSymbolizerView extends JPanel
    JComboBox _anchorXCombo = new JComboBox();
    JLabel _anchorYLabel = new JLabel();
    JComboBox _anchorYCombo = new JComboBox();
+   JLabel _voAutoWrapPixelsLabel = new JLabel();
+   JLabel _voSpaceAroundPixelsLabel = new JLabel();
+   JLabel _voRepeatEveryPixelLabel = new JLabel();
+   JLabel _voFollowLineLabel = new JLabel();
+   JLabel _voMaxDispPixelLabel = new JLabel();
+   JLabel _voMaxAngleAllowedLabel = new JLabel();
+   JTextField _voMaxDispPixelText = new JTextField();
+   JTextField _voAutoWrapPixelsText = new JTextField();
+   JTextField _voSpaceAroundPixelsText = new JTextField();
+   JTextField _voRepeatEveryPixelText = new JTextField();
+   JTextField _voFollowLineText = new JTextField();
+   JTextField _voMaxAngleAllowedText = new JTextField();
+   JLabel _perpenOffsetLabel = new JLabel();
+   JTextField _perpenOffsetText = new JTextField();
+   JLabel _initialGapLabel = new JLabel();
+   JTextField _initialGapText = new JTextField();
 
    /**
     * Default constructor
@@ -135,17 +152,18 @@ public class TextSymbolizerView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
       _applyButton.setActionCommand("Apply");
       _applyButton.setName("applyButton");
       _applyButton.setText("Apply");
-      jpanel1.add(_applyButton,cc.xywh(7,4,13,1));
+      jpanel1.add(_applyButton,cc.xywh(7,7,13,1));
 
       jpanel1.add(createPanel1(),cc.xywh(2,2,18,1));
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 },new int[]{ 1,2,3,4,5 });
+      jpanel1.add(createPanel2(),cc.xywh(2,4,18,1));
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 },new int[]{ 1,2,3,4,5,6,7,8 });
       return jpanel1;
    }
 
@@ -242,6 +260,75 @@ public class TextSymbolizerView extends JPanel
       jpanel1.add(_anchorYCombo,cc.xy(4,18));
 
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel2()
+   {
+      JPanel jpanel1 = new JPanel();
+      TitledBorder titledborder1 = new TitledBorder(null,"Other options (if applicable)",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      jpanel1.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:6.0CM:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      _voAutoWrapPixelsLabel.setName("voAutoWrapPixelsLabel");
+      _voAutoWrapPixelsLabel.setText("auto wrap pixels (VO)");
+      jpanel1.add(_voAutoWrapPixelsLabel,cc.xy(2,4));
+
+      _voSpaceAroundPixelsLabel.setName("voSpaceAroundPixelsLabel");
+      _voSpaceAroundPixelsLabel.setText("space around pixels (VO)");
+      jpanel1.add(_voSpaceAroundPixelsLabel,cc.xy(2,6));
+
+      _voRepeatEveryPixelLabel.setName("voRepeatEveryPixelLabel");
+      _voRepeatEveryPixelLabel.setText("repeat every pixels (VO)");
+      jpanel1.add(_voRepeatEveryPixelLabel,cc.xy(2,8));
+
+      _voFollowLineLabel.setName("voFollowLineLabel");
+      _voFollowLineLabel.setText("follow line (VO)");
+      jpanel1.add(_voFollowLineLabel,cc.xy(2,10));
+
+      _voMaxDispPixelLabel.setName("voMaxDispPixelLabel");
+      _voMaxDispPixelLabel.setText("max displacement pixels (VO)");
+      jpanel1.add(_voMaxDispPixelLabel,cc.xy(2,2));
+
+      _voMaxAngleAllowedLabel.setName("voMaxAngleAllowedLabel");
+      _voMaxAngleAllowedLabel.setText("max angle allowed (VO)");
+      jpanel1.add(_voMaxAngleAllowedLabel,cc.xy(2,12));
+
+      _voMaxDispPixelText.setName("voMaxDispPixelText");
+      jpanel1.add(_voMaxDispPixelText,cc.xy(4,2));
+
+      _voAutoWrapPixelsText.setName("voAutoWrapPixelsText");
+      jpanel1.add(_voAutoWrapPixelsText,cc.xy(4,4));
+
+      _voSpaceAroundPixelsText.setName("voSpaceAroundPixelsText");
+      jpanel1.add(_voSpaceAroundPixelsText,cc.xy(4,6));
+
+      _voRepeatEveryPixelText.setName("voRepeatEveryPixelText");
+      jpanel1.add(_voRepeatEveryPixelText,cc.xy(4,8));
+
+      _voFollowLineText.setName("voFollowLineText");
+      jpanel1.add(_voFollowLineText,cc.xy(4,10));
+
+      _voMaxAngleAllowedText.setName("voMaxAngleAllowedText");
+      jpanel1.add(_voMaxAngleAllowedText,cc.xy(4,12));
+
+      _perpenOffsetLabel.setName("perpenOffsetLabel");
+      _perpenOffsetLabel.setText("perpendicular offset");
+      jpanel1.add(_perpenOffsetLabel,cc.xy(2,14));
+
+      _perpenOffsetText.setName("perpenOffsetText");
+      jpanel1.add(_perpenOffsetText,cc.xy(4,14));
+
+      _initialGapLabel.setName("initialGapLabel");
+      _initialGapLabel.setText("initial gap");
+      jpanel1.add(_initialGapLabel,cc.xy(2,16));
+
+      _initialGapText.setName("initialGapText");
+      jpanel1.add(_initialGapText,cc.xy(4,16));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17 });
       return jpanel1;
    }
 

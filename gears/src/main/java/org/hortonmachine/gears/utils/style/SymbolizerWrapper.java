@@ -65,7 +65,7 @@ public abstract class SymbolizerWrapper {
 
     private final RuleWrapper parent;
 
-    protected SymbolizerWrapper(Symbolizer symbolizer, RuleWrapper parent) {
+    protected SymbolizerWrapper( Symbolizer symbolizer, RuleWrapper parent ) {
         this.symbolizer = symbolizer;
         this.parent = parent;
     }
@@ -82,13 +82,12 @@ public abstract class SymbolizerWrapper {
         return symbolizer instanceof TextSymbolizer;
     }
 
-    public <T> T adapt(Class<T> adaptee) {
+    public <T> T adapt( Class<T> adaptee ) {
         if (adaptee.isAssignableFrom(PointSymbolizerWrapper.class) && this instanceof PointSymbolizerWrapper) {
             return adaptee.cast(this);
         } else if (adaptee.isAssignableFrom(LineSymbolizerWrapper.class) && this instanceof LineSymbolizerWrapper) {
             return adaptee.cast(this);
-        } else if (adaptee.isAssignableFrom(PolygonSymbolizerWrapper.class)
-            && this instanceof PolygonSymbolizerWrapper) {
+        } else if (adaptee.isAssignableFrom(PolygonSymbolizerWrapper.class) && this instanceof PolygonSymbolizerWrapper) {
             return adaptee.cast(this);
         } else if (adaptee.isAssignableFrom(TextSymbolizerWrapper.class) && this instanceof TextSymbolizerWrapper) {
             return adaptee.cast(this);
@@ -171,7 +170,7 @@ public abstract class SymbolizerWrapper {
         return getExternalGraphicPath(fillExternalGraphicFill);
     }
 
-    private String getExternalGraphicPath(ExternalGraphic extGraphic) throws MalformedURLException {
+    private String getExternalGraphicPath( ExternalGraphic extGraphic ) throws MalformedURLException {
         if (extGraphic == null) {
             return ""; //$NON-NLS-1$
         }
@@ -181,12 +180,12 @@ public abstract class SymbolizerWrapper {
             return urlString;
         } else {
             throw new RuntimeException("Not implemented yet");
-            //            File urlToFile = URLUtils.urlToFile(location);
-            //            if (urlString.equals("file:")) { //$NON-NLS-1$
-            //                return ""; //$NON-NLS-1$
-            //            } else {
-            //                return urlToFile.getAbsolutePath();
-            //            }
+            // File urlToFile = URLUtils.urlToFile(location);
+            // if (urlString.equals("file:")) { //$NON-NLS-1$
+            // return ""; //$NON-NLS-1$
+            // } else {
+            // return urlToFile.getAbsolutePath();
+            // }
         }
     }
 
@@ -200,7 +199,7 @@ public abstract class SymbolizerWrapper {
      * @param externalGraphicPath the path to set.
      * @throws MalformedURLException
      */
-    public void setExternalGraphicPath(String externalGraphicPath) throws MalformedURLException {
+    public void setExternalGraphicPath( String externalGraphicPath ) throws MalformedURLException {
         if (externalGraphic == null) {
             PointSymbolizerWrapper pointSymbolizerWrapper = adapt(PointSymbolizerWrapper.class);
             if (pointSymbolizerWrapper != null) {
@@ -227,7 +226,7 @@ public abstract class SymbolizerWrapper {
      * @param externalGraphicPath the path to set.
      * @throws MalformedURLException
      */
-    public void setStrokeExternalGraphicStrokePath(String externalGraphicPath) throws MalformedURLException {
+    public void setStrokeExternalGraphicStrokePath( String externalGraphicPath ) throws MalformedURLException {
         if (strokeExternalGraphicStroke == null) {
             Graphic graphic = null;
             LineSymbolizerWrapper lineSymbolizerWrapper = adapt(LineSymbolizerWrapper.class);
@@ -270,7 +269,7 @@ public abstract class SymbolizerWrapper {
      * @param externalGraphicPath the path to set.
      * @throws MalformedURLException
      */
-    public void setFillExternalGraphicFillPath(String externalGraphicPath, double size) throws MalformedURLException {
+    public void setFillExternalGraphicFillPath( String externalGraphicPath, double size ) throws MalformedURLException {
         Graphic graphic = null;
         PolygonSymbolizerWrapper polygonSymbolizerWrapper = adapt(PolygonSymbolizerWrapper.class);
         if (polygonSymbolizerWrapper != null) {
@@ -298,8 +297,7 @@ public abstract class SymbolizerWrapper {
         graphic.setSize(ff.literal(size));
     }
 
-    private void setExternalGraphicPath(String externalGraphicPath, ExternalGraphic extGraphic)
-        throws MalformedURLException {
+    private void setExternalGraphicPath( String externalGraphicPath, ExternalGraphic extGraphic ) throws MalformedURLException {
         URL url = null;
         File f = new File(externalGraphicPath);
         String format = StyleUtilities.getFormat(externalGraphicPath);
@@ -318,7 +316,7 @@ public abstract class SymbolizerWrapper {
         extGraphic.setFormat(format);
     }
 
-    protected String expressionToString(Expression expression) {
+    protected String expressionToString( Expression expression ) {
         if (expression == null) {
             return null;
         }
@@ -349,13 +347,13 @@ public abstract class SymbolizerWrapper {
         return null;
     }
 
-    public void setOffset(String xOffset, String yOffset) {
+    public void setOffset( String xOffset, String yOffset ) {
         this.xOffset = xOffset;
         this.yOffset = yOffset;
         StyleUtilities.setOffset(symbolizer, xOffset + "," + yOffset); //$NON-NLS-1$
     }
 
-    public void setOffset(String offset) {
+    public void setOffset( String offset ) {
         if (offset.indexOf(',') == -1) {
             return;
         }
@@ -375,10 +373,12 @@ public abstract class SymbolizerWrapper {
     public String getyOffset() {
         return yOffset;
     }
-    
+
     @Override
     public String toString() {
-        return symbolizer.getClass().getSimpleName();
+        String simpleName = symbolizer.getClass().getSimpleName();
+        simpleName = simpleName.replaceFirst("SymbolizerImpl", " Symbolizer");
+        return simpleName;
     }
 
 }

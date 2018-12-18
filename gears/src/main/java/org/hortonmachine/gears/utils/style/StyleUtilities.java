@@ -388,16 +388,21 @@ public class StyleUtilities {
      */
     public static Rule createDefaultPolygonRule() {
         PolygonSymbolizer polygonSymbolizer = sf.createPolygonSymbolizer();
-        polygonSymbolizer.setFill(sf.createFill(ff.literal("#" + Integer.toHexString(Color.RED.getRGB() & 0xffffff))));
-        polygonSymbolizer.getFill().setOpacity(ff.literal(0.50));
-        polygonSymbolizer.setStroke(sf.createStroke(ff.literal("#" + Integer.toHexString(Color.BLACK.getRGB() & 0xffffff)),
-                ff.literal(DEFAULT_WIDTH)));
+        Fill fill = createDefaultFill();
+        polygonSymbolizer.setFill(fill);
+        polygonSymbolizer.setStroke(createDefaultStroke());
 
         Rule rule = sf.createRule();
         rule.setName("New rule");
         rule.symbolizers().add(polygonSymbolizer);
 
         return rule;
+    }
+
+    public static Fill createDefaultFill() {
+        Fill fill = sf.createFill(ff.literal("#" + Integer.toHexString(Color.RED.getRGB() & 0xffffff)));
+        fill.setOpacity(ff.literal(0.50));
+        return fill;
     }
 
     /**
@@ -422,14 +427,17 @@ public class StyleUtilities {
      */
     public static Rule createDefaultLineRule() {
         LineSymbolizer lineSymbolizer = sf.createLineSymbolizer();
-        lineSymbolizer.setStroke(
-                sf.createStroke(ff.literal("#" + Integer.toHexString(Color.BLACK.getRGB() & 0xffffff)), ff.literal(1)));
+        lineSymbolizer.setStroke(createDefaultStroke());
 
         Rule rule = sf.createRule();
         rule.setName("New rule");
         rule.symbolizers().add(lineSymbolizer);
 
         return rule;
+    }
+
+    public static Stroke createDefaultStroke() {
+        return sf.createStroke(ff.literal("#" + Integer.toHexString(Color.BLACK.getRGB() & 0xffffff)), ff.literal(1));
     }
 
     // /**

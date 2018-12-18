@@ -61,7 +61,7 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
     private EGeometryType geomType;
     private String labelName;
 
-    public TextSymbolizerWrapper(Symbolizer symbolizer, RuleWrapper parent, EGeometryType geomType) {
+    public TextSymbolizerWrapper( Symbolizer symbolizer, RuleWrapper parent, EGeometryType geomType ) {
         super(symbolizer, parent);
         this.geomType = geomType;
 
@@ -109,7 +109,7 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
 
         LabelPlacement labelPlacement = textSymbolizer.getLabelPlacement();
         if (geomType != null) {
-            switch (geomType) {
+            switch( geomType ) {
             case POINT:
             case POLYGON:
                 if (labelPlacement instanceof PointPlacement) {
@@ -158,38 +158,38 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
             }
         }
 
-        //        /*
-        //         * vendoroptions
-        //         */
-        //        Map<String, String> vendorOptions = textSymbolizer.getOptions();
-        //        Set<Entry<String, String>> entrySet = vendorOptions.entrySet();
-        //        for( Entry<String, String> entry : entrySet ) {
-        //            String key = entry.getKey();
-        //            String value = entry.getValue();
+        // /*
+        // * vendoroptions
+        // */
+        // Map<String, String> vendorOptions = textSymbolizer.getOptions();
+        // Set<Entry<String, String>> entrySet = vendorOptions.entrySet();
+        // for( Entry<String, String> entry : entrySet ) {
+        // String key = entry.getKey();
+        // String value = entry.getValue();
         //
-        //            switch( VendorOptions.toVendorOption(key) ) {
-        //            case VENDOROPTION_MAXDISPLACEMENT:
-        //                maxDisplacementVO = value;
-        //                break;
-        //            case VENDOROPTION_REPEAT:
-        //                repeatVO = value;
-        //                break;
-        //            case VENDOROPTION_AUTOWRAP:
-        //                autoWrapVO = value;
-        //                break;
-        //            case VENDOROPTION_SPACEAROUND:
-        //                spaceAroundVO = value;
-        //                break;
-        //            case VENDOROPTION_FOLLOWLINE:
-        //                followLineVO = value;
-        //                break;
-        //            case VENDOROPTION_MAXANGLEDELTA:
-        //                maxAngleDeltaVO = value;
-        //                break;
-        //            default:
-        //                break;
-        //            }
-        //        }
+        // switch( VendorOptions.toVendorOption(key) ) {
+        // case VENDOROPTION_MAXDISPLACEMENT:
+        // maxDisplacementVO = value;
+        // break;
+        // case VENDOROPTION_REPEAT:
+        // repeatVO = value;
+        // break;
+        // case VENDOROPTION_AUTOWRAP:
+        // autoWrapVO = value;
+        // break;
+        // case VENDOROPTION_SPACEAROUND:
+        // spaceAroundVO = value;
+        // break;
+        // case VENDOROPTION_FOLLOWLINE:
+        // followLineVO = value;
+        // break;
+        // case VENDOROPTION_MAXANGLEDELTA:
+        // maxAngleDeltaVO = value;
+        // break;
+        // default:
+        // break;
+        // }
+        // }
     }
 
     private void checkFontExists() {
@@ -222,7 +222,7 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
     }
 
     private void checkPlacementExists() {
-        switch (geomType) {
+        switch( geomType ) {
         case POINT:
         case POLYGON:
             if (pointPlacement == null) {
@@ -258,7 +258,7 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setLabelName(String labelName, boolean fromField) {
+    public void setLabelName( String labelName, boolean fromField ) {
         this.labelName = labelName;
         if (fromField) {
             textSymbolizer.setLabel(ff.property(labelName));
@@ -267,42 +267,42 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setFont(Font font) {
+    public void setFont( Font font ) {
         this.font = font;
         textSymbolizer.setFont(font);
     }
 
-    public void setFontFamily(String fontFamily) {
+    public void setFontFamily( String fontFamily ) {
         this.fontFamily = fontFamily;
         checkFontExists();
         font.getFamily().set(0, ff.literal(fontFamily));
     }
 
-    public void setFontStyle(String fontStyle) {
+    public void setFontStyle( String fontStyle ) {
         this.fontStyle = fontStyle;
         checkFontExists();
         font.setStyle(ff.literal(fontStyle));
     }
 
-    public void setFontWeight(String fontWeight) {
+    public void setFontWeight( String fontWeight ) {
         this.fontWeight = fontWeight;
         checkFontExists();
         font.setWeight(ff.literal(fontWeight));
     }
 
-    public void setFontSize(String fontSize) {
+    public void setFontSize( String fontSize ) {
         this.fontSize = fontSize;
         checkFontExists();
         font.setSize(ff.literal(fontSize));
     }
 
-    public void setColor(String color) {
+    public void setColor( String color ) {
         this.color = color;
         checkFillExists();
         fill.setColor(ff.literal(color));
     }
 
-    public void setOpacity(String opacity, boolean fromField) {
+    public void setOpacity( String opacity, boolean fromField ) {
         this.opacity = opacity;
         checkFillExists();
         if (fromField) {
@@ -312,31 +312,31 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setHaloColor(String haloColor) {
+    public void setHaloColor( String haloColor ) {
         this.haloColor = haloColor;
         checkHaloFillExists();
         haloFill.setColor(ff.literal(haloColor));
     }
 
-    public void setHaloRadius(String haloRadius) {
+    public void setHaloRadius( String haloRadius ) {
         this.haloRadius = haloRadius;
         checkHaloExists();
         halo.setRadius(ff.literal(haloRadius));
     }
 
-    public void setAnchorX(String anchorX) {
+    public void setAnchorX( String anchorX ) {
         this.anchorX = anchorX;
         checkAnchorPointExists();
         anchorPoint.setAnchorPointX(ff.literal(anchorX));
     }
 
-    public void setAnchorY(String anchorY) {
+    public void setAnchorY( String anchorY ) {
         this.anchorY = anchorY;
         checkAnchorPointExists();
         anchorPoint.setAnchorPointY(ff.literal(anchorY));
     }
 
-    public void setDisplacement(String displacement) {
+    public void setDisplacement( String displacement ) {
         if (displacement == null || displacement.indexOf(',') == -1) {
             return;
         }
@@ -351,19 +351,19 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setDisplacementX(String displacementX) {
+    public void setDisplacementX( String displacementX ) {
         this.displacementX = displacementX;
         checkDisplacementExists();
         displacement.setDisplacementX(ff.literal(displacementX));
     }
 
-    public void setDisplacementY(String displacementY) {
+    public void setDisplacementY( String displacementY ) {
         this.displacementY = displacementY;
         checkDisplacementExists();
         displacement.setDisplacementY(ff.literal(displacementY));
     }
 
-    public void setRotation(String rotation, boolean fromField) {
+    public void setRotation( String rotation, boolean fromField ) {
         this.rotation = rotation;
         checkPlacementExists();
         if (fromField) {
@@ -373,71 +373,76 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setInitialGap(String initialGap) {
+    public void setInitialGap( String initialGap ) {
         this.initialGap = initialGap;
         checkPlacementExists();
         linePlacement.setInitialGap(ff.literal(initialGap));
     }
 
-    public void setPerpendicularOffset(String perpendicularOffset) {
+    public void setPerpendicularOffset( String perpendicularOffset ) {
         this.perpendicularOffset = perpendicularOffset;
         checkPlacementExists();
         linePlacement.setPerpendicularOffset(ff.literal(perpendicularOffset));
     }
 
-    //    public void setMaxDisplacementVO( String maxDisplacementVO ) {
-    //        this.maxDisplacementVO = maxDisplacementVO;
-    //        if (maxDisplacementVO == null || maxDisplacementVO.equals("")) { //$NON-NLS-1$
-    //            textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_MAXDISPLACEMENT.toString());
-    //        } else {
-    //            textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_MAXDISPLACEMENT.toString(), maxDisplacementVO);
-    //        }
-    //    }
+    // public void setMaxDisplacementVO( String maxDisplacementVO ) {
+    // this.maxDisplacementVO = maxDisplacementVO;
+    // if (maxDisplacementVO == null || maxDisplacementVO.equals("")) { //$NON-NLS-1$
+    // textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_MAXDISPLACEMENT.toString());
+    // } else {
+    // textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_MAXDISPLACEMENT.toString(),
+    // maxDisplacementVO);
+    // }
+    // }
     //
-    //    public void setRepeatVO( String repeatVO ) {
-    //        this.repeatVO = repeatVO;
-    //        if (repeatVO == null || repeatVO.equals("") || geomType != SLD.LINE) { //$NON-NLS-1$
-    //            textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_REPEAT.toString());
-    //        } else {
-    //            textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_REPEAT.toString(), repeatVO);
-    //        }
-    //    }
+    // public void setRepeatVO( String repeatVO ) {
+    // this.repeatVO = repeatVO;
+    // if (repeatVO == null || repeatVO.equals("") || geomType != SLD.LINE) { //$NON-NLS-1$
+    // textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_REPEAT.toString());
+    // } else {
+    // textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_REPEAT.toString(), repeatVO);
+    // }
+    // }
     //
-    //    public void setAutoWrapVO( String autoWrapVO ) {
-    //        this.autoWrapVO = autoWrapVO;
-    //        if (autoWrapVO == null || autoWrapVO.equals("")) { //$NON-NLS-1$
-    //            textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_AUTOWRAP.toString());
-    //        } else {
-    //            textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_AUTOWRAP.toString(), autoWrapVO);
-    //        }
-    //    }
+    // public void setAutoWrapVO( String autoWrapVO ) {
+    // this.autoWrapVO = autoWrapVO;
+    // if (autoWrapVO == null || autoWrapVO.equals("")) { //$NON-NLS-1$
+    // textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_AUTOWRAP.toString());
+    // } else {
+    // textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_AUTOWRAP.toString(), autoWrapVO);
+    // }
+    // }
     //
-    //    public void setSpaceAroundVO( String spaceAroundVO ) {
-    //        this.spaceAroundVO = spaceAroundVO;
-    //        if (spaceAroundVO == null || spaceAroundVO.equals("")) { //$NON-NLS-1$
-    //            textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_SPACEAROUND.toString());
-    //        } else {
-    //            textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_SPACEAROUND.toString(), spaceAroundVO);
-    //        }
-    //    }
+    // public void setSpaceAroundVO( String spaceAroundVO ) {
+    // this.spaceAroundVO = spaceAroundVO;
+    // if (spaceAroundVO == null || spaceAroundVO.equals("")) { //$NON-NLS-1$
+    // textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_SPACEAROUND.toString());
+    // } else {
+    // textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_SPACEAROUND.toString(),
+    // spaceAroundVO);
+    // }
+    // }
     //
-    //    public void setFollowLineVO( String followLineVO ) {
-    //        this.followLineVO = followLineVO;
-    //        if (followLineVO == null || followLineVO.equals("") || geomType != SLD.LINE) { //$NON-NLS-1$
-    //            textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_FOLLOWLINE.toString());
-    //        } else {
-    //            textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_FOLLOWLINE.toString(), followLineVO);
-    //        }
-    //    }
+    // public void setFollowLineVO( String followLineVO ) {
+    // this.followLineVO = followLineVO;
+    // if (followLineVO == null || followLineVO.equals("") || geomType != SLD.LINE) { //$NON-NLS-1$
+    // textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_FOLLOWLINE.toString());
+    // } else {
+    // textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_FOLLOWLINE.toString(),
+    // followLineVO);
+    // }
+    // }
     //
-    //    public void setMaxAngleDeltaVO( String maxAngleDeltaVO ) {
-    //        this.maxAngleDeltaVO = maxAngleDeltaVO;
-    //        if (maxAngleDeltaVO == null || maxAngleDeltaVO.equals("") || geomType != SLD.LINE) { //$NON-NLS-1$
-    //            textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_MAXANGLEDELTA.toString());
-    //        } else {
-    //            textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_MAXANGLEDELTA.toString(), maxAngleDeltaVO);
-    //        }
-    //    }
+    // public void setMaxAngleDeltaVO( String maxAngleDeltaVO ) {
+    // this.maxAngleDeltaVO = maxAngleDeltaVO;
+    // if (maxAngleDeltaVO == null || maxAngleDeltaVO.equals("") || geomType != SLD.LINE) {
+    // //$NON-NLS-1$
+    // textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_MAXANGLEDELTA.toString());
+    // } else {
+    // textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_MAXANGLEDELTA.toString(),
+    // maxAngleDeltaVO);
+    // }
+    // }
 
     // getters
     public String getLabelName() {
@@ -526,5 +531,59 @@ public class TextSymbolizerWrapper extends SymbolizerWrapper {
 
     public String getMaxAngleDeltaVO() {
         return maxAngleDeltaVO;
+    }
+
+    public void setMaxDisplacementVO( String maxDisplacementVO ) {
+        this.maxDisplacementVO = maxDisplacementVO;
+        if (maxDisplacementVO == null || maxDisplacementVO.equals("")) { //$NON-NLS-1$
+            textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_MAXDISPLACEMENT.toString());
+        } else {
+            textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_MAXDISPLACEMENT.toString(), maxDisplacementVO);
+        }
+    }
+
+    public void setRepeatVO( String repeatVO ) {
+        this.repeatVO = repeatVO;
+        if (repeatVO == null || repeatVO.equals("")) { //$NON-NLS-1$
+            textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_REPEAT.toString());
+        } else {
+            textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_REPEAT.toString(), repeatVO);
+        }
+    }
+
+    public void setAutoWrapVO( String autoWrapVO ) {
+        this.autoWrapVO = autoWrapVO;
+        if (autoWrapVO == null || autoWrapVO.equals("")) { //$NON-NLS-1$
+            textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_AUTOWRAP.toString());
+        } else {
+            textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_AUTOWRAP.toString(), autoWrapVO);
+        }
+    }
+
+    public void setSpaceAroundVO( String spaceAroundVO ) {
+        this.spaceAroundVO = spaceAroundVO;
+        if (spaceAroundVO == null || spaceAroundVO.equals("")) { //$NON-NLS-1$
+            textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_SPACEAROUND.toString());
+        } else {
+            textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_SPACEAROUND.toString(), spaceAroundVO);
+        }
+    }
+
+    public void setFollowLineVO( String followLineVO ) {
+        this.followLineVO = followLineVO;
+        if (followLineVO == null || followLineVO.equals("")) { //$NON-NLS-1$
+            textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_FOLLOWLINE.toString());
+        } else {
+            textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_FOLLOWLINE.toString(), followLineVO);
+        }
+    }
+
+    public void setMaxAngleDeltaVO( String maxAngleDeltaVO ) {
+        this.maxAngleDeltaVO = maxAngleDeltaVO;
+        if (maxAngleDeltaVO == null || maxAngleDeltaVO.equals("")) { //$NON-NLS-1$
+            textSymbolizer.getOptions().remove(VendorOptions.VENDOROPTION_MAXANGLEDELTA.toString());
+        } else {
+            textSymbolizer.getOptions().put(VendorOptions.VENDOROPTION_MAXANGLEDELTA.toString(), maxAngleDeltaVO);
+        }
     }
 }

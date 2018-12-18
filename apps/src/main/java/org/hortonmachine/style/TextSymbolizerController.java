@@ -2,20 +2,19 @@ package org.hortonmachine.style;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JColorChooser;
-import javax.swing.JOptionPane;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
-import org.hortonmachine.gears.utils.style.PointSymbolizerWrapper;
-import org.hortonmachine.gears.utils.style.StyleUtilities;
 import org.hortonmachine.gears.utils.style.TextSymbolizerWrapper;
 import org.hortonmachine.gui.utils.GuiUtilities;
-import gov.nasa.worldwind.layers.Earth.LandsatI3WMSLayer;
 
+@SuppressWarnings("serial")
 public class TextSymbolizerController extends TextSymbolizerView {
     private TextSymbolizerWrapper symbolizerWrapper;
     private String[] fields;
@@ -40,20 +39,28 @@ public class TextSymbolizerController extends TextSymbolizerView {
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void init() {
         _labelCombo.setModel(new DefaultComboBoxModel(fields));
-        String fieldName = symbolizerWrapper.getLabelName();
-        if (fieldName != null)
-            _labelCombo.setSelectedItem(fieldName);
         _labelCombo.addActionListener(e -> {
             String field = _labelCombo.getSelectedItem().toString();
             symbolizerWrapper.setLabelName(field, true);
         });
+        String fieldName = symbolizerWrapper.getLabelName();
+        if (fieldName != null) {
+            _labelCombo.setSelectedItem(fieldName);
+            symbolizerWrapper.setLabelName(fieldName, true);
+        } else {
+            String defFieldName = _labelCombo.getSelectedItem().toString();
+            symbolizerWrapper.setLabelName(defFieldName, true);
+        }
 
         SpinnerModel opacityModel = new SpinnerNumberModel(255, // initial value
                 0, // minimum value
                 255, // maximum value
                 5); // step
         _opacitySpinner.setModel(opacityModel);
-        double opacity = Double.parseDouble(symbolizerWrapper.getOpacity());
+        String opacityStr = symbolizerWrapper.getOpacity();
+        if (opacityStr == null)
+            opacityStr = "1";
+        double opacity = Double.parseDouble(opacityStr);
         opacity *= 255;
         _opacitySpinner.setValue((int) opacity);
         _opacitySpinner.addChangeListener(e -> {
@@ -67,26 +74,29 @@ public class TextSymbolizerController extends TextSymbolizerView {
                 360, // maximum value
                 5); // step
         _rotationSpinner.setModel(rotationModel);
-        _rotationSpinner.setValue((int) Double.parseDouble(symbolizerWrapper.getRotation()));
+        String rotation = symbolizerWrapper.getRotation();
+        if (rotation == null)
+            rotation = "0";
+        _rotationSpinner.setValue((int) Double.parseDouble(rotation));
         _rotationSpinner.addChangeListener(e -> {
             symbolizerWrapper.setRotation(_rotationSpinner.getValue().toString(), false);
         });
 
-        // TODO font
         String fontFamily = symbolizerWrapper.getFontFamily();
         String fontSize = symbolizerWrapper.getFontSize();
         String fontStyle = symbolizerWrapper.getFontStyle();
-        String fontWeight = symbolizerWrapper.getFontWeight();
-        Font font = new Font(fontFamily, Font.BOLD, (int) Double.parseDouble(fontSize));
+//        String fontWeight = symbolizerWrapper.getFontWeight();
+
+        Font decoded = Font.decode(fontFamily + "-" + fontStyle + "-" + fontSize);
+
         _fontButton.addActionListener(e -> {
-            JFontChooser chooser = new JFontChooser();
+            JFontChooser chooser = new JFontChooser(decoded);
             Font font2 = chooser.showDialog(this, "Choose a font");
 
-            JOptionPane.showMessageDialog(this,
-                    font2 == null
-                            ? "You canceled the dialog."
-                            : "You have selected " + font2.getName() + ", " + font2.getSize() + (font2.isBold() ? ", Bold" : "")
-                                    + (font2.isItalic() ? ", Italic" : ""));
+            symbolizerWrapper.setFontSize(font2.getSize() + "");
+            symbolizerWrapper.setFontFamily(font2.getFamily());
+            symbolizerWrapper.setFontStyle(font2.isBold() ? "bold" : font2.isItalic() ? "italic" : "normal");
+            symbolizerWrapper.setFontWeight(font2.isBold() ? "bold" : font2.isItalic() ? "italic" : "normal");
         });
 
         String fontColorStr = symbolizerWrapper.getColor();
@@ -107,12 +117,18 @@ public class TextSymbolizerController extends TextSymbolizerView {
                 10, // maximum value
                 1); // step
         _haloSizeSpinner.setModel(haloSizeModel);
-        _haloSizeSpinner.setValue((int) Double.parseDouble(symbolizerWrapper.getHaloRadius()));
+        String haloRadius = symbolizerWrapper.getHaloRadius();
+        if (haloRadius == null) {
+            haloRadius = "0";
+        }
+        _haloSizeSpinner.setValue((int) Double.parseDouble(haloRadius));
         _haloSizeSpinner.addChangeListener(e -> {
             symbolizerWrapper.setHaloRadius(_haloSizeSpinner.getValue().toString());
         });
 
         String haloColorStr = symbolizerWrapper.getHaloColor();
+        if (haloColorStr == null)
+            haloColorStr = "#FFFFFF";
         Color haloColor = ColorUtilities.fromHex(haloColorStr);
         GuiUtilities.colorButton(_haloColorButton, haloColor, MainController.COLOR_IMAGE_SIZE);
         _haloColorButton.setBackground(haloColor);
@@ -125,27 +141,200 @@ public class TextSymbolizerController extends TextSymbolizerView {
             }
         });
 
+        _anchorYCombo.setModel(new DefaultComboBoxModel(Alignments.toVerticalStrings()));
+        String anchorY = symbolizerWrapper.getAnchorY();
+        Alignments vAlign = Alignments.verticalAlignmentfromDouble(anchorY);
+        _anchorYCombo.setSelectedItem(vAlign.toString());
+        _anchorYCombo.addActionListener(e -> {
+            String newAnchorY = _anchorYCombo.getSelectedItem().toString();
+
+            Alignments alignment = Alignments.toAlignment(newAnchorY);
+            symbolizerWrapper.setAnchorY(alignment.toDouble() + "");
+        });
+
+        _anchorXCombo.setModel(new DefaultComboBoxModel(Alignments.toHorizontalStrings()));
+        String anchorX = symbolizerWrapper.getAnchorX();
+        Alignments hAlign = Alignments.horizontalAlignmentfromDouble(anchorX);
+        _anchorXCombo.setSelectedItem(hAlign.toString());
+        _anchorXCombo.addActionListener(e -> {
+            String newAnchorX = _anchorXCombo.getSelectedItem().toString();
+
+            Alignments alignment = Alignments.toAlignment(newAnchorX);
+            symbolizerWrapper.setAnchorX(alignment.toDouble() + "");
+        });
+
         SpinnerModel displacementXModel = new SpinnerNumberModel(0, // initial value
-                0, // minimum value
+                -100, // minimum value
                 100, // maximum value
                 5); // step
         _displacementXSpinner.setModel(displacementXModel);
-        _displacementXSpinner.setValue((int) Double.parseDouble(symbolizerWrapper.getDisplacementX()));
+        String displacementX = symbolizerWrapper.getDisplacementX();
+        if (displacementX == null) {
+            displacementX = "0";
+        }
+        _displacementXSpinner.setValue((int) Double.parseDouble(displacementX));
         _displacementXSpinner.addChangeListener(e -> {
             symbolizerWrapper.setDisplacementX(_displacementXSpinner.getValue().toString());
         });
 
         SpinnerModel displacementYModel = new SpinnerNumberModel(0, // initial value
-                0, // minimum value
+                -100, // minimum value
                 100, // maximum value
                 5); // step
         _displacementYSpinner.setModel(displacementYModel);
-        _displacementYSpinner.setValue((int) Double.parseDouble(symbolizerWrapper.getDisplacementX()));
+        String displacementY = symbolizerWrapper.getDisplacementY();
+        if (displacementY == null) {
+            displacementY = "0";
+        }
+        _displacementYSpinner.setValue((int) Double.parseDouble(displacementY));
         _displacementYSpinner.addChangeListener(e -> {
-            symbolizerWrapper.setDisplacementX(_displacementYSpinner.getValue().toString());
+            symbolizerWrapper.setDisplacementY(_displacementYSpinner.getValue().toString());
         });
 
-        // TODO ANCHORS
+        String perpendOffset = symbolizerWrapper.getPerpendicularOffset();
+        _perpenOffsetText.setText(perpendOffset);
+        _perpenOffsetText.addKeyListener(new KeyListener(){
+            @Override
+            public void keyTyped( KeyEvent e ) {
+            }
+
+            @Override
+            public void keyReleased( KeyEvent e ) {
+                String tmp = _perpenOffsetText.getText();
+                symbolizerWrapper.setPerpendicularOffset(tmp);
+            }
+
+            @Override
+            public void keyPressed( KeyEvent e ) {
+            }
+        });
+
+        String initialGap = symbolizerWrapper.getInitialGap();
+        _initialGapText.setText(initialGap);
+        _initialGapText.addKeyListener(new KeyListener(){
+            @Override
+            public void keyTyped( KeyEvent e ) {
+            }
+
+            @Override
+            public void keyReleased( KeyEvent e ) {
+                String tmp = _initialGapText.getText();
+                symbolizerWrapper.setInitialGap(tmp);
+            }
+
+            @Override
+            public void keyPressed( KeyEvent e ) {
+            }
+        });
+
+        /// VENDOR OPTIONS
+        String _maxDispPixel = symbolizerWrapper.getMaxDisplacementVO();
+        _voMaxDispPixelText.setText(_maxDispPixel);
+        _voMaxDispPixelText.addKeyListener(new KeyListener(){
+            @Override
+            public void keyTyped( KeyEvent e ) {
+            }
+
+            @Override
+            public void keyReleased( KeyEvent e ) {
+                String tmpVo = _voMaxDispPixelText.getText();
+                symbolizerWrapper.setMaxDisplacementVO(tmpVo);
+            }
+
+            @Override
+            public void keyPressed( KeyEvent e ) {
+            }
+        });
+
+        String autoWrapPixel = symbolizerWrapper.getAutoWrapVO();
+        _voAutoWrapPixelsText.setText(autoWrapPixel);
+        _voAutoWrapPixelsText.addKeyListener(new KeyListener(){
+            @Override
+            public void keyTyped( KeyEvent e ) {
+            }
+
+            @Override
+            public void keyReleased( KeyEvent e ) {
+                String tmpVo = _voAutoWrapPixelsText.getText();
+                symbolizerWrapper.setAutoWrapVO(tmpVo);
+            }
+
+            @Override
+            public void keyPressed( KeyEvent e ) {
+            }
+        });
+
+        String spaceAroundPixel = symbolizerWrapper.getSpaceAroundVO();
+        _voSpaceAroundPixelsText.setText(spaceAroundPixel);
+        _voSpaceAroundPixelsText.addKeyListener(new KeyListener(){
+            @Override
+            public void keyTyped( KeyEvent e ) {
+            }
+
+            @Override
+            public void keyReleased( KeyEvent e ) {
+                String tmpVo = _voSpaceAroundPixelsText.getText();
+                symbolizerWrapper.setSpaceAroundVO(tmpVo);
+            }
+
+            @Override
+            public void keyPressed( KeyEvent e ) {
+            }
+        });
+
+        String repeatVo = symbolizerWrapper.getRepeatVO();
+        _voRepeatEveryPixelText.setText(repeatVo);
+        _voRepeatEveryPixelText.addKeyListener(new KeyListener(){
+            @Override
+            public void keyTyped( KeyEvent e ) {
+            }
+
+            @Override
+            public void keyReleased( KeyEvent e ) {
+                String tmpVo = _voRepeatEveryPixelText.getText();
+                symbolizerWrapper.setRepeatVO(tmpVo);
+            }
+
+            @Override
+            public void keyPressed( KeyEvent e ) {
+            }
+        });
+
+        String followLineVo = symbolizerWrapper.getFollowLineVO();
+        _voFollowLineText.setText(followLineVo);
+        _voFollowLineText.addKeyListener(new KeyListener(){
+            @Override
+            public void keyTyped( KeyEvent e ) {
+            }
+
+            @Override
+            public void keyReleased( KeyEvent e ) {
+                String tmpVo = _voFollowLineText.getText();
+                symbolizerWrapper.setFollowLineVO(tmpVo);
+            }
+
+            @Override
+            public void keyPressed( KeyEvent e ) {
+            }
+        });
+
+        String maxAngleVo = symbolizerWrapper.getMaxAngleDeltaVO();
+        _voMaxAngleAllowedText.setText(maxAngleVo);
+        _voMaxAngleAllowedText.addKeyListener(new KeyListener(){
+            @Override
+            public void keyTyped( KeyEvent e ) {
+            }
+
+            @Override
+            public void keyReleased( KeyEvent e ) {
+                String tmpVo = _voMaxAngleAllowedText.getText();
+                symbolizerWrapper.setMaxAngleDeltaVO(tmpVo);
+            }
+
+            @Override
+            public void keyPressed( KeyEvent e ) {
+            }
+        });
 
     }
 

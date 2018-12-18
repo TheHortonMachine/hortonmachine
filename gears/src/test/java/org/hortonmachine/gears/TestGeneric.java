@@ -17,8 +17,11 @@
  */
 package org.hortonmachine.gears;
 
+import java.awt.Color;
+
 import org.hortonmachine.gears.utils.BitMatrix;
 import org.hortonmachine.gears.utils.HMTestCase;
+import org.hortonmachine.gears.utils.colors.ColorUtilities;
 /**
  * Generic tests.
  * 
@@ -48,4 +51,44 @@ public class TestGeneric extends HMTestCase {
         }
     }
 
+    public void testColorUtils() throws Exception {
+        String hex = "#0";
+        String expectedHex = "#000000";
+        checkColor(hex, expectedHex);
+
+        hex = "#00";
+        expectedHex = "#000000";
+        checkColor(hex, expectedHex);
+
+        hex = "#000";
+        expectedHex = "#000000";
+        checkColor(hex, expectedHex);
+
+        hex = "#0F";
+        expectedHex = "#0F0F0F";
+        checkColor(hex, expectedHex);
+
+        hex = "#0FB";
+        expectedHex = "#0FB0FB";
+        checkColor(hex, expectedHex);
+
+        hex = "#0FB111";
+        expectedHex = "#0FB111";
+        checkColor(hex, expectedHex);
+
+        hex = "0FB111";
+        expectedHex = "#0FB111";
+        checkColor(hex, expectedHex);
+        
+        hex = "00";
+        expectedHex = "#000000";
+        checkColor(hex, expectedHex);
+
+    }
+
+    private void checkColor( String hex, String expectedHex ) {
+        Color fromHex = ColorUtilities.fromHex(hex);
+        String asHex = ColorUtilities.asHex(fromHex);
+        assertEquals(expectedHex.toLowerCase(), asHex.toLowerCase());
+    }
 }

@@ -15,17 +15,15 @@ import org.geotools.styling.Rule;
 public class FeatureTypeStyleWrapper {
 
     private FeatureTypeStyle featureTypeStyle;
-    private String name;
     private List<RuleWrapper> rulesWrapperList = new ArrayList<RuleWrapper>();
     private final StyleWrapper parent;
 
-    public FeatureTypeStyleWrapper(FeatureTypeStyle featureTypeStyle, StyleWrapper parent) {
+    public FeatureTypeStyleWrapper( FeatureTypeStyle featureTypeStyle, StyleWrapper parent ) {
         this.featureTypeStyle = featureTypeStyle;
         this.parent = parent;
-        name = featureTypeStyle.getName();
 
         List<Rule> rules = featureTypeStyle.rules();
-        for (Rule rule : rules) {
+        for( Rule rule : rules ) {
             RuleWrapper ruleWrapper = new RuleWrapper(rule, this);
             rulesWrapperList.add(ruleWrapper);
         }
@@ -40,14 +38,16 @@ public class FeatureTypeStyleWrapper {
     }
 
     public String getName() {
-        int indexOf = parent.getStyle().featureTypeStyles().indexOf(featureTypeStyle);
-        name = "featureStyle_" + indexOf;
-        featureTypeStyle.setName(name);
+        String name = featureTypeStyle.getName();
+        if (name == null) {
+            int indexOf = parent.getStyle().featureTypeStyles().indexOf(featureTypeStyle);
+            name = "featureStyle_" + indexOf;
+            featureTypeStyle.setName(name);
+        }
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setName( String name ) {
         featureTypeStyle.setName(name);
     }
 
@@ -94,12 +94,22 @@ public class FeatureTypeStyleWrapper {
      * Remove a {@link RuleWrapper} from the list.
      * 
      * @param remRule the {@link Rule} to remove.
-     * @return the {@link FeatureTypeStyleWrapper} for the new {@link FeatureTypeStyle}.
      */
-    public void removeRule(RuleWrapper remRule) {
+    public void removeRule( RuleWrapper remRule ) {
         Rule rule = remRule.getRule();
         featureTypeStyle.rules().remove(rule);
         rulesWrapperList.remove(remRule);
+    }
+
+    /**
+     * Add a {@link RuleWrapper} to the list.
+     * 
+     * @param addRule the {@link Rule} to add.
+     */
+    public void addRule( RuleWrapper addRule ) {
+        Rule rule = addRule.getRule();
+        featureTypeStyle.rules().add(rule);
+        rulesWrapperList.add(addRule);
     }
 
     /**
@@ -116,17 +126,17 @@ public class FeatureTypeStyleWrapper {
      * @param src the position first element.
      * @param dest the position second element. 
      */
-    public void swap(int src, int dest) {
+    public void swap( int src, int dest ) {
         List<Rule> rules = featureTypeStyle.rules();
         if (src >= 0 && src < rules.size() && dest >= 0 && dest < rules.size()) {
             Collections.swap(rules, src, dest);
             Collections.swap(rulesWrapperList, src, dest);
         }
     }
-    
+
     @Override
     public String toString() {
-        return name;
+        return getName();
     }
 
 }

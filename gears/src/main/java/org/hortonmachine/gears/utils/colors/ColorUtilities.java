@@ -91,13 +91,24 @@ public class ColorUtilities {
      * @return the Color object. 
      */
     public static Color fromHex( String hex ) {
-        int index = 0;
         if (hex.startsWith("#")) {
-            index = 1;
+            hex = hex.substring(1);
         }
+        int length = hex.length();
+        int total = 6;
+        if (length < total) {
+            // we have a shortened version
+            String token = hex;
+            int tokenLength = token.length();
+            for( int i = 0; i < total; i = i + tokenLength ) {
+                hex += token;
+            }
+        }
+
+        int index = 0;
         String r = hex.substring(index, index + 2);
         String g = hex.substring(index + 2, index + 4);
-        String b = hex.substring(index + 4, index + 6);
+        String b = hex.substring(index + 4, index + total);
         return new Color(Integer.valueOf(r, 16), Integer.valueOf(g, 16), Integer.valueOf(b, 16));
     }
 

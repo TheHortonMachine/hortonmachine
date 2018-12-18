@@ -2,35 +2,52 @@ package org.hortonmachine.style;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
+import javax.swing.border.BevelBorder;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.MapContent;
+import org.geotools.styling.FeatureTypeStyle;
+import org.geotools.styling.Rule;
 import org.geotools.styling.Style;
 import org.geotools.swing.JMapPane;
 import org.hortonmachine.database.DatabaseViewer;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.style.FeatureTypeStyleWrapper;
 import org.hortonmachine.gears.utils.style.LineSymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.PointSymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.PolygonSymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.RuleWrapper;
+import org.hortonmachine.gears.utils.style.StyleUtilities;
 import org.hortonmachine.gears.utils.style.StyleWrapper;
 import org.hortonmachine.gears.utils.style.SymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.TextSymbolizerWrapper;
@@ -41,8 +58,10 @@ import org.hortonmachine.modules.VectorReader;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+@SuppressWarnings("serial")
 public class MainController extends MainView implements IOnCloseListener, TreeSelectionListener {
     public static final int COLOR_IMAGE_SIZE = 15;
 
@@ -54,6 +73,14 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     private StyleWrapper styleWrapper;
 
     private String[] featureCollectionFieldNames;
+    private FeatureTypeStyleWrapper currentSelectedFSW;
+    private StyleWrapper currentSelectedSW;
+    private RuleWrapper currentSelectedRW;
+    private SymbolizerWrapper currentSelectedSymW;
+
+    private GeometryDescriptor geometryDescriptor;
+
+    private File selectedFile;
 
     /**
     * Default constructor
@@ -66,6 +93,8 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     private void init() {
         _rulesTree.setModel(new DefaultTreeModel(null));
         _stylePanel.setLayout(new BorderLayout());
+
+        addJtreeContextMenu();
 
         mapContent = new MapContent();
 
@@ -113,15 +142,18 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             if (result == JFileChooser.APPROVE_OPTION) {
                 File[] selectedFiles = fileChooser.getSelectedFiles();
                 if (selectedFiles != null && selectedFiles.length > 0) {
-                    GuiUtilities.setLastPath(selectedFiles[0].getAbsolutePath());
-                    _filepathField.setText(selectedFiles[0].getAbsolutePath());
+                    selectedFile = selectedFiles[0];
+                    GuiUtilities.setLastPath(selectedFile.getAbsolutePath());
+                    _filepathField.setText(selectedFile.getAbsolutePath());
                     try {
                         if (currentFeaturesLayer != null) {
                             mapContent.removeLayer(currentFeaturesLayer);
                         }
 
                         SimpleFeatureCollection currentFeatureCollection = VectorReader
-                                .readVector(selectedFiles[0].getAbsolutePath());
+                                .readVector(selectedFile.getAbsolutePath());
+
+                        geometryDescriptor = currentFeatureCollection.getSchema().getGeometryDescriptor();
 
                         featureCollectionFieldNames = FeatureUtilities.featureCollectionFieldNames(currentFeatureCollection);
                         currentFeaturesList = FeatureUtilities.featureCollectionToList(currentFeatureCollection);
@@ -130,7 +162,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                                 .getCoordinateReferenceSystem();
                         mapContent.getViewport().setCoordinateReferenceSystem(currentCRS);
 
-                        Style style = SldUtilities.getStyleFromFile(selectedFiles[0]);
+                        Style style = SldUtilities.getStyleFromFile(selectedFile);
 
                         currentFeaturesLayer = new FeatureLayer(currentFeatureCollection, style);
                         mapContent.addLayer(currentFeaturesLayer);
@@ -162,11 +194,25 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             loadFeatureCollection();
         });
 
+        _saveButton.addActionListener(e -> {
+            try {
+                String xml = styleWrapper.toXml();
+                String nameWithoutExtention = FileUtilities.getNameWithoutExtention(selectedFile);
+                File sldFile = new File(selectedFile.getParentFile(), nameWithoutExtention + ".sld");
+
+                FileUtilities.writeFile(xml, sldFile);
+
+            } catch (Exception e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        });
+
     }
 
     private void reloadGroupsAndRules() {
         List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = styleWrapper.getFeatureTypeStylesWrapperList();
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("FeatureTypeStyle");
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(styleWrapper);
         DefaultTreeModel model = new DefaultTreeModel(rootNode);
 
         for( FeatureTypeStyleWrapper featureTypeStyle : featureTypeStylesWrapperList ) {
@@ -197,6 +243,76 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             _rulesTree.expandRow(i);
         }
         _rulesTree.addTreeSelectionListener(this);
+
+    }
+
+    private void addJtreeContextMenu() {
+        _rulesTree.addTreeSelectionListener(new TreeSelectionListener(){
+
+            public void valueChanged( TreeSelectionEvent evt ) {
+                TreePath[] paths = evt.getPaths();
+                if (paths.length > 0) {
+                    Object selectedItem = paths[0].getLastPathComponent();
+
+                    currentSelectedSW = null;
+                    currentSelectedFSW = null;
+                    currentSelectedRW = null;
+                    currentSelectedSymW = null;
+
+                    if (selectedItem instanceof DefaultMutableTreeNode) {
+                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectedItem;
+                        Object userObject = node.getUserObject();
+                        System.out.println(userObject.getClass());
+                        System.out.println(userObject);
+
+                        if (userObject instanceof StyleWrapper) {
+                            currentSelectedSW = (StyleWrapper) userObject;
+                        } else if (userObject instanceof FeatureTypeStyleWrapper) {
+                            currentSelectedFSW = (FeatureTypeStyleWrapper) userObject;
+                        } else if (userObject instanceof RuleWrapper) {
+                            currentSelectedRW = (RuleWrapper) userObject;
+                        } else if (userObject instanceof SymbolizerWrapper) {
+                            currentSelectedSymW = (SymbolizerWrapper) userObject;
+                        }
+
+                    }
+
+                }
+            }
+        });
+
+        JPopupMenu popupMenu = new JPopupMenu();
+        popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
+        popupMenu.addPopupMenuListener(new PopupMenuListener(){
+
+            @Override
+            public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
+                createMenuActions(popupMenu);
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) {
+                popupMenu.removeAll();
+            }
+
+            @Override
+            public void popupMenuCanceled( PopupMenuEvent e ) {
+                popupMenu.removeAll();
+            }
+        });
+
+        _rulesTree.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked( MouseEvent e ) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    int row = _rulesTree.getClosestRowForLocation(e.getX(), e.getY());
+                    _rulesTree.setSelectionRow(row);
+                    popupMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
+
+            }
+        });
+
     }
 
     private void loadFeatureCollection() {
@@ -255,22 +371,24 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             return;
         _stylePanel.removeAll();
 
-        Object nodeInfo = node.getUserObject();
-        if (node.isLeaf()) {
-            if (nodeInfo instanceof PolygonSymbolizerWrapper) {
-                PolygonSymbolizerWrapper symbolizerWrapper = (PolygonSymbolizerWrapper) nodeInfo;
-                _stylePanel.add(new PolygonSymbolizerController(symbolizerWrapper, this), BorderLayout.CENTER);
-            } else if (nodeInfo instanceof LineSymbolizerWrapper) {
-                LineSymbolizerWrapper symbolizerWrapper = (LineSymbolizerWrapper) nodeInfo;
-                _stylePanel.add(new LineSymbolizerController(symbolizerWrapper, this), BorderLayout.CENTER);
-            } else if (nodeInfo instanceof PointSymbolizerWrapper) {
-                PointSymbolizerWrapper symbolizerWrapper = (PointSymbolizerWrapper) nodeInfo;
-                _stylePanel.add(new PointMarkSymbolizerController(symbolizerWrapper, this), BorderLayout.CENTER);
-            } else if (nodeInfo instanceof TextSymbolizerWrapper) {
-                TextSymbolizerWrapper symbolizerWrapper = (TextSymbolizerWrapper) nodeInfo;
-                _stylePanel.add(new TextSymbolizerController(symbolizerWrapper, featureCollectionFieldNames, this),
-                        BorderLayout.CENTER);
-            }
+        Object nodeObject = node.getUserObject();
+        if (nodeObject instanceof PolygonSymbolizerWrapper) {
+            PolygonSymbolizerWrapper symbolizerWrapper = (PolygonSymbolizerWrapper) nodeObject;
+            _stylePanel.add(new PolygonSymbolizerController(symbolizerWrapper, this), BorderLayout.CENTER);
+        } else if (nodeObject instanceof LineSymbolizerWrapper) {
+            LineSymbolizerWrapper symbolizerWrapper = (LineSymbolizerWrapper) nodeObject;
+            _stylePanel.add(new LineSymbolizerController(symbolizerWrapper, this), BorderLayout.CENTER);
+        } else if (nodeObject instanceof PointSymbolizerWrapper) {
+            PointSymbolizerWrapper symbolizerWrapper = (PointSymbolizerWrapper) nodeObject;
+            _stylePanel.add(new PointMarkSymbolizerController(symbolizerWrapper, this), BorderLayout.CENTER);
+        } else if (nodeObject instanceof TextSymbolizerWrapper) {
+            TextSymbolizerWrapper symbolizerWrapper = (TextSymbolizerWrapper) nodeObject;
+            _stylePanel.add(new TextSymbolizerController(symbolizerWrapper, featureCollectionFieldNames, this),
+                    BorderLayout.CENTER);
+        } else if (nodeObject instanceof RuleWrapper) {
+            _stylePanel.add(new RuleParametersController((RuleWrapper) nodeObject, this));
+        } else if (nodeObject instanceof FeatureTypeStyleWrapper) {
+            _stylePanel.add(new FeatureTypeParametersController((FeatureTypeStyleWrapper) nodeObject, this));
         }
         _stylePanel.revalidate();
         _stylePanel.repaint();
@@ -279,6 +397,142 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     public void applyStyle() {
         Style style = styleWrapper.getStyle();
         currentFeaturesLayer.setStyle(style);
+    }
+
+    private void createMenuActions( JPopupMenu popupMenu ) {
+        if (currentSelectedSW != null) {
+            // add featureStyle
+            AbstractAction action = new AbstractAction("Add new FeatureTypeStyle"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    FeatureTypeStyle featureTypeStyle = StyleUtilities.sf.createFeatureTypeStyle();
+                    FeatureTypeStyleWrapper ftsw = new FeatureTypeStyleWrapper(featureTypeStyle, currentSelectedSW);
+
+                    String tmpName = "New Group";
+                    tmpName = WrapperUtilities.checkSameNameFeatureTypeStyle(styleWrapper.getFeatureTypeStylesWrapperList(),
+                            tmpName);
+                    ftsw.setName(tmpName);
+                    styleWrapper.addFeatureTypeStyle(ftsw);
+
+                    reloadGroupsAndRules();
+                }
+            };
+            JMenuItem item = new JMenuItem(action);
+            popupMenu.add(item);
+            item.setHorizontalTextPosition(JMenuItem.RIGHT);
+        } else if (currentSelectedFSW != null) {
+            // add rule
+            AbstractAction action = new AbstractAction("Add new Rule"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    Rule rule = StyleUtilities.sf.createRule();
+                    RuleWrapper rw = new RuleWrapper(rule, currentSelectedFSW);
+
+                    currentSelectedFSW.addRule(rw);
+
+                    String tmpName = "New Rule";
+                    tmpName = WrapperUtilities.checkSameNameRule(currentSelectedFSW.getRulesWrapperList(), tmpName);
+                    rw.setName(tmpName);
+
+                    reloadGroupsAndRules();
+                }
+            };
+            JMenuItem item = new JMenuItem(action);
+            popupMenu.add(item);
+            item.setHorizontalTextPosition(JMenuItem.RIGHT);
+
+            popupMenu.add(new JSeparator());
+
+            // remove featureStyle
+            action = new AbstractAction("Remove selected FeatureTypeStyle"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+
+                    StyleWrapper p = currentSelectedFSW.getParent();
+                    p.removeFeatureTypeStyle(currentSelectedFSW);
+
+                    reloadGroupsAndRules();
+                }
+            };
+            item = new JMenuItem(action);
+            popupMenu.add(item);
+            item.setHorizontalTextPosition(JMenuItem.RIGHT);
+        } else if (currentSelectedRW != null) {
+
+            // add rule
+            AbstractAction action;
+            JMenuItem item;
+            if (currentSelectedRW.getGeometrySymbolizersWrapper() == null) {
+                action = new AbstractAction("Add Geometry Symbolizer"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        EGeometryType type = EGeometryType.forGeometryDescriptor(geometryDescriptor);
+                        switch( type ) {
+                        case POINT:
+                        case MULTIPOINT:
+                            currentSelectedRW.addSymbolizer(null, PointSymbolizerWrapper.class);
+                            break;
+                        case LINESTRING:
+                        case MULTILINESTRING:
+                            currentSelectedRW.addSymbolizer(null, LineSymbolizerWrapper.class);
+                            break;
+                        case POLYGON:
+                        case MULTIPOLYGON:
+                            currentSelectedRW.addSymbolizer(null, PolygonSymbolizerWrapper.class);
+                            break;
+                        default:
+                            break;
+                        }
+                        reloadGroupsAndRules();
+                    }
+                };
+                item = new JMenuItem(action);
+                popupMenu.add(item);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+            }
+            if (currentSelectedRW.getTextSymbolizersWrapper() == null
+                    && currentSelectedRW.getGeometrySymbolizersWrapper() != null) {
+                action = new AbstractAction("Add Text Symbolizer"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        currentSelectedRW.addSymbolizer(null, TextSymbolizerWrapper.class);
+                        reloadGroupsAndRules();
+                    }
+                };
+                item = new JMenuItem(action);
+                popupMenu.add(item);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+            }
+            popupMenu.add(new JSeparator());
+
+            // remove featureStyle
+            action = new AbstractAction("Remove selected Rule"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+
+                    FeatureTypeStyleWrapper f = currentSelectedRW.getParent();
+                    f.removeRule(currentSelectedRW);
+
+                    reloadGroupsAndRules();
+                }
+            };
+            item = new JMenuItem(action);
+            popupMenu.add(item);
+            item.setHorizontalTextPosition(JMenuItem.RIGHT);
+        } else if (currentSelectedSymW != null) {
+            // remove featureStyle
+            AbstractAction action = new AbstractAction("Remove selected Symbolizer"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    RuleWrapper rw = currentSelectedSymW.getParent();
+                    rw.removeSymbolizerWrapper(currentSelectedSymW);
+                    reloadGroupsAndRules();
+                }
+            };
+            JMenuItem item = new JMenuItem(action);
+            popupMenu.add(item);
+            item.setHorizontalTextPosition(JMenuItem.RIGHT);
+        }
     }
 
 }

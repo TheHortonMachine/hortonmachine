@@ -22,18 +22,17 @@ import org.opengis.style.GraphicalSymbol;
  */
 public class PolygonSymbolizerWrapper extends LineSymbolizerWrapper {
 
-    private Fill fill;
-    private String fillColor;
-    private String fillOpacity;
+    private Fill fill = StyleUtilities.createDefaultFill();
+    private String fillColor = DEFAULT_COLOR;
+    private String fillOpacity = DEFAULT_OPACITY;
     private Graphic fillGraphicFill;
     private String wkMarkNameFill;
     private String wkMarkColorFill;
     private String wkMarkWidthFill;
     private String wkMarkSizeFill;
-    private boolean hasFill;
     private Mark mark;
 
-    public PolygonSymbolizerWrapper(Symbolizer tmpSymbolizer, RuleWrapper parent) {
+    public PolygonSymbolizerWrapper( Symbolizer tmpSymbolizer, RuleWrapper parent ) {
         super((PolygonSymbolizer) tmpSymbolizer, parent);
 
         PolygonSymbolizer polygonSymbolizer = (PolygonSymbolizer) tmpSymbolizer;
@@ -48,89 +47,97 @@ public class PolygonSymbolizerWrapper extends LineSymbolizerWrapper {
             yOffset = DEFAULT_OFFSET;
         }
 
-        stroke = polygonSymbolizer.getStroke();
-        if (stroke != null) {
-            Expression color = stroke.getColor();
-            strokeColor = expressionToString(color);
-            Expression width = stroke.getWidth();
-            strokeWidth = expressionToString(width);
-            Expression opacity = stroke.getOpacity();
-            strokeOpacity = expressionToString(opacity);
-
-            if (strokeColor == null) {
-                strokeColor = DEFAULT_COLOR;
-                stroke.setColor(ff.literal(DEFAULT_COLOR));
-            }
-            if (strokeOpacity == null) {
-                strokeOpacity = DEFAULT_OPACITY;
-                stroke.setOpacity(ff.literal(DEFAULT_OPACITY));
-            }
-            if (strokeWidth == null) {
-                strokeWidth = DEFAULT_WIDTH;
-                stroke.setWidth(ff.literal(DEFAULT_WIDTH));
-            }
-
-            strokeGraphicStroke = stroke.getGraphicStroke();
-            if (strokeGraphicStroke != null) {
-                List<GraphicalSymbol> graphicalSymbolsList = strokeGraphicStroke.graphicalSymbols();
-                if (graphicalSymbolsList.size() > 0) {
-                    GraphicalSymbol graphicalSymbol = graphicalSymbolsList.get(0);
-                    if (graphicalSymbol instanceof ExternalGraphic) {
-                        strokeExternalGraphicStroke = (ExternalGraphic) graphicalSymbol;
-                    }
-                }
-            }
-
-            // dash
-            float[] dashArray = stroke.getDashArray();
-            if (dashArray != null) {
-                dash = StyleUtilities.getDashString(dashArray);
-            } else {
-                dash = ""; //$NON-NLS-1$
-            }
-            // dashoffset
-            dashOffset = stroke.getDashOffset().evaluate(null, String.class);
-            // line cap
-            lineCap = stroke.getLineCap().evaluate(null, String.class);
-            // line join
-            lineJoin = stroke.getLineJoin().evaluate(null, String.class);
-
-            hasStroke = true;
+        Stroke strokeTmp = polygonSymbolizer.getStroke();
+        if (strokeTmp != null) {
+            stroke = strokeTmp;
         } else {
-            hasStroke = false;
+            polygonSymbolizer.setStroke(stroke);
+        }
+        Expression color = stroke.getColor();
+        if (color != null) {
+            strokeColor = expressionToString(color);
+        } else {
+            strokeColor = DEFAULT_COLOR;
+            stroke.setColor(ff.literal(DEFAULT_COLOR));
+        }
+        Expression width = stroke.getWidth();
+        if (width != null) {
+            strokeWidth = expressionToString(width);
+        } else {
+            strokeWidth = DEFAULT_WIDTH;
+            stroke.setWidth(ff.literal(DEFAULT_WIDTH));
+        }
+        Expression opacity = stroke.getOpacity();
+        if (opacity != null) {
+            strokeOpacity = expressionToString(opacity);
+        } else {
+            strokeOpacity = DEFAULT_OPACITY;
+            stroke.setOpacity(ff.literal(DEFAULT_OPACITY));
         }
 
-        fill = polygonSymbolizer.getFill();
-        if (fill != null) {
-            Expression color = fill.getColor();
-            if (color != null) {
-                fillColor = expressionToString(color);
-            }
-            Expression opacity = fill.getOpacity();
-            fillOpacity = expressionToString(opacity);
-
-            fillGraphicFill = fill.getGraphicFill();
-            if (fillGraphicFill != null) {
-                List<GraphicalSymbol> graphicalSymbolsList = fillGraphicFill.graphicalSymbols();
-
-                if (graphicalSymbolsList.size() > 0) {
-                    GraphicalSymbol graphicalSymbol = graphicalSymbolsList.get(0);
-                    if (graphicalSymbol instanceof ExternalGraphic) {
-                        fillExternalGraphicFill = (ExternalGraphic) graphicalSymbol;
-                    } else if (graphicalSymbol instanceof Mark) {
-                        mark = (Mark) graphicalSymbol;
-                        wkMarkNameFill = mark.getWellKnownName().evaluate(null, String.class);
-                        Stroke stroke = mark.getStroke();
-                        wkMarkColorFill = stroke.getColor().evaluate(null, String.class);
-                        wkMarkWidthFill = stroke.getWidth().evaluate(null, String.class);
-                        wkMarkSizeFill = fillGraphicFill.getSize().evaluate(null, String.class);
-                    }
+        strokeGraphicStroke = stroke.getGraphicStroke();
+        if (strokeGraphicStroke != null) {
+            List<GraphicalSymbol> graphicalSymbolsList = strokeGraphicStroke.graphicalSymbols();
+            if (graphicalSymbolsList.size() > 0) {
+                GraphicalSymbol graphicalSymbol = graphicalSymbolsList.get(0);
+                if (graphicalSymbol instanceof ExternalGraphic) {
+                    strokeExternalGraphicStroke = (ExternalGraphic) graphicalSymbol;
                 }
             }
+        }
 
-            hasFill = true;
+        // dash
+        float[] dashArray = stroke.getDashArray();
+        if (dashArray != null) {
+            dash = StyleUtilities.getDashString(dashArray);
         } else {
-            hasFill = false;
+            dash = ""; //$NON-NLS-1$
+        }
+        // dashoffset
+        dashOffset = stroke.getDashOffset().evaluate(null, String.class);
+        // line cap
+        lineCap = stroke.getLineCap().evaluate(null, String.class);
+        // line join
+        lineJoin = stroke.getLineJoin().evaluate(null, String.class);
+
+        Fill fillTmp = polygonSymbolizer.getFill();
+        if (fillTmp != null) {
+            fill = fillTmp;
+        } else {
+            polygonSymbolizer.setFill(fill);
+        }
+
+        Expression fcolor = fill.getColor();
+        if (fcolor != null) {
+            fillColor = expressionToString(fcolor);
+        } else {
+            fill.setColor(ff.literal(fillColor));
+        }
+
+        Expression fopacity = fill.getOpacity();
+        if (fopacity != null) {
+            fillOpacity = expressionToString(fopacity);
+        } else {
+            fill.setOpacity(ff.literal(fillOpacity));
+        }
+
+        fillGraphicFill = fill.getGraphicFill();
+        if (fillGraphicFill != null) {
+            List<GraphicalSymbol> graphicalSymbolsList = fillGraphicFill.graphicalSymbols();
+
+            if (graphicalSymbolsList.size() > 0) {
+                GraphicalSymbol graphicalSymbol = graphicalSymbolsList.get(0);
+                if (graphicalSymbol instanceof ExternalGraphic) {
+                    fillExternalGraphicFill = (ExternalGraphic) graphicalSymbol;
+                } else if (graphicalSymbol instanceof Mark) {
+                    mark = (Mark) graphicalSymbol;
+                    wkMarkNameFill = mark.getWellKnownName().evaluate(null, String.class);
+                    Stroke stroke = mark.getStroke();
+                    wkMarkColorFill = stroke.getColor().evaluate(null, String.class);
+                    wkMarkWidthFill = stroke.getWidth().evaluate(null, String.class);
+                    wkMarkSizeFill = fillGraphicFill.getSize().evaluate(null, String.class);
+                }
+            }
         }
 
     }
@@ -164,34 +171,11 @@ public class PolygonSymbolizerWrapper extends LineSymbolizerWrapper {
         return fillGraphicFill;
     }
 
-    public void setFillGraphicFill(Graphic fillGraphicFill) {
+    public void setFillGraphicFill( Graphic fillGraphicFill ) {
         this.fillGraphicFill = fillGraphicFill;
         checkFillExists();
 
         fill.setGraphicFill(fillGraphicFill);
-    }
-
-    // ///// GETTERS/SETTERS
-    public void setHasFill(boolean hasFill) {
-        this.hasFill = hasFill;
-        if (hasFill) {
-            checkFillExists();
-        } else {
-            fill = null;
-            PolygonSymbolizer polygonSymbolizer = (PolygonSymbolizer) getSymbolizer();
-            polygonSymbolizer.setFill(null);
-        }
-    }
-
-    public void setHasStroke(boolean hasStroke) {
-        this.hasStroke = hasStroke;
-        if (hasStroke) {
-            checkStrokeExists();
-        } else {
-            stroke = null;
-            PolygonSymbolizer polygonSymbolizer = (PolygonSymbolizer) getSymbolizer();
-            polygonSymbolizer.setStroke(null);
-        }
     }
 
     protected void checkStrokeExists() {
@@ -209,7 +193,7 @@ public class PolygonSymbolizerWrapper extends LineSymbolizerWrapper {
         }
     }
 
-    public void setFillColor(String fillColor, boolean isProperty) {
+    public void setFillColor( String fillColor, boolean isProperty ) {
         this.fillColor = fillColor;
         checkFillExists();
         fill.setGraphicFill(null);
@@ -217,16 +201,11 @@ public class PolygonSymbolizerWrapper extends LineSymbolizerWrapper {
         if (isProperty) {
             fill.setColor(ff.property(fillColor));
         } else {
-            if (fillColor == null) {
-                hasFill = false;
-            } else {
-                hasFill = true;
-            }
             fill.setColor(ff.literal(fillColor));
         }
     }
 
-    public void setFillOpacity(String fillOpacity, boolean isProperty) {
+    public void setFillOpacity( String fillOpacity, boolean isProperty ) {
         this.fillOpacity = fillOpacity;
         checkFillExists();
         if (isProperty) {
@@ -245,11 +224,11 @@ public class PolygonSymbolizerWrapper extends LineSymbolizerWrapper {
         if (fillGraphicFill != null) {
             fillGraphicFill.graphicalSymbols().clear();
         }
-        //    	fillGraphicFill = null;
+        // fillGraphicFill = null;
         mark = null;
     }
 
-    public void setWkMarkNameFill(String wkMarkNameFill) {
+    public void setWkMarkNameFill( String wkMarkNameFill ) {
         this.wkMarkNameFill = wkMarkNameFill;
         checkMarkExists();
         if (wkMarkNameFill != null) {
@@ -257,7 +236,7 @@ public class PolygonSymbolizerWrapper extends LineSymbolizerWrapper {
         }
     }
 
-    public void setWkMarkColorFill(String wkMarkColorFill) {
+    public void setWkMarkColorFill( String wkMarkColorFill ) {
         this.wkMarkColorFill = wkMarkColorFill;
         checkMarkExists();
         if (wkMarkColorFill != null) {
@@ -266,7 +245,7 @@ public class PolygonSymbolizerWrapper extends LineSymbolizerWrapper {
         }
     }
 
-    public void setWkMarkWidthFill(String wkMarkWidthFill) {
+    public void setWkMarkWidthFill( String wkMarkWidthFill ) {
         this.wkMarkWidthFill = wkMarkWidthFill;
         checkMarkExists();
         if (wkMarkWidthFill != null) {
@@ -275,15 +254,10 @@ public class PolygonSymbolizerWrapper extends LineSymbolizerWrapper {
         }
     }
 
-    public void setWkMarkSizeFill(String wkMarkSizeFill) {
+    public void setWkMarkSizeFill( String wkMarkSizeFill ) {
         this.wkMarkSizeFill = wkMarkSizeFill;
         checkFillExists();
         fillGraphicFill.setSize(ff.literal(wkMarkSizeFill));
-    }
-
-    // getters
-    public boolean hasFill() {
-        return hasFill;
     }
 
     public String getFillColor() {

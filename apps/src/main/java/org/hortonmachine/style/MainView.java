@@ -28,12 +28,6 @@ public class MainView extends JPanel
    JButton _saveButton = new JButton();
    JPanel _stylePanelSpace = new JPanel();
    JPanel _stylePanel = new JPanel();
-   JButton _addGroupButton = new JButton();
-   JButton _addRuleButton = new JButton();
-   JButton _deleteButton = new JButton();
-   JButton _deleteAllButton = new JButton();
-   JButton _moveUpButton = new JButton();
-   JButton _moveDownButton = new JButton();
    JButton _previousButton = new JButton();
    JButton _nextButton = new JButton();
    JPanel _mapPaneHolder = new JPanel();
@@ -155,8 +149,7 @@ public class MainView extends JPanel
       jpanel1.add(_saveButton,cc.xy(10,2));
 
       jpanel1.add(createstylePanelSpace(),cc.xywh(12,2,10,18));
-      jpanel1.add(createPanel1(),cc.xywh(2,11,9,1));
-      jpanel1.add(createPanel2(),cc.xywh(2,19,9,1));
+      jpanel1.add(createPanel1(),cc.xywh(2,19,9,1));
       jpanel1.add(createmapPaneHolder(),cc.xywh(2,13,9,5));
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 });
       return jpanel1;
@@ -177,47 +170,6 @@ public class MainView extends JPanel
    }
 
    public JPanel createPanel1()
-   {
-      JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      _addGroupButton.setActionCommand("add group");
-      _addGroupButton.setName("addGroupButton");
-      _addGroupButton.setText("add group");
-      jpanel1.add(_addGroupButton,cc.xy(1,1));
-
-      _addRuleButton.setActionCommand("add rule");
-      _addRuleButton.setName("addRuleButton");
-      _addRuleButton.setText("add rule");
-      jpanel1.add(_addRuleButton,cc.xy(2,1));
-
-      _deleteButton.setActionCommand("delete");
-      _deleteButton.setName("deleteButton");
-      _deleteButton.setText("delete");
-      jpanel1.add(_deleteButton,cc.xy(3,1));
-
-      _deleteAllButton.setActionCommand("delete all");
-      _deleteAllButton.setName("deleteAllButton");
-      _deleteAllButton.setText("delete all");
-      jpanel1.add(_deleteAllButton,cc.xy(4,1));
-
-      _moveUpButton.setActionCommand("move up");
-      _moveUpButton.setName("moveUpButton");
-      _moveUpButton.setText("move up");
-      jpanel1.add(_moveUpButton,cc.xy(5,1));
-
-      _moveDownButton.setActionCommand("move down");
-      _moveDownButton.setName("moveDownButton");
-      _moveDownButton.setText("move down");
-      jpanel1.add(_moveDownButton,cc.xy(6,1));
-
-      addFillComponents(jpanel1,new int[0],new int[0]);
-      return jpanel1;
-   }
-
-   public JPanel createPanel2()
    {
       JPanel jpanel1 = new JPanel();
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE");

@@ -100,6 +100,12 @@ public class StyleWrapper {
         featureTypeStylesWrapperList.remove(ftsW);
     }
 
+    public void addFeatureTypeStyle(FeatureTypeStyleWrapper ftsW) {
+        FeatureTypeStyle fts = ftsW.getFeatureTypeStyle();
+        style.featureTypeStyles().add(fts);
+        featureTypeStylesWrapperList.add(ftsW);
+    }
+
     /**
      * Clear all the {@link FeatureTypeStyle}s and {@link FeatureTypeStyleWrapper}s.
      */
@@ -144,6 +150,11 @@ public class StyleWrapper {
             Collections.swap(ftss, src, dest);
             Collections.swap(featureTypeStylesWrapperList, src, dest);
         }
+    }
+    
+    @Override
+    public String toString() {
+        return getName();
     }
 
 }

@@ -28,7 +28,7 @@ public class RuleWrapper {
     private List<SymbolizerWrapper> symbolizersWrapperList = new ArrayList<SymbolizerWrapper>();
     private final FeatureTypeStyleWrapper parent;
 
-    public RuleWrapper(Rule rule, FeatureTypeStyleWrapper parent) {
+    public RuleWrapper( Rule rule, FeatureTypeStyleWrapper parent ) {
         this.rule = rule;
         this.parent = parent;
 
@@ -42,7 +42,7 @@ public class RuleWrapper {
         }
 
         List<Symbolizer> symbolizers = rule.symbolizers();
-        for (Symbolizer symbolizer : symbolizers) {
+        for( Symbolizer symbolizer : symbolizers ) {
             SymbolizerWrapper wrapper = getWrapper(symbolizer);
             symbolizersWrapperList.add(wrapper);
         }
@@ -61,7 +61,7 @@ public class RuleWrapper {
         return rule;
     }
 
-    private SymbolizerWrapper getWrapper(Symbolizer symbolizer) {
+    private SymbolizerWrapper getWrapper( Symbolizer symbolizer ) {
         SymbolizerWrapper symbolizerWrapper = null;
         if (symbolizer instanceof PointSymbolizer) {
             symbolizerWrapper = new PointSymbolizerWrapper(symbolizer, this);
@@ -109,7 +109,7 @@ public class RuleWrapper {
      * @return the used {@link Symbolizer}.
      */
     public SymbolizerWrapper getGeometrySymbolizersWrapper() {
-        for (SymbolizerWrapper symbolizerWrapper : symbolizersWrapperList) {
+        for( SymbolizerWrapper symbolizerWrapper : symbolizersWrapperList ) {
             if (!symbolizerWrapper.isTextSymbolizer()) {
                 return symbolizerWrapper;
             }
@@ -126,7 +126,7 @@ public class RuleWrapper {
      * @return the used {@link TextSymbolizer}.
      */
     public TextSymbolizerWrapper getTextSymbolizersWrapper() {
-        for (SymbolizerWrapper symbolizerWrapper : symbolizersWrapperList) {
+        for( SymbolizerWrapper symbolizerWrapper : symbolizersWrapperList ) {
             if (symbolizerWrapper.isTextSymbolizer()) {
                 return (TextSymbolizerWrapper) symbolizerWrapper;
             }
@@ -142,7 +142,7 @@ public class RuleWrapper {
         List<Symbolizer> removeS = new ArrayList<Symbolizer>();
 
         List<Symbolizer> symbolizers = rule.symbolizers();
-        for (SymbolizerWrapper symbolizerWrapper : symbolizersWrapperList) {
+        for( SymbolizerWrapper symbolizerWrapper : symbolizersWrapperList ) {
             if (symbolizerWrapper.isTextSymbolizer()) {
                 Symbolizer symbolizer = symbolizerWrapper.getSymbolizer();
                 removeSW.add(symbolizerWrapper);
@@ -154,6 +154,12 @@ public class RuleWrapper {
         symbolizers.removeAll(removeS);
     }
 
+    public void removeSymbolizerWrapper( SymbolizerWrapper symbolizerWrapperToRem ) {
+        symbolizersWrapperList.remove(symbolizerWrapperToRem);
+        List<Symbolizer> symbolizers = rule.symbolizers();
+        symbolizers.remove(symbolizerWrapperToRem.getSymbolizer());
+    }
+
     /**
      * Add a supplied or new {@link Symbolizer} to the {@link Rule}.
      * 
@@ -161,7 +167,7 @@ public class RuleWrapper {
      * @param symbolizerClass the class in the case the symbolizer has to be created.
      * @return the {@link SymbolizerWrapper} for the new {@link Symbolizer}.
      */
-    public <T> T addSymbolizer(Symbolizer newSymbolizer, Class<T> symbolizerClass) {
+    public <T> T addSymbolizer( Symbolizer newSymbolizer, Class<T> symbolizerClass ) {
         SymbolizerWrapper wrapper = null;
         if (newSymbolizer != null) {
             if (newSymbolizer instanceof PointSymbolizer) {
@@ -214,7 +220,7 @@ public class RuleWrapper {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName( String name ) {
         this.name = name;
         rule.setName(name);
     }
@@ -223,7 +229,7 @@ public class RuleWrapper {
         return maxScale;
     }
 
-    public void setMaxScale(String maxScale) {
+    public void setMaxScale( String maxScale ) {
         this.maxScale = maxScale;
         try {
             rule.setMaxScaleDenominator(Double.parseDouble(maxScale));
@@ -236,7 +242,7 @@ public class RuleWrapper {
         return minScale;
     }
 
-    public void setMinScale(String minScale) {
+    public void setMinScale( String minScale ) {
         this.minScale = minScale;
         try {
             rule.setMinScaleDenominator(Double.parseDouble(minScale));
@@ -271,7 +277,7 @@ public class RuleWrapper {
     // Filter filter = (Filter) parser.parse(xml);
     // rule.setFilter(filter);
     // }
-    
+
     @Override
     public String toString() {
         return name;
