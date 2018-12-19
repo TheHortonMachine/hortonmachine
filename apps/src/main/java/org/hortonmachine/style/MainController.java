@@ -44,7 +44,10 @@ import org.geotools.styling.RasterSymbolizer;
 import org.geotools.styling.Rule;
 import org.geotools.styling.Style;
 import org.geotools.swing.JMapPane;
+import org.hortonmachine.database.DatabaseGuiUtils;
 import org.hortonmachine.database.DatabaseViewer;
+import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.SldUtilities;
@@ -100,13 +103,11 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
     /**
      * Default constructor
+     * @param fileToOpen optional file to open.
      */
-    public MainController() {
+    public MainController( File fileToOpen ) {
         setPreferredSize(new Dimension(1400, 800));
-        init();
-    }
 
-    private void init() {
         _rulesTree.setModel(new DefaultTreeModel(null));
         _stylePanel.setLayout(new BorderLayout());
 
@@ -161,64 +162,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 File[] selectedFiles = fileChooser.getSelectedFiles();
                 if (selectedFiles != null && selectedFiles.length > 0) {
                     selectedFile = selectedFiles[0];
-                    String absolutePath = selectedFile.getAbsolutePath();
-                    GuiUtilities.setLastPath(absolutePath);
-                    _filepathField.setText(absolutePath);
-
-                    if (currentLayer != null) {
-                        mapContent.removeLayer(currentLayer);
-                    }
-                    try {
-                        if (HMConstants.isVector(selectedFile)) {
-
-                            currentFeatureCollection = VectorReader.readVector(absolutePath);
-
-                            geometryDescriptor = currentFeatureCollection.getSchema().getGeometryDescriptor();
-
-                            featureCollectionFieldNames = FeatureUtilities.featureCollectionFieldNames(currentFeatureCollection);
-                            currentFeaturesList = FeatureUtilities.featureCollectionToList(currentFeatureCollection);
-
-                            CoordinateReferenceSystem currentCRS = currentFeatureCollection.getSchema()
-                                    .getCoordinateReferenceSystem();
-                            mapContent.getViewport().setCoordinateReferenceSystem(currentCRS);
-
-                            Style style = SldUtilities.getStyleFromFile(selectedFile);
-                            if (style == null) {
-                                style = StyleUtilities.createDefaultStyle(currentFeatureCollection);
-                            }
-
-                            currentLayer = new FeatureLayer(currentFeatureCollection, style);
-                            mapContent.addLayer(currentLayer);
-
-                            styleWrapper = new StyleWrapper(style);
-
-                            zoomToSubItems();
-                            reloadGroupsAndRules();
-
-                            _stylePanel.removeAll();
-                            _stylePanel.revalidate();
-                            _stylePanel.repaint();
-                        } else if (HMConstants.isRaster(selectedFile)) {
-                            raster = OmsRasterReader.readRaster(absolutePath);
-                            Style style = SldUtilities.getStyleFromFile(selectedFile);
-                            if (style == null) {
-                                style = RasterStyleUtilities.createDefaultRasterStyle();
-                            }
-                            mapContent.getViewport().setCoordinateReferenceSystem(raster.getCoordinateReferenceSystem());
-                            currentLayer = new GridCoverageLayer(raster, style);
-                            mapContent.addLayer(currentLayer);
-
-                            styleWrapper = new StyleWrapper(style);
-
-                            zoomToSubItems();
-                            reloadGroupsAndRules();
-
-                        }
-                    } catch (Exception e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
-
+                    openSelectedFile();
                 }
             }
         });
@@ -264,13 +208,77 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             }
         });
 
+        if (fileToOpen != null && fileToOpen.exists()) {
+            selectedFile = fileToOpen;
+            openSelectedFile();
+        }
+
+    }
+
+    private void openSelectedFile() {
+        String absolutePath = selectedFile.getAbsolutePath();
+        GuiUtilities.setLastPath(absolutePath);
+        _filepathField.setText(absolutePath);
+
+        if (currentLayer != null) {
+            mapContent.removeLayer(currentLayer);
+        }
+        try {
+            if (HMConstants.isVector(selectedFile)) {
+
+                currentFeatureCollection = VectorReader.readVector(absolutePath);
+
+                geometryDescriptor = currentFeatureCollection.getSchema().getGeometryDescriptor();
+
+                featureCollectionFieldNames = FeatureUtilities.featureCollectionFieldNames(currentFeatureCollection);
+                currentFeaturesList = FeatureUtilities.featureCollectionToList(currentFeatureCollection);
+
+                CoordinateReferenceSystem currentCRS = currentFeatureCollection.getSchema().getCoordinateReferenceSystem();
+                mapContent.getViewport().setCoordinateReferenceSystem(currentCRS);
+
+                Style style = SldUtilities.getStyleFromFile(selectedFile);
+                if (style == null) {
+                    style = StyleUtilities.createDefaultStyle(currentFeatureCollection);
+                }
+
+                currentLayer = new FeatureLayer(currentFeatureCollection, style);
+                mapContent.addLayer(currentLayer);
+
+                styleWrapper = new StyleWrapper(style);
+
+                zoomToSubItems();
+                reloadGroupsAndRules();
+
+                _stylePanel.removeAll();
+                _stylePanel.revalidate();
+                _stylePanel.repaint();
+            } else if (HMConstants.isRaster(selectedFile)) {
+                raster = OmsRasterReader.readRaster(absolutePath);
+                Style style = SldUtilities.getStyleFromFile(selectedFile);
+                if (style == null) {
+                    style = RasterStyleUtilities.createDefaultRasterStyle();
+                }
+                mapContent.getViewport().setCoordinateReferenceSystem(raster.getCoordinateReferenceSystem());
+                currentLayer = new GridCoverageLayer(raster, style);
+                mapContent.addLayer(currentLayer);
+
+                styleWrapper = new StyleWrapper(style);
+
+                zoomToSubItems();
+                reloadGroupsAndRules();
+
+            }
+        } catch (Exception e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
     }
 
     private void reloadGroupsAndRules() {
         _stylePanel.removeAll();
         _stylePanel.revalidate();
         _stylePanel.repaint();
-        
+
         List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = styleWrapper.getFeatureTypeStylesWrapperList();
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(styleWrapper);
         DefaultTreeModel model = new DefaultTreeModel(rootNode);
@@ -417,7 +425,13 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         GuiUtilities.setDefaultLookAndFeel();
 
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
-        final MainController controller = new MainController();
+
+        File openFile = null;
+        if (args.length > 0 && new File(args[0]).exists()) {
+            openFile = new File(args[0]);
+        }
+
+        final MainController controller = new MainController(openFile);
 
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine SLD Editor");
 
