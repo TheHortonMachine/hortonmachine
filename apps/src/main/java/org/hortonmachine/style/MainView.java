@@ -147,7 +147,7 @@ public class MainView extends JPanel
       _saveButton.setActionCommand("save");
       _saveButton.setName("saveButton");
       _saveButton.setText("save");
-      jpanel1.add(_saveButton,cc.xy(10,2));
+      jpanel1.add(_saveButton,new CellConstraints(10,2,1,1,CellConstraints.FILL,CellConstraints.FILL));
 
       jpanel1.add(createstylePanelSpace(),cc.xywh(12,2,10,18));
       jpanel1.add(createPanel1(),cc.xywh(2,19,9,1));
@@ -180,17 +180,17 @@ public class MainView extends JPanel
       _previousButton.setActionCommand("previous");
       _previousButton.setName("previousButton");
       _previousButton.setText("previous");
-      jpanel1.add(_previousButton,cc.xy(1,1));
+      jpanel1.add(_previousButton,new CellConstraints(1,1,1,1,CellConstraints.FILL,CellConstraints.FILL));
 
       _nextButton.setActionCommand("next");
       _nextButton.setName("nextButton");
       _nextButton.setText("next");
-      jpanel1.add(_nextButton,cc.xy(5,1));
+      jpanel1.add(_nextButton,new CellConstraints(5,1,1,1,CellConstraints.FILL,CellConstraints.FILL));
 
       _allButton.setActionCommand("all");
       _allButton.setName("allButton");
       _allButton.setText("all");
-      jpanel1.add(_allButton,cc.xy(3,1));
+      jpanel1.add(_allButton,new CellConstraints(3,1,1,1,CellConstraints.FILL,CellConstraints.FILL));
 
       addFillComponents(jpanel1,new int[]{ 2,4 },new int[0]);
       return jpanel1;

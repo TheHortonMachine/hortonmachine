@@ -88,6 +88,8 @@ public class ImageCache {
 
     public static final String GLOBE = "globe.gif";
     public static final String ZOOM_TO_ALL = "zoom_to_all.png";
+    public static final String ZOOM_TO_NEXT = "zoom_next.png";
+    public static final String ZOOM_TO_PREVIOUS = "zoom_previous.png";
 
     public static final String BROWSER = "browser.gif";
 

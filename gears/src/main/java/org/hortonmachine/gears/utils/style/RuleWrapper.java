@@ -179,7 +179,8 @@ public class RuleWrapper {
             } else if (newSymbolizer instanceof TextSymbolizer) {
                 wrapper = new TextSymbolizerWrapper(newSymbolizer, this, getType());
             } else if (newSymbolizer instanceof RasterSymbolizer) {
-                // FIXME
+                wrapper = new RasterSymbolizerWrapper(newSymbolizer, this);
+            } else {
                 return null;
             }
         } else {
@@ -196,7 +197,8 @@ public class RuleWrapper {
                 newSymbolizer = sf.createTextSymbolizer();
                 wrapper = new TextSymbolizerWrapper(newSymbolizer, this, getType());
             } else if (symbolizerClass.isAssignableFrom(RasterSymbolizer.class)) {
-                // FIXME
+                wrapper = new RasterSymbolizerWrapper(newSymbolizer, this);
+            } else {
                 return null;
             }
         }
@@ -283,11 +285,10 @@ public class RuleWrapper {
         return name;
     }
 
-    public RasterSymbolizer getRasterSymbolizer() {
+    public RasterSymbolizerWrapper getRasterSymbolizer() {
         for( SymbolizerWrapper symbolizerWrapper : symbolizersWrapperList ) {
-            Symbolizer symbolizer = symbolizerWrapper.getSymbolizer();
-            if (symbolizer instanceof RasterSymbolizer) {
-                return (RasterSymbolizer) symbolizer;
+            if (symbolizerWrapper instanceof RasterSymbolizerWrapper) {
+                return (RasterSymbolizerWrapper) symbolizerWrapper;
             }
         }
         return null;

@@ -1,7 +1,5 @@
 package org.hortonmachine.gears.utils.style;
 
-import java.util.List;
-
 import org.geotools.styling.RasterSymbolizer;
 import org.geotools.styling.Symbolizer;
 
@@ -19,17 +17,25 @@ public class RasterSymbolizerWrapper extends SymbolizerWrapper {
 
         rasterSymbolizer = (RasterSymbolizer) symbolizer;
     }
-    
+
     public RasterSymbolizer getRasterSymbolizer() {
         return rasterSymbolizer;
     }
 
-	public void setRasterSymbolizer(RasterSymbolizer newRasterSymbolizer) {
-		rasterSymbolizer = newRasterSymbolizer;
-		
-		RuleWrapper parent = getParent();
-		List<Symbolizer> symbolizers = parent.getRule().symbolizers();
-		symbolizers.clear();
-		symbolizers.add(rasterSymbolizer);
-	}
+    public void setRasterSymbolizer( RasterSymbolizer newRasterSymbolizer ) {
+        rasterSymbolizer = newRasterSymbolizer;
+
+        RuleWrapper parent = getParent();
+        RasterSymbolizerWrapper tmp = parent.getRasterSymbolizer();
+        if (tmp != null) {
+            parent.removeSymbolizerWrapper(tmp);
+            parent.addSymbolizer(newRasterSymbolizer, RasterSymbolizerWrapper.class);
+        }
+    }
+
+    public double getOpacity() {
+        String opacityStr = expressionToString(rasterSymbolizer.getOpacity());
+        double opacity = Double.parseDouble(opacityStr);
+        return opacity;
+    }
 }

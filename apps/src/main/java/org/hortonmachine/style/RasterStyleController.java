@@ -17,135 +17,126 @@ import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.style.RasterSymbolizerWrapper;
 import org.hortonmachine.gui.utils.GuiUtilities;
+import org.opengis.filter.expression.Expression;
 
+@SuppressWarnings({"unchecked", "serial"})
 public class RasterStyleController extends RasterStyleView {
-	private static final String DEFAULT_NUMFORMAT = "0.00";
-	private static final String CUSTOM_RASTER_STYLES_KEY = "CUSTOM_RASTER_STYLES";
-	private RasterSymbolizerWrapper symbolizer;
-	private GridCoverage2D raster;
+    private RasterSymbolizerWrapper symbolizer;
+    private GridCoverage2D raster;
+    private MainController mainController;
 
-	public RasterStyleController(RasterSymbolizerWrapper symbolizer, GridCoverage2D raster,
-			MainController mainController) {
-		this.symbolizer = symbolizer;
-		this.raster = raster;
+    public RasterStyleController( RasterSymbolizerWrapper symbolizer, GridCoverage2D raster, MainController mainController ) {
+        this.symbolizer = symbolizer;
+        this.raster = raster;
+        this.mainController = mainController;
 
-		numFormatField.setText(DEFAULT_NUMFORMAT);
-		novalueTextfield.setText(HMConstants.doubleNovalue + "");
-		interpolatedCheckbox.setSelected(true);
+        String tableName = symbolizer.getParent().getName();
+        if (tableName == null) {
+            tableName = "other table";
+        }
 
-		colortablesCombo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String colorTableText = customStyleArea.getText();
-				if (colorTableText.trim().length() == 0 && colortablesCombo != null) {
-					Object selectedItem = colortablesCombo.getSelectedItem();
-					if (selectedItem != null) {
-						String colorTableName = selectedItem.toString();
-						if (colorTableName.trim().length() > 0) {
-							String tableString = new DefaultTables().getTableString(colorTableName);
-							customStyleArea.setText(tableString);
-						}
-					}
-				}
-			}
-		});
+        _novalueTextfield.setText(HMConstants.doubleNovalue + "");
 
-		applyTableButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				applyStyle();
-			}
-		});
+        _colortablesCombo.addActionListener(new ActionListener(){
+            public void actionPerformed( ActionEvent e ) {
+                Object selectedItem = _colortablesCombo.getSelectedItem();
+                if (selectedItem != null) {
+                    String colorTableName = selectedItem.toString();
+                    if (colorTableName.trim().length() > 0) {
+                        String tableString = new DefaultTables().getTableString(colorTableName);
+                        _customStyleArea.setText(tableString);
+                    }
+                }
+            }
+        });
 
-		customStyleButton.addActionListener(e -> {
-			String name = GuiUtilities.showInputDialog(this, "Enter a name for the colortable",
-					EColorTables.greyscale.name());
-			if (name == null || name.trim().length() == 0) {
-				return;
-			}
-			String colorTableText = customStyleArea.getText();
+        _applyTableButton.addActionListener(new ActionListener(){
+            public void actionPerformed( ActionEvent e ) {
+                applyStyle();
+            }
+        });
 
-			String tableString = new DefaultTables().getTableString(name);
-			if (tableString != null) {
-				int answer = JOptionPane.showConfirmDialog(this,
-						"A colortable with that name already exists. Overwrite it?", "WARNING",
-						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-				if (answer == JOptionPane.NO_OPTION) {
-					return;
-				}
-			}
-			DefaultTables.addRuntimeTable(name, colorTableText);
+        _customStyleButton.addActionListener(e -> {
+            String name = GuiUtilities.showInputDialog(this, "Enter a name for the colortable", EColorTables.greyscale.name());
+            if (name == null || name.trim().length() == 0) {
+                return;
+            }
+            String colorTableText = _customStyleArea.getText();
 
-			String[] tableNames = DefaultTables.getTableNames();
-			String[] tableNames2 = new String[tableNames.length + 1];
-			System.arraycopy(tableNames, 0, tableNames2, 1, tableNames.length);
-			tableNames2[0] = "";
-			colortablesCombo.setModel(new DefaultComboBoxModel<String>(tableNames2));
-			colortablesCombo.setSelectedItem(name);
+            String tableString = new DefaultTables().getTableString(name);
+            if (tableString != null) {
+                int answer = JOptionPane.showConfirmDialog(this, "A colortable with that name already exists. Overwrite it?",
+                        "WARNING", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (answer == JOptionPane.NO_OPTION) {
+                    return;
+                }
+            }
+            DefaultTables.addRuntimeTable(name, colorTableText);
 
-			applyStyle();
-		});
+            String[] tableNames = DefaultTables.getTableNames();
+            String[] tableNames2 = new String[tableNames.length + 1];
+            System.arraycopy(tableNames, 0, tableNames2, 1, tableNames.length);
+            tableNames2[0] = "";
+            _colortablesCombo.setModel(new DefaultComboBoxModel<String>(tableNames2));
+            _colortablesCombo.setSelectedItem(name);
 
-		setCombos();
-	}
+            applyStyle();
+        });
 
-	private void setCombos() {
-		Object selectedColor = colortablesCombo.getSelectedItem();
-		Object transparencyColor = opacityCombo.getSelectedItem();
+        String[] tableNames = DefaultTables.getTableNames();
+        String[] tableNames2 = new String[tableNames.length + 1];
+        System.arraycopy(tableNames, 0, tableNames2, 1, tableNames.length);
+        tableNames2[0] = "";
+        _colortablesCombo.setModel(new DefaultComboBoxModel<String>(tableNames2));
+        _colortablesCombo.setSelectedItem(tableName);
 
-		String[] tableNames = DefaultTables.getTableNames();
-		String[] tableNames2 = new String[tableNames.length + 1];
-		System.arraycopy(tableNames, 0, tableNames2, 1, tableNames.length);
-		tableNames2[0] = "";
-		colortablesCombo.setModel(new DefaultComboBoxModel<String>(tableNames2));
+        double opacity = symbolizer.getOpacity();
+        int opacityInt = (int) (opacity * 100);
 
-		Integer[] transparency = new Integer[] { 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
-		opacityCombo.setModel(new DefaultComboBoxModel<Integer>(transparency));
-		opacityCombo.setSelectedIndex(transparency.length - 1);
+        Integer[] transparency = new Integer[]{0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+        _opacityCombo.setModel(new DefaultComboBoxModel<Integer>(transparency));
+        _opacityCombo.setSelectedItem(opacityInt);
+    }
 
-		colortablesCombo.setSelectedItem(selectedColor);
-		opacityCombo.setSelectedItem(transparencyColor);
-	}
+    private void applyStyle() {
+        String colorTableName = _colortablesCombo.getSelectedItem().toString();
 
-	private void applyStyle() {
-		String colorTableName = colortablesCombo.getSelectedItem().toString();
+        String novalueText = _novalueTextfield.getText();
+        Double novalue = null;
+        if (novalueText.trim().length() > 0) {
+            try {
+                novalue = Double.parseDouble(novalueText);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
 
-		String novalueText = novalueTextfield.getText();
-		Double novalue = null;
-		if (novalueText.trim().length() > 0) {
-			try {
-				novalue = Double.parseDouble(novalueText);
-			} catch (NumberFormatException e) {
-				e.printStackTrace();
-			}
-		}
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
 
-		double min = Double.POSITIVE_INFINITY;
-		double max = Double.NEGATIVE_INFINITY;
+        try {
+            double[] minMax = OmsRasterSummary.getMinMax(raster);
+            min = minMax[0];
+            max = minMax[1];
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
 
-		try {
-			double[] minMax = OmsRasterSummary.getMinMax(raster);
-			min = minMax[0];
-			max = minMax[1];
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
+        double opacity = 100;
+        if (_opacityCombo.getSelectedItem() != null)
+            opacity = (Integer) _opacityCombo.getSelectedItem();
+        opacity = opacity / 100.0;
 
-		int opacity = 100;
-		if (opacityCombo.getSelectedItem() != null)
-			opacity = (Integer) opacityCombo.getSelectedItem();
-		opacity = (int) (opacity * 255 / 100.0);
+        try {
+            Style style = RasterStyleUtilities.createStyleForColortable(colorTableName, min, max, opacity);
+            Symbolizer newRasterSymbolizer = style.featureTypeStyles().get(0).rules().get(0).getSymbolizers()[0];
+            symbolizer.setRasterSymbolizer((RasterSymbolizer) newRasterSymbolizer);
+            symbolizer.getParent().setName(colorTableName);
+            mainController.applyStyle();
 
-		String numFormatPattern = numFormatField.getText();
-		if (numFormatPattern.trim().length() == 0) {
-			numFormatPattern = DEFAULT_NUMFORMAT;
-		}
-		try {
-			Style style = RasterStyleUtilities.createStyleForColortable(colorTableName, min, max, opacity);
-			Symbolizer newRasterSymbolizer = style.featureTypeStyles().get(0).rules().get(0).getSymbolizers()[0];
-			symbolizer.setRasterSymbolizer((RasterSymbolizer) newRasterSymbolizer);
-
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-	}
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+    }
 
 }
