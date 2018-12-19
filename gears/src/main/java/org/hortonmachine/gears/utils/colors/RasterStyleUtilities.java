@@ -133,6 +133,12 @@ public class RasterStyleUtilities {
         return newStyle;
     }
 
+    public static Style createDefaultRasterStyle() {
+        RasterSymbolizer rasterSym = sf.createRasterSymbolizer();
+        Style newStyle = SLD.wrapSymbolizers(rasterSym);
+        return newStyle;
+    }
+
     public static Style createStyleForColortable( String colorTableName, double min, double max, double opacity )
             throws Exception {
         return createStyleForColortable(colorTableName, min, max, null, opacity);
@@ -232,8 +238,7 @@ public class RasterStyleUtilities {
         // String createStyleForColortable = createStyleForColortable("aspect", 0.0, 360.0, null,
         // 0.5);
         // System.out.println(createStyleForColortable);
-        String createStyleForColortable = styleToString(
-                createStyleForColortable(EColorTables.elev.name(), 73.835, 144.889, 0.8));
+        String createStyleForColortable = styleToString(createStyleForColortable(EColorTables.elev.name(), 73.835, 144.889, 0.8));
         System.out.println(createStyleForColortable);
         // String createStyleForColortable = createStyleForColortable(DefaultTables.SLOPE, 0.0,
         // 0.9656, null, 1.0);

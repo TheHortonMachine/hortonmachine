@@ -72,7 +72,7 @@ public class RuleWrapper {
         } else if (symbolizer instanceof TextSymbolizer) {
             symbolizerWrapper = new TextSymbolizerWrapper(symbolizer, this, getType());
         } else if (symbolizer instanceof RasterSymbolizer) {
-            return null;
+            symbolizerWrapper = new RasterSymbolizerWrapper(symbolizer, this);
         }
 
         return symbolizerWrapper;
@@ -281,6 +281,16 @@ public class RuleWrapper {
     @Override
     public String toString() {
         return name;
+    }
+
+    public RasterSymbolizer getRasterSymbolizer() {
+        for( SymbolizerWrapper symbolizerWrapper : symbolizersWrapperList ) {
+            Symbolizer symbolizer = symbolizerWrapper.getSymbolizer();
+            if (symbolizer instanceof RasterSymbolizer) {
+                return (RasterSymbolizer) symbolizer;
+            }
+        }
+        return null;
     }
 
 }

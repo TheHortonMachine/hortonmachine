@@ -8,6 +8,8 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
@@ -28,17 +30,23 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
+import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.MapContent;
+import org.geotools.map.RasterLayer;
 import org.geotools.styling.FeatureTypeStyle;
+import org.geotools.styling.RasterSymbolizer;
 import org.geotools.styling.Rule;
 import org.geotools.styling.Style;
 import org.geotools.swing.JMapPane;
 import org.hortonmachine.database.DatabaseViewer;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.SldUtilities;
+import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
@@ -69,8 +77,9 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     private List<SimpleFeature> currentFeaturesList;
     private int currentFeatureIndex = 0;
     private FeatureLayer currentFeaturesLayer;
+    private RasterLayer currentRasterLayer;
     private JMapPane mapPane;
-    private StyleWrapper styleWrapper;
+    private StyleWrapper vectorStyleWrapper;
 
     private String[] featureCollectionFieldNames;
     private FeatureTypeStyleWrapper currentSelectedFSW;
@@ -83,6 +92,8 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     private File selectedFile;
 
     private SimpleFeatureCollection currentFeatureCollection;
+
+    private Style rasterStyle;
 
     /**
     * Default constructor
@@ -104,7 +115,9 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         _mapPaneHolder.setLayout(new BorderLayout());
         _mapPaneHolder.add(mapPane, BorderLayout.CENTER);
 
-        String[] supportedExtensions = HMConstants.SUPPORTED_VECTOR_EXTENSIONS;
+        List<String> supportedExtensions = Stream
+                .of(HMConstants.SUPPORTED_VECTOR_EXTENSIONS, HMConstants.SUPPORTED_RASTER_EXTENSIONS).flatMap(Stream::of)
+                .collect(Collectors.toList());
         StringBuilder sb = new StringBuilder();
         for( String ext : supportedExtensions ) {
             sb.append(",*.").append(ext);
@@ -145,42 +158,61 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 File[] selectedFiles = fileChooser.getSelectedFiles();
                 if (selectedFiles != null && selectedFiles.length > 0) {
                     selectedFile = selectedFiles[0];
-                    GuiUtilities.setLastPath(selectedFile.getAbsolutePath());
-                    _filepathField.setText(selectedFile.getAbsolutePath());
+                    String absolutePath = selectedFile.getAbsolutePath();
+                    GuiUtilities.setLastPath(absolutePath);
+                    _filepathField.setText(absolutePath);
+
+                    if (currentFeaturesLayer != null) {
+                        mapContent.removeLayer(currentFeaturesLayer);
+                    }
+                    if (currentRasterLayer != null) {
+                        mapContent.removeLayer(currentRasterLayer);
+                    }
                     try {
-                        if (currentFeaturesLayer != null) {
-                            mapContent.removeLayer(currentFeaturesLayer);
+                        if (HMConstants.isVector(selectedFile)) {
+
+                            currentFeatureCollection = VectorReader.readVector(absolutePath);
+
+                            geometryDescriptor = currentFeatureCollection.getSchema().getGeometryDescriptor();
+
+                            featureCollectionFieldNames = FeatureUtilities.featureCollectionFieldNames(currentFeatureCollection);
+                            currentFeaturesList = FeatureUtilities.featureCollectionToList(currentFeatureCollection);
+
+                            CoordinateReferenceSystem currentCRS = currentFeatureCollection.getSchema()
+                                    .getCoordinateReferenceSystem();
+                            mapContent.getViewport().setCoordinateReferenceSystem(currentCRS);
+
+                            Style style = SldUtilities.getStyleFromFile(selectedFile);
+                            if (style == null) {
+                                style = StyleUtilities.createDefaultStyle(currentFeatureCollection);
+                            }
+
+                            currentFeaturesLayer = new FeatureLayer(currentFeatureCollection, style);
+                            mapContent.addLayer(currentFeaturesLayer);
+
+                            vectorStyleWrapper = new StyleWrapper(style);
+
+                            zoomToFeature();
+                            reloadGroupsAndRules();
+
+                            _stylePanel.removeAll();
+                            _stylePanel.revalidate();
+                            _stylePanel.repaint();
+                        } else if (HMConstants.isRaster(selectedFile)) {
+                            GridCoverage2D gridCoverage2D = OmsRasterReader.readRaster(absolutePath);
+                            rasterStyle = SldUtilities.getStyleFromFile(selectedFile);
+                            if (rasterStyle == null) {
+                                rasterStyle = RasterStyleUtilities.createDefaultRasterStyle();
+                            }
+                            mapContent.getViewport().setCoordinateReferenceSystem(gridCoverage2D.getCoordinateReferenceSystem());
+                            currentRasterLayer = new GridCoverageLayer(gridCoverage2D, rasterStyle);
+                            mapContent.addLayer(currentRasterLayer);
+
+                            zoomToRaster();
+                            reloadGroupsAndRules();
+
                         }
-
-                        currentFeatureCollection = VectorReader.readVector(selectedFile.getAbsolutePath());
-
-                        geometryDescriptor = currentFeatureCollection.getSchema().getGeometryDescriptor();
-
-                        featureCollectionFieldNames = FeatureUtilities.featureCollectionFieldNames(currentFeatureCollection);
-                        currentFeaturesList = FeatureUtilities.featureCollectionToList(currentFeatureCollection);
-
-                        CoordinateReferenceSystem currentCRS = currentFeatureCollection.getSchema()
-                                .getCoordinateReferenceSystem();
-                        mapContent.getViewport().setCoordinateReferenceSystem(currentCRS);
-
-                        Style style = SldUtilities.getStyleFromFile(selectedFile);
-                        if (style == null) {
-                            style = StyleUtilities.createDefaultStyle(currentFeatureCollection);
-                        }
-
-                        currentFeaturesLayer = new FeatureLayer(currentFeatureCollection, style);
-                        mapContent.addLayer(currentFeaturesLayer);
-
-                        styleWrapper = new StyleWrapper(style);
-
-                        zoomToFeature();
-                        reloadGroupsAndRules();
-
-                        _stylePanel.removeAll();
-                        _stylePanel.revalidate();
-                        _stylePanel.repaint();
-                    } catch (IOException e1) {
-
+                    } catch (Exception e1) {
                         // TODO Auto-generated catch block
                         e1.printStackTrace();
                     }
@@ -203,7 +235,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
         _saveButton.addActionListener(e -> {
             try {
-                String xml = styleWrapper.toXml();
+                String xml = vectorStyleWrapper.toXml();
                 String nameWithoutExtention = FileUtilities.getNameWithoutExtention(selectedFile);
                 File sldFile = new File(selectedFile.getParentFile(), nameWithoutExtention + ".sld");
 
@@ -218,36 +250,62 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     }
 
     private void reloadGroupsAndRules() {
-        List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = styleWrapper.getFeatureTypeStylesWrapperList();
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(styleWrapper);
-        DefaultTreeModel model = new DefaultTreeModel(rootNode);
+        if (rasterStyle != null) {
+            List<FeatureTypeStyle> featureTypeStyles = rasterStyle.featureTypeStyles();
+            if (featureTypeStyles.size() > 0) {
+                FeatureTypeStyleWrapper featureTypeStyle = new FeatureTypeStyleWrapper(featureTypeStyles.get(0),
+                        vectorStyleWrapper);
 
-        for( FeatureTypeStyleWrapper featureTypeStyle : featureTypeStylesWrapperList ) {
-            DefaultMutableTreeNode featureStyleNode = new DefaultMutableTreeNode(featureTypeStyle);
-            rootNode.add(featureStyleNode);
+                DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(featureTypeStyle);
+                DefaultTreeModel model = new DefaultTreeModel(rootNode);
 
-            List<RuleWrapper> rulesWrapperList = featureTypeStyle.getRulesWrapperList();
-            for( RuleWrapper ruleWrapper : rulesWrapperList ) {
-                DefaultMutableTreeNode ruleNode = new DefaultMutableTreeNode(ruleWrapper);
-                featureStyleNode.add(ruleNode);
+                List<RuleWrapper> rulesWrapperList = featureTypeStyle.getRulesWrapperList();
+                for( RuleWrapper ruleWrapper : rulesWrapperList ) {
+                    DefaultMutableTreeNode ruleNode = new DefaultMutableTreeNode(ruleWrapper);
+                    rootNode.add(ruleNode);
 
-                SymbolizerWrapper geometrySymbolizers = ruleWrapper.getGeometrySymbolizersWrapper();
-                if (geometrySymbolizers != null) {
-                    DefaultMutableTreeNode geomSymbolizerNode = new DefaultMutableTreeNode(geometrySymbolizers);
-                    ruleNode.add(geomSymbolizerNode);
+                    RasterSymbolizer rasterSymbolizer = ruleWrapper.getRasterSymbolizer();
+                    DefaultMutableTreeNode rasterSymbolizerNode = new DefaultMutableTreeNode(rasterSymbolizer);
+                    ruleNode.add(rasterSymbolizerNode);
+
                 }
-                SymbolizerWrapper textSymbolizers = ruleWrapper.getTextSymbolizersWrapper();
-                if (textSymbolizers != null) {
-                    DefaultMutableTreeNode textSymbolizerNode = new DefaultMutableTreeNode(textSymbolizers);
-                    ruleNode.add(textSymbolizerNode);
+                _rulesTree.setModel(model);
+                for( int i = 0; i < _rulesTree.getRowCount(); i++ ) {
+                    _rulesTree.expandRow(i);
                 }
 
             }
-        }
+        } else {
+            List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = vectorStyleWrapper.getFeatureTypeStylesWrapperList();
+            DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(vectorStyleWrapper);
+            DefaultTreeModel model = new DefaultTreeModel(rootNode);
 
-        _rulesTree.setModel(model);
-        for( int i = 0; i < _rulesTree.getRowCount(); i++ ) {
-            _rulesTree.expandRow(i);
+            for( FeatureTypeStyleWrapper featureTypeStyle : featureTypeStylesWrapperList ) {
+                DefaultMutableTreeNode featureStyleNode = new DefaultMutableTreeNode(featureTypeStyle);
+                rootNode.add(featureStyleNode);
+
+                List<RuleWrapper> rulesWrapperList = featureTypeStyle.getRulesWrapperList();
+                for( RuleWrapper ruleWrapper : rulesWrapperList ) {
+                    DefaultMutableTreeNode ruleNode = new DefaultMutableTreeNode(ruleWrapper);
+                    featureStyleNode.add(ruleNode);
+
+                    SymbolizerWrapper geometrySymbolizers = ruleWrapper.getGeometrySymbolizersWrapper();
+                    if (geometrySymbolizers != null) {
+                        DefaultMutableTreeNode geomSymbolizerNode = new DefaultMutableTreeNode(geometrySymbolizers);
+                        ruleNode.add(geomSymbolizerNode);
+                    }
+                    SymbolizerWrapper textSymbolizers = ruleWrapper.getTextSymbolizersWrapper();
+                    if (textSymbolizers != null) {
+                        DefaultMutableTreeNode textSymbolizerNode = new DefaultMutableTreeNode(textSymbolizers);
+                        ruleNode.add(textSymbolizerNode);
+                    }
+
+                }
+            }
+            _rulesTree.setModel(model);
+            for( int i = 0; i < _rulesTree.getRowCount(); i++ ) {
+                _rulesTree.expandRow(i);
+            }
         }
         _rulesTree.addTreeSelectionListener(this);
 
@@ -351,6 +409,13 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
     }
 
+    private void zoomToRaster() {
+        if (currentRasterLayer != null) {
+            mapPane.setDisplayArea(currentRasterLayer.getBounds());
+        }
+
+    }
+
     public JComponent asJComponent() {
         return this;
     }
@@ -409,7 +474,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     }
 
     public void applyStyle() {
-        Style style = styleWrapper.getStyle();
+        Style style = vectorStyleWrapper.getStyle();
         currentFeaturesLayer.setStyle(style);
     }
 
@@ -423,10 +488,10 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                     FeatureTypeStyleWrapper ftsw = new FeatureTypeStyleWrapper(featureTypeStyle, currentSelectedSW);
 
                     String tmpName = "New Group";
-                    tmpName = WrapperUtilities.checkSameNameFeatureTypeStyle(styleWrapper.getFeatureTypeStylesWrapperList(),
+                    tmpName = WrapperUtilities.checkSameNameFeatureTypeStyle(vectorStyleWrapper.getFeatureTypeStylesWrapperList(),
                             tmpName);
                     ftsw.setName(tmpName);
-                    styleWrapper.addFeatureTypeStyle(ftsw);
+                    vectorStyleWrapper.addFeatureTypeStyle(ftsw);
 
                     reloadGroupsAndRules();
                 }
@@ -455,7 +520,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             popupMenu.add(item);
             item.setHorizontalTextPosition(JMenuItem.RIGHT);
 
-            List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = styleWrapper.getFeatureTypeStylesWrapperList();
+            List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = vectorStyleWrapper.getFeatureTypeStylesWrapperList();
             int ftIndex = featureTypeStylesWrapperList.indexOf(currentSelectedFSW);
             int ftSize = featureTypeStylesWrapperList.size();
             if (ftSize > 1 && ftIndex > 0) {
@@ -465,7 +530,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                         int from = ftIndex;
                         int to = ftIndex - 1;
                         if (to >= 0) {
-                            styleWrapper.swap(from, to);
+                            vectorStyleWrapper.swap(from, to);
                             reloadGroupsAndRules();
                         }
 

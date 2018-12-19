@@ -18,6 +18,8 @@
  */
 package org.hortonmachine.gears.libs.modules;
 
+import java.io.File;
+
 import javax.swing.filechooser.FileFilter;
 
 import org.hortonmachine.dbs.compat.EDb;
@@ -328,4 +330,24 @@ public class HMConstants {
     public static final FileFilter lasFileFilter = new HMFileFilter("Supported LiDAR Files", SUPPORTED_LIDAR_EXTENSIONS);
 
     public static final FileFilter dbFileFilter = new HMFileFilter("Supported Database Files", SUPPORTED_DB_EXTENSIONS);
+
+    public static boolean isVector( File file ) {
+        String name = file.getName().toLowerCase();
+        for( String ext : SUPPORTED_VECTOR_EXTENSIONS ) {
+            if (name.endsWith(ext)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isRaster( File file ) {
+        String name = file.getName().toLowerCase();
+        for( String ext : SUPPORTED_RASTER_EXTENSIONS ) {
+            if (name.endsWith(ext)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

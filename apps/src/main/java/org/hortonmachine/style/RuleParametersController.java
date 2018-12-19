@@ -88,11 +88,11 @@ public class RuleParametersController extends RuleParametersView {
 
     private String checkScale( String scale ) {
         try {
-            int scaleInt = Integer.parseInt(scale);
-            if (scaleInt < 0) {
-                scaleInt = 1;
+            double scaleDouble = Double.parseDouble(scale);
+            if (scaleDouble < 0) {
+                scaleDouble = 1;
             }
-            return String.valueOf(scaleInt);
+            return String.valueOf(scaleDouble);
         } catch (NumberFormatException e) {
             return null;
         }
