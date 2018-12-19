@@ -81,6 +81,10 @@ public abstract class SymbolizerWrapper {
     public boolean isTextSymbolizer() {
         return symbolizer instanceof TextSymbolizer;
     }
+    
+    public boolean isRasterSymbolizer() {
+    	return symbolizer instanceof RasterSymbolizerWrapper;
+    }
 
     public <T> T adapt( Class<T> adaptee ) {
         if (adaptee.isAssignableFrom(PointSymbolizerWrapper.class) && this instanceof PointSymbolizerWrapper) {
@@ -91,6 +95,8 @@ public abstract class SymbolizerWrapper {
             return adaptee.cast(this);
         } else if (adaptee.isAssignableFrom(TextSymbolizerWrapper.class) && this instanceof TextSymbolizerWrapper) {
             return adaptee.cast(this);
+        } else if (adaptee.isAssignableFrom(RasterSymbolizerWrapper.class) && this instanceof RasterSymbolizerWrapper) {
+        	return adaptee.cast(this);
         }
         return null;
     }
