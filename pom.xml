@@ -20,6 +20,7 @@
 		<module>modules</module>
 		<module>gui</module>
 		<module>apps</module>
+		<module>gps</module>
 	</modules>
 
 	<properties>

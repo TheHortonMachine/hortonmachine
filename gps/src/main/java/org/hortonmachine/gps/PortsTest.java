@@ -26,7 +26,7 @@ public class PortsTest implements NmeaGpsListener {
                 gps.start();
 
                 int count = 0;
-                while( count < 60 ) {
+                while( count < 1 ) {
                     count++;
 
                     try {
