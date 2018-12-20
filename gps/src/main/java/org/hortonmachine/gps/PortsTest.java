@@ -21,20 +21,23 @@ public class PortsTest implements NmeaGpsListener {
             System.out.println("Found GPS at port: " + findNmeaGpsPort);
 
             NmeaGps gps = new NmeaGps(findNmeaGpsPort);
-            gps.addListener(this);
-            gps.start();
+            try {
+                gps.addListener(this);
+                gps.start();
 
-            int count = 0;
-            while( count < 60 ) {
-                count++;
+                int count = 0;
+                while( count < 60 ) {
+                    count++;
 
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
+            } finally {
+                gps.stop();
             }
-
         }
     }
 
