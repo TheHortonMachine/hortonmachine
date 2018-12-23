@@ -1,4 +1,4 @@
-package org.hortonmachine.gps;
+package org.hortonmachine.gps.nmea;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

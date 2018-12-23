@@ -1,12 +1,10 @@
-package org.hortonmachine.gps;
+package org.hortonmachine.gps.nmea;
 
+import java.io.InputStream;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import jssc.SerialPort;
-import jssc.SerialPortEvent;
-import jssc.SerialPortEventListener;
-import jssc.SerialPortException;
-import jssc.SerialPortList;
+import com.fazecast.jSerialComm.SerialPort;
+
 import net.sf.marineapi.nmea.sentence.SentenceValidator;
 
 public enum NmeaGpsConnectionManager {
@@ -22,11 +20,16 @@ public enum NmeaGpsConnectionManager {
     interface GpsPortCheckListener {
         void onGpsPortFound( String port );
 
-        void onPortError( String portName, SerialPortException ex );
+        void onPortError( String portName, Exception ex );
     }
 
     public String[] getAvailablePorts() {
-        String[] portNames = SerialPortList.getPortNames();
+        SerialPort[] ports = SerialPort.getCommPorts();
+        String[] portNames = new String[ports.length];
+        for( int i = 0; i < portNames.length; i++ ) {
+            String descriptivePortName = ports[i].getDescriptivePortName();
+            portNames[i] = descriptivePortName;
+        }
         return portNames;
     }
 
@@ -37,30 +40,6 @@ public enum NmeaGpsConnectionManager {
         this.parity = parity;
     }
 
-    public void findNmeaGpsPort( GpsPortCheckListener gpsPortCheckListener ) {
-        portProcessingQueue.clear();
-        String[] availablePorts = getAvailablePorts();
-        for( String port : availablePorts ) {
-            portProcessingQueue.add(port);
-        }
-
-        checkNextPort(gpsPortCheckListener);
-    }
-
-    public SerialPort getConnection( String port ) throws SerialPortException {
-        SerialPort serialPort = new SerialPort(port);
-        boolean openPort = serialPort.openPort();
-        if (openPort) {
-            serialPort.setParams(baudRate, dataBits, stopBits, parity);
-            return serialPort;
-        }
-        return null;
-    }
-
-    public void closeConnection( SerialPort serialPort ) throws SerialPortException {
-        if (serialPort != null && serialPort.isOpened())
-            serialPort.closePort();
-    }
 
     /**
      * A blocking connection to all available ports to see if a GPS is connected.
@@ -70,6 +49,32 @@ public enum NmeaGpsConnectionManager {
     public String findNmeaGpsPort() {
         String[] availablePorts = getAvailablePorts();
         for( String port : availablePorts ) {
+
+            SerialPort comPort = SerialPort.getCommPort(port);
+            comPort.openPort();
+            comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 100, 0);
+            
+            while (true)
+            {
+               while (comPort.bytesAvailable() == 0)
+                  Thread.sleep(20);
+
+               byte[] readBuffer = new byte[comPort.bytesAvailable()];
+               int numRead = comPort.readBytes(readBuffer, readBuffer.length);
+               System.out.println("Read " + numRead + " bytes.");
+            }
+            
+            
+            InputStream in = comPort.getInputStream();
+            try {
+                for( int j = 0; j < 1000; ++j )
+                    System.out.print((char) in.read());
+                in.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            comPort.closePort();
+
             if (port != null) {
                 SerialPort serialPort = new SerialPort(port);
                 try {

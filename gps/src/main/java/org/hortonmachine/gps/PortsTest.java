@@ -1,6 +1,8 @@
 package org.hortonmachine.gps;
 
-import org.hortonmachine.gps.NmeaGps.NmeaGpsListener;
+import org.hortonmachine.gps.nmea.NmeaGps;
+import org.hortonmachine.gps.nmea.NmeaGpsConnectionManager;
+import org.hortonmachine.gps.nmea.NmeaGps.NmeaGpsListener;
 import org.hortonmachine.gps.utils.NmeaUtils;
 
 import jssc.SerialPortException;

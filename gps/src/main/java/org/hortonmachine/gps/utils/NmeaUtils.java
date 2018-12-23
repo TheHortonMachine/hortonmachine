@@ -2,6 +2,11 @@ package org.hortonmachine.gps.utils;
 
 import java.util.List;
 
+import net.sf.marineapi.nmea.sentence.GLLSentence;
+import net.sf.marineapi.nmea.sentence.GSASentence;
+import net.sf.marineapi.nmea.sentence.GSVSentence;
+import net.sf.marineapi.nmea.sentence.RMCSentence;
+import net.sf.marineapi.nmea.util.DataStatus;
 import net.sf.marineapi.nmea.util.Date;
 import net.sf.marineapi.nmea.util.GpsFixQuality;
 import net.sf.marineapi.nmea.util.GpsFixStatus;
@@ -41,6 +46,27 @@ public class NmeaUtils {
         return sb.toString();
     }
 
+    public static String toString( GSASentence satInfoEvent ) {
+        GpsFixStatus gpsFixStatus = satInfoEvent.getFixStatus();
+        double horizontalPrecision = satInfoEvent.getHorizontalDOP();
+        double verticalPrecision = satInfoEvent.getVerticalDOP();
+        double positionPrecision = satInfoEvent.getPositionDOP();
+        StringBuilder sb = new StringBuilder();
+        sb.append("GPS fix status: ").append(gpsFixStatus).append("\n");
+        sb.append("Horizontal precision: ").append(horizontalPrecision).append("\n");
+        sb.append("Vertical precision: ").append(verticalPrecision).append("\n");
+        sb.append("Position precision: ").append(positionPrecision).append("\n");
+
+        String[] satelliteIds = satInfoEvent.getSatelliteIds();
+        sb.append("Satellites count:").append(satelliteIds.length).append("\n");
+        sb.append("--> ids: ");
+        for( String sid : satelliteIds ) {
+            sb.append(" ").append(sid);
+        }
+        sb.append("\n");
+        return sb.toString();
+    }
+
     public static String toString( PositionEvent pEvent ) {
         GpsFixQuality fixQuality = pEvent.getFixQuality();
         Date date = pEvent.getDate();
@@ -58,6 +84,30 @@ public class NmeaUtils {
         sb.append("Position: ").append(position).append("\n");
 
         return sb.toString();
+    }
+
+    public static String toString( GLLSentence pEvent ) {
+        DataStatus dataStatus = pEvent.getStatus();
+        Time time = pEvent.getTime();
+        Position position = pEvent.getPosition();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Data status: ").append(dataStatus).append("\n");
+        sb.append("Time: ").append(time).append("\n");
+        sb.append("Position: ").append(position).append("\n");
+
+        return sb.toString();
+    }
+
+
+    public static char[] toString( RMCSentence rmc ) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public static char[] toString( GSVSentence gsv ) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
