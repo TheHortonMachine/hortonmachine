@@ -53,6 +53,7 @@ public abstract class ANmeaGps implements SentenceListener {
      */
     public void stop() throws Exception {
         doCancel = true;
+        listeners.clear();
     }
 
     /**
@@ -65,7 +66,7 @@ public abstract class ANmeaGps implements SentenceListener {
             listeners.add(listener);
         }
     }
-    
+
     /**
      * Remove a {@link NmeaGpsListener}.
      * 
@@ -76,7 +77,6 @@ public abstract class ANmeaGps implements SentenceListener {
             listeners.remove(listener);
         }
     }
-
 
     public void sentenceRead( SentenceEvent event ) {
         Sentence sentence = event.getSentence();

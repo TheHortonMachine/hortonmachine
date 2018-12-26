@@ -210,6 +210,10 @@ public class CurrentGpsInfo {
         return gpsFixQuality;
     }
 
+    public long getCount() {
+        return count++;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

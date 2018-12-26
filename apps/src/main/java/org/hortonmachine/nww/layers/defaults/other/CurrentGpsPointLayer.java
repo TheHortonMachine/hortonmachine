@@ -55,9 +55,9 @@ public class CurrentGpsPointLayer extends MarkerLayer {
         String shapeType = BasicMarkerShape.SPHERE;
         if (shape != null) {
             shapeType = shape;
-        }
-        if (shape.equals(BasicMarkerShape.HEADING_ARROW)) {
-            doHeading = true;
+            if (shape.equals(BasicMarkerShape.HEADING_ARROW)) {
+                doHeading = true;
+            }
         }
 
         double fillOpacity = 1d;

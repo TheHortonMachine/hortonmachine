@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,7 +54,19 @@ public class FakeNmeaGps extends ANmeaGps {
     }
 
     public void start() throws Exception {
-        dataLines = readFileToLinesList(dataFile);
+        if (dataFile == null || !dataFile.exists()) {
+            InputStream stream = FakeNmeaGps.class.getResourceAsStream("/defaultlog.nmea");
+            try (java.util.Scanner s = new java.util.Scanner(stream)) {
+                s.useDelimiter("\n");
+                dataLines = new ArrayList<>();
+                while( s.hasNext() ) {
+                    dataLines.add(s.next());
+                }
+            }
+        } else {
+            dataLines = readFileToLinesList(dataFile);
+        }
+
         int linesCount = dataLines.size();
 
         new Thread(new Runnable(){
@@ -103,7 +116,7 @@ public class FakeNmeaGps extends ANmeaGps {
     }
 
     public static void main( String[] args ) throws Exception {
-        FakeNmeaGps fg = new FakeNmeaGps(new File("/home/hydrologis/Desktop/gps_log_events.nmea"));
+        FakeNmeaGps fg = new FakeNmeaGps(null);
         fg.start();
 
         fg.addListener(new NmeaGpsListener(){

@@ -93,7 +93,7 @@ public abstract class ActionWithProgress extends AbstractAction {
      * @param monitor the monitor that can be used to update the user.
      * @throws Exception
      */
-    public abstract void backGroundWork( ProgressMonitor monitor );
+    public abstract void backGroundWork( ProgressMonitor monitor ) throws Exception;
 
     /**
      * This is run once the heavy work is done and the button of the action has been enabled again.

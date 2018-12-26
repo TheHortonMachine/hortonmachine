@@ -25,6 +25,11 @@
 			<artifactId>hm-gui</artifactId>
 			<version>${revision}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.hortonmachine</groupId>
+			<artifactId>hm-gps</artifactId>
+			<version>${revision}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.mapsforge</groupId>
