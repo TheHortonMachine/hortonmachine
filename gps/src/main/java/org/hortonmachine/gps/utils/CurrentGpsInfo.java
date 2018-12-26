@@ -51,7 +51,7 @@ public class CurrentGpsInfo {
     private Position position;
     private DataStatus dataStatus = DataStatus.VOID;
     private double kmHSpeed = -1;
-    private GpsFixQuality gpsFixQuality = GpsFixQuality.INVALID;
+    private GpsFixQuality gpsFixQuality = null;;
     private int fieldCount = -1;
 
     private static long count = 1;
@@ -150,14 +150,64 @@ public class CurrentGpsInfo {
     }
 
     public boolean isValid() {
-        if (dataStatus == null || faaMode == null || DataStatus.VOID.equals(dataStatus)
-                || (fieldCount > 11 && FaaMode.NONE.equals(faaMode))) {
+        if (DataStatus.VOID.equals(dataStatus) || GpsFixStatus.GPS_NA == gpsFixStatus
+                || (fieldCount > 11 && FaaMode.NONE == faaMode)
+                || (gpsFixQuality != null && GpsFixQuality.INVALID == gpsFixQuality)) {
             return false;
-        } else if (GpsFixQuality.INVALID.equals(gpsFixQuality)) {
-            return false;
-        } else {
-            return true;
         }
+        return true;
+    }
+
+    public GpsFixStatus getGpsFixStatus() {
+        return gpsFixStatus;
+    }
+
+    public double getHorizontalPrecision() {
+        return horizontalPrecision;
+    }
+
+    public double getVerticalPrecision() {
+        return verticalPrecision;
+    }
+
+    public double getPositionPrecision() {
+        return positionPrecision;
+    }
+
+    public String[] getSatelliteIds() {
+        return satelliteIds;
+    }
+
+    public List<SatelliteInfo> getSatelliteInfo() {
+        return satelliteInfo;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public Time getTime() {
+        return time;
+    }
+
+    public FaaMode getFaaMode() {
+        return faaMode;
+    }
+
+    public Position getPosition() {
+        return position;
+    }
+
+    public DataStatus getDataStatus() {
+        return dataStatus;
+    }
+
+    public double getKmHSpeed() {
+        return kmHSpeed;
+    }
+
+    public GpsFixQuality getGpsFixQuality() {
+        return gpsFixQuality;
     }
 
     @Override
@@ -167,7 +217,8 @@ public class CurrentGpsInfo {
         sb.append("Point number from app start: ").append(count++).append("\n");
         sb.append("THE CURRENT INFO IS VALID: ").append(isValid()).append("\n");
         sb.append("GPS fix status: ").append(gpsFixStatus).append("\n");
-        sb.append("GPS fix quality: ").append(gpsFixQuality).append("\n");
+        if (gpsFixQuality != null)
+            sb.append("GPS fix quality: ").append(gpsFixQuality).append("\n");
         sb.append("Data status: ").append(dataStatus).append("\n");
         sb.append("Faa mode: ").append(faaMode).append("\n");
         sb.append("Horizontal precision: ").append(horizontalPrecision).append("\n");
