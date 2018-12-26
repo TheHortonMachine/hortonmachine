@@ -42,6 +42,7 @@ public class CurrentGpsInfo {
     private double horizontalPrecision = -1;
     private double verticalPrecision = -1;
     private double positionPrecision = -1;
+    private double altitude = -1;
     private String[] satelliteIds;
     private List<SatelliteInfo> satelliteInfo;
     private Date date;
@@ -116,6 +117,7 @@ public class CurrentGpsInfo {
             if (gga.isValid()) {
                 gpsFixQuality = gga.getFixQuality();
                 position = gga.getPosition();
+                altitude = gga.getAltitude();
                 if (time == null) {
                     time = gga.getTime();
                 }
@@ -173,6 +175,10 @@ public class CurrentGpsInfo {
     public double getPositionPrecision() {
         return positionPrecision;
     }
+    
+    public double getAltitude() {
+		return altitude;
+	}
 
     public String[] getSatelliteIds() {
         return satelliteIds;
@@ -235,6 +241,7 @@ public class CurrentGpsInfo {
 //        sb.append("Course: ").append(correctedCourse).append("\n");
         if (position != null)
             sb.append("Position: ").append(position).append("\n");
+        sb.append("Altitude: ").append(altitude).append("\n");
 
         sb.append("Satellites count:").append(satelliteIds.length).append("\n");
         sb.append("--> ids: ");

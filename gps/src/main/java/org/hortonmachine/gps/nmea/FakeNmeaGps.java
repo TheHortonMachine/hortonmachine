@@ -80,6 +80,7 @@ public class FakeNmeaGps extends ANmeaGps {
                     }
 
                     String line = dataLines.get(i);
+                    line = line.trim();
                     if (SentenceValidator.isValid(line)) {
                         if (line.contains("MTK001")) {
                             continue;
@@ -87,6 +88,7 @@ public class FakeNmeaGps extends ANmeaGps {
                         ByteArrayInputStream source = new ByteArrayInputStream(line.getBytes());
                         SentenceReader reader = new SentenceReader(source);
                         reader.addSentenceListener(FakeNmeaGps.this, SentenceId.GSA);
+                        reader.addSentenceListener(FakeNmeaGps.this, SentenceId.GGA);
                         reader.addSentenceListener(FakeNmeaGps.this, SentenceId.GLL);
                         reader.addSentenceListener(FakeNmeaGps.this, SentenceId.GSV);
                         reader.addSentenceListener(FakeNmeaGps.this, SentenceId.RMC);
