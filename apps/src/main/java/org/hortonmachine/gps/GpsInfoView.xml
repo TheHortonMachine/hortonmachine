@@ -25,7 +25,7 @@
     <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
    </super>
    <at name="id">/home/hydrologis/development/hortonmachine-git/apps/src/main/java/org/hortonmachine/gps/GpsInfoView.xml</at>
-   <at name="rowspecs">CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE</at>
+   <at name="rowspecs">CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE</at>
    <at name="colspecs">FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.2),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.4),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE</at>
    <at name="components">
     <object classname="java.util.LinkedList">
@@ -36,7 +36,7 @@
          <at name="cellconstraints">
           <object classname="com.jeta.forms.store.memento.CellConstraintsMemento">
            <at name="column">18</at>
-           <at name="row">8</at>
+           <at name="row">10</at>
            <at name="colspan">4</at>
            <at name="rowspan">18</at>
            <at name="halign">default</at>
@@ -156,7 +156,7 @@
                   </object>
                  </at>
                  <at name="name">gpsFixStatusText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -870,7 +870,7 @@
                   </object>
                  </at>
                  <at name="name">gpsFixQualityText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -924,7 +924,7 @@
                   </object>
                  </at>
                  <at name="name">dataStatusText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -978,7 +978,7 @@
                   </object>
                  </at>
                  <at name="name">faaModeText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -1032,7 +1032,7 @@
                   </object>
                  </at>
                  <at name="name">hdopText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -1086,7 +1086,7 @@
                   </object>
                  </at>
                  <at name="name">vdopText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -1140,7 +1140,7 @@
                   </object>
                  </at>
                  <at name="name">pdopText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -1194,7 +1194,7 @@
                   </object>
                  </at>
                  <at name="name">tsText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -1248,7 +1248,7 @@
                   </object>
                  </at>
                  <at name="name">speedText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -1302,7 +1302,7 @@
                   </object>
                  </at>
                  <at name="name">satCountText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -1356,7 +1356,7 @@
                   </object>
                  </at>
                  <at name="name">satIdsText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -1410,7 +1410,7 @@
                   </object>
                  </at>
                  <at name="name">satInfoCountText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -1584,7 +1584,7 @@
                   </object>
                  </at>
                  <at name="name">lonText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -1638,7 +1638,7 @@
                   </object>
                  </at>
                  <at name="name">latText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -1693,7 +1693,7 @@
                  </at>
                  <at name="name"></at>
                  <at name="width">171</at>
-                 <at name="text">Point count</at>
+                 <at name="text">Event count</at>
                  <at name="fill">
                   <object classname="com.jeta.forms.store.properties.effects.PaintProperty">
                    <at name="name">fill</at>
@@ -1752,7 +1752,7 @@
                   </object>
                  </at>
                  <at name="name">pointCountText</at>
-                 <at name="width">455</at>
+                 <at name="width">387</at>
                  <at name="height">30</at>
                 </object>
                </at>
@@ -1962,7 +1962,7 @@
            <at name="column">4</at>
            <at name="row">2</at>
            <at name="colspan">13</at>
-           <at name="rowspan">24</at>
+           <at name="rowspan">26</at>
            <at name="halign">default</at>
            <at name="valign">default</at>
            <at name="insets" object="insets">0,0,0,0</at>
@@ -1978,8 +1978,8 @@
           <at name="properties">
            <object classname="com.jeta.forms.store.support.PropertyMap">
             <at name="name">mapPanel</at>
-            <at name="width">1032</at>
-            <at name="height">993</at>
+            <at name="width">861</at>
+            <at name="height">1057</at>
            </object>
           </at>
          </object>
@@ -2033,7 +2033,7 @@
             </at>
             <at name="actionCommand">follow GPS</at>
             <at name="name">followGPSCheck</at>
-            <at name="width">647</at>
+            <at name="width">579</at>
             <at name="text">follow GPS</at>
             <at name="height">28</at>
            </object>
@@ -2089,7 +2089,7 @@
             </at>
             <at name="actionCommand">follow GPS</at>
             <at name="name">useFakeGpsCheck</at>
-            <at name="width">647</at>
+            <at name="width">579</at>
             <at name="text">use fake GPS (triggers connection)</at>
             <at name="height">28</at>
            </object>
@@ -2108,7 +2108,7 @@
            <at name="column">2</at>
            <at name="row">2</at>
            <at name="colspan">1</at>
-           <at name="rowspan">24</at>
+           <at name="rowspan">26</at>
            <at name="halign">default</at>
            <at name="valign">default</at>
            <at name="insets" object="insets">0,0,0,0</at>
@@ -2124,8 +2124,8 @@
           <at name="properties">
            <object classname="com.jeta.forms.store.support.PropertyMap">
             <at name="name">layersPanel</at>
-            <at name="width">178</at>
-            <at name="height">993</at>
+            <at name="width">143</at>
+            <at name="height">1057</at>
            </object>
           </at>
          </object>
@@ -2256,7 +2256,7 @@
                   </object>
                  </at>
                  <at name="name">portsCombo</at>
-                 <at name="width">565</at>
+                 <at name="width">497</at>
                  <at name="items">
                   <object classname="com.jeta.forms.store.properties.ItemsProperty">
                    <at name="name">items</at>
@@ -2332,6 +2332,62 @@
        </object>
       </at>
      </item>
+     <item >
+      <at name="value">
+       <object classname="com.jeta.forms.store.memento.BeanMemento">
+        <super classname="com.jeta.forms.store.memento.ComponentMemento">
+         <at name="cellconstraints">
+          <object classname="com.jeta.forms.store.memento.CellConstraintsMemento">
+           <at name="column">19</at>
+           <at name="row">8</at>
+           <at name="colspan">1</at>
+           <at name="rowspan">1</at>
+           <at name="halign">default</at>
+           <at name="valign">default</at>
+           <at name="insets" object="insets">0,0,0,0</at>
+          </object>
+         </at>
+         <at name="componentclass">com.jeta.forms.gui.form.StandardComponent</at>
+        </super>
+        <at name="jetabeanclass">com.jeta.forms.gui.beans.JETABean</at>
+        <at name="beanclass">javax.swing.JCheckBox</at>
+        <at name="beanproperties">
+         <object classname="com.jeta.forms.store.memento.PropertiesMemento">
+          <at name="classname">javax.swing.JCheckBox</at>
+          <at name="properties">
+           <object classname="com.jeta.forms.store.support.PropertyMap">
+            <at name="border">
+             <object classname="com.jeta.forms.store.properties.CompoundBorderProperty">
+              <super classname="com.jeta.forms.store.properties.BorderProperty">
+               <at name="name">border</at>
+              </super>
+              <at name="borders">
+               <object classname="java.util.LinkedList">
+                <item >
+                 <at name="value">
+                  <object classname="com.jeta.forms.store.properties.DefaultBorderProperty">
+                   <super classname="com.jeta.forms.store.properties.BorderProperty">
+                    <at name="name">border</at>
+                   </super>
+                  </object>
+                 </at>
+                </item>
+               </object>
+              </at>
+             </object>
+            </at>
+            <at name="actionCommand">follow GPS</at>
+            <at name="name">recordNmeaCheck</at>
+            <at name="width">579</at>
+            <at name="text">record NMEA log (saved in home)</at>
+            <at name="height">28</at>
+           </object>
+          </at>
+         </object>
+        </at>
+       </object>
+      </at>
+     </item>
     </object>
    </at>
    <at name="properties">
@@ -2389,7 +2445,7 @@
    <at name="cellpainters">
     <object classname="com.jeta.forms.store.support.Matrix">
      <at name="rows">
-      <object classname="[Ljava.lang.Object;" size="26">
+      <object classname="[Ljava.lang.Object;" size="28">
        <at name="item" index="0">
         <object classname="[Ljava.lang.Object;" size="22"/>
        </at>
@@ -2466,6 +2522,12 @@
         <object classname="[Ljava.lang.Object;" size="22"/>
        </at>
        <at name="item" index="25">
+        <object classname="[Ljava.lang.Object;" size="22"/>
+       </at>
+       <at name="item" index="26">
+        <object classname="[Ljava.lang.Object;" size="22"/>
+       </at>
+       <at name="item" index="27">
         <object classname="[Ljava.lang.Object;" size="22"/>
        </at>
       </object>

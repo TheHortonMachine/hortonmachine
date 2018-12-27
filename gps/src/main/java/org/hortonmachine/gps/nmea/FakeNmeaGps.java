@@ -39,7 +39,7 @@ import net.sf.marineapi.nmea.sentence.SentenceValidator;
  */
 public class FakeNmeaGps extends ANmeaGps {
 
-    private static final int GPS_INTERVAL = 1000;
+    private static final int GPS_INTERVAL = 300;
 
     private File dataFile;
     private List<String> dataLines;
