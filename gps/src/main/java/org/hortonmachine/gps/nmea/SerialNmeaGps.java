@@ -67,8 +67,12 @@ public class SerialNmeaGps extends ANmeaGps implements SerialPortDataListener {
     public void start() throws Exception {
         commPort = SerialPort.getCommPort(comPort);
         commPort.setComPortParameters(baudRate, numDataBits, numStopBits, parity);
-        commPort.openPort();
-        commPort.addDataListener(this);
+        boolean opened = commPort.openPort();
+        if (opened) {
+        	commPort.addDataListener(this);
+		} else {
+			throw new RuntimeException("Unable to connect to port: " +comPort);
+		}
     }
 
     @Override
