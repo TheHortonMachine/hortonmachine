@@ -156,7 +156,7 @@ public class GpsInfoController extends GpsInfoView implements NmeaGpsListener, I
 
     private void enableLogFile() {
         String userHome = System.getProperty("user.home");
-        String ts = DateTime.now().toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSS);
+        String ts = DateTime.now().toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSScompact);
         logFile = new File(userHome + File.separator + ts + "_hortonmachine.nmea");
     }
 
