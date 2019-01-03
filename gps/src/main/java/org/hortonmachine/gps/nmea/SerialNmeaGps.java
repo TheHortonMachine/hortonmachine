@@ -37,6 +37,7 @@ import net.sf.marineapi.nmea.sentence.SentenceValidator;
  */
 public class SerialNmeaGps extends ANmeaGps implements SerialPortDataListener {
 
+    private static final String HM_START = "$HM:";
     private String comPort;
     private SerialPort commPort;
 
@@ -46,8 +47,14 @@ public class SerialNmeaGps extends ANmeaGps implements SerialPortDataListener {
     private int numStopBits = STOPBITS_1;
     private int parity = PARITY_NONE;
 
+    private boolean isHmDevice = false;
+    private boolean deviceChecked = false;
+    private String hmDataString = "";
+
     public SerialNmeaGps( String comPort ) {
         this.comPort = comPort;
+        isHmDevice = false;
+        deviceChecked = false;
     }
 
     public SerialNmeaGps( String comPort, int baudRate, int numDataBits, int numStopBits, int parity ) {
@@ -56,6 +63,8 @@ public class SerialNmeaGps extends ANmeaGps implements SerialPortDataListener {
         this.numDataBits = numDataBits;
         this.numStopBits = numStopBits;
         this.parity = parity;
+        isHmDevice = false;
+        deviceChecked = false;
     }
 
     public void logToFile( File logFile ) throws IOException {
@@ -69,10 +78,10 @@ public class SerialNmeaGps extends ANmeaGps implements SerialPortDataListener {
         commPort.setComPortParameters(baudRate, numDataBits, numStopBits, parity);
         boolean opened = commPort.openPort();
         if (opened) {
-        	commPort.addDataListener(this);
-		} else {
-			throw new RuntimeException("Unable to connect to port: " +comPort);
-		}
+            commPort.addDataListener(this);
+        } else {
+            throw new RuntimeException("Unable to connect to port: " + comPort);
+        }
     }
 
     @Override
@@ -161,6 +170,33 @@ public class SerialNmeaGps extends ANmeaGps implements SerialPortDataListener {
                 e.printStackTrace();
             }
 
+        if (!deviceChecked) {
+            // check if it is an HM string
+            if (dataString.contains(HM_START)) {
+                isHmDevice = true;
+                deviceChecked = true;
+            } else {
+                String[] lines = dataString.split("\n");
+                for( String line : lines ) {
+                    if (SentenceValidator.isValid(line)) {
+                        isHmDevice = false;
+                        deviceChecked = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (deviceChecked) {
+            if (isHmDevice) {
+                handleHmDataString(dataString);
+            } else {
+                handleDataString(dataString);
+            }
+        }
+    }
+
+    private void handleDataString( String dataString ) {
         String[] lines = dataString.split("\n");
         for( String line : lines ) {
             if (SentenceValidator.isValid(line)) {
@@ -177,7 +213,85 @@ public class SerialNmeaGps extends ANmeaGps implements SerialPortDataListener {
                 reader.start();
             }
         }
+    }
 
+    private void handleHmDataString( String dataString ) {
+        hmDataString += dataString.trim();
+
+        int firstHM = hmDataString.indexOf(HM_START);
+        if (firstHM != -1) {
+            int secondHM = hmDataString.indexOf(HM_START, firstHM + 1);
+            if (secondHM != -1) {
+//                System.out.println(hmDataString);
+//                System.out.println("--------------------");
+                String hmSentence = hmDataString.substring(firstHM, secondHM);
+//                System.out.println(hmSentence);
+
+                // set remainging to rest
+                hmDataString = hmDataString.substring(secondHM);
+//                System.out.println("--------------------");
+//                System.out.println(hmSentence);
+//                System.out.println("--------------------");
+//                System.out.println(hmDataFString);
+//                System.out.println("====================");
+
+                // hortonmachine sensor gps
+                // $HM:fixstatus,yy-MM-dd
+                // hh:mm:ss,lat,lon,elev,heading,satcount,speedkmh,hdop,vdop,pdop,laterrM,lonerrM,alterrM,humidity%,tempC,pressurehPa
+                System.out.println(hmSentence);
+                hmSentence = hmSentence.substring(4);
+                String[] dataSplit = hmSentence.split(",");
+                if (dataSplit.length == 17) {
+                    int i = 0;
+                    String fixStatus = dataSplit[i++];
+                    String ts = getTs(dataSplit[i++]);
+                    double lat = getDouble(dataSplit[i++]);
+                    double lon = getDouble(dataSplit[i++]);
+                    double elev = getDouble(dataSplit[i++]);
+                    double heading = getDouble(dataSplit[i++]);
+                    int satCount = (int) getDouble(dataSplit[i++]);
+                    double speedKmh = getDouble(dataSplit[i++]);
+                    double hdop = getDouble(dataSplit[i++]);
+                    double vdop = getDouble(dataSplit[i++]);
+                    double pdop = getDouble(dataSplit[i++]);
+                    double latErr = getDouble(dataSplit[i++]);
+                    double lonErr = getDouble(dataSplit[i++]);
+                    double altErr = getDouble(dataSplit[i++]);
+                    double humidityPerc = getDouble(dataSplit[i++]);
+                    double tempC = getDouble(dataSplit[i++]);
+                    double pressure = getDouble(dataSplit[i++]);
+
+                    currentGpsInfo.setHmGpsInfo(ts, lat, lon, elev, heading, satCount, speedKmh, hdop, vdop, pdop, latErr, lonErr,
+                            altErr, humidityPerc, tempC, pressure);
+
+                    for( NmeaGpsListener nmeaGpsListener : listeners ) {
+                        nmeaGpsListener.onGpsEvent(currentGpsInfo);
+                    }
+
+                }
+
+            }
+        }
+
+        String[] lines = dataString.split("\n");
+        for( String line : lines ) {
+            if (line.contains("HM:")) {
+            }
+        }
+    }
+
+    private String getTs( String string ) {
+        if (string.equals("*")) {
+            return "1970-01-01 00:00:00";
+        }
+        return string;
+    }
+
+    private double getDouble( String string ) {
+        if (string.equals("*")) {
+            return Double.NaN;
+        }
+        return Double.parseDouble(string);
     }
 
 }

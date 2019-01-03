@@ -190,6 +190,13 @@ public class GpsInfoController extends GpsInfoView implements NmeaGpsListener, I
                     _satInfoCountText.setText(satelliteInfo.size() + "");
                 }
 
+                if (gpsInfo.isHmGpsInfo()) {
+                    double humidityPerc = gpsInfo.getHumidityPerc();
+                    _humidityText.setText(humidityPerc + "");
+                    double tempC = gpsInfo.getTempC();
+                    _temperatureText.setText(tempC + "");
+                }
+
                 Position position = gpsInfo.getPosition();
                 if (position != null) {
                     double latitude = position.getLatitude();
@@ -241,6 +248,8 @@ public class GpsInfoController extends GpsInfoView implements NmeaGpsListener, I
         _satCountText.setText("");
         _satIdsText.setText("");
         _satInfoCountText.setText("");
+        _humidityText.setText("");
+        _temperatureText.setText("");
     }
 
     private JComponent asJComponent() {

@@ -18,6 +18,7 @@
  ******************************************************************************/
 package org.hortonmachine.gps.utils;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 import net.sf.marineapi.nmea.sentence.GGASentence;
@@ -54,9 +55,14 @@ public class CurrentGpsInfo {
     private double kmHSpeed = -1;
     private GpsFixQuality gpsFixQuality = null;;
     private int fieldCount = -1;
+    private boolean isHmGpsInfo = false;
 
     private static long count = 1;
+    private double humidityPerc;
+    private double tempC;
+    private double pressure;
 
+    private DecimalFormat f2 = new DecimalFormat("00");
     /**
      * Method to add a new {@link GSASentence}.
      * 
@@ -153,11 +159,55 @@ public class CurrentGpsInfo {
 
     public boolean isValid() {
         if (DataStatus.VOID.equals(dataStatus) || GpsFixStatus.GPS_NA == gpsFixStatus
-                || (fieldCount > 11 && FaaMode.NONE == faaMode)
+        // || (fieldCount > 11 && FaaMode.NONE == faaMode)
                 || (gpsFixQuality != null && GpsFixQuality.INVALID == gpsFixQuality)) {
             return false;
         }
         return true;
+    }
+
+    public boolean isHmGpsInfo() {
+        return isHmGpsInfo;
+    }
+
+    public void setHmGpsInfo( String ts, double lat, double lon, double elev, double heading, int satCount, double speedKmh,
+            double hdop, double vdop, double pdop, double latErr, double lonErr, double altErr, double humidityPerc, double tempC,
+            double pressure ) {
+        isHmGpsInfo = true;
+
+        if (!Double.isNaN(lat) && !Double.isNaN(lon)) {
+            position = new Position(lat, lon);
+            dataStatus = DataStatus.ACTIVE;
+            gpsFixStatus = GpsFixStatus.GPS_3D;
+            gpsFixQuality = GpsFixQuality.NORMAL;
+
+            String[] split = ts.split("-");
+
+            String dateStr = split[2] + f2.format(Double.parseDouble(split[1])) + f2.format(Double.parseDouble(split[0]));
+            date = new Date(dateStr);
+
+            String timeStr = f2.format(Double.parseDouble(split[3])) + f2.format(Double.parseDouble(split[4]))
+                    + f2.format(Double.parseDouble(split[5]));
+            time = new Time(timeStr + ".000");
+
+            if (!Double.isNaN(hdop))
+                horizontalPrecision = hdop;
+            if (!Double.isNaN(vdop))
+                verticalPrecision = vdop;
+            if (!Double.isNaN(pdop))
+                positionPrecision = pdop;
+
+            if (!Double.isNaN(elev))
+                altitude = elev;
+
+            if (!Double.isNaN(speedKmh))
+                kmHSpeed = speedKmh;
+        }
+
+        if (!Double.isNaN(humidityPerc))
+            this.humidityPerc = humidityPerc;
+        if (!Double.isNaN(tempC))
+            this.tempC = tempC;
     }
 
     public GpsFixStatus getGpsFixStatus() {
@@ -175,10 +225,10 @@ public class CurrentGpsInfo {
     public double getPositionPrecision() {
         return positionPrecision;
     }
-    
+
     public double getAltitude() {
-		return altitude;
-	}
+        return altitude;
+    }
 
     public String[] getSatelliteIds() {
         return satelliteIds;
@@ -218,6 +268,18 @@ public class CurrentGpsInfo {
 
     public long getCount() {
         return count++;
+    }
+
+    public double getHumidityPerc() {
+        return humidityPerc;
+    }
+
+    public double getTempC() {
+        return tempC;
+    }
+
+    public double getPressure() {
+        return pressure;
     }
 
     @Override
