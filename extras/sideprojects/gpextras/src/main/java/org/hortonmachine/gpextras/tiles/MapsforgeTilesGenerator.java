@@ -16,7 +16,7 @@
  * 
  * Author: Antonello Andrea (http://www.hydrologis.com)
  ******************************************************************************/
-package org.hortonmachine.tiles.utils;
+package org.hortonmachine.gpextras.tiles;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -159,20 +159,23 @@ public class MapsforgeTilesGenerator implements AutoCloseable {
     /**
      * Get tile data for a given tile schema coordinate.
      *  
-     * @param lon the WGS84 longitude.
-     * @param lat the WGS84 latitude.
+     * @param tx the x tile index.
+     * @param ty the y tile index.
      * @param zoom the zoomlevel
      * @param adaptee the class to adapt to.
      * @return the generated data.
      * @throws IOException
      */
-    public <T> T getTile4TileCoordinate( final int ty, final int tx, int zoom, Class<T> adaptee ) throws IOException {
+    public <T> T getTile4TileCoordinate( final int tx, final int ty, int zoom, Class<T> adaptee ) throws IOException {
+        //System.out.println("https://tile.openstreetmap.org/" + zoom + "/" + tx + "/" + ty + ".png");
         Tile tile = new Tile(tx, ty, (byte) zoom, tileSize);
 
         RendererJob mapGeneratorJob = new RendererJob(tile, mapDataStore, renderTheme, displayModel, scaleFactor, false, false);
 
         TileBitmap tb = renderer.executeJob(mapGeneratorJob);
-        tileCache.put(mapGeneratorJob, tb);
+        if (!(tileCache instanceof InMemoryTileCache)) {
+            tileCache.put(mapGeneratorJob, tb);
+        }
         if (tb instanceof AwtTileBitmap) {
             AwtTileBitmap bmp = (AwtTileBitmap) tb;
             if (bmp != null) {
@@ -245,7 +248,7 @@ public class MapsforgeTilesGenerator implements AutoCloseable {
     }
 
     public static void main( String[] args ) throws Exception {
-        try (org.hortonmachine.tiles.utils.MapsforgeTilesGenerator m = new org.hortonmachine.tiles.utils.MapsforgeTilesGenerator(
+        try (org.hortonmachine.gpextras.tiles.MapsforgeTilesGenerator m = new org.hortonmachine.gpextras.tiles.MapsforgeTilesGenerator(
                 new File("/home/hydrologis/data/openandromaps/"), 1024, 1.5f, null, null)) {
             double lat = 46.0643;
             double lon = 11.1321;
