@@ -1,6 +1,8 @@
 package org.hortonmachine.gpextras.camera;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
@@ -22,7 +24,7 @@ import com.github.sarxos.webcam.WebcamDiscoveryListener;
 import com.github.sarxos.webcam.WebcamEvent;
 import com.github.sarxos.webcam.WebcamListener;
 import com.github.sarxos.webcam.WebcamPanel;
-import com.github.sarxos.webcam.WebcamResolution;
+import com.github.sarxos.webcam.WebcamPicker;
 
 /**
  * @author Bartosz Firyn (SarXos)
@@ -41,6 +43,7 @@ public class CameraFrame extends JFrame
 
     private Webcam webcam = null;
     private WebcamPanel panel = null;
+    private WebcamPicker picker = null;
 
     private String fileToWrite;
 
@@ -78,7 +81,10 @@ public class CameraFrame extends JFrame
         addWindowListener(this);
         addMouseListener(this);
 
-        webcam = Webcam.getDefault();
+        picker = new WebcamPicker();
+        picker.addItemListener(this);
+
+        webcam = picker.getSelectedWebcam();
 
         Dimension[] supportedViewSizes = webcam.getViewSizes();
         webcam.setViewSize(supportedViewSizes[supportedViewSizes.length - 1]);
@@ -88,11 +94,15 @@ public class CameraFrame extends JFrame
 
         panel = new WebcamPanel(webcam, false);
         panel.setImageSizeDisplayed(true);
+
+        add(picker, BorderLayout.NORTH);
         add(panel, BorderLayout.CENTER);
 
         setUndecorated(true);
         pack();
         setVisible(true);
+
+        centerOnScreen(this);
 
         Thread t = new Thread(){
             @Override
@@ -104,6 +114,16 @@ public class CameraFrame extends JFrame
         t.setDaemon(true);
         t.setUncaughtExceptionHandler(this);
         t.start();
+    }
+
+    public static void centerOnScreen( Component component ) {
+        Dimension prefSize = component.getPreferredSize();
+        Dimension parentSize;
+        java.awt.Point parentLocation = new java.awt.Point(0, 0);
+        parentSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = parentLocation.x + (parentSize.width - prefSize.width) / 2;
+        int y = parentLocation.y + (parentSize.height - prefSize.height) / 2;
+        component.setLocation(x, y);
     }
 
     @Override
@@ -171,7 +191,8 @@ public class CameraFrame extends JFrame
                 webcam.close();
 
                 webcam = (Webcam) e.getItem();
-                webcam.setViewSize(WebcamResolution.VGA.getSize());
+                Dimension[] supportedViewSizes = webcam.getViewSizes();
+                webcam.setViewSize(supportedViewSizes[supportedViewSizes.length - 1]);
                 webcam.addWebcamListener(this);
 
                 panel = new WebcamPanel(webcam, false);
@@ -194,12 +215,19 @@ public class CameraFrame extends JFrame
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void webcamFound( WebcamDiscoveryEvent event ) {
+        if (picker != null) {
+            picker.addItem(event.getWebcam());
+        }
     }
 
     @Override
     public void webcamGone( WebcamDiscoveryEvent event ) {
+        if (picker != null) {
+            picker.removeItem(event.getWebcam());
+        }
     }
 
     @Override
@@ -217,7 +245,7 @@ public class CameraFrame extends JFrame
             panel.stop();
             setVisible(false);
             dispose();
-            
+
             for( CameraListener cameraListener : cameraListeners ) {
                 cameraListener.onPictureTaken(fileToWrite);
             }

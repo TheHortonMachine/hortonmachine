@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class CameraTest implements CameraListener {
-
+    
     public CameraTest() {
         Camera c = new Camera();
         c.open("/home/hydrologis/TMP/cameratest.jpg");
