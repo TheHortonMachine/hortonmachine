@@ -192,7 +192,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
         }
         sb.append(")");
 
-        String sql = checkSqlCompatibilityIssues(sb.toString());
+        String sql = getType().getDatabaseSyntaxHelper().checkSqlCompatibilityIssues(sb.toString());
 
         execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement()) {
@@ -201,14 +201,6 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
             return null;
         });
     }
-
-    /**
-     * Check for compatibility issues with different databases.
-     * 
-     * @param sql the original sql.
-     * @return the fixed sql.
-     */
-    public abstract String checkSqlCompatibilityIssues( String sql );
 
     /**
      * Create an single column index.

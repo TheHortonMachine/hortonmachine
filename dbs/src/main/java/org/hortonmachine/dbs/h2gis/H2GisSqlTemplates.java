@@ -19,6 +19,7 @@ package org.hortonmachine.dbs.h2gis;
 
 import java.io.File;
 
+import org.h2gis.utilities.TableLocation;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ASqlTemplates;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
@@ -35,7 +36,7 @@ public class H2GisSqlTemplates extends ASqlTemplates {
     public boolean hasAddGeometryColumn() {
         return false;
     }
-    
+
     @Override
     public boolean hasRecoverGeometryColumn() {
         return false;
@@ -45,7 +46,7 @@ public class H2GisSqlTemplates extends ASqlTemplates {
     public boolean hasAttachShapefile() {
         return true;
     }
-    
+
     @Override
     public boolean hasRecoverSpatialIndex() {
         return false;
@@ -139,5 +140,12 @@ public class H2GisSqlTemplates extends ASqlTemplates {
         return sql;
     }
 
+    @Override
+    public String addSrid( String tableName, int srid, String geometryColumnName ) {
+        if (geometryColumnName == null)
+            geometryColumnName = "the_geom";
+        TableLocation tableLocation = TableLocation.parse(tableName);
+        return String.format("ALTER TABLE %s ADD CHECK ST_SRID(" + geometryColumnName + ")=%d", tableLocation.toString(), srid);
+    }
 
 }

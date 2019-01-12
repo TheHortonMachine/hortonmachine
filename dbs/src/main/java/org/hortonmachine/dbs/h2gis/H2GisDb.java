@@ -250,10 +250,6 @@ public class H2GisDb extends ASpatialDb {
         return h2Db.getTables(doOrder);
     }
 
-    public String checkSqlCompatibilityIssues( String sql ) {
-        return h2Db.checkSqlCompatibilityIssues(sql);
-    }
-
     @Override
     public boolean hasTable( String tableName ) throws Exception {
         return h2Db.hasTable(tableName);

@@ -117,4 +117,12 @@ public abstract class ADatabaseSyntaxHelper {
     public abstract String AUTOINCREMENT();
 
     public abstract String MAKEPOINT2D();
+    
+    /**
+     * Check for compatibility issues with different databases.
+     * 
+     * @param sql the original sql.
+     * @return the fixed sql.
+     */
+    public abstract String checkSqlCompatibilityIssues( String sql );
 }

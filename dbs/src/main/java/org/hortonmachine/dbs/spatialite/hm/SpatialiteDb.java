@@ -208,10 +208,6 @@ public class SpatialiteDb extends ASpatialDb {
                 avoidIndex);
     }
 
-    public String checkSqlCompatibilityIssues( String sql ) {
-        return SpatialiteCommonMethods.checkCompatibilityIssues(sql);
-    }
-
     @Override
     public Envelope getTableBounds( String tableName ) throws Exception {
         return SpatialiteCommonMethods.getTableBounds(this, tableName);

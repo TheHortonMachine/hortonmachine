@@ -19,8 +19,8 @@ package org.hortonmachine.dbs.compat;
 
 import java.io.File;
 
-import org.hortonmachine.dbs.h2gis.H2NonSpatialDataType;
-import org.hortonmachine.dbs.postgis.PGNonSpatialDataType;
+import org.hortonmachine.dbs.h2gis.H2SyntaxHelper;
+import org.hortonmachine.dbs.postgis.PGSyntaxHelper;
 import org.hortonmachine.dbs.postgis.PostgisGeometryColumns;
 import org.hortonmachine.dbs.postgis.PostgisGeometryParser;
 import org.hortonmachine.dbs.h2gis.H2GisGeometryParser;
@@ -245,10 +245,10 @@ public enum EDb {
         switch( this ) {
         case H2:
         case H2GIS:
-            return new H2NonSpatialDataType();
+            return new H2SyntaxHelper();
         case POSTGRES:
         case POSTGIS:
-            return new PGNonSpatialDataType();
+            return new PGSyntaxHelper();
         case SQLITE:
         case SPATIALITE:
         case SPATIALITE4ANDROID:

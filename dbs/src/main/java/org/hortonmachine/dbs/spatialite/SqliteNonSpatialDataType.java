@@ -68,4 +68,8 @@ public class SqliteNonSpatialDataType extends ADatabaseSyntaxHelper {
     public String LONG_PRIMARYKEY_AUTOINCREMENT() {
         return LONG() + " " + PRIMARYKEY() + " " + AUTOINCREMENT();
     }
+    
+    public String checkSqlCompatibilityIssues( String sql ) {
+        return SpatialiteCommonMethods.checkCompatibilityIssues(sql);
+    }
 }

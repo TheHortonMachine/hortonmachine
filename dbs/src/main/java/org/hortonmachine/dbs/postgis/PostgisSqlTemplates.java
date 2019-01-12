@@ -147,4 +147,9 @@ public class PostgisSqlTemplates extends ASqlTemplates {
 
         return sql;
     }
+
+    @Override
+    public String addSrid( String tableName, int srid, String geometryColumnName ) {
+        return "-- SRID is added during addGeometryColumn";
+    }
 }

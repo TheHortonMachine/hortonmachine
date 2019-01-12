@@ -47,6 +47,8 @@ public abstract class ASqlTemplates {
 
     public abstract boolean hasAttachShapefile();
 
+    public abstract String addSrid( String tableName, int srid, String geometryColumnName );
+
     public abstract String addGeometryColumn( String tableName, String columnName, String srid, String geomType,
             String dimension );
 

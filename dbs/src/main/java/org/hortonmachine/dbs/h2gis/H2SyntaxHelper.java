@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.dbs.postgis;
+package org.hortonmachine.dbs.h2gis;
 
 import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 
@@ -24,14 +24,14 @@ import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class PGNonSpatialDataType extends ADatabaseSyntaxHelper {
+public class H2SyntaxHelper extends ADatabaseSyntaxHelper {
 
     public String TEXT() {
-        return "TEXT";
+        return "VARCHAR(255)";
     }
 
     public String INTEGER() {
-        return "INTEGER";
+        return "INT";
     }
 
     public String LONG() {
@@ -39,15 +39,15 @@ public class PGNonSpatialDataType extends ADatabaseSyntaxHelper {
     }
 
     public String REAL() {
-        return "REAL";
+        return "DOUBLE";
     }
 
     public String BLOB() {
-        return "bytea";
+        return "BLOB";
     }
 
     public String CLOB() {
-        return "TEXT";
+        return "CLOB";
     }
 
     @Override
@@ -57,7 +57,7 @@ public class PGNonSpatialDataType extends ADatabaseSyntaxHelper {
 
     @Override
     public String AUTOINCREMENT() {
-        return "SERIAL";
+        return "AUTO_INCREMENT";
     }
 
     @Override
@@ -66,7 +66,16 @@ public class PGNonSpatialDataType extends ADatabaseSyntaxHelper {
     }
 
     public String LONG_PRIMARYKEY_AUTOINCREMENT() {
-        return AUTOINCREMENT() + " " + PRIMARYKEY();
+        return LONG() + " " + PRIMARYKEY() + " " + AUTOINCREMENT();
+    }
+
+    public String checkSqlCompatibilityIssues( String sql ) {
+        String lowerCase = sql.toLowerCase().trim();
+        if (lowerCase.startsWith("create table")) {
+            sql = sql.replaceAll("AUTOINCREMENT", "AUTO_INCREMENT");
+            sql = sql.replaceAll("TEXT", "varchar(255)");
+        }
+        return sql;
     }
 
 }

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.dbs.h2gis;
+package org.hortonmachine.dbs.postgis;
 
 import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 
@@ -24,14 +24,14 @@ import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class H2NonSpatialDataType extends ADatabaseSyntaxHelper {
+public class PGSyntaxHelper extends ADatabaseSyntaxHelper {
 
     public String TEXT() {
-        return "VARCHAR(255)";
+        return "TEXT";
     }
 
     public String INTEGER() {
-        return "INT";
+        return "INTEGER";
     }
 
     public String LONG() {
@@ -39,15 +39,15 @@ public class H2NonSpatialDataType extends ADatabaseSyntaxHelper {
     }
 
     public String REAL() {
-        return "DOUBLE";
+        return "REAL";
     }
 
     public String BLOB() {
-        return "BLOB";
+        return "bytea";
     }
 
     public String CLOB() {
-        return "CLOB";
+        return "TEXT";
     }
 
     @Override
@@ -57,16 +57,23 @@ public class H2NonSpatialDataType extends ADatabaseSyntaxHelper {
 
     @Override
     public String AUTOINCREMENT() {
-        return "AUTO_INCREMENT";
+        return "SERIAL";
     }
 
     @Override
     public String MAKEPOINT2D() {
         return "ST_MakePoint";
     }
-    
+
     public String LONG_PRIMARYKEY_AUTOINCREMENT() {
-        return LONG() + " " + PRIMARYKEY() + " " + AUTOINCREMENT();
+        return AUTOINCREMENT() + " " + PRIMARYKEY();
+    }
+
+    public String checkSqlCompatibilityIssues( String sql ) {
+        sql = sql.replaceAll("LONG PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY");
+        sql = sql.replaceAll("AUTO_INCREMENT", "SERIAL");
+        sql = sql.replaceAll("AUTOINCREMENT", "SERIAL");
+        return sql;
     }
 
 }

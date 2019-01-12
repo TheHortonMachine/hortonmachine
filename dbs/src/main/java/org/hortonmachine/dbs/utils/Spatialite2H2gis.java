@@ -98,7 +98,7 @@ public class Spatialite2H2gis implements AutoCloseable {
                 String tableSql = getTableSql(spatialite, tableName);
 
                 System.out.println("Trying to create table: " + tableName);
-                String tableSqlChecked = h2gis.checkSqlCompatibilityIssues(tableSql);
+                String tableSqlChecked = h2gis.getType().getDatabaseSyntaxHelper().checkSqlCompatibilityIssues(tableSql);
 
                 /*
                  *  dirty hack: in my db spatialite had integers where long should be

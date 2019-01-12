@@ -20,10 +20,11 @@ import org.hortonmachine.dbs.log.LogDb;
 import org.hortonmachine.dbs.log.Message;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Tests for log db
+ * Tests pooling 
  */
 public class TestPooling {
 

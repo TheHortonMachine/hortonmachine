@@ -171,10 +171,6 @@ public class SqliteDb extends ADb {
         Logger.INSTANCE.insertDebug(null, message);
     }
 
-    public String checkSqlCompatibilityIssues( String sql ) {
-        return SpatialiteCommonMethods.checkCompatibilityIssues(sql);
-    }
-
     public List<String> getTables( boolean doOrder ) throws Exception {
         List<String> tableNames = new ArrayList<String>();
         String orderBy = " ORDER BY name";

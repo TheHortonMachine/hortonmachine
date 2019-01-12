@@ -55,6 +55,7 @@ public class TestDbsMain {
         }
         db.createTable(TABLE2, "id " + dt.INTEGER() + " PRIMARY KEY", "table1id " + dt.INTEGER(),
                 "FOREIGN KEY (table1id) REFERENCES " + TABLE1 + "(id)");
+        db.createIndex(TABLE2, "table1id", false);
         inserts = new String[]{//
                 "INSERT INTO " + TABLE2 + " VALUES(1, 1);", //
                 "INSERT INTO " + TABLE2 + " VALUES(2, 2);", //
@@ -86,6 +87,8 @@ public class TestDbsMain {
         assertEquals("name", tableColumns.get(1)[0].toLowerCase());
         assertEquals("temperature", tableColumns.get(2)[0].toLowerCase());
 
+        
+        // check primary key
         assertEquals("1", tableColumns.get(0)[2]);
         assertEquals("0", tableColumns.get(1)[2]);
 
@@ -98,7 +101,7 @@ public class TestDbsMain {
         assertEquals(1, foreignKeys.size());
 
         List<Index> indexes = db.getIndexes(TABLE1);
-        assertEquals(1, indexes.size());
+        assertEquals(0, indexes.size());
         indexes = db.getIndexes(TABLE2);
         assertEquals(1, indexes.size());
 

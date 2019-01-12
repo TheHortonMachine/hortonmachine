@@ -115,7 +115,7 @@ public class Spatialite2Postgis implements AutoCloseable {
                 String tableSql = getTableSql(spatialite, tableName);
 
                 System.out.println("Trying to create table: " + tableName);
-                String tableSqlChecked = postgis.checkSqlCompatibilityIssues(tableSql);
+                String tableSqlChecked = postgis.getType().getDatabaseSyntaxHelper().checkSqlCompatibilityIssues(tableSql);
 
                 /*
                  *  dirty hack: in my db spatialite had integers where long should be

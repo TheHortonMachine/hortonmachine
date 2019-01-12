@@ -212,16 +212,6 @@ public class PGDb extends ADb {
         });
     }
 
-    public String checkSqlCompatibilityIssues( String sql ) {
-
-        String lowerCase = sql.toLowerCase().trim();
-        if (lowerCase.startsWith("create table")) {
-            sql = sql.replaceAll("AUTOINCREMENT", "SERIAL");
-        }
-
-        return sql;
-    }
-
     @Override
     public List<String> getTables( boolean doOrder ) throws Exception {
         List<String> tableNames = new ArrayList<String>();

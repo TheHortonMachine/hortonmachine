@@ -98,7 +98,7 @@ public enum PreferencesDb implements AutoCloseable {
             }
             sb.append(");");
 
-            String sql = prefDb.checkSqlCompatibilityIssues(sb.toString());
+            String sql = prefDb.getType().getDatabaseSyntaxHelper().checkSqlCompatibilityIssues(sb.toString());
             prefDb.execOnConnection(connection -> {
                 try (IHMStatement stmt = connection.createStatement()) {
                     stmt.execute(sql);

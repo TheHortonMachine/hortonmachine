@@ -244,7 +244,7 @@ public class PostgisDb extends ASpatialDb {
         sb.append(")");
 
         String sql = sb.toString();
-        sql = checkCompatibilityIssues(sql);
+        sql = getType().getDatabaseSyntaxHelper().checkSqlCompatibilityIssues(sql);
 
         String _sql = sql;
         pgDb.execOnConnection(connection -> {
@@ -307,19 +307,9 @@ public class PostgisDb extends ASpatialDb {
 
     }
 
-    public static String checkCompatibilityIssues( String sql ) {
-        sql = sql.replaceAll("LONG PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY");
-        sql = sql.replaceAll("AUTO_INCREMENT", "SERIAL");
-        return sql;
-    }
-
     @Override
     public List<String> getTables( boolean doOrder ) throws Exception {
         return pgDb.getTables(doOrder);
-    }
-
-    public String checkSqlCompatibilityIssues( String sql ) {
-        return pgDb.checkSqlCompatibilityIssues(sql);
     }
 
     @Override

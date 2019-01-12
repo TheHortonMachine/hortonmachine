@@ -161,4 +161,9 @@ public class SpatialiteSqlTemplates extends ASqlTemplates {
         return sql;
     }
 
+    @Override
+    public String addSrid( String tableName, int srid, String geometryColumnName ) {
+        return "-- added during geometry column creation";
+    }
+
 }

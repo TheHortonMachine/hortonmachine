@@ -68,7 +68,7 @@ public class CommonQueries {
         try {
             ASqlTemplates sqlTemplates = dbType.getSqlTemplates();
 
-            String formatTimeSyntax = sqlTemplates.getFormatTimeSyntax("timestampcolumn", "YYYY-MM-YY HH:mm:ss");
+            String formatTimeSyntax = sqlTemplates.getFormatTimeSyntax("timestampcolumn", "YYYY-MM-dd HH:mm:ss");
             templatesMap.put("timestamp select", "select " + formatTimeSyntax + " from TABLENAME");
 
             String attachShapefile = sqlTemplates.attachShapefile(new File("/path/to/file.shp"));

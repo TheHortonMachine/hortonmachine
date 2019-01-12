@@ -87,7 +87,7 @@ public class LogDb implements AutoCloseable, ILogDb {
             }
             sb.append(");");
 
-            String sql = logDb.checkSqlCompatibilityIssues(sb.toString());
+            String sql = logDb.getType().getDatabaseSyntaxHelper().checkSqlCompatibilityIssues(sb.toString());
             logDb.execOnConnection(connection -> {
                 try (IHMStatement stmt = connection.createStatement()) {
                     stmt.execute(sql);
