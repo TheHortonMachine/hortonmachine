@@ -219,19 +219,23 @@ public class H2Db extends ADb {
         Logger.INSTANCE.insertDebug(null, message);
     }
 
-    public String[] getDbInfo() throws Exception {
+    public String[] getDbInfo() {
         // checking h2 version
         String sql = "SELECT H2VERSION();";
-        return execOnConnection(connection -> {
-            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-                String[] info = new String[1];
-                while( rs.next() ) {
-                    // read the result set
-                    info[0] = rs.getString(1);
+        try {
+            return execOnConnection(connection -> {
+                try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                    String[] info = new String[1];
+                    while( rs.next() ) {
+                        // read the result set
+                        info[0] = rs.getString(1);
+                    }
+                    return info;
                 }
-                return info;
-            }
-        });
+            });
+        } catch (Exception e) {
+            return new String[]{"no version info available"};
+        }
     }
 
     @Override

@@ -19,6 +19,7 @@ package org.hortonmachine.dbs.spatialite.android;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,12 +64,12 @@ public class GPSpatialiteDb extends ASpatialDb {
     public void setCredentials( String user, String password ) {
         // not supported on android
     }
-    
+
     @Override
     public boolean open( String dbPath, String user, String password ) throws Exception {
         return open(dbPath);
     }
-    
+
     @Override
     public ConnectionData getConnectionData() {
         return connectionData;
@@ -76,7 +77,7 @@ public class GPSpatialiteDb extends ASpatialDb {
 
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;
-        
+
         connectionData = new ConnectionData();
         connectionData.connectionLabel = dbPath;
         connectionData.connectionUrl = new String(dbPath);
@@ -131,18 +132,22 @@ public class GPSpatialiteDb extends ASpatialDb {
         SpatialiteCommonMethods.initSpatialMetadata(this, options);
     }
 
-    public String[] getDbInfo() throws Exception {
+    public String[] getDbInfo() {
         // checking SQLite and SpatiaLite version + target CPU
         String sql = "SELECT sqlite_version(), spatialite_version(), spatialite_target_cpu()";
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            String[] info = new String[3];
-            while( rs.next() ) {
-                // read the result set
-                info[0] = rs.getString(1);
-                info[1] = rs.getString(2);
-                info[2] = rs.getString(3);
+        try {
+            try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                String[] info = new String[3];
+                while( rs.next() ) {
+                    // read the result set
+                    info[0] = rs.getString(1);
+                    info[1] = rs.getString(2);
+                    info[2] = rs.getString(3);
+                }
+                return info;
             }
-            return info;
+        } catch (Exception e) {
+            return new String[]{"no version info available", "no version info available", "no version info available"};
         }
     }
 

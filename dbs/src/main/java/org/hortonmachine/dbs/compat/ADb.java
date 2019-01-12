@@ -148,9 +148,8 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * Get database infos.
      * 
      * @return the string array of database version information.
-     * @throws SQLException
      */
-    public abstract String[] getDbInfo() throws Exception;
+    public abstract String[] getDbInfo();
 
     /**
      * Execute an operation on a datrabase connection. This handles proper releasing of the connection.

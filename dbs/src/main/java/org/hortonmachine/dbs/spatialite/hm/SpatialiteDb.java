@@ -188,17 +188,21 @@ public class SpatialiteDb extends ASpatialDb {
         SpatialiteCommonMethods.initSpatialMetadata(this, options);
     }
 
-    public String[] getDbInfo() throws Exception {
+    public String[] getDbInfo() {
         // checking SQLite and SpatiaLite version + target CPU
         String sql = "SELECT spatialite_version(), spatialite_target_cpu()";
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            String[] info = new String[2];
-            while( rs.next() ) {
-                // read the result set
-                info[0] = rs.getString(1);
-                info[1] = rs.getString(2);
+        try {
+            try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                String[] info = new String[2];
+                while( rs.next() ) {
+                    // read the result set
+                    info[0] = rs.getString(1);
+                    info[1] = rs.getString(2);
+                }
+                return info;
             }
-            return info;
+        } catch (Exception e) {
+            return new String[]{"no version info available", "no version info available"};
         }
     }
 

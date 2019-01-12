@@ -76,12 +76,12 @@ public class H2GisDb extends ASpatialDb {
         this.user = user;
         this.password = password;
     }
-    
+
     @Override
     public ConnectionData getConnectionData() {
         return h2Db.getConnectionData();
     }
-    
+
     @Override
     public boolean open( String dbPath, String user, String password ) throws Exception {
         setCredentials(user, password);
@@ -193,20 +193,24 @@ public class H2GisDb extends ASpatialDb {
         });
     }
 
-    public String[] getDbInfo() throws Exception {
+    public String[] getDbInfo() {
         // checking h2 version
         String sql = "SELECT H2VERSION(), H2GISVERSION();";
-        return execOnConnection(connection -> {
-            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-                String[] info = new String[2];
-                while( rs.next() ) {
-                    // read the result set
-                    info[0] = rs.getString(1);
-                    info[1] = rs.getString(2);
+        try {
+            return execOnConnection(connection -> {
+                try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                    String[] info = new String[2];
+                    while( rs.next() ) {
+                        // read the result set
+                        info[0] = rs.getString(1);
+                        info[1] = rs.getString(2);
+                    }
+                    return info;
                 }
-                return info;
-            }
-        });
+            });
+        } catch (Exception e) {
+            return new String[]{"no version info available", "no version info available"};
+        }
     }
 
     public void createSpatialTable( String tableName, int srid, String geometryFieldData, String[] fieldData,

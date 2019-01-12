@@ -53,8 +53,13 @@ public class PostgisSqlTemplates extends ASqlTemplates {
 
     @Override
     public String addGeometryColumn( String tableName, String columnName, String srid, String geomType, String dimension ) {
-        String sql = "SELECT AddGeometryColumn('" + tableName + "','" + columnName + "', " + srid + ", '" + geomType + "', "
-                + dimension + ")";
+        // SELECT AddGeometryColumn ('my_schema','my_spatial_table','geom',4326,'POINT',2);
+        if (dimension.toLowerCase().equals("XY")) {
+            dimension = "2";
+        }
+
+        String sql = "SELECT AddGeometryColumn('" + tableName + "','" + columnName + "', " + srid + ", '" + geomType
+                + "', " + dimension + ")";
         return sql;
     }
 

@@ -69,7 +69,7 @@ public class SqliteDb extends ADb {
         this.user = user;
         this.password = password;
     }
-    
+
     @Override
     public ConnectionData getConnectionData() {
         return connectionData;
@@ -80,10 +80,10 @@ public class SqliteDb extends ADb {
         setCredentials(user, password);
         return open(dbPath);
     }
-    
+
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;
-        
+
         connectionData = new ConnectionData();
         connectionData.connectionLabel = dbPath;
         connectionData.connectionUrl = new String(dbPath);
@@ -143,16 +143,20 @@ public class SqliteDb extends ADb {
         }
     }
 
-    public String[] getDbInfo() throws Exception {
+    public String[] getDbInfo() {
         // checking SQLite and SpatiaLite version + target CPU
         String sql = "SELECT sqlite_version()";
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            String[] info = new String[1];
-            while( rs.next() ) {
-                // read the result set
-                info[0] = rs.getString(1);
+        try {
+            try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                String[] info = new String[1];
+                while( rs.next() ) {
+                    // read the result set
+                    info[0] = rs.getString(1);
+                }
+                return info;
             }
-            return info;
+        } catch (Exception e) {
+            return new String[]{"no version info available"};
         }
     }
 

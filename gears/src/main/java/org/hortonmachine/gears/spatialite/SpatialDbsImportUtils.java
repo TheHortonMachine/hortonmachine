@@ -41,19 +41,12 @@ import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.postgis.PostgisDb;
-import org.hortonmachine.dbs.postgis.PostgisGeometryColumns;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteDb;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -63,6 +56,11 @@ import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Import utilities.
@@ -85,11 +83,23 @@ public class SpatialDbsImportUtils {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
-        GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();
-
         if (newTableName == null) {
             newTableName = FileUtilities.getNameWithoutExtention(shapeFile);
         }
+        return createTableFromSchema(db, schema, newTableName);
+    }
+
+    /**
+     * Create a spatial table using a schema.
+     * 
+     * @param db the database to use.
+     * @param schema the schema to use.
+     * @param newTableName the new name of the table. If null, the shp name is used.
+     * @return the name of the created table.
+     * @throws Exception
+     */
+    public static String createTableFromSchema( ASpatialDb db, SimpleFeatureType schema, String newTableName ) throws Exception {
+        GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();
 
         ADatabaseSyntaxHelper dsh = db.getType().getDatabaseSyntaxHelper();
 
@@ -176,13 +186,31 @@ public class SpatialDbsImportUtils {
      */
     public static boolean importShapefile( ASpatialDb db, File shapeFile, String tableName, int limit, IHMProgressMonitor pm )
             throws Exception {
-        boolean noErrors = true;
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
-        SimpleFeatureType schema = featureSource.getSchema();
+        SimpleFeatureCollection features = featureSource.getFeatures();
+
+        return importFeatureCollection(db, features, tableName, limit, pm);
+
+    }
+
+    /**
+     * Import a featureCollection into a table.
+     * 
+     * @param db the database to use.
+     * @param features the featureCollection to import.
+     * @param tableName the name of the table to import to.
+     * @param limit if > 0, a limit to the imported features is applied.
+     * @param pm the progress monitor.
+     * @return <code>false</code>, is an error occurred. 
+     * @throws Exception
+     */
+    public static boolean importFeatureCollection( ASpatialDb db, SimpleFeatureCollection features, String tableName, int limit,
+            IHMProgressMonitor pm ) throws Exception {
+        boolean noErrors = true;
+        SimpleFeatureType schema = features.getSchema();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
 
-        SimpleFeatureCollection features = featureSource.getFeatures();
         int featureCount = features.size();
 
         List<String[]> tableInfo = db.getTableColumns(tableName);
@@ -234,6 +262,7 @@ public class SpatialDbsImportUtils {
         qMarks = qMarks.substring(1);
         String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
 
+        System.out.println(sql);
         return db.execOnConnection(conn -> {
             try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
                 int count = 0;
@@ -243,11 +272,11 @@ public class SpatialDbsImportUtils {
                         SimpleFeature f = (SimpleFeature) featureIterator.next();
                         for( int i = 0; i < attrNames.size(); i++ ) {
                             Object object = f.getAttribute(attrNames.get(i));
-                            if (object == null) {
-                                continue;
-                            }
+                            
                             int iPlus = i + 1;
-                            if (object instanceof Double) {
+                            if (object == null) {
+                                pStmt.setObject(iPlus, null);
+                            } else if (object instanceof Double) {
                                 pStmt.setDouble(iPlus, (Double) object);
                             } else if (object instanceof Float) {
                                 pStmt.setFloat(iPlus, (Float) object);
@@ -267,7 +296,6 @@ public class SpatialDbsImportUtils {
                             }
                         }
                         pStmt.addBatch();
-
                         count++;
                         if (limit > 0 && count >= limit) {
                             break;
@@ -302,7 +330,6 @@ public class SpatialDbsImportUtils {
             }
             return noErrors;
         });
-
     }
 
     /**

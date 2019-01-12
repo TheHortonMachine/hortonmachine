@@ -208,20 +208,24 @@ public class PostgisDb extends ASpatialDb {
         });
     }
 
-    public String[] getDbInfo() throws Exception {
-        // checking h2 version
+    public String[] getDbInfo() {
+        // checking postgis version
         String sql = "SELECT VERSION(), PostGIS_Full_Version();";
-        return execOnConnection(connection -> {
-            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-                String[] info = new String[2];
-                while( rs.next() ) {
-                    // read the result set
-                    info[0] = rs.getString(1);
-                    info[1] = rs.getString(2);
+        try {
+            return execOnConnection(connection -> {
+                try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                    String[] info = new String[2];
+                    while( rs.next() ) {
+                        // read the result set
+                        info[0] = rs.getString(1);
+                        info[1] = rs.getString(2);
+                    }
+                    return info;
                 }
-                return info;
-            }
-        });
+            });
+        } catch (Exception e) {
+            return new String[]{"no version info available", "no version info available"};
+        }
     }
 
     public void createSpatialTable( String tableName, int srid, String geometryFieldData, String[] fieldData,
