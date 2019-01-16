@@ -98,4 +98,24 @@ public class UtcTimeUtilities {
         return dtStr;
     }
 
+    /**
+     * Quick long to timestamp string formatter, UTC.
+     * 
+     * @param unixEpoch the unix epoch to convert.
+     * @return the timestamp string as yyyy-MM-dd HH:mm:ss
+     */
+    public static String quickToString( long unixEpoch ) {
+        return new DateTime(unixEpoch).toString(withSecondsformatter);
+    }
+
+    /**
+     * Quick long to timestamp string formatter.
+     * 
+     * @param unixEpoch the unix epoch to convert.
+     * @return the timestamp string as yyyy-MM-dd HH:mm:ss
+     */
+    public static String quickToStringLocal( long unixEpoch ) {
+        return new DateTime(unixEpoch).toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSS);
+    }
+
 }

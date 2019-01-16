@@ -135,7 +135,7 @@ public class PostgisSqlTemplates extends ASqlTemplates {
 
     @Override
     public String getFormatTimeSyntax( String timestampField, String formatPattern ) {
-        String pattern = "%Y-%m-%d %H:%M:%S";
+        String pattern = "YYYY-mm-DD HH24:MI:SS";
         if (formatPattern != null) {
             pattern = formatPattern;
             // supported for now YYYY-dd-MM HH:mm:ss
@@ -143,7 +143,7 @@ public class PostgisSqlTemplates extends ASqlTemplates {
             pattern = pattern.replaceAll("dd", "DD");
             pattern = pattern.replaceAll("mm", "MI");// minutes before month
             pattern = pattern.replaceAll("MM", "mm");
-            pattern = pattern.replaceAll("HH", "HH");
+            pattern = pattern.replaceAll("HH", "HH24");
             pattern = pattern.replaceAll("ss", "SS");
         }
 

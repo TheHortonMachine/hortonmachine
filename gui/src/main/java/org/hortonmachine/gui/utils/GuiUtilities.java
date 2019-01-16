@@ -259,6 +259,11 @@ public class GuiUtilities {
         return answer;
     }
 
+    public static boolean showYesNoDialog( Component parentComponent, String message ) {
+        int answer = JOptionPane.showConfirmDialog(parentComponent, message, "", JOptionPane.YES_NO_OPTION);
+        return answer == JOptionPane.YES_OPTION;
+    }
+
     /**
      * Create a simple multi input pane, that returns what the use inserts.
      * 

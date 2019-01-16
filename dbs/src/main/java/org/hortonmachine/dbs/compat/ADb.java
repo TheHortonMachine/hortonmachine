@@ -487,27 +487,6 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
     }
 
     /**
-     * Composes the formatter for unix timstamps in queries.
-     * 
-     * <p>
-     * The default format is: <b>2015-06-11 03:14:51</b>, as given by pattern:
-     * <b>%Y-%m-%d %H:%M:%S</b>.
-     * </p>
-     * 
-     * @param columnName
-     *            the timestamp column in the db.
-     * @param datePattern
-     *            the datepattern.
-     * @return the query piece.
-     */
-    public static String getTimestampQuery( String columnName, String datePattern ) {
-        if (datePattern == null)
-            datePattern = "%Y-%m-%d %H:%M:%S";
-        String sql = "strftime('" + datePattern + "', " + columnName + " / 1000, 'unixepoch')";
-        return sql;
-    }
-
-    /**
      * Get the name of a column in the proper case.
      * 
      * @param tableName the table to check.

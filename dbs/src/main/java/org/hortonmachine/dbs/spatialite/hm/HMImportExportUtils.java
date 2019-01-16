@@ -18,6 +18,8 @@
 package org.hortonmachine.dbs.spatialite.hm;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.HMTransactionExecuter;
+import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.spatialite.ImportExportUtils;
 
@@ -44,7 +46,7 @@ public class HMImportExportUtils {
 
         HMTransactionExecuter transactionExecuter = new HMTransactionExecuter(db){
             @Override
-            public void executeInTransaction() {
+            public void executeInTransaction(IHMConnection conn) {
                 try {
                     ImportExportUtils.executeShapefileImportQueries(db, tableName, shpPath, encoding, srid, geometryType);
                 } catch (Exception e) {
@@ -70,7 +72,7 @@ public class HMImportExportUtils {
 
         HMTransactionExecuter transactionExecuter = new HMTransactionExecuter(db){
             @Override
-            public void executeInTransaction() throws Exception {
+            public void executeInTransaction(IHMConnection conn) throws Exception {
                 ImportExportUtils.executeShapefileAttachQueries(db, tableName, shpPath, encoding, srid);
             }
         };

@@ -27,9 +27,11 @@ public interface ITransactionExecuter {
     /**
      * Method that will hold what to execute inside the transaction.
      * 
+     * @param conn the connection on which to execute on. 
+     * 
      * @throws Exception
      */
-    public void executeInTransaction() throws Exception;
+    public void executeInTransaction(IHMConnection conn) throws Exception;
     
     /**
      * Method to execute the process.

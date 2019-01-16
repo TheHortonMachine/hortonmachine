@@ -15,10 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.dbs.spatialite.hm;
-
-import org.hortonmachine.dbs.compat.ASpatialDb;
-import org.hortonmachine.dbs.compat.ITransactionExecuter;
+package org.hortonmachine.dbs.compat;
 
 /**
  * The transaction executor for the hortonmachine part.
@@ -39,7 +36,7 @@ public abstract class HMTransactionExecuter implements ITransactionExecuter {
             autoCommitEnabled = conn.getAutoCommit();
             conn.setAutoCommit(false);
             try {
-                executeInTransaction();
+                executeInTransaction(conn);
                 conn.commit();
                 return null;
             } catch (Exception e) {

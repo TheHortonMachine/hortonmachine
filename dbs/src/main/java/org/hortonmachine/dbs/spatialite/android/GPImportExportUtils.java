@@ -18,6 +18,7 @@
 package org.hortonmachine.dbs.spatialite.android;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.spatialite.ImportExportUtils;
 
@@ -44,7 +45,7 @@ public class GPImportExportUtils {
 
         GPTransactionExecuter transactionExecuter = new GPTransactionExecuter(db){
             @Override
-            public void executeInTransaction() throws Exception {
+            public void executeInTransaction(IHMConnection conn) throws Exception {
                 ImportExportUtils.executeShapefileImportQueries(db, tableName, shpPath, encoding, srid, geometryType);
             }
         };
@@ -66,7 +67,7 @@ public class GPImportExportUtils {
 
         GPTransactionExecuter transactionExecuter = new GPTransactionExecuter(db){
             @Override
-            public void executeInTransaction() throws Exception {
+            public void executeInTransaction(IHMConnection conn) throws Exception {
                 ImportExportUtils.executeShapefileAttachQueries(db, tableName, shpPath, encoding, srid);
             }
         };

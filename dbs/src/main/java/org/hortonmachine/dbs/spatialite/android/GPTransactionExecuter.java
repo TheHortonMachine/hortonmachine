@@ -32,7 +32,7 @@ public abstract class GPTransactionExecuter implements ITransactionExecuter {
     }
 
     public void execute() throws Exception {
-        executeInTransaction();
+        executeInTransaction(null);
     }
 
 }
