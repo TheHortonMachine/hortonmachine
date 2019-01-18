@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /**
  * An action that uses a progress monitor to update.
@@ -36,7 +38,6 @@ public abstract class ActionWithProgress extends AbstractAction {
     private int total;
     private boolean indeterminate;
     private String progressTitle;
-
     protected List<AbstractAction> connectedActions = new ArrayList<>();
 
     /**
@@ -54,17 +55,13 @@ public abstract class ActionWithProgress extends AbstractAction {
         this.indeterminate = indeterminate;
     }
 
-    public void addConnectedAction( AbstractAction action ) {
-        if (!connectedActions.contains(action))
-            connectedActions.add(action);
-    }
-
     @Override
     public void actionPerformed( ActionEvent event ) {
         setEnabled(false);
         for( AbstractAction abstractAction : connectedActions ) {
             abstractAction.setEnabled(false);
         }
+
         new Thread(() -> {
             ProgressMonitor monitor = null;
             try {
@@ -72,10 +69,7 @@ public abstract class ActionWithProgress extends AbstractAction {
                 monitor.start(progressTitle);
 
                 backGroundWork(monitor);
-                // to ensure that progress dlg is closed in case of any exception
-                if (monitor != null && monitor.getCurrent() != monitor.getTotal())
-                    monitor.setCurrent(null, monitor.getTotal());
-                setEnabled(true);
+                
                 for( AbstractAction abstractAction : connectedActions ) {
                     abstractAction.setEnabled(true);
                 }
@@ -83,8 +77,14 @@ public abstract class ActionWithProgress extends AbstractAction {
                 postWork();
             } catch (Exception e) {
                 onError(e);
+            } finally {
+                setEnabled(true);
+                // to ensure that progress dlg is closed in case of any exception
+                if (monitor != null && monitor.getCurrent() != monitor.getTotal())
+                    monitor.setCurrent(null, monitor.getTotal());
             }
         }).start();
+
     }
 
     /**
@@ -104,11 +104,23 @@ public abstract class ActionWithProgress extends AbstractAction {
 
     }
 
+    public void addConnectedAction( AbstractAction action ) {
+        if (!connectedActions.contains(action))
+            connectedActions.add(action);
+    }
+
     /**
-     * Called if an error occurrs.
+     * Called if an error occurrs. Can be overridden. SHows dialog by default.
      * 
      * @param e the exception thrown.
      */
-    public abstract void onError( Exception e );
+    public void onError( Exception e ) {
+        e.printStackTrace();
+        SwingUtilities.invokeLater(new Runnable(){
+            public void run() {
+                JOptionPane.showMessageDialog(parent, e.getLocalizedMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+    }
 
 }

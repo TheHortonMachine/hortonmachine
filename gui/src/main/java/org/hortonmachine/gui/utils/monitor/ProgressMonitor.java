@@ -1,9 +1,8 @@
 package org.hortonmachine.gui.utils.monitor;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -67,7 +66,7 @@ public class ProgressMonitor {
         return indeterminate;
     }
 
-    public synchronized void setCurrent( String status, int current ) {
+    public void setCurrent( String status, int current ) {
         if (current == -1)
             throw new IllegalStateException("not started yet");
         this.current = current;
@@ -78,27 +77,38 @@ public class ProgressMonitor {
 
     /*--------------------------------[ ListenerSupport ]--------------------------------*/
 
-    private CopyOnWriteArrayList<ChangeListener> listeners = new CopyOnWriteArrayList<>();
+    private List<ChangeListener> listeners = new ArrayList<>();
+    private final ReentrantLock lock = new ReentrantLock();
     private ChangeEvent ce = new ChangeEvent(this);
 
     public void addChangeListener( ChangeListener listener ) {
-        synchronized (listeners) {
+        lock.lock();
+        try {
             listeners.add(listener);
+        } finally {
+            lock.unlock();
         }
     }
 
     public void removeChangeListener( ChangeListener listener ) {
-        synchronized (listeners) {
+        lock.lock();
+        try {
             listeners.remove(listener);
+        } finally {
+            lock.unlock();
         }
     }
 
-    private void fireChangeEvent() {
-        synchronized (listeners) {
-            Iterator<ChangeListener> iter = listeners.iterator();
-            while( iter.hasNext() ) {
-                iter.next().stateChanged(ce);
+    private synchronized void fireChangeEvent() {
+        lock.lock();
+        try {
+            for( ChangeListener changeListener : listeners ) {
+                changeListener.stateChanged(ce);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
         }
     }
 }

@@ -34,7 +34,10 @@ import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,16 +47,21 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import javax.swing.filechooser.FileFilter;
 
+import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.log.PreferencesDb;
+import org.hortonmachine.gears.libs.modules.HMFileFilter;
 import org.hortonmachine.gears.utils.OsCheck;
 import org.hortonmachine.gears.utils.OsCheck.OSType;
 
@@ -428,7 +436,7 @@ public class GuiUtilities {
     }
 
     /**
-     * Create an image to make a color button.
+     * Create an image to make a color picker button.
      * 
      * @param button the button.
      * @param color the color to set.
@@ -444,6 +452,148 @@ public class GuiUtilities {
         gr.dispose();
 
         button.setIcon(new ImageIcon(bi));
+    }
+
+    /**
+     * Adds to a textfield and button the necessary to browse for a file.
+     * 
+     * @param pathTextField
+     * @param browseButton
+     * @param allowedExtensions
+     */
+    public static void setFileBrowsingOnWidgets( JTextField pathTextField, JButton browseButton, String[] allowedExtensions ) {
+        FileFilter filter = null;
+        if (allowedExtensions != null) {
+            filter = new FileFilter(){
+
+                @Override
+                public String getDescription() {
+                    return Arrays.toString(allowedExtensions);
+                }
+
+                @Override
+                public boolean accept( File f ) {
+                    if (f.isDirectory()) {
+                        return true;
+                    }
+                    String name = f.getName();
+                    for( String ext : allowedExtensions ) {
+                        if (name.toLowerCase().endsWith(ext.toLowerCase())) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            };
+        }
+        FileFilter _filter = filter;
+        browseButton.addActionListener(e -> {
+            File lastFile = GuiUtilities.getLastFile();
+            File[] res = showOpenFilesDialog(browseButton, "Select file", false, lastFile, _filter);
+            if (res != null && res.length == 1) {
+                String absolutePath = res[0].getAbsolutePath();
+                pathTextField.setText(absolutePath);
+                setLastPath(absolutePath);
+            }
+        });
+    }
+
+    /**
+     * Adds to a textfield and button the necessary to browse for a folder.
+     * 
+     * @param pathTextField
+     * @param browseButton
+     */
+    public static void setFolderBrowsingOnWidgets( JTextField pathTextField, JButton browseButton ) {
+        browseButton.addActionListener(e -> {
+            File lastFile = GuiUtilities.getLastFile();
+            File[] res = showOpenFolderDialog(browseButton, "Select folder", false, lastFile);
+            if (res != null && res.length == 1) {
+                String absolutePath = res[0].getAbsolutePath();
+                pathTextField.setText(absolutePath);
+                setLastPath(absolutePath);
+            }
+        });
+    }
+
+    private static File[] showOpenFilesDialog( final Component parent, final String title, final boolean multiselection,
+            final File initialPath, final FileFilter filter ) {
+        RunnableWithParameters runnable = new RunnableWithParameters(){
+            public void run() {
+                JFileChooser fc = new JFileChooser();
+                fc.setDialogTitle(title);
+                fc.setDialogType(JFileChooser.OPEN_DIALOG);
+                fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                fc.setMultiSelectionEnabled(multiselection);
+                fc.setCurrentDirectory(initialPath);
+                if (filter != null)
+                    fc.setFileFilter(filter);
+                fc.setFileHidingEnabled(false);
+                int r = fc.showOpenDialog(parent);
+                if (r != JFileChooser.APPROVE_OPTION) {
+                    this.returnValue = null;
+                    return;
+                }
+
+                if (fc.isMultiSelectionEnabled()) {
+                    File[] selectedFiles = fc.getSelectedFiles();
+                    this.returnValue = selectedFiles;
+                } else {
+                    File selectedFile = fc.getSelectedFile();
+                    this.returnValue = new File[]{selectedFile};
+                }
+
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            } catch (Exception e) {
+                Logger.INSTANCE.insertError("", "Can't show chooser dialog '" + title + "'.", e);
+            }
+        }
+        return (File[]) runnable.getReturnValue();
+    }
+
+    private static File[] showOpenFolderDialog( final Component parent, final String title, final boolean multiselection,
+            final File initialPath ) {
+        RunnableWithParameters runnable = new RunnableWithParameters(){
+            public void run() {
+                JFileChooser fc = new JFileChooser();
+                fc.setDialogTitle(title);
+                fc.setDialogType(JFileChooser.OPEN_DIALOG);
+                fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                fc.setMultiSelectionEnabled(multiselection);
+                fc.setCurrentDirectory(initialPath);
+                fc.setFileHidingEnabled(false);
+                int r = fc.showOpenDialog(parent);
+                if (r != JFileChooser.APPROVE_OPTION) {
+                    this.returnValue = null;
+                    return;
+                }
+
+                if (fc.isMultiSelectionEnabled()) {
+                    File[] selectedFiles = fc.getSelectedFiles();
+                    this.returnValue = selectedFiles;
+                } else {
+                    File selectedFile = fc.getSelectedFile();
+                    this.returnValue = new File[]{selectedFile};
+                }
+
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            } catch (Exception e) {
+                Logger.INSTANCE.insertError("", "Can't show chooser dialog '" + title + "'.", e);
+            }
+        }
+        return (File[]) runnable.getReturnValue();
     }
 
 }
