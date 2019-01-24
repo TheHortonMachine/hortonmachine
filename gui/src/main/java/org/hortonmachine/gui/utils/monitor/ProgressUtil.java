@@ -2,6 +2,7 @@ package org.hortonmachine.gui.utils.monitor;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -48,7 +49,7 @@ public class ProgressUtil {
             } else {
                 if (timer != null && timer.isRunning())
                     timer.stop();
-                //monitor.removeChangeListener(this);
+                // monitor.removeChangeListener(this);
             }
         }
 
@@ -57,6 +58,7 @@ public class ProgressUtil {
             ProgressDialog dlg = owner instanceof Frame
                     ? new ProgressDialog((Frame) owner, monitor)
                     : new ProgressDialog((Dialog) owner, monitor);
+//            dlg.setPreferredSize(new Dimension(300, 100));
             dlg.pack();
             dlg.setLocationRelativeTo(null);
             dlg.setVisible(true);

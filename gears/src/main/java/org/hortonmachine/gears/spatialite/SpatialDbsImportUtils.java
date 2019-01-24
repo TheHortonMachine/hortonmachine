@@ -42,6 +42,7 @@ import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.postgis.PostgisDb;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteDb;
+import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -266,13 +267,13 @@ public class SpatialDbsImportUtils {
         return db.execOnConnection(conn -> {
             try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
                 int count = 0;
-                pm.beginTask("Adding data to batch import...", featureCount);
+                int batchCount = 0;
                 try {
                     while( featureIterator.hasNext() ) {
                         SimpleFeature f = (SimpleFeature) featureIterator.next();
                         for( int i = 0; i < attrNames.size(); i++ ) {
                             Object object = f.getAttribute(attrNames.get(i));
-                            
+
                             int iPlus = i + 1;
                             if (object == null) {
                                 pStmt.setObject(iPlus, null);
@@ -297,15 +298,25 @@ public class SpatialDbsImportUtils {
                         }
                         pStmt.addBatch();
                         count++;
+                        batchCount++;
+                        if (batchCount % DbsUtilities.DEFAULT_BULK_INSERT_CHUNK_SIZE == 0) {
+                            pm.beginTask("Batch import " + batchCount + " features...", IHMProgressMonitor.UNKNOWN);
+                            pStmt.executeBatch();
+                            pm.done();
+                            batchCount = 0;
+                        }
                         if (limit > 0 && count >= limit) {
                             break;
                         }
-                        pm.worked(1);
+                    }
+                    if (batchCount > 0) {
+                        pm.beginTask("Batch import " + featureCount + " features...", IHMProgressMonitor.UNKNOWN);
+                        pStmt.executeBatch();
+                        pm.done();
                     }
                 } catch (Exception e) {
                     logger.insertError("SpatialDbsImportUtils", "error", e);
                 } finally {
-                    pm.done();
                     featureIterator.close();
                 }
 

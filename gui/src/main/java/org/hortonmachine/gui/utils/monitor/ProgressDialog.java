@@ -2,6 +2,7 @@ package org.hortonmachine.gui.utils.monitor;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.HeadlessException;
 
@@ -41,6 +42,11 @@ public class ProgressDialog extends JDialog implements ChangeListener {
     public ProgressDialog( Dialog owner, ProgressMonitor monitor ) throws HeadlessException {
         super(owner);
         init(monitor);
+    }
+    
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(700, 100);
     }
 
     private void init( ProgressMonitor monitor ) {

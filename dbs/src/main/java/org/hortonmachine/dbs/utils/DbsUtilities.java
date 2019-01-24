@@ -45,6 +45,10 @@ import org.locationtech.jts.geom.PrecisionModel;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class DbsUtilities {
+    /**
+     * Default insert size used for bulk inserts/updates.
+     */
+    public static final int DEFAULT_BULK_INSERT_CHUNK_SIZE = 10000;
 
     public static final SimpleDateFormat dbDateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static GeometryFactory geomFactory;
