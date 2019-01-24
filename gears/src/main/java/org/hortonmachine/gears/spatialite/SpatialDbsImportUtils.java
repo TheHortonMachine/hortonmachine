@@ -199,20 +199,20 @@ public class SpatialDbsImportUtils {
      * Import a featureCollection into a table.
      * 
      * @param db the database to use.
-     * @param features the featureCollection to import.
+     * @param featureCollection the featureCollection to import.
      * @param tableName the name of the table to import to.
      * @param limit if > 0, a limit to the imported features is applied.
      * @param pm the progress monitor.
      * @return <code>false</code>, is an error occurred. 
      * @throws Exception
      */
-    public static boolean importFeatureCollection( ASpatialDb db, SimpleFeatureCollection features, String tableName, int limit,
-            IHMProgressMonitor pm ) throws Exception {
+    public static boolean importFeatureCollection( ASpatialDb db, SimpleFeatureCollection featureCollection, String tableName,
+            int limit, IHMProgressMonitor pm ) throws Exception {
         boolean noErrors = true;
-        SimpleFeatureType schema = features.getSchema();
+        SimpleFeatureType schema = featureCollection.getSchema();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
 
-        int featureCount = features.size();
+        int featureCount = featureCollection.size();
 
         List<String[]> tableInfo = db.getTableColumns(tableName);
         List<String> tableColumns = new ArrayList<>();
@@ -231,10 +231,10 @@ public class SpatialDbsImportUtils {
         }
         SimpleFeatureIterator featureIterator;
         if (crs != null) {
-            ReprojectingFeatureCollection repFeatures = new ReprojectingFeatureCollection(features, crs);
+            ReprojectingFeatureCollection repFeatures = new ReprojectingFeatureCollection(featureCollection, crs);
             featureIterator = repFeatures.features();
         } else {
-            featureIterator = features.features();
+            featureIterator = featureCollection.features();
         }
 
         List<String> attrNames = new ArrayList<>();
@@ -300,7 +300,8 @@ public class SpatialDbsImportUtils {
                         count++;
                         batchCount++;
                         if (batchCount % DbsUtilities.DEFAULT_BULK_INSERT_CHUNK_SIZE == 0) {
-                            pm.beginTask("Batch import " + batchCount + " features...", IHMProgressMonitor.UNKNOWN);
+                            pm.beginTask("Batch import " + batchCount + " features. ( " + count + " of " + featureCount + " )",
+                                    IHMProgressMonitor.UNKNOWN);
                             pStmt.executeBatch();
                             pm.done();
                             batchCount = 0;
@@ -310,7 +311,8 @@ public class SpatialDbsImportUtils {
                         }
                     }
                     if (batchCount > 0) {
-                        pm.beginTask("Batch import " + featureCount + " features...", IHMProgressMonitor.UNKNOWN);
+                        pm.beginTask("Batch import " + batchCount + " features. ( " + count + " of " + featureCount + " )",
+                                IHMProgressMonitor.UNKNOWN);
                         pStmt.executeBatch();
                         pm.done();
                     }
@@ -319,17 +321,6 @@ public class SpatialDbsImportUtils {
                 } finally {
                     featureIterator.close();
                 }
-
-                try {
-                    pm.beginTask("Execute batch import of " + featureCount + " features...", IHMProgressMonitor.UNKNOWN);
-                    int[] executeBatch = pStmt.executeBatch();
-                    pm.message("Inserted records: " + executeBatch.length);
-                } catch (Exception e) {
-                    logger.insertError("SpatialDbsImportUtils", "error", e);
-                } finally {
-                    pm.done();
-                }
-
             }
 
             try (IHMStatement pStmt = conn.createStatement()) {

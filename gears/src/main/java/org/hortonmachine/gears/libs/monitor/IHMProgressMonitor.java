@@ -76,7 +76,7 @@ public interface IHMProgressMonitor {
     public void internalWorked( double work );
 
     /**
-     * Returns whether cancelation of current operation has been requested.
+     * Returns whether cancellation of current operation has been requested.
      * 
      * @return
      */
