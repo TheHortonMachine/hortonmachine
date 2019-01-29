@@ -26,6 +26,9 @@ import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.hortonmachine.gears.utils.StringUtilities;
+
 /**
  * An action that uses a progress monitor to update.
  * 
@@ -69,7 +72,7 @@ public abstract class ActionWithProgress extends AbstractAction {
                 monitor.start(progressTitle);
 
                 backGroundWork(monitor);
-                
+
                 for( AbstractAction abstractAction : connectedActions ) {
                     abstractAction.setEnabled(true);
                 }
@@ -116,9 +119,19 @@ public abstract class ActionWithProgress extends AbstractAction {
      */
     public void onError( Exception e ) {
         e.printStackTrace();
+        String localizedMessage = e.getLocalizedMessage();
+        if (localizedMessage == null) {
+            localizedMessage = e.getMessage();
+        }
+        if (localizedMessage == null || localizedMessage.trim().length() == 0) {
+            localizedMessage = "An undefined error was thrown. Please send the below trace to your technical contact:\n";
+            localizedMessage += ExceptionUtils.getStackTrace(e);
+        }
+
+        String _localizedMessage = localizedMessage;
         SwingUtilities.invokeLater(new Runnable(){
             public void run() {
-                JOptionPane.showMessageDialog(parent, e.getLocalizedMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(parent, _localizedMessage, "ERROR", JOptionPane.ERROR_MESSAGE);
             }
         });
     }
