@@ -8,7 +8,7 @@
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
 		<version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<groupId>org.hortonmachine</groupId>
@@ -18,10 +18,10 @@
 	<name>HM Databases Support</name>
 
 	<dependencies>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.xerial</groupId>
 			<artifactId>sqlite-jdbc</artifactId>
@@ -37,6 +37,11 @@
 		<dependency>
 			<groupId>com.mchange</groupId>
 			<artifactId>c3p0</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.jcraft</groupId>
+			<artifactId>jsch</artifactId>
+			<version>0.1.54</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
