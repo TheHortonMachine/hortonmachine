@@ -1,23 +1,24 @@
 package org.hortonmachine.database;
 
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
+
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.border.TitledBorder;
+
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 
 public class DatabaseView extends JPanel
@@ -37,6 +38,7 @@ public class DatabaseView extends JPanel
    JButton _historyButton = new JButton();
    JButton _templatesButton = new JButton();
    JButton _connectRemoteDbButton = new JButton();
+   JButton _settingsButton = new JButton();
    JCheckBox _refreshTreeAfterQueryCheckbox = new JCheckBox();
    JLabel _limitCountLabel = new JLabel();
    JTextField _limitCountTextfield = new JTextField();
@@ -227,7 +229,7 @@ public class DatabaseView extends JPanel
    public JPanel createPanel3()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -261,7 +263,12 @@ public class DatabaseView extends JPanel
       _connectRemoteDbButton.setText("Connect Remote");
       jpanel1.add(_connectRemoteDbButton,cc.xy(5,1));
 
-      addFillComponents(jpanel1,new int[]{ 2,4,6,8,10,12,13 },new int[0]);
+      _settingsButton.setActionCommand("Templates");
+      _settingsButton.setName("settingsButton");
+      _settingsButton.setText("Settings");
+      jpanel1.add(_settingsButton,cc.xy(13,1));
+
+      addFillComponents(jpanel1,new int[]{ 2,4,6,8,10,12,14,15 },new int[0]);
       return jpanel1;
    }
 

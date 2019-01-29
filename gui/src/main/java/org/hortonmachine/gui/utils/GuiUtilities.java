@@ -249,10 +249,11 @@ public class GuiUtilities {
         }
     }
 
-    public static JDialog openDialogWithPanel( JPanel panel, String title, Dimension dimension ) {
+    public static JDialog openDialogWithPanel( JPanel panel, String title, Dimension dimension, boolean modal ) {
         JDialog f = new JDialog();
         f.add(panel, BorderLayout.CENTER);
         f.setTitle(title);
+        f.setModal(modal);
         f.pack();
         if (dimension != null)
             f.setSize(dimension);
@@ -260,6 +261,14 @@ public class GuiUtilities {
         f.setVisible(true);
         f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         return f;
+    }
+
+    public static boolean openConfirmDialogWithPanel(Component parentComponent, JPanel panel, String title ) {
+        int result = JOptionPane.showConfirmDialog(parentComponent, panel, title, JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            return true;
+        }
+        return false;
     }
 
     public static String showInputDialog( Component parentComponent, String message, String defaultInput ) {

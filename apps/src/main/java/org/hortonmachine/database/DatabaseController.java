@@ -178,7 +178,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     public DatabaseController( GuiBridgeHandler guiBridge ) {
         this.guiBridge = guiBridge;
-        setPreferredSize(new Dimension(900, 600));
+        setPreferredSize(new Dimension(1200, 900));
         init();
     }
 
@@ -418,6 +418,20 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     String sql = templatesMap.get(selected);
                     addTextToQueryEditor(sql);
                 }
+            } catch (Exception e1) {
+                Logger.INSTANCE.insertError("", "ERROR", e1);
+            }
+        });
+
+        _settingsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        _settingsButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        _settingsButton.setText("Settings");
+        _settingsButton.setToolTipText("Settings for proxy and ssh tunnel.");
+        _settingsButton.setPreferredSize(preferredToolbarButtonSize);
+        _settingsButton.setIcon(ImageCache.getInstance().getImage(ImageCache.SETTINGS));
+        _settingsButton.addActionListener(e -> {
+            try {
+                SettingsController.openSettings();
             } catch (Exception e1) {
                 Logger.INSTANCE.insertError("", "ERROR", e1);
             }

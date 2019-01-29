@@ -48,7 +48,7 @@ public class StyleVectorLayerAction extends AbstractAction {
 
     public void actionPerformed( ActionEvent actionEvent ) {
 
-        GuiUtilities.openDialogWithPanel(new StylePanelController(layer), "Select the Style", new Dimension(400, 400));
+        GuiUtilities.openDialogWithPanel(new StylePanelController(layer), "Select the Style", new Dimension(400, 400), false);
 
     }
 }
