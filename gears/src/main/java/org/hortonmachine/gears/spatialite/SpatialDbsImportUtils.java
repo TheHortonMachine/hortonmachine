@@ -71,6 +71,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class SpatialDbsImportUtils {
     private static final Logger logger = Logger.INSTANCE;
 
+    public static final String GEOMFIELD_FOR_SHAPEFILE = ASpatialDb.DEFAULT_GEOM_FIELD_NAME;
+
     /**
      * Create a spatial table using a shapefile as schema.
      * 
@@ -78,16 +80,20 @@ public class SpatialDbsImportUtils {
      * @param shapeFile the shapefile to use.
      * @param newTableName the new name of the table. If null, the shp name is used.
      * @return the name of the created table.
+     * @param avoidSpatialIndex if <code>true</code>, no spatial index will be created. This is useful if many records 
+     *          have to be inserted and the index will be created later manually.
+     * @return the name of the created table.
      * @throws Exception
      */
-    public static String createTableFromShp( ASpatialDb db, File shapeFile, String newTableName ) throws Exception {
+    public static String createTableFromShp( ASpatialDb db, File shapeFile, String newTableName, boolean avoidSpatialIndex )
+            throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
         if (newTableName == null) {
             newTableName = FileUtilities.getNameWithoutExtention(shapeFile);
         }
-        return createTableFromSchema(db, schema, newTableName);
+        return createTableFromSchema(db, schema, newTableName, avoidSpatialIndex);
     }
 
     /**
@@ -97,9 +103,12 @@ public class SpatialDbsImportUtils {
      * @param schema the schema to use.
      * @param newTableName the new name of the table. If null, the shp name is used.
      * @return the name of the created table.
+     * @param avoidSpatialIndex if <code>true</code>, no spatial index will be created. This is useful if many records 
+     *          have to be inserted and the index will be created later manually.
      * @throws Exception
      */
-    public static String createTableFromSchema( ASpatialDb db, SimpleFeatureType schema, String newTableName ) throws Exception {
+    public static String createTableFromSchema( ASpatialDb db, SimpleFeatureType schema, String newTableName,
+            boolean avoidSpatialIndex ) throws Exception {
         GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();
 
         ADatabaseSyntaxHelper dsh = db.getType().getDatabaseSyntaxHelper();
@@ -151,21 +160,23 @@ public class SpatialDbsImportUtils {
             if (db instanceof SpatialiteDb) {
                 SpatialiteDb spatialiteDb = (SpatialiteDb) db;
                 spatialiteDb.createTable(newTableName, attrSql.toArray(new String[0]));
-                spatialiteDb.addGeometryXYColumnAndIndex(newTableName, null, typeString, codeFromCrs, false);
+                spatialiteDb.addGeometryXYColumnAndIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE, typeString, codeFromCrs,
+                        avoidSpatialIndex);
             } else if (db instanceof PostgisDb) {
                 PostgisDb postgisDb = (PostgisDb) db;
                 postgisDb.createTable(newTableName, attrSql.toArray(new String[0]));
-                postgisDb.addGeometryXYColumnAndIndex(newTableName, null, typeString, codeFromCrs, false);
+                postgisDb.addGeometryXYColumnAndIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE, typeString, codeFromCrs,
+                        avoidSpatialIndex);
             } else if (db instanceof H2GisDb) {
                 H2GisDb spatialiteDb = (H2GisDb) db;
                 String typeStringExtra = typeString;
                 // String typeStringExtra = "GEOMETRY(" + typeString + "," + codeFromCrs + ")";
-                String geomField = "the_geom";
-                attrSql.add(geomField + " " + typeStringExtra);
+                attrSql.add(GEOMFIELD_FOR_SHAPEFILE + " " + typeStringExtra);
                 String[] array = attrSql.toArray(new String[0]);
                 spatialiteDb.createTable(newTableName, array);
-                spatialiteDb.addSrid(newTableName, codeFromCrs, geomField);
-                spatialiteDb.createSpatialIndex(newTableName, geomField);
+                spatialiteDb.addSrid(newTableName, codeFromCrs, GEOMFIELD_FOR_SHAPEFILE);
+                if (!avoidSpatialIndex)
+                    spatialiteDb.createSpatialIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE);
             }
         } else {
             db.createTable(newTableName, attrSql.toArray(new String[0]));
@@ -263,7 +274,6 @@ public class SpatialDbsImportUtils {
         qMarks = qMarks.substring(1);
         String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
 
-        System.out.println(sql);
         return db.execOnConnection(conn -> {
             try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
                 int count = 0;
@@ -399,7 +409,7 @@ public class SpatialDbsImportUtils {
         }
 
         if (latIndex != -1 && lonIndex != -1) {
-            b.add("the_geom", Point.class);
+            b.add(GEOMFIELD_FOR_SHAPEFILE, Point.class);
         }
         for( int i = 0; i < names.size(); i++ ) {
             if (geometryIndex != -1 && i == geometryIndex) {

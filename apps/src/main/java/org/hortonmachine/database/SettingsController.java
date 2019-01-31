@@ -1,11 +1,8 @@
 package org.hortonmachine.database;
 
-import java.awt.Dimension;
-
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.ssh.ProxyEnabler;
-import org.hortonmachine.ssh.SshTunnelHandler;
 
 public class SettingsController extends SettingsView {
     private static final String HM_PREF_PROXYPWD = "hm_pref_proxypwd";
@@ -101,8 +98,7 @@ public class SettingsController extends SettingsView {
 
             int remote = Integer.parseInt(remotePort);
             int local = Integer.parseInt(localPort);;
-            SshTunnelHandler sshTunnelHandler = SshTunnelHandler.openTunnel(host, user, pwd, local, remote);
-            TunnelSingleton.INSTANCE.setTunnelObject(sshTunnelHandler);
+            TunnelSingleton.INSTANCE.setTunnelObject(host, user, pwd, local, remote);
         } else {
             GuiUtilities.setPreference("hm_pref_tunnelcheck", "false");
             TunnelSingleton.INSTANCE.disconnectTunnel();

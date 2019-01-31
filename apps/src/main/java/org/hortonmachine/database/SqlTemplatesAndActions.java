@@ -325,7 +325,7 @@ public class SqlTemplatesAndActions {
                         newTableName = null;
                     }
                     SpatialDbsImportUtils.createTableFromShp(spatialiteViewer.currentConnectedDatabase, openFiles[0],
-                            newTableName);
+                            newTableName, false);
                     spatialiteViewer.refreshDatabaseTree();
                 } catch (Exception e1) {
                     logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
