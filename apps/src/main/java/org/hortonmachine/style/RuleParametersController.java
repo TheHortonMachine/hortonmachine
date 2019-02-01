@@ -1,9 +1,13 @@
 package org.hortonmachine.style;
 
+import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import org.geotools.filter.text.cql2.CQLException;
+import org.geotools.filter.text.ecql.ECQL;
 import org.hortonmachine.gears.utils.style.RuleWrapper;
+import org.opengis.filter.Filter;
 
 @SuppressWarnings("serial")
 public class RuleParametersController extends RuleParametersView {
@@ -16,6 +20,16 @@ public class RuleParametersController extends RuleParametersView {
     public RuleParametersController( RuleWrapper ruleWrapper, MainController mainController ) {
         this.ruleWrapper = ruleWrapper;
         _applyButton.addActionListener(e -> {
+            try {
+                String filterText = _filterTextArea.getText().trim();
+                if (filterText.length() > 0) {
+                    Filter filter = ECQL.toFilter(filterText);
+                    ruleWrapper.getRule().setFilter(filter);
+                }
+            } catch (CQLException e1) {
+                e1.printStackTrace();
+            }
+
             mainController.applyStyle();
         });
         init();
@@ -84,6 +98,15 @@ public class RuleParametersController extends RuleParametersView {
             public void keyPressed( KeyEvent e ) {
             }
         });
+
+        _filterTextArea.setMargin(new Insets(10, 10, 10, 10));
+
+        Filter filter = ruleWrapper.getRule().getFilter();
+        if (filter != null) {
+            _filterTextArea.setText(ECQL.toCQL(filter));
+        } else {
+            _filterTextArea.setText(""); //$NON-NLS-1$
+        }
     }
 
     private String checkScale( String scale ) {

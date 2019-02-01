@@ -11,6 +11,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
@@ -20,13 +22,14 @@ import com.jgoodies.forms.layout.FormLayout;
 
 public class RuleParametersView extends JPanel
 {
+   JButton _applyButton = new JButton();
    JLabel _nameLabel = new JLabel();
    JTextField _nameTextField = new JTextField();
    JTextField _minScaleTextField = new JTextField();
    JLabel _minScaleLabel = new JLabel();
    JLabel _maxScaleLabel = new JLabel();
    JTextField _maxScaleTextField = new JTextField();
-   JButton _applyButton = new JButton();
+   JTextArea _filterTextArea = new JTextArea();
 
    /**
     * Default constructor
@@ -118,17 +121,18 @@ public class RuleParametersView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      jpanel1.add(createPanel1(),cc.xywh(2,2,19,1));
       _applyButton.setActionCommand("Apply");
       _applyButton.setName("applyButton");
       _applyButton.setText("Apply");
-      jpanel1.add(_applyButton,cc.xywh(7,4,13,1));
+      jpanel1.add(_applyButton,cc.xywh(7,6,13,1));
 
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 },new int[]{ 1,2,3,4,5 });
+      jpanel1.add(createPanel1(),cc.xywh(2,2,19,1));
+      jpanel1.add(createPanel2(),cc.xywh(2,4,19,1));
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 },new int[]{ 1,2,3,4,5,6,7 });
       return jpanel1;
    }
 
@@ -163,6 +167,26 @@ public class RuleParametersView extends JPanel
       jpanel1.add(_maxScaleTextField,cc.xy(4,7));
 
       addFillComponents(jpanel1,new int[]{ 1,2,3,4 },new int[]{ 1,2,3,4,5,6,7,8 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel2()
+   {
+      JPanel jpanel1 = new JPanel();
+      TitledBorder titledborder1 = new TitledBorder(null,"Filter",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      jpanel1.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:3.0CM:GROW(1.0)");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      _filterTextArea.setName("filterTextArea");
+      JScrollPane jscrollpane1 = new JScrollPane();
+      jscrollpane1.setViewportView(_filterTextArea);
+      jscrollpane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+      jscrollpane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+      jpanel1.add(jscrollpane1,cc.xy(1,1));
+
+      addFillComponents(jpanel1,new int[0],new int[0]);
       return jpanel1;
    }
 
