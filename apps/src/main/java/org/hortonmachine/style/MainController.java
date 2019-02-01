@@ -50,6 +50,7 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -73,6 +74,8 @@ import org.hortonmachine.modules.VectorReader;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -108,6 +111,8 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     public MainController( File fileToOpen ) {
         setPreferredSize(new Dimension(1400, 800));
 
+        _rulesTree.expandRow(0);
+        _rulesTree.setRootVisible(false);
         _rulesTree.setModel(new DefaultTreeModel(null));
         _stylePanel.setLayout(new BorderLayout());
 
@@ -280,12 +285,17 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         _stylePanel.repaint();
 
         List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = styleWrapper.getFeatureTypeStylesWrapperList();
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(styleWrapper);
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         DefaultTreeModel model = new DefaultTreeModel(rootNode);
+
+        DefaultMutableTreeNode styleInfoNode = new DefaultMutableTreeNode("Style: Groups and Rules");
+        rootNode.add(styleInfoNode);
+        DefaultMutableTreeNode styleNode = new DefaultMutableTreeNode(styleWrapper);
+        styleInfoNode.add(styleNode);
 
         for( FeatureTypeStyleWrapper featureTypeStyle : featureTypeStylesWrapperList ) {
             DefaultMutableTreeNode featureStyleNode = new DefaultMutableTreeNode(featureTypeStyle);
-            rootNode.add(featureStyleNode);
+            styleNode.add(featureStyleNode);
 
             List<RuleWrapper> rulesWrapperList = featureTypeStyle.getRulesWrapperList();
             for( RuleWrapper ruleWrapper : rulesWrapperList ) {
@@ -305,6 +315,31 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
             }
         }
+
+        DefaultMutableTreeNode datastoreNode = new DefaultMutableTreeNode("Datastore information");
+        rootNode.add(datastoreNode);
+
+        SimpleFeatureType schema = currentFeatureCollection.getSchema();
+        CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
+        try {
+            String epsgString = CrsUtilities.getCodeFromCrs(crs);
+            DefaultMutableTreeNode crsNode = new DefaultMutableTreeNode("Projection: " + epsgString);
+            datastoreNode.add(crsNode);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
+        DefaultMutableTreeNode attributesInfoNode = new DefaultMutableTreeNode("Attributes");
+        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+            String name = attributeDescriptor.getLocalName();
+            String type = attributeDescriptor.getType().getBinding().getSimpleName();
+            DefaultMutableTreeNode singleAttrtibuteInfoNode = new DefaultMutableTreeNode(name + " ( " + type + " )");
+            attributesInfoNode.add(singleAttrtibuteInfoNode);
+        }
+        datastoreNode.add(attributesInfoNode);
+
+        _rulesTree.expandRow(0);
+        _rulesTree.setRootVisible(false);
         _rulesTree.setModel(model);
         for( int i = 0; i < _rulesTree.getRowCount(); i++ ) {
             _rulesTree.expandRow(i);
@@ -329,9 +364,6 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                     if (selectedItem instanceof DefaultMutableTreeNode) {
                         DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectedItem;
                         Object userObject = node.getUserObject();
-                        System.out.println(userObject.getClass());
-                        System.out.println(userObject);
-
                         if (userObject instanceof StyleWrapper) {
                             currentSelectedSW = (StyleWrapper) userObject;
                         } else if (userObject instanceof FeatureTypeStyleWrapper) {

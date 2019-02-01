@@ -131,7 +131,7 @@ public class MainView extends JPanel
       jpanel1.add(_filepathField,cc.xywh(2,2,5,1));
 
       _rulesTree.setName("rulesTree");
-      TitledBorder titledborder1 = new TitledBorder(null,"Groups and Rules",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       _rulesTree.setBorder(titledborder1);
       JScrollPane jscrollpane1 = new JScrollPane();
       jscrollpane1.setViewportView(_rulesTree);
