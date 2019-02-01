@@ -90,6 +90,7 @@ public class ImageCache {
     public static final String ZOOM_TO_ALL = "zoom_to_all.png";
     public static final String ZOOM_TO_NEXT = "zoom_next.png";
     public static final String ZOOM_TO_PREVIOUS = "zoom_previous.png";
+    public static final String SELECTION_MODE = "selection_mode.png";
 
     public static final String BROWSER = "browser.gif";
 
@@ -98,6 +99,7 @@ public class ImageCache {
     public static final String GEOM_POINT = "geom_point.png";
     public static final String GEOM_LINE = "geom_line.png";
     public static final String GEOM_POLYGON = "geom_polygon.png";
+    public static final String DEM = "raster_icon.png";
 
     public static final String TREE_OPEN = "tree_open.png";
     public static final String TREE_CLOSED = "tree_closed.png";

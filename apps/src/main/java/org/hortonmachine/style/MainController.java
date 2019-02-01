@@ -7,6 +7,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,8 +19,11 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.PopupMenuEvent;
@@ -25,6 +31,7 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -45,8 +52,10 @@ import org.hortonmachine.database.DatabaseViewer;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
@@ -75,6 +84,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @SuppressWarnings("serial")
 public class MainController extends MainView implements IOnCloseListener, TreeSelectionListener {
+    public static final String VECTOR_BOUNDS = "Vector bounds";
+    public static final String RASTER_BOUNDS = "Raster Bounds";
     public static final String PROJECTION = "Projection: ";
     public static final String STYLE_GROUPS_AND_RULES = "Style: Groups and Rules";
     public static final String ATTRIBUTES = "Attributes";
@@ -101,7 +112,8 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
     private SimpleFeatureCollection currentFeatureCollection;
 
-    private GridCoverage2D raster;
+    private GridCoverage2D currentRaster;
+    private FeatureAttributeNode currentSelectedFeatureAttributeNode;
 
     /**
      * Default constructor
@@ -228,6 +240,14 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         if (currentLayer != null) {
             mapContent.removeLayer(currentLayer);
         }
+        currentSelectedFSW = null;
+        currentSelectedSW = null;
+        currentSelectedRW = null;
+        currentSelectedSymW = null;
+        currentRaster = null;
+        currentFeaturesList = null;
+        currentFeatureCollection = null;
+
         try {
             if (HMConstants.isVector(selectedFile)) {
 
@@ -258,13 +278,13 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 _stylePanel.revalidate();
                 _stylePanel.repaint();
             } else if (HMConstants.isRaster(selectedFile)) {
-                raster = OmsRasterReader.readRaster(absolutePath);
+                currentRaster = OmsRasterReader.readRaster(absolutePath);
                 Style style = SldUtilities.getStyleFromFile(selectedFile);
                 if (style == null) {
                     style = RasterStyleUtilities.createDefaultRasterStyle();
                 }
-                mapContent.getViewport().setCoordinateReferenceSystem(raster.getCoordinateReferenceSystem());
-                currentLayer = new GridCoverageLayer(raster, style);
+                mapContent.getViewport().setCoordinateReferenceSystem(currentRaster.getCoordinateReferenceSystem());
+                currentLayer = new GridCoverageLayer(currentRaster, style);
                 mapContent.addLayer(currentLayer);
 
                 styleWrapper = new StyleWrapper(style);
@@ -319,25 +339,83 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         DefaultMutableTreeNode datastoreNode = new DefaultMutableTreeNode(DATASTORE_INFORMATION);
         rootNode.add(datastoreNode);
 
-        SimpleFeatureType schema = currentFeatureCollection.getSchema();
-        CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
-        try {
-            String epsgString = CrsUtilities.getCodeFromCrs(crs);
-            DefaultMutableTreeNode crsNode = new DefaultMutableTreeNode(PROJECTION + epsgString);
-            datastoreNode.add(crsNode);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
-        DefaultMutableTreeNode attributesInfoNode = new DefaultMutableTreeNode(ATTRIBUTES);
-        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
-            String name = attributeDescriptor.getLocalName();
-            String type = attributeDescriptor.getType().getBinding().getSimpleName();
-            DefaultMutableTreeNode singleAttrtibuteInfoNode = new DefaultMutableTreeNode(name + " ( " + type + " )");
-            attributesInfoNode.add(singleAttrtibuteInfoNode);
-        }
-        datastoreNode.add(attributesInfoNode);
+        if (currentFeatureCollection != null) {
+            SimpleFeatureType schema = currentFeatureCollection.getSchema();
+            CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
+            try {
+                String epsgString = CrsUtilities.getCodeFromCrs(crs);
+                DefaultMutableTreeNode crsNode = new DefaultMutableTreeNode(PROJECTION + epsgString);
+                datastoreNode.add(crsNode);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
+            DefaultMutableTreeNode countNode = new DefaultMutableTreeNode("Feature count: " + currentFeatureCollection.size());
+            datastoreNode.add(countNode);
+
+            ReferencedEnvelope bounds = currentFeatureCollection.getBounds();
+            DefaultMutableTreeNode boundsInfoNode = new DefaultMutableTreeNode(VECTOR_BOUNDS);
+            datastoreNode.add(boundsInfoNode);
+            DefaultMutableTreeNode northNode = new DefaultMutableTreeNode("North: " + bounds.getMaxY());
+            boundsInfoNode.add(northNode);
+            DefaultMutableTreeNode southNode = new DefaultMutableTreeNode("South: " + bounds.getMinY());
+            boundsInfoNode.add(southNode);
+            DefaultMutableTreeNode westNode = new DefaultMutableTreeNode("West: " + bounds.getMinX());
+            boundsInfoNode.add(westNode);
+            DefaultMutableTreeNode eastNode = new DefaultMutableTreeNode("East: " + bounds.getMaxX());
+            boundsInfoNode.add(eastNode);
+            DefaultMutableTreeNode widthNode = new DefaultMutableTreeNode("Width: " + (bounds.getMaxX() - bounds.getMinX()));
+            boundsInfoNode.add(widthNode);
+            DefaultMutableTreeNode heightNode = new DefaultMutableTreeNode("Height: " + (bounds.getMaxY() - bounds.getMinY()));
+            boundsInfoNode.add(heightNode);
+
+            List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
+            DefaultMutableTreeNode attributesInfoNode = new DefaultMutableTreeNode(ATTRIBUTES);
+            for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+                String name = attributeDescriptor.getLocalName();
+                String type = attributeDescriptor.getType().getBinding().getSimpleName();
+                DefaultMutableTreeNode singleAttrtibuteInfoNode = new DefaultMutableTreeNode(
+                        new FeatureAttributeNode(name, type));
+                attributesInfoNode.add(singleAttrtibuteInfoNode);
+            }
+            datastoreNode.add(attributesInfoNode);
+        } else if (currentRaster != null) {
+            CoordinateReferenceSystem crs = currentRaster.getCoordinateReferenceSystem();
+            try {
+                String epsgString = CrsUtilities.getCodeFromCrs(crs);
+                DefaultMutableTreeNode crsNode = new DefaultMutableTreeNode(PROJECTION + epsgString);
+                datastoreNode.add(crsNode);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(currentRaster);
+
+            DefaultMutableTreeNode boundsInfoNode = new DefaultMutableTreeNode(RASTER_BOUNDS);
+            datastoreNode.add(boundsInfoNode);
+            DefaultMutableTreeNode northNode = new DefaultMutableTreeNode("North: " + regionMap.getNorth());
+            boundsInfoNode.add(northNode);
+            DefaultMutableTreeNode southNode = new DefaultMutableTreeNode("South: " + regionMap.getSouth());
+            boundsInfoNode.add(southNode);
+            DefaultMutableTreeNode westNode = new DefaultMutableTreeNode("West: " + regionMap.getWest());
+            boundsInfoNode.add(westNode);
+            DefaultMutableTreeNode eastNode = new DefaultMutableTreeNode("East: " + regionMap.getEast());
+            boundsInfoNode.add(eastNode);
+            DefaultMutableTreeNode colsNode = new DefaultMutableTreeNode("Cols: " + regionMap.getCols());
+            boundsInfoNode.add(colsNode);
+            DefaultMutableTreeNode rowsNode = new DefaultMutableTreeNode("Rows: " + regionMap.getRows());
+            boundsInfoNode.add(rowsNode);
+            DefaultMutableTreeNode xresNode = new DefaultMutableTreeNode("X Res: " + regionMap.getXres());
+            boundsInfoNode.add(xresNode);
+            DefaultMutableTreeNode yresNode = new DefaultMutableTreeNode("Y Res: " + regionMap.getYres());
+            boundsInfoNode.add(yresNode);
+            DefaultMutableTreeNode widthNode = new DefaultMutableTreeNode(
+                    "Width: " + (regionMap.getEast() - regionMap.getWest()));
+            boundsInfoNode.add(widthNode);
+            DefaultMutableTreeNode heightNode = new DefaultMutableTreeNode(
+                    "Height: " + (regionMap.getNorth() - regionMap.getSouth()));
+            boundsInfoNode.add(heightNode);
+
+        }
         _rulesTree.expandRow(0);
         _rulesTree.setRootVisible(false);
         _rulesTree.setModel(model);
@@ -360,6 +438,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                     currentSelectedFSW = null;
                     currentSelectedRW = null;
                     currentSelectedSymW = null;
+                    currentSelectedFeatureAttributeNode = null;
 
                     if (selectedItem instanceof DefaultMutableTreeNode) {
                         DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectedItem;
@@ -372,6 +451,8 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                             currentSelectedRW = (RuleWrapper) userObject;
                         } else if (userObject instanceof SymbolizerWrapper) {
                             currentSelectedSymW = (SymbolizerWrapper) userObject;
+                        } else if (userObject instanceof FeatureAttributeNode) {
+                            currentSelectedFeatureAttributeNode = (FeatureAttributeNode) userObject;
                         }
 
                     }
@@ -499,7 +580,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                     BorderLayout.CENTER);
         } else if (nodeObject instanceof RasterSymbolizerWrapper) {
             RasterSymbolizerWrapper symbolizerWrapper = (RasterSymbolizerWrapper) nodeObject;
-            _stylePanel.add(new RasterStyleController(symbolizerWrapper, raster, this), BorderLayout.CENTER);
+            _stylePanel.add(new RasterStyleController(symbolizerWrapper, currentRaster, this), BorderLayout.CENTER);
         } else if (nodeObject instanceof RuleWrapper) {
             _stylePanel.add(new RuleParametersController((RuleWrapper) nodeObject, this));
         } else if (nodeObject instanceof FeatureTypeStyleWrapper) {
@@ -669,6 +750,46 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                     rw.removeSymbolizerWrapper(currentSelectedSymW);
                     reloadGroupsAndRules();
                 }
+            };
+            JMenuItem item = new JMenuItem(action);
+            popupMenu.add(item);
+            item.setHorizontalTextPosition(JMenuItem.RIGHT);
+        } else if (currentSelectedFeatureAttributeNode != null && !isRaster) {
+            AbstractAction action = new AbstractAction("View distinct content"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    String fieldName = currentSelectedFeatureAttributeNode.getFieldName();
+                    TreeMap<String, Integer> map = new TreeMap<>();
+                    for( SimpleFeature simpleFeature : currentFeaturesList ) {
+                        Object attribute = simpleFeature.getAttribute(fieldName);
+                        if (attribute != null) {
+                            String attrStr = attribute.toString();
+                            Integer count = map.get(attrStr);
+                            if (count == null) {
+                                count = 1;
+                            } else {
+                                count = count + 1;
+                            }
+                            map.put(attrStr, count);
+                        }
+                    }
+                    String[][] dataMatrix = new String[map.size()][2];
+                    int row = 0;
+                    for( Entry<String, Integer> entry : map.entrySet() ) {
+                        String name = entry.getKey();
+                        String count = String.valueOf(entry.getValue());
+                        dataMatrix[row][0] = name;
+                        dataMatrix[row][1] = count;
+                        row++;
+                    }
+                    Dimension dimension = new Dimension(400, 600);
+                    boolean modal = true;
+                    String title = "Field stats";
+                    String[] columnNames = new String[]{"value", "count"};
+
+                    GuiUtilities.openDialogWithTable(title, dataMatrix, columnNames, dimension, modal);
+                }
+
             };
             JMenuItem item = new JMenuItem(action);
             popupMenu.add(item);

@@ -53,11 +53,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.DefaultTableModel;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.log.PreferencesDb;
@@ -263,7 +265,17 @@ public class GuiUtilities {
         return f;
     }
 
-    public static boolean openConfirmDialogWithPanel(Component parentComponent, JPanel panel, String title ) {
+    public static void openDialogWithTable( String title, String[][] dataMatrix, String[] columnNames, Dimension dimension,
+            boolean modal ) {
+        JTable table = new JTable(new DefaultTableModel(dataMatrix, columnNames));
+        JPanel tablePanel = new JPanel();
+        tablePanel.setLayout(new BorderLayout());
+        JScrollPane scroll = new JScrollPane(table);
+        tablePanel.add(scroll, BorderLayout.CENTER);
+        GuiUtilities.openDialogWithPanel(tablePanel, title, dimension, modal);
+    }
+
+    public static boolean openConfirmDialogWithPanel( Component parentComponent, JPanel panel, String title ) {
         int result = JOptionPane.showConfirmDialog(parentComponent, panel, title, JOptionPane.OK_CANCEL_OPTION);
         if (result == JOptionPane.OK_OPTION) {
             return true;
