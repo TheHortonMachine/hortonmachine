@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -16,7 +15,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -40,14 +38,10 @@ import org.geotools.map.MapContent;
 import org.geotools.map.RasterLayer;
 import org.geotools.map.StyleLayer;
 import org.geotools.styling.FeatureTypeStyle;
-import org.geotools.styling.RasterSymbolizer;
 import org.geotools.styling.Rule;
 import org.geotools.styling.Style;
 import org.geotools.swing.JMapPane;
-import org.hortonmachine.database.DatabaseGuiUtils;
 import org.hortonmachine.database.DatabaseViewer;
-import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.CrsUtilities;
@@ -68,8 +62,8 @@ import org.hortonmachine.gears.utils.style.SymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.TextSymbolizerWrapper;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
-import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
+import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.modules.VectorReader;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -81,6 +75,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @SuppressWarnings("serial")
 public class MainController extends MainView implements IOnCloseListener, TreeSelectionListener {
+    public static final String PROJECTION = "Projection: ";
+    public static final String STYLE_GROUPS_AND_RULES = "Style: Groups and Rules";
+    public static final String ATTRIBUTES = "Attributes";
+    public static final String DATASTORE_INFORMATION = "Datastore information";
+
     public static final int COLOR_IMAGE_SIZE = 15;
 
     private MapContent mapContent;
@@ -111,6 +110,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     public MainController( File fileToOpen ) {
         setPreferredSize(new Dimension(1400, 800));
 
+        _rulesTree.setCellRenderer(new CustomTreeCellRenderer());
         _rulesTree.expandRow(0);
         _rulesTree.setRootVisible(false);
         _rulesTree.setModel(new DefaultTreeModel(null));
@@ -288,7 +288,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         DefaultTreeModel model = new DefaultTreeModel(rootNode);
 
-        DefaultMutableTreeNode styleInfoNode = new DefaultMutableTreeNode("Style: Groups and Rules");
+        DefaultMutableTreeNode styleInfoNode = new DefaultMutableTreeNode(STYLE_GROUPS_AND_RULES);
         rootNode.add(styleInfoNode);
         DefaultMutableTreeNode styleNode = new DefaultMutableTreeNode(styleWrapper);
         styleInfoNode.add(styleNode);
@@ -316,20 +316,20 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             }
         }
 
-        DefaultMutableTreeNode datastoreNode = new DefaultMutableTreeNode("Datastore information");
+        DefaultMutableTreeNode datastoreNode = new DefaultMutableTreeNode(DATASTORE_INFORMATION);
         rootNode.add(datastoreNode);
 
         SimpleFeatureType schema = currentFeatureCollection.getSchema();
         CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
         try {
             String epsgString = CrsUtilities.getCodeFromCrs(crs);
-            DefaultMutableTreeNode crsNode = new DefaultMutableTreeNode("Projection: " + epsgString);
+            DefaultMutableTreeNode crsNode = new DefaultMutableTreeNode(PROJECTION + epsgString);
             datastoreNode.add(crsNode);
         } catch (Exception e) {
             e.printStackTrace();
         }
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
-        DefaultMutableTreeNode attributesInfoNode = new DefaultMutableTreeNode("Attributes");
+        DefaultMutableTreeNode attributesInfoNode = new DefaultMutableTreeNode(ATTRIBUTES);
         for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
             String name = attributeDescriptor.getLocalName();
             String type = attributeDescriptor.getType().getBinding().getSimpleName();
