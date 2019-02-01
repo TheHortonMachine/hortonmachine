@@ -755,7 +755,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             popupMenu.add(item);
             item.setHorizontalTextPosition(JMenuItem.RIGHT);
         } else if (currentSelectedFeatureAttributeNode != null && !isRaster) {
-            AbstractAction action = new AbstractAction("View distinct content"){
+            AbstractAction action = new AbstractAction("View field stats"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     String fieldName = currentSelectedFeatureAttributeNode.getFieldName();
