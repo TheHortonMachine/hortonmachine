@@ -23,8 +23,8 @@ public class FormBuilderView extends JPanel
    JButton _browseButton = new JButton();
    JButton _newButton = new JButton();
    JComboBox _buttonsCombo = new JComboBox();
-   JButton _addButtonButton = new JButton();
-   JButton _deleteButtonButton = new JButton();
+   JButton _addSectionButton = new JButton();
+   JButton _deleteSectionButton = new JButton();
    JTabbedPane _buttonsTabPane = new JTabbedPane();
 
    /**
@@ -137,15 +137,15 @@ public class FormBuilderView extends JPanel
       _buttonsCombo.setName("buttonsCombo");
       jpanel1.add(_buttonsCombo,cc.xywh(2,4,14,1));
 
-      _addButtonButton.setActionCommand("add");
-      _addButtonButton.setName("addButtonButton");
-      _addButtonButton.setText("add");
-      jpanel1.add(_addButtonButton,cc.xy(17,4));
+      _addSectionButton.setActionCommand("add");
+      _addSectionButton.setName("addSectionButton");
+      _addSectionButton.setText("add");
+      jpanel1.add(_addSectionButton,cc.xy(17,4));
 
-      _deleteButtonButton.setActionCommand("del");
-      _deleteButtonButton.setName("deleteButtonButton");
-      _deleteButtonButton.setText("del");
-      jpanel1.add(_deleteButtonButton,cc.xy(19,4));
+      _deleteSectionButton.setActionCommand("del");
+      _deleteSectionButton.setName("deleteSectionButton");
+      _deleteSectionButton.setText("del");
+      jpanel1.add(_deleteSectionButton,cc.xy(19,4));
 
       jpanel1.add(createPanel1(),cc.xywh(2,6,18,16));
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 });

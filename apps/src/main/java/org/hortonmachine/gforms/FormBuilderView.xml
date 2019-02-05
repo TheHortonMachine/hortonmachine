@@ -74,7 +74,7 @@
              </object>
             </at>
             <at name="name">filePathtext</at>
-            <at name="width">729</at>
+            <at name="width">1146</at>
             <at name="height">21</at>
            </object>
           </at>
@@ -240,7 +240,7 @@
              </object>
             </at>
             <at name="name">buttonsCombo</at>
-            <at name="width">729</at>
+            <at name="width">1146</at>
             <at name="items">
              <object classname="com.jeta.forms.store.properties.ItemsProperty">
               <at name="name">items</at>
@@ -299,7 +299,7 @@
              </object>
             </at>
             <at name="actionCommand">add</at>
-            <at name="name">addButtonButton</at>
+            <at name="name">addSectionButton</at>
             <at name="width">38</at>
             <at name="text">add</at>
             <at name="height">22</at>
@@ -355,7 +355,7 @@
              </object>
             </at>
             <at name="actionCommand">del</at>
-            <at name="name">deleteButtonButton</at>
+            <at name="name">deleteSectionButton</at>
             <at name="width">38</at>
             <at name="text">del</at>
             <at name="height">22</at>
@@ -383,7 +383,7 @@
          </at>
          <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
         </super>
-        <at name="id">embedded.Z169807d3R168bdcef969GP7ffd</at>
+        <at name="id">embedded.1408453968</at>
         <at name="rowspecs">CENTER:DEFAULT:GROW(1.0)</at>
         <at name="colspecs">FILL:DEFAULT:GROW(1.0)</at>
         <at name="components">
@@ -436,10 +436,13 @@
                  <at name="tabs">
                   <object classname="com.jeta.forms.store.properties.TabbedPaneProperties">
                    <at name="name">tabs</at>
+                   <at name="items">
+                    <object classname="java.util.LinkedList"/>
+                   </at>
                   </object>
                  </at>
-                 <at name="width">840</at>
-                 <at name="height">538</at>
+                 <at name="width">1257</at>
+                 <at name="height">594</at>
                 </object>
                </at>
               </object>
@@ -464,7 +467,7 @@
               </at>
              </object>
             </at>
-            <at name="name"></at>
+            <at name="name"/>
             <at name="fill">
              <object classname="com.jeta.forms.store.properties.effects.PaintProperty">
               <at name="name">fill</at>
@@ -475,6 +478,26 @@
               <at name="name">scollBars</at>
               <at name="verticalpolicy">21</at>
               <at name="horizontalpolicy">31</at>
+              <at name="border">
+               <object classname="com.jeta.forms.store.properties.CompoundBorderProperty">
+                <super classname="com.jeta.forms.store.properties.BorderProperty">
+                 <at name="name">border</at>
+                </super>
+                <at name="borders">
+                 <object classname="java.util.LinkedList">
+                  <item >
+                   <at name="value">
+                    <object classname="com.jeta.forms.store.properties.DefaultBorderProperty">
+                     <super classname="com.jeta.forms.store.properties.BorderProperty">
+                      <at name="name">border</at>
+                     </super>
+                    </object>
+                   </at>
+                  </item>
+                 </object>
+                </at>
+               </object>
+              </at>
              </object>
             </at>
            </object>
@@ -526,7 +549,7 @@
          </at>
         </object>
        </at>
-       <at name="name"></at>
+       <at name="name"/>
        <at name="fill">
         <object classname="com.jeta.forms.store.properties.effects.PaintProperty">
          <at name="name">fill</at>

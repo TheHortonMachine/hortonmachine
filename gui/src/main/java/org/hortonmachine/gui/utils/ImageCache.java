@@ -117,6 +117,7 @@ public class ImageCache {
     public static final String FORM_MAP = "form_map.png";
     public static final String FORM_DATE = "form_date.png";
     public static final String FORM_TIME = "form_time.png";
+    public static final String FORM_PLUS = "form_plus.png";
 
     private static ImageCache imageCache;
 

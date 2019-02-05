@@ -16,6 +16,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -29,12 +30,14 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileFilter;
 
+import org.hortonmachine.gears.io.geopaparazzi.forms.Section;
 import org.hortonmachine.gears.io.geopaparazzi.forms.Utilities;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemBoolean;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemCombo;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemConnectedCombo;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemDate;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemDouble;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemDynamicText;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemInteger;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemLabel;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemMap;
@@ -42,7 +45,9 @@ import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemOneToManyConnecte
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemPicture;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemSketch;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemText;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemTime;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
@@ -97,6 +102,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                     GuiUtilities.setLastPath(selectedFile.getAbsolutePath());
                     try {
                         openTagsFile();
+                        _filePathtext.setText(selectedFile.getAbsolutePath());
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
@@ -106,9 +112,51 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             }
         });
 
+        _addSectionButton.addActionListener(e -> {
+            String newSectionName = GuiUtilities.showInputDialog(this, "Enter new section name", "new section");
+
+            JSONObject sectionObj = selectedSectionsMap.get(newSectionName);
+            if (sectionObj != null) {
+                GuiUtilities.showWarningMessage(this, "The inserted section name already exists!");
+                return;
+            }
+
+            Section newSection = new Section(newSectionName);
+
+            JSONObject sectionJson = new JSONObject(newSection.toString());
+            selectedSectionsMap.put(newSectionName, sectionJson);
+
+            JSONArray rootArray = Utilities.formsRootFromSectionsMap(selectedSectionsMap);
+            String rootString = rootArray.toString(2);
+            try {
+                FileUtilities.writeFile(rootString, selectedFile);
+                openTagsFile();
+                _buttonsCombo.setSelectedItem(newSectionName);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        });
+
+        _deleteSectionButton.addActionListener(e -> {
+            String sectionToDelete = _buttonsCombo.getSelectedItem().toString();
+            boolean doDelete = GuiUtilities.showYesNoDialog(this, "Are you sure you want to delete: " + sectionToDelete);
+
+            if (doDelete) {
+                selectedSectionsMap.remove(sectionToDelete);
+                JSONArray rootArray = Utilities.formsRootFromSectionsMap(selectedSectionsMap);
+                String rootString = rootArray.toString(2);
+                try {
+                    FileUtilities.writeFile(rootString, selectedFile);
+                    openTagsFile();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+
         _buttonsCombo.addActionListener(e -> {
-            String defaultName = _buttonsCombo.getSelectedItem().toString();
-            loadSection(defaultName);
+            String defaultSectionName = _buttonsCombo.getSelectedItem().toString();
+            loadSection(defaultSectionName);
         });
 
         if (selectedFile != null) {
@@ -122,8 +170,8 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
         _buttonsCombo.setModel(new DefaultComboBoxModel<String>(selectedSectionsMap.keySet().toArray(new String[0])));
 
-        String defaultName = _buttonsCombo.getSelectedItem().toString();
-        loadSection(defaultName);
+        String defaultSectionName = _buttonsCombo.getSelectedItem().toString();
+        loadSection(defaultSectionName);
     }
 
     private void loadSection( String name ) {
@@ -145,8 +193,13 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         BoxLayout gridLayout = new BoxLayout(widgetsPanel, BoxLayout.Y_AXIS);
         widgetsPanel.setLayout(gridLayout);
 
-//        JScrollPane scrollPane = new JScrollPane(widgetsPanel);
-//        scrollPane.setAlignmentX(LEFT_ALIGNMENT);
+//        JScrollPane scrollBar = new JScrollPane(widgetsPanel,
+//                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+//                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+//        scrollBar.setAlignmentX(LEFT_ALIGNMENT);
+//        Dimension preferredSize = scrollBar.getPreferredSize();
+//        scrollBar.setMaximumSize(new Dimension(300, preferredSize.height));
+
         _buttonsTabPane.addTab(formName, widgetsPanel);
 
         JSONObject formJson = Utilities.getForm4Name(formName, curentSelectedSectionObject);
@@ -178,10 +231,9 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                 JLabel mainLabel = new JLabel(label); // $NON-NLS-1$
                 mainLabel.setForeground(ColorUtilities.fromHex(LABELCOLOR));
                 mainLabel.setFont(mainLabel.getFont().deriveFont(20f));
+                widgetsPanel.add(mainLabel);
                 mainLabel.setAlignmentX(LEFT_ALIGNMENT);
                 setSizes(mainLabel);
-
-                widgetsPanel.add(mainLabel);
 
                 switch( type ) {
                 case ItemLabel.TYPE:
@@ -267,30 +319,37 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                     multiComboBox.setAlignmentX(LEFT_ALIGNMENT);
                     break;
                 case ItemDate.TYPE:
-                    JPanel datePanel = new JPanel(new BorderLayout());
+                    JPanel datePanel = new JPanel();
+                    BoxLayout dateBoxLayout = new BoxLayout(datePanel, BoxLayout.Y_AXIS);
+                    datePanel.setLayout(dateBoxLayout);
                     JLabel dateImage = new JLabel(ImageCache.getInstance().getImage(ImageCache.FORM_DATE));
                     datePanel.add(dateImage, BorderLayout.CENTER);
                     dateImage.setAlignmentX(LEFT_ALIGNMENT);
                     if (defaultValue.length() != 0) {
                         JLabel dateTextLabel = new JLabel(defaultValue);
                         datePanel.add(dateTextLabel, BorderLayout.SOUTH);
+                        dateTextLabel.setAlignmentX(LEFT_ALIGNMENT);
                     }
+                    datePanel.setAlignmentX(LEFT_ALIGNMENT);
                     setSizes(datePanel);
                     widgetsPanel.add(datePanel);
                     break;
-//                case ItemTime.TYPE:
-//                    TextField time = new TextField();
-//                    time.setPlaceholder("HH:mm:ss"); //$NON-NLS-1$
-//                    try {
-//                        if (defaultValue.trim().length() > 0) {
-//                            time.setValue(defaultValue);
-//                        }
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//
-//                    tab.addComponent(time);
-//                    break;
+                case ItemTime.TYPE:
+                    JPanel timePanel = new JPanel();
+                    BoxLayout timeBoxLayout = new BoxLayout(timePanel, BoxLayout.Y_AXIS);
+                    timePanel.setLayout(timeBoxLayout);
+                    JLabel timeImage = new JLabel(ImageCache.getInstance().getImage(ImageCache.FORM_TIME));
+                    timePanel.add(timeImage, BorderLayout.CENTER);
+                    timeImage.setAlignmentX(LEFT_ALIGNMENT);
+                    if (defaultValue.length() != 0) {
+                        JLabel timeTextLabel = new JLabel(defaultValue);
+                        timePanel.add(timeTextLabel, BorderLayout.SOUTH);
+                        timeTextLabel.setAlignmentX(LEFT_ALIGNMENT);
+                    }
+                    setSizes(timePanel);
+                    widgetsPanel.add(timePanel);
+                    timePanel.setAlignmentX(LEFT_ALIGNMENT);
+                    break;
                 case ItemInteger.TYPE:
                     JTextField integerField = new JTextField();
                     integerField.setText(defaultValue);
@@ -305,17 +364,26 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                     widgetsPanel.add(doubleField);
                     doubleField.setAlignmentX(LEFT_ALIGNMENT);
                     break;
-//                case ItemDynamicText.TYPE:
-//                    String[] split = defaultValue.split(";"); //$NON-NLS-1$
-//                    for( String string : split ) {
-//                        TextField dynamicField = new TextField();
-//                        dynamicField.setValue(string.trim());
-//                        tab.addComponent(dynamicField);
-//                    }
-//                    Button addButton = new Button(VaadinIcons.PLUS_CIRCLE);
-//                    addButton.setStyleName(ValoTheme.BUTTON_PRIMARY);
-//                    tab.addComponent(addButton);
-//                    break;
+                case ItemDynamicText.TYPE:
+                    JPanel dynPanel = new JPanel();
+                    BoxLayout boxLayout = new BoxLayout(dynPanel, BoxLayout.Y_AXIS);
+                    dynPanel.setLayout(boxLayout);
+                    String[] split = defaultValue.split(";"); //$NON-NLS-1$
+                    for( String string : split ) {
+                        JTextField dynamicField = new JTextField();
+                        dynamicField.setText(string.trim());
+                        dynamicField.setAlignmentX(LEFT_ALIGNMENT);
+                        setSizes(dynamicField);
+                        dynPanel.add(dynamicField);
+                    }
+                    JButton addButton = new JButton(ImageCache.getInstance().getImage(ImageCache.FORM_PLUS));
+                    dynPanel.add(addButton);
+                    widgetsPanel.add(dynPanel);
+
+                    setSizes(dynPanel);
+                    addButton.setAlignmentX(LEFT_ALIGNMENT);
+                    dynPanel.setAlignmentX(LEFT_ALIGNMENT);
+                    break;
                 case ItemPicture.TYPE:
                     JLabel pictureImage = new JLabel(ImageCache.getInstance().getImage(ImageCache.FORM_PICTURE));
                     setSizes(pictureImage);
