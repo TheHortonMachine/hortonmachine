@@ -64,12 +64,12 @@ public class ImageCache {
     public static final String NEW_DATABASE = "new_database.gif";
     public static final String DATABASE = "database.gif";
     public static final String TABLE_FOLDER = "table_folder.gif";
-    
+
     public static final String TABLE = "table.gif";
     public static final String VIEW = "view.gif";
     public static final String TABLE_SPATIAL = "table_spatial.gif";
     public static final String TABLE_SPATIAL_VIRTUAL = "table_spatial_virtual.gif";
-    
+
     public static final String TABLE_COLUMN = "table_column.gif";
     public static final String TABLE_COLUMN_PRIMARYKEY = "table_column_pk.gif";
     public static final String TABLE_COLUMN_INDEX = "table_column_index.gif";
@@ -111,7 +111,13 @@ public class ImageCache {
     public static final String SETTINGS = "settings.gif";
 
     public static final String PALETTE = "palette.png";
-    
+
+    public static final String FORM_PICTURE = "form_picture.png";
+    public static final String FORM_SKETCH = "form_sketch.png";
+    public static final String FORM_MAP = "form_map.png";
+    public static final String FORM_DATE = "form_date.png";
+    public static final String FORM_TIME = "form_time.png";
+
     private static ImageCache imageCache;
 
     private HashMap<String, ImageIcon> imageMap = new HashMap<String, ImageIcon>();
