@@ -72,6 +72,11 @@ public interface Variables {
     public String OPEN = "open";
     public String CLOSE = "close";
 
+    public String OGC_TMS = "OGC TMS";
+    public String GOOGLE = "Google";
+    public String TMS = "TMS";
+    public String WMS = "WMS";
+
     /*
      * zonalstats 
      */

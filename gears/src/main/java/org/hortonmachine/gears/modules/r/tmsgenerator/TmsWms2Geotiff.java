@@ -18,6 +18,7 @@
 package org.hortonmachine.gears.modules.r.tmsgenerator;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
+import static org.hortonmachine.gears.libs.modules.Variables.*;
 import static org.hortonmachine.gears.modules.r.tmsgenerator.TmsWms2Geotiff.OmsOnlineTiles2Geotiff_AUTHORCONTACTS;
 import static org.hortonmachine.gears.modules.r.tmsgenerator.TmsWms2Geotiff.OmsOnlineTiles2Geotiff_AUTHORNAMES;
 import static org.hortonmachine.gears.modules.r.tmsgenerator.TmsWms2Geotiff.OmsOnlineTiles2Geotiff_DESCRIPTION;
@@ -81,12 +82,14 @@ public class TmsWms2Geotiff extends HMModel {
     public String inRoiPath = null;
 
     @Description(OmsOnlineTiles2Geotiff_pType_DESCRIPTION)
+    @UI("combo:" + OGC_TMS + "," + GOOGLE)
     @In
-    public int pSchemaType = 0;
+    public String pSchemaType = TMS;
 
     @Description(OmsOnlineTiles2Geotiff_pSourceType_DESCRIPTION)
+    @UI("combo:" + TMS + "," + WMS)
     @In
-    public int pSourceType = 0;
+    public String pSourceType = TMS;
 
     @Description(OmsOnlineTiles2Geotiff_pMinzoom_DESCRIPTION)
     @In
@@ -107,9 +110,9 @@ public class TmsWms2Geotiff extends HMModel {
     public static final String OmsOnlineTiles2Geotiff_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OmsOnlineTiles2Geotiff_AUTHORNAMES = "Andrea Antonello";
     public static final String OmsOnlineTiles2Geotiff_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OmsOnlineTiles2Geotiff_inServiceUrl_DESCRIPTION = "An online tile service to include (XXX, YYY, ZZZ will be substituted by tile indexes and zoom level).";
-    public static final String OmsOnlineTiles2Geotiff_pType_DESCRIPTION = "The tile schema type (0 = OGC TMS, 1 = google).";
-    public static final String OmsOnlineTiles2Geotiff_pSourceType_DESCRIPTION = "The source schema type (0 = TMS, 1 = WMS).";
+    public static final String OmsOnlineTiles2Geotiff_inServiceUrl_DESCRIPTION = "An online tile service with XXX,YYY,ZZZ or SSS,WWW,NNN,EEE to be substituted by indexes or bounds.";
+    public static final String OmsOnlineTiles2Geotiff_pType_DESCRIPTION = "The tile schema type.";
+    public static final String OmsOnlineTiles2Geotiff_pSourceType_DESCRIPTION = "The source schema type.";
     public static final String OmsOnlineTiles2Geotiff_outRaster_DESCRIPTION = "The output geotiff path.";
     public static final String OmsOnlineTiles2Geotiff_pMinzoom_DESCRIPTION = "The zoom level for which to generate the geotiff.";
 
@@ -150,7 +153,7 @@ public class TmsWms2Geotiff extends HMModel {
         int startYTile = Math.min(llTileXY[1], urTileXY[1]);
         int endYTile = Math.max(llTileXY[1], urTileXY[1]);
 
-        if (pSchemaType == 0) {
+        if (pSchemaType.equals(OGC_TMS)) {
             llTileXY = gm.TMSTileFromGoogleTile(llTileXY[0], llTileXY[1], z);
             urTileXY = gm.TMSTileFromGoogleTile(urTileXY[0], urTileXY[1], z);
         }
@@ -180,7 +183,7 @@ public class TmsWms2Geotiff extends HMModel {
 
                 int yy = y;
 
-                if (pSchemaType == 1)
+                if (pSchemaType.equalsIgnoreCase(GOOGLE))
                     yy = (int) ((Math.pow(2, z) - 1) - y);
                 double[] bounds = gm.TileBounds(x, yy, z);
                 double west = bounds[0];
@@ -192,11 +195,11 @@ public class TmsWms2Geotiff extends HMModel {
                 finalMercatorBounds.expandToInclude(tmpBounds);
 
                 String tmp = "";
-                if (pSourceType == 0) {
+                if (pSourceType.equals(TMS)) {
                     tmp = inServiceUrl.replaceFirst("ZZZ", String.valueOf(z));
                     tmp = tmp.replaceFirst("XXX", String.valueOf(x));
                     tmp = tmp.replaceFirst("YYY", String.valueOf(y));
-                } else if (pSourceType == 1) {
+                } else if (pSourceType.equals(WMS)) {
                     ReferencedEnvelope llTB = tmpBounds.transform(latLongCrs, true);
                     tmp = inServiceUrl.replaceFirst("SSS", String.valueOf(llTB.getMinY()));
                     tmp = tmp.replaceFirst("NNN", String.valueOf(llTB.getMaxY()));
@@ -263,29 +266,27 @@ public class TmsWms2Geotiff extends HMModel {
         // VIENNA CONTOURS
 //        g.inServiceUrl = "https://data.wien.gv.at/daten/geo?version=1.3.0&service=WMS&request=GetMap&crs=EPSG:4326&bbox=SSS,WWW,NNN,EEE&width=256&height=256&layers=ogdwien:HOEHENLINIEOGD&styles=&format=image/jpeg";
 //        g.outRaster = "/home/hydrologis/TMP/VIENNA/vienna_contours_zoom16.tiff";
-        
+
         // VIENNA AERIAL
         g.inServiceUrl = "http://maps.wien.gv.at/wmts/lb/farbe/google3857/ZZZ/YYY/XXX.jpeg";
         g.outRaster = "/home/hydrologis/TMP/VIENNA/vienna_zoom16.tiff";
-        g.pSourceType = 0;
-        g.pSchemaType = 1;
+        g.pSourceType = TMS;
+        g.pSchemaType = GOOGLE;
 
-        
         // VENETO WMTS
 //        g.inRoiPath = "/home/hydrologis/Dropbox/hydrologis/lavori/2018_12_idro_bertani/data/roi.shp";
 //        g.inServiceUrl = "https://idt2.regione.veneto.it/gwc/service/wmts?layer=rv:OrthoPhoto_2015_pyramid&tilematrixset=EPSG:900913&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix=EPSG:900913:ZZZ&TileCol=XXX&TileRow=YYY";
 //        g.outRaster = "/home/hydrologis/Dropbox/hydrologis/lavori/2018_12_idro_bertani/data/orto.tiff";
-//        g.pSourceType = 0;
-//        g.pSchemaType = 1;
-        
+//        g.pSourceType = TMS;   
+//        g.pSchemaType = GOOGLE;
+
         // VENETO WMS
 //        g.inRoiPath = "/home/hydrologis/Dropbox/hydrologis/lavori/2018_12_idro_bertani/data/roi.shp";
 //        g.inServiceUrl = "https://idt2.regione.veneto.it/gwc/service/wms?SERVICE=WMS&LAYERS=rv:OrthoPhoto_2015_pyramid&FORMAT=image/jpeg&HEIGHT=256&TRANSPARENT=TRUE&REQUEST=GetMap&BBOX=WWW,SSS,EEE,NNN&WIDTH=256&STYLES=&SRS=EPSG:4326&VERSION=1.1.1";
 //        g.outRaster = "/home/hydrologis/Dropbox/hydrologis/lavori/2018_12_idro_bertani/data/orto3.tiff";
-//        g.pSourceType = 1;
-//        g.pSchemaType = 1;
+//        g.pSourceType = WMS;   
+//        g.pSchemaType = GOOGLE;
 
-        
         g.pZoomlevel = 16;
         g.process();
 
