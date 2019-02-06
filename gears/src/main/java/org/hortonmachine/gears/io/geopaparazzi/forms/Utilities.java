@@ -72,6 +72,10 @@ public class Utilities {
     public static final String TAG_SIZE = "size";
     public static final String TAG_URL = "url";
     public static final String TAG_LABEL = "label";
+    
+    public static final String TAG_ISLABEL = "islabel";
+    public static final String TAG_ISMANDATORY = "mandatory";
+    public static final String TAG_RANGE = "range";
 
     public static final String IMAGES_SEPARATOR = ";";
 

@@ -171,6 +171,8 @@ public class FormBuilderView extends JPanel
 
       jpanel1.add(createPanel2(),cc.xy(1,7));
       _buttonsTabPane.setName("buttonsTabPane");
+      _buttonsTabPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+      _buttonsTabPane.setTabPlacement(JTabbedPane.LEFT);
       jpanel1.add(_buttonsTabPane,cc.xywh(1,1,1,5));
 
       _addFormButton.setActionCommand("add");

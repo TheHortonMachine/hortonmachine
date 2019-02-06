@@ -2,15 +2,18 @@ package org.hortonmachine.gforms;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.ScrollPane;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -33,9 +36,11 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JViewport;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -85,7 +90,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
     };
 
     public FormBuilderController( File tagsFile ) throws Exception {
-        setPreferredSize(new Dimension(1200, 800));
+        setPreferredSize(new Dimension(800, 800));
 
         if (tagsFile != null && tagsFile.exists()) {
             selectedFile = tagsFile;
@@ -99,6 +104,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
         _buttonsTabPane.setTabPlacement(JTabbedPane.LEFT);
         _buttonsTabPane.addChangeListener(this);
+        _buttonsTabPane.setBounds(20, 20, 500, 500);
 
         _browseButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
@@ -433,20 +439,42 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         if (index == -1) {
             widgetsPanel = new JPanel();
             widgetsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+            widgetsPanel.putClientProperty("id", "widgets");
 
-            BoxLayout gridLayout = new BoxLayout(widgetsPanel, BoxLayout.Y_AXIS);
-            widgetsPanel.setLayout(gridLayout);
+            BoxLayout boxLayout = new BoxLayout(widgetsPanel, BoxLayout.Y_AXIS);
+            widgetsPanel.setLayout(boxLayout);
 
-//        JScrollPane scrollBar = new JScrollPane(widgetsPanel,
-//                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-//                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//        scrollBar.setAlignmentX(LEFT_ALIGNMENT);
-//        Dimension preferredSize = scrollBar.getPreferredSize();
-//        scrollBar.setMaximumSize(new Dimension(300, preferredSize.height));
-
-            _buttonsTabPane.addTab(formName, widgetsPanel);
+            JPanel holderPanel = new JPanel(new BorderLayout());
+            Dimension preferredSize = holderPanel.getPreferredSize();
+            holderPanel.setMaximumSize(new Dimension(300, preferredSize.height));
+            JScrollPane scrollBar = new JScrollPane(widgetsPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            holderPanel.add(scrollBar);
+            _buttonsTabPane.addTab(formName, holderPanel);
         } else {
-            widgetsPanel = (JPanel) _buttonsTabPane.getComponentAt(index);
+            JPanel mainTabPanel = (JPanel) _buttonsTabPane.getComponentAt(index);
+            Component[] components = mainTabPanel.getComponents();
+            if (components[0] instanceof JScrollPane) {
+                JScrollPane scrollpane = (JScrollPane) components[0];
+                Component[] components2 = scrollpane.getComponents();
+                for( Component component : components2 ) {
+                    if (component instanceof JViewport) {
+                        JViewport vp = (JViewport) component;
+                        Component[] components3 = vp.getComponents();
+                        if (components3[0] instanceof JPanel) {
+                            JPanel p = (JPanel) components3[0];
+                            Object id = p.getClientProperty("id");
+                            if (id instanceof String) {
+                                String idStr = (String) id;
+                                if (idStr.equals("widgets")) {
+                                    widgetsPanel = p;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             widgetsPanel.removeAll();
             widgetsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
@@ -480,7 +508,37 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                 if (defaultValue == null) {
                     defaultValue = ""; //$NON-NLS-1$
                 }
-                JLabel mainLabel = new JLabel(label); // $NON-NLS-1$
+
+                List<String> attributes = new ArrayList<>();
+                if (jsonObject.has(Utilities.TAG_ISLABEL)) {
+                    String isLabelString = jsonObject.get(Utilities.TAG_ISLABEL).toString().trim();
+                    isLabelString = isLabelString.replace("no", "false").replace("yes", "true");
+                    boolean isLabel = Boolean.parseBoolean(isLabelString);
+                    if (isLabel) {
+                        attributes.add("is label");
+                    }
+                }
+                if (jsonObject.has(Utilities.TAG_ISMANDATORY)) {
+                    String isMandatoryString = jsonObject.get(Utilities.TAG_ISMANDATORY).toString().trim();
+                    isMandatoryString = isMandatoryString.replace("no", "false").replace("yes", "true");
+                    boolean isMandatory = Boolean.parseBoolean(isMandatoryString);
+                    if (isMandatory) {
+                        attributes.add("mandatory");
+                    }
+                }
+                if (jsonObject.has(Utilities.TAG_RANGE)) {
+                    String rangeString = jsonObject.get(Utilities.TAG_RANGE).toString().trim();
+                    if (rangeString.length() > 0) {
+                        attributes.add(rangeString);
+                    }
+                }
+                String collected = attributes.stream().collect(Collectors.joining("; "));
+                String finalLabel = label;
+                if (collected.trim().length() > 0) {
+                    finalLabel += "     -> " + collected;
+                }
+
+                JLabel mainLabel = new JLabel(finalLabel);
                 mainLabel.setForeground(ColorUtilities.fromHex(LABELCOLOR));
                 mainLabel.setFont(mainLabel.getFont().deriveFont(20f));
                 widgetsPanel.add(mainLabel);
@@ -505,9 +563,9 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                     }
                     mainLabel.setText(defaultValue);
                     Font font = mainLabel.getFont();
-                    Map attributes = font.getAttributes();
-                    attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-                    mainLabel.setFont(font.deriveFont(attributes).deriveFont(size));
+                    Map fontAttributes = font.getAttributes();
+                    fontAttributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+                    mainLabel.setFont(font.deriveFont(fontAttributes).deriveFont(size));
                     mainLabel.setForeground(ColorUtilities.fromHex(LABELCOLOR));
                     break;
                 case ItemBoolean.TYPE:
