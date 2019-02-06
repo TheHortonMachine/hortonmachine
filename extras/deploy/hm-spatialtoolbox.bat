@@ -16,8 +16,13 @@
  
 
 setlocal
+IF EXIST "%~dp0\jre\bin\java.exe" (
+	set JAVAEXE="%~dp0\jre\bin\java.exe"
+) ELSE (
+	set JAVAEXE="java"
+)
 
 set MEM="-Xmx1g"
-java %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -cp ".\libs\*" org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController ./libs
+%JAVAEXE% %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -cp ".\libs\*" org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController ./libs
 
 endlocal

@@ -16,14 +16,13 @@
  
 
 setlocal
-
 IF EXIST "%~dp0\jre\bin\java.exe" (
 	set JAVAEXE="%~dp0\jre\bin\java.exe"
 ) ELSE (
 	set JAVAEXE="java"
 )
 
-set MEM="-Xmx2g"
-%JAVAEXE% %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -cp ".\libs\*" org.hortonmachine.geoscript.GeoscriptConsole
+set MEM="-Xmx256m"
+%JAVAEXE% %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -cp ".\libs\*" org.hortonmachine.gforms.FormBuilderController %1
 
 endlocal
