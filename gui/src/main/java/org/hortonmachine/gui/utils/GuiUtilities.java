@@ -534,7 +534,7 @@ public class GuiUtilities {
         });
     }
 
-    private static File[] showOpenFilesDialog( final Component parent, final String title, final boolean multiselection,
+    public static File[] showOpenFilesDialog( final Component parent, final String title, final boolean multiselection,
             final File initialPath, final FileFilter filter ) {
         RunnableWithParameters runnable = new RunnableWithParameters(){
             public void run() {
@@ -575,7 +575,39 @@ public class GuiUtilities {
         return (File[]) runnable.getReturnValue();
     }
 
-    private static File[] showOpenFolderDialog( final Component parent, final String title, final boolean multiselection,
+    public static File showSaveFileDialog( final Component parent, final String title, final File initialPath ) {
+        RunnableWithParameters runnable = new RunnableWithParameters(){
+            public void run() {
+                JFileChooser fc = new JFileChooser();
+                fc.setDialogTitle(title);
+                fc.setDialogType(JFileChooser.SAVE_DIALOG);
+                fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                fc.setCurrentDirectory(initialPath);
+                fc.setFileHidingEnabled(false);
+                int r = fc.showOpenDialog(parent);
+                if (r != JFileChooser.APPROVE_OPTION) {
+                    this.returnValue = null;
+                    return;
+                }
+
+                File selectedFile = fc.getSelectedFile();
+                this.returnValue = selectedFile;
+
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            } catch (Exception e) {
+                Logger.INSTANCE.insertError("", "Can't show chooser dialog '" + title + "'.", e);
+            }
+        }
+        return (File) runnable.getReturnValue();
+    }
+
+    public static File[] showOpenFolderDialog( final Component parent, final String title, final boolean multiselection,
             final File initialPath ) {
         RunnableWithParameters runnable = new RunnableWithParameters(){
             public void run() {

@@ -4,13 +4,19 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.swing.Box;
@@ -28,6 +34,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -62,6 +69,7 @@ import org.json.JSONObject;
 
 @SuppressWarnings({"unchecked", "serial", "rawtypes"})
 public class FormBuilderController extends FormBuilderView implements IOnCloseListener, ChangeListener {
+    private static final String SUFFIX = "_tags.json";
     private static final String OMCOMBO_DOESNT_EXIST = "The type " + ItemOneToManyConnectedCombo.TYPE + " is not supported yet.";
     private static final String CCOMBO_DOESNT_EXIST = "The type " + ItemConnectedCombo.TYPE + " is not supported yet.";
     private static final String FIRST_OPEN_FILE_PROMPT = "Please first open a form file or create a new one.";
@@ -72,9 +80,12 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
     private String currentSelectedSectionName;
     private JSONObject currentSelectedSectionObject;
     private String currentSelectedFormName;
+    private static enum IMAGEWIDGET {
+        PICTURE, SKETCH, MAP
+    };
 
     public FormBuilderController( File tagsFile ) throws Exception {
-        setPreferredSize(new Dimension(900, 600));
+        setPreferredSize(new Dimension(1200, 800));
 
         if (tagsFile != null && tagsFile.exists()) {
             selectedFile = tagsFile;
@@ -102,7 +113,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
                 @Override
                 public boolean accept( File f ) {
-                    return f.isDirectory() || f.getName().endsWith("_tags.json");
+                    return f.isDirectory() || f.getName().endsWith(SUFFIX);
                 }
             };
             fileChooser.setFileFilter(fileFilter);
@@ -122,6 +133,31 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             } else {
                 selectedFile = null;
             }
+        });
+
+        _newButton.addActionListener(e -> {
+            File createdFile = GuiUtilities.showSaveFileDialog(this, "Create new tags file", GuiUtilities.getLastFile());
+            try {
+                selectedFile = createdFile;
+                if (selectedFile != null) {
+                    String absolutePath = selectedFile.getAbsolutePath();
+                    if (!absolutePath.endsWith(SUFFIX)) {
+                        absolutePath += SUFFIX;
+                        selectedFile = new File(absolutePath);
+                    }
+                    FileUtilities.writeFile("[]", selectedFile);
+                    GuiUtilities.setLastPath(absolutePath);
+                    try {
+                        openTagsFile();
+                        _filePathtext.setText(selectedFile.getAbsolutePath());
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+
         });
 
         _addSectionButton.addActionListener(e -> {
@@ -314,8 +350,11 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
         _buttonsCombo.setModel(new DefaultComboBoxModel<String>(selectedSectionsMap.keySet().toArray(new String[0])));
 
-        String defaultSectionName = _buttonsCombo.getSelectedItem().toString();
-        loadSection(defaultSectionName);
+        Object selectedItem = _buttonsCombo.getSelectedItem();
+        if (selectedItem != null) {
+            String defaultSectionName = selectedItem.toString();
+            loadSection(defaultSectionName);
+        }
     }
 
     private void loadSection( String name ) {
@@ -357,6 +396,25 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         }
 
         _loadedWidgetsCombo.setModel(new DefaultComboBoxModel<String>(names));
+    }
+
+    private boolean checkKeyExistanceInSection( String keyToCheck ) {
+        List<String> formNames = Utilities.getFormNames4Section(currentSelectedSectionObject);
+        for( String formName : formNames ) {
+            JSONObject form4Name = Utilities.getForm4Name(formName, currentSelectedSectionObject);
+            JSONArray formItems = Utilities.getFormItems(form4Name);
+            int length = formItems.length();
+            for( int i = 0; i < length; i++ ) {
+                JSONObject jsonObject = formItems.getJSONObject(i);
+                if (jsonObject.has(Utilities.TAG_KEY)) {
+                    String key = jsonObject.getString(Utilities.TAG_KEY).trim();
+                    if (key.equals(keyToCheck)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public void reloadFormTab( String formName ) {
@@ -483,6 +541,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                     }
                     widgetsPanel.add(comboBox);
                     comboBox.setAlignmentX(LEFT_ALIGNMENT);
+                    comboBox.setEditable(false);
                     setSizes(comboBox);
                     break;
                 case ItemCombo.MULTI_TYPE:
@@ -557,6 +616,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                     setSizes(doubleField);
                     widgetsPanel.add(doubleField);
                     doubleField.setAlignmentX(LEFT_ALIGNMENT);
+                    doubleField.setEditable(false);
                     break;
                 case ItemDynamicText.TYPE:
                     JPanel dynPanel = new JPanel();
@@ -567,6 +627,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                         JTextField dynamicField = new JTextField();
                         dynamicField.setText(string.trim());
                         dynamicField.setAlignmentX(LEFT_ALIGNMENT);
+                        dynamicField.setEditable(false);
                         setSizes(dynamicField);
                         dynPanel.add(dynamicField);
                     }
@@ -602,6 +663,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                     setSizes(textField);
                     widgetsPanel.add(textField);
                     textField.setAlignmentX(LEFT_ALIGNMENT);
+                    textField.setEditable(false);
                     break;
                 case ItemConnectedCombo.TYPE:
                     JLabel iccProblemLabel = new JLabel(CCOMBO_DOESNT_EXIST);
@@ -641,7 +703,14 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         JSONObject form4Name = Utilities.getForm4Name(currentSelectedFormName, currentSelectedSectionObject);
         JSONArray formItems = Utilities.getFormItems(form4Name);
 
+        boolean labelWithLine = false;
+        boolean comboIsMultiType = false;
+        boolean textIsInteger = false;
+        IMAGEWIDGET imageType = IMAGEWIDGET.PICTURE; // $NON-NLS-1$
+
         switch( widgetName ) {
+        case ItemLabel.TYPE_WITHLINE:
+            labelWithLine = true;
         case ItemLabel.TYPE:
             JPanel labelPanel = new JPanel(new BorderLayout());
             JTextField labelTextField = new JTextField();
@@ -653,7 +722,10 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             JCheckBox underLineCheck = new JCheckBox("underline");
             labelPanel.add(labelTextField, BorderLayout.NORTH);
             labelPanel.add(sizeCombo, BorderLayout.CENTER);
-            labelPanel.add(underLineCheck, BorderLayout.SOUTH);
+
+            if (!labelWithLine)
+                labelPanel.add(underLineCheck, BorderLayout.SOUTH);
+            underLineCheck.setSelected(labelWithLine);
 
             boolean okPushed = GuiUtilities.openConfirmDialogWithPanel(this, labelPanel, "Add label");
             if (okPushed) {
@@ -665,27 +737,6 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                 String labelJson = il.toString();
                 formItems.put(new JSONObject(labelJson));
 
-                rewriteFileAndLoadCurrentTab();
-            }
-            break;
-        case ItemLabel.TYPE_WITHLINE:
-            JPanel labelWithLinePanel = new JPanel(new BorderLayout());
-            JTextField labelWithLineTextField = new JTextField();
-            labelWithLineTextField.setText("enter label text");
-            JComboBox<Integer> sizeCombo1 = new JComboBox<>();
-            sizeCombo1.setModel(new DefaultComboBoxModel<>(new Integer[]{10, 14, 16, 18, 20, 24, 28, 30, 34, 38, 40, 50, 60}));
-            sizeCombo1.setSelectedItem(20);
-            sizeCombo1.setToolTipText("Text size");
-            labelWithLinePanel.add(labelWithLineTextField, BorderLayout.NORTH);
-            labelWithLinePanel.add(sizeCombo1, BorderLayout.CENTER);
-
-            boolean okPushed1 = GuiUtilities.openConfirmDialogWithPanel(this, labelWithLinePanel, "Add label");
-            if (okPushed1) {
-                String labelString = labelWithLineTextField.getText();
-                Integer size = (Integer) sizeCombo1.getSelectedItem();
-                ItemLabel il = new ItemLabel(labelString, size, true);
-                String labelJson = il.toString();
-                formItems.put(new JSONObject(labelJson));
                 rewriteFileAndLoadCurrentTab();
             }
             break;
@@ -708,51 +759,372 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
             boolean okBooleanPushed = GuiUtilities.openConfirmDialogWithPanel(this, booleanPanel, "Add Boolean");
             if (okBooleanPushed) {
-                String key = keyBooleanTextField.getText();
-                String label = labelBooleanTextField.getText();
-                Boolean defaultValue = defaultBooleanCheckbox.isSelected();
-                Boolean isMandatory = mandatoryBooleanCheckbox.isSelected();
+                checkKeyLabelAndRun(keyBooleanTextField, labelBooleanTextField, () -> {
+                    String key = keyBooleanTextField.getText().trim();
+                    String label = labelBooleanTextField.getText().trim();
+                    Boolean defaultValue = defaultBooleanCheckbox.isSelected();
+                    Boolean isMandatory = mandatoryBooleanCheckbox.isSelected();
 
-                ItemBoolean ib = new ItemBoolean(key, label, defaultValue.toString(), isMandatory);
-                String booleanJson = ib.toString();
-                formItems.put(new JSONObject(booleanJson));
+                    ItemBoolean ib = new ItemBoolean(key, label, defaultValue.toString(), isMandatory);
+                    String booleanJson = ib.toString();
+                    formItems.put(new JSONObject(booleanJson));
 
-                rewriteFileAndLoadCurrentTab();
+                    rewriteFileAndLoadCurrentTab();
+                });
             }
             break;
-//        case ItemCombo.TYPE:
-//            GssWindows.comboParamsWindow(this, false, formItems);
-//            break;
-//        case ItemCombo.MULTI_TYPE:
-//            GssWindows.comboParamsWindow(this, true, formItems);
-//            break;
-//        case ItemText.TYPE:
-//            GssWindows.textParamsWindow(this, formItems);
-//            break;
-//        case ItemInteger.TYPE:
-//            GssWindows.numericParamsWindow(this, false, formItems);
-//            break;
-//        case ItemDouble.TYPE:
-//            GssWindows.numericParamsWindow(this, true, formItems);
-//            break;
-//        case ItemDynamicText.TYPE:
-//            GssWindows.dynamicTextParamsWindow(this, formItems);
-//            break;
-//        case ItemDate.TYPE:
-//            GssWindows.dateParamsWindow(this, formItems);
-//            break;
-//        case ItemTime.TYPE:
-//            GssWindows.timeParamsWindow(this, formItems);
-//            break;
-//        case ItemPicture.TYPE:
-//            GssWindows.imageParamsWindow(this, formItems, GssWindows.IMAGEWIDGET.PICTURE);
-//            break;
-//        case ItemSketch.TYPE:
-//            GssWindows.imageParamsWindow(this, formItems, GssWindows.IMAGEWIDGET.SKETCH);
-//            break;
-//        case ItemMap.TYPE:
-//            GssWindows.imageParamsWindow(this, formItems, GssWindows.IMAGEWIDGET.MAP);
-//            break;
+        case ItemCombo.MULTI_TYPE:
+            comboIsMultiType = true;
+        case ItemCombo.TYPE:
+            BorderLayout comboLayout = new BorderLayout();
+            comboLayout.setVgap(10);
+            JPanel comboPanel = new JPanel(comboLayout);
+            JTextField keyComboTextField = new JTextField();
+            keyComboTextField.setText("enter key");
+            JTextField labelComboTextField = new JTextField();
+            labelComboTextField.setText("enter label");
+
+            JTextArea itemsComboArea = new JTextArea(10, 25);
+            itemsComboArea.setText("enter items");
+            itemsComboArea.setBorder(new JTextField().getBorder());
+
+            JTextField defaultComboTextField = new JTextField();
+            defaultComboTextField.setText("default value");
+
+            JCheckBox mandatoryComboCheckbox = new JCheckBox("is mandatory?");
+
+            JPanel helpComboPanel = new JPanel(new BorderLayout());
+            helpComboPanel.add(keyComboTextField, BorderLayout.NORTH);
+            helpComboPanel.add(labelComboTextField, BorderLayout.CENTER);
+            comboPanel.add(helpComboPanel, BorderLayout.NORTH);
+            comboPanel.add(itemsComboArea, BorderLayout.CENTER);
+            JPanel helpComboPanel2 = new JPanel(new BorderLayout());
+            helpComboPanel2.add(defaultComboTextField, BorderLayout.NORTH);
+            helpComboPanel2.add(mandatoryComboCheckbox, BorderLayout.SOUTH);
+            comboPanel.add(helpComboPanel2, BorderLayout.SOUTH);
+
+            boolean okComboPushed = GuiUtilities.openConfirmDialogWithPanel(this, comboPanel, "Add Combo");
+            if (okComboPushed) {
+                boolean _comboIsMultiType = comboIsMultiType;
+                checkKeyLabelAndRun(keyComboTextField, labelComboTextField, () -> {
+                    String key = keyComboTextField.getText().trim();
+                    String label = labelComboTextField.getText().trim();
+                    String[] items = itemsComboArea.getText().split("\n");
+                    String defaultItem = defaultComboTextField.getText().trim();
+                    Boolean isMandatory = mandatoryComboCheckbox.isSelected();
+
+                    ItemCombo ic = new ItemCombo(key, label, items, defaultItem, _comboIsMultiType, isMandatory); // $NON-NLS-1$
+                    String comboJson = ic.toString();
+                    formItems.put(new JSONObject(comboJson));
+
+                    rewriteFileAndLoadCurrentTab();
+                });
+            }
+            break;
+        case ItemText.TYPE:
+            JPanel textPanel = new JPanel(new BorderLayout());
+            JTextField keyTextTextField = new JTextField();
+            keyTextTextField.setText("enter key");
+            JTextField labelTextTextField = new JTextField();
+            labelTextTextField.setText("enter label");
+            JTextField defaultTextTextField = new JTextField();
+            defaultTextTextField.setText("enter default");
+
+            JCheckBox isLabelTextCheckbox = new JCheckBox("is Label?");
+            JCheckBox mandatoryTextCheckbox = new JCheckBox("is mandatory?");
+
+            JPanel helpTextPanel = new JPanel(new BorderLayout());
+            helpTextPanel.add(keyTextTextField, BorderLayout.NORTH);
+            helpTextPanel.add(labelTextTextField, BorderLayout.CENTER);
+            textPanel.add(helpTextPanel, BorderLayout.NORTH);
+            textPanel.add(defaultTextTextField, BorderLayout.CENTER);
+            JPanel helpTextPanel2 = new JPanel(new BorderLayout());
+            helpTextPanel2.add(isLabelTextCheckbox, BorderLayout.NORTH);
+            helpTextPanel2.add(mandatoryTextCheckbox, BorderLayout.SOUTH);
+            textPanel.add(helpTextPanel2, BorderLayout.SOUTH);
+
+            boolean okTextPushed = GuiUtilities.openConfirmDialogWithPanel(this, textPanel, "Add Text");
+            if (okTextPushed) {
+                checkKeyLabelAndRun(keyTextTextField, labelTextTextField, () -> {
+                    String key = keyTextTextField.getText().trim();
+                    String label = labelTextTextField.getText().trim();
+                    String defaultValue = defaultTextTextField.getText().trim();
+                    Boolean isLabel = isLabelTextCheckbox.isSelected();
+                    Boolean isMandatory = mandatoryTextCheckbox.isSelected();
+
+                    ItemText ib = new ItemText(key, label, defaultValue, isMandatory, isLabel);
+                    String textJson = ib.toString();
+                    formItems.put(new JSONObject(textJson));
+                    rewriteFileAndLoadCurrentTab();
+                });
+            }
+            break;
+        case ItemInteger.TYPE:
+            textIsInteger = true;
+        case ItemDouble.TYPE:
+            JPanel numericPanel = new JPanel(new BorderLayout());
+            JTextField keyNumericTextField = new JTextField();
+            keyNumericTextField.setText("enter key");
+            JTextField labelNumericTextField = new JTextField();
+            labelNumericTextField.setText("enter label");
+            JTextField defaultNumericTextField = new JTextField();
+            defaultNumericTextField.setText("enter default");
+            boolean _textIsInteger = textIsInteger;
+            addNumericCheck(defaultNumericTextField, textIsInteger);
+
+            JCheckBox isLabelNumericCheckbox = new JCheckBox("is Label?");
+            JCheckBox mandatoryNumericCheckbox = new JCheckBox("is mandatory?");
+
+            JPanel helpNumericPanel = new JPanel(new BorderLayout());
+            helpNumericPanel.add(keyNumericTextField, BorderLayout.NORTH);
+            helpNumericPanel.add(labelNumericTextField, BorderLayout.CENTER);
+            helpNumericPanel.add(defaultNumericTextField, BorderLayout.SOUTH);
+            numericPanel.add(helpNumericPanel, BorderLayout.NORTH);
+
+            GridLayout rangeLayout = new GridLayout(2, 2);
+            rangeLayout.setHgap(10);
+            rangeLayout.setVgap(10);
+            JPanel rangePanel = new JPanel(rangeLayout);
+            JTextField minNumericTextfield = new JTextField();
+            addNumericCheck(minNumericTextfield, textIsInteger);
+            JCheckBox minIncludeNumericCheck = new JCheckBox("include?");
+            JTextField maxNumericTextfield = new JTextField();
+            addNumericCheck(maxNumericTextfield, textIsInteger);
+            JCheckBox maxIncludeNumericCheck = new JCheckBox("include?");
+            rangePanel.add(minNumericTextfield);
+            rangePanel.add(minIncludeNumericCheck);
+            rangePanel.add(maxNumericTextfield);
+            rangePanel.add(maxIncludeNumericCheck);
+            numericPanel.add(rangePanel, BorderLayout.CENTER);
+
+            JPanel helpNumericPanel2 = new JPanel(new BorderLayout());
+            helpNumericPanel2.add(rangePanel, BorderLayout.NORTH);
+            helpNumericPanel2.add(isLabelNumericCheckbox, BorderLayout.CENTER);
+            helpNumericPanel2.add(mandatoryNumericCheckbox, BorderLayout.SOUTH);
+            numericPanel.add(helpNumericPanel2, BorderLayout.SOUTH);
+
+            String title = "Add" + (textIsInteger ? " integer" : " double");
+            boolean okNumericPushed = GuiUtilities.openConfirmDialogWithPanel(this, numericPanel, title);
+            if (okNumericPushed) {
+                checkKeyLabelAndRun(keyNumericTextField, labelNumericTextField, () -> {
+                    String key = keyNumericTextField.getText().trim();
+                    String label = labelNumericTextField.getText().trim();
+                    String defaultValue = defaultNumericTextField.getText().trim();
+                    Boolean isLabel = isLabelNumericCheckbox.isSelected();
+                    Boolean isMandatory = mandatoryNumericCheckbox.isSelected();
+
+                    String textJson = null;
+                    if (_textIsInteger) {
+                        Integer defaultInt = null;
+                        if (defaultValue.length() > 0) {
+                            defaultInt = Integer.parseInt(defaultValue);
+                        }
+                        String rangeMinStr = minNumericTextfield.getText().trim();
+                        String rangeMaxStr = maxNumericTextfield.getText().trim();
+                        int[] range = null;
+                        if (rangeMinStr.length() > 0 && rangeMaxStr.length() > 0) {
+                            range = new int[]{Integer.parseInt(rangeMinStr), Integer.parseInt(rangeMaxStr)};
+                        }
+                        boolean[] inclusiveness = new boolean[]{minIncludeNumericCheck.isSelected(),
+                                maxIncludeNumericCheck.isSelected()};
+                        ItemInteger ii = new ItemInteger(key, label, defaultInt, isMandatory, isLabel, range, inclusiveness);
+                        textJson = ii.toString();
+                    } else {
+                        Double defaultDouble = null;
+                        if (defaultValue.length() > 0) {
+                            defaultDouble = Double.parseDouble(defaultValue);
+                        }
+                        String rangeMinStr = minNumericTextfield.getText().trim();
+                        String rangeMaxStr = maxNumericTextfield.getText().trim();
+                        double[] range = null;
+                        if (rangeMinStr.length() > 0 && rangeMaxStr.length() > 0) {
+                            range = new double[]{Double.parseDouble(rangeMinStr), Double.parseDouble(rangeMaxStr)};
+                        }
+                        boolean[] inclusiveness = new boolean[]{minIncludeNumericCheck.isSelected(),
+                                maxIncludeNumericCheck.isSelected()};
+                        ItemDouble id = new ItemDouble(key, label, defaultDouble, isMandatory, isLabel, range, inclusiveness);
+                        textJson = id.toString();
+                    }
+                    formItems.put(new JSONObject(textJson));
+                    rewriteFileAndLoadCurrentTab();
+                });
+            }
+            break;
+        case ItemDynamicText.TYPE:
+            BorderLayout dynamictextLayout = new BorderLayout();
+            dynamictextLayout.setVgap(10);
+            JPanel dynamictextPanel = new JPanel(dynamictextLayout);
+            JTextField keyDynamicTextField = new JTextField();
+            keyDynamicTextField.setText("enter key");
+            JTextField labelDynamicTextField = new JTextField();
+            labelDynamicTextField.setText("enter label");
+
+            JTextArea itemsDynamicArea = new JTextArea(10, 25);
+            itemsDynamicArea.setText("enter default items");
+            itemsDynamicArea.setBorder(new JTextField().getBorder());
+
+            JCheckBox islabelDynamicCheckbox = new JCheckBox("is label?");
+            JCheckBox mandatoryDynamicCheckbox = new JCheckBox("is mandatory?");
+
+            JPanel helpDynamicPanel = new JPanel(new BorderLayout());
+            helpDynamicPanel.add(keyDynamicTextField, BorderLayout.NORTH);
+            helpDynamicPanel.add(labelDynamicTextField, BorderLayout.CENTER);
+            dynamictextPanel.add(helpDynamicPanel, BorderLayout.NORTH);
+            dynamictextPanel.add(itemsDynamicArea, BorderLayout.CENTER);
+            JPanel helpDynamicPanel2 = new JPanel(new BorderLayout());
+            helpDynamicPanel2.add(islabelDynamicCheckbox, BorderLayout.NORTH);
+            helpDynamicPanel2.add(mandatoryDynamicCheckbox, BorderLayout.SOUTH);
+            dynamictextPanel.add(helpDynamicPanel2, BorderLayout.SOUTH);
+
+            boolean okDynamicPushed = GuiUtilities.openConfirmDialogWithPanel(this, dynamictextPanel, "Add Dynamic Text");
+            if (okDynamicPushed) {
+                checkKeyLabelAndRun(keyDynamicTextField, labelDynamicTextField, () -> {
+                    String key = keyDynamicTextField.getText().trim();
+                    String label = labelDynamicTextField.getText().trim();
+                    String itemsValue = itemsDynamicArea.getText();
+                    itemsValue = itemsValue.replace('\n', ';');
+                    Boolean isLabel = islabelDynamicCheckbox.isSelected();
+                    Boolean isMandatory = mandatoryDynamicCheckbox.isSelected();
+
+                    ItemDynamicText ic = new ItemDynamicText(key, label, itemsValue, isMandatory, isLabel); // $NON-NLS-1$
+                    String dynamictextJson = ic.toString();
+                    formItems.put(new JSONObject(dynamictextJson));
+
+                    rewriteFileAndLoadCurrentTab();
+                });
+            }
+            break;
+        case ItemDate.TYPE:
+            JPanel datePanel = new JPanel(new BorderLayout());
+            JTextField keyDateTextField = new JTextField();
+            keyDateTextField.setText("enter key");
+            JTextField labelDateTextField = new JTextField();
+            labelDateTextField.setText("enter label");
+            JTextField defaultDateTextField = new JTextField();
+            defaultDateTextField.setText("enter date as YYYY-MM-DD");
+
+            JCheckBox mandatoryDateCheckbox = new JCheckBox("is mandatory?");
+
+            JPanel helpDatePanel = new JPanel(new BorderLayout());
+            helpDatePanel.add(keyDateTextField, BorderLayout.NORTH);
+            helpDatePanel.add(labelDateTextField, BorderLayout.CENTER);
+            datePanel.add(helpDatePanel, BorderLayout.NORTH);
+            datePanel.add(defaultDateTextField, BorderLayout.CENTER);
+            datePanel.add(mandatoryDateCheckbox, BorderLayout.SOUTH);
+
+            boolean okDatePushed = GuiUtilities.openConfirmDialogWithPanel(this, datePanel, "Add Date");
+            if (okDatePushed) {
+                checkKeyLabelAndRun(keyDateTextField, labelDateTextField, () -> {
+                    String key = keyDateTextField.getText().trim();
+                    String label = labelDateTextField.getText().trim();
+                    String defaultValue = defaultDateTextField.getText().trim();
+                    Boolean isMandatory = mandatoryDateCheckbox.isSelected();
+
+                    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+                    Date defaultDate = null;
+                    try {
+                        defaultDate = dateFormatter.parse(defaultValue);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                    ItemDate ib = new ItemDate(key, label, defaultDate, isMandatory);
+                    String dateJson = ib.toString();
+                    formItems.put(new JSONObject(dateJson));
+                    rewriteFileAndLoadCurrentTab();
+                });
+            }
+            break;
+        case ItemTime.TYPE:
+            JPanel timePanel = new JPanel(new BorderLayout());
+            JTextField keyTimeTextField = new JTextField();
+            keyTimeTextField.setText("enter key");
+            JTextField labelTimeTextField = new JTextField();
+            labelTimeTextField.setText("enter label");
+            JTextField defaultTimeTextField = new JTextField();
+            defaultTimeTextField.setText("enter time as HH:MM:SS");
+
+            JCheckBox mandatoryTimeCheckbox = new JCheckBox("is mandatory?");
+
+            JPanel helpTimePanel = new JPanel(new BorderLayout());
+            helpTimePanel.add(keyTimeTextField, BorderLayout.NORTH);
+            helpTimePanel.add(labelTimeTextField, BorderLayout.CENTER);
+            timePanel.add(helpTimePanel, BorderLayout.NORTH);
+            timePanel.add(defaultTimeTextField, BorderLayout.CENTER);
+            timePanel.add(mandatoryTimeCheckbox, BorderLayout.SOUTH);
+
+            boolean okTimePushed = GuiUtilities.openConfirmDialogWithPanel(this, timePanel, "Add Time");
+            if (okTimePushed) {
+                checkKeyLabelAndRun(keyTimeTextField, labelTimeTextField, () -> {
+                    String key = keyTimeTextField.getText().trim();
+                    String label = labelTimeTextField.getText().trim();
+                    String defaultValue = defaultTimeTextField.getText().trim();
+                    Boolean isMandatory = mandatoryTimeCheckbox.isSelected();
+
+                    SimpleDateFormat timeFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    Date defaultTime = null;
+                    try {
+                        defaultTime = timeFormatter.parse("1970-01-01 " + defaultValue);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+
+                    ItemTime ib = new ItemTime(key, label, defaultTime, isMandatory);
+                    String timeJson = ib.toString();
+                    formItems.put(new JSONObject(timeJson));
+                    rewriteFileAndLoadCurrentTab();
+                });
+            }
+            break;
+        case ItemSketch.TYPE:
+            imageType = IMAGEWIDGET.SKETCH;
+        case ItemMap.TYPE:
+            if (imageType == IMAGEWIDGET.PICTURE) // change only if untouched
+                imageType = IMAGEWIDGET.MAP;
+        case ItemPicture.TYPE:
+            JPanel picturesPanel = new JPanel(new BorderLayout());
+            JTextField keyPicturesTextField = new JTextField();
+            keyPicturesTextField.setText("enter key");
+            JTextField labelPicturesTextField = new JTextField();
+            labelPicturesTextField.setText("enter label");
+
+            JCheckBox mandatoryPicturesCheckbox = new JCheckBox("is mandatory?");
+
+            picturesPanel.add(keyPicturesTextField, BorderLayout.NORTH);
+            picturesPanel.add(labelPicturesTextField, BorderLayout.CENTER);
+            picturesPanel.add(mandatoryPicturesCheckbox, BorderLayout.SOUTH);
+
+            IMAGEWIDGET _imageType = imageType;
+            boolean okPicturesPushed = GuiUtilities.openConfirmDialogWithPanel(this, picturesPanel, "Add Pictures");
+            if (okPicturesPushed) {
+                checkKeyLabelAndRun(keyPicturesTextField, labelPicturesTextField, () -> {
+                    String key = keyPicturesTextField.getText().trim();
+                    String label = labelPicturesTextField.getText().trim();
+                    Boolean isMandatory = mandatoryPicturesCheckbox.isSelected();
+
+                    String textJson;
+                    switch( _imageType ) {
+                    case SKETCH:
+                        ItemSketch is = new ItemSketch(key, label, null, isMandatory);
+                        textJson = is.toString();
+                        break;
+                    case MAP:
+                        ItemMap im = new ItemMap(key, label, null, isMandatory);
+                        textJson = im.toString();
+                        break;
+                    case PICTURE:
+                        ItemPicture ip = new ItemPicture(key, label, null, isMandatory);
+                        textJson = ip.toString();
+                        break;
+                    default:
+                        return;
+                    }
+
+                    formItems.put(new JSONObject(textJson));
+
+                    rewriteFileAndLoadCurrentTab();
+                });
+            }
+            break;
         case ItemConnectedCombo.TYPE:
             GuiUtilities.showWarningMessage(this, CCOMBO_DOESNT_EXIST);
             break;
@@ -764,6 +1136,44 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             break;
         }
 
+    }
+
+    private void addNumericCheck( JTextField textField, boolean textIsInteger ) {
+        textField.addKeyListener(new KeyListener(){
+            public void keyTyped( KeyEvent e ) {
+            }
+            public void keyReleased( KeyEvent e ) {
+                try {
+                    String text = textField.getText();
+                    if (text.length() > 0) {
+                        if (textIsInteger) {
+                            Integer.parseInt(text);
+                        } else {
+                            Double.parseDouble(text);
+                        }
+                    }
+                } catch (Exception e2) {
+                    textField.setText("");
+                }
+            }
+            public void keyPressed( KeyEvent e ) {
+            }
+        });
+    }
+
+    private void checkKeyLabelAndRun( JTextField keyTextField, JTextField labelTextField, Runnable runOnOk ) {
+        String key = keyTextField.getText().trim();
+        String label = labelTextField.getText().trim();
+
+        if (key.length() != 0 && label.length() != 0) {
+            if (checkKeyExistanceInSection(key)) {
+                GuiUtilities.showWarningMessage(keyTextField, "The inserted key already exists!");
+                return;
+            }
+            runOnOk.run();
+            return;
+        }
+        GuiUtilities.showWarningMessage(keyTextField, "The key and label fields are mandatory!");
     }
 
     private void rewriteFileAndLoadCurrentTab() {
