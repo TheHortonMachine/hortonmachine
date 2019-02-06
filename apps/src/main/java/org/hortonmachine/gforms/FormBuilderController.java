@@ -28,8 +28,11 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 
+import org.hortonmachine.gears.io.geopaparazzi.forms.Form;
 import org.hortonmachine.gears.io.geopaparazzi.forms.Section;
 import org.hortonmachine.gears.io.geopaparazzi.forms.Utilities;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemBoolean;
@@ -56,11 +59,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 @SuppressWarnings({"unchecked", "serial", "rawtypes"})
-public class FormBuilderController extends FormBuilderView implements IOnCloseListener {
+public class FormBuilderController extends FormBuilderView implements IOnCloseListener, ChangeListener {
     private static final String LABELCOLOR = "#000000";
     private static final int DEFAULTWIDTH = 500;
     private File selectedFile;
     private LinkedHashMap<String, JSONObject> selectedSectionsMap;
+    private String currentSelectedSectionName;
+    private JSONObject currentSelectedSectionObject;
+    private String currentSelectedFormName;
 
     public FormBuilderController( File tagsFile ) throws Exception {
         setPreferredSize(new Dimension(900, 600));
@@ -76,6 +82,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         _filePathtext.setEditable(false);
 
         _buttonsTabPane.setTabPlacement(JTabbedPane.LEFT);
+        _buttonsTabPane.addChangeListener(this);
 
         _browseButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
@@ -154,9 +161,60 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             }
         });
 
+        _addFormButton.addActionListener(e -> {
+            String newFormName = GuiUtilities.showInputDialog(this, "Enter new form name", "new form");
+
+            JSONObject sectionObject = selectedSectionsMap.get(currentSelectedSectionName);
+            List<String> formNames = Utilities.getFormNames4Section(sectionObject);
+
+            if (formNames.contains(newFormName)) {
+                GuiUtilities.showWarningMessage(this, "The inserted form name already exists!");
+                return;
+            }
+
+            Form newForm = new Form(newFormName);
+
+            JSONObject formJson = new JSONObject(newForm.toString());
+            JSONArray formsArray = sectionObject.getJSONArray(Utilities.ATTR_FORMS);
+            formsArray.put(formJson);
+
+            selectedSectionsMap.put(currentSelectedSectionName, sectionObject);
+            currentSelectedSectionObject = sectionObject;
+
+            JSONArray rootArray = Utilities.formsRootFromSectionsMap(selectedSectionsMap);
+            String rootString = rootArray.toString(2);
+            try {
+                FileUtilities.writeFile(rootString, selectedFile);
+                reloadFormTab(newFormName);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        });
+
+        _deleteFormButton.addActionListener(e -> {
+            if (currentSelectedSectionName == null || currentSelectedFormName == null) {
+                return;
+            }
+            boolean doDelete = GuiUtilities.showYesNoDialog(this, "Are you sure you want to delete: " + currentSelectedFormName);
+            if (doDelete) {
+                Utilities.removeFormFromSection(currentSelectedFormName, currentSelectedSectionObject);
+
+                selectedSectionsMap.put(currentSelectedSectionName, currentSelectedSectionObject);
+                JSONArray rootArray = Utilities.formsRootFromSectionsMap(selectedSectionsMap);
+                String rootString = rootArray.toString(2);
+                
+                try {
+                    FileUtilities.writeFile(rootString, selectedFile);
+                    loadSection(currentSelectedSectionName);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+
         _buttonsCombo.addActionListener(e -> {
-            String defaultSectionName = _buttonsCombo.getSelectedItem().toString();
-            loadSection(defaultSectionName);
+            currentSelectedSectionName = _buttonsCombo.getSelectedItem().toString();
+            loadSection(currentSelectedSectionName);
         });
 
         if (selectedFile != null) {
@@ -175,18 +233,23 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
     }
 
     private void loadSection( String name ) {
-        JSONObject curentSelectedSectionObject = selectedSectionsMap.get(name);
+        currentSelectedSectionObject = selectedSectionsMap.get(name);
 
-        List<String> formNames4Section = Utilities.getFormNames4Section(curentSelectedSectionObject);
+        List<String> formNames4Section = Utilities.getFormNames4Section(currentSelectedSectionObject);
 
+        _buttonsTabPane.removeChangeListener(this);
         _buttonsTabPane.removeAll();
         for( String formName : formNames4Section ) {
-            reloadFormTab(formName, curentSelectedSectionObject);
+            reloadFormTab(formName);
         }
+        _buttonsTabPane.addChangeListener(this);
+
+        if (formNames4Section.size() > 0)
+            currentSelectedFormName = formNames4Section.get(0);
 
     }
 
-    public void reloadFormTab( String formName, JSONObject curentSelectedSectionObject ) {
+    public void reloadFormTab( String formName ) {
         JPanel widgetsPanel = new JPanel();
         widgetsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
@@ -202,7 +265,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
         _buttonsTabPane.addTab(formName, widgetsPanel);
 
-        JSONObject formJson = Utilities.getForm4Name(formName, curentSelectedSectionObject);
+        JSONObject formJson = Utilities.getForm4Name(formName, currentSelectedSectionObject);
 
         JSONArray formItems = Utilities.getFormItems(formJson);
         for( int i = 0; i < formItems.length(); i++ ) {
@@ -470,6 +533,17 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
     @Override
     public void onClose() {
         // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void stateChanged( ChangeEvent e ) {
+        if (e.getSource() instanceof JTabbedPane) {
+            int selectedIndex = _buttonsTabPane.getSelectedIndex();
+            if (selectedIndex >= 0) {
+                currentSelectedFormName = _buttonsTabPane.getTitleAt(selectedIndex);
+            }
+        }
 
     }
 

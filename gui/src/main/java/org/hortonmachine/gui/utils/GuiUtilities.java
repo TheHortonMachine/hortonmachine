@@ -34,10 +34,8 @@ import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,7 +61,6 @@ import javax.swing.table.DefaultTableModel;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.log.PreferencesDb;
-import org.hortonmachine.gears.libs.modules.HMFileFilter;
 import org.hortonmachine.gears.utils.OsCheck;
 import org.hortonmachine.gears.utils.OsCheck.OSType;
 
