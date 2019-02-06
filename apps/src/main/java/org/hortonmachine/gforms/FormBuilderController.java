@@ -154,6 +154,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                     FileUtilities.writeFile("[]", selectedFile);
                     GuiUtilities.setLastPath(absolutePath);
                     try {
+                        _buttonsTabPane.removeAll();
                         openTagsFile();
                         _filePathtext.setText(selectedFile.getAbsolutePath());
                     } catch (IOException e1) {
