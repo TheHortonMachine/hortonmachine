@@ -7,9 +7,11 @@ import java.awt.Font;
 import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -60,6 +62,9 @@ import org.json.JSONObject;
 
 @SuppressWarnings({"unchecked", "serial", "rawtypes"})
 public class FormBuilderController extends FormBuilderView implements IOnCloseListener, ChangeListener {
+    private static final String OMCOMBO_DOESNT_EXIST = "The type " + ItemOneToManyConnectedCombo.TYPE + " is not supported yet.";
+    private static final String CCOMBO_DOESNT_EXIST = "The type " + ItemConnectedCombo.TYPE + " is not supported yet.";
+    private static final String FIRST_OPEN_FILE_PROMPT = "Please first open a form file or create a new one.";
     private static final String LABELCOLOR = "#000000";
     private static final int DEFAULTWIDTH = 500;
     private File selectedFile;
@@ -120,6 +125,10 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         });
 
         _addSectionButton.addActionListener(e -> {
+            if (selectedSectionsMap == null) {
+                GuiUtilities.showInfoMessage(this, FIRST_OPEN_FILE_PROMPT);
+                return;
+            }
             String newSectionName = GuiUtilities.showInputDialog(this, "Enter new section name", "new section");
 
             JSONObject sectionObj = selectedSectionsMap.get(newSectionName);
@@ -145,6 +154,10 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         });
 
         _deleteSectionButton.addActionListener(e -> {
+            if (selectedSectionsMap == null) {
+                GuiUtilities.showInfoMessage(this, FIRST_OPEN_FILE_PROMPT);
+                return;
+            }
             String sectionToDelete = _buttonsCombo.getSelectedItem().toString();
             boolean doDelete = GuiUtilities.showYesNoDialog(this, "Are you sure you want to delete: " + sectionToDelete);
 
@@ -162,8 +175,14 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         });
 
         _addFormButton.addActionListener(e -> {
+            if (selectedSectionsMap == null) {
+                GuiUtilities.showInfoMessage(this, FIRST_OPEN_FILE_PROMPT);
+                return;
+            }
             String newFormName = GuiUtilities.showInputDialog(this, "Enter new form name", "new form");
-
+            if (newFormName == null) {
+                return;
+            }
             JSONObject sectionObject = selectedSectionsMap.get(currentSelectedSectionName);
             List<String> formNames = Utilities.getFormNames4Section(sectionObject);
 
@@ -192,7 +211,11 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         });
 
         _deleteFormButton.addActionListener(e -> {
-            if (currentSelectedSectionName == null || currentSelectedFormName == null) {
+            if (selectedSectionsMap == null) {
+                GuiUtilities.showInfoMessage(this, FIRST_OPEN_FILE_PROMPT);
+                return;
+            }
+            if (currentSelectedFormName == null) {
                 return;
             }
             boolean doDelete = GuiUtilities.showYesNoDialog(this, "Are you sure you want to delete: " + currentSelectedFormName);
@@ -202,7 +225,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                 selectedSectionsMap.put(currentSelectedSectionName, currentSelectedSectionObject);
                 JSONArray rootArray = Utilities.formsRootFromSectionsMap(selectedSectionsMap);
                 String rootString = rootArray.toString(2);
-                
+
                 try {
                     FileUtilities.writeFile(rootString, selectedFile);
                     loadSection(currentSelectedSectionName);
@@ -212,10 +235,73 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             }
         });
 
+        _addWidgetButton.addActionListener(e -> {
+            if (selectedSectionsMap == null) {
+                GuiUtilities.showInfoMessage(this, FIRST_OPEN_FILE_PROMPT);
+                return;
+            }
+            if (currentSelectedFormName == null) {
+                return;
+            }
+            addNewWidget(_widgetsCombo.getSelectedItem().toString());
+        });
+        _deleteWidgetButton.addActionListener(e -> {
+            if (selectedSectionsMap == null) {
+                GuiUtilities.showInfoMessage(this, FIRST_OPEN_FILE_PROMPT);
+                return;
+            }
+            if (currentSelectedFormName == null) {
+                return;
+            }
+
+            Object selectedItem = _loadedWidgetsCombo.getSelectedItem();
+            if (selectedItem instanceof String) {
+                String widgetNameToRemove = (String) selectedItem;
+
+                boolean doDelete = GuiUtilities.showYesNoDialog(this, "Are you sure you want to delete: " + widgetNameToRemove);
+                if (doDelete) {
+                    JSONObject form4Name = Utilities.getForm4Name(currentSelectedFormName, currentSelectedSectionObject);
+                    JSONArray formItems = Utilities.getFormItems(form4Name);
+                    int length = formItems.length();
+                    if (length == 0) {
+                        return;
+                    }
+                    int indexToRemove = -1;
+                    for( int i = 0; i < length; i++ ) {
+                        JSONObject jsonObject = formItems.getJSONObject(i);
+                        String name = null;
+                        if (jsonObject.has(Utilities.TAG_KEY)) {
+                            name = jsonObject.getString(Utilities.TAG_KEY).trim();
+                        } else if (jsonObject.has(Utilities.TAG_VALUE)) {
+                            name = jsonObject.getString(Utilities.TAG_VALUE).trim();
+                        }
+                        if (name != null && name.equals(widgetNameToRemove)) {
+                            indexToRemove = i;
+                            break;
+                        }
+                    }
+
+                    if (indexToRemove != -1) {
+                        formItems.remove(indexToRemove);
+
+                        rewriteFileAndLoadCurrentTab();
+                    }
+                }
+            }
+
+        });
+
         _buttonsCombo.addActionListener(e -> {
             currentSelectedSectionName = _buttonsCombo.getSelectedItem().toString();
             loadSection(currentSelectedSectionName);
         });
+
+        List<String> widgetNames = Arrays.asList(Utilities.ITEM_NAMES).stream().filter(name -> {
+            boolean isUnsupported = name.equals(ItemConnectedCombo.TYPE) || name.equals(ItemOneToManyConnectedCombo.TYPE);
+            return !isUnsupported;
+        }).sorted().collect(Collectors.toList());
+
+        _widgetsCombo.setModel(new DefaultComboBoxModel<String>(widgetNames.toArray(new String[0])));
 
         if (selectedFile != null) {
             openTagsFile();
@@ -244,17 +330,54 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         }
         _buttonsTabPane.addChangeListener(this);
 
-        if (formNames4Section.size() > 0)
+        if (formNames4Section.size() > 0) {
             currentSelectedFormName = formNames4Section.get(0);
+            refreshFormWidgetsCombo();
+        }
 
     }
 
-    public void reloadFormTab( String formName ) {
-        JPanel widgetsPanel = new JPanel();
-        widgetsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+    private void refreshFormWidgetsCombo() {
+        JSONObject form4Name = Utilities.getForm4Name(currentSelectedFormName, currentSelectedSectionObject);
+        JSONArray formItems = Utilities.getFormItems(form4Name);
 
-        BoxLayout gridLayout = new BoxLayout(widgetsPanel, BoxLayout.Y_AXIS);
-        widgetsPanel.setLayout(gridLayout);
+        int length = formItems.length();
+        if (length == 0) {
+            _loadedWidgetsCombo.setModel(new DefaultComboBoxModel<String>());
+            return;
+        }
+        String[] names = new String[length];
+        for( int i = 0; i < length; i++ ) {
+            JSONObject jsonObject = formItems.getJSONObject(i);
+            if (jsonObject.has(Utilities.TAG_KEY)) {
+                names[i] = jsonObject.getString(Utilities.TAG_KEY).trim();
+            } else if (jsonObject.has(Utilities.TAG_VALUE)) {
+                names[i] = jsonObject.getString(Utilities.TAG_VALUE).trim();
+            }
+        }
+
+        _loadedWidgetsCombo.setModel(new DefaultComboBoxModel<String>(names));
+    }
+
+    public void reloadFormTab( String formName ) {
+
+        int index = -1;
+        int tabCount = _buttonsTabPane.getTabCount();
+        for( int i = 0; i < tabCount; i++ ) {
+            String tabTitle = _buttonsTabPane.getTitleAt(i);
+            if (tabTitle.equals(formName)) {
+                index = i;
+                break;
+            }
+        }
+
+        JPanel widgetsPanel = null;
+        if (index == -1) {
+            widgetsPanel = new JPanel();
+            widgetsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+            BoxLayout gridLayout = new BoxLayout(widgetsPanel, BoxLayout.Y_AXIS);
+            widgetsPanel.setLayout(gridLayout);
 
 //        JScrollPane scrollBar = new JScrollPane(widgetsPanel,
 //                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
@@ -263,7 +386,15 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 //        Dimension preferredSize = scrollBar.getPreferredSize();
 //        scrollBar.setMaximumSize(new Dimension(300, preferredSize.height));
 
-        _buttonsTabPane.addTab(formName, widgetsPanel);
+            _buttonsTabPane.addTab(formName, widgetsPanel);
+        } else {
+            widgetsPanel = (JPanel) _buttonsTabPane.getComponentAt(index);
+            widgetsPanel.removeAll();
+            widgetsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+            BoxLayout gridLayout = new BoxLayout(widgetsPanel, BoxLayout.Y_AXIS);
+            widgetsPanel.setLayout(gridLayout);
+        }
 
         JSONObject formJson = Utilities.getForm4Name(formName, currentSelectedSectionObject);
 
@@ -473,15 +604,14 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                     textField.setAlignmentX(LEFT_ALIGNMENT);
                     break;
                 case ItemConnectedCombo.TYPE:
-                    JLabel iccProblemLabel = new JLabel("The type " + ItemConnectedCombo.TYPE + " is not supported yet.");
+                    JLabel iccProblemLabel = new JLabel(CCOMBO_DOESNT_EXIST);
                     iccProblemLabel.setForeground(Color.red);
                     setSizes(iccProblemLabel);
                     widgetsPanel.add(iccProblemLabel);
                     iccProblemLabel.setAlignmentX(LEFT_ALIGNMENT);
                     break;
                 case ItemOneToManyConnectedCombo.TYPE:
-                    JLabel iomccProblemLabel = new JLabel(
-                            "The type " + ItemOneToManyConnectedCombo.TYPE + " is not supported yet.");
+                    JLabel iomccProblemLabel = new JLabel(OMCOMBO_DOESNT_EXIST);
                     iomccProblemLabel.setForeground(Color.red);
                     setSizes(iomccProblemLabel);
                     widgetsPanel.add(iomccProblemLabel);
@@ -497,6 +627,155 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         }
 
         widgetsPanel.add(Box.createVerticalGlue());
+    }
+
+    private void addNewWidget( String widgetName ) {
+        if (selectedSectionsMap == null) {
+            GuiUtilities.showInfoMessage(this, FIRST_OPEN_FILE_PROMPT);
+            return;
+        }
+        if (currentSelectedFormName == null) {
+            return;
+        }
+
+        JSONObject form4Name = Utilities.getForm4Name(currentSelectedFormName, currentSelectedSectionObject);
+        JSONArray formItems = Utilities.getFormItems(form4Name);
+
+        switch( widgetName ) {
+        case ItemLabel.TYPE:
+            JPanel labelPanel = new JPanel(new BorderLayout());
+            JTextField labelTextField = new JTextField();
+            labelTextField.setText("enter label text");
+            JComboBox<Integer> sizeCombo = new JComboBox<>();
+            sizeCombo.setModel(new DefaultComboBoxModel<>(new Integer[]{10, 14, 16, 18, 20, 24, 28, 30, 34, 38, 40, 50, 60}));
+            sizeCombo.setSelectedItem(20);
+            sizeCombo.setToolTipText("Text size");
+            JCheckBox underLineCheck = new JCheckBox("underline");
+            labelPanel.add(labelTextField, BorderLayout.NORTH);
+            labelPanel.add(sizeCombo, BorderLayout.CENTER);
+            labelPanel.add(underLineCheck, BorderLayout.SOUTH);
+
+            boolean okPushed = GuiUtilities.openConfirmDialogWithPanel(this, labelPanel, "Add label");
+            if (okPushed) {
+                String labelString = labelTextField.getText();
+                Integer size = (Integer) sizeCombo.getSelectedItem();
+                boolean doUnderline = underLineCheck.isSelected();
+
+                ItemLabel il = new ItemLabel(labelString, size, doUnderline);
+                String labelJson = il.toString();
+                formItems.put(new JSONObject(labelJson));
+
+                rewriteFileAndLoadCurrentTab();
+            }
+            break;
+        case ItemLabel.TYPE_WITHLINE:
+            JPanel labelWithLinePanel = new JPanel(new BorderLayout());
+            JTextField labelWithLineTextField = new JTextField();
+            labelWithLineTextField.setText("enter label text");
+            JComboBox<Integer> sizeCombo1 = new JComboBox<>();
+            sizeCombo1.setModel(new DefaultComboBoxModel<>(new Integer[]{10, 14, 16, 18, 20, 24, 28, 30, 34, 38, 40, 50, 60}));
+            sizeCombo1.setSelectedItem(20);
+            sizeCombo1.setToolTipText("Text size");
+            labelWithLinePanel.add(labelWithLineTextField, BorderLayout.NORTH);
+            labelWithLinePanel.add(sizeCombo1, BorderLayout.CENTER);
+
+            boolean okPushed1 = GuiUtilities.openConfirmDialogWithPanel(this, labelWithLinePanel, "Add label");
+            if (okPushed1) {
+                String labelString = labelWithLineTextField.getText();
+                Integer size = (Integer) sizeCombo1.getSelectedItem();
+                ItemLabel il = new ItemLabel(labelString, size, true);
+                String labelJson = il.toString();
+                formItems.put(new JSONObject(labelJson));
+                rewriteFileAndLoadCurrentTab();
+            }
+            break;
+        case ItemBoolean.TYPE:
+            JPanel booleanPanel = new JPanel(new BorderLayout());
+            JTextField keyBooleanTextField = new JTextField();
+            keyBooleanTextField.setText("enter key");
+            JTextField labelBooleanTextField = new JTextField();
+            labelBooleanTextField.setText("enter label");
+
+            JCheckBox defaultBooleanCheckbox = new JCheckBox("default value");
+            JCheckBox mandatoryBooleanCheckbox = new JCheckBox("is mandatory?");
+
+            JPanel textFieldsBooleanPanel = new JPanel(new BorderLayout());
+            textFieldsBooleanPanel.add(keyBooleanTextField, BorderLayout.NORTH);
+            textFieldsBooleanPanel.add(labelBooleanTextField, BorderLayout.CENTER);
+            booleanPanel.add(textFieldsBooleanPanel, BorderLayout.NORTH);
+            booleanPanel.add(defaultBooleanCheckbox, BorderLayout.CENTER);
+            booleanPanel.add(mandatoryBooleanCheckbox, BorderLayout.SOUTH);
+
+            boolean okBooleanPushed = GuiUtilities.openConfirmDialogWithPanel(this, booleanPanel, "Add Boolean");
+            if (okBooleanPushed) {
+                String key = keyBooleanTextField.getText();
+                String label = labelBooleanTextField.getText();
+                Boolean defaultValue = defaultBooleanCheckbox.isSelected();
+                Boolean isMandatory = mandatoryBooleanCheckbox.isSelected();
+
+                ItemBoolean ib = new ItemBoolean(key, label, defaultValue.toString(), isMandatory);
+                String booleanJson = ib.toString();
+                formItems.put(new JSONObject(booleanJson));
+
+                rewriteFileAndLoadCurrentTab();
+            }
+            break;
+//        case ItemCombo.TYPE:
+//            GssWindows.comboParamsWindow(this, false, formItems);
+//            break;
+//        case ItemCombo.MULTI_TYPE:
+//            GssWindows.comboParamsWindow(this, true, formItems);
+//            break;
+//        case ItemText.TYPE:
+//            GssWindows.textParamsWindow(this, formItems);
+//            break;
+//        case ItemInteger.TYPE:
+//            GssWindows.numericParamsWindow(this, false, formItems);
+//            break;
+//        case ItemDouble.TYPE:
+//            GssWindows.numericParamsWindow(this, true, formItems);
+//            break;
+//        case ItemDynamicText.TYPE:
+//            GssWindows.dynamicTextParamsWindow(this, formItems);
+//            break;
+//        case ItemDate.TYPE:
+//            GssWindows.dateParamsWindow(this, formItems);
+//            break;
+//        case ItemTime.TYPE:
+//            GssWindows.timeParamsWindow(this, formItems);
+//            break;
+//        case ItemPicture.TYPE:
+//            GssWindows.imageParamsWindow(this, formItems, GssWindows.IMAGEWIDGET.PICTURE);
+//            break;
+//        case ItemSketch.TYPE:
+//            GssWindows.imageParamsWindow(this, formItems, GssWindows.IMAGEWIDGET.SKETCH);
+//            break;
+//        case ItemMap.TYPE:
+//            GssWindows.imageParamsWindow(this, formItems, GssWindows.IMAGEWIDGET.MAP);
+//            break;
+        case ItemConnectedCombo.TYPE:
+            GuiUtilities.showWarningMessage(this, CCOMBO_DOESNT_EXIST);
+            break;
+        case ItemOneToManyConnectedCombo.TYPE:
+            GuiUtilities.showWarningMessage(this, OMCOMBO_DOESNT_EXIST);
+            break;
+        default:
+            GuiUtilities.showWarningMessage(this, "The selected widget doesn't exist.");
+            break;
+        }
+
+    }
+
+    private void rewriteFileAndLoadCurrentTab() {
+        JSONArray rootArray = Utilities.formsRootFromSectionsMap(selectedSectionsMap);
+        String rootString = rootArray.toString(2);
+        try {
+            FileUtilities.writeFile(rootString, selectedFile);
+            reloadFormTab(currentSelectedFormName);
+            refreshFormWidgetsCombo();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
     }
 
     private void setSizes( JComponent component ) {
@@ -542,6 +821,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             int selectedIndex = _buttonsTabPane.getSelectedIndex();
             if (selectedIndex >= 0) {
                 currentSelectedFormName = _buttonsTabPane.getTitleAt(selectedIndex);
+                refreshFormWidgetsCombo();
             }
         }
 
