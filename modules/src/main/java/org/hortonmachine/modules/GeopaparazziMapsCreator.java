@@ -74,7 +74,7 @@ public class GeopaparazziMapsCreator extends HMModel {
     public String inRaster2 = null;
 
     @Description("Optional input vector map 1.")
-    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector1 = null;
 

@@ -35,7 +35,9 @@ public class ConsoleMessageFilter {
 
         containsStrings = new ArrayList<String>();
         containsStrings.add("Kakadu");
+        containsStrings.add("no gdaljni in java.library.path");
         containsStrings.add("Error while parsing JAI registry");
+        containsStrings.add("Call MapContent dispose() to prevent memory leaks");
         containsStrings.add("A descriptor is already registered");
         containsStrings.add("Error in registry file");
         containsStrings.add("Logging initialized");
@@ -47,6 +49,8 @@ public class ConsoleMessageFilter {
         containsStrings.add("Occurs in: com.sun.media.jai.mlib.MediaLibAccessor");
         containsStrings.add("java.lang.NoClassDefFoundError: com/sun/medialib/mlib/Image");
         containsStrings.add("Caused by: java.lang.ClassNotFoundException: com.sun.medialib.mlib.Image");
+        containsStrings.add("Failed to load the GDAL native libs");//. This is not a problem unless you need to use the GDAL plugins: they won't be enabled.\n" + 
+        containsStrings.add("Unable to set ordering between tiff readers spi");
         // "\tat ", //
         // "\t... ", //
 

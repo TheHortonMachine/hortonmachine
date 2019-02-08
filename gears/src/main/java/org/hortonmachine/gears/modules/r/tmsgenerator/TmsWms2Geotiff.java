@@ -269,7 +269,7 @@ public class TmsWms2Geotiff extends HMModel {
 
         // VIENNA AERIAL
         g.inServiceUrl = "http://maps.wien.gv.at/wmts/lb/farbe/google3857/ZZZ/YYY/XXX.jpeg";
-        g.outRaster = "/home/hydrologis/TMP/VIENNA/vienna_zoom16.tiff";
+        g.outRaster = "/home/hydrologis/TMP/VIENNA/vienna_zoom19.tiff";
         g.pSourceType = TMS;
         g.pSchemaType = GOOGLE;
 
@@ -287,7 +287,7 @@ public class TmsWms2Geotiff extends HMModel {
 //        g.pSourceType = WMS;   
 //        g.pSchemaType = GOOGLE;
 
-        g.pZoomlevel = 16;
+        g.pZoomlevel = 19;
         g.process();
 
     }
