@@ -23,6 +23,7 @@ IF EXIST "%~dp0\jre\bin\java.exe" (
 )
 
 set MEM="-Xmx1g"
+set PATH=%PATH%;%~dp0\natives\
 %JAVAEXE% %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path=%~dp0\natives\ -cp ".\libs\*" org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController ./libs
 
 endlocal
