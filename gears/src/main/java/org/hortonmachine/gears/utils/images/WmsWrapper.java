@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
 
@@ -82,46 +84,48 @@ public class WmsWrapper {
             System.out.println("Layer: (" + i + ")" + layers[i].getName());
             System.out.println("       " + layers[i].getTitle());
             System.out.println("       " + layers[i].getChildren().length);
-            System.out.println("       " + layers[i].getBoundingBoxes());
-            CRSEnvelope env = layers[i].getLatLonBoundingBox();
-            System.out.println("       " + env.getLowerCorner() + " x " + env.getUpperCorner());
-
+            Map<String, CRSEnvelope> boundingBoxes = layers[i].getBoundingBoxes();
+            System.out.println("-----------------------------------------------------------------");
+            System.out.println("Supported CRS and bounds: ");
+            for( Entry<String, CRSEnvelope> item : boundingBoxes.entrySet() ) {
+                String epsg = item.getKey();
+                CRSEnvelope crsEnv = item.getValue();
+                System.out.println("\t" + epsg + ": " + crsEnv);
+            }
+            System.out.println("-----------------------------------------------------------------");
             // Get layer styles
             List<StyleImpl> styles = layers[i].getStyles();
+            System.out.println("Styles:");
             for( StyleImpl elem : styles ) {
                 // Print style info
-                System.out.println("Style:");
-                System.out.println("  Name:" + elem.getName());
-                System.out.println("  Title:" + elem.getTitle());
+                System.out.println("  Name:" + elem.getName() + "  Title:" + elem.getTitle());
             }
         }
     }
 
     public BufferedImage getImage( Layer layer, String format, String srs, int imageWidth, int imageHeight,
             ReferencedEnvelope bbox, String version ) throws Exception {
-        
-        System.setProperty("org.geotools.referencing.forceXY", "false");
+
+//        System.setProperty("org.geotools.referencing.forceXY", "true");
 
         GetMapRequest request = wms.createGetMapRequest();
 
-        if (format == null)
-            format = "image/png";
-        if (srs == null)
-            srs = "EPSG:4326";
+        if (srs == null || srs.equalsIgnoreCase("EPSG:4326"))
+            srs = "CRS:84";
         if (imageWidth < 0) {
             imageWidth = 256;
         }
         if (imageHeight < 0) {
             imageHeight = 256;
         }
-        if (version == null) {
-            version = "1.1.1";
-        }
+        if (format == null)
+            format = "image/png";
         request.setFormat(format);
         request.setDimensions(imageWidth, imageHeight);
         request.setTransparent(true);
         request.setSRS(srs);
-        request.setVersion(version);
+        if (version != null)
+            request.setVersion(version);
 
         request.setBBox(bbox);
         request.addLayer(layer);
@@ -132,7 +136,7 @@ public class WmsWrapper {
         System.out.println(finalURL);
 
         // BBOX=xmin,ymin,xmax,ymax NON-FLIPPED
-        //BBOX=ymin,xmin,ymax,xmax FLIPPED
+        // BBOX=ymin,xmin,ymax,xmax FLIPPED
         if (image == null) {
             System.err.println("no image for found for: " + finalURL);
         }
@@ -141,6 +145,11 @@ public class WmsWrapper {
 
     public static void main( String[] args ) throws Exception {
         String url = "https://gis.stmk.gv.at/arcgis/services/OGD/als_schummerung/MapServer/WmsServer?request=GetCapabilities&service=WMS";
+        String wmscode = "EPSG:3857";
+        int width = 1000;
+        int height = 1000;
+        String outputImage = "/home/hydrologis/TMP/VIENNA/wms.png";
+
         WmsWrapper ww = new WmsWrapper(url);
         ww.printInfo();
         Layer[] layers = ww.getLayers();
@@ -148,19 +157,19 @@ public class WmsWrapper {
             String name = layer.getName();
             if (name.equals("Digitales_Oberflaechenmodell_DOM")) {
                 CRSEnvelope latLonBoundingBox = layer.getLatLonBoundingBox();
-                double s = latLonBoundingBox.getMinX();
-                double n = latLonBoundingBox.getMaxX();
-                double w = latLonBoundingBox.getMinY();
-                double e = latLonBoundingBox.getMaxY();
-//                double w = latLonBoundingBox.getMinX();
-//                double e = latLonBoundingBox.getMaxX();
-//                double s = latLonBoundingBox.getMinY();
-//                double n = latLonBoundingBox.getMaxY();
+                double w = latLonBoundingBox.getMinX();
+                double e = latLonBoundingBox.getMaxX();
+                double s = latLonBoundingBox.getMinY();
+                double n = latLonBoundingBox.getMaxY();
+                ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, DefaultGeographicCRS.WGS84);
 
-                ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, CRS.decode("EPSG:4326"));
-                BufferedImage image = ww.getImage(layer, null, "EPSG:3857", 1000, 1000, env, "1.3.0");
-                ImageIO.write(image, "png", new File("/home/hydrologis/TMP/VIENNA/wms.png"));
-
+                ReferencedEnvelope wmsEnv = env.transform(CRS.decode(wmscode), false);
+                BufferedImage image = ww.getImage(layer, null, wmscode, width, height, wmsEnv, null);
+                String format = "jpg";
+                if (outputImage.toLowerCase().endsWith("png")) {
+                    format = "png";
+                }
+                ImageIO.write(image, format, new File(outputImage));
                 break;
             }
         }
