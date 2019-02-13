@@ -29,7 +29,10 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -40,6 +43,7 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -70,6 +74,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -113,6 +118,8 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
+
+import com.jogamp.common.nio.ByteBufferInputStream;
 
 /**
  * The spatialite/h2gis view controller.
@@ -1205,12 +1212,17 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
                 int[] selectedRows = table.getSelectedRows();
                 int[] selectedCols = table.getSelectedColumns();
-
                 boolean isGeom = false;
+                boolean maybeImage = false;
                 ESpatialiteGeometryType geomType = null;
                 if (selectedCols.length == 1 && selectedRows.length > 0) {
                     // check coontent
-                    String valueAt = table.getValueAt(selectedRows[0], selectedCols[0]).toString();
+                    Object valueObj = table.getValueAt(selectedRows[0], selectedCols[0]);
+                    if (valueObj instanceof byte[]) {
+                        maybeImage = true;
+                    }
+                    
+                    String valueAt = valueObj.toString();
                     String[] split = valueAt.split("\\s+");
                     if (split.length > 0 && ESpatialiteGeometryType.isGeometryName(split[0])) {
                         isGeom = true;
@@ -1230,6 +1242,31 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 });
                 item.setHorizontalTextPosition(JMenuItem.RIGHT);
                 popupMenu.add(item);
+                if (maybeImage) {
+                    JMenuItem item1 = new JMenuItem(new AbstractAction("View as image"){
+                        private static final long serialVersionUID = 1L;
+                        @Override
+                        public void actionPerformed( ActionEvent e ) {
+                            for( int r : selectedRows ) {
+                                Object valueObj = table.getValueAt(r, selectedCols[0]);
+                                if (valueObj instanceof byte[]) {
+                                    try {
+                                        BufferedImage image = ImageIO.read(new ByteArrayInputStream((byte[]) valueObj));
+
+                                        GuiUtilities.showImage(popupMenu, valueObj.toString(), image);
+                                    } catch (IOException e1) {
+                                        GuiUtilities.showWarningMessage(popupMenu, "Not an image.");
+                                        break;
+                                    }
+                                }
+                            }
+
+                        }
+
+                    });
+                    item1.setHorizontalTextPosition(JMenuItem.RIGHT);
+                    popupMenu.add(item1);
+                }
                 if (isGeom) {
                     JMenuItem item1 = new JMenuItem(new AbstractAction("View geometry"){
                         private static final long serialVersionUID = 1L;

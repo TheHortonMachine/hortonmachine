@@ -119,6 +119,8 @@ public class ImageCache {
     public static final String FORM_TIME = "form_time.png";
     public static final String FORM_PLUS = "form_plus.png";
 
+    public static final String HORTONMACHINE_FRAME_ICON = "hm150.png";
+
     private static ImageCache imageCache;
 
     private HashMap<String, ImageIcon> imageMap = new HashMap<String, ImageIcon>();
@@ -167,6 +169,14 @@ public class ImageCache {
     private ImageIcon createImage( String key ) {
         ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/" + key));
         return icon;
+    }
+
+    public static ImageIcon get( String key ) {
+        return ImageCache.getInstance().getImage(key);
+    }
+
+    public static BufferedImage getBuffered( String key ) {
+        return ImageCache.getInstance().getBufferedImage(key);
     }
 
     /**

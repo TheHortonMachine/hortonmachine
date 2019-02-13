@@ -1,6 +1,7 @@
 package org.hortonmachine.gears.utils.images;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,6 +19,9 @@ import org.geotools.data.wms.request.GetMapRequest;
 import org.geotools.data.wms.response.GetMapResponse;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.ows.ServiceException;
+import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.gears.utils.CrsUtilities;
 
 public class WmsWrapper {
 
@@ -74,6 +78,7 @@ public class WmsWrapper {
         Layer[] layers = getLayers();
         for( int i = 0; i < layers.length; i++ ) {
             // Print layer info
+            System.out.println("=================================================================");
             System.out.println("Layer: (" + i + ")" + layers[i].getName());
             System.out.println("       " + layers[i].getTitle());
             System.out.println("       " + layers[i].getChildren().length);
@@ -94,6 +99,8 @@ public class WmsWrapper {
 
     public BufferedImage getImage( Layer layer, String format, String srs, int imageWidth, int imageHeight,
             ReferencedEnvelope bbox, String version ) throws Exception {
+        
+        System.setProperty("org.geotools.referencing.forceXY", "false");
 
         GetMapRequest request = wms.createGetMapRequest();
 
@@ -121,10 +128,41 @@ public class WmsWrapper {
 
         GetMapResponse response = (GetMapResponse) wms.issueRequest(request);
         BufferedImage image = ImageIO.read(response.getInputStream());
+        URL finalURL = request.getFinalURL();
+        System.out.println(finalURL);
+
+        // BBOX=xmin,ymin,xmax,ymax NON-FLIPPED
+        //BBOX=ymin,xmin,ymax,xmax FLIPPED
         if (image == null) {
-            URL finalURL = request.getFinalURL();
-            System.err.println("no image for: " + finalURL);
+            System.err.println("no image for found for: " + finalURL);
         }
         return image;
+    }
+
+    public static void main( String[] args ) throws Exception {
+        String url = "https://gis.stmk.gv.at/arcgis/services/OGD/als_schummerung/MapServer/WmsServer?request=GetCapabilities&service=WMS";
+        WmsWrapper ww = new WmsWrapper(url);
+        ww.printInfo();
+        Layer[] layers = ww.getLayers();
+        for( Layer layer : layers ) {
+            String name = layer.getName();
+            if (name.equals("Digitales_Oberflaechenmodell_DOM")) {
+                CRSEnvelope latLonBoundingBox = layer.getLatLonBoundingBox();
+                double s = latLonBoundingBox.getMinX();
+                double n = latLonBoundingBox.getMaxX();
+                double w = latLonBoundingBox.getMinY();
+                double e = latLonBoundingBox.getMaxY();
+//                double w = latLonBoundingBox.getMinX();
+//                double e = latLonBoundingBox.getMaxX();
+//                double s = latLonBoundingBox.getMinY();
+//                double n = latLonBoundingBox.getMaxY();
+
+                ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, CRS.decode("EPSG:4326"));
+                BufferedImage image = ww.getImage(layer, null, "EPSG:3857", 1000, 1000, env, "1.3.0");
+                ImageIO.write(image, "png", new File("/home/hydrologis/TMP/VIENNA/wms.png"));
+
+                break;
+            }
+        }
     }
 }

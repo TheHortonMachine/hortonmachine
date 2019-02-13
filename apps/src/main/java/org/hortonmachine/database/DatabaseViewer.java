@@ -329,9 +329,7 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
         final DatabaseViewer controller = new DatabaseViewer(gBridge);
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Database Viewer");
 
-        Class<DatabaseViewer> class1 = DatabaseViewer.class;
-        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
-        frame.setIconImage(icon.getImage());
+        frame.setIconImage(ImageCache.getBuffered(ImageCache.HORTONMACHINE_FRAME_ICON));
 
         GuiUtilities.addClosingListener(frame, controller);
 

@@ -28,6 +28,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -44,6 +45,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -53,6 +55,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
@@ -252,6 +255,7 @@ public class GuiUtilities {
         JDialog f = new JDialog();
         f.add(panel, BorderLayout.CENTER);
         f.setTitle(title);
+        f.setIconImage(ImageCache.getInstance().getBufferedImage(ImageCache.HORTONMACHINE_FRAME_ICON));
         f.setModal(modal);
         f.pack();
         if (dimension != null)
@@ -259,6 +263,9 @@ public class GuiUtilities {
         f.setLocationRelativeTo(null); // Center on screen
         f.setVisible(true);
         f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        f.getRootPane().registerKeyboardAction(e -> {
+            f.dispose();
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
         return f;
     }
 
@@ -451,6 +458,13 @@ public class GuiUtilities {
             title = "ERROR";
         }
         JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.ERROR_MESSAGE);
+    }
+
+    public static void showImage( Component parentComponent, String title, BufferedImage image ) {
+        if (title == null) {
+            title = "image";
+        }
+        ImageViewer.show(image, title, false);
     }
 
     /**
