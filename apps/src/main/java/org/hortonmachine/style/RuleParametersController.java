@@ -25,6 +25,8 @@ public class RuleParametersController extends RuleParametersView {
                 if (filterText.length() > 0) {
                     Filter filter = ECQL.toFilter(filterText);
                     ruleWrapper.getRule().setFilter(filter);
+                }else {
+                    ruleWrapper.getRule().setFilter(null);
                 }
             } catch (CQLException e1) {
                 e1.printStackTrace();
