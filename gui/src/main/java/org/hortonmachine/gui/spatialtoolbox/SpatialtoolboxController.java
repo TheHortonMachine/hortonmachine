@@ -31,12 +31,15 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -59,9 +62,24 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.map.FeatureLayer;
+import org.geotools.map.GridCoverageLayer;
+import org.geotools.map.Layer;
+import org.geotools.styling.SLD;
+import org.geotools.styling.Style;
+import org.geotools.swing.JMapFrame.Tool;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.ETimeUtilities;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.Variables;
+import org.hortonmachine.gears.ui.HMMapframe;
+import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.DataUtilities;
+import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.console.ProcessLogConsoleController;
 import org.hortonmachine.gui.spatialtoolbox.core.HortonmachineModulesManager;
@@ -75,6 +93,8 @@ import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
+import org.hortonmachine.gui.utils.ImageCache;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Out;
 
@@ -124,6 +144,9 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         final ImageIcon moduleIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/module.gif"));
         final ImageIcon moduleExpIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/module_exp.gif"));
 
+        ImageIcon worldIcon = ImageCache.getInstance().getImage(ImageCache.BROWSER);
+        
+        
         _parametersPanel.setLayout(new BorderLayout());
 
         addComponentListener(new ComponentListener(){
@@ -239,6 +262,28 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         });
         _generateScriptButton.setIcon(generateScriptIcon);
 
+        _viewDataButton.setToolTipText("View all data used by the module in a simple viewer and check the CRS.");
+        _viewDataButton.addActionListener(new ActionListener(){
+            public void actionPerformed( ActionEvent e ) {
+                HashMap<String, Object> fieldName2ValueHolderMap = pPanel.getFieldName2ValueHolderMap();
+                List<File> files = new ArrayList<>();
+                for( Object value : fieldName2ValueHolderMap.values() ) {
+                    if (value instanceof JTextField) {
+                        JTextField field = (JTextField) value;
+                        String possiblePath = field.getText().trim();
+                        if (possiblePath.length() > 0) {
+                            File possibleFile = new File(possiblePath);
+                            if (possibleFile.exists() && !possibleFile.isDirectory()) {
+                                files.add(possibleFile);
+                            }
+                        }
+                    }
+                }
+                showInMapFrame(files);
+            }
+        });
+        _viewDataButton.setIcon(worldIcon);
+
         _clearFilterButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
                 _filterField.setText("");
@@ -266,12 +311,12 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
             heapStr = SpatialToolboxConstants.HEAPLEVELS[0];
         }
         _heapCombo.setSelectedItem(heapStr);
-        
-        _debugCheckbox.addActionListener(e->{
+
+        _debugCheckbox.addActionListener(e -> {
             prefsMap.put(GuiBridgeHandler.DEBUG_KEY, _debugCheckbox.isSelected() + "");
             guiBridge.setSpatialToolboxPreferencesMap(prefsMap);
         });
-        _heapCombo.addActionListener(e->{
+        _heapCombo.addActionListener(e -> {
             String ramLevel = _heapCombo.getSelectedItem().toString();
             prefsMap.put(GuiBridgeHandler.HEAP_KEY, ramLevel);
             guiBridge.setSpatialToolboxPreferencesMap(prefsMap);
@@ -350,6 +395,89 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
             layoutTree(false);
         } catch (Exception e1) {
             Logger.INSTANCE.insertError("", "Error", e1);
+        }
+    }
+
+    private void showInMapFrame( List<File> dataFiles ) {
+        List<Layer> featureLayers = new ArrayList<>();
+        List<Layer> rasterLayers = new ArrayList<>();
+        TreeSet<String> crsSet = new TreeSet<>();
+        for( File file : dataFiles ) {
+            String name = file.getName().toLowerCase();
+            String[] supportedVectorExtensions = HMConstants.SUPPORTED_VECTOR_EXTENSIONS;
+            for( String ext : supportedVectorExtensions ) {
+                if (name.endsWith(ext)) {
+                    try {
+                        SimpleFeatureCollection fc = OmsVectorReader.readVector(file.getAbsolutePath());
+                        File styleFile = FileUtilities.substituteExtention(file, "sld");
+                        Style style;
+                        if (styleFile.exists()) {
+                            style = SldUtilities.getStyleFromFile(styleFile);
+                        } else {
+                            style = SLD.createSimpleStyle(fc.getSchema());
+                        }
+                        FeatureLayer layer = new FeatureLayer(fc, style);
+                        featureLayers.add(layer);
+
+                        CoordinateReferenceSystem crs = fc.getSchema().getCoordinateReferenceSystem();
+                        String epsg = CrsUtilities.getCodeFromCrs(crs);
+                        crsSet.add(epsg);
+                        break;
+                    } catch (Exception e) {
+                        Logger.INSTANCE.insertError(null, "Can't load feature layer: " + file.getName(), e);
+                    }
+
+                }
+            }
+            String[] supportedRasterExtensions = HMConstants.SUPPORTED_RASTER_EXTENSIONS;
+            for( String ext : supportedRasterExtensions ) {
+                if (name.endsWith(ext)) {
+                    try {
+                        GridCoverage2D raster = OmsRasterReader.readRaster(file.getAbsolutePath());
+                        File styleFile = FileUtilities.substituteExtention(file, "sld");
+                        Style style;
+                        if (styleFile.exists()) {
+                            style = SldUtilities.getStyleFromFile(styleFile);
+                        } else {
+                            style = SldUtilities.getStyleFromRasterFile(file);
+                        }
+                        GridCoverageLayer layer = new GridCoverageLayer(raster, style);
+                        rasterLayers.add(layer);
+
+                        CoordinateReferenceSystem crs = raster.getCoordinateReferenceSystem();
+                        String epsg = CrsUtilities.getCodeFromCrs(crs);
+                        crsSet.add(epsg);
+                        break;
+                    } catch (Exception e) {
+                        Logger.INSTANCE.insertError(null, "Can't load raster layer: " + file.getName(), e);
+                    }
+
+                }
+            }
+        }
+
+        if (featureLayers.size() > 0 || rasterLayers.size() > 0) {
+            String crsStr = crsSet.stream().collect(Collectors.joining("\n"));
+            boolean isOk = GuiUtilities.showYesNoDialog(pPanel, "Found the following CRS in the data: \n" + crsStr);
+            if (isOk) {
+                Class<SpatialtoolboxController> class1 = SpatialtoolboxController.class;
+                ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
+                HMMapframe mapFrame = new HMMapframe("Module dataset viewer");
+                mapFrame.setIconImage(icon.getImage());
+                mapFrame.enableToolBar(true);
+                mapFrame.enableStatusBar(true);
+                mapFrame.enableLayerTable(true);
+                mapFrame.enableTool(Tool.PAN, Tool.ZOOM, Tool.RESET);
+                mapFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                mapFrame.setSize(900, 600);
+                for( Layer l : rasterLayers ) {
+                    mapFrame.addLayer(l);
+                }
+                for( Layer l : featureLayers ) {
+                    mapFrame.addLayer(l);
+                }
+                mapFrame.setVisible(true);
+            }
         }
     }
 

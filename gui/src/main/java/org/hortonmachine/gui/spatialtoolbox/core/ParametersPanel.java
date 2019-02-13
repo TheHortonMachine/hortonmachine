@@ -30,6 +30,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -48,7 +49,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.JGrassGears;
 import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.hmachine.HortonMachine;
@@ -73,7 +73,7 @@ public class ParametersPanel extends JPanel implements MouseListener {
 
     private List<JTextField> eastingListeningFields = new ArrayList<JTextField>();
     private List<JTextField> northingListeningFields = new ArrayList<JTextField>();
-    private HashMap<String, Object> fieldName2ValueHolderMap = new HashMap<String, Object>();
+    private LinkedHashMap<String, Object> fieldName2ValueHolderMap = new LinkedHashMap<String, Object>();
     private List<String> outputFieldNames = new ArrayList<String>();
     private List<JComboBox<String>> rasterComboList = new ArrayList<>();
     private List<JComboBox<String>> vectorComboList = new ArrayList<>();

@@ -1,23 +1,24 @@
 package org.hortonmachine.gui.spatialtoolbox;
 
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 import java.awt.BorderLayout;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
+
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JTree;
+
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 
 public class SpatialtoolboxView extends JPanel
@@ -27,8 +28,9 @@ public class SpatialtoolboxView extends JPanel
    JLabel _parametersLabel = new JLabel();
    JButton _startButton = new JButton();
    JButton _runScriptButton = new JButton();
-   JButton _generateScriptButton = new JButton();
    JToggleButton _processingRegionButton = new JToggleButton();
+   JButton _generateScriptButton = new JButton();
+   JButton _viewDataButton = new JButton();
    JTextField _filterField = new JTextField();
    JButton _clearFilterButton = new JButton();
    JCheckBox _loadExperimentalCheckbox = new JCheckBox();
@@ -180,7 +182,7 @@ public class SpatialtoolboxView extends JPanel
    public JPanel createPanel2()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE","FILL:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE","FILL:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -190,13 +192,16 @@ public class SpatialtoolboxView extends JPanel
       _runScriptButton.setName("runScriptButton");
       jpanel1.add(_runScriptButton,cc.xy(5,1));
 
-      _generateScriptButton.setName("generateScriptButton");
-      jpanel1.add(_generateScriptButton,cc.xy(7,1));
-
       _processingRegionButton.setName("processingRegionButton");
       jpanel1.add(_processingRegionButton,cc.xy(1,1));
 
-      addFillComponents(jpanel1,new int[]{ 2,4,6 },new int[0]);
+      _generateScriptButton.setName("generateScriptButton");
+      jpanel1.add(_generateScriptButton,cc.xy(7,1));
+
+      _viewDataButton.setName("viewDataButton");
+      jpanel1.add(_viewDataButton,cc.xy(9,1));
+
+      addFillComponents(jpanel1,new int[]{ 2,4,6,8 },new int[0]);
       return jpanel1;
    }
 

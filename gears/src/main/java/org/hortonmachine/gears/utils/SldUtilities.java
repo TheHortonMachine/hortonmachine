@@ -20,13 +20,18 @@ package org.hortonmachine.gears.utils;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
 import org.geotools.feature.NameImpl;
+import org.geotools.styling.ColorMap;
+import org.geotools.styling.ColorMapEntry;
 import org.geotools.styling.FeatureTypeConstraint;
 import org.geotools.styling.FeatureTypeStyle;
+import org.geotools.styling.RasterSymbolizer;
 import org.geotools.styling.SLD;
 import org.geotools.styling.SLDParser;
 import org.geotools.styling.SLDTransformer;
@@ -35,9 +40,13 @@ import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.styling.UserLayer;
+import org.hortonmachine.gears.io.grasslegacy.map.color.ColorRule;
+import org.hortonmachine.gears.io.grasslegacy.map.color.GrassColorTable;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.style.sld.SLDHandler;
 import org.opengis.filter.FilterFactory;
+import org.opengis.filter.expression.Expression;
 
 /**
  * Utilities to handle style.
@@ -74,7 +83,7 @@ public class SldUtilities {
      * @return the {@link Style} object.
      * @throws IOException
      */
-    public static Style getStyleFromFile(File file) {
+    public static Style getStyleFromFile( File file ) {
         Style style = null;
         try {
             String name = file.getName();
@@ -101,6 +110,119 @@ public class SldUtilities {
         }
     }
 
+    public static Style getStyleFromRasterFile( File file ) throws Exception {
+        String coveragePath = file.getAbsolutePath();
+        if (CoverageUtilities.isGrass(coveragePath)) {
+            return getGrassStyle(coveragePath);
+        } else {
+            RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
+            return SLD.wrapSymbolizers(sym);
+        }
+    }
+
+    public static Style getGrassStyle( String path ) throws Exception {
+        List<String> valuesList = new ArrayList<String>();
+        List<Color> colorsList = new ArrayList<Color>();
+
+        StyleBuilder sB = new StyleBuilder(sf);
+        RasterSymbolizer rasterSym = sf.createRasterSymbolizer();
+
+        File grassFile = new File(path);
+        String mapName = grassFile.getName();
+        String mapsetPath = grassFile.getParentFile().getParent();
+
+        GrassColorTable ctable = new GrassColorTable(mapsetPath, mapName, null);
+        Enumeration<ColorRule> rules = ctable.getColorRules();
+
+        while( rules.hasMoreElements() ) {
+            ColorRule element = (ColorRule) rules.nextElement();
+
+            float fromValue = element.getLowCategoryValue();
+            float toValue = element.getLowCategoryValue() + element.getCategoryRange();
+            byte[] lowcatcol = element.getColor(fromValue);
+            byte[] highcatcol = element.getColor(toValue);
+            Color fromColor = new Color((int) (lowcatcol[0] & 0xff), (int) (lowcatcol[1] & 0xff), (int) (lowcatcol[2] & 0xff));
+            Color toColor = new Color((int) (highcatcol[0] & 0xff), (int) (highcatcol[1] & 0xff), (int) (highcatcol[2] & 0xff));
+
+            String from = String.valueOf(fromValue);
+            if (!valuesList.contains(from)) {
+                valuesList.add(from);
+                colorsList.add(fromColor);
+            }
+
+            String to = String.valueOf(toValue);
+            if (!valuesList.contains(to)) {
+                valuesList.add(to);
+                colorsList.add(toColor);
+            }
+        }
+
+        ColorMap colorMap = sf.createColorMap();
+
+        if (valuesList.size() > 1) {
+            for( int i = 0; i < valuesList.size(); i++ ) {
+                String fromValueStr = valuesList.get(i);
+                // String toValueStr = valuesList.get(i + 1);
+                Color fromColor = colorsList.get(i);
+                // Color toColor = colorsList.get(i + 1);
+                // double[] values = {Double.parseDouble(fromValueStr),
+                // Double.parseDouble(toValueStr)};
+                // double opacity = 1.0;
+
+                Expression fromColorExpr = sB
+                        .colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor.getBlue(), 255));
+                // Expression toColorExpr = sB.colorExpression(new java.awt.Color(toColor.getRed(),
+                // toColor.getGreen(), toColor
+                // .getBlue(), 255));
+                Expression fromExpr = sB.literalExpression(Double.parseDouble(fromValueStr));
+                // Expression toExpr = sB.literalExpression(values[1]);
+                // Expression opacityExpr = sB.literalExpression(opacity);
+
+                ColorMapEntry entry = sf.createColorMapEntry();
+                entry.setQuantity(fromExpr);
+                entry.setColor(fromColorExpr);
+                // entry.setOpacity(opacityExpr);
+                colorMap.addColorMapEntry(entry);
+
+                // entry = sf.createColorMapEntry();
+                // entry.setQuantity(toExpr);
+                // entry.setOpacity(opacityExpr);
+                // entry.setColor(toColorExpr);
+                // colorMap.addColorMapEntry(entry);
+            }
+        } else if (valuesList.size() == 1) {
+            String fromValueStr = valuesList.get(0);
+            Color fromColor = colorsList.get(0);
+            // double opacity = 1.0;
+
+            Expression fromColorExpr = sB
+                    .colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor.getBlue(), 255));
+            Expression fromExpr = sB.literalExpression(Double.parseDouble(fromValueStr));
+            // Expression opacityExpr = sB.literalExpression(opacity);
+
+            ColorMapEntry entry = sf.createColorMapEntry();
+            entry.setQuantity(fromExpr);
+            entry.setColor(fromColorExpr);
+            // entry.setOpacity(opacityExpr);
+            colorMap.addColorMapEntry(entry);
+            colorMap.addColorMapEntry(entry);
+        } else {
+            throw new IllegalArgumentException();
+        }
+
+        rasterSym.setColorMap(colorMap);
+
+        /*
+         * set global transparency for the map
+         */
+        int alpha = ctable.getAlpha();
+        rasterSym.setOpacity(sB.literalExpression(alpha / 255.0));
+
+        Style newStyle = SLD.wrapSymbolizers(rasterSym);
+
+        return newStyle;
+    }
+
     /**
      * Converts a style to its string representation to be written to file.
      * 
@@ -108,10 +230,10 @@ public class SldUtilities {
      * @return the style string.
      * @throws Exception
      */
-    public static String styleToString(Style style) throws Exception {
+    public static String styleToString( Style style ) throws Exception {
         StyledLayerDescriptor sld = sf.createStyledLayerDescriptor();
         UserLayer layer = sf.createUserLayer();
-        layer.setLayerFeatureConstraints(new FeatureTypeConstraint[] { null });
+        layer.setLayerFeatureConstraints(new FeatureTypeConstraint[]{null});
         sld.addStyledLayer(layer);
         layer.addUserStyle(style);
 
@@ -121,9 +243,9 @@ public class SldUtilities {
         return xml;
     }
 
-    public static Style getDefaultStyle(StyledLayerDescriptor sld) {
+    public static Style getDefaultStyle( StyledLayerDescriptor sld ) {
         Style[] styles = SLD.styles(sld);
-        for (int i = 0; i < styles.length; i++) {
+        for( int i = 0; i < styles.length; i++ ) {
             Style style = styles[i];
             List<FeatureTypeStyle> ftStyles = style.featureTypeStyles();
             genericizeftStyles(ftStyles);
@@ -141,8 +263,8 @@ public class SldUtilities {
      *
      * @param ftStyles
      */
-    private static void genericizeftStyles(List<FeatureTypeStyle> ftStyles) {
-        for (FeatureTypeStyle featureTypeStyle : ftStyles) {
+    private static void genericizeftStyles( List<FeatureTypeStyle> ftStyles ) {
+        for( FeatureTypeStyle featureTypeStyle : ftStyles ) {
             featureTypeStyle.featureTypeNames().clear();
             featureTypeStyle.featureTypeNames().add(new NameImpl(GENERIC_FEATURE_TYPENAME));
         }
@@ -154,7 +276,7 @@ public class SldUtilities {
      * @param color the color.
      * @return the color without alpha.
      */
-    public static Color colorWithoutAlpha(Color color) {
+    public static Color colorWithoutAlpha( Color color ) {
         return new Color(color.getRed(), color.getGreen(), color.getBlue());
     }
 
@@ -165,7 +287,7 @@ public class SldUtilities {
      * @param alpha an alpha value between 0 and 255.
      * @return the color with alpha.
      */
-    public static Color colorWithAlpha(Color color, int alpha) {
+    public static Color colorWithAlpha( Color color, int alpha ) {
         return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
     }
 }

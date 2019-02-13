@@ -331,13 +331,7 @@ public class ImageGenerator {
             if (styleFile.exists()) {
                 style = SldUtilities.getStyleFromFile(styleFile);
             } else {
-                if (CoverageUtilities.isGrass(coveragePath)) {
-                    style = getGrassStyle(coveragePath);
-                } else {
-                    RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
-                    style = SLD.wrapSymbolizers(sym);
-                }
-
+                style = SldUtilities.getStyleFromRasterFile(styleFile);
             }
 
             if (raster != null) {
@@ -855,108 +849,5 @@ public class ImageGenerator {
             }
         });
 
-    }
-
-    private Style getGrassStyle( String path ) throws Exception {
-        List<String> valuesList = new ArrayList<String>();
-        List<Color> colorsList = new ArrayList<Color>();
-
-        StyleBuilder sB = new StyleBuilder(sf);
-        RasterSymbolizer rasterSym = sf.createRasterSymbolizer();
-
-        File grassFile = new File(path);
-        String mapName = grassFile.getName();
-        String mapsetPath = grassFile.getParentFile().getParent();
-
-        GrassColorTable ctable = new GrassColorTable(mapsetPath, mapName, null);
-        Enumeration<ColorRule> rules = ctable.getColorRules();
-
-        while( rules.hasMoreElements() ) {
-            ColorRule element = (ColorRule) rules.nextElement();
-
-            float fromValue = element.getLowCategoryValue();
-            float toValue = element.getLowCategoryValue() + element.getCategoryRange();
-            byte[] lowcatcol = element.getColor(fromValue);
-            byte[] highcatcol = element.getColor(toValue);
-            Color fromColor = new Color((int) (lowcatcol[0] & 0xff), (int) (lowcatcol[1] & 0xff), (int) (lowcatcol[2] & 0xff));
-            Color toColor = new Color((int) (highcatcol[0] & 0xff), (int) (highcatcol[1] & 0xff), (int) (highcatcol[2] & 0xff));
-
-            String from = String.valueOf(fromValue);
-            if (!valuesList.contains(from)) {
-                valuesList.add(from);
-                colorsList.add(fromColor);
-            }
-
-            String to = String.valueOf(toValue);
-            if (!valuesList.contains(to)) {
-                valuesList.add(to);
-                colorsList.add(toColor);
-            }
-        }
-
-        ColorMap colorMap = sf.createColorMap();
-
-        if (valuesList.size() > 1) {
-            for( int i = 0; i < valuesList.size(); i++ ) {
-                String fromValueStr = valuesList.get(i);
-                // String toValueStr = valuesList.get(i + 1);
-                Color fromColor = colorsList.get(i);
-                // Color toColor = colorsList.get(i + 1);
-                // double[] values = {Double.parseDouble(fromValueStr),
-                // Double.parseDouble(toValueStr)};
-                // double opacity = 1.0;
-
-                Expression fromColorExpr = sB
-                        .colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor.getBlue(), 255));
-                // Expression toColorExpr = sB.colorExpression(new java.awt.Color(toColor.getRed(),
-                // toColor.getGreen(), toColor
-                // .getBlue(), 255));
-                Expression fromExpr = sB.literalExpression(Double.parseDouble(fromValueStr));
-                // Expression toExpr = sB.literalExpression(values[1]);
-                // Expression opacityExpr = sB.literalExpression(opacity);
-
-                ColorMapEntry entry = sf.createColorMapEntry();
-                entry.setQuantity(fromExpr);
-                entry.setColor(fromColorExpr);
-                // entry.setOpacity(opacityExpr);
-                colorMap.addColorMapEntry(entry);
-
-                // entry = sf.createColorMapEntry();
-                // entry.setQuantity(toExpr);
-                // entry.setOpacity(opacityExpr);
-                // entry.setColor(toColorExpr);
-                // colorMap.addColorMapEntry(entry);
-            }
-        } else if (valuesList.size() == 1) {
-            String fromValueStr = valuesList.get(0);
-            Color fromColor = colorsList.get(0);
-            // double opacity = 1.0;
-
-            Expression fromColorExpr = sB
-                    .colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor.getBlue(), 255));
-            Expression fromExpr = sB.literalExpression(Double.parseDouble(fromValueStr));
-            // Expression opacityExpr = sB.literalExpression(opacity);
-
-            ColorMapEntry entry = sf.createColorMapEntry();
-            entry.setQuantity(fromExpr);
-            entry.setColor(fromColorExpr);
-            // entry.setOpacity(opacityExpr);
-            colorMap.addColorMapEntry(entry);
-            colorMap.addColorMapEntry(entry);
-        } else {
-            throw new IllegalArgumentException();
-        }
-
-        rasterSym.setColorMap(colorMap);
-
-        /*
-         * set global transparency for the map
-         */
-        int alpha = ctable.getAlpha();
-        rasterSym.setOpacity(sB.literalExpression(alpha / 255.0));
-
-        Style newStyle = SLD.wrapSymbolizers(rasterSym);
-
-        return newStyle;
     }
 }
