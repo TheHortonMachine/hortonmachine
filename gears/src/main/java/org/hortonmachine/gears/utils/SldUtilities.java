@@ -36,6 +36,7 @@ import org.geotools.styling.StyleFactory;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.styling.UserLayer;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.style.sld.SLDHandler;
 import org.opengis.filter.FilterFactory;
 
 /**
@@ -88,8 +89,10 @@ public class SldUtilities {
                 }
             }
 
-            SLDParser stylereader = new SLDParser(sf, file);
-            StyledLayerDescriptor sld = stylereader.parseSLD();
+            SLDHandler h = new SLDHandler();
+            StyledLayerDescriptor sld = h.parse(file, null, null, null);
+//            SLDParser stylereader = new SLDParser(sf, file);
+//            StyledLayerDescriptor sld = stylereader.parseSLD();
             style = getDefaultStyle(sld);
             return style;
         } catch (Exception e) {
