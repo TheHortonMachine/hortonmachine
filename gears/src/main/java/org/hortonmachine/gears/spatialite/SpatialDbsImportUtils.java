@@ -275,6 +275,8 @@ public class SpatialDbsImportUtils {
         String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
 
         return db.execOnConnection(conn -> {
+            boolean autoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
             try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
                 int count = 0;
                 int batchCount = 0;
@@ -332,7 +334,7 @@ public class SpatialDbsImportUtils {
                     featureIterator.close();
                 }
             }
-
+            conn.setAutoCommit(autoCommit);
             try (IHMStatement pStmt = conn.createStatement()) {
                 try {
                     pStmt.executeQuery("Select updateLayerStatistics();");

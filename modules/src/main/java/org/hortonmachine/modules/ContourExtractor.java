@@ -31,6 +31,10 @@ import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtr
 import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_P_MIN_DESCRIPTION;
 import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_STATUS;
 
+import java.io.IOException;
+
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor;
@@ -87,5 +91,15 @@ public class ContourExtractor extends HMModel {
         ex.pInterval = pInterval;
         ex.process();
         dumpVector(ex.outGeodata, outGeodata);
+    }
+    
+    public static void main( String[] args ) throws Exception {
+        OmsContourExtractor ex = new OmsContourExtractor();
+        ex.inCoverage = OmsRasterReader.readRaster("/home/hydrologis/Dropbox/hydrologis/lavori/2018_12_idro_bertani/data/laghetto/laghetto_dtm_5x5.asc");
+        ex.pMin = 110.0;
+        ex.pMax = 320.0;
+        ex.pInterval = 10.0;
+        ex.process();
+        OmsVectorWriter.writeVector("/home/hydrologis/Dropbox/hydrologis/lavori/2018_12_idro_bertani/data/laghetto/test_contours.shp", ex.outGeodata);
     }
 }

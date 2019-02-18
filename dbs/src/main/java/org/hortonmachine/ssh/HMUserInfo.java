@@ -45,7 +45,7 @@ public class HMUserInfo implements UserInfo {
     }
 
     public String getPassword() {
-        if (password != null || password.trim().length() == 0) {
+        if (password == null || password.trim().length() == 0) {
             return null;
         }
         String thePwd = SshUtilities.getPreference(SshUtilities.PWD, "");

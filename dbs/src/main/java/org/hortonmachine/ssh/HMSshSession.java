@@ -51,7 +51,7 @@ public class HMSshSession implements AutoCloseable {
      * @throws Exception
      */
     public HMSshSession( String host, String user, String pwd ) throws Exception {
-        session = jsch.getSession(host, user, 22);
+        session = jsch.getSession(user, host, 22);
         UserInfo ui = new HMUserInfo(pwd);
         session.setUserInfo(ui);
         session.setPassword(ui.getPassword().getBytes());
