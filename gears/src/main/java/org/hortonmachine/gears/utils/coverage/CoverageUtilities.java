@@ -70,6 +70,7 @@ import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.features.FastLiteShape;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.opengis.coverage.grid.GridCoverageReader;
@@ -1597,5 +1598,38 @@ public class CoverageUtilities {
             }
         }
         return true;
+    }
+
+    public static void writeWorldFiles( GridCoverage2D coverage, String outPath ) throws Exception {
+        String ext = ".tfw";
+        if (outPath.toLowerCase().endsWith("tif") || outPath.toLowerCase().endsWith("tiff")) {
+            ext = ".tfw";
+        } else if (outPath.toLowerCase().endsWith("png")) {
+            ext = ".pgw";
+        } else if (outPath.toLowerCase().endsWith("jpg")) {
+            ext = ".jgw";
+        } else if (outPath.toLowerCase().endsWith("gif")) {
+            ext = ".gfw";
+        }
+
+        RegionMap rm = gridGeometry2RegionParamsMap(coverage.getGridGeometry());
+        // create tfw
+        double dx = (rm.getEast() - rm.getWest()) / rm.getCols();
+        double dy = (rm.getNorth() - rm.getSouth()) / rm.getRows();
+        StringBuilder sb = new StringBuilder();
+        sb.append(dx).append("\n");
+        sb.append("0.00000000").append("\n");
+        sb.append("0.00000000").append("\n");
+        sb.append(-dy).append("\n");
+        sb.append(rm.getWest()).append("\n");
+        sb.append(rm.getNorth()).append("\n");
+        File outFile = new File(outPath);
+        String fileName = FileUtilities.getNameWithoutExtention(outFile);
+        File folder = outFile.getParentFile();
+        File tfwFile = new File(folder, fileName + ext);
+        FileUtilities.writeFile(sb.toString(), tfwFile);
+        // create prj
+        File prjFile = new File(folder, fileName + ".prj");
+        FileUtilities.writeFile(coverage.getCoordinateReferenceSystem().toWKT(), prjFile);
     }
 }

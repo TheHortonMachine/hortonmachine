@@ -25,7 +25,6 @@ public class WebMapsView extends JPanel
    JLabel _serverTitleLabel = new JLabel();
    JTextField _getCapabilitiesField = new JTextField();
    JButton _loadButton = new JButton();
-   JComboBox _layersCombo = new JComboBox();
    JLabel _layerNameLabel = new JLabel();
    JLabel _layerTitleLabel = new JLabel();
    JComboBox _stylesCombo = new JComboBox();
@@ -35,6 +34,8 @@ public class WebMapsView extends JPanel
    JLabel _westCrsLabel = new JLabel();
    JLabel _eastCrsLabel = new JLabel();
    JComboBox _formatsCombo = new JComboBox();
+   JComboBox _layersCombo = new JComboBox();
+   JTextField _layerNameFilterField = new JTextField();
    JButton _loadPreviewButton = new JButton();
    JTextField _outputWithField = new JTextField();
    JTextField _outputHeightField = new JTextField();
@@ -140,7 +141,7 @@ public class WebMapsView extends JPanel
       jpanel1.setLayout(formlayout1);
 
       jpanel1.add(createPanel1(),cc.xy(2,2));
-      jpanel1.add(createPanel4(),cc.xy(4,2));
+      jpanel1.add(createPanel5(),cc.xy(4,2));
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3 });
       return jpanel1;
    }
@@ -169,11 +170,6 @@ public class WebMapsView extends JPanel
       jpanel1.add(_serverTitleLabel,cc.xy(4,5));
 
       jpanel1.add(createPanel2(),cc.xywh(2,1,3,1));
-      _layersCombo.setName("layersCombo");
-      TitledBorder titledborder1 = new TitledBorder(null,"Layers",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
-      _layersCombo.setBorder(titledborder1);
-      jpanel1.add(_layersCombo,cc.xywh(2,7,3,1));
-
       JLabel jlabel3 = new JLabel();
       jlabel3.setText("Name");
       jpanel1.add(jlabel3,cc.xy(2,9));
@@ -191,21 +187,22 @@ public class WebMapsView extends JPanel
       jpanel1.add(_layerTitleLabel,cc.xy(4,11));
 
       _stylesCombo.setName("stylesCombo");
-      TitledBorder titledborder2 = new TitledBorder(null,"Styles",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
-      _stylesCombo.setBorder(titledborder2);
+      TitledBorder titledborder1 = new TitledBorder(null,"Styles",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      _stylesCombo.setBorder(titledborder1);
       jpanel1.add(_stylesCombo,cc.xywh(2,13,3,1));
 
       _crsCombo.setName("crsCombo");
-      TitledBorder titledborder3 = new TitledBorder(null,"CRS",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
-      _crsCombo.setBorder(titledborder3);
+      TitledBorder titledborder2 = new TitledBorder(null,"CRS",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      _crsCombo.setBorder(titledborder2);
       jpanel1.add(_crsCombo,cc.xywh(2,17,3,1));
 
       jpanel1.add(createPanel3(),cc.xywh(2,19,3,1));
       _formatsCombo.setName("formatsCombo");
-      TitledBorder titledborder4 = new TitledBorder(null,"Formats",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
-      _formatsCombo.setBorder(titledborder4);
+      TitledBorder titledborder3 = new TitledBorder(null,"Formats",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      _formatsCombo.setBorder(titledborder3);
       jpanel1.add(_formatsCombo,cc.xywh(2,15,3,1));
 
+      jpanel1.add(createPanel4(),cc.xywh(2,7,3,1));
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 });
       return jpanel1;
    }
@@ -213,7 +210,7 @@ public class WebMapsView extends JPanel
    public JPanel createPanel2()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:32DLU:GROW(1.0),FILL:DEFAULT:NONE,FILL:32DLU:NONE","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -277,6 +274,25 @@ public class WebMapsView extends JPanel
    public JPanel createPanel4()
    {
       JPanel jpanel1 = new JPanel();
+      TitledBorder titledborder1 = new TitledBorder(null,"Layers & Filter",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      jpanel1.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:50DLU:GROW(1.0),FILL:DEFAULT:NONE,FILL:50DLU:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      _layersCombo.setName("layersCombo");
+      jpanel1.add(_layersCombo,cc.xy(1,1));
+
+      _layerNameFilterField.setName("layerNameFilterField");
+      jpanel1.add(_layerNameFilterField,cc.xy(3,1));
+
+      addFillComponents(jpanel1,new int[]{ 2,4 },new int[0]);
+      return jpanel1;
+   }
+
+   public JPanel createPanel5()
+   {
+      JPanel jpanel1 = new JPanel();
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","FILL:300PX:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
@@ -286,13 +302,13 @@ public class WebMapsView extends JPanel
       _loadPreviewButton.setText("Load Preview");
       jpanel1.add(_loadPreviewButton,cc.xy(2,2));
 
-      jpanel1.add(createPanel5(),cc.xywh(2,4,1,17));
-      jpanel1.add(createPanel6(),cc.xy(2,1));
+      jpanel1.add(createPanel6(),cc.xywh(2,4,1,17));
+      jpanel1.add(createPanel7(),cc.xy(2,1));
       addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 });
       return jpanel1;
    }
 
-   public JPanel createPanel5()
+   public JPanel createPanel6()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Download Geotiff",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
@@ -348,7 +364,7 @@ public class WebMapsView extends JPanel
       return jpanel1;
    }
 
-   public JPanel createPanel6()
+   public JPanel createPanel7()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Preview",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));

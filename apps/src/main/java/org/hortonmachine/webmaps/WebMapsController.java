@@ -1,11 +1,16 @@
 package org.hortonmachine.webmaps;
 
 import java.awt.Dimension;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,10 +34,15 @@ import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.database.DatabaseViewer;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.images.WmsWrapper;
+import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
@@ -49,8 +59,10 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
 
     private Map<String, StyleImpl> stylesMap;
 
+    private ReferencedEnvelope readEnvelope;
+
     public WebMapsController() {
-        setPreferredSize(new Dimension(1400, 800));
+        setPreferredSize(new Dimension(1400, 750));
 
         init();
     }
@@ -90,6 +102,34 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
             }
         });
 
+        _layerNameFilterField.addKeyListener(new KeyListener(){
+
+            @Override
+            public void keyTyped( KeyEvent e ) {
+            }
+
+            @Override
+            public void keyReleased( KeyEvent e ) {
+                Set<String> layerNames = name2LayersMap.keySet();
+                String filterStr = _layerNameFilterField.getText().trim().toLowerCase();
+                if (filterStr.length() > 0) {
+                    layerNames = layerNames.stream().filter(n -> {
+                        n = n.toLowerCase();
+                        if (n.contains(filterStr)) {
+                            return true;
+                        }
+                        return false;
+                    }).collect(Collectors.toSet());
+                }
+                String[] names = layerNames.toArray(new String[0]);
+                _layersCombo.setModel(new DefaultComboBoxModel<>(names));
+            }
+
+            @Override
+            public void keyPressed( KeyEvent e ) {
+            }
+        });
+
         _boundsLoadButton.addActionListener(e -> {
             File[] selFile = GuiUtilities.showOpenFilesDialog(this, "Select file", false, GuiUtilities.getLastFile(),
                     new FileFilter(){
@@ -101,6 +141,9 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
 
                         @Override
                         public boolean accept( File f ) {
+                            if (f.isDirectory()) {
+                                return true;
+                            }
                             String n = f.getName();
                             for( String ext : HMConstants.SUPPORTED_VECTOR_EXTENSIONS ) {
                                 if (n.toLowerCase().endsWith(ext)) {
@@ -112,6 +155,13 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
                     });
             if (selFile != null && selFile.length > 0) {
                 _boundsFileField.setText(selFile[0].getAbsolutePath());
+
+                try {
+                    readEnvelope = OmsVectorReader.readEnvelope(selFile[0].getAbsolutePath());
+                } catch (IOException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
             }
 
         });
@@ -122,6 +172,43 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
                 _outputFileField.setText(saveFile.getAbsolutePath());
             }
         });
+
+        _outputWithField.addKeyListener(new KeyListener(){
+
+            @Override
+            public void keyTyped( KeyEvent e ) {
+
+            }
+
+            @Override
+            public void keyReleased( KeyEvent e ) {
+                if (readEnvelope == null) {
+                    _outputHeightField.setText("First select ROI shapefile.");
+
+                    return;
+                }
+                String widthStr = _outputWithField.getText();
+                try {
+                    int width = Integer.parseInt(widthStr);
+
+                    double sw = readEnvelope.getWidth();
+                    double sh = readEnvelope.getHeight();
+
+                    int height = (int) (width * sh / sw);
+
+                    _outputHeightField.setText(height + "");
+
+                } catch (NumberFormatException e1) {
+                    _outputHeightField.setText("Width has to be integer.");
+                }
+
+            }
+
+            @Override
+            public void keyPressed( KeyEvent e ) {
+            }
+        });
+        _outputHeightField.setEditable(false);
 
         _wms2tiffButton.addActionListener(e -> {
 
@@ -166,11 +253,21 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
 
                 GetMapRequest mapRequest = currentWms.getMapRequest(layer, selectedFormat, epsg, imageWidth, imageHeight, env,
                         null, styleImpl);
+                GuiUtilities.copyToClipboard(currentWms.getUrl(mapRequest).toString());
                 BufferedImage image = currentWms.getImage(mapRequest);
                 if (image != null) {
-
+                    double xRes = env.getWidth() / imageWidth;
+                    double yRes = env.getHeight() / imageHeight;
+                    RegionMap envParams = CoverageUtilities.makeRegionParamsMap(env.getMaxY(), env.getMinY(), env.getMinX(),
+                            env.getMaxX(), xRes, yRes, imageHeight, imageHeight);
+                    GridCoverage2D coverage = CoverageUtilities.buildCoverage("wms2tiff", image, envParams, crs);
                     String outPath = _outputFileField.getText();
-                    ImageIO.write(image, "png", new File(outPath));
+                    OmsRasterWriter.writeRaster(outPath, coverage);
+                    
+                    CoverageUtilities.writeWorldFiles(coverage, outPath);
+
+
+//                    ImageIO.write(image, "png", new File(outPath));
 
                 } else {
                     String message = currentWms.getMessage(mapRequest);

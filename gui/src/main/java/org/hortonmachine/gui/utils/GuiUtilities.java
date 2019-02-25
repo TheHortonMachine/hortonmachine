@@ -572,6 +572,8 @@ public class GuiUtilities {
                     this.returnValue = selectedFiles;
                 } else {
                     File selectedFile = fc.getSelectedFile();
+                    if (selectedFile != null && selectedFile.exists())
+                        GuiUtilities.setLastPath(selectedFile.getAbsolutePath());
                     this.returnValue = new File[]{selectedFile};
                 }
 
@@ -605,6 +607,8 @@ public class GuiUtilities {
                 }
 
                 File selectedFile = fc.getSelectedFile();
+                if (selectedFile != null && selectedFile.getParentFile().exists())
+                    GuiUtilities.setLastPath(selectedFile.getParentFile().getAbsolutePath());
                 this.returnValue = selectedFile;
 
             }
@@ -643,6 +647,8 @@ public class GuiUtilities {
                     this.returnValue = selectedFiles;
                 } else {
                     File selectedFile = fc.getSelectedFile();
+                    if (selectedFile != null && selectedFile.exists())
+                        GuiUtilities.setLastPath(selectedFile.getAbsolutePath());
                     this.returnValue = new File[]{selectedFile};
                 }
 
