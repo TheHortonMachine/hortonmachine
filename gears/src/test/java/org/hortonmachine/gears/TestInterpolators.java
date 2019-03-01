@@ -5,11 +5,17 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hortonmachine.gears.utils.HMTestCase;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.interpolation.Interpolator;
 import org.hortonmachine.gears.utils.math.interpolation.LeastSquaresInterpolator;
 import org.hortonmachine.gears.utils.math.interpolation.LinearArrayInterpolator;
 import org.hortonmachine.gears.utils.math.interpolation.LinearListInterpolator;
 import org.hortonmachine.gears.utils.math.interpolation.PolynomialInterpolator;
+import org.hortonmachine.gears.utils.sorting.OddEvenSortAlgorithm;
+import org.hortonmachine.gears.utils.sorting.QuickSortAlgorithm;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiPoint;
 /**
  * Test interpolation.
  * 
@@ -104,7 +110,32 @@ public class TestInterpolators extends HMTestCase {
         yList.add(5.754603);
 
         Interpolator interp = new PolynomialInterpolator(xList, yList);
-
+        
+//        OddEvenSortAlgorithm.oddEvenSort(xList, yList);
+//        
+//        List<Coordinate> list = new ArrayList<>();
+//        for( int i = 0; i < xList.size(); i++ ) {
+//            double x = xList.get(i);
+//            double y = yList.get(i);
+//            Coordinate c = new Coordinate(x, y);
+//            list.add(c);
+//        }
+//
+//        MultiPoint mp = GeometryUtilities.gf().createMultiPointFromCoords(list.toArray(new Coordinate[0]));
+//        System.out.println(mp);
+//        
+//        List<Coordinate> list2 = new ArrayList<>();
+//        for( int i = 0; i < xList.size(); i++ ) {
+//            double x = xList.get(i);
+//            double y = interp.getInterpolated(x);
+//            Coordinate c = new Coordinate(x, y);
+//            list2.add(c);
+//            System.out.println(x + " " + y);
+//        }
+//
+//        LineString ls = GeometryUtilities.gf().createLineString(list2.toArray(new Coordinate[0]));
+//        System.out.println(ls);
+        
         assertEquals(Math.exp(1.4), interp.getInterpolated(1.4), 0.0001);
     }
 

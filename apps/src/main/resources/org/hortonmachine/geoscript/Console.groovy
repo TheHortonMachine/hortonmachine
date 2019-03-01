@@ -268,7 +268,7 @@ options:
                     title: myTitle,
                     //location: [100,100], // in groovy 2.0 use platform default location
                     iconImage: imageIcon('/org/hortonmachine/images/hm150.png').image,
-                    defaultCloseOperation: JFrame.DO_NOTHING_ON_CLOSE,
+                    defaultCloseOperation: JFrame.EXIT_ON_CLOSE, //DO_NOTHING_ON_CLOSE,
                 ) {
                     try {
                         current.locationByPlatform = true
