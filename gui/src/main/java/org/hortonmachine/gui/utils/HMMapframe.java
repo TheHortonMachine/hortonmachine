@@ -17,13 +17,16 @@
  */
 package org.hortonmachine.gui.utils;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JToolBar;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -31,9 +34,13 @@ import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
+import org.geotools.map.event.MapLayerListEvent;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.geotools.swing.JMapFrame;
+import org.geotools.tile.TileService;
+import org.geotools.tile.impl.osm.OSMService;
+import org.geotools.tile.util.TileLayer;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -46,6 +53,7 @@ import org.hortonmachine.gears.utils.style.StyleUtilities;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
+@SuppressWarnings("serial")
 public class HMMapframe extends JMapFrame {
 
     private MapContent content;
@@ -81,6 +89,14 @@ public class HMMapframe extends JMapFrame {
         content.addLayer(layer);
     }
 
+    public void addLayerBottom( Layer layer ) {
+        content.addLayer(layer);
+        int index = content.layers().indexOf(layer);
+        content.moveLayer(index, 0);
+        getMapPane().layerMoved(new MapLayerListEvent(content, layer, 0));
+        
+    }
+
     public void setLayer( Layer layer ) {
         List<Layer> layers = content.layers();
         for( Layer l : layers ) {
@@ -95,7 +111,7 @@ public class HMMapframe extends JMapFrame {
         return fl;
     }
 
-    public static void openFolder( File folder ) {
+    public static HMMapframe openFolder( File folder ) {
         ImageIcon icon = new ImageIcon(ImageCache.getInstance().getBufferedImage(ImageCache.HORTONMACHINE_FRAME_ICON));
         HMMapframe mapFrame = new HMMapframe("HM Viewer of folder: " + folder.getAbsolutePath());
         mapFrame.setIconImage(icon.getImage());
@@ -106,6 +122,18 @@ public class HMMapframe extends JMapFrame {
         mapFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         mapFrame.setSize(1200, 900);
         mapFrame.setVisible(true);
+
+        JToolBar toolBar = mapFrame.getToolBar();
+        toolBar.add(new AbstractAction("Add OSM background", ImageCache.getInstance().getImage(ImageCache.GLOBE)){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                String baseURL = "http://tile.openstreetmap.org/";
+                TileService service = new OSMService("OpenStreetMap", baseURL);
+                TileLayer layer = new TileLayer(service);
+                layer.setTitle("OpenStreetMap");
+                mapFrame.addLayerBottom(layer);
+            }
+        });
 
         File[] rasterFiles = folder.listFiles(new FilenameFilter(){
             @Override
@@ -159,6 +187,7 @@ public class HMMapframe extends JMapFrame {
             }
         }
 
+        return mapFrame;
     }
 
     public static void main( String[] args ) {
@@ -178,7 +207,8 @@ public class HMMapframe extends JMapFrame {
         }
 
         if (openFile != null) {
-            openFolder(openFile);
+            HMMapframe mf = openFolder(openFile);
+            mf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         } else {
             GuiUtilities.showWarningMessage(null, "No data folder supplied!");
         }
