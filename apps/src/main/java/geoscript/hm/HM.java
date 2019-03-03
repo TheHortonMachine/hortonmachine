@@ -20,12 +20,14 @@ package geoscript.hm;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.interpolation.LeastSquaresInterpolator;
 import org.hortonmachine.gears.utils.math.interpolation.PolynomialInterpolator;
 import org.hortonmachine.gears.utils.sorting.OddEvenSortAlgorithm;
 import org.hortonmachine.gui.utils.HMMapframe;
+import org.hortonmachine.gui.utils.OmsMatrixCharter;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
@@ -38,6 +40,31 @@ import org.locationtech.jts.geom.LineString;
 public class HM {
     public static void showFolder( String folderPath ) {
         HMMapframe.openFolder(new File(folderPath));
+    }
+
+    public static void chartMatrix( String title, String xLabel, String yLabel, double[][] data, List<String> series,
+            List<String> colors, boolean doLegend ) {
+        OmsMatrixCharter charter = new OmsMatrixCharter();
+        charter.doChart = true;
+        charter.doDump = false;
+        charter.doLegend = doLegend;
+        charter.doHorizontal = false;
+        charter.pHeight = 900;
+        charter.pWidth = 1200;
+        charter.pType = 0;
+        charter.inData = data;
+        charter.inTitle = title;
+        charter.inSubTitle = "";
+        String[] labels = {xLabel, yLabel};
+        charter.inLabels = labels;
+        charter.inSeries = series.toArray(new String[0]);
+        if (colors != null)
+            charter.inColors = colors.stream().collect(Collectors.joining(";"));
+        try {
+            charter.chart();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static LineString regressionLS( double[][] dataset ) {

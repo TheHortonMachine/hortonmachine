@@ -29,17 +29,6 @@ import java.util.List;
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
 
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -53,17 +42,26 @@ import org.hortonmachine.gears.io.las.utils.LasRecordGroundElevationComparator;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.modules.r.filter.OmsKernelFilter;
-import org.hortonmachine.gears.ui.OmsMatrixCharter;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureMate;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description("Module that analyzes the height distribution of a las file and categorizes the forest type.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -100,10 +98,10 @@ public class LasHeightDistribution extends HMModel {
     @In
     public String fId = "id";
 
-    @Description("Optional folder to dump charts in.")
-    @UI(HMConstants.FOLDEROUT_UI_HINT)
-    @In
-    public String outChartsFolder = null;
+//    @Description("Optional folder to dump charts in.")
+//    @UI(HMConstants.FOLDEROUT_UI_HINT)
+//    @In
+//    public String outChartsFolder = null;
 
     @Description("The output raster of forest categories.")
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -118,12 +116,12 @@ public class LasHeightDistribution extends HMModel {
     public void process() throws Exception {
         checkNull(inIndexFile, inVector, inDem);
 
-        if (outChartsFolder != null) {
-            outChartsFolderFile = new File(outChartsFolder);
-            if (outChartsFolderFile.exists()) {
-                doChart = true;
-            }
-        }
+//        if (outChartsFolder != null) {
+//            outChartsFolderFile = new File(outChartsFolder);
+//            if (outChartsFolderFile.exists()) {
+//                doChart = true;
+//            }
+//        }
 
         double percentageOverlap = pOverlapPerc / 100.0;
         File indexFile = new File(inIndexFile);
@@ -375,38 +373,38 @@ public class LasHeightDistribution extends HMModel {
     }
 
     private void doChart( String id, double[][] bins, double[] gaussianSmoothedValues, double[] deriv2 ) throws Exception {
-        if (doChart) {
-            double[][] data = new double[bins[0].length][4];
-            for( int i = 0; i < bins[0].length; i++ ) {
-                data[i][0] = bins[0][i];
-                data[i][1] = bins[1][i];
-                data[i][2] = gaussianSmoothedValues[i];
-                data[i][3] = deriv2[i];
-            }
-
-            File chartFile = new File(outChartsFolderFile, "chart_" + id + ".png");
-
-            OmsMatrixCharter charter = new OmsMatrixCharter();
-            charter.doChart = false;
-            charter.doDump = true;
-            charter.doLegend = false;
-            charter.doHorizontal = true;
-            charter.pHeight = 600;
-            charter.pWidth = 300;
-            charter.pType = 0;
-            charter.inData = data;
-            charter.inTitle = "Height distribution id = " + id;
-            charter.inSubTitle = "";
-            charter.inChartPath = chartFile.getAbsolutePath();
-
-            String[] labels = {"height [m]", "number of points"};
-            String[] series = {"original distribution", "gaussian smoothed", "second derivative"};
-            // String[] series = {"second derivative"};
-            charter.inLabels = labels;
-            charter.inSeries = series;
-            charter.inColors = "255,0,0;0,0,255;0,0,0";
-            charter.chart();
-        }
+//        if (doChart) {
+//            double[][] data = new double[bins[0].length][4];
+//            for( int i = 0; i < bins[0].length; i++ ) {
+//                data[i][0] = bins[0][i];
+//                data[i][1] = bins[1][i];
+//                data[i][2] = gaussianSmoothedValues[i];
+//                data[i][3] = deriv2[i];
+//            }
+//
+//            File chartFile = new File(outChartsFolderFile, "chart_" + id + ".png");
+//
+//            OmsMatrixCharter charter = new OmsMatrixCharter();
+//            charter.doChart = false;
+//            charter.doDump = true;
+//            charter.doLegend = false;
+//            charter.doHorizontal = true;
+//            charter.pHeight = 600;
+//            charter.pWidth = 300;
+//            charter.pType = 0;
+//            charter.inData = data;
+//            charter.inTitle = "Height distribution id = " + id;
+//            charter.inSubTitle = "";
+//            charter.inChartPath = chartFile.getAbsolutePath();
+//
+//            String[] labels = {"height [m]", "number of points"};
+//            String[] series = {"original distribution", "gaussian smoothed", "second derivative"};
+//            // String[] series = {"second derivative"};
+//            charter.inLabels = labels;
+//            charter.inSeries = series;
+//            charter.inColors = "255,0,0;0,0,255;0,0,0";
+//            charter.chart();
+//        }
     }
 
     private double[] doPadding( double[] countsArray, int gaussian ) {

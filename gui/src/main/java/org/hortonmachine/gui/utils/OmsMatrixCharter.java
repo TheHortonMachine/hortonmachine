@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.gears.ui;
+package org.hortonmachine.gui.utils;
 
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSMATRIXCHARTER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSMATRIXCHARTER_AUTHORNAMES;
@@ -46,14 +46,21 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSMATRIXCHARTER_P_WIDT
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSMATRIXCHARTER_STATUS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSMATRIXCHARTER_UI;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.KeyStroke;
 
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -72,8 +79,6 @@ import org.jfree.chart.title.TextTitle;
 import org.jfree.data.xy.XYBarDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.ApplicationFrame;
-import org.jfree.ui.RefineryUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -102,7 +107,7 @@ public class OmsMatrixCharter extends HMModel {
     @In
     public double[][] inData;
 
-    @Description("A list of data to chart, in the case the xy data ar different for each series.")
+    @Description("A list of data to chart, in the case the xy data are different for each series.")
     @In
     public List<double[][]> inDataXY;
 
@@ -218,18 +223,20 @@ public class OmsMatrixCharter extends HMModel {
             cp.setDomainZoomable(true);
             cp.setRangeZoomable(true);
 
-            ApplicationFrame af = new ApplicationFrame("");
-            af.setContentPane(cp);
-            af.setPreferredSize(new Dimension(pWidth, pHeight));
-            af.pack();
-            af.setVisible(true);
-            RefineryUtilities.centerFrameOnScreen(af);
+            GuiUtilities.openDialogWithPanel(cp, "", new Dimension(pWidth, pHeight), false);
+
+//            ApplicationFrame af = new ApplicationFrame("");
+//            af.setContentPane(cp);
+//            af.setPreferredSize(new Dimension(pWidth, pHeight));
+//            af.pack();
+//            af.setVisible(true);
+//            RefineryUtilities.centerFrameOnScreen(af);
+//            af.setDefaultCloseOperation(ApplicationFrame.DISPOSE_ON_CLOSE);
         }
     }
 
     private XYSeriesCollection getSeriesCollection() {
-        XYSeriesCollection collection = new XYSeriesCollection();
-
+        List<XYSeries> seriesList = new ArrayList<>();
         for( int i = 0; i < inSeries.length; i++ ) {
             int col = i + 1;
             if (inDataXY != null) {
@@ -241,23 +248,24 @@ public class OmsMatrixCharter extends HMModel {
             XYSeries series = new XYSeries(seriesName);
 
             double previous = 0;
-            double[] x = new double[inData.length];
-            double[] y = new double[inData.length];
-            for( int j = 0; j < inData.length; j++ ) {
+            int length = inData.length;
+            double[] x = new double[length];
+            double[] y = new double[length];
+            for( int row = 0; row < length; row++ ) {
                 double value;
                 if (!doCumulate) {
-                    value = inData[j][col];
+                    value = inData[row][col];
                 } else {
-                    value = previous + inData[j][col];
+                    value = previous + inData[row][col];
                 }
-                x[j] = inData[j][0];
-                y[j] = value;
+                x[row] = inData[row][0];
+                y[row] = value;
 
                 max = Math.max(max, value);
                 min = Math.min(min, value);
                 previous = value;
-                if (j > 1) {
-                    minInterval = Math.min(minInterval, inData[j - 1][0] - inData[j][0]);
+                if (row > 1) {
+                    minInterval = Math.min(minInterval, inData[row - 1][0] - inData[row][0]);
                 }
             }
             if (doNormalize) {
@@ -270,7 +278,14 @@ public class OmsMatrixCharter extends HMModel {
             for( int k = 0; k < y.length; k++ ) {
                 series.add(x[k], y[k]);
             }
-            collection.addSeries(series);
+            seriesList.add(series);
+        }
+
+//        Collections.reverse(seriesList);
+
+        XYSeriesCollection collection = new XYSeriesCollection();
+        for( XYSeries xySeries : seriesList ) {
+            collection.addSeries(xySeries);
         }
         return collection;
     }

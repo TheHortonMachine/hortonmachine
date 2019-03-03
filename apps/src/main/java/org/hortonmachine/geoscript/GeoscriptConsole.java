@@ -3,6 +3,7 @@ package org.hortonmachine.geoscript;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 
+import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 
 import groovy.lang.GroovyClassLoader;
@@ -24,6 +25,7 @@ public class GeoscriptConsole {
 
     public static void main( String[] args ) {
         try {
+            Logger.INSTANCE.init();
             new GeoscriptConsole();
         } catch (Exception e) {
             e.printStackTrace();
