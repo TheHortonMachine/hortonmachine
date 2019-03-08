@@ -30,7 +30,7 @@
 		<gt.version>20.0</gt.version>
 		<groovy.version>2.4.15</groovy.version>
 		<geoscript.version>1.12.0</geoscript.version>
-		<c3p0.version>0.9.5.2</c3p0.version>
+		<c3p0.version>0.9.5.3</c3p0.version>
 		<h2gis.version>1.5.0-SNAPSHOT</h2gis.version>
 		<sqlitejdbc.version>3.8.11.2</sqlitejdbc.version>
 		<jt.version>1.5.0</jt.version>
