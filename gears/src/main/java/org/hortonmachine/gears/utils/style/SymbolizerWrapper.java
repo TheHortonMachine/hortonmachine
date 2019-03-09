@@ -81,9 +81,9 @@ public abstract class SymbolizerWrapper {
     public boolean isTextSymbolizer() {
         return symbolizer instanceof TextSymbolizer;
     }
-    
+
     public boolean isRasterSymbolizer() {
-    	return symbolizer instanceof RasterSymbolizerWrapper;
+        return symbolizer instanceof RasterSymbolizerWrapper;
     }
 
     public <T> T adapt( Class<T> adaptee ) {
@@ -96,7 +96,7 @@ public abstract class SymbolizerWrapper {
         } else if (adaptee.isAssignableFrom(TextSymbolizerWrapper.class) && this instanceof TextSymbolizerWrapper) {
             return adaptee.cast(this);
         } else if (adaptee.isAssignableFrom(RasterSymbolizerWrapper.class) && this instanceof RasterSymbolizerWrapper) {
-        	return adaptee.cast(this);
+            return adaptee.cast(this);
         }
         return null;
     }
@@ -184,6 +184,8 @@ public abstract class SymbolizerWrapper {
         String urlString = location.toExternalForm();
         if (urlString.startsWith("http://")) { //$NON-NLS-1$
             return urlString;
+        } else if (urlString.startsWith("file:")) { //$NON-NLS-1$
+            return urlString.replaceFirst("file:", "");
         } else {
             throw new RuntimeException("Not implemented yet");
             // File urlToFile = URLUtils.urlToFile(location);
@@ -206,7 +208,14 @@ public abstract class SymbolizerWrapper {
      * @throws MalformedURLException
      */
     public void setExternalGraphicPath( String externalGraphicPath ) throws MalformedURLException {
-        if (externalGraphic == null) {
+        if (externalGraphicPath == null) {
+            PointSymbolizerWrapper pointSymbolizerWrapper = adapt(PointSymbolizerWrapper.class);
+            if (pointSymbolizerWrapper != null) {
+                Graphic graphic = pointSymbolizerWrapper.getGraphic();
+                graphic.graphicalSymbols().clear();
+                externalGraphic = null;
+            }
+        } else {
             PointSymbolizerWrapper pointSymbolizerWrapper = adapt(PointSymbolizerWrapper.class);
             if (pointSymbolizerWrapper != null) {
                 Graphic graphic = pointSymbolizerWrapper.getGraphic();
@@ -214,12 +223,14 @@ public abstract class SymbolizerWrapper {
                 String urlStr = externalGraphicPath;
                 if (!externalGraphicPath.startsWith("http:") && !externalGraphicPath.startsWith("file:")) { //$NON-NLS-1$ //$NON-NLS-2$
                     urlStr = "file:" + externalGraphicPath; //$NON-NLS-1$
+                } else if (externalGraphicPath.startsWith("./")) {
+                    urlStr = "file:" + externalGraphicPath; //$NON-NLS-1$
                 }
                 externalGraphic = sb.createExternalGraphic(new URL(urlStr), getFormat(externalGraphicPath));
                 graphic.graphicalSymbols().add(externalGraphic);
             }
+            setExternalGraphicPath(externalGraphicPath, externalGraphic);
         }
-        setExternalGraphicPath(externalGraphicPath, externalGraphic);
     }
 
     /**
@@ -310,6 +321,8 @@ public abstract class SymbolizerWrapper {
         if (!f.exists()) {
             if (externalGraphicPath.startsWith("http://") || externalGraphicPath.startsWith("file:")) { //$NON-NLS-1$ //$NON-NLS-2$
                 url = new URL(externalGraphicPath);
+            } else if (externalGraphicPath.startsWith("./")) {
+                url = new URL("file:" + externalGraphicPath);
             }
         }
         if (url == null) {

@@ -20,4 +20,4 @@
 MEM="-Xmx2g"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-java $MEM -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.geopaparazzi.GeopaparazziViewer
+java -splash:$DIR/imgs/splash_geopaparazziviewer.png $MEM -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.geopaparazzi.GeopaparazziViewer

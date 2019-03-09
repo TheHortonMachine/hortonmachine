@@ -493,7 +493,8 @@ public class GuiUtilities {
      * @param browseButton
      * @param allowedExtensions
      */
-    public static void setFileBrowsingOnWidgets( JTextField pathTextField, JButton browseButton, String[] allowedExtensions ) {
+    public static void setFileBrowsingOnWidgets( JTextField pathTextField, JButton browseButton, String[] allowedExtensions,
+            Runnable postRunnable ) {
         FileFilter filter = null;
         if (allowedExtensions != null) {
             filter = new FileFilter(){
@@ -526,6 +527,9 @@ public class GuiUtilities {
                 String absolutePath = res[0].getAbsolutePath();
                 pathTextField.setText(absolutePath);
                 setLastPath(absolutePath);
+                if (postRunnable != null) {
+                    postRunnable.run();
+                }
             }
         });
     }

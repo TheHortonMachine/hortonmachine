@@ -20,4 +20,4 @@
 MEM="-Xmx4g"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-java $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -cp "$DIR/libs/*" org.hortonmachine.geoscript.GeoscriptConsole
+java -splash:$DIR/imgs/splash_geoscript.png $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -cp "$DIR/libs/*" org.hortonmachine.geoscript.GeoscriptConsole

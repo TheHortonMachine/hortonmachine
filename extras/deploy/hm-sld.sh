@@ -17,8 +17,7 @@
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
 MEM="-Xmx4g"
-set -x
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR=`dirname "$0"`
-java $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.style.MainController $1
+java -splash:$DIR/imgs/splash_sld.png $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.style.MainController $1

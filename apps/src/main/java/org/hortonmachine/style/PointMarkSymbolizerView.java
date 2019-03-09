@@ -13,6 +13,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import com.jgoodies.forms.layout.CellConstraints;
@@ -41,6 +42,9 @@ public class PointMarkSymbolizerView extends JPanel
    JLabel _offsetXLabel = new JLabel();
    JLabel _offsetYLabel = new JLabel();
    JSpinner _offsetYSpinner = new JSpinner();
+   JTextField _graphicPathField = new JTextField();
+   JButton _browseGraphicButton = new JButton();
+   JLabel _sizeLabel1 = new JLabel();
 
    /**
     * Default constructor
@@ -143,7 +147,7 @@ public class PointMarkSymbolizerView extends JPanel
 
       jpanel1.add(createPanel1(),cc.xywh(2,4,19,1));
       jpanel1.add(createPanel2(),cc.xywh(2,6,19,1));
-      jpanel1.add(createPanel3(),cc.xywh(2,2,18,1));
+      jpanel1.add(createPanel3(),cc.xywh(2,2,19,1));
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 },new int[]{ 1,2,3,4,5,6,7,8,9 });
       return jpanel1;
    }
@@ -218,7 +222,7 @@ public class PointMarkSymbolizerView extends JPanel
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Mark",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:6.0CM:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:6.0CM:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:12DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -227,33 +231,57 @@ public class PointMarkSymbolizerView extends JPanel
 
       _sizeLabel.setName("sizeLabel");
       _sizeLabel.setText("size");
-      jpanel1.add(_sizeLabel,cc.xy(2,4));
+      jpanel1.add(_sizeLabel,cc.xy(2,6));
 
       _markSizeSpinner.setName("markSizeSpinner");
-      jpanel1.add(_markSizeSpinner,cc.xy(4,4));
+      jpanel1.add(_markSizeSpinner,cc.xy(4,6));
 
       _rotationLabel.setName("rotationLabel");
       _rotationLabel.setText("rotation");
-      jpanel1.add(_rotationLabel,cc.xy(2,6));
+      jpanel1.add(_rotationLabel,cc.xy(2,8));
 
       _rotationSpinner.setName("rotationSpinner");
-      jpanel1.add(_rotationSpinner,cc.xy(4,6));
+      jpanel1.add(_rotationSpinner,cc.xy(4,8));
 
       _offsetXSpinner.setName("offsetXSpinner");
-      jpanel1.add(_offsetXSpinner,cc.xy(4,8));
+      jpanel1.add(_offsetXSpinner,cc.xy(4,10));
 
       _offsetXLabel.setName("offsetXLabel");
       _offsetXLabel.setText("offset x");
-      jpanel1.add(_offsetXLabel,cc.xy(2,8));
+      jpanel1.add(_offsetXLabel,cc.xy(2,10));
 
       _offsetYLabel.setName("offsetYLabel");
       _offsetYLabel.setText("offset y");
-      jpanel1.add(_offsetYLabel,cc.xy(2,10));
+      jpanel1.add(_offsetYLabel,cc.xy(2,12));
 
       _offsetYSpinner.setName("offsetYSpinner");
-      jpanel1.add(_offsetYSpinner,cc.xy(4,10));
+      jpanel1.add(_offsetYSpinner,cc.xy(4,12));
 
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11 });
+      jpanel1.add(createPanel4(),cc.xy(4,4));
+      _sizeLabel1.setName("sizeLabel");
+      _sizeLabel1.setText("from graphic");
+      jpanel1.add(_sizeLabel1,cc.xy(2,4));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel4()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:24DLU:NONE","CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      _graphicPathField.setName("graphicPathField");
+      jpanel1.add(_graphicPathField,cc.xy(1,1));
+
+      _browseGraphicButton.setActionCommand("...");
+      _browseGraphicButton.setName("browseGraphicButton");
+      _browseGraphicButton.setText("...");
+      jpanel1.add(_browseGraphicButton,cc.xy(3,1));
+
+      addFillComponents(jpanel1,new int[]{ 2 },new int[0]);
       return jpanel1;
    }
 

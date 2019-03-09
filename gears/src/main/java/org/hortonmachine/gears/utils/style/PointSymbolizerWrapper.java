@@ -40,7 +40,7 @@ public class PointSymbolizerWrapper extends SymbolizerWrapper {
 
     private Graphic graphic;
 
-    public PointSymbolizerWrapper(Symbolizer symbolizer, RuleWrapper parent) {
+    public PointSymbolizerWrapper( Symbolizer symbolizer, RuleWrapper parent ) {
         super(symbolizer, parent);
 
         PointSymbolizer pointSymbolizer = (PointSymbolizer) symbolizer;
@@ -134,7 +134,7 @@ public class PointSymbolizerWrapper extends SymbolizerWrapper {
     }
 
     // ///// GETTERS/SETTERS
-    public void setSize(String size, boolean isProperty) {
+    public void setSize( String size, boolean isProperty ) {
         this.size = size;
         if (isProperty) {
             graphic.setSize(ff.property(size));
@@ -143,7 +143,7 @@ public class PointSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setRotation(String rotation, boolean isProperty) {
+    public void setRotation( String rotation, boolean isProperty ) {
         this.rotation = rotation;
         if (isProperty) {
             graphic.setRotation(ff.property(rotation));
@@ -152,11 +152,13 @@ public class PointSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setMarkName(String markName) {
+    public void setMarkName( String markName ) {
+        this.markName = markName;
         if (markName == null || markName.equals("")) { //$NON-NLS-1$
+            graphic.graphicalSymbols().clear();
+            mark = null;
             return;
         }
-        this.markName = markName;
         if (mark == null) {
             mark = sf.createMark();
         }
@@ -166,7 +168,7 @@ public class PointSymbolizerWrapper extends SymbolizerWrapper {
         graphic.graphicalSymbols().add(mark);
     }
 
-    public void setFillColor(String fillColor) {
+    public void setFillColor( String fillColor ) {
         if (fillColor == null) {
             hasFill = false;
         } else {
@@ -177,7 +179,7 @@ public class PointSymbolizerWrapper extends SymbolizerWrapper {
         fill.setColor(ff.literal(fillColor));
     }
 
-    public void setFillOpacity(String fillOpacity, boolean isProperty) {
+    public void setFillOpacity( String fillOpacity, boolean isProperty ) {
         this.fillOpacity = fillOpacity;
         checkFillExists();
         if (isProperty) {
@@ -187,7 +189,7 @@ public class PointSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setHasStroke(boolean hasStroke) {
+    public void setHasStroke( boolean hasStroke ) {
         this.hasStroke = hasStroke;
         if (hasStroke) {
             checkStrokeExists();
@@ -197,7 +199,7 @@ public class PointSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setHasFill(boolean hasFill) {
+    public void setHasFill( boolean hasFill ) {
         this.hasFill = hasFill;
         if (hasFill) {
             checkFillExists();
@@ -216,9 +218,9 @@ public class PointSymbolizerWrapper extends SymbolizerWrapper {
                 strokeWidth = DEFAULT_WIDTH;
             }
             stroke = sf.createStroke(ff.literal(strokeColor), ff.literal(strokeWidth));
-            if (mark != null) {
-                mark.setStroke(stroke);
-            }
+        }
+        if (mark != null) {
+            mark.setStroke(stroke);
         }
     }
 
@@ -228,13 +230,13 @@ public class PointSymbolizerWrapper extends SymbolizerWrapper {
                 fillColor = DEFAULT_COLOR;
             }
             fill = sf.createFill(ff.literal(fillColor));
-            if (mark != null) {
-                mark.setFill(fill);
-            }
+        }
+        if (mark != null) {
+            mark.setFill(fill);
         }
     }
 
-    public void setStrokeWidth(String strokeWidth, boolean isProperty) {
+    public void setStrokeWidth( String strokeWidth, boolean isProperty ) {
         this.strokeWidth = strokeWidth;
         checkStrokeExists();
         if (isProperty) {
@@ -244,7 +246,7 @@ public class PointSymbolizerWrapper extends SymbolizerWrapper {
         }
     }
 
-    public void setStrokeColor(String strokeColor) {
+    public void setStrokeColor( String strokeColor ) {
         this.strokeColor = strokeColor;
         checkStrokeExists();
         if (strokeColor == null) {
@@ -255,7 +257,7 @@ public class PointSymbolizerWrapper extends SymbolizerWrapper {
         stroke.setColor(ff.literal(strokeColor));
     }
 
-    public void setStrokeOpacity(String strokeOpacity, boolean isProperty) {
+    public void setStrokeOpacity( String strokeOpacity, boolean isProperty ) {
         this.strokeOpacity = strokeOpacity;
         checkStrokeExists();
         if (isProperty) {

@@ -23,6 +23,6 @@ IF EXIST "%~dp0\jre\bin\java.exe" (
 )
 
 set MEM="-Xmx256m"
-%JAVAEXE% %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -cp ".\libs\*" org.hortonmachine.gforms.FormBuilderController %1
+"%JAVAEXE%" -splash:%~dp0\imgs\splash_gforms.png %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -cp ".\libs\*" org.hortonmachine.gforms.FormBuilderController %1
 
 endlocal

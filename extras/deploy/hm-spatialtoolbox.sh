@@ -20,4 +20,4 @@
 MEM="-Xmx1g"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-java $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController ./libs
+java -splash:$DIR/imgs/splash_spatialtoolbox.png $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController ./libs
