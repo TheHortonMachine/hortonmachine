@@ -87,6 +87,8 @@ public class GuiUtilities {
 
     public static interface IOnCloseListener {
         public void onClose();
+
+        public boolean canCloseWithoutPrompt();
     }
 
     /**
@@ -411,14 +413,19 @@ public class GuiUtilities {
         }
     }
 
-    public static void addClosingListener( JFrame frame, IOnCloseListener freeResourcesComponent ) {
+    public static void addClosingListener( JFrame frame, IOnCloseListener onCloseListener ) {
         WindowListener exitListener = new WindowAdapter(){
             @Override
             public void windowClosing( WindowEvent e ) {
-                int confirm = JOptionPane.showOptionDialog(frame, "Are you sure you want to exit?", "Exit Confirmation",
-                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    freeResourcesComponent.onClose();
+                if (!onCloseListener.canCloseWithoutPrompt()) {
+                    int confirm = JOptionPane.showOptionDialog(frame, "Are you sure you want to exit?", "Exit Confirmation",
+                            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        onCloseListener.onClose();
+                        System.exit(0);
+                    }
+                } else {
+                    onCloseListener.onClose();
                     System.exit(0);
                 }
             }

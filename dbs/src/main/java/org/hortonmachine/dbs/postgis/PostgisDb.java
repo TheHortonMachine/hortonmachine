@@ -41,15 +41,13 @@ import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
-import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.EGeometryType;
-import org.postgresql.PGConnection;
-import org.postgresql.util.PGobject;
-
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
+import org.postgresql.PGConnection;
+import org.postgresql.util.PGobject;
 
 /**
  * A spatialite database.

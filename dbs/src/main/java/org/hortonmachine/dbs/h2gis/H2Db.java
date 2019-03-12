@@ -47,7 +47,6 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
  */
 public class H2Db extends ADb {
     private static final String DRIVER_CLASS = "org.h2.Driver";
-    private static final String JDBC_URL_PRE = "jdbc:h2:";
     /**
      * Connection use in non pooled mode.
      */
@@ -124,7 +123,7 @@ public class H2Db extends ADb {
             dbExists = false;
         }
 
-        String jdbcUrl = JDBC_URL_PRE + dbPath;
+        String jdbcUrl = EDb.H2.getJdbcPrefix() + dbPath;
 
         if (makePooled) {
             Properties p = new Properties(System.getProperties());
@@ -201,7 +200,7 @@ public class H2Db extends ADb {
 
     @Override
     public String getJdbcUrlPre() {
-        return JDBC_URL_PRE;
+        return EDb.H2.getJdbcPrefix();
     }
 
     @Override

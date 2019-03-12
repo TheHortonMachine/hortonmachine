@@ -47,7 +47,6 @@ import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.utils.OsCheck;
 import org.hortonmachine.dbs.utils.OsCheck.OSType;
-
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
@@ -58,8 +57,6 @@ import org.locationtech.jts.geom.Geometry;
  */
 public class SpatialiteDb extends ASpatialDb {
     private SqliteDb sqliteDb;
-
-    private SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
 
     private IHMConnection mConn;
 

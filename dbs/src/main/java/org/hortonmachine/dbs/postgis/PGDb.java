@@ -49,7 +49,6 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 public class PGDb extends ADb {
     private static final String WORKING_SCHEMA = "public"; // TODO add schema support in future
     private static final String DRIVER_CLASS = "org.postgresql.Driver";
-    private static final String JDBC_URL_PRE = "jdbc:postgresql://";
     /**
      * Connection use in non pooled mode.
      */
@@ -100,9 +99,9 @@ public class PGDb extends ADb {
         connectionData.password = password;
         connectionData.dbType = getType().getCode();
 
-        boolean dbExists = false;
+        boolean dbExists = true;
 
-        String jdbcUrl = JDBC_URL_PRE + dbPath;
+        String jdbcUrl = EDb.POSTGRES.getJdbcPrefix() + dbPath;
 
         if (makePooled) {
             Properties p = new Properties(System.getProperties());
@@ -179,7 +178,7 @@ public class PGDb extends ADb {
 
     @Override
     public String getJdbcUrlPre() {
-        return JDBC_URL_PRE;
+        return EDb.POSTGRES.getJdbcPrefix();
     }
 
     @Override
@@ -437,7 +436,7 @@ public class PGDb extends ADb {
         if (existingDb == null) {
             existingDb = "postgres";
         }
-        String url = JDBC_URL_PRE + host + ":" + port + "/" + existingDb;
+        String url = EDb.POSTGRES.getJdbcPrefix() + host + ":" + port + "/" + existingDb;
         try (Connection connection = DriverManager.getConnection(url, user, pwd)) {
 
             String sql = "SELECT datname FROM pg_database WHERE datistemplate = false;";

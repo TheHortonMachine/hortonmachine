@@ -74,7 +74,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -108,8 +107,8 @@ import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
-import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
+import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.ImageCache;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
@@ -118,8 +117,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
-
-import com.jogamp.common.nio.ByteBufferInputStream;
 
 /**
  * The spatialite/h2gis view controller.
@@ -1221,7 +1218,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     if (valueObj instanceof byte[]) {
                         maybeImage = true;
                     }
-                    
+
                     String valueAt = valueObj.toString();
                     String[] split = valueAt.split("\\s+");
                     if (split.length > 0 && ESpatialiteGeometryType.isGeometryName(split[0])) {
@@ -1674,6 +1671,14 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     }
 
     protected void openDatabase( ConnectionData connectionData ) {
+        EDb type = EDb.forCode(connectionData.dbType);
+        if (type.supportsDesktop()) {
+            GuiUtilities.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, connectionData.connectionUrl);
+        } else if (type.supportsServerMode()) {
+            GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_URL, type.getJdbcPrefix() + connectionData.connectionUrl);
+        }
+        GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, connectionData.user);
+        GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, connectionData.password);
         try {
             closeCurrentDb(true);
         } catch (Exception e1) {
@@ -1691,7 +1696,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             boolean hadError = false;
             try {
 
-                EDb type = EDb.forCode(connectionData.dbType);
                 currentConnectedDatabase = type.getSpatialDb();
                 if (connectionData.user != null) {
                     currentConnectedDatabase.setCredentials(connectionData.user, connectionData.password);
@@ -1978,6 +1982,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             mapFrame.setVisible(true);
         }
         mapFrame.addLayer(fc);
+    }
+    
+    @Override
+    public boolean canCloseWithoutPrompt() {
+        return currentConnectedDatabase == null;
     }
 
 }

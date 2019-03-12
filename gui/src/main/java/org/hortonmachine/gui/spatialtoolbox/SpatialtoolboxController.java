@@ -75,7 +75,6 @@ import org.hortonmachine.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.Variables;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.DataUtilities;
 import org.hortonmachine.gears.utils.SldUtilities;
@@ -91,8 +90,8 @@ import org.hortonmachine.gui.spatialtoolbox.core.ViewerModule;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
-import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
+import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.ImageCache;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -145,8 +144,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         final ImageIcon moduleExpIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/module_exp.gif"));
 
         ImageIcon worldIcon = ImageCache.getInstance().getImage(ImageCache.BROWSER);
-        
-        
+
         _parametersPanel.setLayout(new BorderLayout());
 
         addComponentListener(new ComponentListener(){
@@ -942,6 +940,10 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
      * @param file
      */
     protected void loadVectorLayer( File file ) {
+    }
+
+    public boolean canCloseWithoutPrompt() {
+        return false;
     }
 
     public static void main( String[] args ) throws Exception {

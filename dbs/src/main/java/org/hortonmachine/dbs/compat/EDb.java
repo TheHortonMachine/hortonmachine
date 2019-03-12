@@ -19,11 +19,10 @@ package org.hortonmachine.dbs.compat;
 
 import java.io.File;
 
+import org.hortonmachine.dbs.h2gis.H2GisGeometryParser;
 import org.hortonmachine.dbs.h2gis.H2SyntaxHelper;
 import org.hortonmachine.dbs.postgis.PGSyntaxHelper;
-import org.hortonmachine.dbs.postgis.PostgisGeometryColumns;
 import org.hortonmachine.dbs.postgis.PostgisGeometryParser;
-import org.hortonmachine.dbs.h2gis.H2GisGeometryParser;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryParser;
 import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
@@ -46,9 +45,9 @@ public enum EDb {
     SPATIALITE4ANDROID(4, ".sqlite", "sqlite", "org.hortonmachine.dbs.spatialite.android.GPSpatialiteDb", true,
             "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "", false, false, true, false), //
     POSTGRES(5, "", "", "org.hortonmachine.dbs.postgis.PGDb", false, "org.hortonmachine.dbs.postgis.PGSqlTemplates",
-            "jdbc:postgresql://", true, true, false, true), //
+            "jdbc:postgresql://", true, true, false, false), //
     POSTGIS(6, "", "", "org.hortonmachine.dbs.postgis.PostgisDb", true, "org.hortonmachine.dbs.postgis.PostgisSqlTemplates",
-            "jdbc:postgresql://", true, true, false, true)
+            "jdbc:postgresql://", true, true, false, false)
 
     ; //
 
@@ -65,6 +64,19 @@ public enum EDb {
     private boolean _supportsDesktop;
     private ASqlTemplates sqlTemplates;
 
+    /**
+     * @param code db code.
+     * @param extensionOnCreation extension to use when creating a new db.
+     * @param extension extension to use when opening the db.
+     * @param dbClassName class of the db.
+     * @param isSpatial if <code>true</code>, the database supports spatial tables.
+     * @param sqlTemplatesClassName class of db templates.
+     * @param jdbcPrefix the jdbc prefic, if supported.
+     * @param supportsPwd if the db allows for password.
+     * @param supportsServerMode if the db supports server mode.
+     * @param supportsMobile if the db can be run on mobile devices.
+     * @param supportsDesktop if the db supports file based desktop mode (i.e. without server).
+     */
     private EDb( int code, String extensionOnCreation, String extension, String dbClassName, boolean isSpatial,
             String sqlTemplatesClassName, String jdbcPrefix, boolean supportsPwd, boolean supportsServerMode,
             boolean supportsMobile, boolean supportsDesktop ) {

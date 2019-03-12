@@ -196,6 +196,10 @@ public class GeopaparazziViewer extends GeopaparazziController {
         return actions;
 
     }
+    
+    public boolean canCloseWithoutPrompt() {
+        return false;
+    }
 
     public static void main( String[] args ) throws Exception {
         GuiUtilities.setDefaultLookAndFeel();

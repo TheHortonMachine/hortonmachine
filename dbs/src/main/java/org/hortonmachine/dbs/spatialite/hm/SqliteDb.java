@@ -47,7 +47,6 @@ import org.sqlite.SQLiteConfig;
  */
 public class SqliteDb extends ADb {
     private static final String DRIVER_CLASS = "org.sqlite.JDBC";
-    private static final String JDBC_URL_PRE = "jdbc:sqlite:";
     private Connection jdbcConn;
     private HMConnection mConn;
     private ConnectionData connectionData;
@@ -112,7 +111,7 @@ public class SqliteDb extends ADb {
             properties.setProperty("user", user);
             properties.setProperty("password", password);
         }
-        jdbcConn = DriverManager.getConnection(JDBC_URL_PRE + dbPath, properties);
+        jdbcConn = DriverManager.getConnection(EDb.SQLITE.getJdbcPrefix() + dbPath, properties);
         mConn = new HMConnection(jdbcConn, false);
         if (mPrintInfos) {
             String[] dbInfo = getDbInfo();
@@ -123,7 +122,7 @@ public class SqliteDb extends ADb {
 
     @Override
     public String getJdbcUrlPre() {
-        return JDBC_URL_PRE;
+        return EDb.SQLITE.getJdbcPrefix();
     }
 
     public Connection getJdbcConnection() {

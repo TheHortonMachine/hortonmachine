@@ -22,6 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.h2gis.H2GisDb;
+import org.hortonmachine.dbs.postgis.PostgisDb;
+import org.hortonmachine.dbs.spatialite.hm.SpatialiteThreadsafeDb;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.interpolation.LeastSquaresInterpolator;
 import org.hortonmachine.gears.utils.math.interpolation.PolynomialInterpolator;
@@ -159,6 +164,38 @@ public class HM {
             runningX += interval;
         }
         return GeometryUtilities.gf().createLineString(coords.toArray(new Coordinate[coords.size()]));
+    }
+
+    public static ASpatialDb connectPostgis( String host, int port, String database, String user, String pwd ) throws Exception {
+        PostgisDb spatialDb = (PostgisDb) EDb.POSTGIS.getSpatialDb();
+        String dbPath = host + ":" + port + "/" + database;
+        spatialDb.setMakePooled(false);
+        if (user != null && pwd != null)
+            spatialDb.setCredentials(user, pwd);
+        spatialDb.open(dbPath);
+        spatialDb.initSpatialMetadata(null);
+        return spatialDb;
+    }
+
+    public static ASpatialDb connectSpatialite( String databasePath ) throws Exception {
+        SpatialiteThreadsafeDb spatialDb = (SpatialiteThreadsafeDb) EDb.SPATIALITE.getSpatialDb();
+        spatialDb.setMakePooled(false);
+        if (!spatialDb.open(databasePath)) {
+            spatialDb.initSpatialMetadata(null);
+        }
+        return spatialDb;
+    }
+
+    public static ASpatialDb connectH2GIS( String databasePath, String user, String pwd ) throws Exception {
+        H2GisDb spatialDb = (H2GisDb) EDb.H2GIS.getSpatialDb();
+        if (user != null && pwd != null) {
+            spatialDb.setCredentials(user, pwd);
+        }
+        spatialDb.setMakePooled(false);
+        if (!spatialDb.open(databasePath)) {
+            spatialDb.initSpatialMetadata(null);
+        }
+        return spatialDb;
     }
 
 }

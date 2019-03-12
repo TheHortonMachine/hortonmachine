@@ -425,6 +425,21 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
     }
 
     /**
+     * Execute a select sql without any return.
+     * 
+     * @param sql
+     *            the sql to run.
+     * @throws Exception
+     */
+    public void executeSelect( String sql ) throws Exception {
+        execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement()) {
+                return stmt.executeQuery(sql);
+            }
+        });
+    }
+
+    /**
      * Execute an update, insert or delete by sql.
      * 
      * @param sql

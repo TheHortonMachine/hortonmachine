@@ -427,6 +427,10 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         GuiUtilities.setPreference(MAPCALC_HISTORY_KEY, historyList.toArray(new String[0]));
     }
 
+    public boolean canCloseWithoutPrompt() {
+        return false;
+    }
+    
     public JComponent asJComponent() {
         return this;
     }

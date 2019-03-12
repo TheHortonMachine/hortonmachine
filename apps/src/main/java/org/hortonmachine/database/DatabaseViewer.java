@@ -47,7 +47,6 @@ import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.ImageCache;
-import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.nww.SimpleNwwViewer;
 import org.hortonmachine.nww.gui.LayersPanelController;
 import org.hortonmachine.nww.gui.NwwPanel;
@@ -65,7 +64,7 @@ import gov.nasa.worldwind.util.WWUtil;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class DatabaseViewer extends DatabaseController implements IOnCloseListener {
+public class DatabaseViewer extends DatabaseController {
     // private static final Logger logger = LoggerFactory.getLogger(SpatialiteViewer.class);
     private static final long serialVersionUID = 1L;
     private ToolsPanelController toolsPanelController;
@@ -360,5 +359,7 @@ public class DatabaseViewer extends DatabaseController implements IOnCloseListen
             controller.openDatabase(dbType, absolutePath, null, null);
         }
     }
+
+
 
 }

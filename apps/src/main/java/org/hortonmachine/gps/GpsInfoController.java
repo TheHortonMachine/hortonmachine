@@ -319,6 +319,10 @@ public class GpsInfoController extends GpsInfoView implements NmeaGpsListener, I
         return Double.NaN;
     }
 
+    public boolean canCloseWithoutPrompt() {
+        return false;
+    }
+    
     public static void main( String[] args ) {
 
         GuiUtilities.setDefaultLookAndFeel();

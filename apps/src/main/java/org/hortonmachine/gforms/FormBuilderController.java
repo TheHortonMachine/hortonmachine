@@ -99,6 +99,10 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         init();
     }
 
+    public boolean canCloseWithoutPrompt() {
+        return selectedFile == null;
+    }
+
     private void init() throws Exception {
         _filePathtext.setEditable(false);
 

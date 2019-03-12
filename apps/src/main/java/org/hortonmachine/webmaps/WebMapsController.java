@@ -6,7 +6,6 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -39,10 +37,7 @@ import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.files.FileUtilities;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.images.WmsWrapper;
-import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
@@ -263,9 +258,8 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
                     GridCoverage2D coverage = CoverageUtilities.buildCoverage("wms2tiff", image, envParams, crs);
                     String outPath = _outputFileField.getText();
                     OmsRasterWriter.writeRaster(outPath, coverage);
-                    
-                    CoverageUtilities.writeWorldFiles(coverage, outPath);
 
+                    CoverageUtilities.writeWorldFiles(coverage, outPath);
 
 //                    ImageIO.write(image, "png", new File(outPath));
 
@@ -405,6 +399,10 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
 
     @Override
     public void onClose() {
+    }
+
+    public boolean canCloseWithoutPrompt() {
+        return currentWms == null;
     }
 
     public static void main( String[] args ) {
