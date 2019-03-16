@@ -286,7 +286,7 @@ public class SqlTemplatesAndActions {
                         logConsole.setVisible(false);
                         window.dispose();
                     }
-                }).start();
+                }, "SqlTemplates->refresh database").start();
             }
         };
     }
@@ -452,7 +452,7 @@ public class SqlTemplatesAndActions {
                             window.dispose();
                         }
                     }
-                }).start();
+                }, "SqlTemplates->import shapefile").start();
             }
         };
     }
@@ -565,7 +565,7 @@ public class SqlTemplatesAndActions {
                             window.dispose();
                         }
                     }
-                }).start();
+                }, "SqlTemplates->import sql file").start();
 
             }
         };

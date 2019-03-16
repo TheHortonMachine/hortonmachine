@@ -107,7 +107,7 @@ public class DatabaseViewer extends DatabaseController {
                         window.dispose();
                     }
                 }
-            }).start();
+            }, "DatabaseViewer->run query and view geometries").start();
         });
     }
 

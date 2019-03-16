@@ -261,7 +261,7 @@ public class PGDb extends ADb {
     }
 
     public ETableType getTableType( String tableName ) throws Exception {
-        String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + tableName + "')";
+        String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + tableName + "') and table_Schema!='information_schema'";
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
 
@@ -300,7 +300,7 @@ public class PGDb extends ADb {
         });
 
         String sql = "select column_name, data_type from information_schema.columns where upper(table_name)=upper('" + tableName
-                + "')";
+                + "') and table_Schema!='information_schema'";
         return execOnConnection(connection -> {
             List<String[]> colInfo = new ArrayList<>();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {

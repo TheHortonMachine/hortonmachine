@@ -300,6 +300,8 @@ public enum EGeometryType {
             return ESpatialiteGeometryType.POLYGON_XY;
         case MULTIPOLYGON:
             return ESpatialiteGeometryType.MULTIPOLYGON_XY;
+        case GEOMETRY:
+            return ESpatialiteGeometryType.GEOMETRY_XY;
         case GEOMETRYCOLLECTION:
             return ESpatialiteGeometryType.GEOMETRYCOLLECTION_XY;
         default:

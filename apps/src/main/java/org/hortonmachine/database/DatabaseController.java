@@ -538,7 +538,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         window.dispose();
                     }
                 }
-            }).start();
+            }, "DatabaseController->run query").start();
         });
 
         _runQueryAndStoreButton.setIcon(ImageCache.getInstance().getImage(ImageCache.RUN_TO_FILE));
@@ -595,7 +595,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         window.dispose();
                     }
                 }
-            }).start();
+            }, "DatabaseController->run query to file").start();
         });
 
         _runQueryAndStoreShapefileButton.setIcon(ImageCache.getInstance().getImage(ImageCache.RUN_TO_SHAPEFILE));
@@ -653,7 +653,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         window.dispose();
                     }
                 }
-            }).start();
+            }, "DatabaseController->run query to shapefile").start();
         });
 
         setViewQueryButton(_viewQueryButton, preferredSqleditorButtonSize, currentSqlEditorArea);
@@ -1509,7 +1509,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     window.dispose();
                 }
             }
-        }).start();
+        }, "DatabaseController->create new database").start();
 
     }
 
@@ -1596,7 +1596,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     window.dispose();
                 }
             }
-        }).start();
+        }, "DatabaseController->open database").start();
     }
 
     protected void openRemoteDatabase( String urlString, String user, String pwd ) {
@@ -1666,7 +1666,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     window.dispose();
                 }
             }
-        }).start();
+        }, "DatabaseController->open remote database").start();
 
     }
 
@@ -1722,7 +1722,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     window.dispose();
                 }
             }
-        }).start();
+        }, "DatabaseController->open database with connectiondata").start();
 
     }
 
