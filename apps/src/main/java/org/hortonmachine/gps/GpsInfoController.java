@@ -95,7 +95,7 @@ public class GpsInfoController extends GpsInfoView implements NmeaGpsListener, I
                             e.printStackTrace();
                         }
                     }
-                }).start();
+                }, "GpsInfoController -> Fake GPS thread").start();
             } else {
                 if (gps != null) {
                     try {
@@ -128,7 +128,7 @@ public class GpsInfoController extends GpsInfoView implements NmeaGpsListener, I
                             e.printStackTrace();
                         }
                     }
-                }).start();
+                }, "GpsInfoController -> GPS thread").start();
             } else {
                 if (gps != null) {
                     try {

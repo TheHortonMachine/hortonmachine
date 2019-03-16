@@ -274,8 +274,8 @@ public class StageScriptExecutor {
         logBuilder.setLength(0);
 
         StringBuilder preCommentsBuilder = new StringBuilder();
-        preCommentsBuilder
-                .append("Process started: " + SpatialToolboxConstants.dateTimeFormatterYYYYMMDDHHMMSS.format(new Date()));
+        String processName = "Process started: " + SpatialToolboxConstants.dateTimeFormatterYYYYMMDDHHMMSS.format(new Date());
+        preCommentsBuilder.append(processName);
         preCommentsBuilder.append(nl);
 
         // command launched
@@ -319,7 +319,7 @@ public class StageScriptExecutor {
         printMessage(preCommentsBuilder.toString(), ELogStyle.COMMENT);
         isRunning = true;
 
-        new Thread(){
+        new Thread("StageScriptExecutor->" + processName){
             public void run() {
                 BufferedReader br = null;
                 try {
@@ -350,7 +350,7 @@ public class StageScriptExecutor {
 
         }.start();
 
-        new Thread(){
+        new Thread("StageScriptExecutor->" + processName + " -> Console printer"){
             public void run() {
                 BufferedReader br = null;
                 try {

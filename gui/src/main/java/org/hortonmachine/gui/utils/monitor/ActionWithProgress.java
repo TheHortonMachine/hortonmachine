@@ -86,7 +86,7 @@ public abstract class ActionWithProgress extends AbstractAction {
                 if (monitor != null && monitor.getCurrent() != monitor.getTotal())
                     monitor.setCurrent(null, monitor.getTotal());
             }
-        }).start();
+        }, "ActionWithPogress -> " + progressTitle).start();
 
     }
 
