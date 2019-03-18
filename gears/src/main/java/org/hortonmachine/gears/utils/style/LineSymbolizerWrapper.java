@@ -3,6 +3,7 @@ package org.hortonmachine.gears.utils.style;
 import static org.hortonmachine.gears.utils.style.StyleUtilities.*;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.geotools.filter.function.FilterFunction_endPoint;
@@ -16,6 +17,7 @@ import org.geotools.styling.PolygonSymbolizer;
 import org.geotools.styling.Stroke;
 import org.geotools.styling.Symbolizer;
 import org.opengis.filter.expression.Expression;
+import org.opengis.filter.expression.Literal;
 import org.opengis.style.GraphicalSymbol;
 
 /**
@@ -98,8 +100,10 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
         }
 
         // dash
-        float[] dashArray = stroke.getDashArray();
-        if (dashArray != null) {
+
+        float[] dashArray = getDashArrayFloats();
+
+        if (dashArray.length > 0) {
             dash = getDashString(dashArray);
         } else {
             dash = ""; //$NON-NLS-1$
@@ -245,8 +249,31 @@ public class LineSymbolizerWrapper extends SymbolizerWrapper {
         if (dashArray == null) {
             stroke.dashArray().clear();
         } else {
-            stroke.setDashArray(dashArray);
+            List<Expression> dashArrayExpr = new ArrayList<>();
+            for( float value : dashArray ) {
+                dashArrayExpr.add(ff.literal(value));
+            }
+            stroke.setDashArray(dashArrayExpr);
         }
+    }
+
+    private float[] getDashArrayFloats() {
+        List<Expression> dashArrayExpr = stroke.dashArray();
+        if (dashArrayExpr == null) {
+            return new float[0];
+        }
+        float[] dashArray = new float[dashArrayExpr.size()];
+        int index = 0;
+        for( Expression expression : dashArrayExpr ) {
+            if (expression instanceof Literal) {
+                Literal literal = (Literal) expression;
+                dashArray[index] = literal.evaluate(null, Float.class);
+            } else {
+                throw new RuntimeException("Dash array is not literal: '" + expression + "'.");
+            }
+            index++;
+        }
+        return dashArray;
     }
 
     public void setDashOffset( String dashOffset ) {
