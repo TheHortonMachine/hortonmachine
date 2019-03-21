@@ -48,7 +48,7 @@ public abstract class ExecutorProgressGui extends HMExecutor {
         panel.add(jpb, BorderLayout.CENTER);
         frame.add(panel);
         frame.pack();
-        frame.setSize(400, 90);
+        frame.setSize(w, h);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         frame.setIconImage(ImageCache.getBuffered(ImageCache.HORTONMACHINE_FRAME_ICON));

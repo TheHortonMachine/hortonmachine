@@ -29,6 +29,8 @@ import org.hortonmachine.gui.utils.executor.HMExecutor.Update;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public abstract class HMExecutor extends SwingWorker<Void, Update> {
+    protected int w = 600;
+    protected int h = 120;
 
     protected ProgressPrinter progress;
 
