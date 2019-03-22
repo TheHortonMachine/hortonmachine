@@ -18,49 +18,7 @@
 package org.hortonmachine.hmachine.modules.networktools.trento_p;
 
 import static java.lang.Math.pow;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_AUTHORCONTACTS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_AUTHORNAMES;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_KEYWORDS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_LABEL;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_LICENSE;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_NAME;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_STATUS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_dt_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_inDiameters_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_inPipes_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_inRain_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_outDischarge_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_outFillDegree_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_outPipes_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_outTpMax_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pA_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pAccuracy_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pAlign_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pC_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pCelerityFactor_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pEpsilon_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pEspInflux_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pExponent_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pFranco_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pG_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pGamma_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pJMax_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pMaxJunction_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pMaxTheta_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pMinDischarge_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pMinG_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pMinimumDepth_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pMode_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pN_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pOutPipe_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pTau_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_pTolerance_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_tDTp_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_tMax_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_tpMaxCalibration_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_tpMax_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTRENTOP_tpMin_DESCRIPTION;
+import static org.hortonmachine.gears.libs.modules.HMConstants.OTHER;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_ACCURACY;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_CELERITY_FACTOR;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_EPSILON;
@@ -85,20 +43,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Range;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-import oms3.annotations.Unit;
-
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -114,10 +58,24 @@ import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility;
 import org.joda.time.DateTime;
+import org.locationtech.jts.geom.Coordinate;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import org.locationtech.jts.geom.Coordinate;
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Range;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
+import oms3.annotations.Unit;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoP.*;
 
 @Description(OMSTRENTOP_DESCRIPTION)
 @Author(name = OMSTRENTOP_AUTHORNAMES, contact = OMSTRENTOP_AUTHORCONTACTS)
@@ -127,6 +85,51 @@ import org.locationtech.jts.geom.Coordinate;
 @Status(OMSTRENTOP_STATUS)
 @License(OMSTRENTOP_LICENSE)
 public class OmsTrentoP extends HMModel {
+
+    public static final String OMSTRENTOP_DESCRIPTION = "Calculates the diameters of a sewer net or verify the discharge for each pipe.";
+    public static final String OMSTRENTOP_DOCUMENTATION = "OmsTrentoP.html";
+    public static final String OMSTRENTOP_KEYWORDS = "Sewer network";
+    public static final String OMSTRENTOP_LABEL = OTHER;
+    public static final String OMSTRENTOP_NAME = "";
+    public static final int OMSTRENTOP_STATUS = 10;
+    public static final String OMSTRENTOP_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
+    public static final String OMSTRENTOP_AUTHORNAMES = "Daniele Andreis,Rigon Riccardo,David tamanini";
+    public static final String OMSTRENTOP_AUTHORCONTACTS = "";
+    public static final String OMSTRENTOP_pMode_DESCRIPTION = "Processing mode, 0=project, 1=verification.";
+    public static final String OMSTRENTOP_pMinimumDepth_DESCRIPTION = "Minimum excavation depth";
+    public static final String OMSTRENTOP_pMaxJunction_DESCRIPTION = "Max number of pipes that can converge in a junction.";
+    public static final String OMSTRENTOP_pJMax_DESCRIPTION = "Max number of bisection to do (default is 40)to search a solution of a transcendently equation.";
+    public static final String OMSTRENTOP_pAccuracy_DESCRIPTION = "Accuracy to use to calculate a solution with bisection method.";
+    public static final String OMSTRENTOP_pEpsilon_DESCRIPTION = "Accuracy to use to calculate the discharge.";
+    public static final String OMSTRENTOP_pMinG_DESCRIPTION = "Minimum Fill degree";
+    public static final String OMSTRENTOP_pMinDischarge_DESCRIPTION = "Minimum discharge in a pipe";
+    public static final String OMSTRENTOP_pMaxTheta_DESCRIPTION = "Maximum Fill degree";
+    public static final String OMSTRENTOP_pCelerityFactor_DESCRIPTION = "Celerity factor, value used to obtain the celerity of the discharge wave.";
+    public static final String OMSTRENTOP_pExponent_DESCRIPTION = "Exponent of the basin extension. Used to calculate the average acces time to the network.";
+    public static final String OMSTRENTOP_pTolerance_DESCRIPTION = "tollerance, used to obtain the radius";
+    public static final String OMSTRENTOP_pC_DESCRIPTION = "Division base to height in the rectangular or trapezium section.";
+    public static final String OMSTRENTOP_pGamma_DESCRIPTION = "Exponent of the average ponderal slope of a basin to calculate the average access time to the network  for area units.";
+    public static final String OMSTRENTOP_pEspInflux_DESCRIPTION = "Exponent of the influx coefficent to calculate the average residence time in the network .";
+    public static final String OMSTRENTOP_pFranco_DESCRIPTION = "Minimum dig depth, for rectangular or trapezium pipe.";
+    public static final String OMSTRENTOP_pA_DESCRIPTION = " Coefficient of the pluviometric curve of possibility.";
+    public static final String OMSTRENTOP_pN_DESCRIPTION = "Exponent of the pluviometric curve of possibility. ";
+    public static final String OMSTRENTOP_pTau_DESCRIPTION = "Tangential bottom stress, which ensure the self-cleaning of the network.";
+    public static final String OMSTRENTOP_pG_DESCRIPTION = "Fill degree to use during the project.";
+    public static final String OMSTRENTOP_pAlign_DESCRIPTION = "Align mode, it can be 0 (so the free surface is aligned through a change in the depth of the pipes) or 1 (aligned with bottom step).";
+    public static final String OMSTRENTOP_inDiameters_DESCRIPTION = "Matrix which contains the commercial diameters of the pipes.";
+    public static final String OMSTRENTOP_pOutPipe_DESCRIPTION = "The outlet, the last pipe of the network,.";
+    public static final String OMSTRENTOP_tDTp_DESCRIPTION = "Time step to calculate the discharge in project mode.";
+    public static final String OMSTRENTOP_tpMin_DESCRIPTION = "Minimum Rain Time step to calculate the discharge.";
+    public static final String OMSTRENTOP_tpMax_DESCRIPTION = "Maximum Rain Time step to calculate the discharge.";
+    public static final String OMSTRENTOP_tMax_DESCRIPTION = "Max number of time step.";
+    public static final String OMSTRENTOP_tpMaxCalibration_DESCRIPTION = "Maximum Rain Time step to evaluate the Rain in calibration mode.";
+    public static final String OMSTRENTOP_dt_DESCRIPTION = "Time step, if pMode=1, in minutes. Is the step used to calculate the discharge. If it's not setted then it's equal to the rain time step.";
+    public static final String OMSTRENTOP_inRain_DESCRIPTION = "rain data.";
+    public static final String OMSTRENTOP_inPipes_DESCRIPTION = "The read feature collection.";
+    public static final String OMSTRENTOP_outPipes_DESCRIPTION = "The output feature collection which contains the net with all hydraulics value.";
+    public static final String OMSTRENTOP_outDischarge_DESCRIPTION = "The output if pTest=1, contains the discharge for each pipes at several time.";
+    public static final String OMSTRENTOP_outFillDegree_DESCRIPTION = "The output if pTest=1, contains the fill degree for each pipes at several time.";
+    public static final String OMSTRENTOP_outTpMax_DESCRIPTION = "The time which give the maximum discharge.";
 
     @Description(OMSTRENTOP_pMode_DESCRIPTION)
     @In
