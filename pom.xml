@@ -6,7 +6,7 @@
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hortonmachine</artifactId>
-	<version>${revision}</version>
+	<version>0.9.2-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>The Horton Machine - Spatial Tools for Environmental Modelling</name>
@@ -23,10 +23,6 @@
 	</modules>
 
 	<properties>
-        <!-- THE HM VERSION -->
-        <revision>0.9.2-SNAPSHOT</revision>
-        <!-- THE HM VERSION -->
-
 		<gt.version>20.0</gt.version>
 		<groovy.version>2.4.15</groovy.version>
 		<geoscript.version>1.12.0</geoscript.version>
