@@ -25,12 +25,13 @@
 			<artifactId>hm-gui</artifactId>
 			<version>${revision}</version>
 		</dependency>
+<!--
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gps</artifactId>
 			<version>${revision}</version>
 		</dependency>
-
+-->
 		<dependency>
 			<groupId>org.mapsforge</groupId>
 			<artifactId>mapsforge-map-awt</artifactId>
@@ -102,6 +103,10 @@
 				<exclusion>
 					<groupId>org.geotools.jdbc</groupId>
 					<artifactId>gt-jdbc-spatialite</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt-ogr-jni</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
