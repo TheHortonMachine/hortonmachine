@@ -1,22 +1,20 @@
 package org.hortonmachine.dbs.h2gis;
 
-import org.locationtech.jts.geom.Geometry;
-
-import org.h2gis.functions.io.FileDriver;
-import org.h2gis.functions.io.dbf.internal.DBFDriver;
-import org.h2gis.functions.io.dbf.internal.DbaseFileHeader;
-import org.h2gis.functions.io.shp.internal.IndexFile;
-import org.h2gis.functions.io.shp.internal.SHPDriver;
-import org.h2gis.functions.io.shp.internal.ShapeType;
-import org.h2gis.functions.io.shp.internal.ShapefileHeader;
-import org.h2gis.functions.io.shp.internal.ShapefileReader;
-import org.h2gis.functions.io.shp.internal.ShapefileWriter;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import org.h2gis.api.FileDriver;
+import org.h2gis.functions.io.dbf.internal.DBFDriver;
+import org.h2gis.functions.io.dbf.internal.DbaseFileHeader;
+import org.h2gis.functions.io.shp.internal.IndexFile;
+import org.h2gis.functions.io.shp.internal.ShapeType;
+import org.h2gis.functions.io.shp.internal.ShapefileHeader;
+import org.h2gis.functions.io.shp.internal.ShapefileReader;
+import org.h2gis.functions.io.shp.internal.ShapefileWriter;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * Merge ShapeFileReader and DBFReader.
