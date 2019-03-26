@@ -4,7 +4,7 @@
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hortonmachine</artifactId>
-	<version>0.9.2</version>
+	<version>0.9.3-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>The Horton Machine - Spatial Tools for Environmental Modelling</name>
