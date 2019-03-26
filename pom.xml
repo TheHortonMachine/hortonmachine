@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hortonmachine</artifactId>
-	<version>0.9.2-SNAPSHOT</version>
+	<version>0.9.2</version>
 
 	<packaging>pom</packaging>
 	<name>The Horton Machine - Spatial Tools for Environmental Modelling</name>
@@ -38,7 +36,7 @@
 
 		<java.awt.headless>true</java.awt.headless>
 		<sun.java2d.d3d>true</sun.java2d.d3d>
-		<jvm.opts></jvm.opts>
+		<jvm.opts />
 		<maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
 		<build.timestamp>${maven.build.timestamp}</build.timestamp>
 		<fork.javac>true</fork.javac>
@@ -872,7 +870,7 @@
               <name>moduleIdentifierStep1</name>
               <value>${project.groupId}.${project.artifactId}</value>
               <regex>hm-</regex>
-              <replacement></replacement>
+              <replacement />
               <failIfNoMatch>false</failIfNoMatch>
             </configuration>
           </execution>
