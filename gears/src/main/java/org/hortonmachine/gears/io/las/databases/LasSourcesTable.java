@@ -17,7 +17,6 @@
  */
 package org.hortonmachine.gears.io.las.databases;
 
-import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,6 @@ import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
-
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
@@ -105,7 +103,7 @@ public class LasSourcesTable {
                 pStmt.setDouble(9, maxIntens);
 
                 pStmt.executeUpdate();
-                ResultSet rs = pStmt.getGeneratedKeys();
+                IHMResultSet rs = pStmt.getGeneratedKeys();
                 rs.next();
                 long generatedId = rs.getLong(1);
 

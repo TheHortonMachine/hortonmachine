@@ -19,7 +19,6 @@ package org.hortonmachine.dbs.spatialite.android;
 
 import java.io.File;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,9 +37,9 @@ import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
+import org.hortonmachine.dbs.spatialite.SpatialiteGeometryColumns;
 import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
-
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
@@ -210,6 +209,8 @@ public class GPSpatialiteDb extends ASpatialDb {
     }
 
     public GeometryColumn getGeometryColumnsForTable( String tableName ) throws Exception {
+        if (!hasTable(SpatialiteGeometryColumns.TABLENAME))
+            return null;
         return SpatialiteCommonMethods.getGeometryColumnsForTable(mConn, tableName);
     }
 

@@ -43,6 +43,7 @@ import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.spatialite.RasterCoverage;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
+import org.hortonmachine.dbs.spatialite.SpatialiteGeometryColumns;
 import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.utils.OsCheck;
@@ -251,6 +252,8 @@ public class SpatialiteDb extends ASpatialDb {
     }
 
     public GeometryColumn getGeometryColumnsForTable( String tableName ) throws Exception {
+        if (!hasTable(SpatialiteGeometryColumns.TABLENAME))
+            return null;
         return SpatialiteCommonMethods.getGeometryColumnsForTable(mConn, tableName);
     }
 

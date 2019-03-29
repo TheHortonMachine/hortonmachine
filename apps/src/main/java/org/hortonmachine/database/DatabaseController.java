@@ -533,6 +533,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 } finally {
                     logConsole.finishProcess();
                     logConsole.stopLogging();
+                    Logger.INSTANCE.resetStreams();
                     if (!hadErrors) {
                         logConsole.setVisible(false);
                         window.dispose();
@@ -590,6 +591,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 } finally {
                     logConsole.finishProcess();
                     logConsole.stopLogging();
+                    Logger.INSTANCE.resetStreams();
                     if (!hadErrors) {
                         logConsole.setVisible(false);
                         window.dispose();
@@ -648,6 +650,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 } finally {
                     logConsole.finishProcess();
                     logConsole.stopLogging();
+                    Logger.INSTANCE.resetStreams();
                     if (!hadErrors) {
                         logConsole.setVisible(false);
                         window.dispose();
@@ -1504,6 +1507,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             } finally {
                 logConsole.finishProcess();
                 logConsole.stopLogging();
+                Logger.INSTANCE.resetStreams();
                 if (!hadError) {
                     logConsole.setVisible(false);
                     window.dispose();
@@ -1591,6 +1595,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             } finally {
                 logConsole.finishProcess();
                 logConsole.stopLogging();
+                Logger.INSTANCE.resetStreams();
                 if (!hadError) {
                     logConsole.setVisible(false);
                     window.dispose();
@@ -1661,6 +1666,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             } finally {
                 logConsole.finishProcess();
                 logConsole.stopLogging();
+                Logger.INSTANCE.resetStreams();
                 if (!hadError) {
                     logConsole.setVisible(false);
                     window.dispose();
@@ -1717,6 +1723,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             } finally {
                 logConsole.finishProcess();
                 logConsole.stopLogging();
+                Logger.INSTANCE.resetStreams();
                 if (!hadError) {
                     logConsole.setVisible(false);
                     window.dispose();

@@ -17,9 +17,8 @@
  */
 package org.hortonmachine.dbs.spatialite.android;
 
-import java.sql.ResultSet;
-
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
+import org.hortonmachine.dbs.compat.IHMResultSet;
 
 import jsqlite.Database;
 import jsqlite.Exception;
@@ -99,7 +98,7 @@ public class GPPreparedStatement implements IHMPreparedStatement {
     public void setBytes( int index, byte[] value ) throws Exception {
         preparedStmt.bind(index, value);
     }
-    
+
     @Override
     public void setBlob( int index, byte[] value ) throws Exception {
         preparedStmt.bind(index, value);
@@ -114,15 +113,20 @@ public class GPPreparedStatement implements IHMPreparedStatement {
     public void setBoolean( int index, boolean value ) throws java.lang.Exception {
         preparedStmt.bind(index, value ? 1 : 0);
     }
-    
+
     @Override
     public void setObject( int index, Object value ) throws Exception {
         throw new RuntimeException("Function not supported: setObject()");
     }
 
     @Override
-    public ResultSet getGeneratedKeys() throws Exception {
+    public IHMResultSet getGeneratedKeys() throws Exception {
         throw new RuntimeException("Function not supported: getGeneratedKeys()");
+    }
+
+    @Override
+    public IHMResultSet executeQuery() throws java.lang.Exception {
+        return new GPResultSet(preparedStmt);
     }
 
 }

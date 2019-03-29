@@ -239,4 +239,9 @@ public enum Logger implements ILogDb {
         }
         return tag;
     }
+
+    public void resetStreams() {
+        out = System.out;
+        err = System.err;
+    }
 }

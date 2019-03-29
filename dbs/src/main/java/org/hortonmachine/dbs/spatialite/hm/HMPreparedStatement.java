@@ -20,8 +20,10 @@ package org.hortonmachine.dbs.spatialite.hm;
 import java.io.ByteArrayInputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
+import org.hortonmachine.dbs.compat.IHMResultSet;
 
 /**
  * Prepared Statement wrapper for standard jdbc java.
@@ -103,13 +105,19 @@ public class HMPreparedStatement implements IHMPreparedStatement {
     }
 
     @Override
-    public ResultSet getGeneratedKeys() throws Exception {
-        return preparedStatement.getGeneratedKeys();
+    public IHMResultSet getGeneratedKeys() throws Exception {
+        ResultSet generatedKeysRs = preparedStatement.getGeneratedKeys();
+        return new HMResultSet(generatedKeysRs);
     }
-    
+
     @Override
     public void setObject( int index, Object value ) throws Exception {
         preparedStatement.setObject(index, value);
+    }
+
+    @Override
+    public IHMResultSet executeQuery() throws Exception {
+        return new HMResultSet(preparedStatement.executeQuery());
     }
 
 }

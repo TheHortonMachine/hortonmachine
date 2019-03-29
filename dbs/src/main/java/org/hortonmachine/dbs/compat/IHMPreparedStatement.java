@@ -17,8 +17,6 @@
  */
 package org.hortonmachine.dbs.compat;
 
-import java.sql.ResultSet;
-
 /**
  * Interface wrapping a prep statement.
  * 
@@ -53,6 +51,8 @@ public interface IHMPreparedStatement extends AutoCloseable {
     
     void setObject( int index, Object value ) throws Exception;
 
-    ResultSet getGeneratedKeys() throws Exception;
+    IHMResultSet getGeneratedKeys() throws Exception;
+
+    IHMResultSet executeQuery() throws Exception;
 
 }
