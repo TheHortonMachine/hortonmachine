@@ -42,15 +42,14 @@ import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
+import org.hortonmachine.dbs.rasterlite.Rasterlite2Db;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
-import org.hortonmachine.dbs.spatialite.RasterCoverage;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
-import org.hortonmachine.gears.spatialite.RL2CoverageHandler;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.style.SimpleStyle;
 import org.hortonmachine.gears.utils.style.SimpleStyleUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities;
@@ -81,15 +80,12 @@ import org.hortonmachine.nww.utils.EGlobeModes;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
 import org.hortonmachine.nww.utils.selection.ObjectsOnScreenByBoxSelector;
-import org.hortonmachine.nww.utils.selection.SectorByBoxSelector;
 import org.joda.time.DateTime;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.parameter.ParameterValue;
-
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTReader;
+import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.parameter.ParameterValue;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
@@ -532,10 +528,11 @@ public class ToolsPanelController extends ToolsPanelView {
             } else if (selectedFile.getName().endsWith(".rl2")) {
                 GTSpatialiteThreadsafeDb db = new GTSpatialiteThreadsafeDb();
                 db.open(selectedFile.getAbsolutePath());
-                List<RasterCoverage> rasterCoverages = db.getRasterCoverages(false);
+                Rasterlite2Db rldb = new Rasterlite2Db(db);
+                List<Rasterlite2Coverage> rasterCoverages = rldb.getRasterCoverages(false);
                 if (rasterCoverages.size() > 0) {
-                    RL2CoverageHandler handler = new RL2CoverageHandler(db, rasterCoverages.get(0));
-                    RL2NwwLayer rl2Layer = new RL2NwwLayer(handler, null);
+                    Rasterlite2Coverage rasterCoverage = rasterCoverages.get(0);
+                    RL2NwwLayer rl2Layer = new RL2NwwLayer(rasterCoverage, null);
 
                     wwjPanel.getWwd().getModel().getLayers().add(rl2Layer);
                     layerEventsListener.onLayerAdded(rl2Layer);

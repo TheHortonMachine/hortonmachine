@@ -40,8 +40,8 @@ import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
-import org.hortonmachine.dbs.spatialite.RasterCoverage;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryColumns;
 import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
@@ -283,42 +283,6 @@ public class SpatialiteDb extends ASpatialDb {
 
     public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
         return SpatialiteCommonMethods.getGeojsonIn(this, tableName, fields, wherePiece, precision);
-    }
-
-    /**
-     * Get the list of available raster coverages.
-     * 
-     * @param doOrder
-     *            if <code>true</code>, the names are ordered.
-     * @return the list of raster coverages.
-     * @throws Exception
-     */
-    public List<RasterCoverage> getRasterCoverages( boolean doOrder ) throws Exception {
-        List<RasterCoverage> rasterCoverages = new ArrayList<RasterCoverage>();
-        String orderBy = " ORDER BY name";
-        if (!doOrder) {
-            orderBy = "";
-        }
-
-        String sql = "SELECT " + RasterCoverage.COVERAGE_NAME + ", " + RasterCoverage.TITLE + ", " + RasterCoverage.SRID + ", "
-                + RasterCoverage.COMPRESSION + ", " + RasterCoverage.EXTENT_MINX + ", " + RasterCoverage.EXTENT_MINY + ", "
-                + RasterCoverage.EXTENT_MAXX + ", " + RasterCoverage.EXTENT_MAXY + " FROM " + RasterCoverage.TABLENAME + orderBy;
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            while( rs.next() ) {
-                RasterCoverage rc = new RasterCoverage();
-                int i = 1;
-                rc.coverage_name = rs.getString(i++);
-                rc.title = rs.getString(i++);
-                rc.srid = rs.getInt(i++);
-                rc.compression = rs.getString(i++);
-                rc.extent_minx = rs.getDouble(i++);
-                rc.extent_miny = rs.getDouble(i++);
-                rc.extent_maxx = rs.getDouble(i++);
-                rc.extent_maxy = rs.getDouble(i++);
-                rasterCoverages.add(rc);
-            }
-            return rasterCoverages;
-        }
     }
 
     /**

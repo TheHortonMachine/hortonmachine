@@ -18,6 +18,7 @@
 package org.hortonmachine.nww.layers.defaults.raster;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,18 +28,17 @@ import javax.imageio.ImageIO;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.hortonmachine.dbs.spatialite.RasterCoverage;
-import org.hortonmachine.gears.spatialite.RL2CoverageHandler;
+import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Polygon;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Polygon;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
@@ -64,22 +64,22 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
 
     private Coordinate centerCoordinateLL;
 
-    public RL2NwwLayer( RL2CoverageHandler rl2Handler, Integer tileSize ) throws Exception {
-        super(makeLevels(rl2Handler, tileSize));
-        RasterCoverage rasterCoverage = rl2Handler.getRasterCoverage();
-        this.layerName = rasterCoverage.coverage_name;
+    public RL2NwwLayer( Rasterlite2Coverage rasterCoverage, Integer tileSize ) throws Exception {
+        super(makeLevels(rasterCoverage, tileSize));
+        this.layerName = rasterCoverage.getName();
 
-        double w = rasterCoverage.extent_minx;
-        double s = rasterCoverage.extent_miny;
-        double e = rasterCoverage.extent_maxx;
-        double n = rasterCoverage.extent_maxy;
+        Envelope bounds = rasterCoverage.getBounds();
+        double w = bounds.getMinX();
+        double s = bounds.getMinY();
+        double e = bounds.getMaxX();
+        double n = bounds.getMaxY();
 
         double centerX = w + (e - w) / 2.0;
         double centerY = s + (n - s) / 2.0;
         Coordinate centerCoordinate = new Coordinate(centerX, centerY);
 
         CoordinateReferenceSystem targetCRS = DefaultGeographicCRS.WGS84;
-        CoordinateReferenceSystem sourceCRS = CrsUtilities.getCrsFromSrid(rasterCoverage.srid);
+        CoordinateReferenceSystem sourceCRS = CrsUtilities.getCrsFromSrid(rasterCoverage.getSrid());
 
         MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);
         centerCoordinateLL = JTS.transform(centerCoordinate, null, transform);
@@ -88,7 +88,7 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
 
     }
 
-    private static LevelSet makeLevels( RL2CoverageHandler rl2Handler, Integer tileSize ) throws MalformedURLException {
+    private static LevelSet makeLevels( Rasterlite2Coverage rasterCoverage, Integer tileSize ) throws MalformedURLException {
         AVList params = new AVListImpl();
         if (tileSize == null || tileSize < 256) {
             tileSize = TILESIZE;
@@ -96,9 +96,9 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
 
         int finalTileSize = tileSize;
 
-        String databasePath = rl2Handler.getDatabasePath();
+        String databasePath = rasterCoverage.getDatabasePath();
         File databaseFile = new File(databasePath);
-        String tilesPart = "-tiles" + File.separator + rl2Handler.getRasterCoverage().coverage_name;
+        String tilesPart = "-tiles" + File.separator + rasterCoverage.getName();
         String cacheRelativePath = "rl2/" + databaseFile.getName() + tilesPart;
 
         String urlString = databaseFile.toURI().toURL().toExternalForm();
@@ -109,18 +109,7 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
         params.setValue(AVKey.SERVICE, "*");
         params.setValue(AVKey.DATASET_NAME, "*");
 
-        String imageFormat = null;
-        try {
-            String compression = rl2Handler.getRasterCoverage().compression;
-            if (compression.equals("JPEG")) {
-                imageFormat = "jpg";
-            }
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
-        if (imageFormat == null) {
-            imageFormat = "png";
-        }
+        String imageFormat = rasterCoverage.getImageFormat();
         final String _imageFormat = imageFormat;
         params.setValue(AVKey.FORMAT_SUFFIX, "." + imageFormat);
         params.setValue(AVKey.NUM_LEVELS, 22);
@@ -166,7 +155,7 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
 
                 try {
                     File imgFile;
-                    synchronized (rl2Handler) {
+                    synchronized (rasterCoverage) {
                         StringBuilder sb = new StringBuilder();
                         sb.append(zoom);
                         sb.append(File.separator);
@@ -181,10 +170,10 @@ public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLaye
                         sb.append(_imageFormat);
                         imgFile = new File(tileImageFolderFile, sb.toString());
                         if (!imgFile.exists()) {
-
-                            BufferedImage bImg = rl2Handler.getRL2Image(polygon, "" + CrsUtilities.WGS84_SRID, finalTileSize,
+                            byte[] imageBytes = rasterCoverage.getRL2Image(polygon, "" + CrsUtilities.WGS84_SRID, finalTileSize,
                                     finalTileSize);
-                            if (bImg != null) {
+                            if (imageBytes != null) {
+                                BufferedImage bImg = ImageIO.read(new ByteArrayInputStream(imageBytes));
                                 ImageIO.write(bImg, _imageFormat, imgFile);
                             } else {
                                 return null;
