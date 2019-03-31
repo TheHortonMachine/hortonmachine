@@ -26,6 +26,7 @@ import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
+import org.hortonmachine.dbs.utils.MercatorUtils;
 import org.locationtech.jts.geom.Envelope;
 
 /**
@@ -73,6 +74,8 @@ public class MBTilesDb {
 
     private HashMap<String, String> metadataMap = null;
 
+    private String tileRowType = "osm"; // could be tms in some cases
+
     /**
      * Constructor based on an existing ADb object.
      * 
@@ -111,6 +114,15 @@ public class MBTilesDb {
                         COL_TILES_TILE_DATA + " " + blobStr + //
                         ")";
 
+    }
+
+    /**
+     * Set the row type. 
+     * 
+     * @param tileRowType can be "osm" (default) or "tms".
+     */
+    public void setTileRowType( String tileRowType ) {
+        this.tileRowType = tileRowType;
     }
 
     /**
@@ -245,18 +257,24 @@ public class MBTilesDb {
     /**
      * Get a Tile's image bytes from the database.
      * 
-     * @param x the x tile index.
-     * @param y the y tile index.
-     * @param z the zoom level.
+     * @param tx the x tile index.
+     * @param tyOsm the y tile index, the osm way.
+     * @param zoom the zoom level.
      * @return the tile image bytes.
      * @throws Exception
      */
-    public byte[] getTile( int x, int y, int z ) throws Exception {
+    public byte[] getTile( int tx, int tyOsm, int zoom ) throws Exception {
+        int ty = tyOsm;
+        if (tileRowType.equals("tms")) {
+            int[] tmsTileXY = MercatorUtils.osmTile2TmsTile(tx, tyOsm, zoom);
+            ty = tmsTileXY[1];
+        }
+        int _ty = ty;
         return database.execOnConnection(connection -> {
             try (IHMPreparedStatement statement = connection.prepareStatement(SELECTQUERY)) {
-                statement.setInt(1, z);
-                statement.setInt(2, x);
-                statement.setInt(3, y);
+                statement.setInt(1, zoom);
+                statement.setInt(2, tx);
+                statement.setInt(3, _ty);
                 IHMResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
                     byte[] imageBytes = resultSet.getBytes(1);
@@ -389,58 +407,6 @@ public class MBTilesDb {
         }
     }
 
-    private static double tile2lon( int x, int z ) {
-        return x / Math.pow(2.0, z) * 360.0 - 180.0;
-    }
-
-    private static double tile2lat( int y, int z ) {
-        double n = Math.PI - (2.0 * Math.PI * y) / Math.pow(2.0, z);
-        return Math.toDegrees(Math.atan(Math.sinh(n)));
-    }
-
-    /**
-     * Get the tile index given a geographic location and a zoomlevel.
-     * 
-     * @param lat the latitude.
-     * @param lon the longitude.
-     * @param zoom the zoomlevel.
-     * @return the tile index as [x, y];
-     */
-    public static int[] getTileXY( final double lat, final double lon, final int zoom ) {
-        int xtile = (int) Math.floor((lon + 180) / 360 * (1 << zoom));
-        int ytile = (int) Math.floor(
-                (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2 * (1 << zoom));
-        if (xtile < 0)
-            xtile = 0;
-        if (xtile >= (1 << zoom))
-            xtile = ((1 << zoom) - 1);
-        if (ytile < 0)
-            ytile = 0;
-        if (ytile >= (1 << zoom))
-            ytile = ((1 << zoom) - 1);
-
-        ytile = (int) ((Math.pow(2, zoom) - 1) - ytile);
-        return new int[]{xtile, ytile};
-    }
-
-    /**
-     * Get the bounds of a tile.
-     * 
-     * @param x the x tile index.
-     * @param y the y tile index.
-     * @param zoom the zoom level.
-     * @return the Envelope of the tile.
-     */
-    public static Envelope tile2boundingBox( final int x, final int y, final int zoom ) {
-        double north = MBTilesDb.tile2lat(y, zoom);
-        double south = MBTilesDb.tile2lat(y + 1, zoom);
-        double west = MBTilesDb.tile2lon(x, zoom);
-        double east = MBTilesDb.tile2lon(x + 1, zoom);
-
-        Envelope bb = new Envelope(west, east, south, north);
-        return bb;
-    }
-
     /**
      * A simple tile utility class.
      */
@@ -450,4 +416,39 @@ public class MBTilesDb {
         public int z;
         public byte[] imageBytes;
     }
+
+//    /**
+//     * <p>Code copied from: http://code.google.com/p/gmap-tile-generator/</p>
+//     *
+//     * @param latlong_bounds [minx,miny,maxx,minx]
+//     * @param i_zoom
+//     * @return [zoom, minx, miny, maxx, maxy of tile_bounds]
+//     */
+//    public static int[] LatLonBounds_to_TileBounds( double[] latlong_bounds, int i_zoom ) {
+//        int[] min_tile_bounds = getTileNumber(latlong_bounds[1], latlong_bounds[0], i_zoom);
+//        int[] max_tile_bounds = getTileNumber(latlong_bounds[3], latlong_bounds[2], i_zoom);
+//        return new int[]{i_zoom, min_tile_bounds[1], min_tile_bounds[2], max_tile_bounds[1], max_tile_bounds[2]};
+//    }
+//
+//    /**
+//     * <p>Code adapted from: LatLonBounds_to_TileBounds</p>
+//     *
+//     * @param tile_bounds [minx, miny_osm, maxx, maxy_osm of tile_bounds]
+//     * @param i_zoom
+//     * @return latlong_bounds [minx,miny,maxx,minx]
+//     */
+//    public static double[] TileBounds_to_LatLonBounds( int[] tile_bounds, int i_zoom ) {
+//        int i_min_x = tile_bounds[0];
+//        int i_min_y_osm = tile_bounds[1];
+//        int i_max_x = tile_bounds[2];
+//        int i_max_y_osm = tile_bounds[3];
+//        double[] bounds = tileLatLonBounds(i_min_x, i_min_y_osm, i_zoom, 256);
+//        double d_min_x = bounds[0];
+//        double d_min_y = bounds[1];
+//        bounds = tileLatLonBounds(i_max_x, i_max_y_osm, i_zoom, 256);
+//        double d_max_x = bounds[2];
+//        double d_max_y = bounds[3];
+//        return new double[]{d_min_x, d_min_y, d_max_x, d_max_y};
+//    }
+
 }

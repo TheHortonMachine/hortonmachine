@@ -1,6 +1,7 @@
 package org.hortonmachine.dbs;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.net.URL;
@@ -80,6 +81,16 @@ public class TestMbtiles {
         assertEquals(17, boundsInTileIndex[1]);
         assertEquals(19, boundsInTileIndex[2]);
         assertEquals(20, boundsInTileIndex[3]);
+
+        byte[] tileAsBytes = mdb.getTile(16, 19, 5);
+        assertNotNull(tileAsBytes);
+        tileAsBytes = mdb.getTile(17, 19, 5);
+        assertNotNull(tileAsBytes);
+        tileAsBytes = mdb.getTile(16, 20, 5);
+        assertNotNull(tileAsBytes);
+        tileAsBytes = mdb.getTile(17, 20, 5);
+        assertNotNull(tileAsBytes);
+
     }
 
     @Test
