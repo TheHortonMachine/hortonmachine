@@ -281,10 +281,7 @@ public class NetworkBuilder implements Network {
      * introduction of the bottom step.
      * </ol>
      * 
-     * @param align is a switch that allow to select the metod to allign the free surface.
-     * @param networkPipes is a matrix which contains the networks value.
      * @param two array which contains the ID of the pipe where other pipes drains.
-     * @param maxJunction maximum number of junction in a node.
      */
     private void resetDepths( double[] two ) {
 
@@ -300,12 +297,7 @@ public class NetworkBuilder implements Network {
     }
 
     /**
-     * Aallineamento altimetrico del pelo libero.
-     * 
-     * 
-     * @param networkPipes   is a matrix which contains the networks value.
-     * @param two vettore che contiene la magnitude delle varie aree.
-     * @param maxJunction
+     * Allineamento altimetrico del pelo libero.
      */
     private void resetDepths0( double[] two ) {
 

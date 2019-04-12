@@ -45,6 +45,7 @@ import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -404,6 +405,7 @@ public class OmsTrentoP extends HMModel {
             network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, warningBuilder,
                     tpMaxCalibration, foundTp).celerityFactor(pCelerityFactor).tMax(tMax).build();
             network.geoSewer();
+//  			System.out.println("Final surface = " + finalFreesurface);
             outTpMax = ((NetworkCalibration) network).getTpMax();
 
         } else {
@@ -633,8 +635,7 @@ public class OmsTrentoP extends HMModel {
                     tpMaxCalibration = tMax;
                 }
                 if (dt == null) {
-                    pm.errorMessage(msg.message("trentoP.error.dtp"));
-                    throw new IllegalArgumentException();
+                    throw new ModelsIllegalargumentException("In verify mode with statistical rain, the dt parameter needs to be set.", this, pm);
                 }
                 if (tMax < tpMaxCalibration) {
                     tpMaxCalibration = tMax;
@@ -671,7 +672,7 @@ public class OmsTrentoP extends HMModel {
                 throw new IllegalArgumentException(msg.message("trentoP.error.inputRainMatrix") + " rain file");
             }
 
-            // verificy if the field exist.
+            // verify if the field exist.
 
         }
         return isAreaAllDry;
@@ -712,7 +713,8 @@ public class OmsTrentoP extends HMModel {
                         pm.errorMessage(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
                         throw new IllegalArgumentException(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
                     }
-                    if (field.equals(pOutPipe)) {
+//                    if (field.equals(pOutPipe)) {
+                    if (field.intValue() == pOutPipe.intValue()) {
                         tmpOutIndex = t;
                         existOut = true;
                     }
@@ -940,7 +942,8 @@ public class OmsTrentoP extends HMModel {
 
         for( int i = 0; i < networkPipes.length; i++ ) {
             int index = (int) one[i];
-            results[i][0] = networkPipes[index].getId();
+            int id = networkPipes[index].getId();
+			results[i][0] = id;
             results[i][1] = networkPipes[index].getIdPipeWhereDrain();
             results[i][2] = networkPipes[index].getDrainArea();
             results[i][3] = networkPipes[index].getLenght();

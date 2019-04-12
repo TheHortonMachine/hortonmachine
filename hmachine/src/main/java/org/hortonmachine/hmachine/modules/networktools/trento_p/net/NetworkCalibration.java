@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
@@ -99,13 +100,7 @@ public class NetworkCalibration implements Network {
      */
     private final double celerityfactor1;
 
-    /*
-     * The time of fill degree..
-     */
     private double[][] lastTimeDischarge;
-    /*
-     * The time of fill degree..
-     */
     private double[][] lastTimeFillDegree;
 
     /*
@@ -132,7 +127,7 @@ public class NetworkCalibration implements Network {
     /*
      * The upper limit time range. It is used to search the tpMax. The range to search the tpMax is [IITIAL_TIME, tpMaxCalibration].
      */
-    private final Integer tpMaxCalibration;
+    private Integer tpMaxCalibration;
     /*
      * The rain time that give the maximum discharge.
      */
@@ -173,7 +168,7 @@ public class NetworkCalibration implements Network {
          */
         private final HashMap<DateTime, HashMap<Integer, double[]>> fillDegree;
         /*
-         * The discharg for each pipe and for each time.
+         * The discharge for each pipe and for each time.
          */
         private final HashMap<DateTime, HashMap<Integer, double[]>> discharge;
         /*
@@ -211,7 +206,7 @@ public class NetworkCalibration implements Network {
          * @param dt time step.
          * @param inRain the rain data.
          * @param outDischarge the output, discharge.
-         * @param outFillDegreethe output, fill degree.           
+         * @param outFillDegree the output, fill degree.           
          * @param strBuilder a string used to store the warnings.
          */
         public Builder( IHMProgressMonitor pm, Pipe[] networkPipe, Integer dt, HashMap<DateTime, double[]> inRain,
@@ -226,11 +221,7 @@ public class NetworkCalibration implements Network {
             this.fillDegree = outFillDegree;
             this.strBuilder = strBuilder;
             this.foundMaxrainTime = foundTpMax;
-            if (tpMaxCalibration != null) {
-                this.tpMaxCalibration = tpMaxCalibration;
-            } else {
-                this.tpMaxCalibration = tMax;
-            }
+            this.tpMaxCalibration = tpMaxCalibration;
         }
 
         /**
@@ -279,6 +270,8 @@ public class NetworkCalibration implements Network {
         this.tMax = builder.tMax;
         this.strBuilder = builder.strBuilder;
         this.tpMaxCalibration = builder.tpMaxCalibration;
+        if(this.tpMaxCalibration ==null)
+        	this.tpMaxCalibration = tMax;
         this.foundMaxrainTime = builder.foundMaxrainTime;
         if (builder.networkPipe != null) {
             this.networkPipes = builder.networkPipe;
@@ -595,6 +588,7 @@ public class NetworkCalibration implements Network {
 
             u = qMax * 80 / (Math.pow(tmp1, 2) * (theta - Math.sin(theta)));
             localdelay = tmp2 / (celerityfactor1 * u * MINUTE2SEC);
+//            System.out.println(k + ": " + localdelay + " - " + olddelay);
             count++;
             if (count > MAX_NUMBER_ITERATION) {
                 infiniteLoop = true;
@@ -835,8 +829,6 @@ public class NetworkCalibration implements Network {
     }
 
     private double evaluateDischarge( double[][] timeDischarge, double[][] timeFillDegree, int tp ) {
-        /* l Tratto che si sta progettando. */
-        int l;
         /*
          * matrice che per ciascun area non di testa, contiene i dati geometrici
          * degli stati a monte, che direttamente o indirettamente, drenano in
@@ -892,7 +884,7 @@ public class NetworkCalibration implements Network {
 
         int k = 0;
         // tratto che si sta analizzando o progettando
-        l = (int) one[k];
+        int l = (int) one[k];
         pm.beginTask(msg.message("trentoP.begin"), networkPipes.length - 1);
         isFill = false;
         double[] cDelays = new double[networkPipes.length];
@@ -919,7 +911,8 @@ public class NetworkCalibration implements Network {
                 pm.worked(1);
             } catch (ArithmeticException e) {
                 if (infiniteLoop) {
-                    strBuilder.append(msg.message("trentoP.error.infiniteLoop"));
+                	throw new ModelsRuntimeException(msg.message("trentoP.error.infiniteLoop"), this);
+//                    strBuilder.append(msg.message("trentoP.error.infiniteLoop"));
                 } else {
                     NumberFormat formatter = new DecimalFormat("#.###");
                     String limit = formatter.format(maxFill);
@@ -928,6 +921,7 @@ public class NetworkCalibration implements Network {
                     strBuilder.append(limit);
                     strBuilder.append(" ");
                     strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
+                    strBuilder.append(" ");
                     strBuilder.append(networkPipes[l - 1].getId());
                     strBuilder.append(" ");
                     strBuilder.append("tp " + tp);

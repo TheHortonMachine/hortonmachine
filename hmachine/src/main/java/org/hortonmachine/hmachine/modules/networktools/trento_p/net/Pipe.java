@@ -51,15 +51,16 @@ import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Con
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.TWO_TWENTYOVERTHIRTEEN;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.WSPECIFICWEIGHT;
 
+import java.util.Arrays;
+
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoP;
-import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
-import org.opengis.feature.simple.SimpleFeature;
-
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+import org.opengis.feature.simple.SimpleFeature;
 
 /**
  * This is a class which represents a sewer pipe.
@@ -304,8 +305,34 @@ public class Pipe {
         this.pm = pm;
         setKnowNetworkValue(feature, verify, isAreaNotAllDry);
     }
+    
+    
+    
 
-    public void setK( double defaultEsp1, double defaultExponent, double defaultGamma ) {
+    @Override
+	public String toString() {
+		return "Pipe [id=" + id + ", accuracy=" + accuracy + ", align=" + align + ", averageResidenceTime="
+				+ averageResidenceTime + ", averageSlope=" + averageSlope + ", c=" + c + ", coeffUdometrico="
+				+ coeffUdometrico + ", depthFinalPipe=" + depthFinalPipe + ", depthInitialPipe=" + depthInitialPipe
+				+ ", diameter=" + diameter + ", diameterToVerify=" + diameterToVerify + ", discharge=" + discharge
+				+ ", drainArea=" + drainArea + ", emptyDegree=" + emptyDegree + ", finalElevation=" + finalElevation
+				+ ", finalFreesurface=" + finalFreesurface + ", g=" + g + ", idPipeWhereDrain=" + idPipeWhereDrain
+				+ ", indexPipeWhereDrain=" + indexPipeWhereDrain + ", initialElevation=" + initialElevation
+				+ ", initialFreesurface=" + initialFreesurface + ", jMax=" + jMax + ", k=" + k + ", ks=" + ks
+				+ ", lenght=" + lenght + ", maxJunction=" + maxJunction + ", maxTheta=" + maxTheta
+				+ ", meanLengthSubNet=" + meanLengthSubNet + ", meanSpeed=" + meanSpeed + ", minDischarge="
+				+ minDischarge + ", minG=" + minG + ", minimumDepth=" + minimumDepth + ", minimumPipeSlope="
+				+ minimumPipeSlope + ", pipeSectionType=" + pipeSectionType + ", pipeSlope=" + pipeSlope + ", pm=" + pm
+				+ ", point=" + Arrays.toString(point) + ", residenceTime=" + residenceTime + ", runoffCoefficient="
+				+ runoffCoefficient + ", tau=" + tau + ", tolerance=" + tolerance + ", totalSubNetArea="
+				+ totalSubNetArea + ", totalSubNetLength=" + totalSubNetLength + ", tP=" + tP + ", tQmax=" + tQmax
+				+ ", varianceLengthSubNet=" + varianceLengthSubNet + ", verifyPipeSlope=" + verifyPipeSlope + "]";
+	}
+
+
+
+
+	public void setK( double defaultEsp1, double defaultExponent, double defaultGamma ) {
         this.k = (HOUR2MIN * averageResidenceTime * pow(drainArea / METER2CM, defaultExponent))
                 / (pow(runoffCoefficient, defaultEsp1) * pow(averageSlope, defaultGamma));
 
@@ -1069,11 +1096,22 @@ public class Pipe {
          * pendenza effettiva del tratto [m s.l.m.]
          */
         depthFinalPipe = depthInitialPipe - getLenght() * pipeSlope / METER2CM;
+        
+//        if (id==1) {
+//        	System.out.println("diameter = " + diameter/METER2CM);
+//			System.out.println("Initial depth = " + depthInitialPipe);
+//			System.out.println("Final depth = " + depthFinalPipe);
+//		}
+        
         /* Quota pelo libero all'inizio del tubo [m s.l.m.] */
         initialFreesurface = depthInitialPipe + emptyDegree * D / METER2CM;
         /* Quota pelo libero all'inizio del tubo [m s.l.m.] */
         finalFreesurface = depthFinalPipe + emptyDegree * D / METER2CM;
 
+//        if (id==1) {
+//			System.out.println("Initial surface = " + initialFreesurface);
+//			System.out.println("Final surface = " + finalFreesurface);
+//		}
     }
 
     /**
