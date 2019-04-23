@@ -59,6 +59,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
@@ -101,6 +102,9 @@ import org.hortonmachine.gears.libs.modules.HMFileFilter;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
+import org.hortonmachine.gears.utils.chart.CategoryHistogram;
+import org.hortonmachine.gears.utils.chart.PlotFrame;
+import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
@@ -110,6 +114,8 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.ImageCache;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -1214,9 +1220,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 int[] selectedCols = table.getSelectedColumns();
                 boolean isGeom = false;
                 boolean maybeImage = false;
+                boolean proposeChart = false;
                 ESpatialiteGeometryType geomType = null;
                 if (selectedCols.length == 1 && selectedRows.length > 0) {
-                    // check coontent
+                    // check content
                     Object valueObj = table.getValueAt(selectedRows[0], selectedCols[0]);
                     if (valueObj instanceof byte[]) {
                         maybeImage = true;
@@ -1228,7 +1235,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         isGeom = true;
                         geomType = ESpatialiteGeometryType.forName(split[0]);
                     }
-
+                }
+                if (selectedCols.length > 1 && selectedRows.length > 1) {
+                    proposeChart = true;
                 }
 
                 JMenuItem item = new JMenuItem(new AbstractAction("Copy cells content"){
@@ -1266,7 +1275,114 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     });
                     item1.setHorizontalTextPosition(JMenuItem.RIGHT);
                     popupMenu.add(item1);
+
+                    JMenuItem itemToString = new JMenuItem(new AbstractAction("View as string"){
+                        private static final long serialVersionUID = 1L;
+                        @Override
+                        public void actionPerformed( ActionEvent e ) {
+                            for( int r : selectedRows ) {
+                                Object valueObj = table.getValueAt(r, selectedCols[0]);
+                                if (valueObj instanceof byte[]) {
+                                    try {
+                                        byte[] byteArray = (byte[]) valueObj;
+                                        String string = new String(byteArray);
+
+                                        JTextArea tArea = new JTextArea(string, 10, 20);
+                                        JPanel p = new JPanel(new BorderLayout());
+                                        final JScrollPane scroll = new JScrollPane(tArea);
+                                        p.add(scroll, BorderLayout.CENTER);
+                                        tArea.setLineWrap(true);
+                                        GuiUtilities.openDialogWithPanel(p, "Cell as string", new Dimension(600, 500), false);
+                                    } catch (Exception e1) {
+                                        GuiUtilities.showWarningMessage(popupMenu, "Not an image.");
+                                        break;
+                                    }
+                                }
+                            }
+
+                        }
+
+                    });
+                    itemToString.setHorizontalTextPosition(JMenuItem.RIGHT);
+                    popupMenu.add(itemToString);
                 }
+                if (proposeChart) {
+                    JMenuItem item1 = new JMenuItem(new AbstractAction("Chart values"){
+                        private static final long serialVersionUID = 1L;
+                        @Override
+                        public void actionPerformed( ActionEvent e ) {
+                            int chartsCount = selectedCols.length - 1;
+
+                            Scatter scatterChart = null;
+                            CategoryHistogram categoryHistogram = null;
+
+                            for( int i = 0; i < chartsCount; i++ ) {
+                                Object tmpX = table.getValueAt(0, selectedCols[0]);
+                                boolean doCat = true;
+                                if (tmpX instanceof Number) {
+                                    doCat = false;
+                                }
+                                Object tmpY = table.getValueAt(0, selectedCols[i + 1]);
+                                if (!(tmpY instanceof Number)) {
+                                    break;
+                                }
+
+                                if (doCat) {
+                                    if (categoryHistogram == null) {
+                                        String[] xStr = new String[selectedRows.length];
+                                        double[] y = new double[selectedRows.length];
+                                        for( int r : selectedRows ) {
+                                            Object xObj = table.getValueAt(r, selectedCols[0]);
+                                            Object yObj = table.getValueAt(r, selectedCols[i + 1]);
+                                            xStr[r] = xObj.toString();
+                                            y[r] = ((Number) yObj).doubleValue();
+                                        }
+                                        categoryHistogram = new CategoryHistogram("", xStr, y);
+                                    }
+                                } else {
+                                    if (scatterChart == null) {
+                                        scatterChart = new Scatter("");
+                                        scatterChart.setShowLines(true);
+                                        scatterChart.setXLabel("");
+                                        scatterChart.setYLabel("");
+                                    }
+                                    double[] x = new double[selectedRows.length];
+                                    double[] y = new double[selectedRows.length];
+                                    for( int r : selectedRows ) {
+                                        Object xObj = table.getValueAt(r, selectedCols[0]);
+                                        Object yObj = table.getValueAt(r, selectedCols[i + 1]);
+                                        x[r] = ((Number) xObj).doubleValue();
+                                        y[r] = ((Number) yObj).doubleValue();
+                                    }
+                                    scatterChart.addSeries("col " + (i + 1), x, y);
+                                }
+                            }
+
+                            Dimension dimension = new Dimension(800, 600);
+                            if (scatterChart != null) {
+                                JFreeChart chart = scatterChart.getChart();
+                                ChartPanel chartPanel = new ChartPanel(chart, true);
+                                chartPanel.setPreferredSize(dimension);
+                                JPanel p = new JPanel(new BorderLayout());
+                                p.add(chartPanel, BorderLayout.CENTER);
+                                GuiUtilities.openDialogWithPanel(p, "Chart from cells", dimension, false);
+                            } else if (categoryHistogram != null) {
+                                JFreeChart chart = categoryHistogram.getChart();
+                                ChartPanel chartPanel = new ChartPanel(chart, true);
+                                chartPanel.setPreferredSize(dimension);
+                                JPanel p = new JPanel(new BorderLayout());
+                                p.add(chartPanel, BorderLayout.CENTER);
+                                GuiUtilities.openDialogWithPanel(p, "Chart from cells", dimension, false);
+                            } else {
+                                GuiUtilities.showWarningMessage(popupMenu, "Charting of selected data not possible.");
+                            }
+                        }
+
+                    });
+                    item1.setHorizontalTextPosition(JMenuItem.RIGHT);
+                    popupMenu.add(item1);
+                }
+
                 if (isGeom) {
                     JMenuItem item1 = new JMenuItem(new AbstractAction("View geometry"){
                         private static final long serialVersionUID = 1L;
@@ -1990,7 +2106,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         }
         mapFrame.addLayer(fc);
     }
-    
+
     @Override
     public boolean canCloseWithoutPrompt() {
         return currentConnectedDatabase == null;

@@ -19,6 +19,8 @@ package org.hortonmachine.gears.utils.chart;
 
 import java.awt.Dimension;
 
+import javax.swing.WindowConstants;
+
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.ui.ApplicationFrame;
@@ -55,6 +57,7 @@ public class PlotFrame extends ApplicationFrame {
         pack();
         RefineryUtilities.centerFrameOnScreen(this);
         setVisible(true);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     }
 
 }
