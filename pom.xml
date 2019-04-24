@@ -86,12 +86,6 @@
 		</license>
 	</licenses>
 
-	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>6</version>
-	</parent>
-
 	<developers>
 		<developer>
 			<id>moovida</id>
@@ -712,14 +706,11 @@
 
 	<distributionManagement>
 		<snapshotRepository>
-			<id>sonatype-nexus-snapshots</id>
-			<name>jgrasstools snapshots</name>
+			<id>ossrh</id>
 			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
-			<uniqueVersion>false</uniqueVersion>
 		</snapshotRepository>
 		<repository>
-			<id>sonatype-nexus-staging</id>
-			<name>jgrasstools staging repository</name>
+			<id>ossrh</id>
 			<url>http://oss.sonatype.org/service/local/staging/deploy/maven2</url>
 		</repository>
 	</distributionManagement>
@@ -729,7 +720,19 @@
 	<!-- Maven repository is implicit and doesn't need to be specified. -->
 	<!-- ================================================================== -->
 	<repositories>
+        <repository>
+          <id>central.maven.org</id>
+          <name>Central Maven repository</name>
+          <url>http://central.maven.org/maven2</url>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+
 		<repository>
+            <snapshots>
+              <enabled>false</enabled>
+            </snapshots>
 			<id>osgeo</id>
 			<name>Open Source Geospatial Foundation Repository</name>
 			<url>http://download.osgeo.org/webdav/geotools/</url>
@@ -743,15 +746,23 @@
 			<name>jgrasstools snapshots</name>
 			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
 		</repository>
-		<repository>
-			<id>boundless</id>
-			<name>Boundless Maven Repository</name>
-			<url>https://repo.boundlessgeo.com/main</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
+
+        <repository>
+          <!-- contains snapshot and release (including third-party-dependences)               -->
+          <!-- Restlet maven Repository (http://maven.restlet.org)                             -->
+          <!-- ucar (https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases) -->
+          <!-- geosolutions (http://maven.geo-solutions.it/)                                   -->
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <id>boundless</id>
+          <name>Boundless Maven Repository</name>
+          <url>https://repo.boundlessgeo.com/main/</url>
+        </repository>
+        </repositories>
 
 	<!-- Build configuration -->
 	<build>
@@ -909,6 +920,17 @@
 					</execution>
 				</executions>
 			</plugin>
+            <plugin>
+              <groupId>org.sonatype.plugins</groupId>
+              <artifactId>nexus-staging-maven-plugin</artifactId>
+              <version>1.6.7</version>
+              <extensions>true</extensions>
+              <configuration>
+                 <serverId>ossrh</serverId>
+                 <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                 <autoReleaseAfterClose>true</autoReleaseAfterClose>
+              </configuration>
+            </plugin>
 		</plugins>
 	</build>
 
