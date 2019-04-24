@@ -13,7 +13,8 @@
 	<artifactId>hm-dbs</artifactId>
 	<version>0.9.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>HM Databases Support</name>
+	<name>hm-dbs</name>
+    <description>HM Databases Support</description>
 
 	<dependencies>
 		<dependency>
