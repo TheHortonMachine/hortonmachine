@@ -128,8 +128,7 @@ public class H2Db extends ADb {
         if (makePooled) {
             Properties p = new Properties(System.getProperties());
             p.put("com.mchange.v2.log.MLog", "com.mchange.v2.log.FallbackMLog");
-            p.put("com.mchange.v2.log.FallbackMLog.DEFAULT_CUTOFF_LEVEL", "OFF"); // Off or any
-                                                                                  // other level
+            p.put("com.mchange.v2.log.FallbackMLog.DEFAULT_CUTOFF_LEVEL", "OFF"); 
             System.setProperties(p);
 
             comboPooledDataSource = new ComboPooledDataSource();
@@ -144,6 +143,7 @@ public class H2Db extends ADb {
             comboPooledDataSource.setAcquireIncrement(5);
             comboPooledDataSource.setMaxPoolSize(30);
             comboPooledDataSource.setMaxStatements(100);
+            comboPooledDataSource.setMaxIdleTime(14400); // 4 hours by default
 
             // comboPooledDataSource.setCheckoutTimeout(2000);
             comboPooledDataSource.setAcquireRetryAttempts(1);
