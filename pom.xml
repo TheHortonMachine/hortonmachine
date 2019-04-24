@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.hortonmachine</groupId>
@@ -114,11 +116,11 @@
 				<artifactId>slf4j-api</artifactId>
 				<version>1.7.5</version>
 			</dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-jdk14</artifactId>
-                <version>1.7.5</version>
-            </dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-jdk14</artifactId>
+				<version>1.7.5</version>
+			</dependency>
 
 			<!-- Java Advanced Imaging (JAI) -->
 			<dependency>
@@ -143,7 +145,7 @@
 				<version>2.1.0</version>
 			</dependency>
 
-            
+
 
 			<!-- ImageIO-Ext -->
 			<dependency>
@@ -618,21 +620,21 @@
 				<artifactId>gt-xml</artifactId>
 				<version>${gt.version}</version>
 			</dependency>
-           <dependency>
-                <groupId>org.geotools.xsd</groupId>
-                <artifactId>gt-xsd-sld</artifactId>
-                <version>${gt.version}</version>
-           </dependency>
-           <dependency>
-            <groupId>org.geotools.xsd</groupId>
-            <artifactId>gt-xsd-core</artifactId>
-            <version>${gt.version}</version>
-           </dependency>
-            <dependency>
-                <groupId>xpp3</groupId>
-                <artifactId>xpp3</artifactId>
-                <version>1.1.4c</version>
-            </dependency>
+			<dependency>
+				<groupId>org.geotools.xsd</groupId>
+				<artifactId>gt-xsd-sld</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools.xsd</groupId>
+				<artifactId>gt-xsd-core</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>xpp3</groupId>
+				<artifactId>xpp3</artifactId>
+				<version>1.1.4c</version>
+			</dependency>
 
 			<dependency>
 				<groupId>commons-collections</groupId>
@@ -649,16 +651,16 @@
 				<artifactId>commons-lang3</artifactId>
 				<version>3.7</version>
 			</dependency>
-          <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.6</version>
-          </dependency>
-          <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>3.0.0</version>
-          </dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>2.6</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.code.findbugs</groupId>
+				<artifactId>jsr305</artifactId>
+				<version>3.0.0</version>
+			</dependency>
 			<dependency>
 				<groupId>it.geosolutions.jaiext.jiffle</groupId>
 				<artifactId>jt-jiffle-op</artifactId>
@@ -778,24 +780,24 @@
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>2.4</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-            </manifest>
-            <manifestEntries>
-              <Project-Version>${project.version}</Project-Version>
-              <Git-Revision>${build.commit.id}</Git-Revision>
-              <Build-Timestamp>${build.timestamp}</Build-Timestamp>
-              <Automatic-Module-Name>${moduleIdentifier}</Automatic-Module-Name>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+						</manifest>
+						<manifestEntries>
+							<Project-Version>${project.version}</Project-Version>
+							<Git-Revision>${build.commit.id}</Git-Revision>
+							<Build-Timestamp>${build.timestamp}</Build-Timestamp>
+							<Automatic-Module-Name>${moduleIdentifier}</Automatic-Module-Name>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.0.2</version>
@@ -856,57 +858,57 @@
 					</rules>
 				</configuration>
 			</plugin>
-     <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.0.0</version>
-        <executions>
-          <execution>
-            <id>remove_gt_from_modulename</id>
-            <goals>
-              <goal>regex-property</goal>
-            </goals>
-            <configuration>
-              <name>moduleIdentifierStep1</name>
-              <value>${project.groupId}.${project.artifactId}</value>
-              <regex>hm-</regex>
-              <replacement />
-              <failIfNoMatch>false</failIfNoMatch>
-            </configuration>
-          </execution>
-          <execution>
-            <id>remove_dashes_from_modulename</id>
-            <goals>
-              <goal>regex-property</goal>
-            </goals>
-            <configuration>
-              <name>moduleIdentifier</name>
-              <value>${moduleIdentifierStep1}</value>
-              <regex>-</regex>
-              <replacement>_</replacement>
-              <failIfNoMatch>false</failIfNoMatch>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-<plugin>
-   <groupId>org.codehaus.mojo</groupId>
-   <artifactId>flatten-maven-plugin</artifactId>
-   <version>1.0.1</version>
-   <configuration>
-      <updatePomFile>true</updatePomFile>
-      <outputDirectory>target</outputDirectory>
-   </configuration>
-   <executions>
-      <execution>
-         <id>flatten</id>
-         <phase>process-resources</phase>
-         <goals>
-            <goal>flatten</goal>
-         </goals>
-      </execution>
-   </executions>
-</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<id>remove_gt_from_modulename</id>
+						<goals>
+							<goal>regex-property</goal>
+						</goals>
+						<configuration>
+							<name>moduleIdentifierStep1</name>
+							<value>${project.groupId}.${project.artifactId}</value>
+							<regex>hm-</regex>
+							<replacement />
+							<failIfNoMatch>false</failIfNoMatch>
+						</configuration>
+					</execution>
+					<execution>
+						<id>remove_dashes_from_modulename</id>
+						<goals>
+							<goal>regex-property</goal>
+						</goals>
+						<configuration>
+							<name>moduleIdentifier</name>
+							<value>${moduleIdentifierStep1}</value>
+							<regex>-</regex>
+							<replacement>_</replacement>
+							<failIfNoMatch>false</failIfNoMatch>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+				<version>1.0.1</version>
+				<configuration>
+					<updatePomFile>true</updatePomFile>
+					<outputDirectory>target</outputDirectory>
+				</configuration>
+				<executions>
+					<execution>
+						<id>flatten</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>flatten</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -924,7 +926,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.1</version>
+						<version>1.5</version>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
