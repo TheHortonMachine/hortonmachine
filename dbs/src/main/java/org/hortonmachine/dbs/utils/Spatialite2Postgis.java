@@ -90,11 +90,11 @@ public class Spatialite2Postgis implements AutoCloseable {
     public PostgisDb getPostgisDb() {
         return postgis;
     }
-    
+
     public ASpatialDb getSpatialiteDb() {
         return spatialite;
     }
-    
+
     public void generateSchema() throws Exception {
 
         List<TableLevel> tablesList = getTables();
@@ -138,7 +138,8 @@ public class Spatialite2Postgis implements AutoCloseable {
                             String drop = "ALTER TABLE " + tableName + " DROP COLUMN " + columnName + ";";
                             postgis.executeInsertUpdateDeleteSql(drop);
                             // add spatial
-                            EGeometryType type = EGeometryType.fromSpatialiteCode(geometryColumn.geometryType);
+                            EGeometryType type = geometryColumn.geometryType; // TODO
+                                                                              // EGeometryType.fromSpatialiteCode(geometryColumn.geometryType);
                             postgis.addGeometryXYColumnAndIndex(tableName, columnName, type.name(), geometryColumn.srid + "",
                                     false);
                         } catch (Exception e) {
@@ -261,8 +262,8 @@ public class Spatialite2Postgis implements AutoCloseable {
                                 if (objects[i] == null) {
 
                                     if (emptyGeomStr == null) {
-                                        int geometryType = _gCol.geometryType;
-                                        ESpatialiteGeometryType gType = ESpatialiteGeometryType.forValue(geometryType);
+                                        EGeometryType gType = _gCol.geometryType;
+//                                        TODO check ESpatialiteGeometryType gType = ESpatialiteGeometryType.forValue(geometryType);
                                         if (gType.isLine()) {
                                             if (gType.isMulti()) {
                                                 emptyGeomStr = gf.createLineString((CoordinateSequence) null).toText();

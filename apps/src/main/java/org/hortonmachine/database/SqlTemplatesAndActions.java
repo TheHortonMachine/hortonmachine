@@ -256,8 +256,8 @@ public class SqlTemplatesAndActions {
                 try {
                     String[] tableColsFromFK = column.tableColsFromFK();
                     String refTable = tableColsFromFK[0];
-                    QueryResult queryResult = spatialiteViewer.currentConnectedDatabase.getTableRecordsMapIn(refTable, null, true,
-                            20, -1, null);
+                    QueryResult queryResult = spatialiteViewer.currentConnectedDatabase.getTableRecordsMapIn(refTable, null, 20,
+                            -1, null);
                     spatialiteViewer.loadDataViewer(queryResult);
                 } catch (Exception ex) {
                     ex.printStackTrace();

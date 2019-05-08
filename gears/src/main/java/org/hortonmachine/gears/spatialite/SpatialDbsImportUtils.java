@@ -69,6 +69,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SpatialDbsImportUtils {
+    private static final String PK_UID = "PK_UID";
+
     private static final Logger logger = Logger.INSTANCE;
 
     public static final String GEOMFIELD_FOR_SHAPEFILE = ASpatialDb.DEFAULT_GEOM_FIELD_NAME;
@@ -119,7 +121,7 @@ public class SpatialDbsImportUtils {
             String attrName = attributeDescriptor.getLocalName();
             if (attributeDescriptor instanceof GeometryDescriptor) {
                 continue;
-            } else if (attrName.equalsIgnoreCase(ASpatialDb.PK_UID)) {
+            } else if (attrName.equalsIgnoreCase(PK_UID)) {
                 continue;
             }
             Class< ? > binding = attributeDescriptor.getType().getBinding();
@@ -253,7 +255,7 @@ public class SpatialDbsImportUtils {
         String qMarks = "";
         for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
             String attrName = attributeDescriptor.getLocalName();
-            if (attrName.equalsIgnoreCase(ASpatialDb.PK_UID)) {
+            if (attrName.equalsIgnoreCase("PK_UID")) {
                 continue;
             }
             attrNames.add(attrName);
@@ -376,7 +378,7 @@ public class SpatialDbsImportUtils {
             crs = CrsUtilities.getCrsFromEpsg("EPSG:" + forceSrid);
         }
 
-        QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit, forceSrid, whereStr);
+        QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, featureLimit, forceSrid, whereStr);
         if (tableRecords.data.size() == 0) {
             return fc;
         }

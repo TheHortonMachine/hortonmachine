@@ -41,7 +41,7 @@ import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.utils.DbsUtilities;
-
+import org.hortonmachine.dbs.utils.EGeometryType;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
@@ -399,7 +399,7 @@ public class H2GisDb extends ASpatialDb {
                     String name = rs.getString(1);
                     gc.tableName = name;
                     gc.geometryColumnName = rs.getString(2);
-                    gc.geometryType = rs.getInt(3);
+                    gc.geometryType = EGeometryType.fromGeometryTypeCode(rs.getInt(3));
                     gc.coordinatesDimension = rs.getInt(4);
                     gc.srid = rs.getInt(5);
 
@@ -445,8 +445,8 @@ public class H2GisDb extends ASpatialDb {
 
     }
 
-    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
-            int reprojectSrid, String whereStr ) throws Exception {
+    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, int limit, int reprojectSrid, String whereStr )
+            throws Exception {
         QueryResult queryResult = new QueryResult();
 
         GeometryColumn gCol = null;
@@ -477,11 +477,6 @@ public class H2GisDb extends ASpatialDb {
                 if (index != -1) {
                     tableColumns.remove(index);
                 }
-            }
-        }
-        if (!alsoPK_UID) {
-            if (!tableColumns.remove(PK_UID)) {
-                tableColumns.remove(PKUID);
             }
         }
 

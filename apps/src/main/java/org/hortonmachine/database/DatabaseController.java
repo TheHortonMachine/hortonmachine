@@ -490,7 +490,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
                             try {
                                 QueryResult queryResult = currentConnectedDatabase
-                                        .getTableRecordsMapIn(currentSelectedTable.tableName, null, true, 20, -1, null);
+                                        .getTableRecordsMapIn(currentSelectedTable.tableName, null, 20, -1, null);
                                 loadDataViewer(queryResult);
                             } catch (Exception e) {
                                 Logger.INSTANCE.insertError("", "ERROR", e);

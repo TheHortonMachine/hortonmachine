@@ -11,6 +11,7 @@ import static org.hortonmachine.dbs.TestUtilities.arr;
 import static org.hortonmachine.dbs.TestUtilities.createGeomTables;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -31,6 +32,7 @@ import org.junit.Test;
 
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
@@ -76,9 +78,9 @@ public class TestSpatialDbsMain {
                     + " MULTIPOINT ((6.8 42.5), (6.8 41.4), (6.6 40.2)))";
             String[] geomCollectionInserts = new String[]{//
                     "INSERT INTO " + GEOMCOLL_TABLE
-                    + " (id, name, temperature, the_geom) VALUES(?, ?, ?, ST_GeomFromText(?, 4326));", //
+                            + " (id, name, temperature, the_geom) VALUES(?, ?, ?, ST_GeomFromText(?, 4326));", //
             };
-            Object[] values = {1,"Tscherms", 36.0, gCollWKT};
+            Object[] values = {1, "Tscherms", 36.0, gCollWKT};
 
             db.createSpatialTable(GEOMCOLL_TABLE, 4326, "the_geom GEOMETRYCOLLECTION",
                     arr("id INT PRIMARY KEY", "name VARCHAR(255)", "temperature REAL"));
@@ -120,6 +122,24 @@ public class TestSpatialDbsMain {
 
     @Test
     public void testContents() throws Exception {
+        assertEquals(3, db.getCount(MPOLY_TABLE));
+
+        QueryResult result = db.getTableRecordsMapIn(MPOLY_TABLE, null, 2, 4326, null);
+        assertEquals(2, result.data.size());
+
+        result = db.getTableRecordsMapIn(MPOLY_TABLE, null, -1, 4326, null);
+        assertEquals(3, result.data.size());
+
+        assertEquals(3, result.geometryIndex);
+
+        Object geomObject = result.data.get(0)[result.geometryIndex];
+        assertNotNull(geomObject);
+
+        assertTrue(geomObject instanceof MultiPolygon);
+    }
+
+    @Test
+    public void testContentsRaw() throws Exception {
         assertEquals(3, db.getCount(MPOLY_TABLE));
 
         String sql = "select id, name, temperature from " + MPOLY_TABLE + " order by temperature";
@@ -227,6 +247,39 @@ public class TestSpatialDbsMain {
         Geometry geom = new WKTReader().read(polygonStr);
         List<Geometry> intersecting = db.getGeometriesIn(MPOLY_TABLE, geom);
         assertEquals(2, intersecting.size());
+    }
+
+    @Test
+    public void testReprojectFromDb() throws Exception {
+
+        double w = 11.143413001499738;
+        double e = 11.147502220729288;
+        double s = 46.62897848892326;
+        double n = 46.62981208577648;
+
+        Envelope env = new Envelope(w, e, s, n);
+        
+        Envelope reprojected = db.reproject(env, 4326, 32632);
+        double rw = reprojected.getMinX();
+        double re = reprojected.getMaxX();
+        double rs = reprojected.getMinY();
+        double rn = reprojected.getMaxY();
+        
+        assertEquals(664076.6777860201, rw, 0.001);
+        assertEquals(664387.1714802807, re, 0.001);
+        assertEquals(5166166.626361137, rs, 0.001);
+        assertEquals(5166267.775614383, rn, 0.001);
+        
+        
+        
+        WKTReader reader = new WKTReader();
+        Geometry point = reader.read("POINT (11.143413001499738 46.62897848892326)");
+        Geometry reprojectedGeom = db.reproject(point, 4326, 32632);
+        Geometry expected = reader.read("POINT (664076.6777860201 5166166.626361137)");
+        
+        double distance = reprojectedGeom.distance(expected);
+        assertEquals(0.0, distance, 0.00001);
+        
     }
 
     @Test

@@ -128,7 +128,7 @@ public class H2Db extends ADb {
         if (makePooled) {
             Properties p = new Properties(System.getProperties());
             p.put("com.mchange.v2.log.MLog", "com.mchange.v2.log.FallbackMLog");
-            p.put("com.mchange.v2.log.FallbackMLog.DEFAULT_CUTOFF_LEVEL", "OFF"); 
+            p.put("com.mchange.v2.log.FallbackMLog.DEFAULT_CUTOFF_LEVEL", "OFF");
             System.setProperties(p);
 
             comboPooledDataSource = new ComboPooledDataSource();
@@ -371,6 +371,8 @@ public class H2Db extends ADb {
                     String createSql = rs.getString(2);
                     String lower = createSql.toLowerCase();
                     if (lower.contains("constraint_index")) {
+                        continue;
+                    } else if (lower.contains("primary key")) {
                         continue;
                     } else if (lower.startsWith("create index") || lower.startsWith("create unique index")) {
                         String[] split = createSql.split("\\(|\\)");

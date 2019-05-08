@@ -450,8 +450,7 @@ public class PostgisDb extends ASpatialDb {
                     gc.tableName = name;
                     gc.geometryColumnName = rs.getString(2);
                     String type = rs.getString(3);
-                    ESpatialiteGeometryType spatialiteGeometryType = EGeometryType.forWktName(type).toSpatialiteGeometryType();
-                    gc.geometryType = spatialiteGeometryType.getType();
+                    gc.geometryType = EGeometryType.forWktName(type);
                     gc.coordinatesDimension = rs.getInt(4);
                     gc.srid = rs.getInt(5);
 
@@ -500,8 +499,8 @@ public class PostgisDb extends ASpatialDb {
 
     }
 
-    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
-            int reprojectSrid, String whereStr ) throws Exception {
+    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, int limit, int reprojectSrid, String whereStr )
+            throws Exception {
         QueryResult queryResult = new QueryResult();
 
         GeometryColumn gCol = null;
@@ -532,11 +531,6 @@ public class PostgisDb extends ASpatialDb {
                 if (index != -1) {
                     tableColumns.remove(index);
                 }
-            }
-        }
-        if (!alsoPK_UID) {
-            if (!tableColumns.remove(PK_UID)) {
-                tableColumns.remove(PKUID);
             }
         }
 

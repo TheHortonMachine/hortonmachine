@@ -30,6 +30,14 @@ import org.locationtech.jts.geom.Geometry;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class QueryResult {
+    /**
+     * Index of the primary key (if available), that can be used for updates.
+     */
+    public int pkIndex = -1;
+
+    /**
+     * The index of the geometry, if available.
+     */
     public int geometryIndex = -1;
     
     /**

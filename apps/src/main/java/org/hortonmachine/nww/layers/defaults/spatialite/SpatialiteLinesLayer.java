@@ -136,8 +136,8 @@ public class SpatialiteLinesLayer extends RenderableLayer implements NwwVectorLa
         public void run() {
 
             try {
-                QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit,
-                        NwwUtilities.GPS_CRS_SRID, null);
+                QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, featureLimit, NwwUtilities.GPS_CRS_SRID,
+                        null);
                 int count = tableRecords.data.size();
                 List<String> names = tableRecords.names;
                 for( int i = 0; i < count; i++ ) {

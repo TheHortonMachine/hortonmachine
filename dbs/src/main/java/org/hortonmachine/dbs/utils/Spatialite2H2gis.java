@@ -236,8 +236,7 @@ public class Spatialite2H2gis implements AutoCloseable {
                                 if (objects[i] == null) {
 
                                     if (emptyGeomStr == null) {
-                                        int geometryType = _gCol.geometryType;
-                                        ESpatialiteGeometryType gType = ESpatialiteGeometryType.forValue(geometryType);
+                                        EGeometryType gType= _gCol.geometryType;
                                         if (gType.isLine()) {
                                             if (gType.isMulti()) {
                                                 emptyGeomStr = gf.createLineString((CoordinateSequence) null).toText();

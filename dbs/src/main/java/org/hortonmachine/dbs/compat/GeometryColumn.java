@@ -17,6 +17,9 @@
  */
 package org.hortonmachine.dbs.compat;
 
+import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
+import org.hortonmachine.dbs.utils.EGeometryType;
+
 /**
  * Class representing a geometry_columns record.
  * 
@@ -26,7 +29,10 @@ public abstract class GeometryColumn {
     // VARIABLES
     public String tableName;
     public String geometryColumnName;
-    public int geometryType;
+    /**
+     * The type, as compatible with {@link EGeometryType#fromGeometryTypeCode(int)} and {@link ESpatialiteGeometryType#forValue(int)}.
+     */
+    public EGeometryType geometryType;
     public int coordinatesDimension;
     public int srid;
     public int isSpatialIndexEnabled;

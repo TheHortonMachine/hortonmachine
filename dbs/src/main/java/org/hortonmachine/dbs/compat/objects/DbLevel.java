@@ -115,7 +115,7 @@ public class DbLevel {
                     if (geometryColumns != null && columnName.equalsIgnoreCase(geometryColumns.geometryColumnName)) {
                         columnLevel.geomColumn = geometryColumns;
                         if (columnType.equals("USER-DEFINED")) {
-                            EGeometryType guessedType = EGeometryType.fromSpatialiteCode(geometryColumns.geometryType);
+                            EGeometryType guessedType =geometryColumns.geometryType;// TODO check EGeometryType.fromSpatialiteCode(geometryColumns.geometryType);
                             if (guessedType != null) {
                                 columnLevel.columnType = guessedType.name();
                             }

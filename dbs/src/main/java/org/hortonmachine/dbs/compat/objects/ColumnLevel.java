@@ -18,7 +18,6 @@
 package org.hortonmachine.dbs.compat.objects;
 
 import org.hortonmachine.dbs.compat.GeometryColumn;
-import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 
 /**
  * Class representing a db column.
@@ -64,7 +63,7 @@ public class ColumnLevel {
             }
             return col;
         } else {
-            String gType = ESpatialiteGeometryType.forValue(geomColumn.geometryType).getDescription();
+            String gType = geomColumn.geometryType.getTypeName();
             boolean indexEnabled = geomColumn.isSpatialIndexEnabled == 1 ? true : false;
             return columnName + " [" + gType + ",EPSG:" + geomColumn.srid + ",idx:" + indexEnabled + "]";
         }

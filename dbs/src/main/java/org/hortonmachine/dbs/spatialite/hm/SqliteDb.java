@@ -280,6 +280,7 @@ public class SqliteDb extends ADb {
             }
             while( rs.next() ) {
                 ForeignKey fKey = new ForeignKey();
+                fKey.fromTable = tableName;
                 Object fromObj = rs.getObject(fromIndex);
                 Object toObj = rs.getObject(toIndex);
                 Object toTableObj = rs.getObject(toTableIndex);

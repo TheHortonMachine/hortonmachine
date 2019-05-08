@@ -83,7 +83,7 @@ public class SpatialitePointsLayer extends MarkerLayer implements NwwVectorLayer
         setMarkers(new ArrayList<Marker>());
 
         try {
-            QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, false, featureLimit, NwwUtilities.GPS_CRS_SRID, null);
+            QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, featureLimit, NwwUtilities.GPS_CRS_SRID, null);
             int count = tableRecords.data.size();
             List<String> names = tableRecords.names;
             for( int i = 0; i < count; i++ ) {

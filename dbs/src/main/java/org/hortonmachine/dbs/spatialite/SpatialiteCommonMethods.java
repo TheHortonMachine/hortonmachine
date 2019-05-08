@@ -30,12 +30,11 @@ import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
-import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.utils.DbsUtilities;
-
+import org.hortonmachine.dbs.utils.EGeometryType;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -79,59 +78,52 @@ public class SpatialiteCommonMethods {
         return sql;
     }
 
-    public static QueryResult getTableRecordsMapIn( ASpatialDb db, String tableName, Envelope envelope, boolean alsoPK_UID,
-            int limit, int reprojectSrid, String whereStr ) throws Exception, ParseException {
+    public static QueryResult getTableRecordsMapIn( ASpatialDb db, String tableName, Envelope envelope, int limit,
+            int reprojectSrid, String whereStr ) throws Exception, ParseException {
+        QueryResult queryResult = new QueryResult();
         GeometryColumn gCol = null;
+        String geomColLower = null;
         try {
             gCol = db.getGeometryColumnsForTable(tableName);
             // TODO check if it is a virtual table
+            if (gCol != null)
+                geomColLower = gCol.geometryColumnName.toLowerCase();
         } catch (Exception e) {
             // ignore
         }
-        boolean hasGeom = gCol != null;
 
         List<String[]> tableColumnsInfo = db.getTableColumns(tableName);
-        List<String> tableColumns = new ArrayList<>();
-        for( String[] info : tableColumnsInfo ) {
-            tableColumns.add(info[0].toLowerCase());
-        }
-        if (hasGeom) {
-            String gColLower = gCol.geometryColumnName.toLowerCase();
-            if (!tableColumns.remove(gColLower)) {
-                int index = -1;
-                for( int i = 0; i < tableColumns.size(); i++ ) {
-                    String tableColumn = tableColumns.get(i);
-                    if (tableColumn.toLowerCase().equals(gColLower)) {
-                        index = i;
-                        break;
-                    }
-                }
-                if (index != -1) {
-                    tableColumns.remove(index);
-                }
+        int columnCount = tableColumnsInfo.size();
+
+        int index = 0;
+        List<String> items = new ArrayList<>();
+        for( String[] columnInfo : tableColumnsInfo ) {
+            String columnName = columnInfo[0];
+            String columnTypeName = columnInfo[1];
+            
+            queryResult.names.add(columnName);
+            queryResult.types.add(columnTypeName);
+            
+            String isPk = columnInfo[2];
+            if (isPk.equals("1")) {
+                queryResult.pkIndex = index;
             }
-        }
-        if (!alsoPK_UID) {
-            if (!tableColumns.remove(ASpatialDb.PK_UID)) {
-                tableColumns.remove(ASpatialDb.PKUID);
+            if (geomColLower != null && columnName.toLowerCase().equals(geomColLower)) {
+                queryResult.geometryIndex = index;
+
+                if (reprojectSrid == -1 || reprojectSrid == gCol.srid) {
+                    items.add(geomColLower);
+                } else {
+                    items.add("ST_Transform(" + geomColLower + "," + reprojectSrid + ") AS " + geomColLower);
+                }
+            } else {
+                items.add(columnName);
             }
+            index++;
         }
 
         String sql = "SELECT ";
-        List<String> items = new ArrayList<>();
-        for( int i = 0; i < tableColumns.size(); i++ ) {
-            items.add(tableColumns.get(i));
-        }
-        if (hasGeom) {
-            String gColLower = gCol.geometryColumnName.toLowerCase();
-            if (reprojectSrid == -1 || reprojectSrid == gCol.srid) {
-                items.add(gColLower);
-            } else {
-                items.add("ST_Transform(" + gColLower + "," + reprojectSrid + ") AS " + gColLower);
-            }
-        }
-        String itemsWithComma = DbsUtilities.joinByComma(items);
-        sql += itemsWithComma;
+        sql += DbsUtilities.joinByComma(items);
         sql += " FROM " + tableName;
 
         List<String> whereStrings = new ArrayList<>();
@@ -145,7 +137,6 @@ public class SpatialiteCommonMethods {
         if (whereStr != null) {
             whereStrings.add(whereStr);
         }
-
         if (whereStrings.size() > 0) {
             sql += " WHERE "; //
             sql += DbsUtilities.joinBySeparator(whereStrings, " AND ");
@@ -157,28 +148,13 @@ public class SpatialiteCommonMethods {
         SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
 
         String _sql = sql;
-        GeometryColumn _gCol = gCol;
         return db.execOnConnection(connection -> {
-            QueryResult queryResult = new QueryResult();
+            long start = System.currentTimeMillis();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
-                IHMResultSetMetaData rsmd = rs.getMetaData();
-                int columnCount = rsmd.getColumnCount();
-
-                for( int i = 1; i <= columnCount; i++ ) {
-                    String columnName = rsmd.getColumnName(i);
-                    queryResult.names.add(columnName);
-                    String columnTypeName = rsmd.getColumnTypeName(i);
-                    queryResult.types.add(columnTypeName);
-                    if (hasGeom && columnName.toLowerCase().equals(_gCol.geometryColumnName.toLowerCase())) {
-                        queryResult.geometryIndex = i - 1;
-                    }
-                }
-
-                long start = System.currentTimeMillis();
                 while( rs.next() ) {
                     Object[] rec = new Object[columnCount];
                     for( int j = 1; j <= columnCount; j++ ) {
-                        if (hasGeom && queryResult.geometryIndex == j - 1) {
+                        if (queryResult.geometryIndex == j - 1) {
                             byte[] geomBytes = rs.getBytes(j);
                             if (geomBytes != null) {
                                 Geometry geometry = wkbReader.read(geomBytes);
@@ -311,7 +287,7 @@ public class SpatialiteCommonMethods {
                 SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();
                 gc.tableName = rs.getString(1);
                 gc.geometryColumnName = rs.getString(2);
-                gc.geometryType = rs.getInt(3);
+                gc.geometryType = EGeometryType.fromGeometryTypeCode(rs.getInt(3));
                 gc.coordinatesDimension = rs.getInt(4);
                 gc.srid = rs.getInt(5);
                 gc.isSpatialIndexEnabled = rs.getInt(6);
@@ -332,7 +308,7 @@ public class SpatialiteCommonMethods {
                 SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();
                 gc.tableName = rs.getString(1);
                 gc.geometryColumnName = rs.getString(2);
-                gc.geometryType = rs.getInt(3);
+                gc.geometryType = EGeometryType.fromGeometryTypeCode(rs.getInt(3));
                 gc.coordinatesDimension = rs.getInt(4);
                 gc.srid = rs.getInt(5);
                 gc.isSpatialIndexEnabled = 0;

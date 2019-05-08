@@ -27,6 +27,7 @@ import org.hortonmachine.dbs.utils.DbsUtilities;
 
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 
 /**
  * Abstract spatial db class.
@@ -36,8 +37,6 @@ import org.locationtech.jts.geom.Geometry;
  */
 public abstract class ASpatialDb extends ADb implements AutoCloseable {
 
-    public static String PK_UID = "PK_UID";
-    public static String PKUID = "PKUID";
     public final static String DEFAULT_GEOM_FIELD_NAME = "the_geom";
 
     /**
@@ -253,18 +252,16 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @param tableName
      *            the table name.
      * @param envelope
-     *            the envelope to check.
-     * @param alsoPK_UID
-     *            if <code>true</code>, also the PK_UID column is considered.
+     *            the envelope to check, in the table SRS.
      * @param limit
      *            if > 0 a limit is set.
      * @param reprojectSrid an optional srid to require reprojection (-1 is disabled).
      * @param whereStr an optional where condition string to apply.
-     * @return the list of found records.
+     * @return the result object.
      * @throws Exception
      */
-    public abstract QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
-            int reprojectSrid, String whereStr ) throws Exception;
+    public abstract QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, int limit, int reprojectSrid,
+            String whereStr ) throws Exception;
 
     /**
      * Get the geometries of a table inside a given envelope.
@@ -408,6 +405,63 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
     protected abstract void logInfo( String message );
 
     protected abstract void logDebug( String message );
+
+    /**
+     * Reproject an envelope.
+     * 
+     * @param fromEnvelope the original envelope.
+     * @param fromSrid the original srid.
+     * @param toSrid the destination srid.
+     * @return the reprojected Envelope.
+     * @throws Exception
+     */
+    public Envelope reproject( Envelope fromEnvelope, int fromSrid, int toSrid ) throws Exception {
+        double w = fromEnvelope.getMinX();
+        double e = fromEnvelope.getMaxX();
+        double s = fromEnvelope.getMinY();
+        double n = fromEnvelope.getMaxY();
+        String sql = "select ST_Transform( ST_PointFromText('POINT( " + w + " " + s + ")', " + fromSrid + ") , " + toSrid
+                + "), ST_Transform( ST_PointFromText('POINT( " + e + " " + n + ")', " + fromSrid + ") , " + toSrid + ")";
+        return execOnConnection(connection -> {
+            IGeometryParser gp = getType().getGeometryParser();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    Geometry llPoint = gp.fromResultSet(rs, 1);
+                    Geometry urPoint = gp.fromResultSet(rs, 2);
+                    if (llPoint instanceof Point) {
+                        Point ll = (Point) llPoint;
+                        Point ur = (Point) urPoint;
+                        Envelope newEnv = new Envelope(ll.getX(), ur.getX(), ll.getY(), ur.getY());
+                        return newEnv;
+                    }
+                }
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Reproject an geometry.
+     * 
+     * @param fromGeometry the original geometry.
+     * @param fromSrid the original srid.
+     * @param toSrid the destination srid.
+     * @return the reprojected Geometry.
+     * @throws Exception
+     */
+    public Geometry reproject( Geometry fromGeometry, int fromSrid, int toSrid ) throws Exception {
+        String sql = "select ST_Transform( ST_GeomFromText('" + fromGeometry.toText() + "', " + fromSrid + ") , " + toSrid + ")";
+        return execOnConnection(connection -> {
+            IGeometryParser gp = getType().getGeometryParser();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    Geometry repGeom = gp.fromResultSet(rs, 1);
+                    return repGeom;
+                }
+                return null;
+            }
+        });
+    }
 
     /**
      * Run a generic sql string (also multiline).

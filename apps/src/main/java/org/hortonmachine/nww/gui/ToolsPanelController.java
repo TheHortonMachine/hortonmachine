@@ -44,7 +44,6 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Db;
-import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.hortonmachine.gears.utils.SldUtilities;
@@ -568,7 +567,7 @@ public class ToolsPanelController extends ToolsPanelView {
                     } else {
                         GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
                         if (geometryColumn != null) {
-                            ESpatialiteGeometryType geomType = ESpatialiteGeometryType.forValue(geometryColumn.geometryType);
+                            org.hortonmachine.dbs.utils.EGeometryType geomType = geometryColumn.geometryType;
                             if (geomType.isPolygon()) {
                                 SpatialitePolygonLayer layer = new SpatialitePolygonLayer(db, tableName, 10000);
                                 wwjPanel.getWwd().getModel().getLayers().add(layer);

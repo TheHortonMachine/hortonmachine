@@ -304,7 +304,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
     public abstract List<ForeignKey> getForeignKeys( String tableName ) throws Exception;
 
     /**
-     * Get the indexes of a table.
+     * Get the indexes of a table (no primary keys and no foreign keys).
      * 
      * @param tableName
      *            the table to check on.

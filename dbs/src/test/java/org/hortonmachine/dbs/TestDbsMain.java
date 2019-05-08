@@ -1,6 +1,8 @@
 package org.hortonmachine.dbs;
 
+import static org.hortonmachine.dbs.TestUtilities.MPOLY_TABLE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -15,6 +17,7 @@ import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.locationtech.jts.geom.MultiPolygon;
 
 /**
  * Main tests for normal dbs
@@ -65,6 +68,7 @@ public class TestDbsMain {
             db.executeInsertUpdateDeleteSql(insert);
         }
 
+        System.out.println();
     }
 
     @AfterClass
@@ -100,14 +104,14 @@ public class TestDbsMain {
         assertEquals(1, foreignKeys.size());
 
         List<Index> indexes = db.getIndexes(TABLE1);
-        assertEquals(1, indexes.size());
+        assertEquals(0, indexes.size());
         indexes = db.getIndexes(TABLE2);
-        assertEquals(2, indexes.size());
+        assertEquals(1, indexes.size());
 
     }
-
+    
     @Test
-    public void testContents() throws Exception {
+    public void testContentsRaw() throws Exception {
         assertEquals(3, db.getCount(TABLE1));
 
         String sql = "select id, name, temperature from " + TABLE1 + " order by temperature";

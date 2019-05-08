@@ -51,7 +51,6 @@ import jsqlite.Database;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class GPSpatialiteDb extends ASpatialDb {
-    private SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
     private GPConnection mConn;
     private ConnectionData connectionData;
 
@@ -165,10 +164,9 @@ public class GPSpatialiteDb extends ASpatialDb {
         return SpatialiteCommonMethods.getTableBounds(this, tableName);
     }
 
-    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, boolean alsoPK_UID, int limit,
-            int reprojectSrid, String whereStr ) throws Exception {
-        return SpatialiteCommonMethods.getTableRecordsMapIn(this, tableName, envelope, alsoPK_UID, limit, reprojectSrid,
-                whereStr);
+    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, int limit, int reprojectSrid, String whereStr )
+            throws Exception {
+        return SpatialiteCommonMethods.getTableRecordsMapIn(this, tableName, envelope, limit, reprojectSrid, whereStr);
     }
 
     @Override
@@ -184,12 +182,6 @@ public class GPSpatialiteDb extends ASpatialDb {
     @Override
     protected void logDebug( String message ) {
         // Log.d("SpatialiteDb", message);
-    }
-
-    public Geometry getGeometryFromResultSet( IHMResultSet resultSet, int position ) throws Exception {
-        byte[] geomBytes = resultSet.getBytes(position);
-        Geometry geometry = wkbReader.read(geomBytes);
-        return geometry;
     }
 
     @Override

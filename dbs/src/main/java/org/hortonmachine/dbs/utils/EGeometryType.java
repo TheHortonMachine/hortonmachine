@@ -19,7 +19,6 @@
 package org.hortonmachine.dbs.utils;
 
 import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
-
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.LineString;
@@ -33,22 +32,24 @@ import org.locationtech.jts.geom.Polygon;
  * Geometry types used by the utility.
  */
 public enum EGeometryType {
-    POINT(Point.class, MultiPoint.class), //
-    MULTIPOINT(MultiPoint.class, MultiPoint.class), //
-    LINESTRING(LineString.class, MultiLineString.class), //
-    MULTILINESTRING(MultiLineString.class, MultiLineString.class), //
-    POLYGON(Polygon.class, MultiPolygon.class), //
-    MULTIPOLYGON(MultiPolygon.class, MultiPolygon.class), //
-    GEOMETRYCOLLECTION(GeometryCollection.class, GeometryCollection.class), //
-    GEOMETRY(Geometry.class, Geometry.class), //
-    UNKNOWN(null, null);
+    POINT(Point.class, MultiPoint.class, "Point"), //
+    MULTIPOINT(MultiPoint.class, MultiPoint.class, "MultiPoint"), //
+    LINESTRING(LineString.class, MultiLineString.class, "LineString"), //
+    MULTILINESTRING(MultiLineString.class, MultiLineString.class, "MultiLineString"), //
+    POLYGON(Polygon.class, MultiPolygon.class, "Polygon"), //
+    MULTIPOLYGON(MultiPolygon.class, MultiPolygon.class, "MultiPolygon"), //
+    GEOMETRYCOLLECTION(GeometryCollection.class, GeometryCollection.class, "GeometryCollection"), //
+    GEOMETRY(Geometry.class, Geometry.class, "GEOMETRY"), //
+    UNKNOWN(null, null, "Unknown");
 
     private Class< ? > clazz;
     private Class< ? > multiClazz;
+    private String typeName;
 
-    EGeometryType( Class< ? > clazz, Class< ? > multiClazz ) {
+    EGeometryType( Class< ? > clazz, Class< ? > multiClazz, String typeName ) {
         this.clazz = clazz;
         this.multiClazz = multiClazz;
+        this.typeName = typeName;
     } //
 
     public Class< ? > getClazz() {
@@ -86,6 +87,36 @@ public enum EGeometryType {
         case MULTILINESTRING:
         case MULTIPOINT:
         case MULTIPOLYGON:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    public boolean isPoint() {
+        switch( this ) {
+        case MULTIPOINT:
+        case POINT:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    public boolean isLine() {
+        switch( this ) {
+        case MULTILINESTRING:
+        case LINESTRING:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    public boolean isPolygon() {
+        switch( this ) {
+        case MULTIPOLYGON:
+        case POLYGON:
             return true;
         default:
             return false;
@@ -157,6 +188,10 @@ public enum EGeometryType {
         }
         return UNKNOWN;
     }
+    
+    public static EGeometryType forTypeName( String typeName ) {
+        return forWktName(typeName);
+    }
 
     /**
      * Checks if the given geometry is a {@link LineString} (or {@link MultiLineString}) geometry.
@@ -203,7 +238,7 @@ public enum EGeometryType {
      * @param value the code.
      * @return the type.
      */
-    public static EGeometryType fromSpatialiteCode( int value ) {
+    public static EGeometryType fromGeometryTypeCode( int value ) {
 
         switch( value ) {
         case 0:
@@ -307,5 +342,9 @@ public enum EGeometryType {
         default:
             return null;
         }
+    }
+
+    public String getTypeName() {
+        return typeName;
     }
 }

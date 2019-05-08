@@ -26,7 +26,6 @@ import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.compat.objects.TypeLevel;
-import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.utils.EGeometryType;
 import org.hortonmachine.gui.utils.ImageCache;
 
@@ -103,7 +102,7 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
             if (columnLevel.isPK) {
                 setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_PRIMARYKEY));
             } else if (columnLevel.geomColumn != null) {
-                EGeometryType gType = EGeometryType.fromSpatialiteCode(columnLevel.geomColumn.geometryType);
+                EGeometryType gType = columnLevel.geomColumn.geometryType;
                 switch( gType ) {
                 case POINT:
                 case MULTIPOINT:
