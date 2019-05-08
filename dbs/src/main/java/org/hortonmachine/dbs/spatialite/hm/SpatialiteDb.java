@@ -270,7 +270,8 @@ public class SpatialiteDb extends ASpatialDb {
 
     @Override
     public List<String[]> getTableColumns( String tableName ) throws Exception {
-        return sqliteDb.getTableColumns(tableName);
+        List<String[]> tableColumns = SpatialiteCommonMethods.getTableColumns(this, tableName);
+        return tableColumns;
     }
 
     @Override

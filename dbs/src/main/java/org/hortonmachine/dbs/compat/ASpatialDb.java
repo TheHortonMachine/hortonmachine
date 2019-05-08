@@ -399,6 +399,18 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @throws Exception
      */
     public abstract Envelope getTableBounds( String tableName ) throws Exception;
+    
+    /**
+     * Get the column [name, type, primarykey] values of a table.
+     * 
+     * <p>pk = 0 -> false</p>
+     * 
+     * @param tableName
+     *            the table to check.
+     * @return the list of column [name, type, pk].
+     * @throws SQLException
+     */
+    public abstract List<String[]> getTableColumns( String tableName ) throws Exception;
 
     protected abstract void logWarn( String message );
 

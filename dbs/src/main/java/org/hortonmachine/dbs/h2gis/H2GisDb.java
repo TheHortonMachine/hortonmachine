@@ -461,6 +461,9 @@ public class H2GisDb extends ASpatialDb {
         List<String[]> tableColumnsInfo = getTableColumns(tableName);
         List<String> tableColumns = new ArrayList<>();
         for( String[] info : tableColumnsInfo ) {
+            if (DbsUtilities.isReservedName(info[0])) {
+                info[0] = DbsUtilities.fixReservedNameForQuery(info[0]);
+            }
             tableColumns.add(info[0]);
         }
         if (hasGeom) {

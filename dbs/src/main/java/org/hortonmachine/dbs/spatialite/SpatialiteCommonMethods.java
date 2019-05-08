@@ -30,6 +30,7 @@ import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
+import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
@@ -102,6 +103,10 @@ public class SpatialiteCommonMethods {
         List<ResultSetToObjectFunction> funct = new ArrayList<>();
         for( String[] columnInfo : tableColumnsInfo ) {
             String columnName = columnInfo[0];
+            if (DbsUtilities.isReservedName(columnName)) {
+                columnName = DbsUtilities.fixReservedNameForQuery(columnName);
+            }
+
             String columnTypeName = columnInfo[1];
 
             queryResult.names.add(columnName);
@@ -271,6 +276,81 @@ public class SpatialiteCommonMethods {
             }
         });
 
+    }
+
+    /**
+     * Get the table columns from a non spatial db.
+     * 
+     * @param db the db.
+     * @param tableName the name of the table to get the columns for.
+     * @return the list of table column information. See {@link ADb#getTableColumns(String)}
+     * @throws Exception
+     */
+    public static List<String[]> getTableColumns( ADb db, String tableName ) throws Exception {
+        String sql;
+        if (tableName.indexOf('.') != -1) {
+            // it is an attached database
+            String[] split = tableName.split("\\.");
+            String dbName = split[0];
+            String tmpTableName = split[1];
+            sql = "PRAGMA " + dbName + ".table_info(" + tmpTableName + ")";
+        } else {
+            sql = "PRAGMA table_info(" + tableName + ")";
+        }
+
+        return db.execOnConnection(connection -> {
+            List<String[]> columnNames = new ArrayList<String[]>();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                IHMResultSetMetaData rsmd = rs.getMetaData();
+                int columnCount = rsmd.getColumnCount();
+                int nameIndex = -1;
+                int typeIndex = -1;
+                int pkIndex = -1;
+                for( int i = 1; i <= columnCount; i++ ) {
+                    String columnName = rsmd.getColumnName(i);
+                    if (columnName.equals("name")) {
+                        nameIndex = i;
+                    } else if (columnName.equals("type")) {
+                        typeIndex = i;
+                    } else if (columnName.equals("pk")) {
+                        pkIndex = i;
+                    }
+                }
+
+                while( rs.next() ) {
+                    String name = rs.getString(nameIndex);
+                    String type = rs.getString(typeIndex);
+                    String pk = "0";
+                    if (pkIndex > 0)
+                        pk = rs.getString(pkIndex);
+                    columnNames.add(new String[]{name, type, pk});
+                }
+
+                return columnNames;
+            }
+        });
+    }
+
+    /**
+     * Get the table columns from a spatial db. Some checks are done on non recognised columns.
+     * 
+     * @param db the db.
+     * @param tableName the name of the table to get the columns for.
+     * @return the list of table column information. See {@link ADb#getTableColumns(String)}
+     * @throws Exception
+     */
+    public static List<String[]> getTableColumns( ASpatialDb db, String tableName ) throws Exception {
+        List<String[]> tableColumns = getTableColumns((ADb) db, tableName);
+        for( String[] cols : tableColumns ) {
+            if (cols[1].trim().length() == 0) {
+                // might be a non understood geom type
+                GeometryColumn gcol = db.getGeometryColumnsForTable(tableName);
+                if (cols[0].equals(gcol.geometryColumnName)) {
+                    cols[1] = gcol.geometryType.getTypeName();
+                }
+            }
+        }
+        return tableColumns;
     }
 
     // public static List<Geometry> getGeometriesIn( ASpatialDb db, String tableName, Envelope

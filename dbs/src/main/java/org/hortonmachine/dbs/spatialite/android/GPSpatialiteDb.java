@@ -39,7 +39,6 @@ import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryColumns;
 import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
-import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
@@ -240,45 +239,7 @@ public class GPSpatialiteDb extends ASpatialDb {
     }
 
     public List<String[]> getTableColumns( String tableName ) throws Exception {
-        String sql;
-        if (tableName.indexOf('.') != -1) {
-            // it is an attached database
-            String[] split = tableName.split("\\.");
-            String dbName = split[0];
-            String tmpTableName = split[1];
-            sql = "PRAGMA " + dbName + ".table_info(" + tmpTableName + ")";
-        } else {
-            sql = "PRAGMA table_info(" + tableName + ")";
-        }
-
-        List<String[]> columnNames = new ArrayList<String[]>();
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-            IHMResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
-            int nameIndex = -1;
-            int typeIndex = -1;
-            int pkIndex = -1;
-            for( int i = 1; i <= columnCount; i++ ) {
-                String columnName = rsmd.getColumnName(i);
-                if (columnName.equals("name")) {
-                    nameIndex = i;
-                } else if (columnName.equals("type")) {
-                    typeIndex = i;
-                } else if (columnName.equals("pk")) {
-                    pkIndex = i;
-                }
-            }
-
-            while( rs.next() ) {
-                String name = rs.getString(nameIndex);
-                String type = rs.getString(typeIndex);
-                String pk = "0";
-                if (pkIndex > 0)
-                    pk = rs.getString(pkIndex);
-                columnNames.add(new String[]{name, type, pk});
-            }
-            return columnNames;
-        }
+        return SpatialiteCommonMethods.getTableColumns(this, tableName);
     }
 
     public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {

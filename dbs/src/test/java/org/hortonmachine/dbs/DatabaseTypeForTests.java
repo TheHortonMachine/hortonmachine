@@ -3,7 +3,7 @@ package org.hortonmachine.dbs;
 import org.hortonmachine.dbs.compat.EDb;
 
 public class DatabaseTypeForTests {
-    public static final boolean SPATIALITE = false;
+    public static final boolean SPATIALITE = true;
     /**
      * The db type to test (set to h2 for online tests).
      */

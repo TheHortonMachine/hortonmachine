@@ -20,6 +20,7 @@ package org.hortonmachine.dbs.utils;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,18 @@ public class DbsUtilities {
      */
     public static final int DEFAULT_BULK_INSERT_CHUNK_SIZE = 10000;
 
+    public static List<String> reserverSqlWords = Arrays.asList("ABORT", "ACTION", "ADD", "AFTER", "ALL", "ALTER", "ANALYZE",
+            "AND", "AS", "ASC", "ATTACH", "AUTOINCREMENT", "BEFORE", "BEGIN", "BETWEEN", "BY", "CASCADE", "CASE", "CAST", "CHECK",
+            "COLLATE", "COLUMN", "COMMIT", "CONFLICT", "CONSTRAINT", "CREATE", "CROSS", "CURRENT_DATE", "CURRENT_TIME",
+            "CURRENT_TIMESTAMP", "DATABASE", "DEFAULT", "DEFERRABLE", "DEFERRED", "DELETE", "DESC", "DETACH", "DISTINCT", "DROP",
+            "EACH", "ELSE", "END", "ESCAPE", "EXCEPT", "EXCLUSIVE", "EXISTS", "EXPLAIN", "FAIL", "FOR", "FOREIGN", "FROM", "FULL",
+            "GLOB", "GROUP", "HAVING", "IF", "IGNORE", "IMMEDIATE", "IN", "INDEX", "INDEXED", "INITIALLY", "INNER", "INSERT",
+            "INSTEAD", "INTERSECT", "INTO", "IS", "ISNULL", "JOIN", "KEY", "LEFT", "LIKE", "LIMIT", "MATCH", "NATURAL", "NO",
+            "NOT", "NOTNULL", "NULL", "OF", "OFFSET", "ON", "OR", "ORDER", "OUTER", "PLAN", "PRAGMA", "PRIMARY", "QUERY", "RAISE",
+            "RECURSIVE", "REFERENCES", "REGEXP", "REINDEX", "RELEASE", "RENAME", "REPLACE", "RESTRICT", "RIGHT", "ROLLBACK",
+            "ROW", "SAVEPOINT", "SELECT", "SET", "TABLE", "TEMP", "TEMPORARY", "THEN", "TO", "TRANSACTION", "TRIGGER", "UNION",
+            "UNIQUE", "UPDATE", "USING", "VACUUM", "VALUES", "VIEW", "VIRTUAL", "WHEN", "WHERE", "WITH", "WITHOUT");
+
     public static final SimpleDateFormat dbDateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static GeometryFactory geomFactory;
     private static PrecisionModel precModel;
@@ -70,6 +83,21 @@ public class DbsUtilities {
             precModel = new PrecisionModel(PrecisionModel.FLOATING);
         }
         return (precModel);
+    }
+
+    public static boolean isReservedName( String name ) {
+        return reserverSqlWords.indexOf(name.toUpperCase()) != -1;
+    }
+
+    public static String fixReservedNameForQuery( String name ) {
+        int index = name.indexOf('.');
+        if (index == -1) {
+            return "[" + name + "]";
+        } else {
+            String alias = name.substring(0, index + 1);
+            String tname = name.substring(index + 1);
+            return alias + "[" + tname + "]";
+        }
     }
 
     /**

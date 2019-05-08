@@ -31,7 +31,7 @@ public enum EDataType {
     DOUBLE(1, Double.class, "-1.0", new String[]{"DOUBLE", "REAL"}), //
     PHONE(2, String.class, "''", new String[]{"PHONE"}), //
     DATE(3, String.class, "''", new String[]{"DATE"}), //
-    INTEGER(4, Integer.class, "0", new String[]{"INTEGER"}), //
+    INTEGER(4, Integer.class, "0", new String[]{"INTEGER", "INT"}), //
     LONG(5, Long.class, "0", new String[]{"LONG", "BIGINT"}), //
     FLOAT(6, Float.class, "0.0", new String[]{"FLOAT"}), //
     BLOB(7, Object.class, "''", new String[]{"BLOB"}), //
