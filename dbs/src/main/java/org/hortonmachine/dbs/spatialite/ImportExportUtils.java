@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 
 /**
  * Common import and export utilities.

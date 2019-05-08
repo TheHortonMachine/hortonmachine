@@ -18,14 +18,9 @@
 package org.hortonmachine.dbs.utils;
 
 import java.io.File;
-import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.compat.GeometryColumn;
-
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.WKTReader;
 
 /**
  * Utilities to handle OSM data.

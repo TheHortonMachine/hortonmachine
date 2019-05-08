@@ -16,9 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.hortonmachine.dbs.utils;
+package org.hortonmachine.dbs.datatypes;
 
-import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.LineString;
@@ -30,6 +29,8 @@ import org.locationtech.jts.geom.Polygon;
 
 /**
  * Geometry types used by the utility.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
  */
 public enum EGeometryType {
     POINT(Point.class, MultiPoint.class, "Point"), //

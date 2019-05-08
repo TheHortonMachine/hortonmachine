@@ -33,8 +33,10 @@ import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.datatypes.EDataType;
+import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.dbs.utils.DbsUtilities;
-import org.hortonmachine.dbs.utils.EGeometryType;
+import org.hortonmachine.dbs.utils.ResultSetToObjectFunction;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -97,13 +99,14 @@ public class SpatialiteCommonMethods {
 
         int index = 0;
         List<String> items = new ArrayList<>();
+        List<ResultSetToObjectFunction> funct = new ArrayList<>();
         for( String[] columnInfo : tableColumnsInfo ) {
             String columnName = columnInfo[0];
             String columnTypeName = columnInfo[1];
-            
+
             queryResult.names.add(columnName);
             queryResult.types.add(columnTypeName);
-            
+
             String isPk = columnInfo[2];
             if (isPk.equals("1")) {
                 queryResult.pkIndex = index;
@@ -120,6 +123,97 @@ public class SpatialiteCommonMethods {
                 items.add(columnName);
             }
             index++;
+
+            EDataType type = EDataType.getType4Name(columnTypeName);
+            switch( type ) {
+            case TEXT: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getString(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
+            case INTEGER: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getInt(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
+            case FLOAT: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getFloat(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
+            case DOUBLE: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getDouble(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
+            case LONG: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getLong(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
+            case BLOB: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getBytes(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
+            default:
+                funct.add(null);
+                break;
+            }
         }
 
         String sql = "SELECT ";
@@ -161,7 +255,8 @@ public class SpatialiteCommonMethods {
                                 rec[j - 1] = geometry;
                             }
                         } else {
-                            Object object = rs.getObject(j);
+                            ResultSetToObjectFunction function = funct.get(j - 1);
+                            Object object = function.getObject(rs, j);
                             if (object instanceof Clob) {
                                 object = rs.getString(j);
                             }

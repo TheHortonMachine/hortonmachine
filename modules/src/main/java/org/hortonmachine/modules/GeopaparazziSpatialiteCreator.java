@@ -54,7 +54,7 @@ import org.geotools.filter.LiteralExpressionImpl;
 import org.geotools.styling.Style;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
-import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
+import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.spatialite.hm.HMImportExportUtils;
 import org.hortonmachine.gears.io.geopaparazzi.styles.GeopaparazziDatabaseProperties;
 import org.hortonmachine.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames;

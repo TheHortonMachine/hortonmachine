@@ -25,9 +25,9 @@ import java.util.List;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
-import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
+import org.hortonmachine.dbs.datatypes.EGeometryType;
+import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.utils.DbsUtilities;
-import org.hortonmachine.dbs.utils.EGeometryType;
 
 /**
  * Class representing a db level.

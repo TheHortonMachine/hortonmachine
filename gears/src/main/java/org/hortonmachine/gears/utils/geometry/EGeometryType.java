@@ -18,9 +18,8 @@
 
 package org.hortonmachine.gears.utils.geometry;
 
-import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
 import org.opengis.feature.type.GeometryDescriptor;
-
+import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.locationtech.jts.geom.*;
 
 /**

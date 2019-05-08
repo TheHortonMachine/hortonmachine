@@ -26,7 +26,7 @@ import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.compat.objects.TypeLevel;
-import org.hortonmachine.dbs.utils.EGeometryType;
+import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.gui.utils.ImageCache;
 
 /**

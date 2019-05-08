@@ -20,7 +20,7 @@ package org.hortonmachine.dbs.spatialite.hm;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.HMTransactionExecuter;
 import org.hortonmachine.dbs.compat.IHMConnection;
-import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
+import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.spatialite.ImportExportUtils;
 
 /**

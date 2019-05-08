@@ -17,8 +17,8 @@
  */
 package org.hortonmachine.dbs.compat;
 
-import org.hortonmachine.dbs.spatialite.ESpatialiteGeometryType;
-import org.hortonmachine.dbs.utils.EGeometryType;
+import org.hortonmachine.dbs.datatypes.EGeometryType;
+import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 
 /**
  * Class representing a geometry_columns record.
