@@ -36,6 +36,9 @@ import org.hortonmachine.gui.utils.OmsMatrixCharter;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
+import groovy.lang.GroovyShell;
+import groovy.lang.Script;
+
 /**
  * Scripting support class.
  * 
@@ -45,6 +48,11 @@ import org.locationtech.jts.geom.LineString;
 public class HM {
     public static void showFolder( String folderPath ) {
         HMMapframe.openFolder(new File(folderPath));
+    }
+
+    public static Script load( String scriptPath ) throws Exception {
+        GroovyShell gsh = new GroovyShell();
+        return gsh.parse(new File(scriptPath));
     }
 
     public static void chartMatrix( String title, String xLabel, String yLabel, double[][] data, List<String> series,
