@@ -17,6 +17,8 @@
  */
 package org.hortonmachine.dbs.spatialite.android;
 
+import java.sql.Date;
+
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 
@@ -52,7 +54,7 @@ public class GPResultSet implements IHMResultSet {
     }
 
     @Override
-    public String getString( String name) throws Exception {
+    public String getString( String name ) throws Exception {
         throw new RuntimeException("Function not supported: getString( String name)");
     }
 
@@ -120,11 +122,21 @@ public class GPResultSet implements IHMResultSet {
     public long getLong( String name ) throws Exception {
         throw new RuntimeException("Function not supported: getLong( String name)");
     }
-    
 
     @Override
     public <T> T unwrap( Class<T> iface ) throws Exception {
         throw new RuntimeException("Function not supported: unwrap( Class<T> iface )");
+    }
+
+    @Override
+    public Date getDate( int index ) throws Exception {
+        long tsLong = stmt.column_long(index - 1);
+        return new Date(tsLong);
+    }
+
+    @Override
+    public Date getDate( String name ) throws Exception {
+        throw new RuntimeException("Function not supported: getDate( String name)");
     }
 
 }

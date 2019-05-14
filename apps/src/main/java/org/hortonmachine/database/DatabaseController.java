@@ -33,6 +33,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -95,6 +96,7 @@ import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.utils.CommonQueries;
+import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -1482,6 +1484,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         int index = 0;
         for( Object[] objects : data ) {
             values[index++] = objects;
+            for( int i = 0; i < objects.length; i++ ) {
+                if (objects[i] instanceof Date) {
+                    Date date = (Date) objects[i];
+                    String formatted = DbsUtilities.dbDateFormatter.format(date);
+                    objects[i] = formatted;
+                }
+            }
         }
 
         currentDataTable.setModel(new DefaultTableModel(values, names));

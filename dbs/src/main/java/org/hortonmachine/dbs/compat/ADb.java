@@ -335,6 +335,27 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
     }
 
     /**
+     * Get the max value of a long/int field.
+     * 
+     * @param tableName the name of the table.
+     * @param fieldName the name of the field.
+     * @return the xurrent max value.
+     * @throws Exception
+     */
+    public long getMax( String tableName, String fieldName ) throws Exception {
+        String sql = "select max(" + fieldName + ") from " + tableName;
+        Long max = execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }
+            return -1l;
+        });
+        return max;
+    }
+
+    /**
      * Execute a query from raw sql.
      * 
      * @param sql

@@ -20,6 +20,7 @@ package org.hortonmachine.dbs.spatialite;
 import java.io.File;
 import java.io.FileInputStream;
 import java.sql.Clob;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,9 @@ import org.locationtech.jts.io.ParseException;
  *
  */
 public class SpatialiteCommonMethods {
+
+    private static final String PK_UID = "pk_uid";
+    private static final String PKUID = "pkuid";
 
     public static boolean isSqliteFile( File file ) throws Exception {
         /*
@@ -215,6 +219,21 @@ public class SpatialiteCommonMethods {
                 });
                 break;
             }
+            case DATE: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            Date date = resultSet.getDate(index);
+                            return date;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
             default:
                 funct.add(null);
                 break;
@@ -299,7 +318,7 @@ public class SpatialiteCommonMethods {
         }
 
         return db.execOnConnection(connection -> {
-            List<String[]> columnNames = new ArrayList<String[]>();
+            List<String[]> columnsInfo = new ArrayList<String[]>();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 IHMResultSetMetaData rsmd = rs.getMetaData();
                 int columnCount = rsmd.getColumnCount();
@@ -317,16 +336,32 @@ public class SpatialiteCommonMethods {
                     }
                 }
 
+                boolean hasPk = false;
                 while( rs.next() ) {
                     String name = rs.getString(nameIndex);
                     String type = rs.getString(typeIndex);
                     String pk = "0";
-                    if (pkIndex > 0)
+                    if (pkIndex > 0) {
                         pk = rs.getString(pkIndex);
-                    columnNames.add(new String[]{name, type, pk});
+                        if (pk.equals("1")) {
+                            hasPk = true;
+                        }
+
+                    }
+                    columnsInfo.add(new String[]{name, type, pk});
                 }
 
-                return columnNames;
+                // if no pk is available in the table, check if there is a field pkuid and
+                // in case set that as pk
+                if (!hasPk) {
+                    for( String[] colInfo : columnsInfo ) {
+                        String name = colInfo[0].toLowerCase();
+                        if (name.equals(PKUID) || name.equals(PK_UID)) {
+                            colInfo[2] = "1";
+                        }
+                    }
+                }
+                return columnsInfo;
             }
         });
     }

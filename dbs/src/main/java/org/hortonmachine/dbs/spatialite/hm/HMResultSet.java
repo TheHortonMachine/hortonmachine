@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.dbs.spatialite.hm;
 
+import java.sql.Date;
 import java.sql.ResultSet;
 
 import org.hortonmachine.dbs.compat.IHMResultSet;
@@ -39,7 +40,7 @@ public class HMResultSet implements IHMResultSet {
     public ResultSet getResultSet() {
         return resultSet;
     }
-    
+
     @Override
     public void close() throws Exception {
         resultSet.close();
@@ -125,11 +126,20 @@ public class HMResultSet implements IHMResultSet {
     public long getLong( String name ) throws Exception {
         return resultSet.getLong(name);
     }
-    
+
     @Override
     public <T> T unwrap( Class<T> iface ) throws Exception {
         return resultSet.unwrap(iface);
     }
-    
-    
+
+    @Override
+    public Date getDate( int index ) throws Exception {
+        return resultSet.getDate(index);
+    }
+
+    @Override
+    public Date getDate( String name ) throws Exception {
+        throw new RuntimeException("Function not supported: getDate( String name)");
+    }
+
 }

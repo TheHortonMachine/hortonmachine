@@ -17,6 +17,8 @@
  */
 package org.hortonmachine.dbs.compat;
 
+import java.sql.Date;
+
 /**
  * Interface wrapping a resultset.
  * 
@@ -44,6 +46,10 @@ public interface IHMResultSet extends AutoCloseable {
     long getLong( int index ) throws Exception;
 
     long getLong( String name ) throws Exception;
+
+    Date getDate( int index ) throws Exception;
+    
+    Date getDate( String name ) throws Exception;
 
     byte[] getBytes( int index ) throws Exception;
 
