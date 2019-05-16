@@ -68,4 +68,27 @@ public interface ILasHeader {
     double[] getXYZScale();
 
     double[] getXYZOffset();
+
+    String getFileSignature();
+
+    char getFileSourceID();
+
+    int getProjectID_GUIDData1();
+    char getProjectID_GUIDData2();
+    char getProjectID_GUIDData3();
+    byte[] getProjectID_GUIDData4();
+
+    String getSystemIdentifier();
+
+    String getGeneratingSoftware();
+
+    short getFileCreationYear();
+
+    short getFileCreationDayOfYear();
+
+    char getHeaderSize();
+
+    int getNumberOfVariableLengthRecords();
+
+    public abstract byte getPointDataRecordFormat();
 }

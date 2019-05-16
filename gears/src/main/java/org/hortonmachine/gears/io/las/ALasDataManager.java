@@ -73,7 +73,7 @@ public abstract class ALasDataManager implements AutoCloseable {
     public static ALasDataManager getDataManager( File dataFile, GridCoverage2D inDem, double elevThreshold,
             CoordinateReferenceSystem inCrs ) {
         String lcName = dataFile.getName().toLowerCase();
-        if (lcName.endsWith(".las")) {
+        if (lcName.endsWith(".las") || lcName.endsWith(".laz")) {
             return new LasFileDataManager(dataFile, inDem, elevThreshold, inCrs);
         } else if (lcName.equals(LasIndexer.INDEX_LASFOLDER)) {
             return new LasFolderIndexDataManager(dataFile, inDem, elevThreshold, inCrs);

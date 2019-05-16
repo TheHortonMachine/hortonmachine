@@ -223,9 +223,74 @@ public class LasHeader implements ILasHeader {
         return sb.toString();
     }
 
-	@Override
-	public double[] getRawDataEnvelope() {
-		return new double[]{xMin, yMin, zMin, xMax, yMax, zMax};
-	}
+    @Override
+    public double[] getRawDataEnvelope() {
+        return new double[]{xMin, yMin, zMin, xMax, yMax, zMax};
+    }
+
+    @Override
+    public String getFileSignature() {
+        return signature;
+    }
+
+    @Override
+    public char getFileSourceID() {
+        return (char) fileSourceId;
+    }
+
+    @Override
+    public int getProjectID_GUIDData1() {
+        return (int) projectIdGuidData1;
+    }
+
+    @Override
+    public char getProjectID_GUIDData2() {
+        return (char) projectIdGuidData2;
+    }
+
+    @Override
+    public char getProjectID_GUIDData3() {
+        return (char) projectIdGuidData3;
+    }
+
+    @Override
+    public byte[] getProjectID_GUIDData4() {
+        return projectIdGuidData4.getBytes();
+    }
+
+    @Override
+    public String getSystemIdentifier() {
+        return systemIdentifier;
+    }
+
+    @Override
+    public String getGeneratingSoftware() {
+        return generatingSoftware;
+    }
+
+    @Override
+    public short getFileCreationYear() {
+        return year;
+    }
+
+    @Override
+    public short getFileCreationDayOfYear() {
+        return dayOfYear;
+    }
+
+    @Override
+    public char getHeaderSize() {
+        return (char) headerSize;
+    }
+
+    @Override
+    public int getNumberOfVariableLengthRecords() {
+        return (int) variableLengthRecordNum;
+    }
+
+    @Override
+    public byte getPointDataRecordFormat() {
+        return pointDataFormat;
+    }
 
 }

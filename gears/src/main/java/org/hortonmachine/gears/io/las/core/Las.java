@@ -22,6 +22,8 @@ import java.io.File;
 import org.hortonmachine.gears.io.las.core.laszip4j.LaszipReader;
 import org.hortonmachine.gears.io.las.core.v_1_0.LasReaderBuffered;
 import org.hortonmachine.gears.io.las.core.v_1_0.LasWriterBuffered;
+import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -38,7 +40,28 @@ public abstract class Las {
      * Get a las reader.
      * 
      * @param lasFile the file to read.
-     * @param crs the {@link CoordinateReferenceSystem} or <code>null</code> if the file has one.
+     * @return the las reader.
+     * @throws Exception if something goes wrong.
+     */
+    public static ALasReader getReader( File lasFile ) throws Exception {
+        String nameWithoutExtention = FileUtilities.getNameWithoutExtention(lasFile);
+        File prjFile = new File(lasFile.getParentFile(), nameWithoutExtention + ".prj");
+        CoordinateReferenceSystem crs = null;
+        if (prjFile.exists()) {
+            try {
+                crs = CrsUtilities.readProjectionFile(prjFile.getAbsolutePath(), null);
+            } catch (Exception e) {
+                // try to go on without crs.
+            }
+        }
+        return getReader(lasFile, crs);
+    }
+
+    /**
+     * Get a las reader.
+     * 
+     * @param lasFile the file to read.
+     * @param crs the {@link CoordinateReferenceSystem}.
      * @return the las reader.
      * @throws Exception if something goes wrong.
      */

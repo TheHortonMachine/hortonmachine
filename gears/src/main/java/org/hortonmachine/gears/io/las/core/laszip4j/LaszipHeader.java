@@ -143,4 +143,69 @@ public class LaszipHeader implements ILasHeader {
                 header.getMaxZ()};
     }
 
+    @Override
+    public String getFileSignature() {
+        return header.getFileSignature();
+    }
+
+    @Override
+    public char getFileSourceID() {
+        return header.getFileSourceID();
+    }
+
+    @Override
+    public int getProjectID_GUIDData1() {
+        return header.getProjectID_GUIDData1();
+    }
+
+    @Override
+    public char getProjectID_GUIDData2() {
+        return header.getProjectID_GUIDData2();
+    }
+
+    @Override
+    public char getProjectID_GUIDData3() {
+        return header.getProjectID_GUIDData3();
+    }
+
+    @Override
+    public byte[] getProjectID_GUIDData4() {
+        return header.getProjectID_GUIDData4();
+    }
+
+    @Override
+    public String getSystemIdentifier() {
+        return header.getSystemIdentifier();
+    }
+
+    @Override
+    public String getGeneratingSoftware() {
+        return header.getGeneratingSoftware();
+    }
+
+    @Override
+    public short getFileCreationYear() {
+        return (short) header.getFileCreationYear();
+    }
+
+    @Override
+    public short getFileCreationDayOfYear() {
+        return (short) header.getFileCreationDayOfYear();
+    }
+
+    @Override
+    public char getHeaderSize() {
+        return header.getHeaderSize();
+    }
+
+    @Override
+    public int getNumberOfVariableLengthRecords() {
+        return header.getNumberOfVariableLengthRecords();
+    }
+
+    @Override
+    public byte getPointDataRecordFormat() {
+        return header.getPointDataRecordFormat();
+    }
+
 }

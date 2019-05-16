@@ -71,6 +71,13 @@ public abstract class ALasReader extends Las implements AutoCloseable{
     public abstract LasRecord getNextPoint() throws IOException;
 
     /**
+     * Rewind the iterator to start from scratch.
+     * 
+     * @throws IOException
+     */
+    public abstract void rewind() throws IOException;
+
+    /**
      * Reads a dot at a given address.
      * 
      * @param address the file address of the record to read.

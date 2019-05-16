@@ -44,6 +44,7 @@ public class LaszipReader extends ALasReader {
     private Iterator<LASPoint> pointsIterator;
     private double[] xyzOffset;
     private double[] xyzScale;
+    private boolean isOpen;
 
     public LaszipReader( File lasFile, CoordinateReferenceSystem crs ) throws Exception {
         this.lasFile = lasFile;
@@ -62,6 +63,7 @@ public class LaszipReader extends ALasReader {
         header = new LaszipHeader(laszipHeader, crs);
         xyzOffset = header.getXYZOffset();
         xyzScale = header.getXYZScale();
+        isOpen = true;
     }
 
     @Override
@@ -119,7 +121,23 @@ public class LaszipReader extends ALasReader {
 
     @Override
     public ILasHeader getHeader() {
+        checkOpen();
         return header;
+    }
+
+    private void checkOpen() {
+        if (!isOpen) {
+            try {
+                open();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void rewind() throws IOException {
+        pointsIterator = null;
     }
 
 }

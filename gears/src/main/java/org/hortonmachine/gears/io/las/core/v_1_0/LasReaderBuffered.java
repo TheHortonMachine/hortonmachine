@@ -115,8 +115,32 @@ public class LasReaderBuffered extends ALasReader {
 
     @Override
     public void open() throws Exception {
+        if (fc != null)
+            fc.close();
+        if (fis != null)
+            fis.close();
         fis = new FileInputStream(lasFile);
         fc = fis.getChannel();
+
+        readingDataArray = null;
+        bufferedReadingBb = null;
+        xScale = 0;
+        yScale = 0;
+        zScale = 0;
+        xOffset = 0;
+        yOffset = 0;
+        zOffset = 0;
+        offset = 0;
+        records = 0;
+        recordLength = 0;
+        readRecords = 0;
+        xMax = 0;
+        xMin = 0;
+        yMax = 0;
+        yMin = 0;
+        zMax = 0;
+        zMin = 0;
+        readBufferSize = 0;
 
         parseHeader();
         isOpen = true;
@@ -410,6 +434,7 @@ public class LasReaderBuffered extends ALasReader {
         // long bytesToSkip = recordLength * newPosition;
         // fc.position(fc.position() + bytesToSkip);
         fc.position(offset + pointNumber * recordLength);
+        readRecords = pointNumber;
     }
 
     @Override
@@ -495,5 +520,15 @@ public class LasReaderBuffered extends ALasReader {
 
     private boolean isSet( byte b, int n ) { // true if bit n is set in byte b
         return (b & (1 << n)) != 0;
+    }
+
+    @Override
+    public void rewind() throws IOException {
+        try {
+            close();
+            open();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
