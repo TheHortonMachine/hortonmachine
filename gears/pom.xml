@@ -1,16 +1,18 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
-        <relativePath>../pom.xml</relativePath>
+		<relativePath>../pom.xml</relativePath>
 		<version>0.9.4</version>
 	</parent>
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hm-gears</artifactId>
-    <version>0.9.4</version>
+	<version>0.9.4</version>
 	<packaging>jar</packaging>
 	<name>HM Gears</name>
 
@@ -26,10 +28,10 @@
 			<artifactId>joda-time</artifactId>
 		</dependency>
 
-        <dependency>
-          <groupId>jfree</groupId>
-          <artifactId>eastwood</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>jfree</groupId>
+			<artifactId>eastwood</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.scannotation</groupId>
@@ -46,6 +48,12 @@
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
 			<version>3.20.0-GA</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.mreutegg</groupId>
+			<artifactId>laszip4j</artifactId>
+			<version>0.5</version>
 		</dependency>
 
 		<dependency>
@@ -136,22 +144,22 @@
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-xml</artifactId>
 		</dependency>
-       <dependency>
-            <groupId>org.geotools.xsd</groupId>
-            <artifactId>gt-xsd-sld</artifactId>
-       </dependency>
-       <dependency>
-            <groupId>org.geotools.xsd</groupId>
-            <artifactId>gt-xsd-core</artifactId>
-       </dependency>
-<dependency>
-    <groupId>xpp3</groupId>
-    <artifactId>xpp3</artifactId>
-</dependency>
+		<dependency>
+			<groupId>org.geotools.xsd</groupId>
+			<artifactId>gt-xsd-sld</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools.xsd</groupId>
+			<artifactId>gt-xsd-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>xpp3</groupId>
+			<artifactId>xpp3</artifactId>
+		</dependency>
 
 		<dependency>
-            <groupId>it.geosolutions.jaiext.jiffle</groupId>
-            <artifactId>jt-jiffle-op</artifactId>
+			<groupId>it.geosolutions.jaiext.jiffle</groupId>
+			<artifactId>jt-jiffle-op</artifactId>
 		</dependency>
 
 		<dependency>

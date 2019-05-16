@@ -18,14 +18,8 @@
 package org.hortonmachine.gears.io.las.core;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import org.hortonmachine.gears.io.las.core.liblas.LiblasJNALibrary;
-import org.hortonmachine.gears.io.las.core.liblas.LiblasReader;
-import org.hortonmachine.gears.io.las.core.liblas.LiblasWrapper;
-import org.hortonmachine.gears.io.las.core.liblas.LiblasWriter;
+import org.hortonmachine.gears.io.las.core.laszip4j.LaszipReader;
 import org.hortonmachine.gears.io.las.core.v_1_0.LasReaderBuffered;
 import org.hortonmachine.gears.io.las.core.v_1_0.LasWriterBuffered;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -36,45 +30,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public abstract class Las {
-    private static volatile boolean testedLibLoading = false;
-    private static volatile boolean isNativeLibAvailable;
-
-    /**
-     * Checks of nativ libs are available. 
-     * 
-     * @return <code>true</code>, if native liblas connection is available. 
-     */
-    public static boolean supportsNative() {
-        if (!testedLibLoading) {
-            LiblasJNALibrary wrapper = LiblasWrapper.getWrapper();
-            if (wrapper != null) {
-                isNativeLibAvailable = true;
-            }
-            testedLibLoading = true;
-        }
-        return isNativeLibAvailable;
+    private static boolean isLaz( String name ) {
+        return name.toLowerCase().endsWith(".laz");
     }
 
-    public static String[] getLibraryPaths() {
-        String path = System.getProperty("java.library.path");
-        String[] split = path.trim().split(File.pathSeparator);
-        List<String> pathList = new ArrayList<String>();
-        for( String pathItem : split ) {
-            pathItem = pathItem.trim();
-            if (pathItem.length() == 0) {
-                continue;
-            }
-            if (!pathList.contains(pathItem)) {
-                pathList.add(pathItem);
-            }
-        }
-        Collections.sort(pathList);
-        return pathList.toArray(new String[0]);
-    }
     /**
      * Get a las reader.
-     * 
-     * <p>If available, a native reader is created.
      * 
      * @param lasFile the file to read.
      * @param crs the {@link CoordinateReferenceSystem} or <code>null</code> if the file has one.
@@ -82,8 +43,8 @@ public abstract class Las {
      * @throws Exception if something goes wrong.
      */
     public static ALasReader getReader( File lasFile, CoordinateReferenceSystem crs ) throws Exception {
-        if (supportsNative()) {
-            return new LiblasReader(lasFile, crs);
+        if (isLaz(lasFile.getName())) {
+            return new LaszipReader(lasFile, crs);
         } else {
             return new LasReaderBuffered(lasFile, crs);
         }
@@ -92,19 +53,13 @@ public abstract class Las {
     /**
      * Get a las writer.
      * 
-     * <p>If available, a native writer is created.
-     * 
      * @param lasFile the file to write.
      * @param crs the {@link CoordinateReferenceSystem} to be written in the prj.
      * @return the las writer.
      * @throws Exception if something goes wrong.
      */
     public static ALasWriter getWriter( File lasFile, CoordinateReferenceSystem crs ) throws Exception {
-        if (supportsNative()) {
-            return new LiblasWriter(lasFile, crs);
-        } else {
-            return new LasWriterBuffered(lasFile, crs);
-        }
+        return new LasWriterBuffered(lasFile, crs);
     }
 
 }

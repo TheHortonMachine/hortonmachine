@@ -25,7 +25,6 @@ import org.hortonmachine.gears.io.las.core.ALasReader;
 import org.hortonmachine.gears.io.las.core.ALasWriter;
 import org.hortonmachine.gears.io.las.core.LasRecord;
 import org.hortonmachine.gears.io.las.core.v_1_0.LasReaderBuffered;
-import org.hortonmachine.gears.io.las.core.v_1_0.LasWriterEachPoint;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;

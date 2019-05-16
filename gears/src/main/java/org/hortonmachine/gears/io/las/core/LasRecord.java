@@ -62,12 +62,12 @@ public class LasRecord {
     /**
      * Gps timestamp
      */
-    public double gpsTime = -1;
+    public double gpsTime = 0;
 
     /**
-     * Color rgb info for styling (defaults to gray).
+     * Color rgb info for styling (defaults to black).
      */
-    public short[] color = new short[]{100, 100, 100};
+    public short[] color = new short[]{0, 0, 0};
 
     /**
      * Information about the ground elevation in the current point position (not contained in record and optional).

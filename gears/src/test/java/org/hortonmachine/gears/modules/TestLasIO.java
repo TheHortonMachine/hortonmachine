@@ -24,46 +24,20 @@ import java.net.URL;
 
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.gears.io.las.core.ALasReader;
 import org.hortonmachine.gears.io.las.core.ALasWriter;
 import org.hortonmachine.gears.io.las.core.ILasHeader;
+import org.hortonmachine.gears.io.las.core.Las;
 import org.hortonmachine.gears.io.las.core.LasRecord;
-import org.hortonmachine.gears.io.las.core.liblas.LiblasHeader;
-import org.hortonmachine.gears.io.las.core.liblas.LiblasJNALibrary;
-import org.hortonmachine.gears.io.las.core.liblas.LiblasReader;
-import org.hortonmachine.gears.io.las.core.liblas.LiblasWrapper;
-import org.hortonmachine.gears.io.las.core.liblas.LiblasWriter;
+import org.hortonmachine.gears.io.las.core.laszip4j.LaszipReader;
 import org.hortonmachine.gears.io.las.core.v_1_0.LasReaderBuffered;
-import org.hortonmachine.gears.io.las.core.v_1_0.LasReaderEachPoint;
-import org.hortonmachine.gears.io.las.core.v_1_0.LasWriterBuffered;
-import org.hortonmachine.gears.io.las.core.v_1_0.LasWriterEachPoint;
 import org.hortonmachine.gears.io.las.utils.LasUtils;
 import org.hortonmachine.gears.utils.HMTestCase;
-@SuppressWarnings("nls")
 public class TestLasIO extends HMTestCase {
 
-    private static boolean doNative = false;
-    private static boolean tellNative = true;
     private static String lasWriteFileName = "las/1.1_1.las";
 
     protected void setUp() throws Exception {
-        // local native libs for test
-        File libFolder = new File("/usr/local/lib/");
-        if (libFolder.exists()) {
-            String error = LiblasWrapper.loadNativeLibrary(libFolder.getAbsolutePath(), "las_c");
-            if (error == null) {
-                doNative = true;
-            }
-        } else {
-            LiblasJNALibrary wrapper = LiblasWrapper.getWrapper();
-            if (wrapper != null) {
-                doNative = true;
-            }
-        }
-
-        if (doNative && tellNative) {
-            System.out.println("Doing tests with native support.");
-            tellNative = false;
-        }
     }
 
     public void testLasReader() throws Exception {
@@ -121,58 +95,31 @@ public class TestLasIO extends HMTestCase {
     }
 
     public void testLazReader() throws Exception {
-        if (doNative) {
-            String name = "las/1.2-with-color.laz";
-            int expectedCount = 1065;
+//        String name = "/media/hydrologis/Samsung_T3/UNIBZ/monticolo2019/Coverage_SolarTirol_05.laz";
+//        File lasFile = new File(name);
+        String name = "las/1.2-with-color.laz";
+        URL lasUrl = this.getClass().getClassLoader().getResource(name);
+        File lasFile = new File(lasUrl.toURI());
+        int expectedCount = 1065;
 
-            URL lasUrl = this.getClass().getClassLoader().getResource(name);
-            File lasFile = new File(lasUrl.toURI());
-            LiblasReader libLasReader = new LiblasReader(lasFile, null);
-            libLasReader.open();
-            LiblasHeader libLasHeader = libLasReader.getHeader();
+        ALasReader reader = Las.getReader(lasFile, null);
+        reader.open();
+        ILasHeader libLasHeader = reader.getHeader();
 
-            long recordsCount = libLasHeader.getRecordsCount();
-            if (recordsCount != 0) {
-                // we have laz support
-                assertEquals(expectedCount, recordsCount);
-            } else {
-                System.out.println("No laz support");
-            }
-            libLasReader.close();
+        if (reader.hasNextPoint()) {
+            LasRecord nextPoint = reader.getNextPoint();
+            short r = nextPoint.color[0];
+            short g = nextPoint.color[1];
+            short b = nextPoint.color[2];
+
+            assertEquals(68, r);
+            assertEquals(77, g);
+            assertEquals(88, b);
         }
 
-    }
-
-    public void testLasWriterNative() throws Exception {
-        if (doNative) {
-            URL lasUrl = this.getClass().getClassLoader().getResource(lasWriteFileName);
-            File lasFile = new File(lasUrl.toURI());
-
-            File liblasTmp = File.createTempFile("liblasreader", ".las");
-            LiblasReader libLasReader = new LiblasReader(lasFile, null);
-            libLasReader.open();
-            LiblasHeader libLasHeader = libLasReader.getHeader();
-
-            LiblasWriter liblasWriter = new LiblasWriter(liblasTmp, DefaultGeographicCRS.WGS84);
-            liblasWriter.setBounds(libLasHeader);
-            liblasWriter.open();
-            while( libLasReader.hasNextPoint() ) {
-                liblasWriter.addPoint(libLasReader.getNextPoint());
-            }
-            liblasWriter.close();
-
-            LiblasReader tmpLiblasReader = new LiblasReader(liblasTmp, null);
-            tmpLiblasReader.open();
-            ILasHeader tmpLiblasHeader = tmpLiblasReader.getHeader();
-            checkHeader(libLasHeader, tmpLiblasHeader);
-            LasRecord tmpLiblasDot = tmpLiblasReader.getPointAt(0);
-            LasRecord liblasDot = libLasReader.getPointAt(0);
-            assertTrue(LasUtils.lasRecordEqual(tmpLiblasDot, liblasDot));
-            tmpLiblasReader.close();
-            libLasReader.close();
-
-            liblasTmp.deleteOnExit();
-        }
+        long recordsCount = libLasHeader.getRecordsCount();
+        assertEquals(expectedCount, recordsCount);
+        reader.close();
     }
 
     public void testLasWriter() throws Exception {
@@ -213,14 +160,6 @@ public class TestLasIO extends HMTestCase {
             throws URISyntaxException, Exception, IOException {
         URL lasUrl = this.getClass().getClassLoader().getResource(name);
         File lasFile = new File(lasUrl.toURI());
-        LiblasReader libLasReader = null;
-        ILasHeader libLasHeader = null;
-        if (doNative) {
-            libLasReader = new LiblasReader(lasFile, null);
-            libLasReader.open();
-            libLasHeader = libLasReader.getHeader();
-            assertEquals(hasColor, libLasHeader.hasRGB());
-        }
 
         LasReaderBuffered lasReader = new LasReaderBuffered(lasFile, null);
         lasReader.open();
@@ -229,19 +168,9 @@ public class TestLasIO extends HMTestCase {
 
         assertEquals(expectedCount, lasHeader.getRecordsCount());
 
-        if (doNative) {
-            assertTrue(libLasHeader.getRecordsCount() == lasHeader.getRecordsCount());
-        }
-
         long count = 0;
         while( lasReader.hasNextPoint() ) {
-            LasRecord lasDot = lasReader.getNextPoint();
-            if (doNative) {
-                libLasReader.hasNextPoint();
-                LasRecord liblasDot = libLasReader.getNextPoint();
-                assertTrue(LasUtils.lasRecordEqual(lasDot, liblasDot));
-            }
-
+            lasReader.getNextPoint();
             count++;
             if (count == 3) {
                 break;
@@ -249,35 +178,17 @@ public class TestLasIO extends HMTestCase {
         }
 
         if (lasHeader.getRecordsCount() > 1) {
-            if (doNative) {
-                libLasReader.seek(0);
-            }
             lasReader.seek(0);
-
-            LasRecord lasDot = lasReader.getNextPoint();
-            if (doNative) {
-                LasRecord liblasDot = libLasReader.getNextPoint();
-                assertTrue(LasUtils.lasRecordEqual(lasDot, liblasDot));
-            }
-
-            lasDot = lasReader.getPointAt(1);
-            if (doNative) {
-                LasRecord liblasDot = libLasReader.getPointAt(1);
-                assertTrue(LasUtils.lasRecordEqual(lasDot, liblasDot));
-            }
-
+            lasReader.getPointAt(1);
         }
 
         lasReader.close();
-        if (doNative) {
-            libLasReader.close();
-        }
 
     }
 
     private void checkFileContent( File lasFile ) throws URISyntaxException, Exception, IOException {
         try (LasReaderBuffered lasReaderBuffered = new LasReaderBuffered(lasFile, null);
-                LasReaderEachPoint lasReaderEachPoint = new LasReaderEachPoint(lasFile, null);) {
+                LaszipReader lasReaderEachPoint = new LaszipReader(lasFile, null);) {
             lasReaderBuffered.open();
             lasReaderEachPoint.open();
 

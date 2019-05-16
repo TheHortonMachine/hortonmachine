@@ -25,6 +25,17 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hortonmachine.gears.io.las.core.ALasWriter;
+import org.hortonmachine.gears.io.las.core.LasRecord;
+import org.hortonmachine.gears.io.las.index.LasIndexer;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.math.NumericsUtilities;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -36,19 +47,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
-
-import org.geotools.referencing.CRS;
-import org.hortonmachine.gears.io.las.core.ALasWriter;
-import org.hortonmachine.gears.io.las.core.LasRecord;
-import org.hortonmachine.gears.io.las.core.v_1_0.LasWriterEachPoint;
-import org.hortonmachine.gears.io.las.index.LasIndexer;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.CrsUtilities;
-import org.hortonmachine.gears.utils.math.NumericsUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("Converts XYZ data exported from FARO TLS to las.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
