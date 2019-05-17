@@ -28,6 +28,8 @@ public class LasInfoView extends JPanel
    JButton _loadButton = new JButton();
    JTable _headerTable = new JTable();
    JTable _firstPointTable = new JTable();
+   JTextField _dtmInputPathField = new JTextField();
+   JButton _loadDtmButton = new JButton();
    JTextField _outputFileField = new JTextField();
    JButton _outputSaveButton = new JButton();
    JButton _convertButton = new JButton();
@@ -35,6 +37,8 @@ public class LasInfoView extends JPanel
    JTextField _classesField = new JTextField();
    JTextField _impulsesField = new JTextField();
    JTextField _intensityRangeField = new JTextField();
+   JTextField _lowerThresField = new JTextField();
+   JTextField _upperThresField = new JTextField();
    JTextField _westField = new JTextField();
    JTextField _eastField = new JTextField();
    JTextField _boundsFileField = new JTextField();
@@ -148,8 +152,8 @@ public class LasInfoView extends JPanel
       jpanel1.setLayout(formlayout1);
 
       jpanel1.add(createPanel1(),cc.xy(2,2));
-      jpanel1.add(createPanel5(),cc.xy(4,2));
-      jpanel1.add(createPanel10(),cc.xy(6,2));
+      jpanel1.add(createPanel6(),cc.xy(4,2));
+      jpanel1.add(createPanel11(),cc.xy(6,2));
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7 },new int[]{ 1,2,3 });
       return jpanel1;
    }
@@ -157,20 +161,23 @@ public class LasInfoView extends JPanel
    public JPanel createPanel1()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
       jpanel1.add(createPanel2(),cc.xywh(2,1,3,1));
-      jpanel1.add(createPanel3(),cc.xywh(2,3,3,1));
-      jpanel1.add(createPanel4(),cc.xywh(2,5,3,1));
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6 });
+      jpanel1.add(createPanel3(),cc.xywh(2,5,3,1));
+      jpanel1.add(createPanel4(),cc.xywh(2,7,3,1));
+      jpanel1.add(createPanel5(),cc.xywh(2,3,3,1));
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6,7,8 });
       return jpanel1;
    }
 
    public JPanel createPanel2()
    {
       JPanel jpanel1 = new JPanel();
+      TitledBorder titledborder1 = new TitledBorder(null,"Las/Laz input file",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:32DLU:GROW(1.0),FILL:DEFAULT:NONE,FILL:32DLU:NONE","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
@@ -230,17 +237,38 @@ public class LasInfoView extends JPanel
    public JPanel createPanel5()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","FILL:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0)");
+      TitledBorder titledborder1 = new TitledBorder(null,"Optional DTM for delta",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      jpanel1.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:32DLU:GROW(1.0),FILL:DEFAULT:NONE,FILL:32DLU:NONE","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      jpanel1.add(createPanel6(),cc.xywh(2,4,1,2));
-      jpanel1.add(createPanel7(),cc.xy(2,1));
-      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3,4,5 });
+      _dtmInputPathField.setName("dtmInputPathField");
+      jpanel1.add(_dtmInputPathField,cc.xy(1,1));
+
+      _loadDtmButton.setActionCommand("load");
+      _loadDtmButton.setName("loadDtmButton");
+      _loadDtmButton.setText("...");
+      jpanel1.add(_loadDtmButton,cc.xy(3,1));
+
+      addFillComponents(jpanel1,new int[]{ 2 },new int[0]);
       return jpanel1;
    }
 
    public JPanel createPanel6()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","FILL:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0)");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      jpanel1.add(createPanel7(),cc.xywh(2,4,1,2));
+      jpanel1.add(createPanel8(),cc.xy(2,1));
+      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3,4,5 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel7()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Export region",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
@@ -270,7 +298,7 @@ public class LasInfoView extends JPanel
       return jpanel1;
    }
 
-   public JPanel createPanel7()
+   public JPanel createPanel8()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Filters",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
@@ -279,16 +307,16 @@ public class LasInfoView extends JPanel
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      jpanel1.add(createPanel8(),cc.xy(1,1));
-      jpanel1.add(createPanel9(),cc.xy(1,4));
+      jpanel1.add(createPanel9(),cc.xy(1,1));
+      jpanel1.add(createPanel10(),cc.xy(1,4));
       addFillComponents(jpanel1,new int[]{ 1 },new int[]{ 1,2,3,4 });
       return jpanel1;
    }
 
-   public JPanel createPanel8()
+   public JPanel createPanel9()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,LEFT:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,LEFT:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -307,24 +335,38 @@ public class LasInfoView extends JPanel
       jlabel3.setText("impulses");
       jpanel1.add(jlabel3,cc.xy(2,5));
 
-      JLabel jlabel4 = new JLabel();
-      jlabel4.setText("min, max intensity range");
-      jpanel1.add(jlabel4,cc.xy(2,7));
-
       _classesField.setName("classesField");
       jpanel1.add(_classesField,cc.xy(4,3));
 
       _impulsesField.setName("impulsesField");
       jpanel1.add(_impulsesField,cc.xy(4,5));
 
+      JLabel jlabel4 = new JLabel();
+      jlabel4.setText("min, max intensity range");
+      jpanel1.add(jlabel4,cc.xy(2,7));
+
       _intensityRangeField.setName("intensityRangeField");
       jpanel1.add(_intensityRangeField,cc.xy(4,7));
 
-      addFillComponents(jpanel1,new int[]{ 1,3 },new int[]{ 1,2,3,4,5,6,7 });
+      JLabel jlabel5 = new JLabel();
+      jlabel5.setText("post DTM lower threshold");
+      jpanel1.add(jlabel5,cc.xy(2,9));
+
+      _lowerThresField.setName("lowerThresField");
+      jpanel1.add(_lowerThresField,cc.xy(4,9));
+
+      JLabel jlabel6 = new JLabel();
+      jlabel6.setText("post DTM upper threshold");
+      jpanel1.add(jlabel6,cc.xy(2,11));
+
+      _upperThresField.setName("upperThresField");
+      jpanel1.add(_upperThresField,cc.xy(4,11));
+
+      addFillComponents(jpanel1,new int[]{ 1,3 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12 });
       return jpanel1;
    }
 
-   public JPanel createPanel9()
+   public JPanel createPanel10()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Bounds",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
@@ -391,25 +433,25 @@ public class LasInfoView extends JPanel
       return jpanel1;
    }
 
-   public JPanel createPanel10()
+   public JPanel createPanel11()
    {
       JPanel jpanel1 = new JPanel();
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      jpanel1.add(createPanel11(),cc.xy(1,1));
+      jpanel1.add(createPanel12(),cc.xy(1,1));
       _loadPreviewButton.setActionCommand("Load Preview");
       _loadPreviewButton.setName("loadPreviewButton");
       _loadPreviewButton.setText("Load Preview");
       jpanel1.add(_loadPreviewButton,cc.xy(1,4));
 
-      jpanel1.add(createPanel12(),cc.xy(1,2));
+      jpanel1.add(createPanel13(),cc.xy(1,2));
       addFillComponents(jpanel1,new int[]{ 1 },new int[]{ 1,2,3 });
       return jpanel1;
    }
 
-   public JPanel createPanel11()
+   public JPanel createPanel12()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Preview",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
@@ -425,7 +467,7 @@ public class LasInfoView extends JPanel
       return jpanel1;
    }
 
-   public JPanel createPanel12()
+   public JPanel createPanel13()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Preview properties",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
@@ -434,13 +476,13 @@ public class LasInfoView extends JPanel
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      jpanel1.add(createPanel13(),cc.xy(2,1));
-      jpanel1.add(createPanel14(),cc.xy(4,1));
+      jpanel1.add(createPanel14(),cc.xy(2,1));
+      jpanel1.add(createPanel15(),cc.xy(4,1));
       addFillComponents(jpanel1,new int[]{ 1,2,3,4 },new int[]{ 1 });
       return jpanel1;
    }
 
-   public JPanel createPanel13()
+   public JPanel createPanel14()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Color by",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
@@ -483,7 +525,7 @@ public class LasInfoView extends JPanel
       return jpanel1;
    }
 
-   public JPanel createPanel14()
+   public JPanel createPanel15()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Other",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));

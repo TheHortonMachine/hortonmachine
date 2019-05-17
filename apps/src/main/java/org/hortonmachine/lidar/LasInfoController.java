@@ -6,6 +6,8 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -18,9 +20,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.hortonmachine.database.DatabaseViewer;
@@ -30,6 +34,7 @@ import org.hortonmachine.gears.io.las.core.Las;
 import org.hortonmachine.gears.io.las.core.LasRecord;
 import org.hortonmachine.gears.io.las.utils.LasConstraints;
 import org.hortonmachine.gears.io.las.utils.LasUtils;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.utils.TransformationUtils;
 import org.hortonmachine.gears.utils.colors.ColorInterpolator;
@@ -46,14 +51,22 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
 
     private LasConstraints constraints = new LasConstraints();
 
+    private GridCoverage2D dtm;
+    private AffineTransform worldToPixel;
+    private AffineTransform pixelToWorld;
+
     public LasInfoController() {
         setPreferredSize(new Dimension(1400, 850));
 
         init();
     }
     private void init() {
+        _inputPathField.setEditable(false);
         GuiUtilities.setFileBrowsingOnWidgets(_inputPathField, _loadButton, new String[]{"las", "laz"}, () -> loadNewFile());
+        _dtmInputPathField.setEditable(false);
+        GuiUtilities.setFileBrowsingOnWidgets(_dtmInputPathField, _loadDtmButton, new String[]{"asc", "tiff"}, () -> loadDtm());
 
+        _boundsFileField.setEditable(false);
         GuiUtilities.setFileBrowsingOnWidgets(_boundsFileField, _boundsLoadButton, new String[]{"shp"},
                 () -> loadBoundsFromFile());
 
@@ -69,6 +82,8 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         _northField.addKeyListener(this);
         _minZField.addKeyListener(this);
         _maxZField.addKeyListener(this);
+        _lowerThresField.addKeyListener(this);
+        _upperThresField.addKeyListener(this);
 
         _elevationRadio.setSelected(true);
 
@@ -79,8 +94,67 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
             }
         });
 
+        _previewImageLabel.addMouseListener(new MouseListener(){
+
+            @Override
+            public void mouseReleased( MouseEvent e ) {
+                if (pixelToWorld != null) {
+                    int px = e.getX();
+                    int py = e.getY();
+                    Point2D fromPoint = new Point2D.Double(px, py);
+                    Point2D toPoint = new Point2D.Double();
+                    pixelToWorld.transform(fromPoint, toPoint);
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        double newWest = toPoint.getX();
+                        double newSouth = toPoint.getY();
+                        _westField.setText("" + newWest);
+                        constraints.setWest(newWest);
+                        _southField.setText("" + newSouth);
+                        constraints.setSouth(newSouth);
+                    } else if (SwingUtilities.isRightMouseButton(e)) {
+                        double newEast = toPoint.getX();
+                        double newNorth = toPoint.getY();
+                        _eastField.setText("" + newEast);
+                        constraints.setEast(newEast);
+                        _northField.setText("" + newNorth);
+                        constraints.setNorth(newNorth);
+                    }
+                }
+            }
+
+            @Override
+            public void mousePressed( MouseEvent e ) {
+            }
+
+            @Override
+            public void mouseExited( MouseEvent e ) {
+            }
+
+            @Override
+            public void mouseEntered( MouseEvent e ) {
+            }
+
+            @Override
+            public void mouseClicked( MouseEvent e ) {
+            }
+        });
+
         updateLoadPreviewAction();
     }
+    private void loadDtm() {
+        String dtmFilePath = _dtmInputPathField.getText();
+        try {
+            if (dtmFilePath.trim().length() > 0) {
+                dtm = OmsRasterReader.readRaster(dtmFilePath);
+            } else {
+                dtm = null;
+            }
+            constraints.setDtm(dtm);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @SuppressWarnings("serial")
     private void updateLoadPreviewAction() {
         if (lasReader == null) {
@@ -95,6 +169,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         ActionWithProgress uploadAction = new ActionWithProgress(this, "Filtering data and loading preview... ", work, false){
             private List<LasRecord> filteredPoints;
             private String errorMessage;
+
             @Override
             public void onError( Exception e ) {
                 JOptionPane.showMessageDialog(LasInfoController.this, "An error occurred: " + e.getMessage(), "ERROR",
@@ -164,8 +239,9 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                     g2d.fillRect(0, 0, imageWidth, imageHeight);
                     g2d.setColor(Color.RED);
 
-                    AffineTransform worldToPixel = TransformationUtils.getWorldToPixel(filteredEnvelope,
-                            new Rectangle(0, 0, imageWidth, imageHeight));
+                    Rectangle pixelRectangle = new Rectangle(0, 0, imageWidth, imageHeight);
+                    worldToPixel = TransformationUtils.getWorldToPixel(filteredEnvelope, pixelRectangle);
+                    pixelToWorld = TransformationUtils.getPixelToWorld(pixelRectangle, filteredEnvelope);
                     ColorInterpolator fcolorInterp = colorInterp;
                     Point2D toPoint = new Point2D.Double();
                     Point2D fromPoint = new Point2D.Double();
@@ -265,16 +341,21 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
     private void loadNewFile() {
         String inputPath = _inputPathField.getText();
         try {
-            lasReader = Las.getReader(new File(inputPath));
-            ILasHeader header = lasReader.getHeader();
+            if (inputPath.trim().length() > 0) {
+                lasReader = Las.getReader(new File(inputPath));
+                ILasHeader header = lasReader.getHeader();
 
-            List<String[]> headerInfoList = getHeaderInfo(header);
-            _headerTable
-                    .setModel(new DefaultTableModel(headerInfoList.toArray(new String[0][0]), new String[]{"Property", "Value"}));
-            List<String[]> firstPointInfoList = getFirstPointInfo();
-            _firstPointTable.setModel(
-                    new DefaultTableModel(firstPointInfoList.toArray(new String[0][0]), new String[]{"Property", "Value"}));
-
+                List<String[]> headerInfoList = getHeaderInfo(header);
+                _headerTable.setModel(
+                        new DefaultTableModel(headerInfoList.toArray(new String[0][0]), new String[]{"Property", "Value"}));
+                List<String[]> firstPointInfoList = getFirstPointInfo();
+                _firstPointTable.setModel(
+                        new DefaultTableModel(firstPointInfoList.toArray(new String[0][0]), new String[]{"Property", "Value"}));
+            } else {
+                lasReader = null;
+                _headerTable.setModel(new DefaultTableModel(new String[0][0], new String[]{"Property", "Value"}));
+                _firstPointTable.setModel(new DefaultTableModel(new String[0][0], new String[]{"Property", "Value"}));
+            }
             updateLoadPreviewAction();
         } catch (Exception e) {
             e.printStackTrace();
@@ -495,6 +576,24 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                 maxZ = null;
             }
             constraints.setMaxZ(maxZ);
+        } else if (source == _lowerThresField) {
+            String text = _lowerThresField.getText();
+            Double lowerThres;
+            try {
+                lowerThres = Double.parseDouble(text);
+            } catch (NumberFormatException e1) {
+                lowerThres = null;
+            }
+            constraints.setLowerThres(lowerThres);
+        } else if (source == _upperThresField) {
+            String text = _upperThresField.getText();
+            Double upperThres;
+            try {
+                upperThres = Double.parseDouble(text);
+            } catch (NumberFormatException e1) {
+                upperThres = null;
+            }
+            constraints.setUpperThres(upperThres);
         }
     }
 

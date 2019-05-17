@@ -5,11 +5,14 @@ import static org.hortonmachine.gears.utils.math.NumericsUtilities.dEq;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.las.core.ALasReader;
 import org.hortonmachine.gears.io.las.core.LasRecord;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.colors.ColorInterpolator;
 import org.hortonmachine.gears.utils.colors.EColorTables;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Envelope;
 
 public class LasConstraints {
@@ -27,6 +30,8 @@ public class LasConstraints {
     private Double northConstrain = null;
     private Double minZConstrain = null;
     private Double maxZConstrain = null;
+    private Double lowerThresConstrain = null;
+    private Double upperThresConstrain = null;
 
     private List<LasRecord> filteredPoints;
 
@@ -40,6 +45,8 @@ public class LasConstraints {
     private double maxElevation = Double.NEGATIVE_INFINITY;
 
     private Envelope filteredEnvelope;
+
+    private GridCoverage2D dtm;
 
     /**
      * @return the points that survived the last {@link #applyConstraints(ALasReader)} run.
@@ -74,6 +81,17 @@ public class LasConstraints {
         minElevation = Double.POSITIVE_INFINITY;
         maxElevation = Double.NEGATIVE_INFINITY;
 
+        double minIntensityConstrainD = minIntensityConstrain != null ? minIntensityConstrain : 0;
+        double maxIntensityConstrainD = maxIntensityConstrain != null ? maxIntensityConstrain : 0;
+        double westConstrainD = westConstrain != null ? westConstrain : 0;
+        double eastConstrainD = eastConstrain != null ? eastConstrain : 0;
+        double southConstrainD = southConstrain != null ? southConstrain : 0;
+        double northConstrainD = northConstrain != null ? northConstrain : 0;
+        double minZConstrainD = minZConstrain != null ? minZConstrain : 0;
+        double maxZConstrainD = maxZConstrain != null ? maxZConstrain : 0;
+        double lowerThresConstrainD = lowerThresConstrain != null ? lowerThresConstrain : 0;
+        double upperThresConstrainD = upperThresConstrain != null ? upperThresConstrain : 0;
+
         filteredEnvelope = new Envelope();
         filteredPoints = new ArrayList<>(1000000);
         while( lasReader.hasNextPoint() ) {
@@ -85,7 +103,7 @@ public class LasConstraints {
             count++;
             final double x = lasDot.x;
             final double y = lasDot.y;
-            final double z = lasDot.z;
+            double z = lasDot.z;
             final double intensity = lasDot.intensity;
             final int classification = lasDot.classification;
             final double impulse = lasDot.returnNumber;
@@ -96,7 +114,7 @@ public class LasConstraints {
             }
             if (takeIt && minIntensityConstrain != null) {
                 takeIt = false;
-                if (intensity >= minIntensityConstrain && intensity <= maxIntensityConstrain) {
+                if (intensity >= minIntensityConstrainD && intensity <= maxIntensityConstrainD) {
                     takeIt = true;
                 }
             }
@@ -120,18 +138,41 @@ public class LasConstraints {
             }
             if (takeIt && (westConstrain != null && eastConstrain != null && southConstrain != null && northConstrain != null)) {
                 takeIt = false;
-                if (x >= westConstrain && x <= eastConstrain && y >= southConstrain && y <= northConstrain) {
+                if (x >= westConstrainD && x <= eastConstrainD && y >= southConstrainD && y <= northConstrainD) {
                     takeIt = true;
                 }
             }
             if (takeIt && (minZConstrain != null && maxZConstrain != null)) {
                 takeIt = false;
-                if (z >= minZConstrain && z <= maxZConstrain) {
+                if (z >= minZConstrainD && z <= maxZConstrainD) {
                     takeIt = true;
                 }
             }
 
             if (takeIt) {
+                if (dtm != null) {
+                    double value = CoverageUtilities.getValue(dtm, lasDot.x, lasDot.y);
+                    if (!HMConstants.isNovalue(value)) {
+                        z = z - value;
+                        if (z < 0)
+                            z = 0;
+                        lasDot.z = z;
+                    } else {
+                        continue;
+                    }
+                }
+
+                if (lowerThresConstrain != null) {
+                    if (z < lowerThresConstrainD) {
+                        continue;
+                    }
+                }
+                if (upperThresConstrain != null) {
+                    if (z > upperThresConstrainD) {
+                        continue;
+                    }
+                }
+
                 minImpulse = Math.min(minImpulse, impulse);
                 maxImpulse = Math.max(maxImpulse, impulse);
                 minInt = Math.min(minInt, intensity);
@@ -167,7 +208,7 @@ public class LasConstraints {
     public double[] getStats() {
         return new double[]{minElevation, maxElevation, minInt, maxInt, minClass, maxClass, minImpulse, maxImpulse};
     }
-    
+
     public Envelope getFilteredEnvelope() {
         return filteredEnvelope;
     }
@@ -208,6 +249,17 @@ public class LasConstraints {
     }
     public void setMaxZ( Double maxZ ) {
         this.maxZConstrain = maxZ;
+    }
+
+    public void setDtm( GridCoverage2D dtm ) {
+        this.dtm = dtm;
+    }
+
+    public void setLowerThres( Double lowerThres ) {
+        this.lowerThresConstrain = lowerThres;
+    }
+    public void setUpperThres( Double upperThres ) {
+        this.upperThresConstrain = upperThres;
     }
 
 }
