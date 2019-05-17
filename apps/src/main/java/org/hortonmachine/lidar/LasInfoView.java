@@ -56,6 +56,8 @@ public class LasInfoView extends JPanel
    JRadioButton _impulseRadio = new JRadioButton();
    JRadioButton _ownColorRadio = new JRadioButton();
    JTextField _pointSizeField = new JTextField();
+   JTextField _elevHigherThanField = new JTextField();
+   JTextField _intensityHigherThanField = new JTextField();
 
    /**
     * Default constructor
@@ -487,7 +489,7 @@ public class LasInfoView extends JPanel
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Color by",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -530,7 +532,7 @@ public class LasInfoView extends JPanel
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Other",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","TOP:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,TOP:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -541,7 +543,21 @@ public class LasInfoView extends JPanel
       _pointSizeField.setName("pointSizeField");
       jpanel1.add(_pointSizeField,cc.xy(3,1));
 
-      addFillComponents(jpanel1,new int[]{ 2 },new int[0]);
+      JLabel jlabel2 = new JLabel();
+      jlabel2.setText("show elevation higher than");
+      jpanel1.add(jlabel2,cc.xy(1,3));
+
+      _elevHigherThanField.setName("elevHigherThanField");
+      jpanel1.add(_elevHigherThanField,cc.xy(3,3));
+
+      JLabel jlabel3 = new JLabel();
+      jlabel3.setText("show intensity higher than");
+      jpanel1.add(jlabel3,cc.xy(1,5));
+
+      _intensityHigherThanField.setName("intensityHigherThanField");
+      jpanel1.add(_intensityHigherThanField,cc.xy(3,5));
+
+      addFillComponents(jpanel1,new int[]{ 2 },new int[]{ 2,4 });
       return jpanel1;
    }
 

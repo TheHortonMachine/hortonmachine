@@ -2,6 +2,7 @@ package org.hortonmachine.gears.io.las.utils;
 
 import static org.hortonmachine.gears.utils.math.NumericsUtilities.dEq;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,11 +49,17 @@ public class LasConstraints {
 
     private GridCoverage2D dtm;
 
+    private boolean isDirty = false;
+
     /**
      * @return the points that survived the last {@link #applyConstraints(ALasReader)} run.
      */
     public List<LasRecord> getFilteredPoints() {
         return filteredPoints;
+    }
+
+    public boolean isDirty() {
+        return isDirty;
     }
 
     /**
@@ -94,97 +101,108 @@ public class LasConstraints {
 
         filteredEnvelope = new Envelope();
         filteredPoints = new ArrayList<>(1000000);
-        while( lasReader.hasNextPoint() ) {
-            LasRecord lasDot = lasReader.getNextPoint();
+        try {
+            while( lasReader.hasNextPoint() ) {
+                LasRecord lasDot = lasReader.getNextPoint();
 
-            if (count % 1000 == 0)
-                monitor.worked(1);
+                if (count % 1000 == 0)
+                    monitor.worked(1);
 
-            count++;
-            final double x = lasDot.x;
-            final double y = lasDot.y;
-            double z = lasDot.z;
-            final double intensity = lasDot.intensity;
-            final int classification = lasDot.classification;
-            final double impulse = lasDot.returnNumber;
+                count++;
+                final double x = lasDot.x;
+                final double y = lasDot.y;
+                double z = lasDot.z;
+                final double intensity = lasDot.intensity;
+                final int classification = lasDot.classification;
+                final double impulse = lasDot.returnNumber;
 
-            boolean takeIt = true;
-            if (doSampling && (count % samp != 0)) {
-                takeIt = false;
-            }
-            if (takeIt && minIntensityConstrain != null) {
-                takeIt = false;
-                if (intensity >= minIntensityConstrainD && intensity <= maxIntensityConstrainD) {
-                    takeIt = true;
+                boolean takeIt = true;
+                if (doSampling && (count % samp != 0)) {
+                    takeIt = false;
                 }
-            }
-            if (takeIt && impulsesConstrains != null) {
-                takeIt = false;
-                for( final double imp : impulsesConstrains ) {
-                    if (dEq(impulse, imp)) {
+                if (takeIt && minIntensityConstrain != null) {
+                    takeIt = false;
+                    if (intensity >= minIntensityConstrainD && intensity <= maxIntensityConstrainD) {
                         takeIt = true;
-                        break;
                     }
                 }
-            }
-            if (takeIt && classesConstrains != null) {
-                takeIt = false;
-                for( final double classs : classesConstrains ) {
-                    if (classification == (int) classs) {
+                if (takeIt && impulsesConstrains != null) {
+                    takeIt = false;
+                    for( final double imp : impulsesConstrains ) {
+                        if (dEq(impulse, imp)) {
+                            takeIt = true;
+                            break;
+                        }
+                    }
+                }
+                if (takeIt && classesConstrains != null) {
+                    takeIt = false;
+                    for( final double classs : classesConstrains ) {
+                        if (classification == (int) classs) {
+                            takeIt = true;
+                            break;
+                        }
+                    }
+                }
+                if (takeIt
+                        && (westConstrain != null && eastConstrain != null && southConstrain != null && northConstrain != null)) {
+                    takeIt = false;
+                    if (x >= westConstrainD && x <= eastConstrainD && y >= southConstrainD && y <= northConstrainD) {
                         takeIt = true;
-                        break;
                     }
+                }
+                if (takeIt && (minZConstrain != null && maxZConstrain != null)) {
+                    takeIt = false;
+                    if (z >= minZConstrainD && z <= maxZConstrainD) {
+                        takeIt = true;
+                    }
+                }
+
+                if (takeIt) {
+                    if (dtm != null) {
+                        double value = CoverageUtilities.getValue(dtm, lasDot.x, lasDot.y);
+                        if (!HMConstants.isNovalue(value)) {
+                            z = z - value;
+                            if (z < 0)
+                                z = 0;
+                            lasDot.z = z;
+                        } else {
+                            continue;
+                        }
+
+                        if (lowerThresConstrain != null) {
+                            if (z < lowerThresConstrainD) {
+                                continue;
+                            }
+                        }
+                        if (upperThresConstrain != null) {
+                            if (z > upperThresConstrainD) {
+                                continue;
+                            }
+                        }
+                    }
+
+
+                    minImpulse = Math.min(minImpulse, impulse);
+                    maxImpulse = Math.max(maxImpulse, impulse);
+                    minInt = Math.min(minInt, intensity);
+                    maxInt = Math.max(maxInt, intensity);
+                    minClass = Math.min(minClass, classification);
+                    maxClass = Math.max(maxClass, classification);
+                    minElevation = Math.min(minElevation, z);
+                    maxElevation = Math.max(maxElevation, z);
+
+                    filteredEnvelope.expandToInclude(x, y);
+
+                    filteredPoints.add(lasDot);
                 }
             }
-            if (takeIt && (westConstrain != null && eastConstrain != null && southConstrain != null && northConstrain != null)) {
-                takeIt = false;
-                if (x >= westConstrainD && x <= eastConstrainD && y >= southConstrainD && y <= northConstrainD) {
-                    takeIt = true;
-                }
-            }
-            if (takeIt && (minZConstrain != null && maxZConstrain != null)) {
-                takeIt = false;
-                if (z >= minZConstrainD && z <= maxZConstrainD) {
-                    takeIt = true;
-                }
-            }
-
-            if (takeIt) {
-                if (dtm != null) {
-                    double value = CoverageUtilities.getValue(dtm, lasDot.x, lasDot.y);
-                    if (!HMConstants.isNovalue(value)) {
-                        z = z - value;
-                        if (z < 0)
-                            z = 0;
-                        lasDot.z = z;
-                    } else {
-                        continue;
-                    }
-                }
-
-                if (lowerThresConstrain != null) {
-                    if (z < lowerThresConstrainD) {
-                        continue;
-                    }
-                }
-                if (upperThresConstrain != null) {
-                    if (z > upperThresConstrainD) {
-                        continue;
-                    }
-                }
-
-                minImpulse = Math.min(minImpulse, impulse);
-                maxImpulse = Math.max(maxImpulse, impulse);
-                minInt = Math.min(minInt, intensity);
-                maxInt = Math.max(maxInt, intensity);
-                minClass = Math.min(minClass, classification);
-                maxClass = Math.max(maxClass, classification);
-                minElevation = Math.min(minElevation, z);
-                maxElevation = Math.max(maxElevation, z);
-
-                filteredEnvelope.expandToInclude(x, y);
-
-                filteredPoints.add(lasDot);
+            isDirty = false;
+        } finally {
+            try {
+                lasReader.rewind();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -215,51 +233,65 @@ public class LasConstraints {
 
     public void setSampling( Integer sampling ) {
         this.sampling = sampling;
+        isDirty = true;
     }
 
     public void setClassifications( int[] classes ) {
         this.classesConstrains = classes;
+        isDirty = true;
     }
 
     public void setImpulses( int[] impulses ) {
         this.impulsesConstrains = impulses;
+        isDirty = true;
     }
 
     public void setMaxIntensity( Double maxInt ) {
         this.maxIntensityConstrain = maxInt;
+        isDirty = true;
     }
     public void setMinIntensity( Double minInt ) {
         this.minIntensityConstrain = minInt;
+        isDirty = true;
     }
 
     public void setWest( Double west ) {
         this.westConstrain = west;
+        isDirty = true;
     }
     public void setEast( Double east ) {
         this.eastConstrain = east;
+        isDirty = true;
     }
     public void setSouth( Double south ) {
         this.southConstrain = south;
+        isDirty = true;
     }
     public void setNorth( Double north ) {
         this.northConstrain = north;
+        isDirty = true;
     }
     public void setMinZ( Double minZ ) {
         this.minZConstrain = minZ;
+        isDirty = true;
     }
     public void setMaxZ( Double maxZ ) {
         this.maxZConstrain = maxZ;
+        isDirty = true;
     }
 
     public void setDtm( GridCoverage2D dtm ) {
         this.dtm = dtm;
+        isDirty = true;
     }
 
     public void setLowerThres( Double lowerThres ) {
         this.lowerThresConstrain = lowerThres;
+        isDirty = true;
     }
     public void setUpperThres( Double upperThres ) {
         this.upperThresConstrain = upperThres;
+        isDirty = true;
     }
 
 }
