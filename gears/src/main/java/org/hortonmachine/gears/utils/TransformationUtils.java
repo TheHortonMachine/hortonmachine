@@ -115,4 +115,21 @@ public class TransformationUtils {
                 original.getMinY() + newHeight);
     }
 
+    /**
+     * Scale an envelope to have a given height.
+     * 
+     * @param original the envelope.
+     * @param newHeight the new height to use.
+     * @return the scaled envelope placed in the original lower left corner position.
+     */
+    public static Envelope scaleToHeight( Envelope original, double newHeight ) {
+        double height = original.getHeight();
+        double factor = newHeight / height;
+
+        double newWidth = original.getWidth() * factor;
+
+        return new Envelope(original.getMinX(), original.getMinX() + newWidth, original.getMinY(),
+                original.getMinY() + newHeight);
+    }
+
 }

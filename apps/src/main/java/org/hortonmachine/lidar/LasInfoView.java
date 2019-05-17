@@ -51,6 +51,7 @@ public class LasInfoView extends JPanel
    JRadioButton _classRadio = new JRadioButton();
    JRadioButton _impulseRadio = new JRadioButton();
    JRadioButton _ownColorRadio = new JRadioButton();
+   JTextField _pointSizeField = new JTextField();
 
    /**
     * Default constructor
@@ -427,9 +428,24 @@ public class LasInfoView extends JPanel
    public JPanel createPanel12()
    {
       JPanel jpanel1 = new JPanel();
+      TitledBorder titledborder1 = new TitledBorder(null,"Preview properties",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      jpanel1.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.5),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","TOP:DEFAULT:GROW(1.0)");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      jpanel1.add(createPanel13(),cc.xy(2,1));
+      jpanel1.add(createPanel14(),cc.xy(4,1));
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4 },new int[]{ 1 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel13()
+   {
+      JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Color by",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,LEFT:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -437,33 +453,53 @@ public class LasInfoView extends JPanel
       _elevationRadio.setName("elevationRadio");
       _elevationRadio.setText("elevation");
       _buttongroup1.add(_elevationRadio);
-      jpanel1.add(_elevationRadio,cc.xy(2,1));
+      jpanel1.add(_elevationRadio,cc.xy(1,1));
 
       _intensityRadio.setActionCommand("intensity");
       _intensityRadio.setName("intensityRadio");
       _intensityRadio.setText("intensity");
       _buttongroup1.add(_intensityRadio);
-      jpanel1.add(_intensityRadio,cc.xy(2,3));
+      jpanel1.add(_intensityRadio,cc.xy(1,3));
 
       _classRadio.setActionCommand("intensity");
       _classRadio.setName("classRadio");
       _classRadio.setText("classification");
       _buttongroup1.add(_classRadio);
-      jpanel1.add(_classRadio,cc.xy(2,5));
+      jpanel1.add(_classRadio,cc.xy(1,5));
 
       _impulseRadio.setActionCommand("intensity");
       _impulseRadio.setName("impulseRadio");
       _impulseRadio.setText("impulse");
       _buttongroup1.add(_impulseRadio);
-      jpanel1.add(_impulseRadio,cc.xy(2,7));
+      jpanel1.add(_impulseRadio,cc.xy(1,7));
 
       _ownColorRadio.setActionCommand("intensity");
       _ownColorRadio.setName("ownColorRadio");
       _ownColorRadio.setText("own color");
       _buttongroup1.add(_ownColorRadio);
-      jpanel1.add(_ownColorRadio,cc.xy(2,9));
+      jpanel1.add(_ownColorRadio,cc.xy(1,9));
 
-      addFillComponents(jpanel1,new int[]{ 1 },new int[]{ 1,2,3,4,5,6,7,8,9 });
+      addFillComponents(jpanel1,new int[0],new int[]{ 2,4,6,8 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel14()
+   {
+      JPanel jpanel1 = new JPanel();
+      TitledBorder titledborder1 = new TitledBorder(null,"Other",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      jpanel1.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","TOP:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      JLabel jlabel1 = new JLabel();
+      jlabel1.setText("point size");
+      jpanel1.add(jlabel1,cc.xy(1,1));
+
+      _pointSizeField.setName("pointSizeField");
+      jpanel1.add(_pointSizeField,cc.xy(3,1));
+
+      addFillComponents(jpanel1,new int[]{ 2 },new int[0]);
       return jpanel1;
    }
 

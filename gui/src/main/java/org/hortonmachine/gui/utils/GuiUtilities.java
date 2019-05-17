@@ -534,9 +534,11 @@ public class GuiUtilities {
                 String absolutePath = res[0].getAbsolutePath();
                 pathTextField.setText(absolutePath);
                 setLastPath(absolutePath);
-                if (postRunnable != null) {
-                    postRunnable.run();
-                }
+            } else {
+                pathTextField.setText("");
+            }
+            if (postRunnable != null) {
+                postRunnable.run();
             }
         });
     }
