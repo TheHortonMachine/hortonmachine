@@ -25,6 +25,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
@@ -42,6 +43,8 @@ import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.utils.BitMatrix;
 import org.hortonmachine.gears.utils.TransformationUtils;
 import org.hortonmachine.gears.utils.colors.ColorInterpolator;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
@@ -49,9 +52,12 @@ import org.hortonmachine.gui.utils.monitor.ActionWithProgress;
 import org.hortonmachine.gui.utils.monitor.ProgressMonitor;
 import org.joda.time.DateTime;
 import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.simple.SimpleFeature;
 
 public class LasInfoController extends LasInfoView implements IOnCloseListener, KeyListener {
+    private static final String NO_CRS_MSG = "No CRS is available for the dataset. Please add a proper prj file.";
+
     private ALasReader lasReader;
 
     private LasConstraints constraints = new LasConstraints();
@@ -384,9 +390,11 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
     private void updateExportAction() {
         if (lasReader == null) {
             _convertButton.setEnabled(false);
+            _createOverviewButton.setEnabled(false);
             return;
         } else {
             _convertButton.setEnabled(true);
+            _createOverviewButton.setEnabled(true);
         }
         String outputFilePath = _outputFileField.getText();
         if (outputFilePath.trim().length() == 0) {
@@ -401,7 +409,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         ILasHeader header = lasReader.getHeader();
         long recordsCount = header.getRecordsCount();
         int work = (int) (recordsCount / 1000);
-        ActionWithProgress exportAction = new ActionWithProgress(this, "Exporting data... ", work, false){
+        ActionWithProgress exportAction = new ActionWithProgress(this, "Exporting data... ", work * 2, false){
             private List<LasRecord> filteredPoints;
             private String errorMessage;
 
@@ -416,22 +424,8 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                         constraints.applyConstraints(lasReader, monitor);
                     }
                     filteredPoints = constraints.getFilteredPoints();
-                    monitor.done();
-                } catch (Exception e) {
-                    errorMessage = e.getMessage();
-                    if (errorMessage == null) {
-                        errorMessage = "An undefined error was thrown.";
-                        errorMessage += ExceptionUtils.getStackTrace(e);
-                    }
-                }
-            }
-            @Override
-            public void postWork() throws Exception {
-                if (errorMessage != null) {
-                    GuiUtilities.showErrorMessage(parent, errorMessage);
-                    return;
-                }
-                try {
+
+                    monitor.setCurrent("Now writing to file...", work + work / 2);
                     if (outputFilePath.toLowerCase().endsWith(".las")) {
                         ALasWriter lasWriter = Las.getWriter(new File(outputFilePath), header.getCrs());
                         Envelope fEnv = constraints.getFilteredEnvelope();
@@ -441,9 +435,6 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                         lasWriter.open();
                         filteredPoints.stream().forEach(lr -> {
                             try {
-//                                lr.x = lr.x * 100;
-//                                lr.y = lr.y * 100;
-//                                lr.z = lr.z * 100;
                                 lasWriter.addPoint(lr);
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -459,15 +450,73 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                         }
                         OmsVectorWriter.writeVector(outputFilePath, fc);
                     }
+                    monitor.done();
+                } catch (Exception e) {
+                    errorMessage = e.getMessage();
+                    if (errorMessage == null) {
+                        errorMessage = "An undefined error was thrown.";
+                        errorMessage += ExceptionUtils.getStackTrace(e);
+                    }
+                }
+            }
+            @Override
+            public void postWork() throws Exception {
+                if (errorMessage != null) {
+                    GuiUtilities.showErrorMessage(parent, errorMessage);
+                }
+            }
+        };
 
-                } catch (Exception e1) {
-                    GuiUtilities.showErrorMessage(parent, "ERROR: " + e1.getMessage());
+        ActionWithProgress createOverviewAction = new ActionWithProgress(this, "Exporting data... ", 2, false){
+            private String errorMessage;
+
+            @Override
+            public void onError( Exception e ) {
+                GuiUtilities.showErrorMessage(parent, "An error occurred: " + e.getMessage());
+            }
+            @Override
+            public void backGroundWork( ProgressMonitor monitor ) {
+                try {
+                    if (header.getCrs() == null) {
+                        throw new Exception(NO_CRS_MSG);
+                    }
+
+                    if (constraints.isDirty()) {
+                        constraints.applyConstraints(lasReader, monitor);
+                    }
+                    monitor.setCurrent("Getting bounds...", 0);
+                    Envelope filteredEnvelope = constraints.getFilteredEnvelope();
+                    Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(filteredEnvelope);
+                    polygon.setUserData("Overview for " + lasReader.getLasFile().getName());
+                    SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(header.getCrs(), polygon);
+
+                    monitor.setCurrent("Writing to file...", 12);
+                    String f = outputFilePath;
+                    if (!f.toLowerCase().endsWith(".shp"))
+                        f = f + ".shp";
+                    OmsVectorWriter.writeVector(f, fc);
+
+                    monitor.done();
+                } catch (Exception e) {
+                    errorMessage = e.getMessage();
+                    if (errorMessage == null) {
+                        errorMessage = "An undefined error was thrown.";
+                        errorMessage += ExceptionUtils.getStackTrace(e);
+                    }
+                }
+            }
+            @Override
+            public void postWork() throws Exception {
+                if (errorMessage != null) {
+                    GuiUtilities.showErrorMessage(parent, errorMessage);
                 }
             }
         };
 
         _convertButton.setAction(exportAction);
         _convertButton.setText("Convert");
+        _createOverviewButton.setAction(createOverviewAction);
+        _createOverviewButton.setText("Create overview shp");
 
     }
 

@@ -33,6 +33,7 @@ public class LasInfoView extends JPanel
    JTextField _outputFileField = new JTextField();
    JButton _outputSaveButton = new JButton();
    JButton _convertButton = new JButton();
+   JButton _createOverviewButton = new JButton();
    JTextField _samplingField = new JTextField();
    JTextField _classesField = new JTextField();
    JTextField _impulsesField = new JTextField();
@@ -275,7 +276,7 @@ public class LasInfoView extends JPanel
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Export region",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:24DLU:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:24DLU:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -294,9 +295,14 @@ public class LasInfoView extends JPanel
       _convertButton.setActionCommand("Load Preview");
       _convertButton.setName("convertButton");
       _convertButton.setText("Convert");
-      jpanel1.add(_convertButton,cc.xywh(2,4,5,1));
+      jpanel1.add(_convertButton,cc.xywh(2,6,5,1));
 
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6 },new int[]{ 1,2,3,4,5 });
+      _createOverviewButton.setActionCommand("Load Preview");
+      _createOverviewButton.setName("createOverviewButton");
+      _createOverviewButton.setText("Create overview");
+      jpanel1.add(_createOverviewButton,cc.xywh(2,8,5,1));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6 },new int[]{ 1,2,3,4,5,6,7,8,9 });
       return jpanel1;
    }
 
