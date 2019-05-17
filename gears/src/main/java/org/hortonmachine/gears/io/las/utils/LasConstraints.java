@@ -182,7 +182,6 @@ public class LasConstraints {
                         }
                     }
 
-
                     minImpulse = Math.min(minImpulse, impulse);
                     maxImpulse = Math.max(maxImpulse, impulse);
                     minInt = Math.min(minInt, intensity);

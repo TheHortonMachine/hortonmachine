@@ -25,10 +25,12 @@ import javax.swing.table.DefaultTableModel;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.hortonmachine.database.DatabaseViewer;
 import org.hortonmachine.gears.io.las.core.ALasReader;
+import org.hortonmachine.gears.io.las.core.ALasWriter;
 import org.hortonmachine.gears.io.las.core.ILasHeader;
 import org.hortonmachine.gears.io.las.core.Las;
 import org.hortonmachine.gears.io.las.core.LasRecord;
@@ -36,6 +38,7 @@ import org.hortonmachine.gears.io.las.utils.LasConstraints;
 import org.hortonmachine.gears.io.las.utils.LasUtils;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
+import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.utils.BitMatrix;
 import org.hortonmachine.gears.utils.TransformationUtils;
 import org.hortonmachine.gears.utils.colors.ColorInterpolator;
@@ -46,6 +49,7 @@ import org.hortonmachine.gui.utils.monitor.ActionWithProgress;
 import org.hortonmachine.gui.utils.monitor.ProgressMonitor;
 import org.joda.time.DateTime;
 import org.locationtech.jts.geom.Envelope;
+import org.opengis.feature.simple.SimpleFeature;
 
 public class LasInfoController extends LasInfoView implements IOnCloseListener, KeyListener {
     private ALasReader lasReader;
@@ -88,10 +92,12 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
 
         _elevationRadio.setSelected(true);
 
+        _outputFileField.setEditable(false);
         _outputSaveButton.addActionListener(e -> {
-            File saveFile = GuiUtilities.showSaveFileDialog(this, "Save to geotiff", GuiUtilities.getLastFile());
+            File saveFile = GuiUtilities.showSaveFileDialog(this, "Save to file", GuiUtilities.getLastFile());
             if (saveFile != null) {
                 _outputFileField.setText(saveFile.getAbsolutePath());
+                updateExportAction();
             }
         });
 
@@ -150,6 +156,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         });
 
         updateLoadPreviewAction();
+        updateExportAction();
     }
     private void loadDtm() {
         String dtmFilePath = _dtmInputPathField.getText();
@@ -176,7 +183,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         ILasHeader header = lasReader.getHeader();
         long recordsCount = header.getRecordsCount();
         int work = (int) (recordsCount / 1000);
-        ActionWithProgress uploadAction = new ActionWithProgress(this, "Filtering data and loading preview... ", work, false){
+        ActionWithProgress previewAction = new ActionWithProgress(this, "Filtering data and loading preview... ", work, false){
             private List<LasRecord> filteredPoints;
             private String errorMessage;
 
@@ -342,11 +349,12 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                     _previewImageLabel.setIcon(new ImageIcon(image));
 
                     double[] stats = constraints.getStats();
+                    Envelope fenv = constraints.getFilteredEnvelope();
                     StringBuilder toolTip = new StringBuilder("<html>");
                     int i = 0;
                     toolTip.append("Filtered data stats ").append("<br>");
-                    toolTip.append("   Points count: ").append(filteredPoints.size()).append("<br>");
-                    toolTip.append("   Min Elevation: ").append(stats[i++]).append("<br>");
+                    toolTip.append("Points count: ").append(filteredPoints.size()).append("<br>");
+                    toolTip.append("Min Elevation: ").append(stats[i++]).append("<br>");
                     toolTip.append("Max Elevation: ").append(stats[i++]).append("<br>");
                     toolTip.append("Min Intensity: ").append(stats[i++]).append("<br>");
                     toolTip.append("Max Intensity: ").append(stats[i++]).append("<br>");
@@ -354,6 +362,10 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                     toolTip.append("Max Classification: ").append(stats[i++]).append("<br>");
                     toolTip.append("Min Impulse: ").append(stats[i++]).append("<br>");
                     toolTip.append("Max Impulse: ").append(stats[i++]).append("<br>");
+                    toolTip.append("West: ").append(fenv.getMinX()).append("<br>");
+                    toolTip.append("East: ").append(fenv.getMaxX()).append("<br>");
+                    toolTip.append("South: ").append(fenv.getMinY()).append("<br>");
+                    toolTip.append("North: ").append(fenv.getMaxY()).append("<br>");
                     toolTip.append("</html>");
                     _previewImageLabel.setToolTipText(toolTip.toString());
 
@@ -363,8 +375,99 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
             }
         };
 
-        _loadPreviewButton.setAction(uploadAction);
+        _loadPreviewButton.setAction(previewAction);
         _loadPreviewButton.setText("Load Preview");
+
+    }
+
+    @SuppressWarnings("serial")
+    private void updateExportAction() {
+        if (lasReader == null) {
+            _convertButton.setEnabled(false);
+            return;
+        } else {
+            _convertButton.setEnabled(true);
+        }
+        String outputFilePath = _outputFileField.getText();
+        if (outputFilePath.trim().length() == 0) {
+            return;
+        }
+        if (!outputFilePath.toLowerCase().endsWith(".las") && !outputFilePath.toLowerCase().endsWith(".shp")) {
+            JOptionPane.showMessageDialog(LasInfoController.this, "Only conversion to las and shp is supported.", "ERROR",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        ILasHeader header = lasReader.getHeader();
+        long recordsCount = header.getRecordsCount();
+        int work = (int) (recordsCount / 1000);
+        ActionWithProgress exportAction = new ActionWithProgress(this, "Exporting data... ", work, false){
+            private List<LasRecord> filteredPoints;
+            private String errorMessage;
+
+            @Override
+            public void onError( Exception e ) {
+                GuiUtilities.showErrorMessage(parent, "An error occurred: " + e.getMessage());
+            }
+            @Override
+            public void backGroundWork( ProgressMonitor monitor ) {
+                try {
+                    if (constraints.isDirty()) {
+                        constraints.applyConstraints(lasReader, monitor);
+                    }
+                    filteredPoints = constraints.getFilteredPoints();
+                    monitor.done();
+                } catch (Exception e) {
+                    errorMessage = e.getMessage();
+                    if (errorMessage == null) {
+                        errorMessage = "An undefined error was thrown.";
+                        errorMessage += ExceptionUtils.getStackTrace(e);
+                    }
+                }
+            }
+            @Override
+            public void postWork() throws Exception {
+                if (errorMessage != null) {
+                    GuiUtilities.showErrorMessage(parent, errorMessage);
+                    return;
+                }
+                try {
+                    if (outputFilePath.toLowerCase().endsWith(".las")) {
+                        ALasWriter lasWriter = Las.getWriter(new File(outputFilePath), header.getCrs());
+                        Envelope fEnv = constraints.getFilteredEnvelope();
+                        double[] stats = constraints.getStats();
+                        lasWriter.setBounds(lasReader.getHeader());
+                        lasWriter.setBounds(fEnv.getMinX(), fEnv.getMaxX(), fEnv.getMinY(), fEnv.getMaxY(), stats[0], stats[1]);
+                        lasWriter.open();
+                        filteredPoints.stream().forEach(lr -> {
+                            try {
+//                                lr.x = lr.x * 100;
+//                                lr.y = lr.y * 100;
+//                                lr.z = lr.z * 100;
+                                lasWriter.addPoint(lr);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        });
+                        lasWriter.close();
+                    } else if (outputFilePath.toLowerCase().endsWith(".shp")) {
+                        DefaultFeatureCollection fc = new DefaultFeatureCollection();
+                        int count = 0;
+                        for( LasRecord lr : filteredPoints ) {
+                            SimpleFeature feature = LasUtils.tofeature(lr, count++, header.getCrs());
+                            fc.add(feature);
+                        }
+                        OmsVectorWriter.writeVector(outputFilePath, fc);
+                    }
+
+                } catch (Exception e1) {
+                    GuiUtilities.showErrorMessage(parent, "ERROR: " + e1.getMessage());
+                }
+            }
+        };
+
+        _convertButton.setAction(exportAction);
+        _convertButton.setText("Convert");
 
     }
 
@@ -410,6 +513,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                 _firstPointTable.setModel(new DefaultTableModel(new String[0][0], new String[]{"Property", "Value"}));
             }
             updateLoadPreviewAction();
+            updateExportAction();
         } catch (Exception e) {
             e.printStackTrace();
         }
