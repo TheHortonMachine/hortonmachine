@@ -34,8 +34,6 @@ public class LasConstraints {
     private Double lowerThresConstrain = null;
     private Double upperThresConstrain = null;
 
-    private List<LasRecord> filteredPoints;
-
     private double minInt = Double.POSITIVE_INFINITY;
     private double maxInt = Double.NEGATIVE_INFINITY;
     private double minClass = Double.POSITIVE_INFINITY;
@@ -44,12 +42,35 @@ public class LasConstraints {
     private double maxImpulse = Double.NEGATIVE_INFINITY;
     private double minElevation = Double.POSITIVE_INFINITY;
     private double maxElevation = Double.NEGATIVE_INFINITY;
+    private double minGroundHeight = Double.POSITIVE_INFINITY;
+    private double maxGroundHeight = Double.NEGATIVE_INFINITY;
 
     private Envelope filteredEnvelope;
 
     private GridCoverage2D dtm;
 
-    private boolean isDirty = false;
+    private double minIntensityConstrainD;
+
+    private double maxIntensityConstrainD;
+
+    private double westConstrainD;
+
+    private double eastConstrainD;
+
+    private double southConstrainD;
+
+    private double northConstrainD;
+
+    private double minZConstrainD;
+
+    private double maxZConstrainD;
+
+    private double lowerThresConstrainD;
+
+    private double upperThresConstrainD;
+
+    private List<LasRecord> filteredPoints;
+    private List<LasRecord> lastReadPoints;
 
     /**
      * @return the points that survived the last {@link #applyConstraints(ALasReader)} run.
@@ -58,19 +79,16 @@ public class LasConstraints {
         return filteredPoints;
     }
 
-    public boolean isDirty() {
-        return isDirty;
-    }
-
     /**
      * Get the data filtered by the current constraints.
      * 
      * @param lasReader the reader.
+     * @param doReread if true, the data are read again, else only the existing are filtered.
      * @param monitor the monitor. This needs to consider that every 1000 a worked(1) is called.
      * @return the list of points to keep.
      * @throws Exception
      */
-    public void applyConstraints( ALasReader lasReader, IHMProgressMonitor monitor ) throws Exception {
+    public void applyConstraints( ALasReader lasReader, boolean doReread, IHMProgressMonitor monitor ) throws Exception {
         boolean doSampling = false;
         int samp = -1;
         if (sampling != null) {
@@ -87,127 +105,156 @@ public class LasConstraints {
         maxImpulse = Double.NEGATIVE_INFINITY;
         minElevation = Double.POSITIVE_INFINITY;
         maxElevation = Double.NEGATIVE_INFINITY;
+        maxGroundHeight = Double.NEGATIVE_INFINITY;
+        minGroundHeight = Double.POSITIVE_INFINITY;
 
-        double minIntensityConstrainD = minIntensityConstrain != null ? minIntensityConstrain : 0;
-        double maxIntensityConstrainD = maxIntensityConstrain != null ? maxIntensityConstrain : 0;
-        double westConstrainD = westConstrain != null ? westConstrain : 0;
-        double eastConstrainD = eastConstrain != null ? eastConstrain : 0;
-        double southConstrainD = southConstrain != null ? southConstrain : 0;
-        double northConstrainD = northConstrain != null ? northConstrain : 0;
-        double minZConstrainD = minZConstrain != null ? minZConstrain : 0;
-        double maxZConstrainD = maxZConstrain != null ? maxZConstrain : 0;
-        double lowerThresConstrainD = lowerThresConstrain != null ? lowerThresConstrain : 0;
-        double upperThresConstrainD = upperThresConstrain != null ? upperThresConstrain : 0;
+        minIntensityConstrainD = minIntensityConstrain != null ? minIntensityConstrain : 0;
+        maxIntensityConstrainD = maxIntensityConstrain != null ? maxIntensityConstrain : 0;
+        westConstrainD = westConstrain != null ? westConstrain : 0;
+        eastConstrainD = eastConstrain != null ? eastConstrain : 0;
+        southConstrainD = southConstrain != null ? southConstrain : 0;
+        northConstrainD = northConstrain != null ? northConstrain : 0;
+        minZConstrainD = minZConstrain != null ? minZConstrain : 0;
+        maxZConstrainD = maxZConstrain != null ? maxZConstrain : 0;
+        lowerThresConstrainD = lowerThresConstrain != null ? lowerThresConstrain : 0;
+        upperThresConstrainD = upperThresConstrain != null ? upperThresConstrain : 0;
 
         filteredEnvelope = new Envelope();
-        filteredPoints = new ArrayList<>(1000000);
-        try {
-            while( lasReader.hasNextPoint() ) {
-                LasRecord lasDot = lasReader.getNextPoint();
-
-                if (count % 1000 == 0)
-                    monitor.worked(1);
-
-                count++;
-                final double x = lasDot.x;
-                final double y = lasDot.y;
-                double z = lasDot.z;
-                final double intensity = lasDot.intensity;
-                final int classification = lasDot.classification;
-                final double impulse = lasDot.returnNumber;
-
-                boolean takeIt = true;
-                if (doSampling && (count % samp != 0)) {
-                    takeIt = false;
-                }
-                if (takeIt && minIntensityConstrain != null) {
-                    takeIt = false;
-                    if (intensity >= minIntensityConstrainD && intensity <= maxIntensityConstrainD) {
-                        takeIt = true;
-                    }
-                }
-                if (takeIt && impulsesConstrains != null) {
-                    takeIt = false;
-                    for( final double imp : impulsesConstrains ) {
-                        if (dEq(impulse, imp)) {
-                            takeIt = true;
-                            break;
-                        }
-                    }
-                }
-                if (takeIt && classesConstrains != null) {
-                    takeIt = false;
-                    for( final double classs : classesConstrains ) {
-                        if (classification == (int) classs) {
-                            takeIt = true;
-                            break;
-                        }
-                    }
-                }
-                if (takeIt
-                        && (westConstrain != null && eastConstrain != null && southConstrain != null && northConstrain != null)) {
-                    takeIt = false;
-                    if (x >= westConstrainD && x <= eastConstrainD && y >= southConstrainD && y <= northConstrainD) {
-                        takeIt = true;
-                    }
-                }
-                if (takeIt && (minZConstrain != null && maxZConstrain != null)) {
-                    takeIt = false;
-                    if (z >= minZConstrainD && z <= maxZConstrainD) {
-                        takeIt = true;
-                    }
-                }
-
-                if (takeIt) {
-                    if (dtm != null) {
-                        double value = CoverageUtilities.getValue(dtm, lasDot.x, lasDot.y);
-                        if (!HMConstants.isNovalue(value)) {
-                            z = z - value;
-                            if (z < 0)
-                                z = 0;
-                            lasDot.z = z;
-                        } else {
-                            continue;
-                        }
-
-                        if (lowerThresConstrain != null) {
-                            if (z < lowerThresConstrainD) {
-                                continue;
-                            }
-                        }
-                        if (upperThresConstrain != null) {
-                            if (z > upperThresConstrainD) {
-                                continue;
-                            }
-                        }
-                    }
-
-                    minImpulse = Math.min(minImpulse, impulse);
-                    maxImpulse = Math.max(maxImpulse, impulse);
-                    minInt = Math.min(minInt, intensity);
-                    maxInt = Math.max(maxInt, intensity);
-                    minClass = Math.min(minClass, classification);
-                    maxClass = Math.max(maxClass, classification);
-                    minElevation = Math.min(minElevation, z);
-                    maxElevation = Math.max(maxElevation, z);
-
-                    filteredEnvelope.expandToInclude(x, y);
-
-                    filteredPoints.add(lasDot);
-                }
-            }
-            isDirty = false;
-        } finally {
+        if (doReread || lastReadPoints == null) {
+            lastReadPoints = new ArrayList<>(1000000);
             try {
-                lasReader.rewind();
-            } catch (IOException e) {
-                e.printStackTrace();
+                while( lasReader.hasNextPoint() ) {
+                    if (count % 1000 == 0)
+                        monitor.worked(1);
+                    count++;
+
+                    LasRecord lasDot = lasReader.getNextPoint();
+                    boolean takeIt = checkPoint(lasDot, doSampling, samp, count);
+                    if (takeIt) {
+                        lastReadPoints.add(lasDot);
+                    }
+                }
+                filteredPoints = lastReadPoints;
+                System.out.println(filteredPoints.size());
+            } finally {
+                try {
+                    lasReader.rewind();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+        } else {
+            List<LasRecord> newFilteredPoints = new ArrayList<>(1000000);
+            lastReadPoints.forEach(lr -> {
+                // do not resample
+                boolean takeIt = checkPoint(lr, false, -1, -1);
+                if (takeIt) {
+                    newFilteredPoints.add(lr);
+                }
+            });
+            filteredPoints = newFilteredPoints;
+            System.out.println(filteredPoints.size());
         }
     }
 
+    private boolean checkPoint( LasRecord lasDot, boolean doSampling, int samp, int count ) {
+        boolean takeIt = true;
+        final double x = lasDot.x;
+        final double y = lasDot.y;
+        double z = lasDot.z;
+        final double intensity = lasDot.intensity;
+        final int classification = lasDot.classification;
+        final double impulse = lasDot.returnNumber;
+
+        if (doSampling && (count % samp != 0)) {
+            takeIt = false;
+        }
+        if (takeIt && minIntensityConstrain != null) {
+            takeIt = false;
+            if (intensity >= minIntensityConstrainD && intensity <= maxIntensityConstrainD) {
+                takeIt = true;
+            }
+        }
+        if (takeIt && impulsesConstrains != null) {
+            takeIt = false;
+            for( final double imp : impulsesConstrains ) {
+                if (dEq(impulse, imp)) {
+                    takeIt = true;
+                    break;
+                }
+            }
+        }
+        if (takeIt && classesConstrains != null) {
+            takeIt = false;
+            for( final double classs : classesConstrains ) {
+                if (classification == (int) classs) {
+                    takeIt = true;
+                    break;
+                }
+            }
+        }
+        if (takeIt && (westConstrain != null && eastConstrain != null && southConstrain != null && northConstrain != null)) {
+            takeIt = false;
+            if (x >= westConstrainD && x <= eastConstrainD && y >= southConstrainD && y <= northConstrainD) {
+                takeIt = true;
+            }
+        }
+        if (takeIt && (minZConstrain != null && maxZConstrain != null)) {
+            takeIt = false;
+            if (z >= minZConstrainD && z <= maxZConstrainD) {
+                takeIt = true;
+            }
+        }
+
+        if (takeIt) {
+            if (dtm != null) {
+                double value = CoverageUtilities.getValue(dtm, lasDot.x, lasDot.y);
+                if (!HMConstants.isNovalue(value)) {
+                    double groundHeight = z - value;
+                    if (groundHeight < 0)
+                        groundHeight = 0;
+                    lasDot.groundElevation = groundHeight;
+                    takeIt = true;
+                } else {
+                    takeIt = false;
+                }
+
+                if (lowerThresConstrain != null) {
+                    takeIt = lasDot.groundElevation >= lowerThresConstrainD;
+                }
+                if (upperThresConstrain != null) {
+                    takeIt = lasDot.groundElevation <= upperThresConstrainD;
+                }
+            } else {
+                lasDot.groundElevation = Double.NaN;
+            }
+        }
+
+        if (takeIt) {
+            minImpulse = Math.min(minImpulse, impulse);
+            maxImpulse = Math.max(maxImpulse, impulse);
+            minInt = Math.min(minInt, intensity);
+            maxInt = Math.max(maxInt, intensity);
+            minClass = Math.min(minClass, classification);
+            maxClass = Math.max(maxClass, classification);
+            minElevation = Math.min(minElevation, z);
+            maxElevation = Math.max(maxElevation, z);
+            if (!Double.isNaN(lasDot.groundElevation)) {
+                minGroundHeight = Math.min(minGroundHeight, lasDot.groundElevation);
+                maxGroundHeight = Math.max(maxGroundHeight, lasDot.groundElevation);
+            }
+
+            filteredEnvelope.expandToInclude(x, y);
+        }
+        return takeIt;
+    }
+
     public ColorInterpolator getElevationColorInterpolator() {
-        return new ColorInterpolator(EColorTables.elev.name(), minElevation, maxElevation, null);
+        if (Double.isInfinite(maxGroundHeight)) {
+            return new ColorInterpolator(EColorTables.elev.name(), minElevation, maxElevation, null);
+        } else {
+            return new ColorInterpolator(EColorTables.elev.name(), minGroundHeight, maxGroundHeight, null);
+        }
     }
 
     public ColorInterpolator getIntensityColorInterpolator() {
@@ -223,7 +270,8 @@ public class LasConstraints {
     }
 
     public double[] getStats() {
-        return new double[]{minElevation, maxElevation, minInt, maxInt, minClass, maxClass, minImpulse, maxImpulse};
+        return new double[]{minElevation, maxElevation, minInt, maxInt, minClass, maxClass, minImpulse, maxImpulse,
+                minGroundHeight, maxGroundHeight};
     }
 
     public Envelope getFilteredEnvelope() {
@@ -232,65 +280,85 @@ public class LasConstraints {
 
     public void setSampling( Integer sampling ) {
         this.sampling = sampling;
-        isDirty = true;
+
     }
 
     public void setClassifications( int[] classes ) {
         this.classesConstrains = classes;
-        isDirty = true;
+
     }
 
     public void setImpulses( int[] impulses ) {
         this.impulsesConstrains = impulses;
-        isDirty = true;
+
     }
 
     public void setMaxIntensity( Double maxInt ) {
         this.maxIntensityConstrain = maxInt;
-        isDirty = true;
+
     }
     public void setMinIntensity( Double minInt ) {
         this.minIntensityConstrain = minInt;
-        isDirty = true;
+
     }
 
     public void setWest( Double west ) {
         this.westConstrain = west;
-        isDirty = true;
+        checkBounds();
     }
+
     public void setEast( Double east ) {
         this.eastConstrain = east;
-        isDirty = true;
+        checkBounds();
     }
     public void setSouth( Double south ) {
         this.southConstrain = south;
-        isDirty = true;
+        checkBounds();
     }
     public void setNorth( Double north ) {
         this.northConstrain = north;
-        isDirty = true;
+        checkBounds();
     }
     public void setMinZ( Double minZ ) {
         this.minZConstrain = minZ;
-        isDirty = true;
+        checkBounds();
     }
     public void setMaxZ( Double maxZ ) {
         this.maxZConstrain = maxZ;
-        isDirty = true;
+        checkBounds();
+    }
+
+    public Double[] checkBounds() {
+        if (westConstrain != null && eastConstrain != null) {
+            double westConstrainTmp = Math.min(westConstrain, eastConstrain);
+            eastConstrain = Math.max(westConstrain, eastConstrain);
+            westConstrain = westConstrainTmp;
+        }
+        if (southConstrain != null && northConstrain != null) {
+            double southConstrainTmp = Math.min(southConstrain, northConstrain);
+            northConstrain = Math.max(southConstrain, northConstrain);
+            southConstrain = southConstrainTmp;
+        }
+        if (minZConstrain != null && maxZConstrain != null) {
+            double minZConstrainTmp = Math.min(minZConstrain, maxZConstrain);
+            maxZConstrain = Math.max(minZConstrain, maxZConstrain);
+            minZConstrain = minZConstrainTmp;
+        }
+        return new Double[]{westConstrain, eastConstrain, southConstrain, northConstrain, minZConstrain, maxZConstrain};
     }
 
     public void setDtm( GridCoverage2D dtm ) {
         this.dtm = dtm;
-        isDirty = true;
+
     }
 
     public void setLowerThres( Double lowerThres ) {
         this.lowerThresConstrain = lowerThres;
-        isDirty = true;
+
     }
     public void setUpperThres( Double upperThres ) {
         this.upperThresConstrain = upperThres;
-        isDirty = true;
+
     }
 
 }

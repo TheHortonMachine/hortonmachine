@@ -132,4 +132,32 @@ public class TransformationUtils {
                 original.getMinY() + newHeight);
     }
 
+    /**
+     * Extend an envelope to have the same ratio as the given width and height.
+     * 
+     * @param original the envelope.
+     * @param width the reference width.
+     * @param height the reference height.
+     * @return the extended envelope, centered on the original one.
+     */
+    public static Envelope expandToFitRatio( Envelope original, double width, double height ) {
+
+        double oh = height * original.getWidth() / width;
+        double ow;
+        if (oh < original.getHeight()) {
+            ow = width * original.getHeight() / height;
+            oh = original.getHeight();
+        } else {
+            ow = original.getWidth();
+        }
+
+        double expandX = (ow - original.getWidth()) / 2.0;
+        double expandY = (oh - original.getHeight()) / 2.0;
+
+        Envelope newEnv = new Envelope(original);
+        newEnv.expandBy(expandX, expandY);
+
+        return newEnv;
+    }
+
 }

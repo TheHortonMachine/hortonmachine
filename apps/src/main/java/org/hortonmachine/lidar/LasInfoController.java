@@ -2,6 +2,7 @@ package org.hortonmachine.lidar;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -67,7 +68,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
     private AffineTransform pixelToWorld;
 
     public LasInfoController() {
-        setPreferredSize(new Dimension(1400, 850));
+        setPreferredSize(new Dimension(1400, 900));
 
         init();
     }
@@ -108,6 +109,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         });
 
         _previewImageLabel.addMouseListener(new MouseListener(){
+            private boolean oneTwo = true;
 
             @Override
             public void mouseReleased( MouseEvent e ) {
@@ -118,28 +120,32 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                     Point2D toPoint = new Point2D.Double();
                     pixelToWorld.transform(fromPoint, toPoint);
                     if (SwingUtilities.isLeftMouseButton(e)) {
-                        double newWest = toPoint.getX();
-                        double newSouth = toPoint.getY();
-                        _westField.setText("" + newWest);
-                        constraints.setWest(newWest);
-                        _southField.setText("" + newSouth);
-                        constraints.setSouth(newSouth);
+                        double x = toPoint.getX();
+                        double y = toPoint.getY();
+                        if (oneTwo) {
+                            constraints.setWest(x);
+                            constraints.setSouth(y);
+                        } else {
+                            constraints.setEast(x);
+                            constraints.setNorth(y);
+                        }
+                        Double[] propBounds = constraints.checkBounds();
+                        _westField.setText(propBounds[0] != null ? propBounds[0].toString() : "");
+                        _eastField.setText(propBounds[1] != null ? propBounds[1].toString() : "");
+                        _southField.setText(propBounds[2] != null ? propBounds[2].toString() : "");
+                        _northField.setText(propBounds[3] != null ? propBounds[3].toString() : "");
+                        oneTwo = !oneTwo;
                     } else if (SwingUtilities.isRightMouseButton(e)) {
-                        double newEast = toPoint.getX();
-                        double newNorth = toPoint.getY();
-                        _eastField.setText("" + newEast);
-                        constraints.setEast(newEast);
-                        _northField.setText("" + newNorth);
-                        constraints.setNorth(newNorth);
                     } else if (SwingUtilities.isMiddleMouseButton(e)) {
-                        _eastField.setText("");
                         constraints.setEast(null);
-                        _northField.setText("");
                         constraints.setNorth(null);
-                        _westField.setText("");
                         constraints.setWest(null);
-                        _southField.setText("");
                         constraints.setSouth(null);
+                        Double[] propBounds = constraints.checkBounds();
+                        _westField.setText(propBounds[0] != null ? propBounds[0].toString() : "");
+                        _eastField.setText(propBounds[1] != null ? propBounds[1].toString() : "");
+                        _southField.setText(propBounds[2] != null ? propBounds[2].toString() : "");
+                        _northField.setText(propBounds[3] != null ? propBounds[3].toString() : "");
                     }
                 }
             }
@@ -162,6 +168,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         });
 
         updateLoadPreviewAction();
+        updateLoadDataAction();
         updateExportAction();
     }
     private void loadDtm() {
@@ -189,8 +196,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         ILasHeader header = lasReader.getHeader();
         long recordsCount = header.getRecordsCount();
         int work = (int) (recordsCount / 1000);
-        ActionWithProgress previewAction = new ActionWithProgress(this, "Filtering data and loading preview... ", work, false){
-            private List<LasRecord> filteredPoints;
+        ActionWithProgress previewAction = new ActionWithProgress(this, "Drawing data... ", work, false){
             private String errorMessage;
 
             @Override
@@ -201,10 +207,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
             @Override
             public void backGroundWork( ProgressMonitor monitor ) {
                 try {
-                    if (constraints.isDirty()) {
-                        constraints.applyConstraints(lasReader, monitor);
-                    }
-                    filteredPoints = constraints.getFilteredPoints();
+                    constraints.applyConstraints(lasReader, false, monitor);
                     monitor.done();
                 } catch (Exception e) {
                     errorMessage = e.getMessage();
@@ -220,169 +223,57 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                     JOptionPane.showMessageDialog(LasInfoController.this, errorMessage, "ERROR", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                try {
-                    ColorInterpolator colorInterp = null;
-                    boolean useIntensity = _intensityRadio.isSelected();
-                    boolean useClass = _classRadio.isSelected();
-                    boolean useImpulse = _impulseRadio.isSelected();
-                    boolean useRGB = _ownColorRadio.isSelected();
-                    if (!useRGB) {
-                        if (useIntensity) {
-                            colorInterp = constraints.getIntensityColorInterpolator();
-                        } else if (useClass) {
-                            colorInterp = constraints.getClassificationColorInterpolator();
-                        } else if (useImpulse) {
-                            colorInterp = constraints.getImpulseColorInterpolator();
-                        } else {
-                            colorInterp = constraints.getElevationColorInterpolator();
-                        }
-                    }
-
-                    String text = _elevHigherThanField.getText();
-                    double elevHigherThan = Double.NaN;
-                    try {
-                        elevHigherThan = Double.parseDouble(text.trim());
-                    } catch (Exception e) {
-                        // ignore
-                    }
-                    boolean showElevHigherThan = !Double.isNaN(elevHigherThan);
-                    double felevHigherThan = elevHigherThan;
-
-                    text = _intensityHigherThanField.getText();
-                    double intensityHigherThan = Double.NaN;
-                    try {
-                        intensityHigherThan = Double.parseDouble(text.trim());
-                    } catch (Exception e) {
-                        // ignore
-                    }
-                    boolean showIntensityHigherThan = !Double.isNaN(intensityHigherThan);
-                    double fintensityHigherThan = intensityHigherThan;
-
-                    text = _pointSizeField.getText();
-                    int pointSize = 1;
-                    try {
-                        pointSize = Integer.parseInt(text.trim());
-                    } catch (Exception e) {
-                        // ignore
-                    }
-                    int fpointSize = pointSize;
-
-                    int imageWidth = 500;
-                    int imageHeight = 500;
-                    Envelope filteredEnvelope = constraints.getFilteredEnvelope();
-                    if (filteredEnvelope.getWidth() > filteredEnvelope.getHeight()) {
-                        Envelope scaledToWidth = TransformationUtils.scaleToWidth(filteredEnvelope, imageWidth);
-                        imageHeight = (int) scaledToWidth.getHeight();
-                    } else {
-                        Envelope scaledToHeight = TransformationUtils.scaleToHeight(filteredEnvelope, imageHeight);
-                        imageWidth = (int) scaledToHeight.getWidth();
-                    }
-                    if (imageWidth == 0)
-                        imageWidth = 10;
-                    if (imageHeight == 0)
-                        imageHeight = 10;
-
-                    BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
-                    Graphics2D g2d = (Graphics2D) image.getGraphics();
-                    g2d.setColor(Color.WHITE);
-                    g2d.fillRect(0, 0, imageWidth, imageHeight);
-                    g2d.setColor(Color.RED);
-
-                    Rectangle pixelRectangle = new Rectangle(0, 0, imageWidth, imageHeight);
-                    worldToPixel = TransformationUtils.getWorldToPixel(filteredEnvelope, pixelRectangle);
-                    pixelToWorld = TransformationUtils.getPixelToWorld(pixelRectangle, filteredEnvelope);
-                    ColorInterpolator fcolorInterp = colorInterp;
-                    Point2D toPoint = new Point2D.Double();
-                    Point2D fromPoint = new Point2D.Double();
-                    BitMatrix bm = new BitMatrix(imageWidth, imageHeight);
-                    List<int[]> elevHigherThanList = new ArrayList<>();
-                    List<int[]> intensityHigherThanList = new ArrayList<>();
-                    filteredPoints.stream().forEach(lr -> {
-                        fromPoint.setLocation(lr.x, lr.y);
-                        worldToPixel.transform(fromPoint, toPoint);
-
-                        int xPix = (int) toPoint.getX();
-                        int yPix = (int) toPoint.getY();
-                        if (showElevHigherThan && lr.z > felevHigherThan) {
-                            elevHigherThanList.add(new int[]{xPix, yPix});
-                        }
-                        if (showIntensityHigherThan && lr.intensity > fintensityHigherThan) {
-                            intensityHigherThanList.add(new int[]{xPix, yPix});
-                        }
-                        if (!bm.isMarked(xPix, yPix)) {
-                            Color c;
-                            if (useRGB) {
-                                try {
-                                    c = new Color(lr.color[0], lr.color[1], lr.color[2]);
-                                } catch (Exception e) {
-                                    c = Color.RED;
-                                }
-                            } else {
-                                if (useClass) {
-                                    c = fcolorInterp.getColorFor(lr.classification);
-                                } else if (useIntensity) {
-                                    c = fcolorInterp.getColorFor(lr.intensity);
-                                } else if (useImpulse) {
-                                    c = fcolorInterp.getColorFor(lr.returnNumber);
-                                } else {
-                                    c = fcolorInterp.getColorFor(lr.z);
-                                }
-                            }
-                            g2d.setColor(c);
-
-                            if (fpointSize == 1) {
-                                g2d.drawLine(xPix, yPix, xPix, yPix);
-                            } else {
-                                g2d.fillOval(xPix - fpointSize / 2, yPix - fpointSize / 2, fpointSize, fpointSize);
-                            }
-                        }
-                        bm.mark(xPix, yPix);
-                    });
-
-                    g2d.setColor(Color.black);
-                    int delta = 5;
-                    for( int[] xy : elevHigherThanList ) {
-                        g2d.drawLine(xy[0] - delta, xy[1], xy[0] + delta, xy[1]);
-                        g2d.drawLine(xy[0], xy[1] - delta, xy[0], xy[1] + delta);
-                    }
-                    g2d.setColor(Color.red);
-                    for( int[] xy : intensityHigherThanList ) {
-                        g2d.drawLine(xy[0] - delta, xy[1], xy[0] + delta, xy[1]);
-                        g2d.drawLine(xy[0], xy[1] - delta, xy[0], xy[1] + delta);
-                    }
-
-                    g2d.dispose();
-                    _previewImageLabel.setIcon(new ImageIcon(image));
-
-                    double[] stats = constraints.getStats();
-                    Envelope fenv = constraints.getFilteredEnvelope();
-                    StringBuilder toolTip = new StringBuilder("<html>");
-                    int i = 0;
-                    toolTip.append("Filtered data stats ").append("<br>");
-                    toolTip.append("Points count: ").append(filteredPoints.size()).append("<br>");
-                    toolTip.append("Min Elevation: ").append(stats[i++]).append("<br>");
-                    toolTip.append("Max Elevation: ").append(stats[i++]).append("<br>");
-                    toolTip.append("Min Intensity: ").append(stats[i++]).append("<br>");
-                    toolTip.append("Max Intensity: ").append(stats[i++]).append("<br>");
-                    toolTip.append("Min Classification: ").append(stats[i++]).append("<br>");
-                    toolTip.append("Max Classification: ").append(stats[i++]).append("<br>");
-                    toolTip.append("Min Impulse: ").append(stats[i++]).append("<br>");
-                    toolTip.append("Max Impulse: ").append(stats[i++]).append("<br>");
-                    toolTip.append("West: ").append(fenv.getMinX()).append("<br>");
-                    toolTip.append("East: ").append(fenv.getMaxX()).append("<br>");
-                    toolTip.append("South: ").append(fenv.getMinY()).append("<br>");
-                    toolTip.append("North: ").append(fenv.getMaxY()).append("<br>");
-                    toolTip.append("</html>");
-                    _previewImageLabel.setToolTipText(toolTip.toString());
-
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
+                drawPreview();
             }
         };
 
         _loadPreviewButton.setAction(previewAction);
-        _loadPreviewButton.setText("Load Preview");
+        _loadPreviewButton.setText("Draw Data");
+
+    }
+
+    private void updateLoadDataAction() {
+        if (lasReader == null) {
+            _loadDataButton.setEnabled(false);
+            return;
+        } else {
+            _loadDataButton.setEnabled(true);
+        }
+        ILasHeader header = lasReader.getHeader();
+        long recordsCount = header.getRecordsCount();
+        int work = (int) (recordsCount / 1000);
+        ActionWithProgress previewAction = new ActionWithProgress(this, "Loading data using filters... ", work, false){
+            private String errorMessage;
+
+            @Override
+            public void onError( Exception e ) {
+                JOptionPane.showMessageDialog(LasInfoController.this, "An error occurred: " + e.getMessage(), "ERROR",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+            @Override
+            public void backGroundWork( ProgressMonitor monitor ) {
+                try {
+                    constraints.applyConstraints(lasReader, true, monitor);
+                    monitor.done();
+                } catch (Exception e) {
+                    errorMessage = e.getMessage();
+                    if (errorMessage == null) {
+                        errorMessage = "An undefined error was thrown.";
+                        errorMessage += ExceptionUtils.getStackTrace(e);
+                    }
+                }
+            }
+            @Override
+            public void postWork() throws Exception {
+                if (errorMessage != null) {
+                    JOptionPane.showMessageDialog(LasInfoController.this, errorMessage, "ERROR", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+        };
+
+        _loadDataButton.setAction(previewAction);
+        _loadDataButton.setText("Load Data");
 
     }
 
@@ -410,7 +301,6 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         long recordsCount = header.getRecordsCount();
         int work = (int) (recordsCount / 1000);
         ActionWithProgress exportAction = new ActionWithProgress(this, "Exporting data... ", work * 2, false){
-            private List<LasRecord> filteredPoints;
             private String errorMessage;
 
             @Override
@@ -420,10 +310,8 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
             @Override
             public void backGroundWork( ProgressMonitor monitor ) {
                 try {
-                    if (constraints.isDirty()) {
-                        constraints.applyConstraints(lasReader, monitor);
-                    }
-                    filteredPoints = constraints.getFilteredPoints();
+                    constraints.applyConstraints(lasReader, true, monitor);
+                    List<LasRecord> filteredPoints = constraints.getFilteredPoints();
 
                     monitor.setCurrent("Now writing to file...", work + work / 2);
                     if (outputFilePath.toLowerCase().endsWith(".las")) {
@@ -481,9 +369,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                         throw new Exception(NO_CRS_MSG);
                     }
 
-                    if (constraints.isDirty()) {
-                        constraints.applyConstraints(lasReader, monitor);
-                    }
+                    constraints.applyConstraints(lasReader, true, monitor);
                     monitor.setCurrent("Getting bounds...", 0);
                     Envelope filteredEnvelope = constraints.getFilteredEnvelope();
                     Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(filteredEnvelope);
@@ -562,6 +448,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                 _firstPointTable.setModel(new DefaultTableModel(new String[0][0], new String[]{"Property", "Value"}));
             }
             updateLoadPreviewAction();
+            updateLoadDataAction();
             updateExportAction();
         } catch (Exception e) {
             e.printStackTrace();
@@ -803,4 +690,186 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         }
     }
 
+    private void drawPreview() {
+        try {
+            List<LasRecord> filteredPoints = constraints.getFilteredPoints();
+            ColorInterpolator colorInterp = null;
+            boolean useIntensity = _intensityRadio.isSelected();
+            boolean useClass = _classRadio.isSelected();
+            boolean useImpulse = _impulseRadio.isSelected();
+            boolean useRGB = _ownColorRadio.isSelected();
+            if (!useRGB) {
+                if (useIntensity) {
+                    colorInterp = constraints.getIntensityColorInterpolator();
+                } else if (useClass) {
+                    colorInterp = constraints.getClassificationColorInterpolator();
+                } else if (useImpulse) {
+                    colorInterp = constraints.getImpulseColorInterpolator();
+                } else {
+                    colorInterp = constraints.getElevationColorInterpolator();
+                }
+            }
+
+            String text = _elevHigherThanField.getText();
+            double elevHigherThan = Double.NaN;
+            try {
+                elevHigherThan = Double.parseDouble(text.trim());
+            } catch (Exception e) {
+                // ignore
+            }
+            boolean showElevHigherThan = !Double.isNaN(elevHigherThan);
+            double felevHigherThan = elevHigherThan;
+
+            text = _intensityHigherThanField.getText();
+            double intensityHigherThan = Double.NaN;
+            try {
+                intensityHigherThan = Double.parseDouble(text.trim());
+            } catch (Exception e) {
+                // ignore
+            }
+            boolean showIntensityHigherThan = !Double.isNaN(intensityHigherThan);
+            double fintensityHigherThan = intensityHigherThan;
+
+            text = _pointSizeField.getText();
+            int pointSize = 1;
+            try {
+                pointSize = Integer.parseInt(text.trim());
+            } catch (Exception e) {
+                // ignore
+            }
+            int fpointSize = pointSize;
+
+            int labelWidth = _previewImageLabel.getWidth();
+            int labelHeight = _previewImageLabel.getHeight();
+
+            int imageWidth = 500;
+            int imageHeight = 500;
+            if (labelWidth > 0 && labelHeight > 0) {
+                imageWidth = labelWidth;
+                imageHeight = labelHeight;
+            }
+            if (imageWidth == 0)
+                imageWidth = 10;
+            if (imageHeight == 0)
+                imageHeight = 10;
+            Envelope filteredEnvelope = constraints.getFilteredEnvelope();
+            Envelope fittingEnvelope = TransformationUtils.expandToFitRatio(filteredEnvelope, imageWidth, imageHeight);
+
+            BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = (Graphics2D) image.getGraphics();
+            g2d.setColor(Color.WHITE);
+            g2d.fillRect(0, 0, imageWidth, imageHeight);
+            g2d.setColor(Color.RED);
+
+            Rectangle pixelRectangle = new Rectangle(0, 0, imageWidth, imageHeight);
+            worldToPixel = TransformationUtils.getWorldToPixel(fittingEnvelope, pixelRectangle);
+            pixelToWorld = TransformationUtils.getPixelToWorld(pixelRectangle, fittingEnvelope);
+            ColorInterpolator fcolorInterp = colorInterp;
+            Point2D toPoint = new Point2D.Double();
+            Point2D fromPoint = new Point2D.Double();
+            BitMatrix bm = new BitMatrix(imageWidth, imageHeight);
+            List<int[]> elevHigherThanList = new ArrayList<>();
+            List<int[]> intensityHigherThanList = new ArrayList<>();
+            filteredPoints.stream().forEach(lr -> {
+                fromPoint.setLocation(lr.x, lr.y);
+                worldToPixel.transform(fromPoint, toPoint);
+
+                int xPix = (int) toPoint.getX();
+                int yPix = (int) toPoint.getY();
+
+                double theZ = Double.isNaN(lr.groundElevation) ? lr.z : lr.groundElevation;
+
+                if (showElevHigherThan && theZ > felevHigherThan) {
+                    elevHigherThanList.add(new int[]{xPix, yPix});
+                }
+                if (showIntensityHigherThan && lr.intensity > fintensityHigherThan) {
+                    intensityHigherThanList.add(new int[]{xPix, yPix});
+                }
+                if (!bm.isMarked(xPix, yPix)) {
+                    Color c;
+                    if (useRGB) {
+                        try {
+                            c = new Color(lr.color[0], lr.color[1], lr.color[2]);
+                        } catch (Exception e) {
+                            c = Color.RED;
+                        }
+                    } else {
+                        if (useClass) {
+                            c = fcolorInterp.getColorFor(lr.classification);
+                        } else if (useIntensity) {
+                            c = fcolorInterp.getColorFor(lr.intensity);
+                        } else if (useImpulse) {
+                            c = fcolorInterp.getColorFor(lr.returnNumber);
+                        } else {
+                            c = fcolorInterp.getColorFor(theZ);
+                        }
+                    }
+                    g2d.setColor(c);
+                    lr.color[0] = (short) c.getRed();
+                    lr.color[1] = (short) c.getGreen();
+                    lr.color[2] = (short) c.getBlue();
+
+                    if (fpointSize == 1) {
+                        g2d.drawLine(xPix, yPix, xPix, yPix);
+                    } else {
+                        g2d.fillOval(xPix - fpointSize / 2, yPix - fpointSize / 2, fpointSize, fpointSize);
+                    }
+                }
+                bm.mark(xPix, yPix);
+            });
+
+            g2d.setColor(Color.black);
+            int delta = 5;
+            for( int[] xy : elevHigherThanList ) {
+                g2d.drawLine(xy[0] - delta, xy[1], xy[0] + delta, xy[1]);
+                g2d.drawLine(xy[0], xy[1] - delta, xy[0], xy[1] + delta);
+            }
+            g2d.setColor(Color.red);
+            for( int[] xy : intensityHigherThanList ) {
+                g2d.drawLine(xy[0] - delta, xy[1], xy[0] + delta, xy[1]);
+                g2d.drawLine(xy[0], xy[1] - delta, xy[0], xy[1] + delta);
+            }
+
+            g2d.dispose();
+
+            BufferedImage finalImage = new BufferedImage(labelWidth, labelHeight, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2dLabel = (Graphics2D) finalImage.getGraphics();
+            int x = labelWidth / 2 - imageWidth / 2;
+            int y = labelHeight / 2 - imageHeight / 2;
+            g2dLabel.setColor(Color.WHITE);
+            g2dLabel.fillRect(0, 0, labelWidth, labelHeight);
+            g2dLabel.drawImage(image, x, y, null);
+            g2dLabel.dispose();
+            _previewImageLabel.setIcon(new ImageIcon(finalImage));
+
+            double[] stats = constraints.getStats();
+            Envelope fenv = constraints.getFilteredEnvelope();
+            StringBuilder toolTip = new StringBuilder("<html>");
+            int i = 0;
+            toolTip.append("Filtered data stats ").append("<br>");
+            toolTip.append("Points count: ").append(filteredPoints.size()).append("<br>");
+            toolTip.append("Min Elevation: ").append(stats[i++]).append("<br>");
+            toolTip.append("Max Elevation: ").append(stats[i++]).append("<br>");
+            toolTip.append("Min Intensity: ").append(stats[i++]).append("<br>");
+            toolTip.append("Max Intensity: ").append(stats[i++]).append("<br>");
+            toolTip.append("Min Classification: ").append(stats[i++]).append("<br>");
+            toolTip.append("Max Classification: ").append(stats[i++]).append("<br>");
+            toolTip.append("Min Impulse: ").append(stats[i++]).append("<br>");
+            toolTip.append("Max Impulse: ").append(stats[i++]).append("<br>");
+            double maxGroundHeight = stats[i++];
+            if (!Double.isInfinite(maxGroundHeight)) {
+                toolTip.append("Min ground height: ").append(maxGroundHeight).append("<br>");
+                toolTip.append("Max ground height: ").append(stats[i++]).append("<br>");
+            }
+            toolTip.append("West: ").append(fenv.getMinX()).append("<br>");
+            toolTip.append("East: ").append(fenv.getMaxX()).append("<br>");
+            toolTip.append("South: ").append(fenv.getMinY()).append("<br>");
+            toolTip.append("North: ").append(fenv.getMaxY()).append("<br>");
+            toolTip.append("</html>");
+            _previewImageLabel.setToolTipText(toolTip.toString());
+
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+    }
 }
