@@ -2,7 +2,6 @@ package org.hortonmachine.lidar;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -52,6 +51,12 @@ import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.monitor.ActionWithProgress;
 import org.hortonmachine.gui.utils.monitor.ProgressMonitor;
 import org.joda.time.DateTime;
+import org.jzy3d.analysis.AbstractAnalysis;
+import org.jzy3d.analysis.AnalysisLauncher;
+import org.jzy3d.chart.factories.AWTChartComponentFactory;
+import org.jzy3d.maths.Coord3d;
+import org.jzy3d.plot3d.primitives.Scatter;
+import org.jzy3d.plot3d.rendering.canvas.Quality;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.simple.SimpleFeature;
@@ -67,8 +72,10 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
     private AffineTransform worldToPixel;
     private AffineTransform pixelToWorld;
 
+    private BufferedImage lastDrawnImage;
+
     public LasInfoController() {
-        setPreferredSize(new Dimension(1400, 900));
+        setPreferredSize(new Dimension(1800, 1000));
 
         init();
     }
@@ -119,33 +126,42 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                     Point2D fromPoint = new Point2D.Double(px, py);
                     Point2D toPoint = new Point2D.Double();
                     pixelToWorld.transform(fromPoint, toPoint);
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        double x = toPoint.getX();
-                        double y = toPoint.getY();
-                        if (oneTwo) {
-                            constraints.setWest(x);
-                            constraints.setSouth(y);
-                        } else {
-                            constraints.setEast(x);
-                            constraints.setNorth(y);
+                    if (SwingUtilities.isMiddleMouseButton(e)) {
+                        Envelope env = constraints.getFilteredEnvelope();
+                        double expX = env.getWidth() * 0.2 / 2.0;
+                        double expY = env.getHeight() * 0.2 / 2.0;
+                        Envelope newEnv = new Envelope(env);
+                        newEnv.expandBy(expX, expY);
+                        constraints.setWest(newEnv.getMinX());
+                        constraints.setEast(newEnv.getMaxX());
+                        constraints.setSouth(newEnv.getMinY());
+                        constraints.setNorth(newEnv.getMaxY());
+                        drawPreview();
+                    } else {
+                        if (SwingUtilities.isLeftMouseButton(e)) {
+                            double x = toPoint.getX();
+                            double y = toPoint.getY();
+                            if (oneTwo) {
+                                constraints.setWest(x);
+                                constraints.setSouth(y);
+                            } else {
+                                constraints.setEast(x);
+                                constraints.setNorth(y);
+                            }
+                            oneTwo = !oneTwo;
+                        } else if (SwingUtilities.isRightMouseButton(e)) {
+                            constraints.setEast(null);
+                            constraints.setNorth(null);
+                            constraints.setWest(null);
+                            constraints.setSouth(null);
+                            _boundsFileField.setText("");
                         }
                         Double[] propBounds = constraints.checkBounds();
                         _westField.setText(propBounds[0] != null ? propBounds[0].toString() : "");
                         _eastField.setText(propBounds[1] != null ? propBounds[1].toString() : "");
                         _southField.setText(propBounds[2] != null ? propBounds[2].toString() : "");
                         _northField.setText(propBounds[3] != null ? propBounds[3].toString() : "");
-                        oneTwo = !oneTwo;
-                    } else if (SwingUtilities.isRightMouseButton(e)) {
-                    } else if (SwingUtilities.isMiddleMouseButton(e)) {
-                        constraints.setEast(null);
-                        constraints.setNorth(null);
-                        constraints.setWest(null);
-                        constraints.setSouth(null);
-                        Double[] propBounds = constraints.checkBounds();
-                        _westField.setText(propBounds[0] != null ? propBounds[0].toString() : "");
-                        _eastField.setText(propBounds[1] != null ? propBounds[1].toString() : "");
-                        _southField.setText(propBounds[2] != null ? propBounds[2].toString() : "");
-                        _northField.setText(propBounds[3] != null ? propBounds[3].toString() : "");
+                        drawWithMouseMouse();
                     }
                 }
             }
@@ -170,6 +186,45 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         updateLoadPreviewAction();
         updateLoadDataAction();
         updateExportAction();
+
+        _load3DButton.addActionListener(e -> {
+            AbstractAnalysis abstractAnalysis = new AbstractAnalysis(){
+                @Override
+                public void init() throws Exception {
+                    constraints.applyConstraints(lasReader, false, null);
+                    List<LasRecord> filteredPoints = constraints.getFilteredPoints();
+                    List<Coord3d> points = new ArrayList<>();
+                    List<org.jzy3d.colors.Color> colors = new ArrayList<>();
+
+                    for( LasRecord dot : filteredPoints ) {
+                        float x = (float) dot.x;
+                        float y = (float) dot.y;
+                        float z = (float) dot.z;
+                        if (!Double.isNaN(dot.groundElevation)) {
+                            z = (float) dot.groundElevation;
+                        }
+                        points.add(new Coord3d(x, y, z));
+                        short[] c = dot.color;
+                        colors.add(new org.jzy3d.colors.Color((int) c[0], (int) c[1], (int) c[2]));
+                    }
+
+                    Coord3d[] coord3ds = points.toArray(new Coord3d[points.size()]);
+                    org.jzy3d.colors.Color[] colorsArray = colors.toArray(new org.jzy3d.colors.Color[colors.size()]);
+                    Scatter scatterLas = new Scatter(coord3ds, colorsArray, 7f);
+                    
+                    chart = AWTChartComponentFactory.chart(Quality.Fastest, "newt");
+                    chart.getScene().getGraph().add(scatterLas);
+                    chart.setAxeDisplayed(false);
+                    chart.getView().setSquared(false);
+                    
+                }
+            };
+            try {
+                AnalysisLauncher.open(abstractAnalysis);
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        });
     }
     private void loadDtm() {
         String dtmFilePath = _dtmInputPathField.getText();
@@ -832,15 +887,17 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
 
             g2d.dispose();
 
-            BufferedImage finalImage = new BufferedImage(labelWidth, labelHeight, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g2dLabel = (Graphics2D) finalImage.getGraphics();
+            lastDrawnImage = new BufferedImage(labelWidth, labelHeight, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2dLabel = (Graphics2D) lastDrawnImage.getGraphics();
             int x = labelWidth / 2 - imageWidth / 2;
             int y = labelHeight / 2 - imageHeight / 2;
             g2dLabel.setColor(Color.WHITE);
             g2dLabel.fillRect(0, 0, labelWidth, labelHeight);
             g2dLabel.drawImage(image, x, y, null);
             g2dLabel.dispose();
-            _previewImageLabel.setIcon(new ImageIcon(finalImage));
+
+            drawWithMouseMouse();
+//            _previewImageLabel.setIcon(new ImageIcon(lastDrawnImage));
 
             double[] stats = constraints.getStats();
             Envelope fenv = constraints.getFilteredEnvelope();
@@ -871,5 +928,36 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         } catch (Exception e1) {
             e1.printStackTrace();
         }
+    }
+
+    private void drawWithMouseMouse() {
+        Double[] propBounds = constraints.checkBounds();
+        BufferedImage withMouseImage = null;
+        if (propBounds[0] != null && propBounds[1] != null && propBounds[2] != null && propBounds[3] != null) {
+            withMouseImage = new BufferedImage(lastDrawnImage.getWidth(), lastDrawnImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Point2D llFromPoint = new Point2D.Double(propBounds[0], propBounds[2]);
+            Point2D urFromPoint = new Point2D.Double(propBounds[1], propBounds[3]);
+            Point2D ll = new Point2D.Double();
+            Point2D ur = new Point2D.Double();
+            worldToPixel.transform(llFromPoint, ll);
+            worldToPixel.transform(urFromPoint, ur);
+
+            Graphics2D g2d = (Graphics2D) withMouseImage.getGraphics();
+
+            g2d.drawImage(lastDrawnImage, 0, 0, null);
+            g2d.setColor(Color.BLACK);
+
+            int x = (int) ll.getX();
+            int y = (int) ll.getY();
+            int width = (int) (ur.getX() - ll.getX());
+            int height = (int) (ll.getY() - ur.getY());
+            g2d.drawRect(x, y - height, width, height);
+            g2d.dispose();
+
+        } else {
+            withMouseImage = lastDrawnImage;
+        }
+        _previewImageLabel.setIcon(new ImageIcon(withMouseImage));
+
     }
 }

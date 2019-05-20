@@ -760,7 +760,13 @@
           <name>Boundless Maven Repository</name>
           <url>https://repo.boundlessgeo.com/main/</url>
         </repository>
-        </repositories>
+
+		<repository>
+			<id>jzy3d-releases</id>
+			<name>Jzy3d Snapshots</name>
+			<url>http://maven.jzy3d.org/releases/</url>
+		</repository>
+    </repositories>
 
 	<!-- Build configuration -->
 	<build>

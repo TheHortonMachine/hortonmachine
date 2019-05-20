@@ -124,7 +124,7 @@ public class LasConstraints {
             lastReadPoints = new ArrayList<>(1000000);
             try {
                 while( lasReader.hasNextPoint() ) {
-                    if (count % 1000 == 0)
+                    if (count % 1000 == 0 && monitor != null)
                         monitor.worked(1);
                     count++;
 

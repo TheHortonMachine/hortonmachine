@@ -50,7 +50,6 @@ public class LasInfoView extends JPanel
    JTextField _maxZField = new JTextField();
    JButton _loadDataButton = new JButton();
    JLabel _previewImageLabel = new JLabel();
-   JButton _loadPreviewButton = new JButton();
    JRadioButton _elevationRadio = new JRadioButton();
    ButtonGroup _buttongroup1 = new ButtonGroup();
    JRadioButton _intensityRadio = new JRadioButton();
@@ -60,6 +59,8 @@ public class LasInfoView extends JPanel
    JTextField _pointSizeField = new JTextField();
    JTextField _elevHigherThanField = new JTextField();
    JTextField _intensityHigherThanField = new JTextField();
+   JButton _loadPreviewButton = new JButton();
+   JButton _load3DButton = new JButton();
 
    /**
     * Default constructor
@@ -262,18 +263,18 @@ public class LasInfoView extends JPanel
    public JPanel createPanel6()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","FILL:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0)");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","FILL:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      jpanel1.add(createPanel7(),cc.xywh(2,6,1,2));
+      jpanel1.add(createPanel7(),cc.xywh(2,8,1,2));
       jpanel1.add(createPanel8(),cc.xy(2,1));
       _loadDataButton.setActionCommand("Load Preview");
       _loadDataButton.setName("loadDataButton");
       _loadDataButton.setText("Load data");
       jpanel1.add(_loadDataButton,cc.xy(2,3));
 
-      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3,4,5,6,7 });
+      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3,4,5,6,7,8,9 });
       return jpanel1;
    }
 
@@ -455,13 +456,8 @@ public class LasInfoView extends JPanel
       jpanel1.setLayout(formlayout1);
 
       jpanel1.add(createPanel12(),cc.xy(1,1));
-      _loadPreviewButton.setActionCommand("Load Preview");
-      _loadPreviewButton.setName("loadPreviewButton");
-      _loadPreviewButton.setText("Draw loaded data");
-      jpanel1.add(_loadPreviewButton,cc.xy(1,4));
-
       jpanel1.add(createPanel13(),cc.xy(1,2));
-      addFillComponents(jpanel1,new int[]{ 1 },new int[]{ 1,2,3 });
+      addFillComponents(jpanel1,new int[]{ 1 },new int[]{ 1,2,3,4 });
       return jpanel1;
    }
 
@@ -487,13 +483,14 @@ public class LasInfoView extends JPanel
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Preview properties",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.5),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","TOP:DEFAULT:GROW(1.0)");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.5),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","TOP:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
       jpanel1.add(createPanel14(),cc.xy(2,1));
       jpanel1.add(createPanel15(),cc.xy(4,1));
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4 },new int[]{ 1 });
+      jpanel1.add(createPanel16(),cc.xy(6,1));
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6 },new int[]{ 1 });
       return jpanel1;
    }
 
@@ -571,6 +568,27 @@ public class LasInfoView extends JPanel
       jpanel1.add(_intensityHigherThanField,cc.xy(3,5));
 
       addFillComponents(jpanel1,new int[]{ 2 },new int[]{ 2,4 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel16()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      _loadPreviewButton.setActionCommand("Load Preview");
+      _loadPreviewButton.setName("loadPreviewButton");
+      _loadPreviewButton.setText("Draw loaded data");
+      jpanel1.add(_loadPreviewButton,cc.xy(1,2));
+
+      _load3DButton.setActionCommand("Load Preview");
+      _load3DButton.setName("load3DButton");
+      _load3DButton.setText("Show bounds in 3D");
+      jpanel1.add(_load3DButton,cc.xy(1,4));
+
+      addFillComponents(jpanel1,new int[]{ 1 },new int[]{ 1,3,5 });
       return jpanel1;
    }
 
