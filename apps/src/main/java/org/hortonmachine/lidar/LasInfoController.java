@@ -211,12 +211,20 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
                     Coord3d[] coord3ds = points.toArray(new Coord3d[points.size()]);
                     org.jzy3d.colors.Color[] colorsArray = colors.toArray(new org.jzy3d.colors.Color[colors.size()]);
                     Scatter scatterLas = new Scatter(coord3ds, colorsArray, 7f);
-                    
+                    String text = _pointSizeField.getText();
+                    int pointSize = 1;
+                    try {
+                        pointSize = Integer.parseInt(text.trim());
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                    scatterLas.setWidth(pointSize);
+
                     chart = AWTChartComponentFactory.chart(Quality.Fastest, "newt");
                     chart.getScene().getGraph().add(scatterLas);
                     chart.setAxeDisplayed(false);
                     chart.getView().setSquared(false);
-                    
+
                 }
             };
             try {
