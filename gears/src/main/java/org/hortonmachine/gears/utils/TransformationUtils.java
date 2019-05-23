@@ -20,7 +20,9 @@ package org.hortonmachine.gears.utils;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
 
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.geom.util.NoninvertibleTransformationException;
@@ -158,6 +160,30 @@ public class TransformationUtils {
         newEnv.expandBy(expandX, expandY);
 
         return newEnv;
+    }
+
+    /**
+     * Given a transformation, transform an envelope by it.
+     * 
+     * @param transformation the transformation to use.
+     * @param env the envelope to transform.
+     * @return the transformed envelope.
+     */
+    public static Envelope transformEnvelope( AffineTransform transformation, Envelope env ) {
+        Point2D llFromPoint = new Point2D.Double(env.getMinX(), env.getMinY());
+        Point2D urFromPoint = new Point2D.Double(env.getMaxX(), env.getMaxY());
+        Point2D ll = new Point2D.Double();
+        Point2D ur = new Point2D.Double();
+        transformation.transform(llFromPoint, ll);
+        transformation.transform(urFromPoint, ur);
+        return new Envelope(ll.getX(), ur.getX(), ll.getY(), ur.getY());
+    }
+
+    public static Coordinate transformCoordinate( AffineTransform transformation, Coordinate coordinate ) {
+        Point2D fromPoint = new Point2D.Double(coordinate.x, coordinate.y);
+        Point2D toPoint = new Point2D.Double();
+        transformation.transform(fromPoint, toPoint);
+        return new Coordinate(toPoint.getX(), toPoint.getY());
     }
 
 }

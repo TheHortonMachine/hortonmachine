@@ -90,6 +90,10 @@ public class OmsHoughCirclesRaster extends HMModel {
     @In
     public int pMaxCircleCount = 50;
 
+    @Description("Optional novalue in case of non physical data")
+    @In
+    public Integer pColorNv = 255;
+
     @Description(outCircles_DESCR)
     @In
     public SimpleFeatureCollection outCircles;
@@ -125,9 +129,17 @@ public class OmsHoughCirclesRaster extends HMModel {
     private double xRes;
     private double referenceImageValue = HMConstants.doubleNovalue;
 
+    private boolean useColorNv = false;
+    private int colorNv;
+
     @Execute
     public void process() throws Exception {
         checkNull(inRaster, pMinRadius, pMaxRadius, pRadiusIncrement);
+
+        if (pColorNv != null) {
+            colorNv = pColorNv;
+            useColorNv = true;
+        }
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
         offx = 0;
@@ -176,12 +188,17 @@ public class OmsHoughCirclesRaster extends HMModel {
         int count = 0;
         for( int r = 0; r < height; r++ ) {
             for( int c = 0; c < width; c++ ) {
-                double sample = renderedImageIterator.getSampleDouble(c, r, 0);
-                if (HMConstants.isNovalue(sample)) {
-                    imageValues[count++] = (byte) 0;
+                if (useColorNv) {
+                    int sample = renderedImageIterator.getSample(c, r, 0);
+                    imageValues[count++] = (sample == colorNv) ? (byte) 0 : (byte) 1;
                 } else {
-                    referenceImageValue = sample;
-                    imageValues[count++] = (byte) 1;
+                    double sample = renderedImageIterator.getSampleDouble(c, r, 0);
+                    if (HMConstants.isNovalue(sample)) {
+                        imageValues[count++] = (byte) 0;
+                    } else {
+                        referenceImageValue = sample;
+                        imageValues[count++] = (byte) 1;
+                    }
                 }
             }
         }

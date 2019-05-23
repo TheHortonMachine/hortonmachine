@@ -10,7 +10,8 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.las.core.ALasReader;
 import org.hortonmachine.gears.io.las.core.LasRecord;
 import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.ui.progress.IProgressPrinter;
+import org.hortonmachine.gears.ui.progress.ProgressUpdate;
 import org.hortonmachine.gears.utils.colors.ColorInterpolator;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -84,11 +85,11 @@ public class LasConstraints {
      * 
      * @param lasReader the reader.
      * @param doReread if true, the data are read again, else only the existing are filtered.
-     * @param monitor the monitor. This needs to consider that every 1000 a worked(1) is called.
+     * @param progressPrinter the monitor. This needs to consider that every 1000 a worked(1) is called.
      * @return the list of points to keep.
      * @throws Exception
      */
-    public void applyConstraints( ALasReader lasReader, boolean doReread, IHMProgressMonitor monitor ) throws Exception {
+    public void applyConstraints( ALasReader lasReader, boolean doReread, IProgressPrinter progressPrinter ) throws Exception {
         boolean doSampling = false;
         int samp = -1;
         if (sampling != null) {
@@ -123,9 +124,12 @@ public class LasConstraints {
         if (doReread || lastReadPoints == null) {
             lastReadPoints = new ArrayList<>(1000000);
             try {
+                int progress = 0;
                 while( lasReader.hasNextPoint() ) {
-                    if (count % 1000 == 0 && monitor != null)
-                        monitor.worked(1);
+                    if (count % 1000 == 0 && progressPrinter != null) {
+                        progressPrinter.publish(new ProgressUpdate("Reading dataset...", progress++));
+                    }
+
                     count++;
 
                     LasRecord lasDot = lasReader.getNextPoint();

@@ -19,6 +19,8 @@ package org.hortonmachine.gui.utils.executor;
 
 import javax.swing.SwingUtilities;
 
+import org.hortonmachine.gears.ui.progress.ProgressUpdate;
+
 /**
  * Usage examples for the executor.
  * 
@@ -38,7 +40,7 @@ public class ExecutorExamples {
                     @Override
                     public void backGroundWork() throws Exception {
                         for( int i = 0; i < 15; i++ ) {
-                            publish(new Update("Working...", (i + 1)));
+                            publish(new ProgressUpdate("Working...", (i + 1)));
                             Thread.sleep(300);
                         }
                     }
@@ -58,7 +60,7 @@ public class ExecutorExamples {
                     public void backGroundWork() throws Exception {
                         for( int i = 0; i < max; i++ ) {
                             int workDone = i + 1;
-                            publish(new Update("Working " + workDone + "...", workDone));
+                            publish(new ProgressUpdate("Working " + workDone + "...", workDone));
                             Thread.sleep(300);
                         }
                     }
@@ -78,7 +80,7 @@ public class ExecutorExamples {
                     public void backGroundWork() throws Exception {
                         for( int i = 0; i < max; i++ ) {
                             int workDone = i + 1;
-                            publish(new Update("Working " + workDone + "...", workDone));
+                            publish(new ProgressUpdate("Working " + workDone + "...", workDone));
                             Thread.sleep(300);
                             if (i == 3) {
                                 throw new RuntimeException("Exiting due to error");
@@ -101,7 +103,7 @@ public class ExecutorExamples {
                     public void backGroundWork() throws Exception {
                         for( int i = 0; i < max; i++ ) {
                             int workDone = i + 1;
-                            publish(new Update("Working " + workDone + "...", workDone));
+                            publish(new ProgressUpdate("Working " + workDone + "...", workDone));
                             Thread.sleep(300);
                         }
                     }

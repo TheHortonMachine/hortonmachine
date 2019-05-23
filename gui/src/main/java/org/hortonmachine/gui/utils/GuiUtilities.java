@@ -62,6 +62,7 @@ import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 
+import org.apache.commons.io.FilenameUtils;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.log.PreferencesDb;
 import org.hortonmachine.gears.utils.OsCheck;
@@ -460,6 +461,11 @@ public class GuiUtilities {
         showErrorMessage(parentComponent, null, message);
     }
 
+    public static void handleError( Component parentComponent, Exception e ) {
+        Logger.INSTANCE.insertError("GuiUtilities", e.getLocalizedMessage(), e);
+        showErrorMessage(parentComponent, "ERROR", e.getLocalizedMessage());
+    }
+
     public static void showErrorMessage( Component parentComponent, String title, String message ) {
         if (title == null) {
             title = "ERROR";
@@ -679,4 +685,22 @@ public class GuiUtilities {
         return (File[]) runnable.getReturnValue();
     }
 
+    public static class ShpFileFilter extends FileFilter {
+
+        @Override
+        public String getDescription() {
+            return "(*.shp) Shape files";
+        }
+
+        @Override
+        public boolean accept( File file ) {
+            if (file.isDirectory())
+                return true;
+            else if (FilenameUtils.getExtension(file.getName().toLowerCase()).endsWith("shp")) {
+                return true;
+            } else
+                return false;
+        }
+
+    }
 }

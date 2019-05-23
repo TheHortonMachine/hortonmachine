@@ -21,26 +21,27 @@ import java.util.concurrent.ExecutionException;
 
 import javax.swing.SwingWorker;
 
-import org.hortonmachine.gui.utils.executor.HMExecutor.Update;
+import org.hortonmachine.gears.ui.progress.IProgressPrinter;
+import org.hortonmachine.gears.ui.progress.ProgressUpdate;
 
 /**
  * An swingworker executor helper to work with a progress printer.
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public abstract class HMExecutor extends SwingWorker<Void, Update> {
+public abstract class HMExecutor extends SwingWorker<Void, ProgressUpdate> implements IProgressPrinter {
     protected int w = 600;
     protected int h = 120;
 
-    protected ProgressPrinter progress;
+    protected IProgressPrinter progress;
 
-    public void setProgressPrinter( ProgressPrinter progress ) {
+    public void setProgressPrinter( IProgressPrinter progress ) {
         this.progress = progress;
     }
 
     @Override
-    protected void process( List<Update> chunks ) {
-        Update update = chunks.get(chunks.size() - 1);
+    protected void process( List<ProgressUpdate> chunks ) {
+        ProgressUpdate update = chunks.get(chunks.size() - 1);
         this.progress.publish(update);
     }
 
@@ -49,46 +50,25 @@ public abstract class HMExecutor extends SwingWorker<Void, Update> {
         try {
             backGroundWork();
         } catch (Exception e) {
-            publish(new Update(e.getMessage()));
+            publish(new ProgressUpdate(e.getMessage()));
         }
         return null;
     }
 
     public abstract void backGroundWork() throws Exception;
 
+    public void publish( ProgressUpdate update ) {
+        super.publish(update);
+    }
+
     @Override
-    protected void done() {
+    public void done() {
         try {
             get();
             progress.done();
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Class to hold update messages and work done.
-     */
-    public static class Update {
-        public String errorMessage;
-        public String updateString;
-        public int workDone;
-        public Update( String updateString, int workDone ) {
-            this.updateString = updateString;
-            this.workDone = workDone;
-        }
-        public Update( String errorMessage ) {
-            this.errorMessage = errorMessage;
-        }
-    }
-
-    /**
-     * Class to help printing to console or gui.
-     */
-    public interface ProgressPrinter {
-        void publish( Update update );
-
-        void done();
     }
 
 }

@@ -19,6 +19,9 @@ package org.hortonmachine.gui.utils.executor;
 
 import java.io.PrintStream;
 
+import org.hortonmachine.gears.ui.progress.IProgressPrinter;
+import org.hortonmachine.gears.ui.progress.ProgressUpdate;
+
 /**
  * Executor swingworker with an {@link PrintStream} that allows for messages.
  * 
@@ -30,9 +33,9 @@ public abstract class ExecutorProgressPrintStream extends HMExecutor {
 
     public ExecutorProgressPrintStream( PrintStream ps, int max ) {
         _ps = ps;
-        progress = new ProgressPrinter(){
+        progress = new IProgressPrinter(){
             @Override
-            public void publish( Update update ) {
+            public void publish( ProgressUpdate update ) {
                 if (update.errorMessage != null) {
                     System.err.println(update.errorMessage);
                     _ps = null;

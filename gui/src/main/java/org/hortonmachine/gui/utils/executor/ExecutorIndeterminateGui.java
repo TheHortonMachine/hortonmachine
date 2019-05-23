@@ -25,6 +25,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
+import org.hortonmachine.gears.ui.progress.IProgressPrinter;
+import org.hortonmachine.gears.ui.progress.ProgressUpdate;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.ImageCache;
 
@@ -54,9 +56,9 @@ public abstract class ExecutorIndeterminateGui extends HMExecutor {
         frame.setIconImage(ImageCache.getBuffered(ImageCache.HORTONMACHINE_FRAME_ICON));
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-        progress = new ProgressPrinter(){
+        progress = new IProgressPrinter(){
             @Override
-            public void publish( Update update ) {
+            public void publish( ProgressUpdate update ) {
                 if (update.errorMessage != null) {
                     frame.dispose();
                     GuiUtilities.showErrorMessage(panel, update.errorMessage);

@@ -38,6 +38,7 @@ import org.geotools.map.event.MapLayerListEvent;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.geotools.swing.JMapFrame;
+import org.geotools.swing.JMapFrame.Tool;
 import org.geotools.tile.TileService;
 import org.geotools.tile.impl.osm.OSMService;
 import org.geotools.tile.util.TileLayer;
@@ -94,7 +95,7 @@ public class HMMapframe extends JMapFrame {
         int index = content.layers().indexOf(layer);
         content.moveLayer(index, 0);
         getMapPane().layerMoved(new MapLayerListEvent(content, layer, 0));
-        
+
     }
 
     public void setLayer( Layer layer ) {
@@ -112,28 +113,8 @@ public class HMMapframe extends JMapFrame {
     }
 
     public static HMMapframe openFolder( File folder ) {
-        ImageIcon icon = new ImageIcon(ImageCache.getInstance().getBufferedImage(ImageCache.HORTONMACHINE_FRAME_ICON));
-        HMMapframe mapFrame = new HMMapframe("HM Viewer of folder: " + folder.getAbsolutePath());
-        mapFrame.setIconImage(icon.getImage());
-        mapFrame.enableToolBar(true);
-        mapFrame.enableStatusBar(true);
-        mapFrame.enableLayerTable(true);
-        mapFrame.enableTool(Tool.PAN, Tool.ZOOM, Tool.RESET, Tool.INFO);
-        mapFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        mapFrame.setSize(1200, 900);
-        mapFrame.setVisible(true);
-
-        JToolBar toolBar = mapFrame.getToolBar();
-        toolBar.add(new AbstractAction("Add OSM background", ImageCache.getInstance().getImage(ImageCache.GLOBE)){
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                String baseURL = "http://tile.openstreetmap.org/";
-                TileService service = new OSMService("OpenStreetMap", baseURL);
-                TileLayer layer = new TileLayer(service);
-                layer.setTitle("OpenStreetMap");
-                mapFrame.addLayerBottom(layer);
-            }
-        });
+        String title = "HM Viewer of folder: " + folder.getAbsolutePath();
+        HMMapframe mapFrame = getBaseFrame(title, false);
 
         File[] rasterFiles = folder.listFiles(new FilenameFilter(){
             @Override
@@ -188,6 +169,46 @@ public class HMMapframe extends JMapFrame {
         }
 
         return mapFrame;
+    }
+
+    private static HMMapframe getBaseFrame( String title, boolean exitOnClose ) {
+        ImageIcon icon = new ImageIcon(ImageCache.getInstance().getBufferedImage(ImageCache.HORTONMACHINE_FRAME_ICON));
+        HMMapframe mapFrame = new HMMapframe(title);
+        mapFrame.setIconImage(icon.getImage());
+        mapFrame.enableToolBar(true);
+        mapFrame.enableStatusBar(true);
+        mapFrame.enableLayerTable(true);
+        mapFrame.enableTool(Tool.PAN, Tool.ZOOM, Tool.RESET, Tool.INFO);
+        if (exitOnClose) {
+            mapFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        } else {
+            mapFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        }
+        mapFrame.setSize(1200, 900);
+        mapFrame.setVisible(true);
+
+        JToolBar toolBar = mapFrame.getToolBar();
+        toolBar.add(new AbstractAction("Add OSM background", ImageCache.getInstance().getImage(ImageCache.GLOBE)){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                String baseURL = "http://tile.openstreetmap.org/";
+                TileService service = new OSMService("OpenStreetMap", baseURL);
+                TileLayer layer = new TileLayer(service);
+                layer.setTitle("OpenStreetMap");
+                mapFrame.addLayerBottom(layer);
+            }
+        });
+        return mapFrame;
+    }
+
+    /**
+     * Opens a new frame to which layers can be added for fast visualization of data.
+     * @param exitOnClose 
+     * 
+     * @return the map frame.
+     */
+    public static HMMapframe openFrame( boolean exitOnClose ) {
+        return getBaseFrame("HM Viewer", exitOnClose);
     }
 
     public static void main( String[] args ) {

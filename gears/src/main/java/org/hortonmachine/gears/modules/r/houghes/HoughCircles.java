@@ -71,7 +71,7 @@ public class HoughCircles {
 
             BufferedImage src = ImageIO.read(new File(inImage));
             HoughCircles h = new HoughCircles(src, 10, 40, 1, 300);
-            h.run();
+            h.run(null);
             ImageIO.write(src, "png", new File(outImage));
         }
 
@@ -99,7 +99,7 @@ public class HoughCircles {
         // }
     }
 
-    public void run() {
+    public void run( BufferedImage circleImage ) {
         offx = 0;
         offy = 0;
         width = raster.getWidth();
@@ -135,7 +135,12 @@ public class HoughCircles {
         Coordinate[] centerPoints = getCenterPoints(houghValues, maxCircles);
         // drawCircles(houghValues, circlespixels);
 
-        Graphics2D g2d = (Graphics2D) raster.getGraphics();
+        Graphics2D g2d;
+        if (circleImage != null) {
+            g2d = (Graphics2D) circleImage.getGraphics();
+        } else {
+            g2d = (Graphics2D) raster.getGraphics();
+        }
         g2d.setColor(Color.red);
         g2d.setStroke(new BasicStroke(2));
         for( Coordinate point : centerPoints ) {
@@ -146,17 +151,17 @@ public class HoughCircles {
 
     /** The parametric equation for a circle centered at (a,b) with
         radius r is:
-
+    
     a = x - r*cos(theta)
     b = y - r*sin(theta)
-
+    
     In order to speed calculations, we first construct a lookup
     table (lut) containing the rcos(theta) and rsin(theta) values, for
     theta varying from 0 to 2*PI with increments equal to
     1/8*r. As of now, a fixed increment is being used for all
     different radius (1/8*radiusMin). This should be corrected in
     the future.
-
+    
     Return value = Number of angles for each radius
        
     */
@@ -308,7 +313,7 @@ public class HoughCircles {
     }
 
     /** Search for a fixed number of circles.
-
+    
     @param maxCircles The number of circles that should be found.  
      * @param houghValues 
     */
@@ -345,7 +350,7 @@ public class HoughCircles {
     }
 
     /** Search circles having values in the hough space higher than a threshold
-
+    
     @param threshold The threshold used to select the higher point of Hough Space
     */
     // private void getCenterPointsByThreshold( int threshold ) {
