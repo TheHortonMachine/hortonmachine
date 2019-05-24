@@ -141,7 +141,7 @@ public class Scatter implements IChart {
                     // data
                     PlotOrientation.VERTICAL,
                     // orientation
-                    false,
+                    true,
                     // include legend
                     true,
                     // tooltips?

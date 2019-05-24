@@ -57,7 +57,7 @@ public class PlotFrame extends ApplicationFrame {
         pack();
         RefineryUtilities.centerFrameOnScreen(this);
         setVisible(true);
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
     }
 
 }

@@ -29,5 +29,4 @@ public interface IChart {
     JFreeChart getChart();
 
     String getTitle();
-
 }

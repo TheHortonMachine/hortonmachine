@@ -17,9 +17,13 @@
  */
 package geoscript.hm;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
@@ -27,12 +31,16 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.postgis.PostgisDb;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteThreadsafeDb;
+import org.hortonmachine.gears.utils.chart.Scatter;
+import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.interpolation.LeastSquaresInterpolator;
 import org.hortonmachine.gears.utils.math.interpolation.PolynomialInterpolator;
 import org.hortonmachine.gears.utils.sorting.OddEvenSortAlgorithm;
+import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.OmsMatrixCharter;
+import org.jfree.chart.ChartPanel;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 
@@ -78,6 +86,81 @@ public class HM {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void scatterPlot( List<List<List<Double>>> data ) {
+        scatterPlot(null, data);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void scatterPlot( Map<String, Object> options, List<List<List<Double>>> data ) {
+        String title = "";
+        String xLabel = "x";
+        String yLabel = "y";
+        List<String> series = null;
+        List<String> colors = null;
+        boolean doLines = false;
+
+        if (options != null) {
+            Object object = options.get("title");
+            if (object instanceof String) {
+                title = (String) object;
+            }
+            object = options.get("xlabel");
+            if (object instanceof String) {
+                xLabel = (String) object;
+            }
+            object = options.get("ylabel");
+            if (object instanceof String) {
+                yLabel = (String) object;
+            }
+            object = options.get("series");
+            if (object instanceof List) {
+                series = (List) object;
+            }
+            object = options.get("colors");
+            if (object instanceof List) {
+                colors = (List) object;
+            }
+            object = options.get("dolines");
+            if (object instanceof Boolean) {
+                doLines = (Boolean) object;
+            }
+        }
+
+        Scatter scatterChart = new Scatter(title);
+        scatterChart.setShowLines(doLines);
+        scatterChart.setXLabel(xLabel);
+        scatterChart.setYLabel(yLabel);
+
+        int index = 0;
+        for( List<List<Double>> seriesData : data ) {
+            String name = "data " + (index + 1);
+            if (series != null)
+                name = series.get(index);
+            double[] x = new double[seriesData.size()];
+            double[] y = new double[seriesData.size()];
+            for( int i = 0; i < seriesData.size(); i++ ) {
+                List<Double> pair = seriesData.get(i);
+                x[i] = pair.get(0);
+                y[i] = pair.get(1);
+            }
+            scatterChart.addSeries(name, x, y);
+            index++;
+        }
+
+        if (colors != null) {
+            List<Color> colorsList = colors.stream().map(cStr -> {
+                return ColorUtilities.fromHex(cStr);
+            }).collect(Collectors.toList());
+            scatterChart.setColors(colorsList.toArray(new Color[0]));
+        }
+
+        ChartPanel chartPanel = new ChartPanel(scatterChart.getChart(), true);
+        Dimension preferredSize = new Dimension(1600, 1000);
+        chartPanel.setPreferredSize(preferredSize);
+
+        GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
     }
 
     public static LineString regressionLS( double[][] dataset ) {
