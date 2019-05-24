@@ -48,6 +48,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -842,7 +843,7 @@ public class OmsGeopaparazzi4Converter extends HMModel {
 
                 Scatter scatterProfile = new Scatter("Profile " + logName);
                 scatterProfile.addSeries("profile", xProfile, yProfile);
-                scatterProfile.setShowLines(true);
+                scatterProfile.setShowLines(Arrays.asList(true));
                 scatterProfile.setXLabel("progressive distance [m]");
                 scatterProfile.setYLabel("elevation [m]");
                 BufferedImage imageProfile = scatterProfile.getImage(1000, 800);
@@ -850,7 +851,7 @@ public class OmsGeopaparazzi4Converter extends HMModel {
 
                 Scatter scatterPlanim = new Scatter("Planimetry " + logName);
                 scatterPlanim.addSeries("planimetry", xPlanim, yPlanim);
-                scatterPlanim.setShowLines(false);
+                scatterPlanim.setShowLines(Arrays.asList(false));
                 scatterPlanim.setXLabel("longitude");
                 scatterPlanim.setYLabel("latitude");
                 BufferedImage imagePlanim = scatterPlanim.getImage(1000, 800);

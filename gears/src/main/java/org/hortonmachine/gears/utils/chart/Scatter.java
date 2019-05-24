@@ -21,6 +21,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -50,8 +51,8 @@ public class Scatter implements IChart {
     protected XYSeriesCollection dataset;
     protected boolean xLog = false;
     protected boolean yLog = false;
-    protected boolean showLines = true;
-    protected boolean showShapes = true;
+    protected List<Boolean> showLines;
+    protected List<Boolean> showShapes;
     protected JFreeChart chart;
     protected String title;
     private Color[] colors;
@@ -108,11 +109,11 @@ public class Scatter implements IChart {
         this.yLog = yLog;
     }
 
-    public void setShowLines( boolean showLines ) {
+    public void setShowLines( List<Boolean> showLines ) {
         this.showLines = showLines;
     }
 
-    public void setShowShapes( boolean showShapes ) {
+    public void setShowShapes( List<Boolean> showShapes ) {
         this.showShapes = showShapes;
     }
 
@@ -186,10 +187,15 @@ public class Scatter implements IChart {
         XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
         int seriesCount = plot.getSeriesCount();
         for( int i = 0; i < seriesCount; i++ ) {
-            renderer.setSeriesShapesVisible(i, showShapes);
-            renderer.setSeriesLinesVisible(i, showLines);
+            if (showShapes != null) {
+                renderer.setSeriesShapesVisible(i, showShapes.get(i));
+            }
+            if (showLines != null) {
+                renderer.setSeriesLinesVisible(i, showLines.get(i));
+            }
         }
     }
+    
     public void setXRange( double min, double max ) {
         XYPlot plot = (XYPlot) getChart().getPlot();
         ValueAxis domainAxis = plot.getDomainAxis();

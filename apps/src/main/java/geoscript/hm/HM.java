@@ -20,8 +20,9 @@ package geoscript.hm;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,16 +34,13 @@ import org.hortonmachine.dbs.postgis.PostgisDb;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteThreadsafeDb;
 import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.hortonmachine.gears.utils.math.interpolation.LeastSquaresInterpolator;
-import org.hortonmachine.gears.utils.math.interpolation.PolynomialInterpolator;
-import org.hortonmachine.gears.utils.sorting.OddEvenSortAlgorithm;
+import org.hortonmachine.gears.utils.math.regressions.LogTrendLine;
+import org.hortonmachine.gears.utils.math.regressions.PolyTrendLine;
+import org.hortonmachine.gears.utils.math.regressions.RegressionLine;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.OmsMatrixCharter;
 import org.jfree.chart.ChartPanel;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.LineString;
 
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
@@ -99,7 +97,8 @@ public class HM {
         String yLabel = "y";
         List<String> series = null;
         List<String> colors = null;
-        boolean doLines = false;
+        List<Boolean> doLines = null;
+        List<Boolean> doShapes = null;
 
         if (options != null) {
             Object object = options.get("title");
@@ -123,13 +122,20 @@ public class HM {
                 colors = (List) object;
             }
             object = options.get("dolines");
-            if (object instanceof Boolean) {
-                doLines = (Boolean) object;
+            if (object instanceof List) {
+                doLines = (List) object;
+            }
+            object = options.get("doshapes");
+            if (object instanceof List) {
+                doShapes = (List) object;
             }
         }
 
         Scatter scatterChart = new Scatter(title);
-        scatterChart.setShowLines(doLines);
+        if (doLines != null)
+            scatterChart.setShowLines(doLines);
+        if (doShapes != null)
+            scatterChart.setShowShapes(doShapes);
         scatterChart.setXLabel(xLabel);
         scatterChart.setYLabel(yLabel);
 
@@ -163,98 +169,32 @@ public class HM {
         GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
     }
 
-    public static LineString regressionLS( double[][] dataset ) {
-        return regressionLS(toCoordList(dataset));
+    public static RegressionLine logRegression( Number a, Number b, List<List<Double>> data, List<List<Double>> result ) {
+        RegressionLine t = new LogTrendLine(a.doubleValue(), b.doubleValue());
+        return processregression(data, result, t);
     }
 
-    private static List<Coordinate> toCoordList( double[][] dataset ) {
-        List<Coordinate> cDataset = new ArrayList<>();
-        for( double[] ds : dataset ) {
-            cDataset.add(new Coordinate(ds[0], ds[1]));
-        }
-        return cDataset;
+    public static RegressionLine polynomialRegression( Number degree, List<List<Double>> data, List<List<Double>> result ) {
+        RegressionLine t = new PolyTrendLine(degree.intValue());
+        return processregression(data, result, t);
     }
 
-    public static LineString regressionLS( List< ? > dataset ) {
-        List<Double> x = new ArrayList<>();
-        List<Double> y = new ArrayList<>();
-        double minX = Double.POSITIVE_INFINITY;
-        double maxX = Double.NEGATIVE_INFINITY;
-        for( Object cObj : dataset ) {
-            if (cObj instanceof Coordinate) {
-                Coordinate c = (Coordinate) cObj;
-                x.add(c.x);
-                y.add(c.y);
-                maxX = Math.max(maxX, c.x);
-                minX = Math.min(minX, c.x);
-            } else if (cObj instanceof double[]) {
-                double[] c = (double[]) cObj;
-                x.add(c[0]);
-                y.add(c[1]);
-                maxX = Math.max(maxX, c[0]);
-                minX = Math.min(minX, c[0]);
-            } else if (cObj instanceof List) {
-                List c = (List) cObj;
-                double xv = ((Number) c.get(0)).doubleValue();
-                double yv = ((Number) c.get(1)).doubleValue();
-                x.add(xv);
-                y.add(yv);
-                maxX = Math.max(maxX, xv);
-                minX = Math.min(minX, xv);
-            }
+    private static RegressionLine processregression( List<List<Double>> data, List<List<Double>> result,
+            RegressionLine function ) {
+        double[] x = new double[data.size()];
+        double[] y = new double[data.size()];
+        for( int i = 0; i < data.size(); i++ ) {
+            List<Double> pair = data.get(i);
+            x[i] = pair.get(0);
+            y[i] = pair.get(1);
         }
-        LeastSquaresInterpolator lsInt = new LeastSquaresInterpolator(x, y);
-        double y1 = lsInt.getInterpolated(minX);
-        double y2 = lsInt.getInterpolated(maxX);
-        return GeometryUtilities.gf().createLineString(new Coordinate[]{new Coordinate(minX, y1), new Coordinate(maxX, y2)});
-    }
+        function.setValues(y, x);
 
-    public static LineString interpolationPoly( double[][] dataset, double interval ) {
-        return interpolationPoly(toCoordList(dataset), interval);
-    }
-
-    public static LineString interpolationPoly( List< ? > dataset, double interval ) {
-        List<Double> x = new ArrayList<>();
-        List<Double> y = new ArrayList<>();
-        double minX = Double.POSITIVE_INFINITY;
-        double maxX = Double.NEGATIVE_INFINITY;
-        for( Object cObj : dataset ) {
-            if (cObj instanceof Coordinate) {
-                Coordinate c = (Coordinate) cObj;
-                x.add(c.x);
-                y.add(c.y);
-                maxX = Math.max(maxX, c.x);
-                minX = Math.min(minX, c.x);
-            } else if (cObj instanceof double[]) {
-                double[] c = (double[]) cObj;
-                x.add(c[0]);
-                y.add(c[1]);
-                maxX = Math.max(maxX, c[0]);
-                minX = Math.min(minX, c[0]);
-            } else if (cObj instanceof List) {
-                List c = (List) cObj;
-                double xv = ((Number) c.get(0)).doubleValue();
-                double yv = ((Number) c.get(1)).doubleValue();
-                x.add(xv);
-                y.add(yv);
-                maxX = Math.max(maxX, xv);
-                minX = Math.min(minX, xv);
-            }
+        for( int i = 0; i < x.length; i++ ) {
+            double predY = function.predict(x[i]);
+            result.add(Arrays.asList(x[i], predY));
         }
-
-        OddEvenSortAlgorithm.oddEvenSort(x, y);
-
-        PolynomialInterpolator polyInt = new PolynomialInterpolator(x, y);
-
-        List<Coordinate> coords = new ArrayList<>();
-        double runningX = minX;
-        while( runningX <= maxX ) {
-            double interpY = polyInt.getInterpolated(runningX);
-            Coordinate c = new Coordinate(runningX, interpY);
-            coords.add(c);
-            runningX += interval;
-        }
-        return GeometryUtilities.gf().createLineString(coords.toArray(new Coordinate[coords.size()]));
+        return function;
     }
 
     public static ASpatialDb connectPostgis( String host, int port, String database, String user, String pwd ) throws Exception {
