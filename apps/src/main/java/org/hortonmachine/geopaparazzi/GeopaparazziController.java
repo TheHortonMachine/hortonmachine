@@ -40,6 +40,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.HashMap;
@@ -833,7 +834,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
                 Scatter scatterProfile = new Scatter("Profile " + logName);
                 scatterProfile.addSeries("profile", xProfile, yProfile);
-                scatterProfile.setShowLines(true);
+                scatterProfile.setShowLines(Arrays.asList(true));
                 String colorQuery = "select " //
                         + GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_COLOR.getFieldName() + " from " + TABLE_GPSLOG_PROPERTIES
                         + " where " + //

@@ -37,6 +37,8 @@ public class CategoryHistogram implements IChart {
     private DefaultCategoryDataset dataset;
     private String title;
     private JFreeChart chart;
+    private String yLabel = "Value";
+    private String xLabel = "Category";
 
     public CategoryHistogram( String[] categories, double[] values ) {
         this("Histogram", categories, values);
@@ -58,15 +60,24 @@ public class CategoryHistogram implements IChart {
             dataset.addValue(values[i], "", categories[i]);
         }
     }
+    
+
+    public void setXLabel( String xLabel ) {
+        this.xLabel = xLabel;
+    }
+
+    public void setYLabel( String yLabel ) {
+        this.yLabel = yLabel;
+    }
 
     public JFreeChart getChart() {
         if (chart == null) {
             createDataset();
             chart = ChartFactory.createBarChart(title,
             // chart title
-                    "Category",
+                    xLabel,
                     // domain axis label
-                    "Value",
+                    yLabel,
                     // range axis label
                     dataset,
                     // data

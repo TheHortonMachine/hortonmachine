@@ -20,8 +20,6 @@ package geoscript.hm;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +30,7 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.postgis.PostgisDb;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteThreadsafeDb;
+import org.hortonmachine.gears.utils.chart.CategoryHistogram;
 import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gears.utils.math.regressions.LogTrendLine;
@@ -86,6 +85,51 @@ public class HM {
         }
     }
 
+    public static void histogram( Map<String, Object> options, List<String> categories, List<Number> values ) {
+        String title = "";
+        String xLabel = "x";
+        String yLabel = "y";
+        int width = 1600;
+        int height = 1000;
+        if (options != null) {
+            Object object = options.get("title");
+            if (object instanceof String) {
+                title = (String) object;
+            }
+            object = options.get("xlabel");
+            if (object instanceof String) {
+                xLabel = (String) object;
+            }
+            object = options.get("ylabel");
+            if (object instanceof String) {
+                yLabel = (String) object;
+            }
+            object = options.get("width");
+            if (object instanceof Number) {
+                width = ((Number) object).intValue();
+            }
+            object = options.get("height");
+            if (object instanceof Number) {
+                height = ((Number) object).intValue();
+            }
+        }
+
+        double[] valuesDouble = new double[values.size()];
+        for( int i = 0; i < valuesDouble.length; i++ ) {
+            valuesDouble[i] = values.get(i).doubleValue();
+        }
+        CategoryHistogram categoryHistogram = new CategoryHistogram(title, categories.toArray(new String[categories.size()]),
+                valuesDouble);
+        categoryHistogram.setXLabel(xLabel);
+        categoryHistogram.setYLabel(yLabel);
+        ChartPanel chartPanel = new ChartPanel(categoryHistogram.getChart(), true);
+        Dimension preferredSize = new Dimension(width, height);
+        chartPanel.setPreferredSize(preferredSize);
+
+        GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
+
+    }
+
     public static void scatterPlot( List<List<List<Double>>> data ) {
         scatterPlot(null, data);
     }
@@ -99,6 +143,8 @@ public class HM {
         List<String> colors = null;
         List<Boolean> doLines = null;
         List<Boolean> doShapes = null;
+        int width = 1600;
+        int height = 1000;
 
         if (options != null) {
             Object object = options.get("title");
@@ -128,6 +174,14 @@ public class HM {
             object = options.get("doshapes");
             if (object instanceof List) {
                 doShapes = (List) object;
+            }
+            object = options.get("width");
+            if (object instanceof Number) {
+                width = ((Number) object).intValue();
+            }
+            object = options.get("height");
+            if (object instanceof Number) {
+                height = ((Number) object).intValue();
             }
         }
 
@@ -163,14 +217,14 @@ public class HM {
         }
 
         ChartPanel chartPanel = new ChartPanel(scatterChart.getChart(), true);
-        Dimension preferredSize = new Dimension(1600, 1000);
+        Dimension preferredSize = new Dimension(width, height);
         chartPanel.setPreferredSize(preferredSize);
 
         GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
     }
 
-    public static RegressionLine logRegression( Number a, Number b, List<List<Double>> data, List<List<Double>> result ) {
-        RegressionLine t = new LogTrendLine(a.doubleValue(), b.doubleValue());
+    public static RegressionLine logRegression( List<List<Double>> data, List<List<Double>> result ) {
+        RegressionLine t = new LogTrendLine();
         return processregression(data, result, t);
     }
 

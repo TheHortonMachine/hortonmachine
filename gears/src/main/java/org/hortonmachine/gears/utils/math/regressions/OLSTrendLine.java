@@ -11,7 +11,8 @@ import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
  */
 public abstract class OLSTrendLine implements RegressionLine {
 
-    RealMatrix coef = null; // will hold prediction coefs once we get values
+    private RealMatrix coef = null; // will hold prediction coefs once we get values
+    private OLSMultipleLinearRegression ols;
 
     protected abstract double[] xVector( double x ); // create vector of values from x
     protected abstract boolean logY(); // set true to predict log of y (note: y must be positive)
@@ -34,11 +35,14 @@ public abstract class OLSTrendLine implements RegressionLine {
                 y[i] = Math.log(y[i]);
             }
         }
-        OLSMultipleLinearRegression ols = new OLSMultipleLinearRegression();
+        ols = new OLSMultipleLinearRegression();
         ols.setNoIntercept(true); // let the implementation include a constant in xVector if desired
         ols.newSampleData(y, xData); // provide the data to the model
-        coef = MatrixUtils.createColumnRealMatrix(ols.estimateRegressionParameters()); // get our
-                                                                                       // coefs
+        coef = MatrixUtils.createColumnRealMatrix(ols.estimateRegressionParameters()); 
+    }
+
+    public double[] getRegressionParameters() {
+        return ols.estimateRegressionParameters();
     }
 
     @Override

@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1344,7 +1345,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 } else {
                                     if (scatterChart == null) {
                                         scatterChart = new Scatter("");
-                                        scatterChart.setShowLines(true);
+                                        scatterChart.setShowLines(Arrays.asList(true));
                                         scatterChart.setXLabel("");
                                         scatterChart.setYLabel("");
                                     }
