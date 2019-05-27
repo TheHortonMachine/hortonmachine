@@ -27,17 +27,31 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.imageio.ImageIO;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.geometry.jts.ReferencedEnvelope3D;
+import org.hortonmachine.gears.io.las.ALasDataManager;
+import org.hortonmachine.gears.io.las.core.LasRecord;
+import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.chart.Scatter;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.gears.utils.math.NumericsUtilities;
+import org.jfree.data.xy.XYSeries;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Polygon;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -50,27 +64,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.geometry.jts.ReferencedEnvelope3D;
-import org.hortonmachine.gears.io.las.ALasDataManager;
-import org.hortonmachine.gears.io.las.core.LasRecord;
-import org.hortonmachine.gears.io.las.databases.LasSource;
-import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.chart.Scatter;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.hortonmachine.gears.utils.math.NumericsUtilities;
-import org.jfree.data.xy.XYSeries;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Polygon;
 
 @Description("Creates vertical slices of a las file. The resulting raster will have the slice height value as valid pixel value.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
@@ -228,7 +221,7 @@ public class LasSlicer extends HMModel {
                         pm.message("Generate chart with points: " + size);
                         Scatter scatterPlanim = new Scatter("Slice " + z);
                         scatterPlanim.addSeries(xySeries);
-                        scatterPlanim.setShowLines(false);
+                        scatterPlanim.setShowLines(Arrays.asList(false));
                         scatterPlanim.setXLabel("longitude");
                         scatterPlanim.setYLabel("latitude");
                         scatterPlanim.setXRange(minX, maxX);
