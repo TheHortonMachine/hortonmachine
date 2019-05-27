@@ -181,7 +181,7 @@ public class HM {
 
     }
 
-    public static void scatterPlot( List<List<List<Double>>> data ) {
+    public static void scatterPlot( List<List<List<Number>>> data ) {
         scatterPlot(null, data);
     }
 
