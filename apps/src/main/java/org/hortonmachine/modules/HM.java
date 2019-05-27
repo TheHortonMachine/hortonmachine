@@ -33,6 +33,8 @@ import org.hortonmachine.dbs.spatialite.hm.SpatialiteThreadsafeDb;
 import org.hortonmachine.gears.utils.chart.CategoryHistogram;
 import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
+import org.hortonmachine.gears.utils.colors.EColorTables;
+import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.math.regressions.LogTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.PolyTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.RegressionLine;
@@ -41,6 +43,8 @@ import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.OmsMatrixCharter;
 import org.jfree.chart.ChartPanel;
 
+import geoscript.style.Style;
+import geoscript.style.io.SLDReader;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 
@@ -130,12 +134,59 @@ public class HM {
 
     }
 
+    public static void histogram( Map<String, Object> options, List<List<Number>> values ) {
+        String title = "";
+        String xLabel = "x";
+        String yLabel = "y";
+        int width = 1600;
+        int height = 1000;
+        if (options != null) {
+            Object object = options.get("title");
+            if (object instanceof String) {
+                title = (String) object;
+            }
+            object = options.get("xlabel");
+            if (object instanceof String) {
+                xLabel = (String) object;
+            }
+            object = options.get("ylabel");
+            if (object instanceof String) {
+                yLabel = (String) object;
+            }
+            object = options.get("width");
+            if (object instanceof Number) {
+                width = ((Number) object).intValue();
+            }
+            object = options.get("height");
+            if (object instanceof Number) {
+                height = ((Number) object).intValue();
+            }
+        }
+
+        String[] categories = new String[values.size()];
+        double[] valuesDouble = new double[values.size()];
+        for( int i = 0; i < valuesDouble.length; i++ ) {
+            List<Number> pair = values.get(i);
+            categories[i] = pair.get(0).toString();
+            valuesDouble[i] = pair.get(1).doubleValue();
+        }
+        CategoryHistogram categoryHistogram = new CategoryHistogram(title, categories, valuesDouble);
+        categoryHistogram.setXLabel(xLabel);
+        categoryHistogram.setYLabel(yLabel);
+        ChartPanel chartPanel = new ChartPanel(categoryHistogram.getChart(), true);
+        Dimension preferredSize = new Dimension(width, height);
+        chartPanel.setPreferredSize(preferredSize);
+
+        GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
+
+    }
+
     public static void scatterPlot( List<List<List<Double>>> data ) {
         scatterPlot(null, data);
     }
 
     @SuppressWarnings("unchecked")
-    public static void scatterPlot( Map<String, Object> options, List<List<List<Double>>> data ) {
+    public static void scatterPlot( Map<String, Object> options, List<List<List<Number>>> data ) {
         String title = "";
         String xLabel = "x";
         String yLabel = "y";
@@ -194,16 +245,16 @@ public class HM {
         scatterChart.setYLabel(yLabel);
 
         int index = 0;
-        for( List<List<Double>> seriesData : data ) {
+        for( List<List<Number>> seriesData : data ) {
             String name = "data " + (index + 1);
             if (series != null)
                 name = series.get(index);
             double[] x = new double[seriesData.size()];
             double[] y = new double[seriesData.size()];
             for( int i = 0; i < seriesData.size(); i++ ) {
-                List<Double> pair = seriesData.get(i);
-                x[i] = pair.get(0);
-                y[i] = pair.get(1);
+                List<Number> pair = seriesData.get(i);
+                x[i] = pair.get(0).doubleValue();
+                y[i] = pair.get(1).doubleValue();
             }
             scatterChart.addSeries(name, x, y);
             index++;
@@ -281,6 +332,19 @@ public class HM {
             spatialDb.initSpatialMetadata(null);
         }
         return spatialDb;
+    }
+
+    public static String printColorTables() {
+        StringBuilder sb = new StringBuilder();
+        for( EColorTables table : EColorTables.values() ) {
+            sb.append(",").append(table.name());
+        }
+        return sb.substring(1);
+    }
+
+    public static Style styleForColorTable( String tableName, double min, double max, double opacity ) throws Exception {
+        return new SLDReader().read(
+                RasterStyleUtilities.styleToString(RasterStyleUtilities.createStyleForColortable(tableName, min, max, opacity)));
     }
 
 }
