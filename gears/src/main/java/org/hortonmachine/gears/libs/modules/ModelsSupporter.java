@@ -297,12 +297,6 @@ public class ModelsSupporter {
             sb.append("Module status: " + ModelsSupporter.getStatusString(status.value())).append(NEWLINE);
         }
 
-        // general info: script name
-        Name name = moduleClass.getAnnotation(Name.class);
-        if (name != null) {
-            String nameStr = name.value();
-            sb.append("Name to use in an OMS3 script: " + nameStr + "").append(NEWLINE);
-        }
         // general info: authors
         Author author = moduleClass.getAnnotation(Author.class);
         if (author != null) {
@@ -377,8 +371,8 @@ public class ModelsSupporter {
         StringBuilder sb = new StringBuilder();
         String newName = name;
         String varName = name.toLowerCase();
-        sb.append(newName).append(" ").append(varName).append(" = new ");
-        sb.append(newName).append("();\n");
+        sb.append("def ").append(varName).append(" = new ");
+        sb.append(newName).append("()\n");
         java.lang.reflect.Field[] fields = class1.getFields();
         for( java.lang.reflect.Field field : fields ) {
             String fname = field.getName();
@@ -391,12 +385,12 @@ public class ModelsSupporter {
                 continue;
             }
             if (cl.isAssignableFrom(String.class)) {
-                sb.append(varName).append(".").append(fname).append(" = \"\";\n");
+                sb.append(varName).append(".").append(fname).append(" = \"\"\n");
             } else {
-                sb.append(varName).append(".").append(fname).append(" = ?;\n");
+                sb.append(varName).append(".").append(fname).append(" = ?\n");
             }
         }
-        sb.append(varName).append(".process();\n");
+        sb.append(varName).append(".process()\n");
 
         // outputs
         // for( java.lang.reflect.Field field : fields ) {
@@ -407,9 +401,9 @@ public class ModelsSupporter {
         // continue;
         // }
         // if (cl.isAssignableFrom(org.geotools.coverage.grid.GridCoverage2D.class)) {
-        // sb.append("dumpRaster(").append(varName).append(".").append(fname).append(", ").append(fname).append(");\n");
+        // sb.append("dumpRaster(").append(varName).append(".").append(fname).append(", ").append(fname).append(")\n");
         // } else if (cl.isAssignableFrom(org.geotools.data.simple.SimpleFeatureCollection.class)) {
-        // sb.append("dumpVector(").append(varName).append(".").append(fname).append(", ").append(fname).append(");\n");
+        // sb.append("dumpVector(").append(varName).append(".").append(fname).append(", ").append(fname).append(")\n");
         // } else {
         // System.err.println("Unrecognised: " + fname);
         // }
