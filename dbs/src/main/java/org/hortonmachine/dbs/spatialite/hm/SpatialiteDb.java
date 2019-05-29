@@ -57,8 +57,6 @@ import org.locationtech.jts.geom.Geometry;
 public class SpatialiteDb extends ASpatialDb {
     private SqliteDb sqliteDb;
 
-    private IHMConnection mConn;
-
     public SpatialiteDb() {
         sqliteDb = new SqliteDb();
     }
@@ -91,7 +89,7 @@ public class SpatialiteDb extends ASpatialDb {
         sqliteDb.getConnectionData().dbType = getType().getCode();
 
         this.mDbPath = sqliteDb.getDatabasePath();
-        mConn = sqliteDb.getConnectionInternal();
+        IHMConnection mConn = sqliteDb.getConnectionInternal();
         try (IHMStatement stmt = mConn.createStatement()) {
             // set timeout to 30 sec.
             stmt.setQueryTimeout(30);
@@ -172,7 +170,7 @@ public class SpatialiteDb extends ASpatialDb {
 
     @Override
     protected IHMConnection getConnectionInternal() throws Exception {
-        return mConn;
+        return sqliteDb.getConnectionInternal();
     }
 
     public void close() throws Exception {
@@ -188,6 +186,7 @@ public class SpatialiteDb extends ASpatialDb {
         // checking SQLite and SpatiaLite version + target CPU
         String sql = "SELECT spatialite_version(), spatialite_target_cpu()";
         try {
+            IHMConnection mConn = sqliteDb.getConnectionInternal();
             try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 String[] info = new String[2];
                 while( rs.next() ) {
@@ -251,7 +250,7 @@ public class SpatialiteDb extends ASpatialDb {
     public GeometryColumn getGeometryColumnsForTable( String tableName ) throws Exception {
         if (!hasTable(SpatialiteGeometryColumns.TABLENAME))
             return null;
-        return SpatialiteCommonMethods.getGeometryColumnsForTable(mConn, tableName);
+        return SpatialiteCommonMethods.getGeometryColumnsForTable(sqliteDb.getConnectionInternal(), tableName);
     }
 
     @Override
@@ -292,7 +291,7 @@ public class SpatialiteDb extends ASpatialDb {
     public void deleteGeoTable( String tableName ) throws Exception {
         String sql = "SELECT DropGeoTable('" + tableName + "');";
 
-        try (IHMStatement stmt = mConn.createStatement()) {
+        try (IHMStatement stmt = sqliteDb.getConnectionInternal().createStatement()) {
             stmt.execute(sql);
         }
     }
@@ -309,7 +308,7 @@ public class SpatialiteDb extends ASpatialDb {
 
     public QueryResult getTableRecordsMapFromRawSql( String sql, int limit ) throws Exception {
         QueryResult queryResult = new QueryResult();
-        try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+        try (IHMStatement stmt = sqliteDb.getConnectionInternal().createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
             IHMResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
             int geometryIndex = -1;
@@ -370,7 +369,8 @@ public class SpatialiteDb extends ASpatialDb {
     public void runRawSqlToCsv( String sql, File csvFile, boolean doHeader, String separator ) throws Exception {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {
             SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
-            try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+            try (IHMStatement stmt = sqliteDb.getConnectionInternal().createStatement();
+                    IHMResultSet rs = stmt.executeQuery(sql)) {
                 IHMResultSetMetaData rsmd = rs.getMetaData();
                 int columnCount = rsmd.getColumnCount();
                 int geometryIndex = -1;
