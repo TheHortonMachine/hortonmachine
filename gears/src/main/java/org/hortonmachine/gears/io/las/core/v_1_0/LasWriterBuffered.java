@@ -72,7 +72,8 @@ public class LasWriterBuffered extends ALasWriter {
     private FileChannel fileChannel;
     private int recordsNumPosition;
     private int pointFormatPosition;
-    private int pointFormat = 0;
+    private boolean pointFormatHasBeenSet = true;
+    private int pointFormat = 3;
     private boolean doWriteGroundElevation;
     private boolean openCalled;
 
@@ -81,7 +82,6 @@ public class LasWriterBuffered extends ALasWriter {
     private byte[] previousReturnBytes = null;
     private long offsetToData = 227;
     private int recordLengthPosition;
-    private boolean pointFormatHasBeenSet = false;
     private int gpsTimeType = 0;
 
     /**
