@@ -126,16 +126,16 @@ public class OmsFlowDirections extends HMModel {
 
         elevations = new double[nx][ny];
 
-        for( int i = 0; i < nx; i++ ) {
+        for( int row = 0; row < ny; row++ ) {
             if (isCanceled(pm)) {
                 return;
             }
-            for( int j = 0; j < ny; j++ ) {
-                double pitValue = pitfillerIter.getSampleDouble(i, j, 0);
+            for( int col = 0; col < nx; col++ ) {
+                double pitValue = pitfillerIter.getSampleDouble(col, row, 0);
                 if (!isNovalue(pitValue)) {
-                    elevations[i][j] = pitValue;
+                    elevations[col][row] = pitValue;
                 } else {
-                    elevations[i][j] = FLOWNOVALUE;
+                    elevations[col][row] = FLOWNOVALUE;
                 }
             }
         }

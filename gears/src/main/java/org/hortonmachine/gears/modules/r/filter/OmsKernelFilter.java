@@ -84,13 +84,13 @@ public class OmsKernelFilter extends HMModel {
 
         float[] kernelData = kernel.getKernelData();
         pm.beginTask("Processing...", cols - 2 * pRadius);
-        for( int c = pRadius; c < cols - pRadius; c++ ) {
-            for( int r = pRadius; r < rows - pRadius; r++ ) {
+        for( int r = pRadius; r < rows - pRadius; r++ ) {
+            for( int c = pRadius; c < cols - pRadius; c++ ) {
                 double kernelSum = 0.0;
                 int k = 0;
                 double outputValue = 0.0;
-                for( int kc = -pRadius; kc <= pRadius; kc++ ) {
-                    for( int kr = -pRadius; kr <= pRadius; kr++, k++ ) {
+                for( int kr = -pRadius; kr <= pRadius; kr++, k++ ) {
+                    for( int kc = -pRadius; kc <= pRadius; kc++ ) {
                         double value = inIter.getSampleDouble(c + kc, r + kr, 0);
                         if (!isNovalue(value)) {
                             outputValue = outputValue + value * kernelData[k];

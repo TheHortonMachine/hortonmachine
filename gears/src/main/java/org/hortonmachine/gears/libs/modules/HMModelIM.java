@@ -309,8 +309,8 @@ public abstract class HMModelIM extends HMModel {
 
         try {
             final GridCoordinates2D gridCoordinates2D = new GridCoordinates2D();
-            for( int writeCol = 0; writeCol < writeCols; writeCol++ ) {
-                for( int writeRow = 0; writeRow < writeRows; writeRow++ ) {
+            for( int writeRow = 0; writeRow < writeRows; writeRow++ ) {
+                for( int writeCol = 0; writeCol < writeCols; writeCol++ ) {
                     gridCoordinates2D.x = writeCol;
                     gridCoordinates2D.y = writeRow;
                     DirectPosition writeGridToWorld = writeGridGeometry.gridToWorld(gridCoordinates2D);

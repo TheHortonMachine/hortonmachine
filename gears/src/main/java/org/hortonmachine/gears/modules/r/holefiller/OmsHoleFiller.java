@@ -149,8 +149,8 @@ public class OmsHoleFiller extends HMModel {
             preparedRoi = PreparedGeometryFactory.prepare(gc);
         }
         pm.beginTask("Filling holes...", cols - 2);
-        for( int c = 1; c < cols - 1; c++ ) {
-            for( int r = 1; r < rows - 1; r++ ) {
+        for( int r = 1; r < rows - 1; r++ ) {
+            for( int c = 1; c < cols - 1; c++ ) {
                 if (pm.isCanceled()) {
                     return;
                 }

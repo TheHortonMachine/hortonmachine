@@ -125,8 +125,8 @@ public class OmsNabla extends HMModel {
         grid[2] = grid[4] = grid[6] = grid[8] = Math.sqrt(grid[1] * grid[1] + grid[3] * grid[3]);
 
         pm.beginTask("Processing nabla...", nCols * 2);
-        for( int c = 1; c < nCols - 1; c++ ) {
-            for( int r = 1; r < nRows - 1; r++ ) {
+        for( int r = 1; r < nRows - 1; r++ ) {
+            for( int c = 1; c < nCols - 1; c++ ) {
                 z[0] = elevationIter.getSampleDouble(c, r, 0);
                 if (!isNovalue((z[0]))) {
                     y = 1;
@@ -141,8 +141,8 @@ public class OmsNabla extends HMModel {
                     if (y == 0) {
                         nablaRaster.setSample(c, r, 0, doubleNovalue);
                     } else {
-                        double derivata = 0.5 * ((z[1] + z[5] - 2 * z[0]) / (grid[1] * grid[1]) + (z[3] + z[7] - 2 * z[0])
-                                / (grid[3] * grid[3]));
+                        double derivata = 0.5 * ((z[1] + z[5] - 2 * z[0]) / (grid[1] * grid[1])
+                                + (z[3] + z[7] - 2 * z[0]) / (grid[3] * grid[3]));
                         double derivata2 = derivata + 0.5 * ((z[2] + z[4] + z[6] + z[8] - 4 * z[0]) / (grid[6] * grid[6]));
                         nablaRaster.setSample(c, r, 0, derivata2);
                     }
@@ -153,8 +153,8 @@ public class OmsNabla extends HMModel {
             pm.worked(1);
         }
 
-        for( int c = 1; c < nCols - 1; c++ ) {
-            for( int r = 1; r < nRows - 1; r++ ) {
+        for( int r = 1; r < nRows - 1; r++ ) {
+            for( int c = 1; c < nCols - 1; c++ ) {
                 if (segnWR.getSampleDouble(c, r, 0) == 1) {
                     n = 0.0;
                     nablaT = 0.0;
@@ -206,8 +206,8 @@ public class OmsNabla extends HMModel {
         grid[2] = grid[4] = grid[6] = grid[8] = Math.sqrt(grid[1] * grid[1] + grid[3] * grid[3]);
 
         pm.beginTask("Processing nabla...", nCols * 2);
-        for( int c = 1; c < nCols - 1; c++ ) {
-            for( int r = 1; r < nRows - 1; r++ ) {
+        for( int r = 1; r < nRows - 1; r++ ) {
+            for( int c = 1; c < nCols - 1; c++ ) {
                 z[0] = elevationIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(z[0])) {
                     y = 1;
@@ -222,8 +222,8 @@ public class OmsNabla extends HMModel {
                     if (y == 0) {
                         nablaRaster.setSample(c, r, 0, 1);
                     } else {
-                        derivate2 = 0.5 * ((z[1] + z[5] - 2 * z[0]) / (grid[1] * grid[1]) + (z[3] + z[7] - 2 * z[0])
-                                / (grid[3] * grid[3]));
+                        derivate2 = 0.5 * ((z[1] + z[5] - 2 * z[0]) / (grid[1] * grid[1])
+                                + (z[3] + z[7] - 2 * z[0]) / (grid[3] * grid[3]));
                         derivate2 = derivate2 + 0.5 * ((z[2] + z[4] + z[6] + z[8] - 4 * z[0]) / (grid[6] * grid[6]));
 
                         if (Math.abs(derivate2) <= thNabla || derivate2 > thNabla) {

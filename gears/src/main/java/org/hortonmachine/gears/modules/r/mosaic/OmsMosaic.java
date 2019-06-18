@@ -200,8 +200,8 @@ public class OmsMosaic extends HMModel {
             double tmpW = tmpEnv.getWidth();
             double tmpH = tmpEnv.getHeight();
             pm.beginTask("Patch map " + index++, (int) tmpW); //$NON-NLS-1$
-            for( int x = 0; x < tmpW; x++ ) {
-                for( int y = 0; y < tmpH; y++ ) {
+            for( int y = 0; y < tmpH; y++ ) {
+                for( int x = 0; x < tmpW; x++ ) {
                     double value = randomIter.getSampleDouble(x, y, 0);
                     outputIter.setSample(x + startX, y + startY, 0, value);
                 }

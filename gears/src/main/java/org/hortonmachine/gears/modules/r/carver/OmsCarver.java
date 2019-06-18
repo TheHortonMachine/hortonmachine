@@ -190,8 +190,8 @@ public class OmsCarver extends HMModel {
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         try {
-            for( int x = 0; x < cols; x++ ) {
-                for( int y = 0; y < rows; y++ ) {
+            for( int y = 0; y < rows; y++ ) {
+                for( int x = 0; x < cols; x++ ) {
                     double dtmValue = dtmIter.getSampleDouble(x, y, 0);
                     if (HMConstants.isNovalue(dtmValue)) {
                         continue;

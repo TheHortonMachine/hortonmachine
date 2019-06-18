@@ -147,8 +147,8 @@ public class OmsKernelDensity extends HMModel {
                     inputValue = 1.0;
 
                 int k = 0;
-                for( int kc = -pRadius; kc <= pRadius; kc++ ) {
-                    for( int kr = -pRadius; kr <= pRadius; kr++, k++ ) {
+                for( int kr = -pRadius; kr <= pRadius; kr++, k++ ) {
+                    for( int kc = -pRadius; kc <= pRadius; kc++ ) {
                         // data[gridCoords.y + j][gridCoords.x + i] += cdata[k] * centreValue;
                         double outputValue = outIter.getSampleDouble(c + kc, r + kr, 0);
                         if (isNovalue(outputValue)) {

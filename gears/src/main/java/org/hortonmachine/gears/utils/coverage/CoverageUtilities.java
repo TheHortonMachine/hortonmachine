@@ -715,14 +715,14 @@ public class CoverageUtilities {
         WritableRaster writableRaster = createWritableRaster(width, height, null, null, HMConstants.doubleNovalue);
 
         WritableRandomIter rasterIter = RandomIterFactory.createWritable(writableRaster, null);
-        for( int x = 0; x < width; x++ ) {
-            for( int y = 0; y < height; y++ ) {
+        for( int row = 0; row < height; row++ ) {
+            for( int col = 0; col < width; col++ ) {
                 if (matrixIsRowCol) {
-                    if (!HMConstants.isNovalue(matrix[y][x]))
-                        rasterIter.setSample(x, y, 0, matrix[y][x]);
+                    if (!HMConstants.isNovalue(matrix[row][col]))
+                        rasterIter.setSample(col, row, 0, matrix[row][col]);
                 } else {
-                    if (!HMConstants.isNovalue(matrix[x][y]))
-                        rasterIter.setSample(x, y, 0, matrix[x][y]);
+                    if (!HMConstants.isNovalue(matrix[col][row]))
+                        rasterIter.setSample(col, row, 0, matrix[col][row]);
                 }
             }
         }
@@ -749,12 +749,12 @@ public class CoverageUtilities {
         WritableRaster writableRaster = createWritableRaster(width, height, null, null, null);
 
         WritableRandomIter randomIter = RandomIterFactory.createWritable(writableRaster, null);
-        for( int x = 0; x < width; x++ ) {
-            for( int y = 0; y < height; y++ ) {
+        for( int row = 0; row < height; row++ ) {
+            for( int col = 0; col < width; col++ ) {
                 if (matrixIsRowCol) {
-                    randomIter.setSample(x, y, 0, matrix[y][x]);
+                    randomIter.setSample(col, row, 0, matrix[row][col]);
                 } else {
-                    randomIter.setSample(x, y, 0, matrix[x][y]);
+                    randomIter.setSample(col, row, 0, matrix[col][row]);
                 }
             }
         }
@@ -774,12 +774,12 @@ public class CoverageUtilities {
         WritableRaster writableRaster = createWritableRaster(width, height, null, null, null);
 
         WritableRandomIter randomIter = RandomIterFactory.createWritable(writableRaster, null);
-        for( int x = 0; x < width; x++ ) {
-            for( int y = 0; y < height; y++ ) {
+        for( int row = 0; row < height; row++ ) {
+            for( int col = 0; col < width; col++ ) {
                 if (matrixIsRowCol) {
-                    randomIter.setSample(x, y, 0, matrix[y][x]);
+                    randomIter.setSample(col, row, 0, matrix[row][col]);
                 } else {
-                    randomIter.setSample(x, y, 0, matrix[x][y]);
+                    randomIter.setSample(col, row, 0, matrix[col][row]);
                 }
             }
         }
@@ -799,13 +799,13 @@ public class CoverageUtilities {
     public static WritableRaster createWritableRasterFromArray( int width, int height, int[] pixels ) {
         WritableRaster writableRaster = createWritableRaster(width, height, null, null, null);
         int index = 0;
-        for( int y = 0; y < height; y++ ) {
-            for( int x = 0; x < width; x++ ) {
+        for( int row = 0; row < height; row++ ) {
+            for( int col = 0; col < width; col++ ) {
                 double value = (double) pixels[index];
                 if (value == 0) {
                     value = doubleNovalue;
                 }
-                writableRaster.setSample(x, y, 0, value);
+                writableRaster.setSample(col, row, 0, value);
                 index++;
             }
         }
@@ -1112,8 +1112,8 @@ public class CoverageUtilities {
     public static WritableRaster integerArray2WritableRaster( int[] array, double divide, int width, int height ) {
         WritableRaster writableRaster = createWritableRaster(width, height, null, null, null);
         int index = 0;;
-        for( int x = 0; x < width; x++ ) {
-            for( int y = 0; y < height; y++ ) {
+        for( int y = 0; y < height; y++ ) {
+            for( int x = 0; x < width; x++ ) {
                 double value = (double) array[index++] / divide;
                 writableRaster.setSample(x, y, 0, value);
             }
@@ -1133,8 +1133,8 @@ public class CoverageUtilities {
     public static WritableRaster doubleArray2WritableRaster( double[] array, int width, int height ) {
         WritableRaster writableRaster = createWritableRaster(width, height, null, null, null);
         int index = 0;;
-        for( int x = 0; x < width; x++ ) {
-            for( int y = 0; y < height; y++ ) {
+        for( int y = 0; y < height; y++ ) {
+            for( int x = 0; x < width; x++ ) {
                 writableRaster.setSample(x, y, 0, array[index++]);
             }
         }
@@ -1380,8 +1380,8 @@ public class CoverageUtilities {
         WritableRaster writableRaster = createWritableRaster(cs, rs, null, null, HMConstants.doubleNovalue);
         WritableRandomIter outIter = RandomIterFactory.createWritable(writableRaster, null);
 
-        for( int c = 0; c < cs; c++ ) {
-            for( int r = 0; r < rs; r++ ) {
+        for( int r = 0; r < rs; r++ ) {
+            for( int c = 0; c < cs; c++ ) {
                 if (!isNovalue(maskIter.getSampleDouble(c, r, 0))) {
                     // if not nv, put the value from the valueMap in the new map
                     double value = valuesIter.getSampleDouble(c, r, 0);
@@ -1421,8 +1421,8 @@ public class CoverageUtilities {
         WritableRaster outWR = renderedImage2WritableRaster(onMap.getRenderedImage(), false);
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
-        for( int c = 0; c < cs; c++ ) {
-            for( int r = 0; r < rs; r++ ) {
+        for( int r = 0; r < rs; r++ ) {
+            for( int c = 0; c < cs; c++ ) {
                 double value = valuesIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(value))
                     outIter.setSample(c, r, 0, value);

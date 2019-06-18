@@ -87,8 +87,8 @@ public class OmsBiasedSigmaFilter extends HMModel {
         int part = (pWindow - 1) / 2;
 
         pm.beginTask("Processing filter...", cols - (pWindow - 1));
-        for( int c = part; c < cols - part; c++ ) {
-            for( int r = part; r < rows - part; r++ ) {
+        for( int r = part; r < rows - part; r++ ) {
+            for( int c = part; c < cols - part; c++ ) {
                 GridNode node = new GridNode(inIter, cols, rows, xres, yres, c, r);
                 if (node.isValid() && !node.touchesBound()) {
                     double[][] window = node.getWindow(pWindow, false);

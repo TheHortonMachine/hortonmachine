@@ -147,8 +147,8 @@ public class OmsBasinShape extends HMModel {
             }
         }
 
-        WritableRaster subbasinsWR = CoverageUtilities.createWritableRaster(basinsRI.getWidth(), basinsRI.getHeight(),
-                null, basinsRI.getSampleModel(), doubleNovalue);
+        WritableRaster subbasinsWR = CoverageUtilities.createWritableRaster(basinsRI.getWidth(), basinsRI.getHeight(), null,
+                basinsRI.getSampleModel(), doubleNovalue);
 
         // create the feature type
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
@@ -161,11 +161,11 @@ public class OmsBasinShape extends HMModel {
         // add some properties
         b.add("area", Float.class); //$NON-NLS-1$
         b.add("perimeter", Float.class); //$NON-NLS-1$
-        b.add(NetworkChannel.NETNUMNAME, Integer.class); //$NON-NLS-1$
+        b.add(NetworkChannel.NETNUMNAME, Integer.class); // $NON-NLS-1$
         b.add("maxelev", Float.class); //$NON-NLS-1$
         b.add("minelev", Float.class); //$NON-NLS-1$
         b.add("avgelev", Float.class); //$NON-NLS-1$
-        b.add(NetworkChannel.BARICENTERELEVNAME, Float.class); //$NON-NLS-1$
+        b.add(NetworkChannel.BARICENTERELEVNAME, Float.class); // $NON-NLS-1$
 
         // build the type
         SimpleFeatureType type = b.buildFeatureType();
@@ -190,8 +190,8 @@ public class OmsBasinShape extends HMModel {
             if (pitRI != null)
                 pitRandomIter = RandomIterFactory.create(pitRI, null);
             WritableRandomIter subbasinIter = RandomIterFactory.createWritable(subbasinsWR, null);
-            for( int i = 0; i < nCols; i++ ) {
-                for( int j = 0; j < nRows; j++ ) {
+            for( int j = 0; j < nRows; j++ ) {
+                for( int i = 0; i < nCols; i++ ) {
                     double basinId = basinsRandomIter.getSampleDouble(i, j, 0);
                     if (isNovalue(basinId)) {
                         continue;
@@ -280,8 +280,8 @@ public class OmsBasinShape extends HMModel {
                 }
                 outGeodataIterator.close();
 
-                MultiPolygon geometry = GeometryUtilities.gf().createMultiPolygon(
-                        (Polygon[]) polygons.toArray(new Polygon[polygons.size()]));
+                MultiPolygon geometry = GeometryUtilities.gf()
+                        .createMultiPolygon((Polygon[]) polygons.toArray(new Polygon[polygons.size()]));
                 values[0] = geometry;
                 values[1] = geometry.getArea();
                 values[2] = geometry.getLength();
