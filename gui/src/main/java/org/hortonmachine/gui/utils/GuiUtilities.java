@@ -20,6 +20,7 @@ package org.hortonmachine.gui.utils;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.ComponentOrientation;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -77,6 +78,9 @@ public class GuiUtilities {
 
     public static final String LAST_PATH = "KEY_LAST_PATH";
     public static final String PREF_STRING_SEPARATORS = "@@@@";
+    public static final String PREF_ORIENTATION = "PREF_ORIENTATION";
+    public static final String LEFT_TO_RIGHT = "LEFT_TO_RIGHT";
+    public static final String RIGHT_TO_LEFT = "RIGHT_TO_LEFT";
 
     private static PreferencesDb preferencesDb;
     static {
@@ -235,6 +239,27 @@ public class GuiUtilities {
         }
     }
 
+    public static void applyComponentOrientation( Component component, ComponentOrientation co ) {
+        component.applyComponentOrientation(co);
+    }
+
+    public static ComponentOrientation getComponentOrientation() {
+        String orientationString = getPreference(PREF_ORIENTATION, LEFT_TO_RIGHT);
+        if (orientationString.equals(RIGHT_TO_LEFT)) {
+            return ComponentOrientation.RIGHT_TO_LEFT;
+        } else {
+            return ComponentOrientation.LEFT_TO_RIGHT;
+        }
+    }
+
+    public static void saveComponentOrientation( ComponentOrientation orientation ) {
+        setPreference(PREF_ORIENTATION, orientation.isLeftToRight() ? LEFT_TO_RIGHT : RIGHT_TO_LEFT);
+    }
+
+    public static void saveComponentOrientation( String orientationString ) {
+        setPreference(PREF_ORIENTATION, orientationString);
+    }
+
     public static void copyToClipboard( String text ) {
         StringSelection selection = new StringSelection(text);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -365,9 +390,10 @@ public class GuiUtilities {
         return input;
     }
 
-    public static String showComboDialog( Component parentComponent, String title, String message, String[] values ) {
+    public static String showComboDialog( Component parentComponent, String title, String message, String[] values,
+            String selectedValue ) {
         String result = (String) JOptionPane.showInputDialog(parentComponent, message, title, JOptionPane.QUESTION_MESSAGE, null,
-                values, values[0]);
+                values, selectedValue != null ? selectedValue : values[0]);
         return result;
     }
 
@@ -703,4 +729,5 @@ public class GuiUtilities {
         }
 
     }
+
 }

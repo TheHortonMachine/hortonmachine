@@ -406,7 +406,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 }
 
                 String[] sqlHistory = oldSqlCommands.toArray(new String[0]);
-                String selected = GuiUtilities.showComboDialog(this, "HISTORY", "", sqlHistory);
+                String selected = GuiUtilities.showComboDialog(this, "HISTORY", "", sqlHistory, null);
                 if (selected != null) {
                     addTextToQueryEditor(selected);
                 }
@@ -426,7 +426,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             try {
                 LinkedHashMap<String, String> templatesMap = CommonQueries.getTemplatesMap(currentConnectedDatabase.getType());
                 String[] sqlTemplates = templatesMap.keySet().toArray(new String[0]);
-                String selected = GuiUtilities.showComboDialog(this, "TEMPLATES", "", sqlTemplates);
+                String selected = GuiUtilities.showComboDialog(this, "TEMPLATES", "", sqlTemplates, null);
                 if (selected != null) {
                     String sql = templatesMap.get(selected);
                     addTextToQueryEditor(sql);
@@ -735,7 +735,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
                                 List<String> names = sqlDataList.stream().map(sd -> sd.name).collect(Collectors.toList());
                                 String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Query",
-                                        "Select the query to load", names.toArray(new String[0]));
+                                        "Select the query to load", names.toArray(new String[0]), null);
                                 if (selected != null && selected.length() > 0) {
                                     SqlData sqlData = collect.get(selected);
                                     if (sqlData != null) {
@@ -800,7 +800,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 sqlDataList.sort(( sd1, sd2 ) -> sd1.name.compareTo(sd2.name));
                                 List<String> names = sqlDataList.stream().map(sd -> sd.name).collect(Collectors.toList());
                                 String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Query",
-                                        "Select the query to remove", names.toArray(new String[0]));
+                                        "Select the query to remove", names.toArray(new String[0]), null);
                                 if (selected != null && selected.length() > 0) {
                                     sqlDataList.removeIf(sd -> {
                                         if (sd.name == null)
@@ -1032,7 +1032,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 List<String> labels = connectionDataList.stream().map(c -> c.connectionLabel)
                                         .collect(Collectors.toList());
                                 String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Connection",
-                                        "Select the connection to use", labels.toArray(new String[0]));
+                                        "Select the connection to use", labels.toArray(new String[0]), null);
                                 if (selected != null && selected.length() > 0) {
                                     ConnectionData connectionData = collect.get(selected);
                                     if (connectionData != null) {
@@ -1062,7 +1062,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 List<String> labels = connectionDataList.stream().map(c -> c.connectionLabel)
                                         .collect(Collectors.toList());
                                 String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Connection",
-                                        "Select the connection to remove", labels.toArray(new String[0]));
+                                        "Select the connection to remove", labels.toArray(new String[0]), null);
                                 if (selected != null && selected.length() > 0) {
                                     connectionDataList.removeIf(cd -> {
                                         if (cd.connectionLabel == null)

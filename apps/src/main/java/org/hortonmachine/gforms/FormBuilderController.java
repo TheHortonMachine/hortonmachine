@@ -3,6 +3,7 @@ package org.hortonmachine.gforms;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -85,12 +86,14 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
     private String currentSelectedSectionName;
     private JSONObject currentSelectedSectionObject;
     private String currentSelectedFormName;
+    private ComponentOrientation co;
     private static enum IMAGEWIDGET {
         PICTURE, SKETCH, MAP
     };
 
-    public FormBuilderController( File tagsFile ) throws Exception {
-        setPreferredSize(new Dimension(800, 800));
+    public FormBuilderController( ComponentOrientation co, File tagsFile ) throws Exception {
+        this.co = co;
+        setPreferredSize(new Dimension(1000, 800));
 
         if (tagsFile != null && tagsFile.exists()) {
             selectedFile = tagsFile;
@@ -106,7 +109,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
     private void init() throws Exception {
         _filePathtext.setEditable(false);
 
-        _buttonsTabPane.setTabPlacement(JTabbedPane.LEFT);
+        _buttonsTabPane.setTabPlacement(co.isLeftToRight() ? JTabbedPane.LEFT : JTabbedPane.RIGHT);
         _buttonsTabPane.addChangeListener(this);
         _buttonsTabPane.setBounds(20, 20, 500, 500);
 
@@ -145,6 +148,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             }
         });
 
+        _newButton.setText("new");
         _newButton.addActionListener(e -> {
             File createdFile = GuiUtilities.showSaveFileDialog(this, "Create new tags file", GuiUtilities.getLastFile());
             try {
@@ -171,6 +175,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
         });
 
+        _addSectionButton.setText("add");
         _addSectionButton.addActionListener(e -> {
             if (selectedSectionsMap == null) {
                 GuiUtilities.showInfoMessage(this, FIRST_OPEN_FILE_PROMPT);
@@ -200,6 +205,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             }
         });
 
+        _deleteSectionButton.setText("del");
         _deleteSectionButton.addActionListener(e -> {
             if (selectedSectionsMap == null) {
                 GuiUtilities.showInfoMessage(this, FIRST_OPEN_FILE_PROMPT);
@@ -221,6 +227,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             }
         });
 
+        _addFormButton.setText("add");
         _addFormButton.addActionListener(e -> {
             if (selectedSectionsMap == null) {
                 GuiUtilities.showInfoMessage(this, FIRST_OPEN_FILE_PROMPT);
@@ -257,6 +264,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             }
         });
 
+        _deleteFormButton.setText("del");
         _deleteFormButton.addActionListener(e -> {
             if (selectedSectionsMap == null) {
                 GuiUtilities.showInfoMessage(this, FIRST_OPEN_FILE_PROMPT);
@@ -282,6 +290,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             }
         });
 
+        _addWidgetButton.setText("add");
         _addWidgetButton.addActionListener(e -> {
             if (selectedSectionsMap == null) {
                 GuiUtilities.showInfoMessage(this, FIRST_OPEN_FILE_PROMPT);
@@ -292,6 +301,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             }
             addNewWidget(_widgetsCombo.getSelectedItem().toString());
         });
+        _deleteWidgetButton.setText("del");
         _deleteWidgetButton.addActionListener(e -> {
             if (selectedSectionsMap == null) {
                 GuiUtilities.showInfoMessage(this, FIRST_OPEN_FILE_PROMPT);
@@ -349,6 +359,21 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         }).sorted().collect(Collectors.toList());
 
         _widgetsCombo.setModel(new DefaultComboBoxModel<String>(widgetNames.toArray(new String[0])));
+
+        _settingsButton.setText("");
+        _settingsButton.setIcon(ImageCache.get(ImageCache.SETTINGS));
+        int s = 48;
+        _settingsButton.setPreferredSize(new Dimension(s, s));
+        _settingsButton.addActionListener(e -> {
+            String selection = GuiUtilities.showComboDialog(this, "Configure Orientation", "Select the component orientation",
+                    new String[]{GuiUtilities.LEFT_TO_RIGHT, GuiUtilities.RIGHT_TO_LEFT},
+                    co.isLeftToRight() ? GuiUtilities.LEFT_TO_RIGHT : GuiUtilities.RIGHT_TO_LEFT);
+            if (selection != null) {
+                GuiUtilities.saveComponentOrientation(selection);
+                GuiUtilities.showInfoMessage(this, "Please restart for the changes to take effect.");
+            }
+
+        });
 
         if (selectedFile != null) {
             openTagsFile();
@@ -752,6 +777,8 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         }
 
         widgetsPanel.add(Box.createVerticalGlue());
+
+        GuiUtilities.applyComponentOrientation(widgetsPanel, co);
     }
 
     private void addNewWidget( String widgetName ) {
@@ -1270,7 +1297,9 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             openFile = new File(args[0]);
         }
 
-        final FormBuilderController controller = new FormBuilderController(openFile);
+        ComponentOrientation co = GuiUtilities.getComponentOrientation();
+        final FormBuilderController controller = new FormBuilderController(co, openFile);
+        GuiUtilities.applyComponentOrientation(controller, co);
 
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Geopaparazzi Form Builder");
 

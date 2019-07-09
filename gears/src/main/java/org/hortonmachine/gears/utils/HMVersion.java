@@ -29,7 +29,7 @@ public class HMVersion {
     /**
      * The patch version number.
      */
-    public static final int PATCH = 2;
+    public static final int PATCH = 6;
 
     /**
      * An optional string providing further release info (such as "alpha 1");
