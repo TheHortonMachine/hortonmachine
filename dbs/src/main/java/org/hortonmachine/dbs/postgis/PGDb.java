@@ -110,6 +110,10 @@ public class PGDb extends ADb {
                                                                                   // other level
             System.setProperties(p);
 
+//            testConnectionOnCheckin validates the connection when it is returned to the pool. 
+//            idleConnectionTestPeriod sets a limit to how long a connection will stay idle before testing it.
+//            maxIdleTimeExcessConnections will bring back the connectionCount back down to minPoolSize after a spike in activity.
+
             comboPooledDataSource = new ComboPooledDataSource();
             comboPooledDataSource.setDriverClass(DRIVER_CLASS);
             comboPooledDataSource.setJdbcUrl(jdbcUrl);
@@ -117,11 +121,14 @@ public class PGDb extends ADb {
                 comboPooledDataSource.setUser(user);
                 comboPooledDataSource.setPassword(password);
             }
-            comboPooledDataSource.setInitialPoolSize(10);
             comboPooledDataSource.setMinPoolSize(5);
-            comboPooledDataSource.setAcquireIncrement(5);
             comboPooledDataSource.setMaxPoolSize(30);
+            comboPooledDataSource.setAcquireIncrement(1);
+            comboPooledDataSource.setInitialPoolSize(10);
             comboPooledDataSource.setMaxStatements(100);
+            comboPooledDataSource.setTestConnectionOnCheckin(true);
+            comboPooledDataSource.setIdleConnectionTestPeriod(300);
+            comboPooledDataSource.setMaxIdleTimeExcessConnections(240);
 
             // comboPooledDataSource.setCheckoutTimeout(2000);
             comboPooledDataSource.setAcquireRetryAttempts(1);
@@ -261,7 +268,8 @@ public class PGDb extends ADb {
     }
 
     public ETableType getTableType( String tableName ) throws Exception {
-        String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + tableName + "') and table_Schema!='information_schema'";
+        String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + tableName
+                + "') and table_Schema!='information_schema'";
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
 
