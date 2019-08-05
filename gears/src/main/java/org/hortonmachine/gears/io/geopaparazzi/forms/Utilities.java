@@ -72,7 +72,7 @@ public class Utilities {
     public static final String TAG_SIZE = "size";
     public static final String TAG_URL = "url";
     public static final String TAG_LABEL = "label";
-    
+
     public static final String TAG_ISLABEL = "islabel";
     public static final String TAG_ISMANDATORY = "mandatory";
     public static final String TAG_RANGE = "range";
@@ -82,17 +82,17 @@ public class Utilities {
     /**
      * Type for pictures element.
      */
-    public static final String TYPE_PICTURES = "pictures";
+    public static final String TYPE_PICTURES = ItemPicture.TYPE;
 
     /**
      * Type for pictures element.
      */
-    public static final String TYPE_SKETCH = "sketch";
+    public static final String TYPE_SKETCH = ItemSketch.TYPE;
 
     /**
      * Type for map element.
      */
-    public static final String TYPE_MAP = "map";
+    public static final String TYPE_MAP = ItemMap.TYPE;
 
     public static final String[] ITEM_NAMES = {//
             ItemLabel.TYPE, //
@@ -112,6 +112,41 @@ public class Utilities {
             ItemConnectedCombo.TYPE, //
             ItemOneToManyConnectedCombo.TYPE//
     };
+
+    public static boolean isStringType( String type ) {
+        boolean isString = false;
+        if (type.equals(TYPE_MAP) || type.equals(TYPE_SKETCH) || type.equals(TYPE_PICTURES) || type.equals(ItemCombo.TYPE)
+                || type.equals(ItemCombo.MULTI_TYPE) || type.equals(ItemDate.TYPE) || type.equals(ItemTime.TYPE)
+                || type.equals(ItemDynamicText.TYPE) || type.equals(ItemText.TYPE) || type.equals(ItemConnectedCombo.TYPE)
+                || type.equals(ItemOneToManyConnectedCombo.TYPE)) {
+            isString = true;
+        }
+        return isString;
+    }
+
+    public static boolean isIntegerType( String type ) {
+        boolean isInteger = false;
+        if (type.equals(ItemInteger.TYPE)) {
+            isInteger = true;
+        }
+        return isInteger;
+    }
+
+    public static boolean isDoubleType( String type ) {
+        boolean isDouble = false;
+        if (type.equals(ItemDouble.TYPE)) {
+            isDouble = true;
+        }
+        return isDouble;
+    }
+
+    public static boolean isMediaType( String type ) {
+        boolean isMedia = false;
+        if (type.equals(TYPE_MAP) || type.equals(TYPE_SKETCH) || type.equals(TYPE_PICTURES)) {
+            isMedia = true;
+        }
+        return isMedia;
+    }
 
     public static LinkedHashMap<String, JSONObject> getSectionFromFile( String formPath ) throws IOException {
         String formString = FileUtilities.readFile(formPath);

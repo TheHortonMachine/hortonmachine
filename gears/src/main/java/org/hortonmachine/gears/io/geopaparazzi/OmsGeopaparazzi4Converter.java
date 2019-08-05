@@ -406,7 +406,7 @@ public class OmsGeopaparazzi4Converter extends HMModel {
                 // check if there is a builder already
                 String uniqueSectionName = sectionName + "_" + entrySet.size();
                 BuilderAndCollectionPair builderAndCollectionPair = getBuilderAndCollectionPair(pm, forms2PropertiesMap,
-                        sectionName, entrySet, namesMap, uniqueSectionName);
+                        sectionName, entrySet, typesMap, namesMap, uniqueSectionName);
 
                 int size = entrySet.size();
                 Object[] values = new Object[size + 4];
@@ -421,7 +421,7 @@ public class OmsGeopaparazzi4Converter extends HMModel {
                     String value = entry.getValue();
 
                     String type = typesMap.get(key);
-                    if (isMedia(type)) {
+                    if (Utilities.isMediaType(type)) {
                         // extract images to media folder
                         String[] imageSplit = value.split(OmsGeopaparazziProject3To4Converter.IMAGE_ID_SEPARATOR);
                         StringBuilder sb = new StringBuilder();
@@ -471,7 +471,8 @@ public class OmsGeopaparazzi4Converter extends HMModel {
 
     private static BuilderAndCollectionPair getBuilderAndCollectionPair( IHMProgressMonitor pm,
             HashMap<String, BuilderAndCollectionPair> forms2PropertiesMap, String sectionName,
-            Set<Entry<String, String>> entrySet, TreeMap<String, Integer> namesMap, String uniqueSectionName ) {
+            Set<Entry<String, String>> entrySet, LinkedHashMap<String, String> typesMap, TreeMap<String, Integer> namesMap,
+            String uniqueSectionName ) {
         BuilderAndCollectionPair builderAndCollectionPair = forms2PropertiesMap.get(uniqueSectionName);
         if (builderAndCollectionPair == null) {
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
@@ -483,6 +484,9 @@ public class OmsGeopaparazzi4Converter extends HMModel {
             b.add(dirtyFN, Integer.class); // $NON-NLS-1$
             for( Entry<String, String> entry : entrySet ) {
                 String key = entry.getKey();
+
+                String typeStr = typesMap.get(key);
+
                 key = key.replaceAll("\\s+", "_");
                 if (key.length() > 10) {
                     pm.errorMessage("Need to trim key: " + key);
@@ -501,7 +505,17 @@ public class OmsGeopaparazzi4Converter extends HMModel {
                         key = key.substring(0, key.length() - 2) + nCount;
                     }
                 }
-                b.add(key, String.class);
+
+                Class< ? > clazz = String.class;
+                if (Utilities.isStringType(typeStr)) {
+                    clazz = String.class; // redundant just to show that one can check
+                } else if (Utilities.isIntegerType(typeStr)) {
+                    clazz = Integer.class;
+                } else if (Utilities.isDoubleType(typeStr)) {
+                    clazz = Double.class;
+                }
+
+                b.add(key, clazz);
             }
             SimpleFeatureType featureType = b.buildFeatureType();
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
@@ -582,7 +596,7 @@ public class OmsGeopaparazzi4Converter extends HMModel {
                 // check if there is a builder already
                 String uniqueSectionName = sectionName + "_" + entrySet.size();
                 BuilderAndCollectionPair builderAndCollectionPair = getBuilderAndCollectionPair(pm, forms2PropertiesMap,
-                        sectionName, entrySet, namesMap, uniqueSectionName);
+                        sectionName, entrySet, typesMap, namesMap, uniqueSectionName);
 
                 int size = entrySet.size();
                 Object[] values = new Object[size + 4];
@@ -597,7 +611,7 @@ public class OmsGeopaparazzi4Converter extends HMModel {
                     String value = entry.getValue();
 
                     String type = typesMap.get(key);
-                    if (isMedia(type)) {
+                    if (Utilities.isMediaType(type)) {
                         // extract images to media folder
                         String[] imageSplit = value.split(OmsGeopaparazziProject3To4Converter.IMAGE_ID_SEPARATOR);
                         StringBuilder sb = new StringBuilder();
@@ -617,11 +631,21 @@ public class OmsGeopaparazzi4Converter extends HMModel {
                         }
                     }
 
-                    if (value.length() > 253) {
-                        pm.errorMessage("Need to trim value: " + value);
-                        value = value.substring(0, 252);
+                    if (Utilities.isStringType(type)) {
+                        if (value.length() > 253) {
+                            pm.errorMessage("Need to trim value: " + value);
+                            value = value.substring(0, 252);
+                        }
+                        values[i] = value;
+                    } else if (Utilities.isIntegerType(type)) {
+                        int intValue = Integer.parseInt(value);
+                        values[i] = intValue;
+                    } else if (Utilities.isDoubleType(type)) {
+                        double doubleValue = Double.parseDouble(value);
+                        values[i] = doubleValue;
+                    } else {
+                        pm.errorMessage("Unsupported type: " + type);
                     }
-                    values[i] = value;
                     i++;
                 }
                 try {
@@ -707,10 +731,6 @@ public class OmsGeopaparazzi4Converter extends HMModel {
         }
         pm.done();
         return newCollection;
-    }
-
-    public static boolean isMedia( String type ) {
-        return type.equals("pictures") || type.equals("map") || type.equals("sketch");
     }
 
     /**
