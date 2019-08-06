@@ -23,7 +23,6 @@ import com.jcraft.jsch.JSchException;
 
 public class SettingsController extends SettingsView implements IOnCloseListener {
 
-
     public SettingsController() {
         setPreferredSize(new Dimension(900, 400));
 
@@ -99,6 +98,7 @@ public class SettingsController extends SettingsView implements IOnCloseListener
         }
 
         boolean tunnelSelected = _sshTunnelCheckbox.isSelected();
+        PreferencesHandler.setPreference(HM_PREF_TUNNELCHECK, tunnelSelected ? "true" : "false");
         if (tunnelSelected) {
             String host = _tunnelHostField.getText();
             String user = _tunnelUserField.getText();
@@ -106,7 +106,6 @@ public class SettingsController extends SettingsView implements IOnCloseListener
             String localPort = _tunnelLocalPortField.getText();
             String remotePort = _tunnelRemotePortField.getText();
 
-            PreferencesHandler.setPreference(HM_PREF_TUNNELCHECK, "true");
             PreferencesHandler.setPreference(HM_PREF_TUNNELHOST, host);
             PreferencesHandler.setPreference(HM_PREF_TUNNELUSER, user);
             PreferencesHandler.setPreference(HM_PREF_TUNNELPWD, pwd);
