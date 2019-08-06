@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gui.settings.SettingsController;
 
 import groovy.lang.GroovyClassLoader;
 
@@ -26,6 +27,7 @@ public class GeoscriptConsole {
     public static void main( String[] args ) {
         try {
             Logger.INSTANCE.init();
+            SettingsController.applySettings(null);
             new GeoscriptConsole();
         } catch (Exception e) {
             e.printStackTrace();

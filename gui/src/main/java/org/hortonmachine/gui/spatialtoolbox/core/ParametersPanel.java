@@ -49,6 +49,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.JGrassGears;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.hmachine.HortonMachine;
@@ -448,7 +449,7 @@ public class ParametersPanel extends JPanel implements MouseListener {
                     // input file
                     browseButton.addActionListener(new ActionListener(){
                         public void actionPerformed( ActionEvent e ) {
-                            File[] files = guiBridge.showOpenFileDialog("Select input file", GuiUtilities.getLastFile(),
+                            File[] files = guiBridge.showOpenFileDialog("Select input file", PreferencesHandler.getLastFile(),
                                     _fileFilter);
                             setSelectedFile(textField, files);
                         }
@@ -459,7 +460,7 @@ public class ParametersPanel extends JPanel implements MouseListener {
                     // output file
                     browseButton.addActionListener(new ActionListener(){
                         public void actionPerformed( ActionEvent e ) {
-                            File[] files = guiBridge.showSaveFileDialog("Select file to save", GuiUtilities.getLastFile(),
+                            File[] files = guiBridge.showSaveFileDialog("Select file to save", PreferencesHandler.getLastFile(),
                                     _fileFilter);
                             setSelectedFile(textField, files);
                         }
@@ -468,7 +469,7 @@ public class ParametersPanel extends JPanel implements MouseListener {
                     // input folder
                     browseButton.addActionListener(new ActionListener(){
                         public void actionPerformed( ActionEvent e ) {
-                            File[] files = guiBridge.showOpenDirectoryDialog("Select folder", GuiUtilities.getLastFile());
+                            File[] files = guiBridge.showOpenDirectoryDialog("Select folder", PreferencesHandler.getLastFile());
                             setSelectedFile(textField, files);
                         }
                     });
@@ -477,7 +478,7 @@ public class ParametersPanel extends JPanel implements MouseListener {
                     // output folder
                     browseButton.addActionListener(new ActionListener(){
                         public void actionPerformed( ActionEvent e ) {
-                            File[] files = guiBridge.showOpenDirectoryDialog("Select folder", GuiUtilities.getLastFile());
+                            File[] files = guiBridge.showOpenDirectoryDialog("Select folder", PreferencesHandler.getLastFile());
                             setSelectedFile(textField, files);
                         }
                     });
@@ -492,7 +493,7 @@ public class ParametersPanel extends JPanel implements MouseListener {
     private void setSelectedFile( final JTextField textField, File[] files ) {
         if (files != null && files.length > 0) {
             final File gpapFile = files[0];
-            GuiUtilities.setLastPath(gpapFile.getAbsolutePath());
+            PreferencesHandler.setLastPath(gpapFile.getAbsolutePath());
 
             textField.setText(gpapFile.getAbsolutePath());
         }

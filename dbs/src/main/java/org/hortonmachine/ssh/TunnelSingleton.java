@@ -1,6 +1,4 @@
-package org.hortonmachine.database;
-
-import org.hortonmachine.ssh.SshTunnelHandler;
+package org.hortonmachine.ssh;
 
 import com.jcraft.jsch.JSchException;
 

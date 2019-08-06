@@ -41,8 +41,6 @@ public interface GuiBridgeHandler {
     String DEBUG_KEY = "jgt_prefs_debug";
     String LAST_GP_PROJECTS_PATH = "jgt_last_projects_path";
 
-    String PREFS_NODE_NAME = "/org/hortonmachine/gui";
-
     /**
      * Open a directory selection dialog.
      * 

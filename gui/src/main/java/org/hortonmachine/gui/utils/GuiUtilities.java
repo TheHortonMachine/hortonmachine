@@ -38,9 +38,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.prefs.Preferences;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -65,9 +62,9 @@ import javax.swing.table.DefaultTableModel;
 
 import org.apache.commons.io.FilenameUtils;
 import org.hortonmachine.dbs.log.Logger;
-import org.hortonmachine.dbs.log.PreferencesDb;
 import org.hortonmachine.gears.utils.OsCheck;
 import org.hortonmachine.gears.utils.OsCheck.OSType;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 
 /**
  * Utilities class.
@@ -75,20 +72,6 @@ import org.hortonmachine.gears.utils.OsCheck.OSType;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class GuiUtilities {
-
-    public static final String LAST_PATH = "KEY_LAST_PATH";
-    public static final String PREF_STRING_SEPARATORS = "@@@@";
-    public static final String PREF_ORIENTATION = "PREF_ORIENTATION";
-    public static final String LEFT_TO_RIGHT = "LEFT_TO_RIGHT";
-    public static final String RIGHT_TO_LEFT = "RIGHT_TO_LEFT";
-
-    private static PreferencesDb preferencesDb;
-    static {
-        preferencesDb = PreferencesDb.INSTANCE;
-        if (!preferencesDb.isValid()) {
-            preferencesDb = null;
-        }
-    }
 
     public static interface IOnCloseListener {
         public void onClose();
@@ -112,152 +95,8 @@ public class GuiUtilities {
         component.setLocation(x, y);
     }
 
-    /**
-     * Handle the last set path preference.
-     * 
-     * @return the last set path or the user home.
-     */
-    public static File getLastFile() {
-        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
-
-        String userHome = System.getProperty("user.home");
-        String lastPath = preferences.get(LAST_PATH, userHome);
-        File file = new File(lastPath);
-        if (!file.exists()) {
-            return new File(userHome);
-        }
-        return file;
-    }
-
-    /**
-     * Save the passed path as last path available.
-     * 
-     * @param lastPath
-     *            the last path to save.
-     */
-    public static void setLastPath( String lastPath ) {
-        File file = new File(lastPath);
-        if (!file.isDirectory()) {
-            lastPath = file.getParentFile().getAbsolutePath();
-        }
-        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
-        preferences.put(LAST_PATH, lastPath);
-    }
-
-    /**
-     * Get from preference.
-     * 
-     * @param preferenceKey
-     *            the preference key.
-     * @param defaultValue
-     *            the default value in case of <code>null</code>.
-     * @return the string preference asked.
-     */
-    public static String getPreference( String preferenceKey, String defaultValue ) {
-        if (preferencesDb != null) {
-            return preferencesDb.getPreference(preferenceKey, defaultValue);
-        }
-        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
-        String preference = preferences.get(preferenceKey, defaultValue);
-        return preference;
-    }
-
-    public static String[] getPreference( String preferenceKey, String[] defaultValue ) {
-        if (preferencesDb != null) {
-            return preferencesDb.getPreference(preferenceKey, defaultValue);
-        }
-        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
-        String preference = preferences.get(preferenceKey, "");
-        String[] split = preference.split(PREF_STRING_SEPARATORS);
-        return split;
-    }
-
-    public static byte[] getPreference( String preferenceKey, byte[] defaultValue ) {
-        if (preferencesDb != null) {
-            return preferencesDb.getPreference(preferenceKey, defaultValue);
-        }
-        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
-        byte[] preference = preferences.getByteArray(preferenceKey, defaultValue);
-        return preference;
-    }
-
-    /**
-     * Set a preference.
-     * 
-     * @param preferenceKey
-     *            the preference key.
-     * @param value
-     *            the value to set.
-     */
-    public static void setPreference( String preferenceKey, String value ) {
-        if (preferencesDb != null) {
-            preferencesDb.setPreference(preferenceKey, value);
-            return;
-        }
-
-        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
-        if (value != null) {
-            preferences.put(preferenceKey, value);
-        } else {
-            preferences.remove(preferenceKey);
-        }
-    }
-
-    public static void setPreference( String preferenceKey, byte[] value ) {
-        if (preferencesDb != null) {
-            preferencesDb.setPreference(preferenceKey, value);
-            return;
-        }
-        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
-        if (value != null) {
-            preferences.putByteArray(preferenceKey, value);
-        } else {
-            preferences.remove(preferenceKey);
-        }
-    }
-
-    public static void setPreference( String preferenceKey, String[] valuesArray ) {
-        if (preferencesDb != null) {
-            preferencesDb.setPreference(preferenceKey, valuesArray);
-            return;
-        }
-        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
-        if (valuesArray != null) {
-            int maxLength = Preferences.MAX_VALUE_LENGTH;
-            String arrayToString = Stream.of(valuesArray).collect(Collectors.joining(PREF_STRING_SEPARATORS));
-
-            // remove from last if it is too large
-            int remIndex = valuesArray.length - 1;
-            while( arrayToString.length() > maxLength ) {
-                valuesArray[remIndex--] = "";
-                arrayToString = Stream.of(valuesArray).collect(Collectors.joining(PREF_STRING_SEPARATORS));
-            }
-
-            preferences.put(preferenceKey, arrayToString);
-        } else {
-            preferences.remove(preferenceKey);
-        }
-    }
-
     public static void applyComponentOrientation( Component component, ComponentOrientation co ) {
         component.applyComponentOrientation(co);
-    }
-
-    public static ComponentOrientation getComponentOrientation() {
-        String orientationString = getPreference(PREF_ORIENTATION, LEFT_TO_RIGHT);
-        if (orientationString.equals(RIGHT_TO_LEFT)) {
-            return ComponentOrientation.RIGHT_TO_LEFT;
-        } else {
-            return ComponentOrientation.LEFT_TO_RIGHT;
-        }
-    }
-
-    public static void saveComponentOrientation( ComponentOrientation orientation ) {
-        setPreference(PREF_ORIENTATION, orientation.isLeftToRight() ? LEFT_TO_RIGHT : RIGHT_TO_LEFT);
-    }
-
-    public static void saveComponentOrientation( String orientationString ) {
-        setPreference(PREF_ORIENTATION, orientationString);
     }
 
     public static void copyToClipboard( String text ) {
@@ -560,12 +399,12 @@ public class GuiUtilities {
         }
         FileFilter _filter = filter;
         browseButton.addActionListener(e -> {
-            File lastFile = GuiUtilities.getLastFile();
+            File lastFile = PreferencesHandler.getLastFile();
             File[] res = showOpenFilesDialog(browseButton, "Select file", false, lastFile, _filter);
             if (res != null && res.length == 1) {
                 String absolutePath = res[0].getAbsolutePath();
                 pathTextField.setText(absolutePath);
-                setLastPath(absolutePath);
+                PreferencesHandler.setLastPath(absolutePath);
             } else {
                 pathTextField.setText("");
             }
@@ -583,12 +422,12 @@ public class GuiUtilities {
      */
     public static void setFolderBrowsingOnWidgets( JTextField pathTextField, JButton browseButton ) {
         browseButton.addActionListener(e -> {
-            File lastFile = GuiUtilities.getLastFile();
+            File lastFile = PreferencesHandler.getLastFile();
             File[] res = showOpenFolderDialog(browseButton, "Select folder", false, lastFile);
             if (res != null && res.length == 1) {
                 String absolutePath = res[0].getAbsolutePath();
                 pathTextField.setText(absolutePath);
-                setLastPath(absolutePath);
+                PreferencesHandler.setLastPath(absolutePath);
             }
         });
     }
@@ -618,7 +457,7 @@ public class GuiUtilities {
                 } else {
                     File selectedFile = fc.getSelectedFile();
                     if (selectedFile != null && selectedFile.exists())
-                        GuiUtilities.setLastPath(selectedFile.getAbsolutePath());
+                        PreferencesHandler.setLastPath(selectedFile.getAbsolutePath());
                     this.returnValue = new File[]{selectedFile};
                 }
 
@@ -653,7 +492,7 @@ public class GuiUtilities {
 
                 File selectedFile = fc.getSelectedFile();
                 if (selectedFile != null && selectedFile.getParentFile().exists())
-                    GuiUtilities.setLastPath(selectedFile.getParentFile().getAbsolutePath());
+                    PreferencesHandler.setLastPath(selectedFile.getParentFile().getAbsolutePath());
                 this.returnValue = selectedFile;
 
             }
@@ -693,7 +532,7 @@ public class GuiUtilities {
                 } else {
                     File selectedFile = fc.getSelectedFile();
                     if (selectedFile != null && selectedFile.exists())
-                        GuiUtilities.setLastPath(selectedFile.getAbsolutePath());
+                        PreferencesHandler.setLastPath(selectedFile.getAbsolutePath());
                     this.returnValue = new File[]{selectedFile};
                 }
 

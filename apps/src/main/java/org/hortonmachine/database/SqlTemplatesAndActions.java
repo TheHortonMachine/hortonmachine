@@ -45,6 +45,7 @@ import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
@@ -305,11 +306,11 @@ public class SqlTemplatesAndActions {
         return new AbstractAction("Create table from shapefile"){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile(),
+                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", PreferencesHandler.getLastFile(),
                         HMConstants.vectorFileFilter);
                 if (openFiles != null && openFiles.length > 0) {
                     try {
-                        GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
+                        PreferencesHandler.setLastPath(openFiles[0].getAbsolutePath());
                     } catch (Exception e1) {
                         logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
                     }
@@ -340,11 +341,11 @@ public class SqlTemplatesAndActions {
             return new AbstractAction("Attach readonly shapefile"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
-                    File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile(),
+                    File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", PreferencesHandler.getLastFile(),
                             HMConstants.vectorFileFilter);
                     if (openFiles != null && openFiles.length > 0) {
                         try {
-                            GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
+                            PreferencesHandler.setLastPath(openFiles[0].getAbsolutePath());
                         } catch (Exception e1) {
                             logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
                         }
@@ -421,11 +422,11 @@ public class SqlTemplatesAndActions {
         return new AbstractAction("Import data from shapefile"){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", GuiUtilities.getLastFile(),
+                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", PreferencesHandler.getLastFile(),
                         HMConstants.vectorFileFilter);
                 if (openFiles != null && openFiles.length > 0) {
                     try {
-                        GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
+                        PreferencesHandler.setLastPath(openFiles[0].getAbsolutePath());
                     } catch (Exception e1) {
                         logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
                     }
@@ -533,10 +534,10 @@ public class SqlTemplatesAndActions {
         return new AbstractAction("Import sql file"){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                File[] openFiles = guiBridge.showOpenFileDialog("Open sql file", GuiUtilities.getLastFile(), null);
+                File[] openFiles = guiBridge.showOpenFileDialog("Open sql file", PreferencesHandler.getLastFile(), null);
                 if (openFiles != null && openFiles.length > 0) {
                     try {
-                        GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
+                        PreferencesHandler.setLastPath(openFiles[0].getAbsolutePath());
                     } catch (Exception e1) {
                         logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
                     }
@@ -584,7 +585,7 @@ public class SqlTemplatesAndActions {
                             "db connection " + new DateTime().toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSS));
                     connectionData.connectionLabel = newName;
 
-                    byte[] savedDbs = GuiUtilities.getPreference(HM_SAVED_DATABASES, new byte[0]);
+                    byte[] savedDbs = PreferencesHandler.getPreference(HM_SAVED_DATABASES, new byte[0]);
                     List<ConnectionData> connectionDataList = new ArrayList<>();
                     try {
                         connectionDataList = (List<ConnectionData>) convertFromBytes(savedDbs);
@@ -594,7 +595,7 @@ public class SqlTemplatesAndActions {
                     connectionDataList.add(connectionData);
 
                     byte[] inBytes = convertObjectToBytes(connectionDataList);
-                    GuiUtilities.setPreference(HM_SAVED_DATABASES, inBytes);
+                    PreferencesHandler.setPreference(HM_SAVED_DATABASES, inBytes);
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }

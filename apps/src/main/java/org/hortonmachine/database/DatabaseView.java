@@ -38,7 +38,6 @@ public class DatabaseView extends JPanel
    JButton _historyButton = new JButton();
    JButton _templatesButton = new JButton();
    JButton _connectRemoteDbButton = new JButton();
-   JButton _settingsButton = new JButton();
    JCheckBox _refreshTreeAfterQueryCheckbox = new JCheckBox();
    JLabel _limitCountLabel = new JLabel();
    JTextField _limitCountTextfield = new JTextField();
@@ -263,12 +262,7 @@ public class DatabaseView extends JPanel
       _connectRemoteDbButton.setText("Connect Remote");
       jpanel1.add(_connectRemoteDbButton,cc.xy(5,1));
 
-      _settingsButton.setActionCommand("Templates");
-      _settingsButton.setName("settingsButton");
-      _settingsButton.setText("Settings");
-      jpanel1.add(_settingsButton,cc.xy(13,1));
-
-      addFillComponents(jpanel1,new int[]{ 2,4,6,8,10,12,14,15 },new int[0]);
+      addFillComponents(jpanel1,new int[]{ 2,4,6,8,10,12,13,14,15 },new int[0]);
       return jpanel1;
    }
 

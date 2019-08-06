@@ -59,6 +59,7 @@ import org.hortonmachine.gears.modules.r.houghes.OmsHoughCirclesRaster;
 import org.hortonmachine.gears.modules.v.vectorize.OmsVectorizer;
 import org.hortonmachine.gears.ui.progress.ProgressUpdate;
 import org.hortonmachine.gears.utils.BitMatrix;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.TransformationUtils;
 import org.hortonmachine.gears.utils.colors.ColorInterpolator;
@@ -134,7 +135,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
 
         _boundsLoadButton.addActionListener(e -> {
             File[] shpFile = GuiUtilities.showOpenFilesDialog(_boundsLoadButton, "Select bounds file...", false,
-                    GuiUtilities.getLastFile(), new GuiUtilities.ShpFileFilter());
+                    PreferencesHandler.getLastFile(), new GuiUtilities.ShpFileFilter());
             if (shpFile != null) {
                 new ExecutorIndeterminateGui(){
                     @Override
@@ -164,7 +165,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
 
         _convertButton.addActionListener(e -> {
             if (checkReader()) {
-                File saveFile = GuiUtilities.showSaveFileDialog(this, "Save to file", GuiUtilities.getLastFile());
+                File saveFile = GuiUtilities.showSaveFileDialog(this, "Save to file", PreferencesHandler.getLastFile());
                 if (saveFile != null) {
                     exportAction(saveFile);
                 }
@@ -172,7 +173,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         });
         _createOverviewButton.addActionListener(e -> {
             if (checkReader()) {
-                File saveFile = GuiUtilities.showSaveFileDialog(this, "Save to file", GuiUtilities.getLastFile());
+                File saveFile = GuiUtilities.showSaveFileDialog(this, "Save to file", PreferencesHandler.getLastFile());
                 if (saveFile != null) {
                     createOverviewAction(saveFile);
                 }
@@ -393,7 +394,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         });
         _circlesSaveShpButton.addActionListener(e -> {
             if (checkReader()) {
-                File saveFile = GuiUtilities.showSaveFileDialog(this, "Save circles to shp", GuiUtilities.getLastFile());
+                File saveFile = GuiUtilities.showSaveFileDialog(this, "Save circles to shp", PreferencesHandler.getLastFile());
                 if (saveFile != null) {
                     new ExecutorIndeterminateGui(){
                         @Override

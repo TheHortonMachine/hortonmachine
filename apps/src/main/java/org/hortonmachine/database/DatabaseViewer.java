@@ -42,7 +42,9 @@ import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gui.console.LogConsoleController;
+import org.hortonmachine.gui.settings.SettingsController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
@@ -320,12 +322,19 @@ public class DatabaseViewer extends DatabaseController {
 
         return actions;
     }
+    
+    @Override
+    public void onClose() {
+        SettingsController.onCloseHandleSettings();
+        super.onClose();
+    }
 
     public static void main( String[] args ) throws Exception {
         GuiUtilities.setDefaultLookAndFeel();
 
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
         final DatabaseViewer controller = new DatabaseViewer(gBridge);
+        SettingsController.applySettings(controller);
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Database Viewer");
 
         frame.setIconImage(ImageCache.getBuffered(ImageCache.HORTONMACHINE_FRAME_ICON));
@@ -336,7 +345,7 @@ public class DatabaseViewer extends DatabaseController {
         if (args.length > 0 && new File(args[0]).exists()) {
             openFile = new File(args[0]);
         } else {
-            String lastPath = GuiUtilities.getPreference(DatabaseGuiUtils.HM_SPATIALITE_LAST_FILE, (String) null);
+            String lastPath = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_SPATIALITE_LAST_FILE, (String) null);
             if (lastPath != null) {
                 File tmp = new File(lastPath);
                 if (tmp.exists()) {

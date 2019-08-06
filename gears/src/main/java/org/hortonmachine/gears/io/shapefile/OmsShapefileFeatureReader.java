@@ -31,6 +31,17 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREAD
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+
+import org.geotools.data.FileDataStore;
+import org.geotools.data.FileDataStoreFinder;
+import org.geotools.data.shapefile.ShapefileDataStore;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.feature.FeatureCollection;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -43,16 +54,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.data.FeatureSource;
-import org.geotools.data.FileDataStore;
-import org.geotools.data.FileDataStoreFinder;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.feature.FeatureCollection;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
 
 @Description(OMSSHAPEFILEFEATUREREADER_DESCRIPTION)
 @Author(name = OMSSHAPEFILEFEATUREREADER_AUTHORNAMES, contact = OMSSHAPEFILEFEATUREREADER_AUTHORCONTACTS)
@@ -83,6 +84,13 @@ public class OmsShapefileFeatureReader extends HMModel {
             File shapeFile = new File(file);
             pm.beginTask("Reading features from shapefile: " + shapeFile.getName(), -1);
             FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
+            if (store instanceof ShapefileDataStore) {
+                ShapefileDataStore shpStore = (ShapefileDataStore) store;
+                String shpCharset = PreferencesHandler.getShpCharset();
+                if (shpCharset != null) {
+                    shpStore.setCharset(Charset.forName(shpCharset));
+                }
+            }
             SimpleFeatureSource featureSource = store.getFeatureSource();
             geodata = featureSource.getFeatures();
             store.dispose();

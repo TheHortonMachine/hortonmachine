@@ -7,7 +7,6 @@ import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.ScrollPane;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.font.TextAttribute;
@@ -20,7 +19,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.swing.Box;
@@ -64,8 +62,10 @@ import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemPicture;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemSketch;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemText;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemTime;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gui.settings.SettingsController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
@@ -91,8 +91,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         PICTURE, SKETCH, MAP
     };
 
-    public FormBuilderController( ComponentOrientation co, File tagsFile ) throws Exception {
-        this.co = co;
+    public FormBuilderController( File tagsFile ) throws Exception {
         setPreferredSize(new Dimension(1000, 800));
 
         if (tagsFile != null && tagsFile.exists()) {
@@ -109,6 +108,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
     private void init() throws Exception {
         _filePathtext.setEditable(false);
 
+        co = PreferencesHandler.getComponentOrientation();
         _buttonsTabPane.setTabPlacement(co.isLeftToRight() ? JTabbedPane.LEFT : JTabbedPane.RIGHT);
         _buttonsTabPane.addChangeListener(this);
         _buttonsTabPane.setBounds(20, 20, 500, 500);
@@ -130,12 +130,12 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                 }
             };
             fileChooser.setFileFilter(fileFilter);
-            fileChooser.setCurrentDirectory(GuiUtilities.getLastFile());
+            fileChooser.setCurrentDirectory(PreferencesHandler.getLastFile());
             int result = fileChooser.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 selectedFile = fileChooser.getSelectedFile();
                 if (selectedFile != null) {
-                    GuiUtilities.setLastPath(selectedFile.getAbsolutePath());
+                    PreferencesHandler.setLastPath(selectedFile.getAbsolutePath());
                     try {
                         openTagsFile();
                         _filePathtext.setText(selectedFile.getAbsolutePath());
@@ -150,7 +150,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
         _newButton.setText("new");
         _newButton.addActionListener(e -> {
-            File createdFile = GuiUtilities.showSaveFileDialog(this, "Create new tags file", GuiUtilities.getLastFile());
+            File createdFile = GuiUtilities.showSaveFileDialog(this, "Create new tags file", PreferencesHandler.getLastFile());
             try {
                 selectedFile = createdFile;
                 if (selectedFile != null) {
@@ -160,7 +160,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                         selectedFile = new File(absolutePath);
                     }
                     FileUtilities.writeFile("[]", selectedFile);
-                    GuiUtilities.setLastPath(absolutePath);
+                    PreferencesHandler.setLastPath(absolutePath);
                     try {
                         _buttonsTabPane.removeAll();
                         openTagsFile();
@@ -359,21 +359,6 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         }).sorted().collect(Collectors.toList());
 
         _widgetsCombo.setModel(new DefaultComboBoxModel<String>(widgetNames.toArray(new String[0])));
-
-        _settingsButton.setText("");
-        _settingsButton.setIcon(ImageCache.get(ImageCache.SETTINGS));
-        int s = 48;
-        _settingsButton.setPreferredSize(new Dimension(s, s));
-        _settingsButton.addActionListener(e -> {
-            String selection = GuiUtilities.showComboDialog(this, "Configure Orientation", "Select the component orientation",
-                    new String[]{GuiUtilities.LEFT_TO_RIGHT, GuiUtilities.RIGHT_TO_LEFT},
-                    co.isLeftToRight() ? GuiUtilities.LEFT_TO_RIGHT : GuiUtilities.RIGHT_TO_LEFT);
-            if (selection != null) {
-                GuiUtilities.saveComponentOrientation(selection);
-                GuiUtilities.showInfoMessage(this, "Please restart for the changes to take effect.");
-            }
-
-        });
 
         if (selectedFile != null) {
             openTagsFile();
@@ -1297,9 +1282,8 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             openFile = new File(args[0]);
         }
 
-        ComponentOrientation co = GuiUtilities.getComponentOrientation();
-        final FormBuilderController controller = new FormBuilderController(co, openFile);
-        GuiUtilities.applyComponentOrientation(controller, co);
+        final FormBuilderController controller = new FormBuilderController(openFile);
+        SettingsController.applySettings(controller);
 
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Geopaparazzi Form Builder");
 
@@ -1313,8 +1297,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
     @Override
     public void onClose() {
-        // TODO Auto-generated method stub
-
+        SettingsController.onCloseHandleSettings();
     }
 
     @Override

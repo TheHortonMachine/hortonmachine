@@ -31,6 +31,7 @@ import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.DataUtilities;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.console.ProcessLogConsoleController;
 import org.hortonmachine.gui.spatialtoolbox.core.SpatialToolboxConstants;
@@ -95,12 +96,12 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         if (manualAdd) {
             _comboAddLayerlayout.removeAll();
             _addMapButton.addActionListener(( e ) -> {
-                File[] files = guiBridge.showOpenFileDialog("Select raster map file", GuiUtilities.getLastFile(),
+                File[] files = guiBridge.showOpenFileDialog("Select raster map file", PreferencesHandler.getLastFile(),
                         HMConstants.rasterFileFilter);
                 if (files != null && files.length > 0) {
                     for( File file : files ) {
                         String absolutePath = file.getAbsolutePath();
-                        GuiUtilities.setLastPath(absolutePath);
+                        PreferencesHandler.setLastPath(absolutePath);
                         String name = FileUtilities.getNameWithoutExtention(file);
                         
                         absolutePath = FileUtilities.replaceBackSlashesWithSlashes(absolutePath);
@@ -117,7 +118,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
                     File file = getFileForLayerName(layerName);
                     if (file != null) {
                         String absolutePath = file.getAbsolutePath();
-                        GuiUtilities.setLastPath(absolutePath);
+                        PreferencesHandler.setLastPath(absolutePath);
                         String name = FileUtilities.getNameWithoutExtention(file);
                         
                         absolutePath = FileUtilities.replaceBackSlashesWithSlashes(absolutePath);
@@ -128,12 +129,12 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         }
 
         _outPathButton.addActionListener(( e ) -> {
-            File[] files = guiBridge.showSaveFileDialog("Choose output file", GuiUtilities.getLastFile(),
+            File[] files = guiBridge.showSaveFileDialog("Choose output file", PreferencesHandler.getLastFile(),
                     HMConstants.rasterFileFilter);
             if (files != null && files.length > 0) {
                 for( File file : files ) {
                     String absolutePath = file.getAbsolutePath();
-                    GuiUtilities.setLastPath(absolutePath);
+                    PreferencesHandler.setLastPath(absolutePath);
                     absolutePath = FileUtilities.replaceBackSlashesWithSlashes(absolutePath);
                     _outputPathText.setText(absolutePath);
                 }
@@ -230,7 +231,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
 
         });
 
-        String[] historyArray = GuiUtilities.getPreference(MAPCALC_HISTORY_KEY, new String[]{""});
+        String[] historyArray = PreferencesHandler.getPreference(MAPCALC_HISTORY_KEY, new String[]{""});
         for( String entry : historyArray ) {
             historyList.add(entry);
         }
@@ -424,7 +425,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         prefsMap.put(GuiBridgeHandler.HEAP_KEY, ramLevel);
         guiBridge.setSpatialToolboxPreferencesMap(prefsMap);
 
-        GuiUtilities.setPreference(MAPCALC_HISTORY_KEY, historyList.toArray(new String[0]));
+        PreferencesHandler.setPreference(MAPCALC_HISTORY_KEY, historyList.toArray(new String[0]));
     }
 
     public boolean canCloseWithoutPrompt() {

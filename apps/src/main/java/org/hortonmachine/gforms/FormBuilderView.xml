@@ -387,7 +387,7 @@
          </at>
          <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
         </super>
-        <at name="id">embedded.1538703363</at>
+        <at name="id">embedded.475727589</at>
         <at name="rowspecs">FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE</at>
         <at name="colspecs">FILL:DEFAULT:GROW(1.0),FILL:24DLU:NONE</at>
         <at name="components">
@@ -409,7 +409,7 @@
               </at>
               <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
              </super>
-             <at name="id">embedded.1564131967</at>
+             <at name="id">embedded.1157799628</at>
              <at name="rowspecs">CENTER:DEFAULT:NONE</at>
              <at name="colspecs">FILL:100DLU:NONE,FILL:4DLU:NONE,FILL:24DLU:NONE,FILL:30DLU:NONE,FILL:100DLU:NONE,FILL:4DLU:NONE,FILL:24DLU:NONE</at>
              <at name="components">
@@ -901,62 +901,6 @@
                  <at name="width">62</at>
                  <at name="text">del</at>
                  <at name="toolTipText">Delete current tab from the section.</at>
-                 <at name="height">31</at>
-                </object>
-               </at>
-              </object>
-             </at>
-            </object>
-           </at>
-          </item>
-          <item >
-           <at name="value">
-            <object classname="com.jeta.forms.store.memento.BeanMemento">
-             <super classname="com.jeta.forms.store.memento.ComponentMemento">
-              <at name="cellconstraints">
-               <object classname="com.jeta.forms.store.memento.CellConstraintsMemento">
-                <at name="column">2</at>
-                <at name="row">7</at>
-                <at name="colspan">1</at>
-                <at name="rowspan">1</at>
-                <at name="halign">default</at>
-                <at name="valign">default</at>
-                <at name="insets" object="insets">0,0,0,0</at>
-               </object>
-              </at>
-              <at name="componentclass">com.jeta.forms.gui.form.StandardComponent</at>
-             </super>
-             <at name="jetabeanclass">com.jeta.forms.gui.beans.JETABean</at>
-             <at name="beanclass">javax.swing.JButton</at>
-             <at name="beanproperties">
-              <object classname="com.jeta.forms.store.memento.PropertiesMemento">
-               <at name="classname">javax.swing.JButton</at>
-               <at name="properties">
-                <object classname="com.jeta.forms.store.support.PropertyMap">
-                 <at name="border">
-                  <object classname="com.jeta.forms.store.properties.CompoundBorderProperty">
-                   <super classname="com.jeta.forms.store.properties.BorderProperty">
-                    <at name="name">border</at>
-                   </super>
-                   <at name="borders">
-                    <object classname="java.util.LinkedList">
-                     <item >
-                      <at name="value">
-                       <object classname="com.jeta.forms.store.properties.DefaultBorderProperty">
-                        <super classname="com.jeta.forms.store.properties.BorderProperty">
-                         <at name="name">border</at>
-                        </super>
-                       </object>
-                      </at>
-                     </item>
-                    </object>
-                   </at>
-                  </object>
-                 </at>
-                 <at name="actionCommand">S</at>
-                 <at name="name">settingsButton</at>
-                 <at name="width">62</at>
-                 <at name="text">S</at>
                  <at name="height">31</at>
                 </object>
                </at>

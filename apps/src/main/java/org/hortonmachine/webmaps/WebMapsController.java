@@ -35,9 +35,11 @@ import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.images.WmsWrapper;
+import org.hortonmachine.gui.settings.SettingsController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
@@ -126,7 +128,7 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
         });
 
         _boundsLoadButton.addActionListener(e -> {
-            File[] selFile = GuiUtilities.showOpenFilesDialog(this, "Select file", false, GuiUtilities.getLastFile(),
+            File[] selFile = GuiUtilities.showOpenFilesDialog(this, "Select file", false, PreferencesHandler.getLastFile(),
                     new FileFilter(){
 
                         @Override
@@ -162,7 +164,7 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
         });
 
         _outputSaveButton.addActionListener(e -> {
-            File saveFile = GuiUtilities.showSaveFileDialog(this, "Save to geotiff", GuiUtilities.getLastFile());
+            File saveFile = GuiUtilities.showSaveFileDialog(this, "Save to geotiff", PreferencesHandler.getLastFile());
             if (saveFile != null) {
                 _outputFileField.setText(saveFile.getAbsolutePath());
             }
@@ -399,6 +401,7 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
 
     @Override
     public void onClose() {
+        SettingsController.onCloseHandleSettings();
     }
 
     public boolean canCloseWithoutPrompt() {
@@ -411,6 +414,7 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
 
         final WebMapsController controller = new WebMapsController();
+        SettingsController.applySettings(controller);
 
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Web Maps Downloader");
 

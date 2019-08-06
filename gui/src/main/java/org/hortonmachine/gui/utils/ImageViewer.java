@@ -40,6 +40,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.images.ImageUtilities;
 
 /**
@@ -112,7 +113,7 @@ public class ImageViewer extends JComponent {
                 JMenuItem item2 = new JMenuItem(new AbstractAction("Save image"){
                     @Override
                     public void actionPerformed( ActionEvent e ) {
-                        File saveFile = GuiUtilities.showSaveFileDialog(popupMenu, "Save image", GuiUtilities.getLastFile());
+                        File saveFile = GuiUtilities.showSaveFileDialog(popupMenu, "Save image", PreferencesHandler.getLastFile());
                         String name = saveFile.getName().toLowerCase();
                         String format = "png";
                         if (name.endsWith("jpg") || name.endsWith("jpeg")) {

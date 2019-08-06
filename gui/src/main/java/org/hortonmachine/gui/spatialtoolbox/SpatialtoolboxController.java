@@ -77,6 +77,7 @@ import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.DataUtilities;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.console.ProcessLogConsoleController;
@@ -202,10 +203,10 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         _runScriptButton.setToolTipText("Run a script from file.");
         _runScriptButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
-                File[] loadFiles = guiBridge.showOpenFileDialog("Load script", GuiUtilities.getLastFile(), null);
+                File[] loadFiles = guiBridge.showOpenFileDialog("Load script", PreferencesHandler.getLastFile(), null);
                 if (loadFiles != null && loadFiles.length > 0) {
                     try {
-                        GuiUtilities.setLastPath(loadFiles[0].getAbsolutePath());
+                        PreferencesHandler.setLastPath(loadFiles[0].getAbsolutePath());
                         String readFile = FileUtilities.readFile(loadFiles[0]);
 
                         final ProcessLogConsoleController logConsole = new ProcessLogConsoleController();
@@ -247,10 +248,10 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
                 StringBuilder scriptBuilder = getScript(fieldName2ValueHolderMap, outputFieldNames, outputStringsMap,
                         moduleClass);
 
-                File[] saveFiles = guiBridge.showSaveFileDialog("Save script", GuiUtilities.getLastFile(), null);
+                File[] saveFiles = guiBridge.showSaveFileDialog("Save script", PreferencesHandler.getLastFile(), null);
                 if (saveFiles != null && saveFiles.length > 0) {
                     try {
-                        GuiUtilities.setLastPath(saveFiles[0].getAbsolutePath());
+                        PreferencesHandler.setLastPath(saveFiles[0].getAbsolutePath());
                         FileUtilities.writeFile(scriptBuilder.toString(), saveFiles[0]);
                     } catch (IOException e1) {
                         e1.printStackTrace();

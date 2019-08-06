@@ -92,6 +92,7 @@ import org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.Metadat
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.modules.v.smoothing.FeatureSlidingAverage;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
@@ -193,10 +194,10 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
         _projectsFolderBrowseButton.setPreferredSize(preferredButtonSize);
         _projectsFolderBrowseButton.addActionListener(e -> {
-            File[] openFiles = guiBridge.showOpenDirectoryDialog("Open projects folder", GuiUtilities.getLastFile());
+            File[] openFiles = guiBridge.showOpenDirectoryDialog("Open projects folder", PreferencesHandler.getLastFile());
             if (openFiles != null && openFiles.length > 0) {
                 try {
-                    GuiUtilities.setLastPath(openFiles[0].getAbsolutePath());
+                    PreferencesHandler.setLastPath(openFiles[0].getAbsolutePath());
                 } catch (Exception e1) {
                     Logger.INSTANCE.insertError("", "ERROR", e1);
                 }

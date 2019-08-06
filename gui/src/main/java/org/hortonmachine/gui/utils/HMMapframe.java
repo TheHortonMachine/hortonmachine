@@ -45,9 +45,11 @@ import org.geotools.tile.util.TileLayer;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.style.StyleUtilities;
+import org.hortonmachine.gui.settings.SettingsController;
 
 /**
  * A simple map frame where layers can be set or added with default styles.
@@ -221,7 +223,7 @@ public class HMMapframe extends JMapFrame {
             }
         } else {
             File[] openFolder = GuiUtilities.showOpenFolderDialog(null, "Select folder to show", false,
-                    GuiUtilities.getLastFile());
+                    PreferencesHandler.getLastFile());
             if (openFolder != null && openFolder.length > 0) {
                 openFile = openFolder[0];
             }
@@ -229,6 +231,7 @@ public class HMMapframe extends JMapFrame {
 
         if (openFile != null) {
             HMMapframe mf = openFolder(openFile);
+            SettingsController.applySettings(mf);
             mf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         } else {
             GuiUtilities.showWarningMessage(null, "No data folder supplied!");

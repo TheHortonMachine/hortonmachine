@@ -46,6 +46,7 @@ import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Db;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
@@ -148,11 +149,11 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
             };
             fileChooser.setFileFilter(fileFilter);
-            fileChooser.setCurrentDirectory(GuiUtilities.getLastFile());
+            fileChooser.setCurrentDirectory(PreferencesHandler.getLastFile());
             int result = fileChooser.showOpenDialog((Component) wwjPanel);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
-                GuiUtilities.setLastPath(selectedFile.getAbsolutePath());
+                PreferencesHandler.setLastPath(selectedFile.getAbsolutePath());
 
                 CurrentGpsPointLayer currentGpsPointLayer = new CurrentGpsPointLayer(null, null, null, null, null);
                 SimplePointsLayer simplePointsLayer = new SimplePointsLayer("GPS Points");
@@ -198,7 +199,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
             };
             fileChooser.setFileFilter(fileFilter);
-            fileChooser.setCurrentDirectory(GuiUtilities.getLastFile());
+            fileChooser.setCurrentDirectory(PreferencesHandler.getLastFile());
             int result = fileChooser.showOpenDialog((Component) wwjPanel);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File[] selectedFiles = fileChooser.getSelectedFiles();
@@ -228,14 +229,14 @@ public class ToolsPanelController extends ToolsPanelView {
                             }
                         });
                         for( File file : listFiles ) {
-                            GuiUtilities.setLastPath(file.getAbsolutePath());
+                            PreferencesHandler.setLastPath(file.getAbsolutePath());
                             loadFile(file);
                         }
                     }
 
                 } else {
                     if (selectedFiles != null && selectedFiles.length > 0) {
-                        GuiUtilities.setLastPath(selectedFiles[0].getAbsolutePath());
+                        PreferencesHandler.setLastPath(selectedFiles[0].getAbsolutePath());
                         if (selectedFiles.length == 1) {
                             loadFile(selectedFiles[0]);
                         } else {

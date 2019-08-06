@@ -105,8 +105,8 @@ import org.hortonmachine.gears.libs.modules.HMFileFilter;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.chart.CategoryHistogram;
-import org.hortonmachine.gears.utils.chart.PlotFrame;
 import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
@@ -197,7 +197,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     private void init() {
 
-        String[] oldSqlCommandsArray = GuiUtilities.getPreference("HM_OLD_SQL_COMMANDS", new String[0]);
+        String[] oldSqlCommandsArray = PreferencesHandler.getPreference("HM_OLD_SQL_COMMANDS", new String[0]);
         for( String oldSql : oldSqlCommandsArray ) {
             oldSqlCommands.add(oldSql);
         }
@@ -308,9 +308,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             JDialog f = new JDialog();
             f.setModal(true);
 
-            String lastPath = GuiUtilities.getPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, "");
-            String lastUser = GuiUtilities.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, "sa");
-            String lastPwd = GuiUtilities.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, "");
+            String lastPath = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, "");
+            String lastUser = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, "sa");
+            String lastPwd = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, "");
             NewDbController newDb = new NewDbController(f, guiBridge, true, lastPath, null, lastUser, lastPwd, true);
             f.add(newDb, BorderLayout.CENTER);
             f.setTitle("Open database");
@@ -328,15 +328,15 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 boolean connectInRemote = newDb.connectInRemote();
 
                 if (connectInRemote) {
-                    GuiUtilities.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, dbPath);
+                    PreferencesHandler.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, dbPath);
                     dbPath = "jdbc:h2:tcp://localhost:9092/" + dbPath;
-                    GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, user);
-                    GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, pwd);
+                    PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, user);
+                    PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, pwd);
                     openRemoteDatabase(dbPath, user, pwd);
                 } else {
-                    GuiUtilities.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, dbPath);
-                    GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, user);
-                    GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, pwd);
+                    PreferencesHandler.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, dbPath);
+                    PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, user);
+                    PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, pwd);
                     openDatabase(dbType, dbPath, user, pwd);
                 }
 
@@ -353,10 +353,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             JDialog f = new JDialog();
             f.setModal(true);
 
-            String lastPath = GuiUtilities.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_URL,
+            String lastPath = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_URL,
                     "jdbc:h2:tcp://localhost:9092/absolute_dbpath");
-            String lastUser = GuiUtilities.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, "sa");
-            String lastPwd = GuiUtilities.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, "");
+            String lastUser = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, "sa");
+            String lastPwd = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, "");
 
             NewDbController newDb = new NewDbController(f, guiBridge, false, null, lastPath, lastUser, lastPwd, false);
             f.add(newDb, BorderLayout.CENTER);
@@ -371,8 +371,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 String dbPath = newDb.getDbPath();
                 String user = newDb.getDbUser();
                 String pwd = newDb.getDbPwd();
-                GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, user);
-                GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, pwd);
+                PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, user);
+                PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, pwd);
                 openRemoteDatabase(dbPath, user, pwd);
             }
 
@@ -431,20 +431,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     String sql = templatesMap.get(selected);
                     addTextToQueryEditor(sql);
                 }
-            } catch (Exception e1) {
-                Logger.INSTANCE.insertError("", "ERROR", e1);
-            }
-        });
-
-        _settingsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        _settingsButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        _settingsButton.setText("Settings");
-        _settingsButton.setToolTipText("Settings for proxy and ssh tunnel.");
-        _settingsButton.setPreferredSize(preferredToolbarButtonSize);
-        _settingsButton.setIcon(ImageCache.getInstance().getImage(ImageCache.SETTINGS));
-        _settingsButton.addActionListener(e -> {
-            try {
-                SettingsController.openSettings();
             } catch (Exception e1) {
                 Logger.INSTANCE.insertError("", "ERROR", e1);
             }
@@ -561,10 +547,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             String sqlText = currentSqlEditorArea.getText().trim();
             if (sqlText.length() > 0) {
                 if (isSelectOrPragma(sqlText)) {
-                    File[] saveFiles = guiBridge.showSaveFileDialog("Select file to save to", GuiUtilities.getLastFile(), null);
+                    File[] saveFiles = guiBridge.showSaveFileDialog("Select file to save to", PreferencesHandler.getLastFile(),
+                            null);
                     if (saveFiles != null && saveFiles.length > 0) {
                         try {
-                            GuiUtilities.setLastPath(saveFiles[0].getAbsolutePath());
+                            PreferencesHandler.setLastPath(saveFiles[0].getAbsolutePath());
                         } catch (Exception e1) {
                             Logger.INSTANCE.insertError("", "ERROR", e1);
                         }
@@ -619,11 +606,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             String sqlText = currentSqlEditorArea.getText().trim();
             if (sqlText.length() > 0) {
                 if (sqlText.toLowerCase().startsWith("select")) {
-                    File[] saveFiles = guiBridge.showSaveFileDialog("Select shapefile to save to", GuiUtilities.getLastFile(),
-                            HMConstants.vectorFileFilter);
+                    File[] saveFiles = guiBridge.showSaveFileDialog("Select shapefile to save to",
+                            PreferencesHandler.getLastFile(), HMConstants.vectorFileFilter);
                     if (saveFiles != null && saveFiles.length > 0) {
                         try {
-                            GuiUtilities.setLastPath(saveFiles[0].getAbsolutePath());
+                            PreferencesHandler.setLastPath(saveFiles[0].getAbsolutePath());
                         } catch (Exception e1) {
                             Logger.INSTANCE.insertError("", "ERROR", e1);
                         }
@@ -716,7 +703,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         try {
-                            byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
+                            byte[] savedQueries = PreferencesHandler.getPreference(HM_SAVED_QUERIES, new byte[0]);
                             List<SqlData> sqlDataList;
                             if (savedQueries.length == 0) {
                                 sqlDataList = new ArrayList<>();
@@ -753,7 +740,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         try {
-                            byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
+                            byte[] savedQueries = PreferencesHandler.getPreference(HM_SAVED_QUERIES, new byte[0]);
                             List<SqlData> sqlDataList = new ArrayList<>();
                             if (savedQueries.length != 0) {
                                 sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
@@ -775,7 +762,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             sqlDataList.add(sd);
 
                             byte[] bytesToSave = SqlTemplatesAndActions.convertObjectToBytes(sqlDataList);
-                            GuiUtilities.setPreference(HM_SAVED_QUERIES, bytesToSave);
+                            PreferencesHandler.setPreference(HM_SAVED_QUERIES, bytesToSave);
 
                         } catch (Exception e1) {
                             e1.printStackTrace();
@@ -790,7 +777,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         try {
-                            byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
+                            byte[] savedQueries = PreferencesHandler.getPreference(HM_SAVED_QUERIES, new byte[0]);
                             List<SqlData> sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
                             Set<String> checkSet = new TreeSet<>();
                             sqlDataList.removeIf(sd -> sd.name == null || !checkSet.add(sd.name));
@@ -808,7 +795,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                         return sd.name.equals(selected);
                                     });
                                     byte[] bytesToSave = SqlTemplatesAndActions.convertObjectToBytes(sqlDataList);
-                                    GuiUtilities.setPreference(HM_SAVED_QUERIES, bytesToSave);
+                                    PreferencesHandler.setPreference(HM_SAVED_QUERIES, bytesToSave);
                                 }
 
                             }
@@ -823,7 +810,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         try {
-                            byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
+                            byte[] savedQueries = PreferencesHandler.getPreference(HM_SAVED_QUERIES, new byte[0]);
                             List<SqlData> sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
 
                             JSONArray queriesArray = new JSONArray();
@@ -835,10 +822,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
                             String jsonString = queriesArray.toString(2);
                             File[] files = guiBridge.showSaveFileDialog("Select queries json to create",
-                                    GuiUtilities.getLastFile(), new HMFileFilter("JSON Files", new String[]{"json"}));
+                                    PreferencesHandler.getLastFile(), new HMFileFilter("JSON Files", new String[]{"json"}));
                             if (files != null && files.length > 0) {
                                 String absolutePath = files[0].getAbsolutePath();
-                                GuiUtilities.setLastPath(absolutePath);
+                                PreferencesHandler.setLastPath(absolutePath);
                                 FileUtilities.writeFile(jsonString, files[0]);
                             }
                         } catch (Exception e1) {
@@ -852,12 +839,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     public void actionPerformed( ActionEvent e ) {
                         try {
                             File[] files = guiBridge.showOpenFileDialog("Select queries json to import",
-                                    GuiUtilities.getLastFile(), new HMFileFilter("JSON Files", new String[]{"json"}));
+                                    PreferencesHandler.getLastFile(), new HMFileFilter("JSON Files", new String[]{"json"}));
                             if (files != null && files.length > 0) {
                                 String absolutePath = files[0].getAbsolutePath();
-                                GuiUtilities.setLastPath(absolutePath);
+                                PreferencesHandler.setLastPath(absolutePath);
 
-                                byte[] savedQueries = GuiUtilities.getPreference(HM_SAVED_QUERIES, new byte[0]);
+                                byte[] savedQueries = PreferencesHandler.getPreference(HM_SAVED_QUERIES, new byte[0]);
                                 List<SqlData> sqlDataList = new ArrayList<>();
                                 if (savedQueries.length != 0) {
                                     sqlDataList = (List<SqlData>) SqlTemplatesAndActions.convertFromBytes(savedQueries);
@@ -881,7 +868,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 }
 
                                 byte[] bytesToSave = SqlTemplatesAndActions.convertObjectToBytes(sqlDataList);
-                                GuiUtilities.setPreference(HM_SAVED_QUERIES, bytesToSave);
+                                PreferencesHandler.setPreference(HM_SAVED_QUERIES, bytesToSave);
 
                             }
                         } catch (Exception e1) {
@@ -1014,7 +1001,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         try {
-                            byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
+                            byte[] savedDbs = PreferencesHandler.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES,
+                                    new byte[0]);
                             List<ConnectionData> connectionDataList;
                             if (savedDbs.length > 0) {
                                 connectionDataList = (List<ConnectionData>) SqlTemplatesAndActions.convertFromBytes(savedDbs);
@@ -1051,7 +1039,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         try {
-                            byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
+                            byte[] savedDbs = PreferencesHandler.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES,
+                                    new byte[0]);
                             List<ConnectionData> connectionDataList = (List<ConnectionData>) SqlTemplatesAndActions
                                     .convertFromBytes(savedDbs);
                             connectionDataList.removeIf(c -> c.connectionLabel == null);
@@ -1070,7 +1059,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                         return cd.connectionLabel.equals(selected);
                                     });
                                     byte[] bytesToSave = SqlTemplatesAndActions.convertObjectToBytes(connectionDataList);
-                                    GuiUtilities.setPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, bytesToSave);
+                                    PreferencesHandler.setPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, bytesToSave);
                                 }
 
                             }
@@ -1084,7 +1073,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         try {
-                            byte[] savedDbs = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
+                            byte[] savedDbs = PreferencesHandler.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES,
+                                    new byte[0]);
                             if (savedDbs.length == 0) {
                                 GuiUtilities.showWarningMessage(DatabaseController.this, null, NO_SAVED_CONNECTIONS_AVAILABLE);
                             } else {
@@ -1105,10 +1095,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                     }
                                     String jsonString = queriesArray.toString(2);
                                     File[] files = guiBridge.showSaveFileDialog("Select connections json to create",
-                                            GuiUtilities.getLastFile(), new HMFileFilter("JSON Files", new String[]{"json"}));
+                                            PreferencesHandler.getLastFile(),
+                                            new HMFileFilter("JSON Files", new String[]{"json"}));
                                     if (files != null && files.length > 0) {
                                         String absolutePath = files[0].getAbsolutePath();
-                                        GuiUtilities.setLastPath(absolutePath);
+                                        PreferencesHandler.setLastPath(absolutePath);
                                         FileUtilities.writeFile(jsonString, files[0]);
                                     }
                                 } else {
@@ -1128,13 +1119,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     public void actionPerformed( ActionEvent e ) {
                         try {
                             File[] files = guiBridge.showOpenFileDialog("Select connections json to import",
-                                    GuiUtilities.getLastFile(), new HMFileFilter("JSON Files", new String[]{"json"}));
+                                    PreferencesHandler.getLastFile(), new HMFileFilter("JSON Files", new String[]{"json"}));
                             if (files != null && files.length > 0) {
                                 String absolutePath = files[0].getAbsolutePath();
-                                GuiUtilities.setLastPath(absolutePath);
+                                PreferencesHandler.setLastPath(absolutePath);
 
-                                byte[] savedConnections = GuiUtilities.getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES,
-                                        new byte[0]);
+                                byte[] savedConnections = PreferencesHandler
+                                        .getPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, new byte[0]);
                                 List<ConnectionData> connectionsDataList = new ArrayList<>();
                                 if (savedConnections.length != 0) {
                                     connectionsDataList = (List<ConnectionData>) SqlTemplatesAndActions
@@ -1165,7 +1156,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 }
 
                                 byte[] bytesToSave = SqlTemplatesAndActions.convertObjectToBytes(connectionsDataList);
-                                GuiUtilities.setPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, bytesToSave);
+                                PreferencesHandler.setPreference(SqlTemplatesAndActions.HM_SAVED_DATABASES, bytesToSave);
 
                             }
                         } catch (Exception e1) {
@@ -1584,7 +1575,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     public void onClose() {
         if (currentConnectedDatabase != null) {
-            GuiUtilities.setPreference(DatabaseGuiUtils.HM_SPATIALITE_LAST_FILE, currentConnectedDatabase.getDatabasePath());
+            PreferencesHandler.setPreference(DatabaseGuiUtils.HM_SPATIALITE_LAST_FILE,
+                    currentConnectedDatabase.getDatabasePath());
         }
         try {
             closeCurrentDb(false);
@@ -1757,7 +1749,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
-        GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_URL, urlString);
+        PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_URL, urlString);
 
         urlString = urlString.replaceFirst(type.getJdbcPrefix(), "");
 
@@ -1805,12 +1797,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     protected void openDatabase( ConnectionData connectionData ) {
         EDb type = EDb.forCode(connectionData.dbType);
         if (type.supportsDesktop()) {
-            GuiUtilities.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, connectionData.connectionUrl);
+            PreferencesHandler.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, connectionData.connectionUrl);
         } else if (type.supportsServerMode()) {
-            GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_URL, type.getJdbcPrefix() + connectionData.connectionUrl);
+            PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_URL,
+                    type.getJdbcPrefix() + connectionData.connectionUrl);
         }
-        GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, connectionData.user);
-        GuiUtilities.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, connectionData.password);
+        PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, connectionData.user);
+        PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, connectionData.password);
         try {
             closeCurrentDb(true);
         } catch (Exception e1) {
@@ -1874,7 +1867,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             _recordCountTextfield.setText("");
 
             if (manually)
-                GuiUtilities.setPreference(DatabaseGuiUtils.HM_SPATIALITE_LAST_FILE, (String) null);
+                PreferencesHandler.setPreference(DatabaseGuiUtils.HM_SPATIALITE_LAST_FILE, (String) null);
         }
     }
 
@@ -2081,7 +2074,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             oldSqlCommands.remove(20);
         }
 
-        GuiUtilities.setPreference("HM_OLD_SQL_COMMANDS", oldSqlCommands.toArray(new String[0]));
+        PreferencesHandler.setPreference("HM_OLD_SQL_COMMANDS", oldSqlCommands.toArray(new String[0]));
     }
 
     protected abstract List<Action> makeColumnActions( final ColumnLevel selectedColumn );

@@ -32,7 +32,6 @@ public class FormBuilderView extends JPanel
    JTabbedPane _buttonsTabPane = new JTabbedPane();
    JButton _addFormButton = new JButton();
    JButton _deleteFormButton = new JButton();
-   JButton _settingsButton = new JButton();
 
    /**
     * Default constructor
@@ -187,11 +186,6 @@ public class FormBuilderView extends JPanel
       _deleteFormButton.setText("del");
       _deleteFormButton.setToolTipText("Delete current tab from the section.");
       jpanel1.add(_deleteFormButton,cc.xy(2,4));
-
-      _settingsButton.setActionCommand("Settings");
-      _settingsButton.setName("settingsButton");
-      _settingsButton.setText("Settings");
-      jpanel1.add(_settingsButton,cc.xy(2,7));
 
       addFillComponents(jpanel1,new int[]{ 2 },new int[]{ 2,3,4,5,6,7 });
       return jpanel1;

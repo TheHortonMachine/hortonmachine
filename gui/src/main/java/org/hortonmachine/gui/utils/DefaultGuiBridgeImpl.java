@@ -37,6 +37,7 @@ import javax.swing.filechooser.FileFilter;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.libs.modules.HMFileFilter;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController;
 
 /**
@@ -300,7 +301,7 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
 
     @Override
     public HashMap<String, String> getSpatialToolboxPreferencesMap() {
-        Preferences preferences = Preferences.userRoot().node(PREFS_NODE_NAME);
+        Preferences preferences = Preferences.userRoot().node(PreferencesHandler.PREFS_NODE_NAME);
         String debug = preferences.get(DEBUG_KEY, "false");
         String heap = preferences.get(HEAP_KEY, "64");
 
@@ -313,7 +314,7 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
 
     @Override
     public void setSpatialToolboxPreferencesMap( HashMap<String, String> prefsMap ) {
-        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
+        Preferences preferences = Preferences.userRoot().node(PreferencesHandler.PREFS_NODE_NAME);
 
         String debug = prefsMap.get(DEBUG_KEY);
         String heap = prefsMap.get(HEAP_KEY);
@@ -324,7 +325,7 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
 
     @Override
     public HashMap<String, String> getGeopaparazziProjectViewerPreferencesMap() {
-        Preferences preferences = Preferences.userRoot().node(PREFS_NODE_NAME);
+        Preferences preferences = Preferences.userRoot().node(PreferencesHandler.PREFS_NODE_NAME);
         String lastPath = preferences.get(LAST_GP_PROJECTS_PATH, "");
 
         HashMap<String, String> prefsMap = new HashMap<>();
@@ -335,7 +336,7 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
 
     @Override
     public void setGeopaparazziProjectViewerPreferencesMap( HashMap<String, String> prefsMap ) {
-        Preferences preferences = Preferences.userRoot().node(GuiBridgeHandler.PREFS_NODE_NAME);
+        Preferences preferences = Preferences.userRoot().node(PreferencesHandler.PREFS_NODE_NAME);
         String lastPath = prefsMap.get(LAST_GP_PROJECTS_PATH);
         preferences.put(LAST_GP_PROJECTS_PATH, lastPath);
     }

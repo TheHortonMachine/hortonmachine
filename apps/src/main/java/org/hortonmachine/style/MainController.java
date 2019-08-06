@@ -47,6 +47,7 @@ import org.hortonmachine.database.DatabaseViewer;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
@@ -64,6 +65,7 @@ import org.hortonmachine.gears.utils.style.StyleUtilities;
 import org.hortonmachine.gears.utils.style.StyleWrapper;
 import org.hortonmachine.gears.utils.style.SymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.TextSymbolizerWrapper;
+import org.hortonmachine.gui.settings.SettingsController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
@@ -168,7 +170,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 }
             };
             fileChooser.setFileFilter(fileFilter);
-            fileChooser.setCurrentDirectory(GuiUtilities.getLastFile());
+            fileChooser.setCurrentDirectory(PreferencesHandler.getLastFile());
             int result = fileChooser.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File[] selectedFiles = fileChooser.getSelectedFiles();
@@ -229,7 +231,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
     private void openSelectedFile() {
         String absolutePath = selectedFile.getAbsolutePath();
-        GuiUtilities.setLastPath(absolutePath);
+        PreferencesHandler.setLastPath(absolutePath);
         _filepathField.setText(absolutePath);
 
         if (currentLayer != null) {
@@ -525,7 +527,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
     @Override
     public void onClose() {
-        // TODO Auto-generated method stub
+        SettingsController.onCloseHandleSettings();
     }
     public boolean canCloseWithoutPrompt() {
         return false;
@@ -542,6 +544,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         }
 
         final MainController controller = new MainController(openFile);
+        SettingsController.applySettings(controller);
 
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine SLD Editor");
 

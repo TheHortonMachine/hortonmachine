@@ -1,4 +1,4 @@
-package org.hortonmachine.database;
+package org.hortonmachine.gui.settings;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -9,9 +9,11 @@ import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
@@ -21,11 +23,14 @@ import com.jgoodies.forms.layout.FormLayout;
 
 public class SettingsView extends JPanel
 {
+   JTabbedPane _jtabbedpane1 = new JTabbedPane();
    JTextField _proxyHostField = new JTextField();
    JTextField _proxyPortField = new JTextField();
    JTextField _proxyUserField = new JTextField();
    JPasswordField _proxyPasswordField = new JPasswordField();
    JCheckBox _proxyCheckbox = new JCheckBox();
+   JTextField _charsetTextField = new JTextField();
+   JComboBox _orientationCombo = new JComboBox();
    JTextField _tunnelHostField = new JTextField();
    JTextField _tunnelUserField = new JTextField();
    JTextField _tunnelLocalPortField = new JTextField();
@@ -123,17 +128,32 @@ public class SettingsView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      jpanel1.add(createPanel1(),cc.xy(2,2));
-      jpanel1.add(createPanel2(),cc.xy(2,4));
-      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3,4,5 });
+      _jtabbedpane1.addTab("Proxy",null,createPanel1());
+      _jtabbedpane1.addTab("Internationalization",null,createPanel3());
+      _jtabbedpane1.addTab("Tunneling",null,createPanel6());
+      jpanel1.add(_jtabbedpane1,cc.xy(2,2));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3 });
       return jpanel1;
    }
 
    public JPanel createPanel1()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      jpanel1.add(createPanel2(),cc.xy(2,2));
+      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel2()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Proxy",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
@@ -179,7 +199,68 @@ public class SettingsView extends JPanel
       return jpanel1;
    }
 
-   public JPanel createPanel2()
+   public JPanel createPanel3()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      jpanel1.add(createPanel4(),cc.xy(2,2));
+      jpanel1.add(createPanel5(),cc.xy(2,4));
+      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3,4,5 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel4()
+   {
+      JPanel jpanel1 = new JPanel();
+      TitledBorder titledborder1 = new TitledBorder(null,"Charset",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      jpanel1.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      JLabel jlabel1 = new JLabel();
+      jlabel1.setText("Charset to use for shapefile read/write");
+      jpanel1.add(jlabel1,cc.xy(2,1));
+
+      _charsetTextField.setName("charsetTextField");
+      jpanel1.add(_charsetTextField,cc.xy(4,1));
+
+      addFillComponents(jpanel1,new int[]{ 1,3,5 },new int[]{ 1 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel5()
+   {
+      JPanel jpanel1 = new JPanel();
+      TitledBorder titledborder1 = new TitledBorder(null,"Component Orientation",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      jpanel1.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      _orientationCombo.setName("orientationCombo");
+      jpanel1.add(_orientationCombo,cc.xy(2,1));
+
+      addFillComponents(jpanel1,new int[]{ 1,3 },new int[]{ 1 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel6()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      jpanel1.add(createPanel7(),cc.xy(2,2));
+      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel7()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"SSH Tunnel",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));

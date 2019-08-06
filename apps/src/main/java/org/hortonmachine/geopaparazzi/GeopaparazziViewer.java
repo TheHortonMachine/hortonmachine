@@ -39,6 +39,7 @@ import javax.swing.JLabel;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.Image;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.Note;
@@ -178,7 +179,7 @@ public class GeopaparazziViewer extends GeopaparazziController {
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
-                    File[] folderFiles = guiBridge.showOpenDirectoryDialog("Save Image", GuiUtilities.getLastFile());
+                    File[] folderFiles = guiBridge.showOpenDirectoryDialog("Save Image", PreferencesHandler.getLastFile());
                     if (folderFiles != null && folderFiles.length > 0) {
                         File folderFile = folderFiles[0];
                         File imgFile = new File(folderFile, selectedImage.getName());

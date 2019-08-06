@@ -33,7 +33,10 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRIT
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import oms3.annotations.Author;
@@ -52,12 +55,16 @@ import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FileDataStoreFactorySpi;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.Transaction;
+import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.PreferencesHandler;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureVisitor;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 @Description(OMSSHAPEFILEFEATUREWRITER_DESCRIPTION)
@@ -105,7 +112,19 @@ public class OmsShapefileFeatureWriter extends HMModel {
         }
         File shapeFile = new File(file);
         FileDataStoreFactorySpi factory = FileDataStoreFinder.getDataStoreFactory("shp");
-        Map map = Collections.singletonMap("url", shapeFile.toURI().toURL());
+
+        Map<String, Serializable> map = new HashMap<>();
+        map.put("url", shapeFile.toURI().toURL());
+        String shpDoIndex = PreferencesHandler.getShpDoIndex();
+        if (shpDoIndex != null) {
+            map.put("create spatial index", new Boolean(shpDoIndex));
+        }
+
+        String shpCharset = PreferencesHandler.getShpCharset();
+        if (shpCharset != null) {
+            map.put("charset", shpCharset);
+        }
+
         DataStore newDataStore = factory.createNewDataStore(map);
         newDataStore.createSchema(pType);
 
@@ -118,6 +137,16 @@ public class OmsShapefileFeatureWriter extends HMModel {
             if (geodata == null) {
                 featureStore.addFeatures(new DefaultFeatureCollection());
             } else {
+                geodata.accepts(new FeatureVisitor(){
+
+                    @Override
+                    public void visit( Feature arg0 ) {
+                        arg0.getProperties().forEach(p -> {
+                            System.out.println(p.getName() + "    ->     " + p.getValue());
+                        });
+
+                    }
+                }, null);
                 featureStore.addFeatures(geodata);
             }
             transaction.commit();
