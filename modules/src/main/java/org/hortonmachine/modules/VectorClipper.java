@@ -66,7 +66,7 @@ public class VectorClipper extends HMModel {
 
     @Description(OMSVECTORCLIPPER_P_MAX_THREADS_DESCRIPTION)
     @In
-    public int pMaxThreads = 1;
+    public int pMaxThreads = getDefaultThreadsNum();
 
     @Description(OMSVECTORCLIPPER_OUT_MAP_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)

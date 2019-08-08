@@ -124,7 +124,7 @@ public class OmsSurfaceInterpolator extends HMModel {
 
     @Description(OMSSURFACEINTERPOLATOR_P_MAX_THREADS_DESCRIPTION)
     @In
-    public int pMaxThreads = 1;
+    public int pMaxThreads = getDefaultThreadsNum();
 
     @Description(OMSSURFACEINTERPOLATOR_OUT_RASTER_DESCRIPTION)
     @Out
