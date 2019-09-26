@@ -17,17 +17,11 @@
  */
 package org.hortonmachine.utils;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.awt.image.PixelGrabber;
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import javax.imageio.ImageIO;
 
 import org.geotools.data.crs.ReprojectFeatureResults;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -40,30 +34,24 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.nww.layers.defaults.raster.OsmTilegenerator;
-import org.mapsforge.core.model.BoundingBox;
-import org.mapsforge.map.awt.graphics.AwtGraphicFactory;
-import org.mapsforge.map.controller.FrameBufferController;
-import org.mapsforge.map.datastore.MultiMapDataStore;
-import org.mapsforge.map.datastore.MultiMapDataStore.DataPolicy;
-import org.mapsforge.map.layer.cache.InMemoryTileCache;
-import org.mapsforge.map.layer.labels.TileBasedLabelStore;
-import org.mapsforge.map.layer.renderer.DatabaseRenderer;
-import org.mapsforge.map.layer.renderer.MapWorkerPool;
-import org.mapsforge.map.model.DisplayModel;
-import org.mapsforge.map.reader.MapFile;
-import org.mapsforge.map.reader.ReadBuffer;
-import org.mapsforge.map.rendertheme.InternalRenderTheme;
-import org.mapsforge.map.rendertheme.rule.RenderThemeFuture;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
-
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
+import org.mapsforge.core.model.BoundingBox;
+import org.mapsforge.map.awt.graphics.AwtGraphicFactory;
+import org.mapsforge.map.datastore.MultiMapDataStore;
+import org.mapsforge.map.datastore.MultiMapDataStore.DataPolicy;
+import org.mapsforge.map.layer.cache.InMemoryTileCache;
+import org.mapsforge.map.layer.labels.TileBasedLabelStore;
+import org.mapsforge.map.layer.renderer.DatabaseRenderer;
+import org.mapsforge.map.model.DisplayModel;
+import org.mapsforge.map.reader.MapFile;
+import org.mapsforge.map.rendertheme.InternalRenderTheme;
+import org.mapsforge.map.rendertheme.rule.RenderThemeFuture;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Execute;
 
@@ -243,11 +231,11 @@ public class Mapsforge2MbtilesConverter extends HMModel {
     }
 
     private OsmTilegenerator getGenerator( ReferencedEnvelope llBounds ) {
-        MapWorkerPool.NUMBER_OF_THREADS = 4;
-        // Map buffer size
-        ReadBuffer.setMaximumBufferSize(6500000);
-        // Square frame buffer
-        FrameBufferController.setUseSquareFrameBuffer(false);
+//        MapWorkerPool.NUMBER_OF_THREADS = 4;
+//        // Map buffer size
+//        ReadBuffer.setMaximumBufferSize(6500000);
+//        // Square frame buffer
+//        FrameBufferController.setUseSquareFrameBuffer(false);
 
         DisplayModel model = new DisplayModel();
         model.setUserScaleFactor(pScaleFactor);
@@ -265,7 +253,7 @@ public class Mapsforge2MbtilesConverter extends HMModel {
 
         InMemoryTileCache tileCache = new InMemoryTileCache(200);
         DatabaseRenderer renderer = new DatabaseRenderer(mapDatabase, AwtGraphicFactory.INSTANCE, tileCache,
-                new TileBasedLabelStore(tileCache.getCapacityFirstLevel()), true, true);
+                new TileBasedLabelStore(tileCache.getCapacityFirstLevel()), true, true, null);
         InternalRenderTheme xmlRenderTheme = InternalRenderTheme.DEFAULT;
         RenderThemeFuture theme = new RenderThemeFuture(AwtGraphicFactory.INSTANCE, xmlRenderTheme, model);
         // super important!! without the following line, all rendering

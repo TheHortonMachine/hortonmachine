@@ -17,7 +17,10 @@
  */
 package org.hortonmachine.ssh;
 
+import org.hortonmachine.dbs.log.Logger;
+
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.ProxyHTTP;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 
@@ -28,6 +31,13 @@ import com.jcraft.jsch.UserInfo;
  *
  */
 public class HMSshSession implements AutoCloseable {
+    // THESE NEED TO BE KEPT IN LINE WITH THOSE IN
+    // org.hortonmachine.gears.utils.PreferencesHandler.*
+    public static final String HM_PREF_PROXYPWD = "hm_pref_proxypwd";
+    public static final String HM_PREF_PROXYUSER = "hm_pref_proxyuser";
+    public static final String HM_PREF_PROXYPORT = "hm_pref_proxyport";
+    public static final String HM_PREF_PROXYHOST = "hm_pref_proxyhost";
+    public static final String HM_PREF_PROXYCHECK = "hm_pref_proxycheck";
 
     private static JSch jsch = new JSch();
     private Session session;
@@ -58,6 +68,26 @@ public class HMSshSession implements AutoCloseable {
         java.util.Properties config = new java.util.Properties();
         config.put("StrictHostKeyChecking", "no");
         session.setConfig(config);
+
+        try {
+            String doProxy = SshUtilities.getPreference(HM_PREF_PROXYCHECK, "false");
+            if (Boolean.parseBoolean(doProxy)) {
+                String proxyHost = SshUtilities.getPreference(HM_PREF_PROXYHOST, "");
+                String proxyPort = SshUtilities.getPreference(HM_PREF_PROXYPORT, "");
+                String proxyUser = SshUtilities.getPreference(HM_PREF_PROXYUSER, "");
+                String proxyPwd = SshUtilities.getPreference(HM_PREF_PROXYPWD, "");
+
+                int port = Integer.parseInt(proxyPort);
+                ProxyHTTP proxyHTTP = new ProxyHTTP(proxyHost, port);
+                if (proxyUser.length() > 0 && proxyPwd.length() > 0) {
+                    proxyHTTP.setUserPasswd(proxyUser, proxyPwd);
+                }
+                session.setProxy(proxyHTTP);
+            }
+        } catch (Exception e) {
+            Logger.INSTANCE.insertError("HMSshSession", "Error setting proxy", e);
+        }
+
         session.connect(3000);
     }
 

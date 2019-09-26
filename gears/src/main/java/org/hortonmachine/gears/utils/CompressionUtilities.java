@@ -58,11 +58,38 @@ public class CompressionUtilities {
         }
     }
 
-    public static void main( String[] args ) throws IOException {
-        String zip = "/home/moovida/TMP/AAAAAAA/geopaparazzi_giovanni.zip";
-        String outFolder = "/home/moovida/TMP/AAAAAAA/";
+    /**
+     * Compress a set of files and its contents if folders.
+     * 
+     * @param srcFiles
+     *            the files to compress.
+     * @param destZipFile
+     *            path to the final output zip file.
+     * @throws IOException
+     */
+    static public void zipFiles( File[] srcFiles, String destZipFile ) throws IOException {
+        ZipOutputStream zip = null;
+        FileOutputStream fileWriter = null;
+        try {
+            fileWriter = new FileOutputStream(destZipFile);
+            zip = new ZipOutputStream(fileWriter);
 
-        unzipFolder(zip, outFolder, true);
+            for( File file : srcFiles ) {
+                if (file.isDirectory()) {
+                    addFolderToZip("", file.getAbsolutePath(), zip, true); //$NON-NLS-1$
+                } else {
+                    addToZip("", file.getAbsolutePath(), zip);
+                }
+            }
+
+        } finally {
+            if (zip != null) {
+                zip.flush();
+                zip.close();
+            }
+            if (fileWriter != null)
+                fileWriter.close();
+        }
     }
 
     /**

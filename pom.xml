@@ -766,6 +766,12 @@
 			<name>Jzy3d Snapshots</name>
 			<url>http://maven.jzy3d.org/releases/</url>
 		</repository>
+
+		<repository>
+			<id>jitpack.io</id>
+			<name>jitpack</name>
+			<url>http://jitpack.io</url>
+		</repository>
     </repositories>
 
 	<!-- Build configuration -->

@@ -36,6 +36,7 @@ import org.mapsforge.map.controller.FrameBufferController;
 import org.mapsforge.map.datastore.MultiMapDataStore;
 import org.mapsforge.map.datastore.MultiMapDataStore.DataPolicy;
 import org.mapsforge.map.layer.cache.InMemoryTileCache;
+import org.mapsforge.map.layer.hills.HillsRenderConfig;
 import org.mapsforge.map.layer.labels.TileBasedLabelStore;
 import org.mapsforge.map.layer.renderer.DatabaseRenderer;
 import org.mapsforge.map.layer.renderer.MapWorkerPool;
@@ -93,11 +94,11 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer implements N
 		if (scaleFactor == null)
 			scaleFactor = 1.5f;
 
-		MapWorkerPool.NUMBER_OF_THREADS = 4;
-		// Map buffer size
-		ReadBuffer.setMaximumBufferSize(6500000);
-		// Square frame buffer
-		FrameBufferController.setUseSquareFrameBuffer(false);
+//		MapWorkerPool.NUMBER_OF_THREADS = 4;
+//		// Map buffer size
+//		ReadBuffer.setMaximumBufferSize(6500000);
+//		// Square frame buffer
+//		FrameBufferController.setUseSquareFrameBuffer(false);
 
 		DisplayModel model = new DisplayModel();
 		model.setUserScaleFactor(scaleFactor);
@@ -110,7 +111,7 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer implements N
 
 		InMemoryTileCache tileCache = new InMemoryTileCache(200);
 		DatabaseRenderer renderer = new DatabaseRenderer(mapDatabase, AwtGraphicFactory.INSTANCE, tileCache,
-				new TileBasedLabelStore(tileCache.getCapacityFirstLevel()), true, true);
+				new TileBasedLabelStore(tileCache.getCapacityFirstLevel()), true, true, null);
 		InternalRenderTheme xmlRenderTheme = InternalRenderTheme.DEFAULT;
 		RenderThemeFuture theme = new RenderThemeFuture(AwtGraphicFactory.INSTANCE, xmlRenderTheme, model);
 		// super important!! without the following line, all rendering

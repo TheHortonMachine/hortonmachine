@@ -420,7 +420,8 @@ public class GuiUtilities {
      * @param pathTextField
      * @param browseButton
      */
-    public static void setFolderBrowsingOnWidgets( JTextField pathTextField, JButton browseButton ) {
+    public static void setFolderBrowsingOnWidgets( JTextField pathTextField, JButton browseButton ,
+            Runnable postRunnable) {
         browseButton.addActionListener(e -> {
             File lastFile = PreferencesHandler.getLastFile();
             File[] res = showOpenFolderDialog(browseButton, "Select folder", false, lastFile);
@@ -428,6 +429,9 @@ public class GuiUtilities {
                 String absolutePath = res[0].getAbsolutePath();
                 pathTextField.setText(absolutePath);
                 PreferencesHandler.setLastPath(absolutePath);
+                if (postRunnable != null) {
+                    postRunnable.run();
+                }
             }
         });
     }

@@ -35,7 +35,7 @@ import org.mapsforge.map.layer.download.TileDownloadLayer;
 import org.mapsforge.map.layer.download.tilesource.OpenStreetMapMapnik;
 import org.mapsforge.map.layer.download.tilesource.TileSource;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
-import org.mapsforge.map.model.MapViewPosition;
+import org.mapsforge.map.model.IMapViewPosition;
 import org.mapsforge.map.model.Model;
 import org.mapsforge.map.model.common.PreferencesFacade;
 import org.mapsforge.map.reader.MapFile;
@@ -51,7 +51,7 @@ public final class MapsforgeSimpleViewer {
 
     public static void main( String[] args ) {
         File mapFile = new File(
-                "/home/hydrologis/data/italy.map");
+                "/home/hydrologis/data/mapsforge/italy.map");
         List<File> mapFiles = Arrays.asList(mapFile);
         final MapView mapView = createMapView();
         final BoundingBox boundingBox = addLayers(mapView, mapFiles);
@@ -146,7 +146,7 @@ public final class MapsforgeSimpleViewer {
     }
 
     @SuppressWarnings("unused")
-    private static TileDownloadLayer createTileDownloadLayer( TileCache tileCache, MapViewPosition mapViewPosition,
+    private static TileDownloadLayer createTileDownloadLayer( TileCache tileCache, IMapViewPosition mapViewPosition,
             TileSource tileSource ) {
         return new TileDownloadLayer(tileCache, mapViewPosition, tileSource, GRAPHIC_FACTORY){
             @Override
@@ -158,7 +158,7 @@ public final class MapsforgeSimpleViewer {
     }
 
     private static TileRendererLayer createTileRendererLayer( TileCache tileCache, MapDataStore mapDataStore,
-            MapViewPosition mapViewPosition ) {
+            IMapViewPosition mapViewPosition ) {
         TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, mapDataStore, mapViewPosition, false, true, false,
                 GRAPHIC_FACTORY){
             @Override
