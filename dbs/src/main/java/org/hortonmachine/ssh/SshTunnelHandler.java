@@ -66,14 +66,4 @@ public class SshTunnelHandler implements AutoCloseable {
             tunnelingSession.disconnect();
     }
 
-    // EXAMPLE POSTGIS CONNECTION VIA SSH TUNNELING
-    // public static void main( String[] args ) throws Exception {
-    // try (SshTunnelHandler openTunnel = openTunnel("ipaddress", "username", "pwd", 5433, 5432)) {
-    // try (ASpatialDb postgisDb = EDb.POSTGIS.getSpatialDb()) {
-    // String url = "localhost:5433/database";
-    // postgisDb.open(url, "", "");
-    // postgisDb.getTables(true).forEach(t -> System.out.println(t));
-    // }
-    // }
-    // }
 }

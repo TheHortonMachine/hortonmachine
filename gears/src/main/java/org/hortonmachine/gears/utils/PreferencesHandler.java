@@ -26,13 +26,6 @@ import java.util.stream.Stream;
 import org.hortonmachine.dbs.log.PreferencesDb;
 
 public class PreferencesHandler {
-    public static final String HM_PREF_TUNNELREMOTEPORT = "hm_pref_tunnelremoteport";
-    public static final String HM_PREF_TUNNELLOCALPORT = "hm_pref_tunnellocalport";
-    public static final String HM_PREF_TUNNELPWD = "hm_pref_tunnelpwd";
-    public static final String HM_PREF_TUNNELUSER = "hm_pref_tunneluser";
-    public static final String HM_PREF_TUNNELHOST = "hm_pref_tunnelhost";
-    public static final String HM_PREF_TUNNELCHECK = "hm_pref_tunnelcheck";
-
     public static final String HM_PREF_PROXYPWD = "hm_pref_proxypwd";
     public static final String HM_PREF_PROXYUSER = "hm_pref_proxyuser";
     public static final String HM_PREF_PROXYPORT = "hm_pref_proxyport";

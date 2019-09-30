@@ -31,12 +31,6 @@ public class SettingsView extends JPanel
    JCheckBox _proxyCheckbox = new JCheckBox();
    JTextField _charsetTextField = new JTextField();
    JComboBox _orientationCombo = new JComboBox();
-   JTextField _tunnelHostField = new JTextField();
-   JTextField _tunnelUserField = new JTextField();
-   JTextField _tunnelLocalPortField = new JTextField();
-   JTextField _tunnelRemotePortField = new JTextField();
-   JPasswordField _tunnelPasswordField = new JPasswordField();
-   JCheckBox _sshTunnelCheckbox = new JCheckBox();
 
    /**
     * Default constructor
@@ -134,7 +128,6 @@ public class SettingsView extends JPanel
 
       _jtabbedpane1.addTab("Proxy",null,createPanel1());
       _jtabbedpane1.addTab("Internationalization",null,createPanel3());
-      _jtabbedpane1.addTab("Tunneling",null,createPanel6());
       jpanel1.add(_jtabbedpane1,cc.xy(2,2));
 
       addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3 });
@@ -245,71 +238,6 @@ public class SettingsView extends JPanel
       jpanel1.add(_orientationCombo,cc.xy(2,1));
 
       addFillComponents(jpanel1,new int[]{ 1,3 },new int[]{ 1 });
-      return jpanel1;
-   }
-
-   public JPanel createPanel6()
-   {
-      JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      jpanel1.add(createPanel7(),cc.xy(2,2));
-      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3 });
-      return jpanel1;
-   }
-
-   public JPanel createPanel7()
-   {
-      JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"SSH Tunnel",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
-      jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      JLabel jlabel1 = new JLabel();
-      jlabel1.setText("target host");
-      jpanel1.add(jlabel1,cc.xy(2,4));
-
-      JLabel jlabel2 = new JLabel();
-      jlabel2.setText("ssh user");
-      jpanel1.add(jlabel2,cc.xy(2,6));
-
-      JLabel jlabel3 = new JLabel();
-      jlabel3.setText("ssh password");
-      jpanel1.add(jlabel3,cc.xy(2,8));
-
-      JLabel jlabel4 = new JLabel();
-      jlabel4.setText("local port");
-      jpanel1.add(jlabel4,cc.xy(2,10));
-
-      JLabel jlabel5 = new JLabel();
-      jlabel5.setText("remote port");
-      jpanel1.add(jlabel5,cc.xy(2,12));
-
-      _tunnelHostField.setName("tunnelHostField");
-      jpanel1.add(_tunnelHostField,cc.xy(4,4));
-
-      _tunnelUserField.setName("tunnelUserField");
-      jpanel1.add(_tunnelUserField,cc.xy(4,6));
-
-      _tunnelLocalPortField.setName("tunnelLocalPortField");
-      jpanel1.add(_tunnelLocalPortField,cc.xy(4,10));
-
-      _tunnelRemotePortField.setName("tunnelRemotePortField");
-      jpanel1.add(_tunnelRemotePortField,cc.xy(4,12));
-
-      _tunnelPasswordField.setName("tunnelPasswordField");
-      jpanel1.add(_tunnelPasswordField,cc.xy(4,8));
-
-      _sshTunnelCheckbox.setActionCommand("enable ssh tunnel");
-      _sshTunnelCheckbox.setName("sshTunnelCheckbox");
-      _sshTunnelCheckbox.setText("enable ssh tunnel");
-      jpanel1.add(_sshTunnelCheckbox,cc.xywh(2,2,3,1));
-
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13 });
       return jpanel1;
    }
 

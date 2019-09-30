@@ -1,7 +1,13 @@
 package org.hortonmachine.gui.settings;
 
+import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_PROXYCHECK;
+import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_PROXYHOST;
+import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_PROXYPORT;
+import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_PROXYPWD;
+import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_PROXYUSER;
+import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_SHP_CHARSET;
+
 import java.awt.Component;
-import static org.hortonmachine.gears.utils.PreferencesHandler.*;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.nio.charset.Charset;
@@ -17,9 +23,6 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.ssh.ProxyEnabler;
-import org.hortonmachine.ssh.TunnelSingleton;
-
-import com.jcraft.jsch.JSchException;
 
 public class SettingsController extends SettingsView implements IOnCloseListener {
 
@@ -41,20 +44,6 @@ public class SettingsController extends SettingsView implements IOnCloseListener
         _proxyPortField.setText(proxyPort);
         _proxyUserField.setText(proxyUser);
         _proxyPasswordField.setText(proxyPwd);
-
-        String tunnelCheck = PreferencesHandler.getPreference(HM_PREF_TUNNELCHECK, "false");
-        String tunnelHost = PreferencesHandler.getPreference(HM_PREF_TUNNELHOST, "");
-        String tunnelUser = PreferencesHandler.getPreference(HM_PREF_TUNNELUSER, "");
-        String tunnelPwd = PreferencesHandler.getPreference(HM_PREF_TUNNELPWD, "");
-        String tunnelLocalPort = PreferencesHandler.getPreference(HM_PREF_TUNNELLOCALPORT, "");
-        String tunnelRemotePort = PreferencesHandler.getPreference(HM_PREF_TUNNELREMOTEPORT, "");
-
-        _sshTunnelCheckbox.setSelected(Boolean.parseBoolean(tunnelCheck));
-        _tunnelHostField.setText(tunnelHost);
-        _tunnelUserField.setText(tunnelUser);
-        _tunnelPasswordField.setText(tunnelPwd);
-        _tunnelLocalPortField.setText(tunnelLocalPort);
-        _tunnelRemotePortField.setText(tunnelRemotePort);
 
         String shpCharset = PreferencesHandler.getPreference(HM_PREF_SHP_CHARSET, "");
         _charsetTextField.setText(shpCharset);
@@ -97,22 +86,6 @@ public class SettingsController extends SettingsView implements IOnCloseListener
             PreferencesHandler.setPreference(HM_PREF_PROXYPWD, pwd);
         }
 
-        boolean tunnelSelected = _sshTunnelCheckbox.isSelected();
-        PreferencesHandler.setPreference(HM_PREF_TUNNELCHECK, tunnelSelected ? "true" : "false");
-        if (tunnelSelected) {
-            String host = _tunnelHostField.getText();
-            String user = _tunnelUserField.getText();
-            String pwd = _tunnelPasswordField.getText();
-            String localPort = _tunnelLocalPortField.getText();
-            String remotePort = _tunnelRemotePortField.getText();
-
-            PreferencesHandler.setPreference(HM_PREF_TUNNELHOST, host);
-            PreferencesHandler.setPreference(HM_PREF_TUNNELUSER, user);
-            PreferencesHandler.setPreference(HM_PREF_TUNNELPWD, pwd);
-            PreferencesHandler.setPreference(HM_PREF_TUNNELLOCALPORT, localPort);
-            PreferencesHandler.setPreference(HM_PREF_TUNNELREMOTEPORT, remotePort);
-
-        }
     }
 
     public JComponent asJComponent() {
@@ -149,32 +122,13 @@ public class SettingsController extends SettingsView implements IOnCloseListener
         }
 
         if (component != null) {
-            String doTunneling = PreferencesHandler.getPreference(HM_PREF_TUNNELCHECK, "false");
-            if (Boolean.parseBoolean(doTunneling)) {
-                String host = PreferencesHandler.getPreference(HM_PREF_TUNNELHOST, "");
-                String user = PreferencesHandler.getPreference(HM_PREF_TUNNELUSER, "");
-                String pwd = PreferencesHandler.getPreference(HM_PREF_TUNNELPWD, "");
-                String localPort = PreferencesHandler.getPreference(HM_PREF_TUNNELLOCALPORT, "");
-                String remotePort = PreferencesHandler.getPreference(HM_PREF_TUNNELREMOTEPORT, "");
-
-                int remote = Integer.parseInt(remotePort);
-                int local = Integer.parseInt(localPort);;
-                try {
-                    TunnelSingleton.INSTANCE.setTunnelObject(host, user, pwd, local, remote);
-                } catch (JSchException e) {
-                    Logger.INSTANCE.insertError("SettingsController", "An error occurred while opening tunnel", e);
-                }
-            }
-
             // charsets need to be set in shp read writer
-
             ComponentOrientation co = PreferencesHandler.getComponentOrientation();
             GuiUtilities.applyComponentOrientation(component, co);
         }
     }
 
     public static void onCloseHandleSettings() {
-        TunnelSingleton.INSTANCE.disconnectTunnel();
     }
 
     public static void main( String[] args ) throws Exception {

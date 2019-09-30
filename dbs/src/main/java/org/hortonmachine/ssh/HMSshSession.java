@@ -45,11 +45,12 @@ public class HMSshSession implements AutoCloseable {
     /**
      * Constructor without user and passowrd. 
      * 
-     * <p>The pwd will be taken from the {@link SshUtilities#getPreference(String, String)} using the key {@link SshUtilities#PWD}. Same fo rthe user.
+     * <p>The pwd will be taken from the {@link SshUtilities#getPreference(String, String)} using the key {@link SshUtilities#PWD}. Same for the user.
      */
     public HMSshSession() throws Exception {
-        this(SshUtilities.getPreference(SshUtilities.HOST, ""), SshUtilities.getPreference(SshUtilities.USER, ""),
-                SshUtilities.getPreference(SshUtilities.PWD, ""));
+        this(SshUtilities.getPreference(SshUtilities.HOST, ""),
+                Integer.parseInt(SshUtilities.getPreference(SshUtilities.PORT, "22")),
+                SshUtilities.getPreference(SshUtilities.USER, ""), SshUtilities.getPreference(SshUtilities.PWD, ""));
     }
 
     /**
@@ -60,8 +61,8 @@ public class HMSshSession implements AutoCloseable {
      * @param pwd the password.
      * @throws Exception
      */
-    public HMSshSession( String host, String user, String pwd ) throws Exception {
-        session = jsch.getSession(user, host, 22);
+    public HMSshSession( String host, int port, String user, String pwd ) throws Exception {
+        session = jsch.getSession(user, host, port);
         UserInfo ui = new HMUserInfo(pwd);
         session.setUserInfo(ui);
         session.setPassword(ui.getPassword().getBytes());
@@ -77,8 +78,8 @@ public class HMSshSession implements AutoCloseable {
                 String proxyUser = SshUtilities.getPreference(HM_PREF_PROXYUSER, "");
                 String proxyPwd = SshUtilities.getPreference(HM_PREF_PROXYPWD, "");
 
-                int port = Integer.parseInt(proxyPort);
-                ProxyHTTP proxyHTTP = new ProxyHTTP(proxyHost, port);
+                int proxPort = Integer.parseInt(proxyPort);
+                ProxyHTTP proxyHTTP = new ProxyHTTP(proxyHost, proxPort);
                 if (proxyUser.length() > 0 && proxyPwd.length() > 0) {
                     proxyHTTP.setUserPasswd(proxyUser, proxyPwd);
                 }

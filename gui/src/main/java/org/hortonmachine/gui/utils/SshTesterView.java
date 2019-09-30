@@ -1,6 +1,7 @@
 package org.hortonmachine.gui.utils;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -14,7 +15,9 @@ import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -29,6 +32,13 @@ public class SshTesterView extends JPanel
    JTextField _userField = new JTextField();
    JPasswordField _passwordField = new JPasswordField();
    JLabel _proxyLabel = new JLabel();
+   JTextField _remoteTunnelHostField = new JTextField();
+   JTextField _remoteTunnelPortField = new JTextField();
+   JTextField _localTunnelPortField = new JTextField();
+   JTextField _tunnelUserField = new JTextField();
+   JPasswordField _tunnelPasswordField = new JPasswordField();
+   JToggleButton _toggleTunnelButton = new JToggleButton();
+   JTextField _portField = new JTextField();
 
    /**
     * Default constructor
@@ -120,20 +130,16 @@ public class SshTesterView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.5),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.5),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
-
-      JLabel jlabel1 = new JLabel();
-      jlabel1.setText("host");
-      jpanel1.add(jlabel1,cc.xy(2,2));
 
       _hostField.setName("hostField");
       jpanel1.add(_hostField,cc.xy(4,2));
 
-      JLabel jlabel2 = new JLabel();
-      jlabel2.setText("command");
-      jpanel1.add(jlabel2,cc.xy(7,2));
+      JLabel jlabel1 = new JLabel();
+      jlabel1.setText("command");
+      jpanel1.add(jlabel1,cc.xy(7,2));
 
       _outputArea.setName("outputArea");
       EtchedBorder etchedborder1 = new EtchedBorder(EtchedBorder.RAISED,null,null);
@@ -142,7 +148,7 @@ public class SshTesterView extends JPanel
       jscrollpane1.setViewportView(_outputArea);
       jscrollpane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
       jscrollpane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-      jpanel1.add(jscrollpane1,cc.xywh(7,4,5,8));
+      jpanel1.add(jscrollpane1,cc.xywh(7,6,5,34));
 
       _commandField.setName("commandField");
       jpanel1.add(_commandField,cc.xy(9,2));
@@ -152,25 +158,102 @@ public class SshTesterView extends JPanel
       _commandButton.setText(" run ");
       jpanel1.add(_commandButton,cc.xy(11,2));
 
-      JLabel jlabel3 = new JLabel();
-      jlabel3.setText("user");
-      jpanel1.add(jlabel3,cc.xy(2,4));
+      JLabel jlabel2 = new JLabel();
+      jlabel2.setText("user");
+      jpanel1.add(jlabel2,cc.xy(2,6));
 
       _userField.setName("userField");
-      jpanel1.add(_userField,cc.xy(4,4));
+      jpanel1.add(_userField,cc.xy(4,6));
 
-      JLabel jlabel4 = new JLabel();
-      jlabel4.setText("password");
-      jpanel1.add(jlabel4,cc.xy(2,6));
+      JLabel jlabel3 = new JLabel();
+      jlabel3.setText("password");
+      jpanel1.add(jlabel3,cc.xy(2,8));
 
       _passwordField.setName("passwordField");
-      jpanel1.add(_passwordField,cc.xy(4,6));
+      jpanel1.add(_passwordField,cc.xy(4,8));
 
       _proxyLabel.setName("proxyLabel");
       _proxyLabel.setText("   ");
-      jpanel1.add(_proxyLabel,cc.xywh(2,8,3,1));
+      jpanel1.add(_proxyLabel,cc.xywh(2,10,3,1));
 
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12 });
+      jpanel1.add(createPanel1(),cc.xywh(2,14,3,26));
+      JLabel jlabel4 = new JLabel();
+      jlabel4.setText("host");
+      jpanel1.add(jlabel4,cc.xy(2,2));
+
+      JLabel jlabel5 = new JLabel();
+      jlabel5.setText("port");
+      jpanel1.add(jlabel5,cc.xy(2,4));
+
+      _portField.setName("portField");
+      jpanel1.add(_portField,cc.xy(4,4));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel1()
+   {
+      JPanel jpanel1 = new JPanel();
+      TitledBorder titledborder1 = new TitledBorder(null,"Tunneling",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      jpanel1.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      JLabel jlabel1 = new JLabel();
+      jlabel1.setText("remote host");
+      jpanel1.add(jlabel1,cc.xy(2,2));
+
+      _remoteTunnelHostField.setName("remoteTunnelHostField");
+      jpanel1.add(_remoteTunnelHostField,cc.xy(4,2));
+
+      JLabel jlabel2 = new JLabel();
+      jlabel2.setText("remote port");
+      jpanel1.add(jlabel2,cc.xy(2,4));
+
+      _remoteTunnelPortField.setName("remoteTunnelPortField");
+      jpanel1.add(_remoteTunnelPortField,cc.xy(4,4));
+
+      JLabel jlabel3 = new JLabel();
+      jlabel3.setText("local port");
+      jpanel1.add(jlabel3,cc.xy(2,6));
+
+      _localTunnelPortField.setName("localTunnelPortField");
+      jpanel1.add(_localTunnelPortField,cc.xy(4,6));
+
+      JLabel jlabel4 = new JLabel();
+      jlabel4.setText("remote user");
+      jpanel1.add(jlabel4,cc.xy(2,8));
+
+      _tunnelUserField.setName("tunnelUserField");
+      jpanel1.add(_tunnelUserField,cc.xy(4,8));
+
+      _tunnelPasswordField.setName("tunnelPasswordField");
+      jpanel1.add(_tunnelPasswordField,cc.xy(4,10));
+
+      JLabel jlabel5 = new JLabel();
+      jlabel5.setText("remote password");
+      jpanel1.add(jlabel5,cc.xy(2,10));
+
+      jpanel1.add(createPanel2(),cc.xywh(2,12,3,1));
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel2()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      _toggleTunnelButton.setActionCommand("create tunnel");
+      _toggleTunnelButton.setName("toggleTunnelButton");
+      _toggleTunnelButton.setText("create tunnel");
+      jpanel1.add(_toggleTunnelButton,cc.xy(2,1));
+
+      addFillComponents(jpanel1,new int[]{ 1,3 },new int[]{ 1 });
       return jpanel1;
    }
 
