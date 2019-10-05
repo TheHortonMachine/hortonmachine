@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
@@ -68,12 +69,15 @@ public class LogDb implements AutoCloseable, ILogDb {
 
     public void createTable() throws Exception {
         if (logDb != null && !logDb.hasTable(TABLE_MESSAGES)) {
+
+            ADatabaseSyntaxHelper helper = logDb.getType().getDatabaseSyntaxHelper();
+
             String[] fields = { //
-                    ID_NAME + " LONG PRIMARY KEY AUTOINCREMENT", //
-                    TimeStamp_NAME + " LONG", //
-                    type_NAME + " INTEGER", //
-                    tag_NAME + " TEXT", //
-                    message_NAME + " TEXT"//
+                    ID_NAME + " " + helper.LONG_PRIMARYKEY_AUTOINCREMENT(), //
+                    TimeStamp_NAME + " " + helper.LONG(), //
+                    type_NAME + " " + helper.INTEGER(), //
+                    tag_NAME + " " + helper.TEXT(), //
+                    message_NAME + " " + helper.TEXT()//
             };
 
             StringBuilder sb = new StringBuilder();
