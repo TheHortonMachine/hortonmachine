@@ -27,7 +27,7 @@ import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 public class H2SyntaxHelper extends ADatabaseSyntaxHelper {
 
     public String TEXT() {
-        return "VARCHAR(255)";
+        return "VARCHAR";
     }
 
     public String INTEGER() {
@@ -73,7 +73,7 @@ public class H2SyntaxHelper extends ADatabaseSyntaxHelper {
         String lowerCase = sql.toLowerCase().trim();
         if (lowerCase.startsWith("create table")) {
             sql = sql.replaceAll("AUTOINCREMENT", "AUTO_INCREMENT");
-            sql = sql.replaceAll("TEXT", "varchar(255)");
+            sql = sql.replaceAll("TEXT", "varchar");
         }
         return sql;
     }
