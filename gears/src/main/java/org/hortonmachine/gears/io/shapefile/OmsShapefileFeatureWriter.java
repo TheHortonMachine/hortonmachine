@@ -137,16 +137,6 @@ public class OmsShapefileFeatureWriter extends HMModel {
             if (geodata == null) {
                 featureStore.addFeatures(new DefaultFeatureCollection());
             } else {
-                geodata.accepts(new FeatureVisitor(){
-
-                    @Override
-                    public void visit( Feature arg0 ) {
-                        arg0.getProperties().forEach(p -> {
-                            System.out.println(p.getName() + "    ->     " + p.getValue());
-                        });
-
-                    }
-                }, null);
                 featureStore.addFeatures(geodata);
             }
             transaction.commit();
