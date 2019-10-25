@@ -17,20 +17,13 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_DO_SINGLE_SIDED_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_IN_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_OUT_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_P_BUFFER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_P_CAP_STYLE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_P_JOIN_STYLE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_STATUS;
+import static org.hortonmachine.gears.modules.v.vectoroperations.OmsBuffer.*;
+
+import java.io.IOException;
+
+import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
+import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
+
 import static org.hortonmachine.gears.libs.modules.Variables.CAP_FLAT;
 import static org.hortonmachine.gears.libs.modules.Variables.CAP_ROUND;
 import static org.hortonmachine.gears.libs.modules.Variables.CAP_SQUARE;
@@ -71,6 +64,10 @@ public class Buffer extends HMModel {
     @In
     public double pBuffer = 10.0;
 
+    @Description(OMSBUFFER_P_BUFFERFIELD_DESCRIPTION)
+    @In
+    public String pBufferField;
+
     @Description(OMSBUFFER_DO_SINGLE_SIDED_DESCRIPTION)
     @In
     public boolean doSinglesided = false;
@@ -95,12 +92,23 @@ public class Buffer extends HMModel {
         OmsBuffer buffer = new OmsBuffer();
         buffer.inMap = getVector(inMap);
         buffer.pBuffer = pBuffer;
+        buffer.pBufferField = pBufferField;
         buffer.doSinglesided = doSinglesided;
         buffer.pJoinstyle = pJoinstyle;
         buffer.pCapstyle = pCapstyle;
         buffer.pm = pm;
         buffer.process();
         dumpVector(buffer.outMap, outMap);
+    }
+
+    public static void main( String[] args ) throws Exception {
+        OmsBuffer buffer = new OmsBuffer();
+        buffer.inMap = OmsVectorReader.readVector("/home/hydrologis/TMP/R3GIS/data/P1.shp");
+        buffer.pBuffer = 10;
+        buffer.pBufferField = "diam_chiom";
+        buffer.doSinglesided = false;
+        buffer.process();
+        OmsVectorWriter.writeVector("/home/hydrologis/TMP/R3GIS/data/P1_buf.shp", buffer.outMap);
     }
 
 }

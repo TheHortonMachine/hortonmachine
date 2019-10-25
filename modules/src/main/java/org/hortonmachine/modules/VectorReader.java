@@ -17,18 +17,24 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREADER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREADER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREADER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREADER_FILE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREADER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREADER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREADER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREADER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREADER_OUT_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREADER_STATUS;
+import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_AUTHORNAMES;
+import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_DESCRIPTION;
+import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_FILE_DESCRIPTION;
+import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_KEYWORDS;
+import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_LABEL;
+import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_LICENSE;
+import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_NAME;
+import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_OUT_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_STATUS;
+import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_TABLE_DESCRIPTION;
 
 import java.io.IOException;
+
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -40,11 +46,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
 
 @Description(OMSVECTORREADER_DESCRIPTION)
 @Author(name = OMSVECTORREADER_AUTHORNAMES, contact = OMSVECTORREADER_AUTHORCONTACTS)
@@ -60,6 +61,10 @@ public class VectorReader extends HMModel {
     @In
     public String file = null;
 
+    @Description(OMSVECTORREADER_TABLE_DESCRIPTION)
+    @In
+    public String table = null;
+
     @Description(OMSVECTORREADER_OUT_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection outVector = null;
@@ -68,6 +73,7 @@ public class VectorReader extends HMModel {
     public void process() throws IOException {
         OmsVectorReader vectorreader = new OmsVectorReader();
         vectorreader.file = file;
+        vectorreader.table = table;
         vectorreader.pm = pm;
         vectorreader.doProcess = doProcess;
         vectorreader.doReset = doReset;
@@ -77,6 +83,10 @@ public class VectorReader extends HMModel {
 
     public static SimpleFeatureCollection readVector( String path ) throws IOException {
         return OmsVectorReader.readVector(path);
+    }
+
+    public static SimpleFeatureCollection readVector( String path, String table ) throws IOException {
+        return OmsVectorReader.readVector(path, table);
     }
 
 }

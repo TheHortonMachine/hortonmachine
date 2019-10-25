@@ -245,10 +245,11 @@ public class HMConstants {
     public static final String GEOTIF = "tif";
     public static final String GRASS = "grass";
     public static final String SHP = "shp";
+    public static final String GPKG = "gpkg";
     public static final String LAS = "las";
     public static final String LAZ = "laz";
 
-    public static final String[] SUPPORTED_VECTOR_EXTENSIONS = {SHP};
+    public static final String[] SUPPORTED_VECTOR_EXTENSIONS = {SHP, GPKG};
     public static final String[] SUPPORTED_LIDAR_EXTENSIONS = {LAS};
     public static final String[] SUPPORTED_RASTER_EXTENSIONS = {GEOTIFF, GEOTIF, ESRIGRID};
     public static final String[] SUPPORTED_DB_EXTENSIONS = {EDb.SPATIALITE.getExtension(), EDb.H2GIS.getExtension(),

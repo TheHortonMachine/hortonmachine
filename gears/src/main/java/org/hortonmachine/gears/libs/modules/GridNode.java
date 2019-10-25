@@ -180,8 +180,7 @@ public class GridNode extends Node {
                 "-----------------------------------\n" + //
                 "]";
     }
-    
-    
+
     public void setFloatValueInMap( WritableRandomIter map, float value ) {
         if (map == null) {
             return;
@@ -193,7 +192,7 @@ public class GridNode extends Node {
             e.printStackTrace();
         }
     }
-    
+
     public void setDoubleValueInMap( WritableRandomIter map, double value ) {
         if (map == null) {
             return;
@@ -295,6 +294,35 @@ public class GridNode extends Node {
             }
         }
         return window;
+    }
+
+    /**
+     * Get a window of nodes surrounding the current node.
+     * 
+     * <p>Notes:</p>
+     * <ul>
+     *  <li>the size has to be odd, so that the current node can be in the center. 
+     *      If the size is even, size+1 will be used.</li>
+     * </ul>
+     * 
+     * @param size the size of the window in cell numbers.
+     * @return the window nodes.
+     */
+    public List<GridNode> getWindow( int size ) {
+        if (size % 2 == 0) {
+            size++;
+        }
+        List<GridNode> windowNodes = new ArrayList<>(size * size);
+        int delta = (size - 1) / 2;
+        for( int c = -delta; c <= delta; c++ ) {
+            int tmpCol = col + c;
+            for( int r = -delta; r <= delta; r++ ) {
+                int tmpRow = row + r;
+                GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
+                windowNodes.add(n);
+            }
+        }
+        return windowNodes;
     }
 
     /**

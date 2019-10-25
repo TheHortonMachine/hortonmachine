@@ -70,6 +70,8 @@ public class SettingsController extends SettingsView implements IOnCloseListener
             } else {
                 PreferencesHandler.setPreference(HM_PREF_SHP_CHARSET, charset);
             }
+        } else {
+            PreferencesHandler.setPreference(HM_PREF_SHP_CHARSET, "");
         }
 
         boolean proxySelected = _proxyCheckbox.isSelected();

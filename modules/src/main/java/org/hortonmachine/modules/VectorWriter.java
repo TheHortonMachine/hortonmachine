@@ -17,17 +17,7 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_FILE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_P_TYPE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_STATUS;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.*;
 
 import java.io.IOException;
 

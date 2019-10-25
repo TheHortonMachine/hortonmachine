@@ -38,11 +38,19 @@ public abstract class OLSTrendLine implements RegressionLine {
         ols = new OLSMultipleLinearRegression();
         ols.setNoIntercept(true); // let the implementation include a constant in xVector if desired
         ols.newSampleData(y, xData); // provide the data to the model
-        coef = MatrixUtils.createColumnRealMatrix(ols.estimateRegressionParameters()); 
+        coef = MatrixUtils.createColumnRealMatrix(ols.estimateRegressionParameters());
     }
 
     public double[] getRegressionParameters() {
         return ols.estimateRegressionParameters();
+    }
+
+    public double[] getRegressionParametersErrors() {
+        return ols.estimateRegressionParametersStandardErrors();
+    }
+
+    public double getRSquared() {
+        return ols.calculateRSquared();
     }
 
     @Override

@@ -17,21 +17,8 @@
  */
 package org.hortonmachine.gears.modules.v.vectoroperations;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_DO_SINGLE_SIDED_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_IN_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_OUT_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_P_BUFFER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_P_CAP_STYLE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_P_JOIN_STYLE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSBUFFER_STATUS;
+import static org.hortonmachine.gears.modules.v.vectoroperations.OmsBuffer.*;
+import static org.hortonmachine.gears.libs.modules.HMConstants.VECTORPROCESSING;
 import static org.hortonmachine.gears.libs.modules.Variables.CAP_FLAT;
 import static org.hortonmachine.gears.libs.modules.Variables.CAP_ROUND;
 import static org.hortonmachine.gears.libs.modules.Variables.CAP_SQUARE;
@@ -88,6 +75,10 @@ public class OmsBuffer extends HMModel {
     @In
     public double pBuffer = 10.0;
 
+    @Description(OMSBUFFER_P_BUFFERFIELD_DESCRIPTION)
+    @In
+    public String pBufferField;
+
     @Description(OMSBUFFER_DO_SINGLE_SIDED_DESCRIPTION)
     @In
     public boolean doSinglesided = false;
@@ -105,6 +96,25 @@ public class OmsBuffer extends HMModel {
     @Description(OMSBUFFER_OUT_MAP_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outMap = null;
+
+    // PARAM NAMES START
+    public static final String OMSBUFFER_DESCRIPTION = "A module that performs a buffer operation on a vector layer.";
+    public static final String OMSBUFFER_DOCUMENTATION = "";
+    public static final String OMSBUFFER_KEYWORDS = "JTS, OmsBuffer";
+    public static final String OMSBUFFER_LABEL = VECTORPROCESSING;
+    public static final String OMSBUFFER_NAME = "vbuffer";
+    public static final int OMSBUFFER_STATUS = 5;
+    public static final String OMSBUFFER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
+    public static final String OMSBUFFER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSBUFFER_AUTHORCONTACTS = "www.hydrologis.com";
+    public static final String OMSBUFFER_IN_MAP_DESCRIPTION = "The input vector map.";
+    public static final String OMSBUFFER_P_BUFFER_DESCRIPTION = "The buffer distance.";
+    public static final String OMSBUFFER_P_BUFFERFIELD_DESCRIPTION = "The field to use as buffer distance.";
+    public static final String OMSBUFFER_DO_SINGLE_SIDED_DESCRIPTION = "Flag to toggle singlesided buffer.";
+    public static final String OMSBUFFER_P_JOIN_STYLE_DESCRIPTION = "The join style to use.";
+    public static final String OMSBUFFER_P_CAP_STYLE_DESCRIPTION = "The cap style to use.";
+    public static final String OMSBUFFER_OUT_MAP_DESCRIPTION = "The buffered vector map.";
+    // PARAM NAMES ENd
 
     private double mitreLimit = BufferParameters.DEFAULT_MITRE_LIMIT;
     private int quadrantSegments = BufferParameters.DEFAULT_QUADRANT_SEGMENTS;
@@ -141,8 +151,16 @@ public class OmsBuffer extends HMModel {
         for( SimpleFeature feature : featuresList ) {
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
 
+            double buf = pBuffer;
+            if (pBufferField != null) {
+                Object bFieldObj = feature.getAttribute(pBufferField);
+                if (bFieldObj instanceof Number) {
+                    buf = ((Number) bFieldObj).doubleValue();
+                }
+            }
+
             BufferParameters bP = new BufferParameters(quadrantSegments, endCapStyle, joinStyle, mitreLimit);
-            Geometry bufferedGeom = BufferOp.bufferOp(geometry, pBuffer, bP);
+            Geometry bufferedGeom = BufferOp.bufferOp(geometry, buf, bP);
             List<Polygon> polygons = new ArrayList<Polygon>(bufferedGeom.getNumGeometries());
             for( int i = 0; i < bufferedGeom.getNumGeometries(); i++ ) {
                 Geometry geometryN = bufferedGeom.getGeometryN(i);

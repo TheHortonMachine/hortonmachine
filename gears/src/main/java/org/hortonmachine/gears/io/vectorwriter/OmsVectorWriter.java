@@ -17,21 +17,29 @@
  */
 package org.hortonmachine.gears.io.vectorwriter;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_FILE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_P_TYPE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORWRITER_STATUS;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_AUTHORNAMES;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_DESCRIPTION;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_DOCUMENTATION;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_KEYWORDS;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_LABEL;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_LICENSE;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_NAME;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.*;
+import static org.hortonmachine.gears.libs.modules.HMConstants.FEATUREWRITER;
 
 import java.io.File;
 import java.io.IOException;
+
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureWriter;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.FeatureCollection;
+import org.geotools.geopkg.FeatureEntry;
+import org.geotools.geopkg.GeoPackage;
+import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureWriter;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -44,12 +52,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollection;
-import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureWriter;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
 
 @Description(OMSVECTORWRITER_DESCRIPTION)
 @Documentation(OMSVECTORWRITER_DOCUMENTATION)
@@ -70,10 +72,30 @@ public class OmsVectorWriter extends HMModel {
     // currently not used, for future compatibility
     public String pType = null;
 
+    @Description(OMSVECTORWRITER_TABLE_DESCRIPTION)
+    @In
+    public String table = null;
+
     @Description(OMSVECTORWRITER_FILE_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String file = null;
+
+    // PARAM NAMES START
+    public static final String OMSVECTORWRITER_DESCRIPTION = "Vectors features writer to file module.";
+    public static final String OMSVECTORWRITER_DOCUMENTATION = "OmsVectorWriter.html";
+    public static final String OMSVECTORWRITER_KEYWORDS = "IO, Shapefile, Feature, Vector, Writing";
+    public static final String OMSVECTORWRITER_LABEL = FEATUREWRITER;
+    public static final String OMSVECTORWRITER_NAME = "vectorwriter";
+    public static final int OMSVECTORWRITER_STATUS = 40;
+    public static final String OMSVECTORWRITER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSVECTORWRITER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSVECTORWRITER_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSVECTORWRITER_IN_VECTOR_DESCRIPTION = "The read feature collection.";
+    public static final String OMSVECTORWRITER_P_TYPE_DESCRIPTION = "The vector type to write (Supported is: shp).";
+    public static final String OMSVECTORWRITER_TABLE_DESCRIPTION = "The table to write to (where applicable).";
+    public static final String OMSVECTORWRITER_FILE_DESCRIPTION = "The vector file to write.";
+    // PARAM NAMES STOP
 
     @Execute
     public void process() throws IOException {
@@ -85,8 +107,20 @@ public class OmsVectorWriter extends HMModel {
             return;
         }
         String name = vectorFile.getName();
-        if (name.toLowerCase().endsWith("shp") || (pType != null && pType.equals(HMConstants.SHP))) {
+        if (name.toLowerCase().endsWith(HMConstants.SHP) || (pType != null && pType.equals(HMConstants.SHP))) {
             OmsShapefileFeatureWriter.writeShapefile(vectorFile.getAbsolutePath(), inVector, pm);
+        } else if (name.toLowerCase().endsWith(HMConstants.GPKG) || (pType != null && pType.equals(HMConstants.GPKG))) {
+            GeoPackage geopkg = new GeoPackage(new File(file));
+            try {
+                geopkg.init();
+                FeatureEntry featureEntry = new FeatureEntry();
+                if (table != null) {
+                    featureEntry.setTableName(table);
+                }
+                geopkg.add(featureEntry, inVector);
+            } finally {
+                geopkg.close();
+            }
         } else {
             throw new IOException("Format is currently not supported for file: " + name);
         }
@@ -102,6 +136,14 @@ public class OmsVectorWriter extends HMModel {
     public static void writeVector( String path, SimpleFeatureCollection featureCollection ) throws IOException {
         OmsVectorWriter writer = new OmsVectorWriter();
         writer.file = path;
+        writer.inVector = featureCollection;
+        writer.process();
+    }
+
+    public static void writeVector( String path, String table, SimpleFeatureCollection featureCollection ) throws IOException {
+        OmsVectorWriter writer = new OmsVectorWriter();
+        writer.file = path;
+        writer.table = table;
         writer.inVector = featureCollection;
         writer.process();
     }

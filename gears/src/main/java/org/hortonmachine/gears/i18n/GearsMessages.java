@@ -232,19 +232,6 @@ public class GearsMessages {
     public static final String OMSLINESVECTORIZER_F_DEFAULT_DESCRIPTION = "The field name to use as a name for the raster value in the vector.";
     public static final String OMSLINESVECTORIZER_OUT_VECTOR_DESCRIPTION = "The extracted vector.";
 
-    public static final String OMSVECTORREADER_DESCRIPTION = "Vectors features reader module.";
-    public static final String OMSVECTORREADER_DOCUMENTATION = "OmsVectorReader.html";
-    public static final String OMSVECTORREADER_KEYWORDS = "IO, Shapefile, Feature, Vector, Reading";
-    public static final String OMSVECTORREADER_LABEL = FEATUREREADER;
-    public static final String OMSVECTORREADER_NAME = "vectorreader";
-    public static final int OMSVECTORREADER_STATUS = 40;
-    public static final String OMSVECTORREADER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSVECTORREADER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSVECTORREADER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSVECTORREADER_P_TYPE_DESCRIPTION = "The vector type to read (Supported is: shp, properties).";
-    public static final String OMSVECTORREADER_FILE_DESCRIPTION = "The vector file to read.";
-    public static final String OMSVECTORREADER_OUT_VECTOR_DESCRIPTION = "The read feature collection.";
-
     public static final String OMSRASTERWRITER_DESCRIPTION = "Raster writer module.";
     public static final String OMSRASTERWRITER_DOCUMENTATION = "OmsRasterWriter.html";
     public static final String OMSRASTERWRITER_KEYWORDS = "IO, Grass, Coverage, Raster, Writing";
@@ -608,22 +595,6 @@ public class GearsMessages {
     public static final String OMSMOSAIC12_IN_MAP12_DESCRIPTION = "The optional Map N.12 to be patched";
     public static final String OMSMOSAIC12_P_INTERPOLATION_DESCRIPTION = "The interpolation type to use";
     public static final String OMSMOSAIC12_OUT_MAP_DESCRIPTION = "The patched map.";
-
-    public static final String OMSBUFFER_DESCRIPTION = "A module that performs a buffer operation on a vector layer.";
-    public static final String OMSBUFFER_DOCUMENTATION = "";
-    public static final String OMSBUFFER_KEYWORDS = "JTS, OmsBuffer";
-    public static final String OMSBUFFER_LABEL = VECTORPROCESSING;
-    public static final String OMSBUFFER_NAME = "vbuffer";
-    public static final int OMSBUFFER_STATUS = 5;
-    public static final String OMSBUFFER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSBUFFER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSBUFFER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSBUFFER_IN_MAP_DESCRIPTION = "The input vector map.";
-    public static final String OMSBUFFER_P_BUFFER_DESCRIPTION = "The buffer distance.";
-    public static final String OMSBUFFER_DO_SINGLE_SIDED_DESCRIPTION = "Flag to toggle singlesided buffer.";
-    public static final String OMSBUFFER_P_JOIN_STYLE_DESCRIPTION = "The join style to use.";
-    public static final String OMSBUFFER_P_CAP_STYLE_DESCRIPTION = "The cap style to use.";
-    public static final String OMSBUFFER_OUT_MAP_DESCRIPTION = "The buffered vector map.";
 
     public static final String OMSVECTORFILTER_DESCRIPTION = "Module that creates a subset of a vector based on a filtered vector.";
     public static final String OMSVECTORFILTER_DOCUMENTATION = "OmsVectorFilter.html";
@@ -1184,19 +1155,6 @@ public class GearsMessages {
     public static final String OMSFEATURESLISTER_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSFEATURESLISTER_IN_FILES_DESCRIPTION = "The list of file from which to read features.";
     public static final String OMSFEATURESLISTER_OUT_FC_DESCRIPTION = "All features read from the input files.";
-
-    public static final String OMSVECTORWRITER_DESCRIPTION = "Vectors features writer to file module.";
-    public static final String OMSVECTORWRITER_DOCUMENTATION = "OmsVectorWriter.html";
-    public static final String OMSVECTORWRITER_KEYWORDS = "IO, Shapefile, Feature, Vector, Writing";
-    public static final String OMSVECTORWRITER_LABEL = FEATUREWRITER;
-    public static final String OMSVECTORWRITER_NAME = "vectorwriter";
-    public static final int OMSVECTORWRITER_STATUS = 40;
-    public static final String OMSVECTORWRITER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSVECTORWRITER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSVECTORWRITER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSVECTORWRITER_IN_VECTOR_DESCRIPTION = "The read feature collection.";
-    public static final String OMSVECTORWRITER_P_TYPE_DESCRIPTION = "The vector type to write (Supported is: shp).";
-    public static final String OMSVECTORWRITER_FILE_DESCRIPTION = "The vector file to write.";
 
     public static final String OMSCOVERAGEVIEWER_DESCRIPTION = "Utility class for viewing coverages.";
     public static final String OMSCOVERAGEVIEWER_DOCUMENTATION = "";
