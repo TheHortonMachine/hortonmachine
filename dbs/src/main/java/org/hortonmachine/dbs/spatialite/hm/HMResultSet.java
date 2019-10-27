@@ -107,6 +107,10 @@ public class HMResultSet implements IHMResultSet {
         return resultSet.getBoolean(index);
     }
 
+    public boolean getBoolean( String name ) throws Exception {
+        return resultSet.getBoolean(name);
+    }
+
     @Override
     public boolean wasNull() throws Exception {
         return resultSet.wasNull();

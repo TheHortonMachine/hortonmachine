@@ -59,6 +59,8 @@ public interface IHMResultSet extends AutoCloseable {
 
     boolean getBoolean( int index )throws Exception;
 
+    boolean getBoolean( String name)throws Exception;
+
     boolean wasNull() throws Exception;
 
     float getFloat( int index ) throws Exception;

@@ -145,6 +145,25 @@ public class StringUtilities {
     }
 
     /**
+     * Extract strings form a stream.
+     * 
+     * @param stream the stream.
+     * @param delimiter the delimiter used to split. If <code>null</code>, newline is used.
+     * @return the list of string pieces.
+     */
+    public static List<String> streamToStringList( InputStream stream, String delimiter ) {
+        if (delimiter == null) {
+            delimiter = "\n";
+        }
+        Scanner scanner = StringUtilities.streamToScanner(stream, delimiter);
+        List<String> pieces = new ArrayList<>();
+        while( scanner.hasNext() ) {
+            pieces.add(scanner.next());
+        }
+        return pieces;
+    }
+
+    /**
      * Convert a string containing a list of numbers into its array.
      * 
      * @param string the string containing numbers.

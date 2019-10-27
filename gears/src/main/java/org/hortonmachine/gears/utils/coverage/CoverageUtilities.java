@@ -1024,6 +1024,17 @@ public class CoverageUtilities {
      * @return the array holding the data.
      */
     public static double[] renderedImage2DoubleArray( RenderedImage renderedImage ) {
+        return renderedImage2DoubleArray(renderedImage, 0);
+    }
+
+    /**
+     * Transform a rendered image in its array representation.
+     * 
+     * @param renderedImage the rendered image to transform.
+     * @param bandNumber the the number of the band to consider..
+     * @return the array holding the data.
+     */
+    public static double[] renderedImage2DoubleArray( RenderedImage renderedImage, int bandNumber ) {
         int width = renderedImage.getWidth();
         int height = renderedImage.getHeight();
 
@@ -1032,7 +1043,7 @@ public class CoverageUtilities {
         int index = 0;;
         for( int x = 0; x < width; x++ ) {
             for( int y = 0; y < height; y++ ) {
-                double sample = imageIter.getSampleDouble(x, y, 0);
+                double sample = imageIter.getSampleDouble(x, y, bandNumber);
                 values[index++] = sample;
             }
         }

@@ -18,6 +18,7 @@
 package org.hortonmachine.dbs.spatialite.android;
 
 import java.sql.Date;
+import java.util.HashMap;
 
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
@@ -34,8 +35,15 @@ public class GPResultSet implements IHMResultSet {
 
     private Stmt stmt;
 
-    public GPResultSet( Stmt stmt ) {
+    private HashMap<String, Integer> name2Index = new HashMap<>();
+
+    public GPResultSet( Stmt stmt ) throws Exception {
         this.stmt = stmt;
+        int columnCount = stmt.column_count();
+        for( int i = 0; i < columnCount; i++ ) {
+            String columnName = stmt.column_name(i);
+            name2Index.put(columnName, i);
+        }
     }
 
     @Override
@@ -55,7 +63,7 @@ public class GPResultSet implements IHMResultSet {
 
     @Override
     public String getString( String name ) throws Exception {
-        throw new RuntimeException("Function not supported: getString( String name)");
+        return stmt.column_string(name2Index.get(name));
     }
 
     @Override
@@ -103,6 +111,10 @@ public class GPResultSet implements IHMResultSet {
         return stmt.column_int(index - 1) == 0 ? false : true;
     }
 
+    public boolean getBoolean( String name ) throws Exception {
+        return stmt.column_int(name2Index.get(name)) == 0 ? false : true;
+    }
+
     @Override
     public boolean wasNull() throws Exception {
         throw new RuntimeException("Function not supported: wasNull()");
@@ -110,17 +122,17 @@ public class GPResultSet implements IHMResultSet {
 
     @Override
     public int getInt( String name ) throws Exception {
-        throw new RuntimeException("Function not supported: getInt( String name)");
+        return stmt.column_int(name2Index.get(name));
     }
 
     @Override
     public double getDouble( String name ) throws Exception {
-        throw new RuntimeException("Function not supported: getDouble( String name)");
+        return stmt.column_double(name2Index.get(name));
     }
 
     @Override
     public long getLong( String name ) throws Exception {
-        throw new RuntimeException("Function not supported: getLong( String name)");
+        return stmt.column_long(name2Index.get(name));
     }
 
     @Override
@@ -130,13 +142,12 @@ public class GPResultSet implements IHMResultSet {
 
     @Override
     public Date getDate( int index ) throws Exception {
-        long tsLong = stmt.column_long(index - 1);
-        return new Date(tsLong);
+        return new Date(getLong(index));
     }
 
     @Override
     public Date getDate( String name ) throws Exception {
-        throw new RuntimeException("Function not supported: getDate( String name)");
+        return new Date(getLong(name));
     }
 
 }

@@ -1900,7 +1900,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 int limit = getLimit();
 
                 if (sqlText.contains(";")) {
-                    String trim = sqlText.replaceAll("\n", "").trim();
+                    String trim = sqlText.replaceAll("\n", " ").trim();
                     String[] querySplit = trim.split(";");
                     if (querySplit.length > 1) {
                         pm.message("Runnng in multi query mode, since a semicolon has been found.");

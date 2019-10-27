@@ -18,6 +18,7 @@
 package org.hortonmachine.dbs.utils;
 
 import java.io.File;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -299,5 +300,26 @@ public class DbsUtilities {
                 return _map;
             }
         });
+    }
+
+    /**
+     * Extract strings form a stream.
+     * 
+     * @param stream the stream.
+     * @param delimiter the delimiter used to split. If <code>null</code>, newline is used.
+     * @return the list of string pieces.
+     */
+    public static List<String> streamToStringList( InputStream stream, String delimiter ) {
+        if (delimiter == null) {
+            delimiter = "\n";
+        }
+        List<String> pieces = new ArrayList<>();
+        try (java.util.Scanner scanner = new java.util.Scanner(stream)) {
+            scanner.useDelimiter(delimiter);
+            while( scanner.hasNext() ) {
+                pieces.add(scanner.next());
+            }
+        }
+        return pieces;
     }
 }

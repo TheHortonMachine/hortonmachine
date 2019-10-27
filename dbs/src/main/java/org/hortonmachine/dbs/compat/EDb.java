@@ -47,8 +47,9 @@ public enum EDb {
     POSTGRES(5, "", "", "org.hortonmachine.dbs.postgis.PGDb", false, "org.hortonmachine.dbs.postgis.PGSqlTemplates",
             "jdbc:postgresql://", true, true, false, false), //
     POSTGIS(6, "", "", "org.hortonmachine.dbs.postgis.PostgisDb", true, "org.hortonmachine.dbs.postgis.PostgisSqlTemplates",
-            "jdbc:postgresql://", true, true, false, false)
-
+            "jdbc:postgresql://", true, true, false, false), //
+    GEOPACKAGE(7, ".gpkg", "gpkg", "org.hortonmachine.dbs.geopackage.GeopackageDb", true,
+            "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, false, true), //
     ; //
 
     private int _code;
@@ -198,6 +199,7 @@ public enum EDb {
             return new PostgisGeometryParser();
         case SPATIALITE:
         case SPATIALITE4ANDROID:
+        case GEOPACKAGE:
             return new SpatialiteGeometryParser();
         default:
             return null;
@@ -235,8 +237,9 @@ public enum EDb {
      * @throws Exception 
      */
     public static EDb fromFileDesktop( File file ) throws Exception {
+        String name = file.getName();
         if (!file.exists()) {
-            return fromFileNameDesktop(file.getName());
+            return fromFileNameDesktop(name);
         }
         if (SpatialiteCommonMethods.isSqliteFile(file)) {
             // sqlite
@@ -245,11 +248,14 @@ public enum EDb {
                 if (db.hasTable(SpatialiteTableNames.CHECK_SPATIALITE_TABLE)) {
                     return SPATIALITE;
                 } else {
-                    return SQLITE;
+                    if (name.toLowerCase().endsWith(GEOPACKAGE.getExtension())) {
+                        return GEOPACKAGE;
+                    } else {
+                        return SQLITE;
+                    }
                 }
             }
         }
-        String name = file.getName();
         return fromFileNameDesktop(name);
     }
 
@@ -264,6 +270,7 @@ public enum EDb {
         case SQLITE:
         case SPATIALITE:
         case SPATIALITE4ANDROID:
+        case GEOPACKAGE:
             return new SqliteNonSpatialDataType();
         default:
             return null;

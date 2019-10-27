@@ -1,12 +1,11 @@
 package org.hortonmachine.dbs;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.compat.IHMResultSet;
-import org.hortonmachine.dbs.compat.IHMStatement;
 
 public class TestUtilities {
     public static final String MPOLY_TABLE = "multipoly";
@@ -16,6 +15,10 @@ public class TestUtilities {
     public static final String MLINES_TABLE = "mlines";
     public static final String LINES_TABLE = "lines";
     public static final String GEOMCOLL_TABLE = "geomcoll";
+
+    public static File createTmpFile( String ext ) throws IOException {
+        return File.createTempFile("hm-dbs-", ext);
+    }
 
     public static void createGeomTables( ASpatialDb db ) throws Exception {
         String[] multiPolygonInserts = {//

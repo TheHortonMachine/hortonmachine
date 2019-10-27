@@ -24,10 +24,10 @@ package org.hortonmachine.dbs.compat;
  */
 public abstract class HMTransactionExecuter implements ITransactionExecuter {
 
-    private ASpatialDb db;
+    private ADb db;
     private boolean autoCommitEnabled;
 
-    public HMTransactionExecuter( ASpatialDb db ) {
+    public HMTransactionExecuter( ADb db ) {
         this.db = db;
     }
 
