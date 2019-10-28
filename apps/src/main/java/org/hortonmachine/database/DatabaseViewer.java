@@ -322,7 +322,7 @@ public class DatabaseViewer extends DatabaseController {
 
         return actions;
     }
-    
+
     @Override
     public void onClose() {
         SettingsController.onCloseHandleSettings();
@@ -358,9 +358,11 @@ public class DatabaseViewer extends DatabaseController {
             String absolutePath = openFile.getAbsolutePath();
             EDb dbType = null;
             if (SpatialiteCommonMethods.isSqliteFile(openFile)) {
-                dbType = EDb.SPATIALITE;
-            } else if (absolutePath.endsWith(EDb.GEOPACKAGE.getExtension())) {
-                dbType = EDb.GEOPACKAGE;
+                if (absolutePath.endsWith(EDb.GEOPACKAGE.getExtension())) {
+                    dbType = EDb.GEOPACKAGE;
+                } else {
+                    dbType = EDb.SPATIALITE;
+                }
             } else if (absolutePath.endsWith(EDb.H2GIS.getExtension())) {
                 dbType = EDb.H2GIS;
             } else {
@@ -370,7 +372,5 @@ public class DatabaseViewer extends DatabaseController {
             controller.openDatabase(dbType, absolutePath, null, null);
         }
     }
-
-
 
 }
