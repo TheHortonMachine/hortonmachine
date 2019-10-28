@@ -154,6 +154,20 @@ public class GeopackageDb extends ASpatialDb {
                 initialized = (0x47503130 == applicationId);
             }
         }
+
+        try {
+            // TODO check
+            String checkTable = "rtree_test_check";
+            String checkRtree = "CREATE VIRTUAL TABLE " + checkTable + " USING rtree(id, minx, maxx, miny, maxy)";
+            sqliteDb.executeInsertUpdateDeleteSql(checkRtree);
+            String drop = "DROP TABLE " + checkTable;
+            sqliteDb.executeInsertUpdateDeleteSql(drop);
+
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
         if (!initialized) {
             runScript(SPATIAL_REF_SYS + ".sql");
             runScript(GEOMETRY_COLUMNS + ".sql");
@@ -263,10 +277,11 @@ public class GeopackageDb extends ASpatialDb {
      * @throws IOException
      */
     public boolean hasSpatialIndex( String table ) throws Exception {
+        FeatureEntry feature = feature(table);
         return sqliteDb.execOnConnection(connection -> {
             try (IHMPreparedStatement pStmt = connection
                     .prepareStatement("SELECT name FROM sqlite_master WHERE type='table' AND name=? ")) {
-                pStmt.setString(1, table);
+                pStmt.setString(1, getSpatialIndexName(feature));
                 IHMResultSet resultSet = pStmt.executeQuery();
                 return resultSet.next();
             }
@@ -492,11 +507,29 @@ public class GeopackageDb extends ASpatialDb {
 
     public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 )
             throws Exception {
-        return SpatialiteCommonMethods.getSpatialindexBBoxWherePiece(this, tableName, alias, x1, y1, x2, y2);
+        FeatureEntry feature = feature(tableName);
+        String spatial_index = getSpatialIndexName(feature);
+
+        String pk = SpatialiteCommonMethods.getPrimaryKey(sqliteDb, tableName);
+        if (pk == null) {
+            // can't use spatial index
+            return null;
+        }
+
+        String check = "(" + x1 + " <= maxx and " + x2 + " >= minx and " + y1 + " <= maxy and " + y2 + " >= miny)";
+        // Make Sure the table name is escaped
+        String sql = pk + " IN ( SELECT id FROM \"" + spatial_index + "\"  WHERE " + check + ")";
+        return sql;
+    }
+
+    private String getSpatialIndexName( FeatureEntry feature ) {
+        return "rtree_" + feature.tableName + "_" + feature.geometryColumn;
     }
 
     public String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry ) throws Exception {
-        return SpatialiteCommonMethods.getSpatialindexGeometryWherePiece(this, tableName, alias, geometry);
+        // this is not possible in gpkg, backing on envelope intersection
+        Envelope env = geometry.getEnvelopeInternal();
+        return getSpatialindexBBoxWherePiece(tableName, alias, env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
     }
 
     public GeometryColumn getGeometryColumnsForTable( String tableName ) throws Exception {

@@ -250,7 +250,9 @@ public class SpatialiteCommonMethods {
             double y1 = envelope.getMinY();
             double x2 = envelope.getMaxX();
             double y2 = envelope.getMaxY();
-            whereStrings.add(db.getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2));
+            String spatialindexBBoxWherePiece = db.getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
+            if (spatialindexBBoxWherePiece != null)
+                whereStrings.add(spatialindexBBoxWherePiece);
         }
         if (whereStr != null) {
             whereStrings.add(whereStr);
@@ -362,6 +364,75 @@ public class SpatialiteCommonMethods {
                     }
                 }
                 return columnsInfo;
+            }
+        });
+    }
+
+    /**
+     * Get the primary key from a non spatial db.
+     * 
+     * @param db the db.
+     * @param tableName the name of the table to get the pk for.
+     * @return the pk name
+     * @throws Exception
+     */
+    public static String getPrimaryKey( ADb db, String tableName ) throws Exception {
+        String sql;
+        if (tableName.indexOf('.') != -1) {
+            // it is an attached database
+            String[] split = tableName.split("\\.");
+            String dbName = split[0];
+            String tmpTableName = split[1];
+            sql = "PRAGMA " + dbName + ".table_info(" + tmpTableName + ")";
+        } else {
+            sql = "PRAGMA table_info(" + tableName + ")";
+        }
+
+        return db.execOnConnection(connection -> {
+            List<String[]> primaryKey = new ArrayList<>();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                IHMResultSetMetaData rsmd = rs.getMetaData();
+                int columnCount = rsmd.getColumnCount();
+                int nameIndex = -1;
+                int typeIndex = -1;
+                int pkIndex = -1;
+                for( int i = 1; i <= columnCount; i++ ) {
+                    String columnName = rsmd.getColumnName(i);
+                    if (columnName.equals("name")) {
+                        nameIndex = i;
+                    } else if (columnName.equals("type")) {
+                        typeIndex = i;
+                    } else if (columnName.equals("pk")) {
+                        pkIndex = i;
+                    }
+                }
+
+                boolean hasPk = false;
+                while( rs.next() ) {
+                    String name = rs.getString(nameIndex);
+                    String type = rs.getString(typeIndex);
+                    String pk = "0";
+                    if (pkIndex > 0) {
+                        pk = rs.getString(pkIndex);
+                        if (pk.equals("1")) {
+                            return name;
+                        }
+                    }
+                    primaryKey.add(new String[]{name, type, pk});
+                }
+
+                // if no pk is available in the table, check if there is a field pkuid and
+                // in case set that as pk
+                if (!hasPk) {
+                    for( String[] colInfo : primaryKey ) {
+                        String name = colInfo[0].toLowerCase();
+                        if (name.equals(PKUID) || name.equals(PK_UID)) {
+                            colInfo[2] = "1";
+                            return name;
+                        }
+                    }
+                }
+                return null;
             }
         });
     }

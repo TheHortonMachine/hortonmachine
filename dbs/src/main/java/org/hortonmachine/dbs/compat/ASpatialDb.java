@@ -277,7 +277,6 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @throws Exception
      */
     public List<Geometry> getGeometriesIn( String tableName, Envelope envelope, String... prePostWhere ) throws Exception {
-        List<Geometry> geoms = new ArrayList<Geometry>();
         List<String> wheres = new ArrayList<>();
         String pre = "";
         String post = "";
@@ -296,12 +295,16 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
         String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName;
 
+        String sqlNoIndex = sql + (wheres.size() > 0 ? " WHERE " + DbsUtilities.joinBySeparator(wheres, " AND ") : "");
+
         if (envelope != null) {
             double x1 = envelope.getMinX();
             double y1 = envelope.getMinY();
             double x2 = envelope.getMaxX();
             double y2 = envelope.getMaxY();
-            wheres.add(getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2));
+            String spatialindexBBoxWherePiece = getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
+            if (spatialindexBBoxWherePiece != null)
+                wheres.add(spatialindexBBoxWherePiece);
         }
 
         if (wheres.size() > 0) {
@@ -311,13 +314,26 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         String _sql = sql;
         IGeometryParser geometryParser = getType().getGeometryParser();
         return execOnConnection(connection -> {
+            List<Geometry> geoms = new ArrayList<Geometry>();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
                 while( rs.next() ) {
                     Geometry geometry = geometryParser.fromResultSet(rs, 1);
                     geoms.add(geometry);
                 }
-                return geoms;
+            } catch (Exception e) {
+                geoms.clear();
+                if (e.getMessage().toLowerCase().contains("no such table: rtree_")) {
+                    try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sqlNoIndex)) {
+                        while( rs.next() ) {
+                            Geometry geometry = geometryParser.fromResultSet(rs, 1);
+                            geoms.add(geometry);
+                        }
+                    }
+                } else {
+                    throw e;
+                }
             }
+            return geoms;
         });
     }
 
@@ -399,7 +415,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @throws Exception
      */
     public abstract Envelope getTableBounds( String tableName ) throws Exception;
-    
+
     /**
      * Get the column [name, type, primarykey] values of a table.
      * 

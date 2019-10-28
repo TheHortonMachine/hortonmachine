@@ -508,7 +508,9 @@ public class H2GisDb extends ASpatialDb {
             double y1 = envelope.getMinY();
             double x2 = envelope.getMaxX();
             double y2 = envelope.getMaxY();
-            whereStrings.add(getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2));
+            String spatialindexBBoxWherePiece = getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
+            if (spatialindexBBoxWherePiece != null)
+                whereStrings.add(spatialindexBBoxWherePiece);
         }
         if (whereStr != null) {
             whereStrings.add(whereStr);

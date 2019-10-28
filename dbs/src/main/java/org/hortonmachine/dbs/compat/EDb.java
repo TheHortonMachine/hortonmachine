@@ -19,6 +19,7 @@ package org.hortonmachine.dbs.compat;
 
 import java.io.File;
 
+import org.hortonmachine.dbs.geopackage.GeopackageGeometryParser;
 import org.hortonmachine.dbs.h2gis.H2GisGeometryParser;
 import org.hortonmachine.dbs.h2gis.H2SyntaxHelper;
 import org.hortonmachine.dbs.postgis.PGSyntaxHelper;
@@ -199,8 +200,9 @@ public enum EDb {
             return new PostgisGeometryParser();
         case SPATIALITE:
         case SPATIALITE4ANDROID:
-        case GEOPACKAGE:
             return new SpatialiteGeometryParser();
+        case GEOPACKAGE:
+            return new GeopackageGeometryParser();
         default:
             return null;
         }
