@@ -61,6 +61,9 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
                 case H2:
                     setIcon(ImageCache.getInstance().getImage(ImageCache.H2GIS32));
                     break;
+                case GEOPACKAGE:
+                    setIcon(ImageCache.getInstance().getImage(ImageCache.GPKG32));
+                    break;
                 case SPATIALITE:
                 case SQLITE:
                     setIcon(ImageCache.getInstance().getImage(ImageCache.SPATIALITE32));

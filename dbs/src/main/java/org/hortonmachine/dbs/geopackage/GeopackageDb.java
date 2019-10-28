@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -45,6 +46,7 @@ import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.HMTransactionExecuter;
 import org.hortonmachine.dbs.compat.IDbVisitor;
+import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
@@ -53,6 +55,7 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.datatypes.EDataType;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.geopackage.Entry.DataType;
@@ -65,6 +68,7 @@ import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.ResultSetToObjectFunction;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.sqlite.Function;
@@ -100,6 +104,8 @@ public class GeopackageDb extends ASpatialDb {
     static final String DATE_FORMAT_STRING = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
     private SqliteDb sqliteDb;
+
+    private boolean supportsRtree = true;
 
     public GeopackageDb() {
         sqliteDb = new SqliteDb();
@@ -156,16 +162,14 @@ public class GeopackageDb extends ASpatialDb {
         }
 
         try {
-            // TODO check
             String checkTable = "rtree_test_check";
             String checkRtree = "CREATE VIRTUAL TABLE " + checkTable + " USING rtree(id, minx, maxx, miny, maxy)";
             sqliteDb.executeInsertUpdateDeleteSql(checkRtree);
             String drop = "DROP TABLE " + checkTable;
             sqliteDb.executeInsertUpdateDeleteSql(drop);
-
+            supportsRtree = true;
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            supportsRtree = false;
         }
 
         if (!initialized) {
@@ -286,6 +290,10 @@ public class GeopackageDb extends ASpatialDb {
                 return resultSet.next();
             }
         });
+    }
+
+    private String getSpatialIndexName( FeatureEntry feature ) {
+        return "rtree_" + feature.tableName + "_" + feature.geometryColumn;
     }
 
     private FeatureEntry createFeatureEntry( IHMResultSet rs ) throws Exception {
@@ -481,7 +489,214 @@ public class GeopackageDb extends ASpatialDb {
 
     public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, int limit, int reprojectSrid, String whereStr )
             throws Exception {
-        return SpatialiteCommonMethods.getTableRecordsMapIn(this, tableName, envelope, limit, reprojectSrid, whereStr);
+        QueryResult queryResult = new QueryResult();
+        GeometryColumn gCol = null;
+        String geomColLower = null;
+        try {
+            gCol = getGeometryColumnsForTable(tableName);
+            if (gCol != null)
+                geomColLower = gCol.geometryColumnName.toLowerCase();
+        } catch (Exception e) {
+            // ignore
+        }
+
+        List<String[]> tableColumnsInfo = getTableColumns(tableName);
+        int columnCount = tableColumnsInfo.size();
+
+        int index = 0;
+        List<String> items = new ArrayList<>();
+        List<ResultSetToObjectFunction> funct = new ArrayList<>();
+        for( String[] columnInfo : tableColumnsInfo ) {
+            String columnName = columnInfo[0];
+            if (DbsUtilities.isReservedName(columnName)) {
+                columnName = DbsUtilities.fixReservedNameForQuery(columnName);
+            }
+
+            String columnTypeName = columnInfo[1];
+
+            queryResult.names.add(columnName);
+            queryResult.types.add(columnTypeName);
+
+            String isPk = columnInfo[2];
+            if (isPk.equals("1")) {
+                queryResult.pkIndex = index;
+            }
+            if (geomColLower != null && columnName.toLowerCase().equals(geomColLower)) {
+                queryResult.geometryIndex = index;
+
+                if (reprojectSrid == -1 || reprojectSrid == gCol.srid) {
+                    items.add(geomColLower);
+                } else {
+                    items.add("ST_Transform(" + geomColLower + "," + reprojectSrid + ") AS " + geomColLower);
+                }
+            } else {
+                items.add(columnName);
+            }
+            index++;
+
+            EDataType type = EDataType.getType4Name(columnTypeName);
+            switch( type ) {
+            case TEXT: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getString(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
+            case INTEGER: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getInt(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
+            case FLOAT: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getFloat(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
+            case DOUBLE: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getDouble(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
+            case LONG: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getLong(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
+            case BLOB: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getBytes(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
+            case DATE: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            Date date = resultSet.getDate(index);
+                            return date;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
+            default:
+                funct.add(null);
+                break;
+            }
+        }
+
+        String sql = "SELECT ";
+        sql += DbsUtilities.joinByComma(items);
+        sql += " FROM " + tableName;
+
+        List<String> whereStrings = new ArrayList<>();
+        if (envelope != null) {
+            double x1 = envelope.getMinX();
+            double y1 = envelope.getMinY();
+            double x2 = envelope.getMaxX();
+            double y2 = envelope.getMaxY();
+            String spatialindexBBoxWherePiece = getSpatialindexBBoxWherePiece(tableName, null, x1, y1, x2, y2);
+            if (spatialindexBBoxWherePiece != null)
+                whereStrings.add(spatialindexBBoxWherePiece);
+        }
+        if (whereStr != null) {
+            whereStrings.add(whereStr);
+        }
+        if (whereStrings.size() > 0) {
+            sql += " WHERE "; //
+            sql += DbsUtilities.joinBySeparator(whereStrings, " AND ");
+        }
+
+        if (limit > 0) {
+            sql += " LIMIT " + limit;
+        }
+
+        IGeometryParser gp = getType().getGeometryParser();
+        String _sql = sql;
+        return execOnConnection(connection -> {
+            long start = System.currentTimeMillis();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
+                while( rs.next() ) {
+                    Object[] rec = new Object[columnCount];
+                    for( int j = 1; j <= columnCount; j++ ) {
+                        if (queryResult.geometryIndex == j - 1) {
+                            Geometry geometry = gp.fromResultSet(rs, j);
+                            if (geometry != null) {
+                                rec[j - 1] = geometry;
+                            }
+                        } else {
+                            ResultSetToObjectFunction function = funct.get(j - 1);
+                            Object object = function.getObject(rs, j);
+                            if (object instanceof Clob) {
+                                object = rs.getString(j);
+                            }
+                            rec[j - 1] = object;
+                        }
+                    }
+                    queryResult.data.add(rec);
+                }
+                long end = System.currentTimeMillis();
+                queryResult.queryTimeMillis = end - start;
+                return queryResult;
+            }
+        });
+
     }
 
     @Override
@@ -507,6 +722,8 @@ public class GeopackageDb extends ASpatialDb {
 
     public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 )
             throws Exception {
+        if (!supportsRtree)
+            return null;
         FeatureEntry feature = feature(tableName);
         String spatial_index = getSpatialIndexName(feature);
 
@@ -520,10 +737,6 @@ public class GeopackageDb extends ASpatialDb {
         // Make Sure the table name is escaped
         String sql = pk + " IN ( SELECT id FROM \"" + spatial_index + "\"  WHERE " + check + ")";
         return sql;
-    }
-
-    private String getSpatialIndexName( FeatureEntry feature ) {
-        return "rtree_" + feature.tableName + "_" + feature.geometryColumn;
     }
 
     public String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry ) throws Exception {

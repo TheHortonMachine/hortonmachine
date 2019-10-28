@@ -253,7 +253,7 @@ public class HMConstants {
     public static final String[] SUPPORTED_LIDAR_EXTENSIONS = {LAS};
     public static final String[] SUPPORTED_RASTER_EXTENSIONS = {GEOTIFF, GEOTIF, ESRIGRID};
     public static final String[] SUPPORTED_DB_EXTENSIONS = {EDb.SPATIALITE.getExtension(), EDb.H2GIS.getExtension(),
-            GeopaparazziUtilities.GPAP_EXTENSION};
+            GeopaparazziUtilities.GPAP_EXTENSION, EDb.GEOPACKAGE.getExtension()};
 
     /*
      * modules categories

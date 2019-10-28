@@ -81,6 +81,7 @@ import javax.swing.tree.TreePath;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.swing.JMapFrame.Tool;
 import org.h2.jdbc.JdbcSQLException;
 import org.hortonmachine.database.tree.DatabaseTreeCellRenderer;
@@ -123,6 +124,7 @@ import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
@@ -1389,16 +1391,24 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 try {
                                     String valueAt = table.getValueAt(r, selectedCols[0]).toString();
                                     Geometry geometry = wktReader.read(valueAt);
-                                    geomsList.add(geometry);
+                                    if (geometry instanceof GeometryCollection) {
+                                        int numGeometries = geometry.getNumGeometries();
+                                        for( int j = 0; j < numGeometries; j++ ) {
+                                            Geometry geometryN = geometry.getGeometryN(j);
+                                            geomsList.add(geometryN);
+                                        }
+                                    } else {
+                                        geomsList.add(geometry);
+                                    }
                                 } catch (ParseException e1) {
                                     e1.printStackTrace();
                                 }
                             }
 
                             if (geomsList.size() > 0) {
-                                SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(null,
+                                List<SimpleFeatureCollection> fcs = FeatureUtilities.featureCollectionsFromGeometry(null,
                                         geomsList.toArray(new Geometry[0]));
-                                showInMapFrame(false, fc);
+                                showInMapFrame(false, fcs.toArray(new SimpleFeatureCollection[0]));
                             }
 
                         }
@@ -1418,20 +1428,31 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                     try {
                                         String valueAt = table.getValueAt(r, selectedCols[0]).toString();
                                         Geometry geometry = wktReader.read(valueAt);
-                                        List<Polygon> simpleDirectionArrows = GeometryUtilities
-                                                .createSimpleDirectionArrow(geometry);
+                                        if (geometry instanceof GeometryCollection) {
+                                            int numGeometries = geometry.getNumGeometries();
+                                            for( int j = 0; j < numGeometries; j++ ) {
+                                                Geometry geometryN = geometry.getGeometryN(j);
+                                                List<Polygon> simpleDirectionArrows = GeometryUtilities
+                                                        .createSimpleDirectionArrow(geometryN);
+                                                geomsList.add(geometryN);
+                                                geomsList.addAll(simpleDirectionArrows);
+                                            }
+                                        } else {
+                                            List<Polygon> simpleDirectionArrows = GeometryUtilities
+                                                    .createSimpleDirectionArrow(geometry);
+                                            geomsList.add(geometry);
+                                            geomsList.addAll(simpleDirectionArrows);
+                                        }
 
-                                        geomsList.add(geometry);
-                                        geomsList.addAll(simpleDirectionArrows);
                                     } catch (ParseException e1) {
                                         e1.printStackTrace();
                                     }
                                 }
 
                                 if (geomsList.size() > 0) {
-                                    SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(null,
+                                    List<SimpleFeatureCollection> fcs = FeatureUtilities.featureCollectionsFromGeometry(null,
                                             geomsList.toArray(new Geometry[0]));
-                                    showInMapFrame(false, fc);
+                                    showInMapFrame(false, fcs.toArray(new SimpleFeatureCollection[0]));
                                 }
 
                             }
@@ -2089,7 +2110,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         layoutTree(dbLevel, true);
     }
 
-    protected void showInMapFrame( boolean withLayers, SimpleFeatureCollection fc ) {
+    protected void showInMapFrame( boolean withLayers, SimpleFeatureCollection... fcs ) {
         if (mapFrame == null || !mapFrame.isVisible()) {
             Class<DatabaseController> class1 = DatabaseController.class;
             ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
@@ -2106,8 +2127,20 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 mapFrame.setSize(600, 600);
             }
             mapFrame.setVisible(true);
+
         }
-        mapFrame.addLayer(fc);
+        ReferencedEnvelope renv = null;
+        for( SimpleFeatureCollection fc : fcs ) {
+            mapFrame.addLayer(fc);
+            ReferencedEnvelope bounds = fc.getBounds();
+            if (renv == null) {
+                renv = bounds;
+            } else {
+                renv.expandToInclude(bounds);
+            }
+        }
+
+        mapFrame.getMapPane().setDisplayArea(renv);
     }
 
     @Override

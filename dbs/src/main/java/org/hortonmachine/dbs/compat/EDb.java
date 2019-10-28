@@ -50,7 +50,7 @@ public enum EDb {
     POSTGIS(6, "", "", "org.hortonmachine.dbs.postgis.PostgisDb", true, "org.hortonmachine.dbs.postgis.PostgisSqlTemplates",
             "jdbc:postgresql://", true, true, false, false), //
     GEOPACKAGE(7, ".gpkg", "gpkg", "org.hortonmachine.dbs.geopackage.GeopackageDb", true,
-            "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, false, true), //
+            "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, true, true), //
     ; //
 
     private int _code;
@@ -96,11 +96,11 @@ public enum EDb {
     }
 
     public static EDb[] getSpatialTypesDesktop() {
-        return new EDb[]{SPATIALITE, H2GIS, POSTGIS};
+        return new EDb[]{H2GIS, GEOPACKAGE, POSTGIS, SPATIALITE};
     }
 
     public static EDb[] getSpatialTypesMobile() {
-        return new EDb[]{SPATIALITE4ANDROID};
+        return new EDb[]{SPATIALITE4ANDROID, GEOPACKAGE};
     }
 
     public int getCode() {

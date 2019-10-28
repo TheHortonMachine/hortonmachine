@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.media.jai.JAI;
 import javax.media.jai.ParameterBlockJAI;
@@ -64,13 +66,6 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.metadata.spatial.PixelOrientation;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateList;
 import org.locationtech.jts.geom.Envelope;
@@ -84,6 +79,12 @@ import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.index.strtree.STRtree;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.metadata.spatial.PixelOrientation;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public class FeatureUtilities {
 
@@ -95,7 +96,6 @@ public class FeatureUtilities {
      *        same
      * @return a list of ordered coordinates
      */
-    @SuppressWarnings("unchecked")
     public static CoordinateList orderLineGeometries( List<Geometry> geometryList, double thresHold ) {
         /*
          * first search the feature that is one of the two external points
@@ -575,6 +575,75 @@ public class FeatureUtilities {
             newCollection.add(feature);
         }
         return newCollection;
+    }
+
+    /**
+     * Make a set of {@link SimpleFeatureCollection} from a set of {@link Geometry}, based on the geometry type.
+     * 
+     * <p>This is a fast utility and adds no attributes.</p>
+     * 
+     * @param crs The {@link CoordinateReferenceSystem}.
+     * @param geometries the set of {@link Geometry} to add.
+     * @return the features wrapping the geoms.
+     */
+    public static List<SimpleFeatureCollection> featureCollectionsFromGeometry( CoordinateReferenceSystem crs,
+            Geometry... geometries ) {
+        Map<String, List<Geometry>> geombyTypeMap = Arrays.asList(geometries).stream()
+                .collect(Collectors.groupingBy(Geometry::getGeometryType));
+        List<SimpleFeatureCollection> fcs = new ArrayList<>();
+
+        for( List<Geometry> geoms : geombyTypeMap.values() ) {
+            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+            b.setName("simplegeom");
+            b.setCRS(crs);
+
+            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
+
+            EGeometryType geometryType = EGeometryType.forGeometry(geoms.get(0));
+            b.add("the_geom", geometryType.getClazz());
+
+            Object userData = geoms.get(0).getUserData();
+            int userDataSize = 1;
+            if (userData != null) {
+                if (userData instanceof String[]) {
+                    String[] string = (String[]) userData;
+                    userDataSize = string.length;
+                    for( int i = 0; i < userDataSize; i++ ) {
+                        b.add("data" + i, String.class);
+                    }
+                } else {
+                    b.add("userdata", userData.getClass());
+                }
+            }
+
+            SimpleFeatureType type = b.buildFeatureType();
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+            for( Geometry g : geoms ) {
+                Object[] values;
+                if (userData == null) {
+                    values = new Object[]{g};
+                } else {
+                    Object tmpUserData = g.getUserData();
+                    if (tmpUserData instanceof String[]) {
+                        String[] string = (String[]) tmpUserData;
+                        values = new Object[userDataSize + 1];
+                        values[0] = g;
+                        for( int i = 0; i < string.length; i++ ) {
+                            values[i + 1] = string[i];
+                        }
+                    } else {
+                        values = new Object[]{g, tmpUserData};
+                    }
+                }
+                builder.addAll(values);
+                SimpleFeature feature = builder.buildFeature(null);
+                newCollection.add(feature);
+            }
+            
+            fcs.add(newCollection);
+        }
+
+        return fcs;
     }
 
     /**

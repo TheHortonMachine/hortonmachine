@@ -359,6 +359,8 @@ public class DatabaseViewer extends DatabaseController {
             EDb dbType = null;
             if (SpatialiteCommonMethods.isSqliteFile(openFile)) {
                 dbType = EDb.SPATIALITE;
+            } else if (absolutePath.endsWith(EDb.GEOPACKAGE.getExtension())) {
+                dbType = EDb.GEOPACKAGE;
             } else if (absolutePath.endsWith(EDb.H2GIS.getExtension())) {
                 dbType = EDb.H2GIS;
             } else {
