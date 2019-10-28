@@ -45,7 +45,10 @@ public class GeopackageTableNames implements ISpatialTableNames {
             "gpkg_tile_matrix_set", //
             "gpkg_data_column_constraints", //
             "gpkg_extensions", //
-            "gpkg_spatial_index"//
+            "gpkg_ogr_contents", //
+            "gpkg_spatial_index",//
+            "spatial_ref_sys",//
+            "st_spatial_ref_sys"//
     );
 
     // INTERNAL DATA

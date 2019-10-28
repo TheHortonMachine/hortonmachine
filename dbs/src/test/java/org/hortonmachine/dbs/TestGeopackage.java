@@ -6,12 +6,15 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 
+import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageTableNames;
 import org.junit.Test;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -30,7 +33,8 @@ public class TestGeopackage {
             db.open(gpkgFile.getAbsolutePath());
             db.initSpatialMetadata(null);
 
-            List<String> tables = db.getTables(false);
+            HashMap<String, List<String>> tablesMap = db.getTablesMap(false);
+            List<String> tables = tablesMap.get(GeopackageTableNames.USERDATA);
             assertEquals(16, tables.size());
 
             String point2DTable = "point2d";
@@ -95,20 +99,35 @@ public class TestGeopackage {
 
         }
     }
-//    @Test
-//    public void testCreation() throws Exception {
-//        
-//        File gpkgFile = TestUtilities.createTmpFile(".gpkg");
-//        
-//        try (ASpatialDb db = EDb.GEOPACKAGE.getSpatialDb()) {
-//            db.open(gpkgFile.getAbsolutePath());
-//            db.initSpatialMetadata(null);
-//            
-//            List<String> tables = db.getTables(false);
-//            assertEquals(10, tables.size());
-//        } finally {
-//            gpkgFile.delete();
-//        }
-//    }
+
+    @Test
+    public void testCreation() throws Exception {
+
+        File gpkgFile = TestUtilities.createTmpFile(".gpkg");
+        gpkgFile.delete();
+        try (GeopackageDb db = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb()) {
+            db.open(gpkgFile.getAbsolutePath());
+            db.initSpatialMetadata(null);
+
+            TestUtilities.createGeomTablesAndPopulate(db);
+        }
+        // reopen
+        try (GeopackageDb db = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb()) {
+            db.open(gpkgFile.getAbsolutePath());
+            db.initSpatialMetadata(null);
+
+            HashMap<String, List<String>> tablesMap = db.getTablesMap(false);
+            List<String> tables = tablesMap.get(GeopackageTableNames.USERDATA);
+            assertEquals(6, tables.size());
+
+            List<Geometry> geometries = db.getGeometriesIn(TestUtilities.MPOLY_TABLE, (Envelope) null);
+            assertEquals(3, geometries.size());
+
+            geometries = db.getGeometriesIn(TestUtilities.MPOLY_TABLE, new Envelope(0, 5, 0, 5));
+            assertEquals(2, geometries.size());
+        } finally {
+            gpkgFile.delete();
+        }
+    }
 
 }

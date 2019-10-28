@@ -8,7 +8,7 @@ import static org.hortonmachine.dbs.TestUtilities.MPOLY_TABLE;
 import static org.hortonmachine.dbs.TestUtilities.POINTS_TABLE;
 import static org.hortonmachine.dbs.TestUtilities.POLY_TABLE;
 import static org.hortonmachine.dbs.TestUtilities.arr;
-import static org.hortonmachine.dbs.TestUtilities.createGeomTables;
+import static org.hortonmachine.dbs.TestUtilities.createGeomTablesAndPopulate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -59,7 +59,7 @@ public class TestPostgisDbsMain {
         db.initSpatialMetadata("'WGS84'");
 
         removePgGeometryTables(db);
-        createGeomTables(db);
+        createGeomTablesAndPopulate(db);
 
         tablesCount = 6;
         if (DB_TYPE == EDb.SPATIALITE) {

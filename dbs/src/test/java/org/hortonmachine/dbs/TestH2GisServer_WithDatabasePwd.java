@@ -1,7 +1,7 @@
 package org.hortonmachine.dbs;
 
 import static org.hortonmachine.dbs.TestUtilities.MPOLY_TABLE;
-import static org.hortonmachine.dbs.TestUtilities.createGeomTables;
+import static org.hortonmachine.dbs.TestUtilities.createGeomTablesAndPopulate;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -79,7 +79,7 @@ public class TestH2GisServer_WithDatabasePwd {
             db.open(tcpServerUrl);
             db.initSpatialMetadata("'WGS84'");
 
-            createGeomTables(db);
+            createGeomTablesAndPopulate(db);
 
             List<Geometry> intersecting = db.getGeometriesIn(MPOLY_TABLE, (Envelope) null);
             assertEquals(3, intersecting.size());

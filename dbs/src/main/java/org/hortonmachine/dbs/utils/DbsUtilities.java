@@ -190,7 +190,12 @@ public class DbsUtilities {
         String tableName = selectedTable.tableName;
         String letter = tableName.substring(0, 1);
         List<String[]> tableColumns = db.getTableColumns(tableName);
-        GeometryColumn geometryColumns = db.getGeometryColumnsForTable(tableName);
+        GeometryColumn geometryColumns = null;
+        try {
+            geometryColumns = db.getGeometryColumnsForTable(tableName);
+        } catch (Exception e) {
+            // ignore
+        }
         String query = "SELECT ";
         if (geomFirst) {
             // first geom

@@ -35,9 +35,11 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.geopackage.GeopackageDb;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.postgis.PostgisDb;
@@ -170,15 +172,20 @@ public class SpatialDbsImportUtils {
                 postgisDb.addGeometryXYColumnAndIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE, typeString, codeFromCrs,
                         avoidSpatialIndex);
             } else if (db instanceof H2GisDb) {
-                H2GisDb spatialiteDb = (H2GisDb) db;
+                H2GisDb h2gisDb = (H2GisDb) db;
                 String typeStringExtra = typeString;
                 // String typeStringExtra = "GEOMETRY(" + typeString + "," + codeFromCrs + ")";
                 attrSql.add(GEOMFIELD_FOR_SHAPEFILE + " " + typeStringExtra);
                 String[] array = attrSql.toArray(new String[0]);
-                spatialiteDb.createTable(newTableName, array);
-                spatialiteDb.addSrid(newTableName, codeFromCrs, GEOMFIELD_FOR_SHAPEFILE);
+                h2gisDb.createTable(newTableName, array);
+                h2gisDb.addSrid(newTableName, codeFromCrs, GEOMFIELD_FOR_SHAPEFILE);
                 if (!avoidSpatialIndex)
-                    spatialiteDb.createSpatialIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE);
+                    h2gisDb.createSpatialIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE);
+            } else if (db instanceof GeopackageDb) {
+                GeopackageDb gpkgDb = (GeopackageDb) db;
+                String[] array = attrSql.toArray(new String[0]);
+                gpkgDb.createSpatialTable(newTableName, Integer.parseInt(codeFromCrs), GEOMFIELD_FOR_SHAPEFILE + " " + typeString,
+                        array, null, avoidSpatialIndex);
             }
         } else {
             db.createTable(newTableName, attrSql.toArray(new String[0]));
@@ -261,7 +268,8 @@ public class SpatialDbsImportUtils {
             attrNames.add(attrName);
             if (attributeDescriptor instanceof GeometryDescriptor) {
                 valueNames += "," + gCol;
-                qMarks += ",ST_GeomFromText(?, " + epsg + ")";
+                qMarks += ",?";
+//                qMarks += ",ST_GeomFromText(?, " + epsg + ")"; TODO check
             } else {
                 if (!tableColumns.contains(attrName.toUpperCase())) {
                     pm.errorMessage(
@@ -276,6 +284,8 @@ public class SpatialDbsImportUtils {
         qMarks = qMarks.substring(1);
         String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
 
+        IGeometryParser gp = db.getType().getGeometryParser();
+        
         return db.execOnConnection(conn -> {
             boolean autoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
@@ -302,7 +312,7 @@ public class SpatialDbsImportUtils {
                             } else if (object instanceof String) {
                                 pStmt.setString(iPlus, (String) object);
                             } else if (object instanceof Geometry) {
-                                pStmt.setString(iPlus, ((Geometry) object).toText());
+                                pStmt.setObject(iPlus, gp.toSqlObject((Geometry) object));
                             } else if (object instanceof Clob) {
                                 String string = ((Clob) object).toString();
                                 pStmt.setString(iPlus, string);

@@ -497,7 +497,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
                     } else if (objects[i] instanceof String) {
                         stmt.setString(i + 1, (String) objects[i]);
                     } else {
-                        stmt.setString(i + 1, objects[i].toString());
+                        stmt.setObject(i + 1, objects[i]);
                     }
                 }
                 return stmt.executeUpdate();

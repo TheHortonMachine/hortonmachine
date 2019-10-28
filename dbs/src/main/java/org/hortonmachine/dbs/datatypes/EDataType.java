@@ -28,10 +28,10 @@ import org.locationtech.jts.geom.Geometry;
 @SuppressWarnings("nls")
 public enum EDataType {
     TEXT(0, String.class, "''", new String[]{"TEXT", "VARCHAR", "CLOB"}), //
-    DOUBLE(1, Double.class, "-1.0", new String[]{"DOUBLE", "REAL"}), //
+    DOUBLE(1, Double.class, "-1.0", new String[]{"DOUBLE", "REAL", "NUMERIC"}), //
     PHONE(2, String.class, "''", new String[]{"PHONE"}), //
     DATE(3, String.class, "''", new String[]{"DATE"}), //
-    INTEGER(4, Integer.class, "0", new String[]{"INTEGER", "INT", "TINYINT"}), //
+    INTEGER(4, Integer.class, "0", new String[]{"INTEGER", "INT", "TINYINT", "MEDIUMINT", "SMALLINT"}), //
     LONG(5, Long.class, "0", new String[]{"LONG", "BIGINT"}), //
     FLOAT(6, Float.class, "0.0", new String[]{"FLOAT"}), //
     BLOB(7, Object.class, "''", new String[]{"BLOB"}), //
