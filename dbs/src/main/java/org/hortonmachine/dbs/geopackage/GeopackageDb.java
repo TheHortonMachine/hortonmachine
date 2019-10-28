@@ -256,7 +256,7 @@ public class GeopackageDb extends ASpatialDb {
      * @return The entry, or <code>null</code> if no such entry exists.
      */
     public FeatureEntry feature( String name ) throws Exception {
-        if(!sqliteDb.hasTable(GEOMETRY_COLUMNS)) {
+        if (!sqliteDb.hasTable(GEOMETRY_COLUMNS)) {
             return null;
         }
         return sqliteDb.execOnConnection(connection -> {
@@ -625,6 +625,20 @@ public class GeopackageDb extends ASpatialDb {
                 });
                 break;
             }
+            case BOOLEAN: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getInt(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
             case FLOAT: {
                 funct.add(new ResultSetToObjectFunction(){
                     @Override
@@ -681,12 +695,13 @@ public class GeopackageDb extends ASpatialDb {
                 });
                 break;
             }
+            case DATETIME:
             case DATE: {
                 funct.add(new ResultSetToObjectFunction(){
                     @Override
                     public Object getObject( IHMResultSet resultSet, int index ) {
                         try {
-                            Date date = resultSet.getDate(index);
+                            String date = resultSet.getString(index);
                             return date;
                         } catch (Exception e) {
                             e.printStackTrace();

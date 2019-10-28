@@ -163,6 +163,20 @@ public class SpatialiteCommonMethods {
                 });
                 break;
             }
+            case BOOLEAN: {
+                funct.add(new ResultSetToObjectFunction(){
+                    @Override
+                    public Object getObject( IHMResultSet resultSet, int index ) {
+                        try {
+                            return resultSet.getInt(index);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+                });
+                break;
+            }
             case FLOAT: {
                 funct.add(new ResultSetToObjectFunction(){
                     @Override
@@ -219,12 +233,13 @@ public class SpatialiteCommonMethods {
                 });
                 break;
             }
+            case DATETIME:
             case DATE: {
                 funct.add(new ResultSetToObjectFunction(){
                     @Override
                     public Object getObject( IHMResultSet resultSet, int index ) {
                         try {
-                            Date date = resultSet.getDate(index);
+                            String date = resultSet.getString(index);
                             return date;
                         } catch (Exception e) {
                             e.printStackTrace();
