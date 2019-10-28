@@ -476,10 +476,61 @@ public class GeopackageDb extends ASpatialDb {
 
     public void createSpatialTable( String tableName, int tableSrid, String geometryFieldData, String[] fieldData,
             String[] foreignKeys, boolean avoidIndex ) throws Exception {
-//        SpatialiteCommonMethods.createSpatialTable(this, tableName, tableSrid, geometryFieldData, fieldData, foreignKeys,
-//                avoidIndex);
-        // TODO
-        throw new RuntimeException("Not implemented yet...");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE TABLE ");
+        sb.append(tableName).append("(");
+        for( int i = 0; i < fieldData.length; i++ ) {
+            if (i != 0)
+                sb.append(",");
+            sb.append(fieldData[i]);
+        }
+        sb.append(",").append(geometryFieldData);
+        if (foreignKeys != null) {
+            for( int i = 0; i < foreignKeys.length; i++ ) {
+                sb.append(",");
+                sb.append(foreignKeys[i]);
+            }
+        }
+        sb.append(")");
+
+        execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement()) {
+                stmt.execute(sb.toString());
+            }
+            return null;
+        });
+
+//        addSrid(tableName, String.valueOf(tableSrid), null);
+//
+//        if (!avoidIndex) {
+//            String[] split = geometryFieldData.trim().split("\\s+");
+//            String geomColName = split[0];
+//
+//            createSpatialIndex(tableName, geomColName);
+//        }
+//    
+//        try {
+//            geopkg.addGeoPackageContentsEntry(fe);
+//            geopkg.addGeometryColumnsEntry(fe);
+//
+//            // other geometry columns are possible
+//            for( PropertyDescriptor descr : featureType.getDescriptors() ) {
+//                if (descr instanceof GeometryDescriptor) {
+//                    GeometryDescriptor gd1 = (GeometryDescriptor) descr;
+//                    if (!(gd1.getLocalName()).equals(fe.getGeometryColumn())) {
+//                        FeatureEntry fe1 = new FeatureEntry();
+//                        fe1.init(fe);
+//                        fe1.setGeometryColumn(gd1.getLocalName());
+//                        fe1.setGeometryType(Geometries.getForBinding((Class) gd1.getType().getBinding()));
+//                        geopkg.addGeometryColumnsEntry(fe1);
+//                    }
+//                }
+//            }
+//        } catch (IOException e) {
+//            throw new SQLException(e);
+//        }
+
     }
 
     @Override
@@ -717,7 +768,7 @@ public class GeopackageDb extends ASpatialDb {
 
     public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
         List<String> tableNames = getTables(doOrder);
-        HashMap<String, List<String>> tablesMap = SpatialiteTableNames.getTablesSorted(tableNames, doOrder);
+        HashMap<String, List<String>> tablesMap = GeopackageTableNames.getTablesSorted(tableNames, doOrder);
         return tablesMap;
     }
 
@@ -748,6 +799,8 @@ public class GeopackageDb extends ASpatialDb {
 
     public GeometryColumn getGeometryColumnsForTable( String tableName ) throws Exception {
         FeatureEntry feature = feature(tableName);
+        if (feature == null)
+            return null;
         SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();
         gc.tableName = tableName;
         gc.geometryColumnName = feature.geometryColumn;
@@ -765,11 +818,12 @@ public class GeopackageDb extends ASpatialDb {
 
     @Override
     public List<String> getTables( boolean doOrder ) throws Exception {
-        Stream<String> map = features().stream().map(e -> e.tableName);
-        if (doOrder) {
-            map = map.sorted();
-        }
-        return map.collect(Collectors.toList());
+        return sqliteDb.getTables(doOrder);
+//        Stream<String> map = features().stream().map(e -> e.tableName);
+//        if (doOrder) {
+//            map = map.sorted();
+//        }
+//        return map.collect(Collectors.toList());
     }
 
     @Override
@@ -952,4 +1006,188 @@ public class GeopackageDb extends ASpatialDb {
         sqliteDb.accept(visitor);
     }
 
+//    void addGeoPackageContentsEntry( String tableName, int srid, String description, Date lastChange ) throws IOException {
+//        final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT_STRING);
+//        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
+////            addCRS(e.getSrid());
+//
+//        StringBuilder sb = new StringBuilder();
+//        StringBuilder vals = new StringBuilder();
+//
+//        sb.append(format("INSERT INTO %s (table_name, data_type, identifier", GEOPACKAGE_CONTENTS));
+//        vals.append("VALUES (?,?,?");
+//
+//        if (description != null) {
+//            sb.append(", description");
+//            vals.append(",?");
+//        }
+//
+//        if (lastChange != null) {
+//            sb.append(", last_change");
+//            vals.append(",?");
+//        }
+//
+//        sb.append(", min_x, min_y, max_x, max_y");
+//        vals.append(",?,?,?,?");
+//
+//        sb.append(", srs_id");
+//        vals.append(",?");
+//        sb.append(") ").append(vals.append(")").toString());
+//
+//        try {
+//
+//            sqliteDb.execOnConnection(connection -> {
+//                try (IHMPreparedStatement pStmt = connection.prepareStatement(sb.toString())) {
+//                    pStmt.setString(1, getSpatialIndexName(feature));
+//                    IHMResultSet resultSet = pStmt.executeQuery();
+//                    return resultSet.next();
+//                }
+//            });
+//
+//            Connection cx = connPool.getConnection();
+//            try {
+//                SqlUtil.PreparedStatementBuilder psb = prepare(cx, sb.toString()).set(e.getTableName())
+//                        .set(e.getDataType().value()).set(e.getIdentifier());
+//
+//                if (e.getDescription() != null) {
+//                    psb.set(e.getDescription());
+//                }
+//
+//                if (e.getLastChange() != null) {
+//                    psb.set(DATE_FORMAT.format(e.getLastChange()));
+//                }
+//                if (e.getBounds() != null) {
+//                    psb.set(e.getBounds().getMinX()).set(e.getBounds().getMinY()).set(e.getBounds().getMaxX())
+//                            .set(e.getBounds().getMaxY());
+//                } else {
+//                    double minx = 0;
+//                    double miny = 0;
+//                    double maxx = 0;
+//                    double maxy = 0;
+//                    if (e.getSrid() != null) {
+//                        CoordinateReferenceSystem crs = getCRS(e.getSrid());
+//                        if (crs != null) {
+//                            org.opengis.geometry.Envelope env = CRS.getEnvelope(crs);
+//                            if (env != null) {
+//                                minx = env.getMinimum(0);
+//                                miny = env.getMinimum(1);
+//                                maxx = env.getMaximum(0);
+//                                maxy = env.getMaximum(1);
+//                            }
+//                        }
+//                    }
+//                    psb.set(minx).set(miny).set(maxx).set(maxy);
+//                }
+//                if (e.getSrid() != null) {
+//                    psb.set(e.getSrid());
+//                }
+//
+//                PreparedStatement ps = psb.log(Level.FINE).statement();
+//                try {
+//                    ps.execute();
+//                } finally {
+//                    close(ps);
+//                }
+//            } finally {
+//                close(cx);
+//            }
+//        } catch (SQLException ex) {
+//            throw new IOException(ex);
+//        }
+//    }
+//
+//    void deleteGeoPackageContentsEntry( Entry e ) throws IOException {
+//        String sql = format("DELETE FROM %s WHERE table_name = ?", GEOPACKAGE_CONTENTS);
+//        try {
+//            Connection cx = connPool.getConnection();
+//            try {
+//                PreparedStatement ps = prepare(cx, sql).set(e.getTableName()).log(Level.FINE).statement();
+//                try {
+//                    ps.execute();
+//                } finally {
+//                    close(ps);
+//                }
+//            } finally {
+//                close(cx);
+//            }
+//        } catch (SQLException ex) {
+//            throw new IOException(ex);
+//        }
+//    }
+//
+//    void addGeometryColumnsEntry( FeatureEntry e ) throws IOException {
+//        // geometryless tables should not be inserted into this table.
+//        if (e.getGeometryColumn() == null || e.getGeometryColumn().isEmpty()) {
+//            return;
+//        }
+//        String sql = format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?);", GEOMETRY_COLUMNS);
+//
+//        try {
+//            Connection cx = connPool.getConnection();
+//            try {
+//                PreparedStatement ps = prepare(cx, sql).set(e.getTableName()).set(e.getGeometryColumn())
+//                        .set(e.getGeometryType() != null ? e.getGeometryType().getName() : null).set(e.getSrid()).set(e.isZ())
+//                        .set(e.isM()).log(Level.FINE).statement();
+//                try {
+//                    ps.execute();
+//                } finally {
+//                    close(ps);
+//                }
+//            } finally {
+//                close(cx);
+//            }
+//        } catch (SQLException ex) {
+//            throw new IOException(ex);
+//        }
+//    }
+//
+//    void deleteGeometryColumnsEntry( FeatureEntry e ) throws IOException {
+//        String sql = format("DELETE FROM %s WHERE table_name = ?", GEOMETRY_COLUMNS);
+//        try {
+//            Connection cx = connPool.getConnection();
+//            try {
+//                PreparedStatement ps = prepare(cx, sql).set(e.getTableName()).log(Level.FINE).statement();
+//                try {
+//                    ps.execute();
+//                } finally {
+//                    close(ps);
+//                }
+//            } finally {
+//                close(cx);
+//            }
+//        } catch (SQLException ex) {
+//            throw new IOException(ex);
+//        }
+//    }
+//
+//    /**
+//     * Create a spatial index
+//     *
+//     * @param e feature entry to create spatial index for
+//     */
+//    public void createSpatialIndex( FeatureEntry e ) throws IOException {
+//        Map<String, String> properties = new HashMap<String, String>();
+//
+//        PrimaryKey pk = ((JDBCFeatureStore) (dataStore.getFeatureSource(e.getTableName()))).getPrimaryKey();
+//        if (pk.getColumns().size() != 1) {
+//            throw new IOException("Spatial index only supported for primary key of single column.");
+//        }
+//
+//        properties.put("t", e.getTableName());
+//        properties.put("c", e.getGeometryColumn());
+//        properties.put("i", pk.getColumns().get(0).getName());
+//
+//        Connection cx;
+//        try {
+//            cx = connPool.getConnection();
+//            try {
+//                runScript(SPATIAL_INDEX + ".sql", cx, properties);
+//            } finally {
+//                cx.close();
+//            }
+//
+//        } catch (SQLException ex) {
+//            throw new IOException(ex);
+//        }
+//    }
 }

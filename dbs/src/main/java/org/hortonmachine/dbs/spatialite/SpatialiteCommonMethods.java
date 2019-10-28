@@ -451,7 +451,7 @@ public class SpatialiteCommonMethods {
             if (cols[1].trim().length() == 0) {
                 // might be a non understood geom type
                 GeometryColumn gcol = db.getGeometryColumnsForTable(tableName);
-                if (cols[0].equals(gcol.geometryColumnName)) {
+                if (gcol != null && cols[0].equals(gcol.geometryColumnName)) {
                     cols[1] = gcol.geometryType.getTypeName();
                 }
             }
