@@ -140,11 +140,10 @@ public class GeopackageDb extends ASpatialDb {
 
         this.mDbPath = sqliteDb.getDatabasePath();
 
-//        if (mPrintInfos) {
-//            String[] dbInfo = getDbInfo();
-//            Logger.INSTANCE.insertInfo(null, "Spatialite Version: " + dbInfo[0]);
-//            Logger.INSTANCE.insertInfo(null, "Spatialite Target CPU: " + dbInfo[1]);
-//        }
+        if (mPrintInfos) {
+            String[] dbInfo = sqliteDb.getDbInfo();
+            Logger.INSTANCE.insertInfo(null, "Geopackage database with Sqlite Version: " + dbInfo[0]);
+        }
         return dbExists;
     }
 
@@ -479,12 +478,14 @@ public class GeopackageDb extends ASpatialDb {
             String[] foreignKeys, boolean avoidIndex ) throws Exception {
 //        SpatialiteCommonMethods.createSpatialTable(this, tableName, tableSrid, geometryFieldData, fieldData, foreignKeys,
 //                avoidIndex);
+        // TODO
         throw new RuntimeException("Not implemented yet...");
     }
 
     @Override
     public Envelope getTableBounds( String tableName ) throws Exception {
-        return SpatialiteCommonMethods.getTableBounds(this, tableName);
+        // TODO
+        throw new RuntimeException("Not implemented yet...");
     }
 
     public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, int limit, int reprojectSrid, String whereStr )

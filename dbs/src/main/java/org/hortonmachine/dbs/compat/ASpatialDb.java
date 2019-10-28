@@ -228,10 +228,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * Supported types are:
      * <ul>
      * <li>{@value ISpatialTableNames#INTERNALDATA}</li>
-     * <li>{@value ISpatialTableNames#METADATA}</li>
-     * <li>{@value ISpatialTableNames#SPATIALINDEX}</li>
-     * <li>{@value ISpatialTableNames#STYLE}</li>
-     * <li>{@value ISpatialTableNames#USERDATA}</li>
+     * <li>{@value ISpatialTableNames#SYSTEM}</li>
      * <li></li>
      * <li></li>
      * <li></li>

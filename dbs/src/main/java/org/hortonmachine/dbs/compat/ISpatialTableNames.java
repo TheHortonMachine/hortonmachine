@@ -28,12 +28,9 @@ import java.util.List;
  */
 public interface ISpatialTableNames {
     public static final String USERDATA = "User Data";
-    public static final String SPATIALINDEX = "Spatial Index";
-    public static final String STYLE = "Styling (SLD/SE)";
-    public static final String METADATA = "Metadata";
-    public static final String INTERNALDATA = "Internal Data";
+    public static final String SYSTEM = "System tables";
 
     public static final List<String> ALL_TYPES_LIST = Arrays.asList(//
-            USERDATA, SPATIALINDEX, STYLE, METADATA, INTERNALDATA);
+            USERDATA, SYSTEM);
 
 }

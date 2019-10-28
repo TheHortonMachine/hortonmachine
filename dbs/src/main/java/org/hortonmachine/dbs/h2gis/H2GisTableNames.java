@@ -71,30 +71,14 @@ public class H2GisTableNames implements ISpatialTableNames {
     public static LinkedHashMap<String, List<String>> getTablesSorted( List<String> allTableNames, boolean doSort ) {
         LinkedHashMap<String, List<String>> tablesMap = new LinkedHashMap<>();
         tablesMap.put(USERDATA, new ArrayList<String>());
-        tablesMap.put(STYLE, new ArrayList<String>());
-        tablesMap.put(METADATA, new ArrayList<String>());
-        tablesMap.put(INTERNALDATA, new ArrayList<String>());
-        tablesMap.put(SPATIALINDEX, new ArrayList<String>());
+        tablesMap.put(SYSTEM, new ArrayList<String>());
 
         for( String tableName : allTableNames ) {
             tableName = tableName.toLowerCase();
-            if (spatialindexTables.contains(tableName) || tableName.startsWith(startsWithIndexTables)) {
-                List<String> list = tablesMap.get(SPATIALINDEX);
-                list.add(tableName);
-                continue;
-            }
-            if (tableName.startsWith(startsWithStyleTables)) {
-                List<String> list = tablesMap.get(STYLE);
-                list.add(tableName);
-                continue;
-            }
-            if (metadataTables.contains(tableName)) {
-                List<String> list = tablesMap.get(METADATA);
-                list.add(tableName);
-                continue;
-            }
-            if (internalDataTables.contains(tableName)) {
-                List<String> list = tablesMap.get(INTERNALDATA);
+            if (spatialindexTables.contains(tableName) || tableName.startsWith(startsWithIndexTables)
+                    || tableName.startsWith(startsWithStyleTables) || metadataTables.contains(tableName)
+                    || internalDataTables.contains(tableName)) {
+                List<String> list = tablesMap.get(SYSTEM);
                 list.add(tableName);
                 continue;
             }
