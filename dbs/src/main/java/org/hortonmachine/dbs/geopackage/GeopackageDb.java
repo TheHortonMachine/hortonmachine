@@ -836,15 +836,14 @@ public class GeopackageDb extends ASpatialDb {
                 }
             }
             int count = 0;
-            SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+            IGeometryParser gp = getType().getGeometryParser();
             long start = System.currentTimeMillis();
             while( rs.next() ) {
                 Object[] rec = new Object[columnCount];
                 for( int j = 1; j <= columnCount; j++ ) {
                     if (j == geometryIndex) {
-                        byte[] geomBytes = rs.getBytes(j);
-                        if (geomBytes != null) {
-                            Geometry geometry = wkbReader.read(geomBytes);
+                        Geometry geometry = gp.fromResultSet(rs, j);
+                        if (geometry != null) {
                             rec[j - 1] = geometry;
                         }
                     } else {
