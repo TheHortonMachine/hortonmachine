@@ -606,7 +606,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
             checkConstraint(_eastField);
             checkConstraint(_southField);
             checkConstraint(_northField);
-        } catch (IOException e) {
+        } catch (Exception e) {
             GuiUtilities.handleError(_boundsLoadButton, e);
         }
     }

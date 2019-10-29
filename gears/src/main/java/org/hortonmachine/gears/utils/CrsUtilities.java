@@ -31,6 +31,7 @@ import org.geotools.referencing.crs.AbstractSingleCRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.Datum;
@@ -187,13 +188,18 @@ public class CrsUtilities {
     public static String getCodeFromCrs( CoordinateReferenceSystem crs ) throws Exception {
         String code = null;
         try {
-            Integer epsg = CRS.lookupEpsgCode(crs, true);
+            Integer epsg = getSrid(crs);
             code = "EPSG:" + epsg; //$NON-NLS-1$
         } catch (Exception e) {
             // try non epsg
             code = CRS.lookupIdentifier(crs, true);
         }
         return code;
+    }
+
+    public static int getSrid( CoordinateReferenceSystem crs ) throws FactoryException {
+        Integer epsg = CRS.lookupEpsgCode(crs, true);
+        return epsg;
     }
 
     /**

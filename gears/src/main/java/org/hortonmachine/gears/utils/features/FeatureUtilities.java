@@ -553,6 +553,7 @@ public class FeatureUtilities {
 
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        long id = 1;
         for( Geometry g : geometries ) {
             Object[] values;
             if (userData == null) {
@@ -571,7 +572,7 @@ public class FeatureUtilities {
                 }
             }
             builder.addAll(values);
-            SimpleFeature feature = builder.buildFeature(null);
+            SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + id++);
             newCollection.add(feature);
         }
         return newCollection;
@@ -639,7 +640,7 @@ public class FeatureUtilities {
                 SimpleFeature feature = builder.buildFeature(null);
                 newCollection.add(feature);
             }
-            
+
             fcs.add(newCollection);
         }
 
@@ -1039,6 +1040,19 @@ public class FeatureUtilities {
             }
         }
         return names.toArray(new String[0]);
+    }
+
+    /**
+     * Extract the numeric feature id from a feature.
+     * 
+     * @param feature the feature to check.
+     * @return the id as long.
+     */
+    public static long getFeatureId( SimpleFeature feature ) {
+        String idStr = feature.getID();
+        int lastIndexOf = idStr.lastIndexOf('.');
+        String idNumStr = idStr.substring(lastIndexOf + 1);
+        return Long.parseLong(idNumStr);
     }
 
     /**

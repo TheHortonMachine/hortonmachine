@@ -115,8 +115,8 @@ public class Canny {
      * @param contrastNormalized
      * @param sourceImage
      */
-    public Canny( Float lowThreshold, Float highThreshold, Float gaussianKernelRadius,
-            Integer gaussianKernelWidth, Boolean contrastNormalized, RenderedImage sourceImage ) {
+    public Canny( Float lowThreshold, Float highThreshold, Float gaussianKernelRadius, Integer gaussianKernelWidth,
+            Boolean contrastNormalized, RenderedImage sourceImage ) {
         this.sourceImage = sourceImage;
         if (lowThreshold == null) {
             this.lowThreshold = 2.5f;
@@ -342,8 +342,7 @@ public class Canny {
                 break;
             float g2 = gaussian(kwidth - 0.5f, kernelRadius);
             float g3 = gaussian(kwidth + 0.5f, kernelRadius);
-            kernel[kwidth] = (g1 + g2 + g3) / 3f
-                    / (2f * (float) Math.PI * kernelRadius * kernelRadius);
+            kernel[kwidth] = (g1 + g2 + g3) / 3f / (2f * (float) Math.PI * kernelRadius * kernelRadius);
             diffKernel[kwidth] = g3 - g2;
         }
 
@@ -459,24 +458,18 @@ public class Canny {
                  * 
                  */
                 if (xGrad * yGrad <= (float) 0 /*(1)*/
-                ? Math.abs(xGrad) >= Math.abs(yGrad) /*(2)*/
-                ? (tmp = Math.abs(xGrad * gradMag)) >= Math.abs(yGrad * neMag - (xGrad + yGrad)
-                        * eMag) /*(3)*/
-                        && tmp > Math.abs(yGrad * swMag - (xGrad + yGrad) * wMag) /*(4)*/
-                : (tmp = Math.abs(yGrad * gradMag)) >= Math.abs(xGrad * neMag - (yGrad + xGrad)
-                        * nMag) /*(3)*/
-                        && tmp > Math.abs(xGrad * swMag - (yGrad + xGrad) * sMag) /*(4)*/
-                : Math.abs(xGrad) >= Math.abs(yGrad) /*(2)*/
-                ? (tmp = Math.abs(xGrad * gradMag)) >= Math.abs(yGrad * seMag + (xGrad - yGrad)
-                        * eMag) /*(3)*/
-                        && tmp > Math.abs(yGrad * nwMag + (xGrad - yGrad) * wMag) /*(4)*/
-                : (tmp = Math.abs(yGrad * gradMag)) >= Math.abs(xGrad * seMag + (yGrad - xGrad)
-                        * sMag) /*(3)*/
-                        && tmp > Math.abs(xGrad * nwMag + (yGrad - xGrad) * nMag) /*(4)*/
+                        ? Math.abs(xGrad) >= Math.abs(yGrad) /*(2)*/
+                                ? (tmp = Math.abs(xGrad * gradMag)) >= Math.abs(yGrad * neMag - (xGrad + yGrad) * eMag) /*(3)*/
+                                        && tmp > Math.abs(yGrad * swMag - (xGrad + yGrad) * wMag) /*(4)*/
+                                : (tmp = Math.abs(yGrad * gradMag)) >= Math.abs(xGrad * neMag - (yGrad + xGrad) * nMag) /*(3)*/
+                                        && tmp > Math.abs(xGrad * swMag - (yGrad + xGrad) * sMag) /*(4)*/
+                        : Math.abs(xGrad) >= Math.abs(yGrad) /*(2)*/
+                                ? (tmp = Math.abs(xGrad * gradMag)) >= Math.abs(yGrad * seMag + (xGrad - yGrad) * eMag) /*(3)*/
+                                        && tmp > Math.abs(yGrad * nwMag + (xGrad - yGrad) * wMag) /*(4)*/
+                                : (tmp = Math.abs(yGrad * gradMag)) >= Math.abs(xGrad * seMag + (yGrad - xGrad) * sMag) /*(3)*/
+                                        && tmp > Math.abs(xGrad * nwMag + (yGrad - xGrad) * nMag) /*(4)*/
                 ) {
-                    magnitude[index] = gradMag >= MAGNITUDE_LIMIT
-                            ? MAGNITUDE_MAX
-                            : (int) (MAGNITUDE_SCALE * gradMag);
+                    magnitude[index] = gradMag >= MAGNITUDE_LIMIT ? MAGNITUDE_MAX : (int) (MAGNITUDE_SCALE * gradMag);
                     // NOTE: The orientation of the edge is not employed by this
                     // implementation. It is a simple matter to compute it at
                     // this point as: Math.atan2(yGrad, xGrad);
@@ -548,9 +541,26 @@ public class Canny {
         Raster r = sourceImage.getData();
         Object dataElements = r.getDataElements(0, 0, width, height, null);
 
-        double[] pixels = (double[]) dataElements;
-        for( int i = 0; i < picsize; i++ ) {
-            data[i] = (int) (pixels[i] * 10000);
+        if (dataElements instanceof double[]) {
+            double[] pixels = (double[]) dataElements;
+            for( int i = 0; i < picsize; i++ ) {
+                data[i] = (int) (pixels[i] * 10000);
+            }
+        } else if (dataElements instanceof float[]) {
+            float[] pixels = (float[]) dataElements;
+            for( int i = 0; i < picsize; i++ ) {
+                data[i] = (int) (pixels[i] * 10000);
+            }
+        } else if (dataElements instanceof int[]) {
+            int[] pixels = (int[]) dataElements;
+            for( int i = 0; i < picsize; i++ ) {
+                data[i] = pixels[i] * 10000;
+            }
+        } else if (dataElements instanceof short[]) {
+            short[] pixels = (short[]) dataElements;
+            for( int i = 0; i < picsize; i++ ) {
+                data[i] = pixels[i] * 10000;
+            }
         }
     }
 
@@ -601,8 +611,7 @@ public class Canny {
 
     private WritableRaster createEdgesRaster( int width, int height, int[] pixels ) {
         int dataType = DataBuffer.TYPE_DOUBLE;
-        ComponentSampleModel sampleModel = new ComponentSampleModel(dataType, width, height, 1,
-                width, new int[]{0});
+        ComponentSampleModel sampleModel = new ComponentSampleModel(dataType, width, height, 1, width, new int[]{0});
 
         WritableRaster raster = RasterFactory.createWritableRaster(sampleModel, null);
         int index = 0;
@@ -622,8 +631,7 @@ public class Canny {
     }
     private WritableRaster createDoubleWritableRaster( int width, int height, int[] pixels ) {
         int dataType = DataBuffer.TYPE_DOUBLE;
-        ComponentSampleModel sampleModel = new ComponentSampleModel(dataType, width, height, 1,
-                width, new int[]{0});
+        ComponentSampleModel sampleModel = new ComponentSampleModel(dataType, width, height, 1, width, new int[]{0});
 
         WritableRaster raster = RasterFactory.createWritableRaster(sampleModel, null);
         int index = 0;
@@ -638,8 +646,7 @@ public class Canny {
 
     private WritableRaster createDoubleWritableRaster( int width, int height, float[] pixels ) {
         int dataType = DataBuffer.TYPE_DOUBLE;
-        ComponentSampleModel sampleModel = new ComponentSampleModel(dataType, width, height, 1,
-                width, new int[]{0});
+        ComponentSampleModel sampleModel = new ComponentSampleModel(dataType, width, height, 1, width, new int[]{0});
 
         WritableRaster raster = RasterFactory.createWritableRaster(sampleModel, null);
         int index = 0;

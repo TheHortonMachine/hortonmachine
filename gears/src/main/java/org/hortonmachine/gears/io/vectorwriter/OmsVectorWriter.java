@@ -25,21 +25,23 @@ import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORW
 import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_LABEL;
 import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_LICENSE;
 import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_NAME;
-import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.*;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_STATUS;
 import static org.hortonmachine.gears.libs.modules.HMConstants.FEATUREWRITER;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureWriter;
-import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
-import org.geotools.geopkg.FeatureEntry;
-import org.geotools.geopkg.GeoPackage;
+import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.geopackage.GeopackageDb;
 import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureWriter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
+import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -98,7 +100,7 @@ public class OmsVectorWriter extends HMModel {
     // PARAM NAMES STOP
 
     @Execute
-    public void process() throws IOException {
+    public void process() throws Exception {
         checkNull(file);
 
         File vectorFile = new File(file);
@@ -110,16 +112,19 @@ public class OmsVectorWriter extends HMModel {
         if (name.toLowerCase().endsWith(HMConstants.SHP) || (pType != null && pType.equals(HMConstants.SHP))) {
             OmsShapefileFeatureWriter.writeShapefile(vectorFile.getAbsolutePath(), inVector, pm);
         } else if (name.toLowerCase().endsWith(HMConstants.GPKG) || (pType != null && pType.equals(HMConstants.GPKG))) {
-            GeoPackage geopkg = new GeoPackage(new File(file));
-            try {
-                geopkg.init();
-                FeatureEntry featureEntry = new FeatureEntry();
-                if (table != null) {
-                    featureEntry.setTableName(table);
-                }
-                geopkg.add(featureEntry, inVector);
-            } finally {
-                geopkg.close();
+            File outFile = new File(file);
+            if (table == null || table.length() == 0) {
+                table = FileUtilities.getNameWithoutExtention(outFile);
+            }
+            try (GeopackageDb db = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb()) {
+                db.open(file);
+                db.initSpatialMetadata(null);
+
+                CoordinateReferenceSystem crs = inVector.getBounds().getCoordinateReferenceSystem();
+                int srid = CrsUtilities.getSrid(crs);
+                db.addCRS("EPSG", srid, crs.toWKT());
+                SpatialDbsImportUtils.createTableFromSchema(db, inVector.getSchema(), table, null, false);
+                SpatialDbsImportUtils.importFeatureCollection(db, inVector, table, -1, pm);
             }
         } else {
             throw new IOException("Format is currently not supported for file: " + name);
@@ -133,14 +138,14 @@ public class OmsVectorWriter extends HMModel {
      * @param featureCollection the {@link FeatureCollection} to write.
      * @throws IOException
      */
-    public static void writeVector( String path, SimpleFeatureCollection featureCollection ) throws IOException {
+    public static void writeVector( String path, SimpleFeatureCollection featureCollection ) throws Exception {
         OmsVectorWriter writer = new OmsVectorWriter();
         writer.file = path;
         writer.inVector = featureCollection;
         writer.process();
     }
 
-    public static void writeVector( String path, String table, SimpleFeatureCollection featureCollection ) throws IOException {
+    public static void writeVector( String path, String table, SimpleFeatureCollection featureCollection ) throws Exception {
         OmsVectorWriter writer = new OmsVectorWriter();
         writer.file = path;
         writer.table = table;

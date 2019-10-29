@@ -34,6 +34,7 @@ import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ASqlTemplates;
 import org.hortonmachine.dbs.compat.ConnectionData;
@@ -43,8 +44,10 @@ import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
+import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
@@ -319,23 +322,46 @@ public class SqlTemplatesAndActions {
                 }
                 try {
                     String nameWithoutExtention = FileUtilities.getNameWithoutExtention(openFiles[0]);
+                    String newTableName = null;
+                    String sridStr = null;
 
-                    String newTableName = GuiUtilities.showInputDialog(spatialiteViewer,
-                            "Set new table name (can't start with numbers)", nameWithoutExtention);
+                    try {
+                        ReferencedEnvelope env = OmsVectorReader.readEnvelope(openFiles[0].getAbsolutePath());
+                        int srid = CrsUtilities.getSrid(env.getCoordinateReferenceSystem());
+
+                        String[] results = GuiUtilities.showMultiInputDialog(spatialiteViewer, "Set parameters",
+                                new String[]{"Set new table name (can't start with numbers)", "Choose the import EPSG code"},
+                                new String[]{nameWithoutExtention, String.valueOf(srid)}, null);
+                        if (results == null) {
+                            return;
+                        }
+                        newTableName = results[0];
+                        sridStr = results[1];
+
+                        try {
+                            Integer.parseInt(sridStr);
+                        } catch (Exception e1) {
+                            sridStr = null;
+                        }
+
+                    } catch (Exception e1) {
+                        Logger.INSTANCE.insertError("getCreateTableFromShapefileSchemaAction", "ERROR", e1);
+                        newTableName = GuiUtilities.showInputDialog(spatialiteViewer,
+                                "Set new table name (can't start with numbers)", nameWithoutExtention);
+                    }
                     if (newTableName.trim().length() == 0) {
                         newTableName = null;
                     }
+                    if (newTableName == null) {
+                        return;
+                    }
+
                     SpatialDbsImportUtils.createTableFromShp(spatialiteViewer.currentConnectedDatabase, openFiles[0],
-                            newTableName, false);
-                } catch (Exception e1) {
-                    logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
-                }
-                try {
+                            newTableName, sridStr, false);
                     spatialiteViewer.refreshDatabaseTree();
                 } catch (Exception e1) {
-                    logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
+                    GuiUtilities.handleError(spatialiteViewer, e1);
                 }
-
             }
         };
     }
@@ -449,6 +475,7 @@ public class SqlTemplatesAndActions {
                                 openFiles[0], spatialiteViewer.currentSelectedTable.tableName, -1, spatialiteViewer.pm);
                     } catch (Exception ex) {
                         logger.insertError("SqlTemplatesAndActions", "Error importing data from shapefile", ex);
+                        hasErrors = true;
                     } finally {
                         logConsole.finishProcess();
                         logConsole.stopLogging();

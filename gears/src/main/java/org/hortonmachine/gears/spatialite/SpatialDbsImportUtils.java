@@ -39,6 +39,7 @@ import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.datatypes.EDataType;
 import org.hortonmachine.dbs.geopackage.GeopackageDb;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.log.Logger;
@@ -71,6 +72,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SpatialDbsImportUtils {
+    private static final String FID = "fid";
+
     private static final String PK_UID = "PK_UID";
 
     private static final Logger logger = Logger.INSTANCE;
@@ -83,21 +86,22 @@ public class SpatialDbsImportUtils {
      * @param db the database to use.
      * @param shapeFile the shapefile to use.
      * @param newTableName the new name of the table. If null, the shp name is used.
+     * @param forceSrid an optional srid to force the table to.
      * @return the name of the created table.
      * @param avoidSpatialIndex if <code>true</code>, no spatial index will be created. This is useful if many records 
      *          have to be inserted and the index will be created later manually.
      * @return the name of the created table.
      * @throws Exception
      */
-    public static String createTableFromShp( ASpatialDb db, File shapeFile, String newTableName, boolean avoidSpatialIndex )
-            throws Exception {
+    public static String createTableFromShp( ASpatialDb db, File shapeFile, String newTableName, String forceSrid,
+            boolean avoidSpatialIndex ) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
         if (newTableName == null) {
             newTableName = FileUtilities.getNameWithoutExtention(shapeFile);
         }
-        return createTableFromSchema(db, schema, newTableName, avoidSpatialIndex);
+        return createTableFromSchema(db, schema, newTableName, forceSrid, avoidSpatialIndex);
     }
 
     /**
@@ -106,25 +110,36 @@ public class SpatialDbsImportUtils {
      * @param db the database to use.
      * @param schema the schema to use.
      * @param newTableName the new name of the table. If null, the shp name is used.
+     * @param forceSrid an optional srid to force the table to.
      * @return the name of the created table.
      * @param avoidSpatialIndex if <code>true</code>, no spatial index will be created. This is useful if many records 
      *          have to be inserted and the index will be created later manually.
      * @throws Exception
      */
-    public static String createTableFromSchema( ASpatialDb db, SimpleFeatureType schema, String newTableName,
+    public static String createTableFromSchema( ASpatialDb db, SimpleFeatureType schema, String newTableName, String forceSrid,
             boolean avoidSpatialIndex ) throws Exception {
         GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();
 
         ADatabaseSyntaxHelper dsh = db.getType().getDatabaseSyntaxHelper();
 
         List<String> attrSql = new ArrayList<String>();
+        attrSql.add(FID + " " + dsh.LONG_PRIMARYKEY_AUTOINCREMENT());
+
+        String fidField = FeatureUtilities.findAttributeName(schema, FID);
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
         for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
             String attrName = attributeDescriptor.getLocalName();
-            if (attributeDescriptor instanceof GeometryDescriptor) {
+
+            if (fidField != null && fidField.equals(attrName)) {
+                continue;
+            } else if (attributeDescriptor instanceof GeometryDescriptor) {
                 continue;
             } else if (attrName.equalsIgnoreCase(PK_UID)) {
                 continue;
+            }
+
+            if (DbsUtilities.isReservedName(attrName)) {
+                attrName = DbsUtilities.fixReservedNameForQuery(attrName);
             }
             Class< ? > binding = attributeDescriptor.getType().getBinding();
             if (binding.isAssignableFrom(Double.class) || binding.isAssignableFrom(Float.class)) {
@@ -155,21 +170,23 @@ public class SpatialDbsImportUtils {
             typeString = "POINT";
         }
         if (typeString != null) {
-            String codeFromCrs = CrsUtilities.getCodeFromCrs(schema.getCoordinateReferenceSystem());
-            if (codeFromCrs == null || codeFromCrs.toLowerCase().contains("null")) {
-                codeFromCrs = "4326"; // fallback on 4326
+            String sridString = forceSrid; // forced srid rules, if available
+            if (sridString == null) {
+                String codeFromCrs = CrsUtilities.getCodeFromCrs(schema.getCoordinateReferenceSystem());
+                if (codeFromCrs == null || codeFromCrs.toLowerCase().contains("null")) {
+                    codeFromCrs = "4326"; // fallback on 4326
+                }
+                sridString = codeFromCrs.replaceFirst("EPSG:", "");
             }
-            codeFromCrs = codeFromCrs.replaceFirst("EPSG:", "");
-
             if (db instanceof SpatialiteDb) {
                 SpatialiteDb spatialiteDb = (SpatialiteDb) db;
                 spatialiteDb.createTable(newTableName, attrSql.toArray(new String[0]));
-                spatialiteDb.addGeometryXYColumnAndIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE, typeString, codeFromCrs,
+                spatialiteDb.addGeometryXYColumnAndIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE, typeString, sridString,
                         avoidSpatialIndex);
             } else if (db instanceof PostgisDb) {
                 PostgisDb postgisDb = (PostgisDb) db;
                 postgisDb.createTable(newTableName, attrSql.toArray(new String[0]));
-                postgisDb.addGeometryXYColumnAndIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE, typeString, codeFromCrs,
+                postgisDb.addGeometryXYColumnAndIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE, typeString, sridString,
                         avoidSpatialIndex);
             } else if (db instanceof H2GisDb) {
                 H2GisDb h2gisDb = (H2GisDb) db;
@@ -178,13 +195,13 @@ public class SpatialDbsImportUtils {
                 attrSql.add(GEOMFIELD_FOR_SHAPEFILE + " " + typeStringExtra);
                 String[] array = attrSql.toArray(new String[0]);
                 h2gisDb.createTable(newTableName, array);
-                h2gisDb.addSrid(newTableName, codeFromCrs, GEOMFIELD_FOR_SHAPEFILE);
+                h2gisDb.addSrid(newTableName, sridString, GEOMFIELD_FOR_SHAPEFILE);
                 if (!avoidSpatialIndex)
                     h2gisDb.createSpatialIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE);
             } else if (db instanceof GeopackageDb) {
                 GeopackageDb gpkgDb = (GeopackageDb) db;
                 String[] array = attrSql.toArray(new String[0]);
-                gpkgDb.createSpatialTable(newTableName, Integer.parseInt(codeFromCrs), GEOMFIELD_FOR_SHAPEFILE + " " + typeString,
+                gpkgDb.createSpatialTable(newTableName, Integer.parseInt(sridString), GEOMFIELD_FOR_SHAPEFILE + " " + typeString,
                         array, null, avoidSpatialIndex);
             }
         } else {
@@ -228,7 +245,6 @@ public class SpatialDbsImportUtils {
      */
     public static boolean importFeatureCollection( ASpatialDb db, SimpleFeatureCollection featureCollection, String tableName,
             int limit, IHMProgressMonitor pm ) throws Exception {
-        boolean noErrors = true;
         SimpleFeatureType schema = featureCollection.getSchema();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
 
@@ -258,35 +274,39 @@ public class SpatialDbsImportUtils {
         }
 
         List<String> attrNames = new ArrayList<>();
-        String valueNames = "";
-        String qMarks = "";
+        String valueNames = FID;
+        String qMarks = "?";
         for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
             String attrName = attributeDescriptor.getLocalName();
-            if (attrName.equalsIgnoreCase("PK_UID")) {
+            String fidField = FeatureUtilities.findAttributeName(schema, FID);
+            if (fidField != null && fidField.equals(attrName)) {
+                continue;
+            } else if (attrName.equalsIgnoreCase("PK_UID")) {
                 continue;
             }
             attrNames.add(attrName);
             if (attributeDescriptor instanceof GeometryDescriptor) {
                 valueNames += "," + gCol;
                 qMarks += ",?";
-//                qMarks += ",ST_GeomFromText(?, " + epsg + ")"; TODO check
             } else {
                 if (!tableColumns.contains(attrName.toUpperCase())) {
                     pm.errorMessage(
                             "The imported shapefile doesn't seem to match the table's schema. Doesn't exist: " + attrName);
                     return false;
                 }
+                if (DbsUtilities.isReservedName(attrName)) {
+                    attrName = DbsUtilities.fixReservedNameForQuery(attrName);
+                }
                 valueNames += "," + attrName;
                 qMarks += ",?";
             }
         }
-        valueNames = valueNames.substring(1);
-        qMarks = qMarks.substring(1);
         String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
 
         IGeometryParser gp = db.getType().getGeometryParser();
-        
+
         return db.execOnConnection(conn -> {
+            boolean noErrors = true;
             boolean autoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
             try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
@@ -295,10 +315,14 @@ public class SpatialDbsImportUtils {
                 try {
                     while( featureIterator.hasNext() ) {
                         SimpleFeature f = (SimpleFeature) featureIterator.next();
+
+                        long featureId = FeatureUtilities.getFeatureId(f);
+                        pStmt.setLong(1, featureId);
+
                         for( int i = 0; i < attrNames.size(); i++ ) {
                             Object object = f.getAttribute(attrNames.get(i));
 
-                            int iPlus = i + 1;
+                            int iPlus = i + 2;
                             if (object == null) {
                                 pStmt.setObject(iPlus, null);
                             } else if (object instanceof Double) {
@@ -342,6 +366,7 @@ public class SpatialDbsImportUtils {
                     }
                 } catch (Exception e) {
                     logger.insertError("SpatialDbsImportUtils", "error", e);
+                    noErrors = false;
                 } finally {
                     featureIterator.close();
                 }
@@ -433,18 +458,28 @@ public class SpatialDbsImportUtils {
             }
             Class< ? > fieldClass = null;
             String typeStr = types.get(i);
-            switch( typeStr ) {
-            case "DOUBLE":
-            case "REAL":
+            EDataType type = EDataType.getType4Name(typeStr);
+            switch( type ) {
+            case DOUBLE:
                 fieldClass = Double.class;
                 break;
-            case "FLOAT":
+            case FLOAT:
                 fieldClass = Float.class;
                 break;
-            case "INTEGER":
+            case INTEGER:
                 fieldClass = Integer.class;
                 break;
-            case "TEXT":
+            case LONG:
+                fieldClass = Long.class;
+                break;
+            case BOOLEAN:
+                fieldClass = Integer.class;
+                break;
+            case DATE:
+            case DATETIME:
+                fieldClass = String.class;
+                break;
+            case TEXT:
                 fieldClass = String.class;
                 break;
             default:

@@ -83,7 +83,7 @@ public abstract class HMModelIM extends HMModel {
     private boolean isSingleInX = true;
     private boolean isSingleInY = true;
 
-    protected void addSource( File imageMosaicSource ) throws IOException {
+    protected void addSource( File imageMosaicSource ) throws Exception {
 
         URL imageMosaicUrl = imageMosaicSource.toURI().toURL();
         final AbstractGridFormat imageMosaicFormat = (AbstractGridFormat) GridFormatFinder.findFormat(imageMosaicUrl);

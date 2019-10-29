@@ -17,9 +17,22 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.*;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_AUTHORNAMES;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_DESCRIPTION;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_FILE_DESCRIPTION;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_IN_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_KEYWORDS;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_LABEL;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_LICENSE;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_NAME;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_P_TYPE_DESCRIPTION;
+import static org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter.OMSVECTORWRITER_STATUS;
 
-import java.io.IOException;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -31,11 +44,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
 
 @Description(OMSVECTORWRITER_DESCRIPTION)
 @Author(name = OMSVECTORWRITER_AUTHORNAMES, contact = OMSVECTORWRITER_AUTHORCONTACTS)
@@ -61,7 +69,7 @@ public class VectorWriter extends HMModel {
     public String file = null;
 
     @Execute
-    public void process() throws IOException {
+    public void process() throws Exception {
         OmsVectorWriter vectorwriter = new OmsVectorWriter();
         vectorwriter.inVector = inVector;
         vectorwriter.pType = pType;
@@ -72,7 +80,7 @@ public class VectorWriter extends HMModel {
         vectorwriter.process();
     }
 
-    public static void writeVector( String path, SimpleFeatureCollection featureCollection ) throws IOException {
+    public static void writeVector( String path, SimpleFeatureCollection featureCollection ) throws Exception {
         OmsVectorWriter.writeVector(path, featureCollection);
     }
 }

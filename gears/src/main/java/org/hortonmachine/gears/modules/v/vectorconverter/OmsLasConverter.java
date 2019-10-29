@@ -441,7 +441,7 @@ public class OmsLasConverter extends HMModel {
     }
 
     private void createBboxGeometry( CoordinateReferenceSystem crs, File lasFile, SimpleFeatureCollection outGeodata )
-            throws IOException {
+            throws Exception {
         final ReferencedEnvelope3D envelope = lasReader.getHeader().getDataEnvelope();
         ReferencedEnvelope env2d = new ReferencedEnvelope(envelope);
         final Polygon polygon = FeatureUtilities.envelopeToPolygon(new Envelope2D(env2d));

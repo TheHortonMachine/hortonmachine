@@ -70,7 +70,7 @@ public class VectorReader extends HMModel {
     public SimpleFeatureCollection outVector = null;
 
     @Execute
-    public void process() throws IOException {
+    public void process() throws Exception {
         OmsVectorReader vectorreader = new OmsVectorReader();
         vectorreader.file = file;
         vectorreader.table = table;
@@ -81,11 +81,11 @@ public class VectorReader extends HMModel {
         outVector = vectorreader.outVector;
     }
 
-    public static SimpleFeatureCollection readVector( String path ) throws IOException {
+    public static SimpleFeatureCollection readVector( String path ) throws Exception {
         return OmsVectorReader.readVector(path);
     }
 
-    public static SimpleFeatureCollection readVector( String path, String table ) throws IOException {
+    public static SimpleFeatureCollection readVector( String path, String table ) throws Exception {
         return OmsVectorReader.readVector(path, table);
     }
 

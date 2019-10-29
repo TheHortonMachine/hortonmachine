@@ -23,30 +23,28 @@ import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORR
 import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_DOCUMENTATION;
 import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_KEYWORDS;
 import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_LABEL;
-import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.*;
+import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_LICENSE;
 import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_NAME;
 import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_STATUS;
 import static org.hortonmachine.gears.libs.modules.HMConstants.FEATUREREADER;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureReader;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.geopkg.FeatureEntry;
-import org.geotools.geopkg.GeoPackage;
+import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.geopackage.GeopackageDb;
 import org.hortonmachine.gears.io.properties.OmsPropertiesFeatureReader;
 import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -106,7 +104,7 @@ public class OmsVectorReader extends HMModel {
     // PARAM NAMES STOP
 
     @Execute
-    public void process() throws IOException {
+    public void process() throws Exception {
         if (!concatOr(outVector == null, doReset)) {
             return;
         }
@@ -125,44 +123,20 @@ public class OmsVectorReader extends HMModel {
                 pm.errorMessage("The coordinate reference system could not be defined for: " + reader.file);
             }
         } else if (name.toLowerCase().endsWith(HMConstants.GPKG)) {
-            GeoPackage geopkg = new GeoPackage(new File(file));
-            try {
-                geopkg.init();
-
-                List<FeatureEntry> features = geopkg.features();
-                if (features.size() == 1) {
-                    FeatureEntry featureEntry = features.get(0);
-                    outVector = extractFeatures(geopkg, featureEntry);
-                } else {
-                    if (table == null || table.length() == 0) {
-                        throw new ModelsIllegalargumentException(
-                                "The geopackage contains several tables, the table neame needs to be specified.", this);
-                    }
-                    for( FeatureEntry featureEntry : features ) {
-                        String tableName = featureEntry.getTableName();
-                        if (table.equalsIgnoreCase(tableName)) {
-                            outVector = extractFeatures(geopkg, featureEntry);
-                            break;
-                        }
-                    }
-                }
-            } finally {
-                geopkg.close();
+            if (table == null || table.length() == 0) {
+                throw new ModelsIllegalargumentException(
+                        "The geopackage contains several tables, the table neame needs to be specified.", this);
+            }
+            try (GeopackageDb db = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb()) {
+                db.open(file);
+                db.initSpatialMetadata(null);
+                outVector = SpatialDbsImportUtils.tableToFeatureFCollection(db, table, -1, -1, null);
             }
         } else if (name.toLowerCase().endsWith("properties")) {
             outVector = OmsPropertiesFeatureReader.readPropertiesfile(vectorFile.getAbsolutePath());
         } else {
             throw new IOException("Format is currently not supported for file: " + name);
         }
-    }
-
-    private DefaultFeatureCollection extractFeatures( GeoPackage geopkg, FeatureEntry featureEntry ) throws IOException {
-        SimpleFeatureReader reader = geopkg.reader(featureEntry, null, null);
-        DefaultFeatureCollection fc = new DefaultFeatureCollection();
-        while( reader.hasNext() ) {
-            fc.add(reader.next());
-        }
-        return fc;
     }
 
     /**
@@ -172,12 +146,12 @@ public class OmsVectorReader extends HMModel {
      * @return the read {@link FeatureCollection}.
      * @throws IOException
      */
-    public static SimpleFeatureCollection readVector( String path ) throws IOException {
+    public static SimpleFeatureCollection readVector( String path ) throws Exception {
         SimpleFeatureCollection fc = getFC(path);
         return fc;
     }
 
-    private static SimpleFeatureCollection getFC( String path ) throws IOException {
+    private static SimpleFeatureCollection getFC( String path ) throws Exception {
         OmsVectorReader reader = new OmsVectorReader();
         reader.file = path;
         reader.process();
@@ -185,14 +159,14 @@ public class OmsVectorReader extends HMModel {
         return fc;
     }
 
-    public static ReferencedEnvelope readEnvelope( String filePath ) throws IOException {
+    public static ReferencedEnvelope readEnvelope( String filePath ) throws Exception {
         File shapeFile = new File(filePath);
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         return featureSource.getBounds();
     }
 
-    public static SimpleFeatureCollection readVector( String path, String table ) throws IOException {
+    public static SimpleFeatureCollection readVector( String path, String table ) throws Exception {
         OmsVectorReader reader = new OmsVectorReader();
         reader.file = path;
         reader.table = table;

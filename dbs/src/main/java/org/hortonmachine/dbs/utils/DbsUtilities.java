@@ -205,6 +205,9 @@ public class DbsUtilities {
             List<String> nonGeomCols = new ArrayList<String>();
             for( int i = 0; i < tableColumns.size(); i++ ) {
                 String colName = tableColumns.get(i)[0];
+                if(DbsUtilities.isReservedName(colName)) {
+                    colName = DbsUtilities.fixReservedNameForQuery(colName);
+                }
                 if (geometryColumns != null && colName.equals(geometryColumns.geometryColumnName)) {
                     colName = letter + "." + colName + " as " + colName;
                     query += colName;
@@ -222,6 +225,9 @@ public class DbsUtilities {
                 if (i > 0)
                     query += ",";
                 String colName = tableColumns.get(i)[0];
+                if(DbsUtilities.isReservedName(colName)) {
+                    colName = DbsUtilities.fixReservedNameForQuery(colName);
+                }
                 if (geometryColumns != null && colName.equals(geometryColumns.geometryColumnName)) {
                     colName = letter + "." + colName + " as " + colName;
                     query += colName;

@@ -155,9 +155,8 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
 
                 try {
                     readEnvelope = OmsVectorReader.readEnvelope(selFile[0].getAbsolutePath());
-                } catch (IOException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                } catch (Exception e1) {
+                    GuiUtilities.handleError(_boundsFileField, e1);
                 }
             }
 

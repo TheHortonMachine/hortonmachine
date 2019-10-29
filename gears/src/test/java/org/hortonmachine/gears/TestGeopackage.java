@@ -8,6 +8,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -26,7 +27,7 @@ public class TestGeopackage extends HMTestCase {
         String polygonTable = "polygontest";
         String lineTable = "linetest";
 
-        SimpleFeatureCollection polygonFC = HMTestMaps.getTestFC();
+        SimpleFeatureCollection polygonFC = HMTestMaps.getTestLeftFC();
         LineString line = GeometryUtilities.createDummyLine();
         SimpleFeatureCollection lineFc = FeatureUtilities.featureCollectionFromGeometry(DefaultGeographicCRS.WGS84, line);
 
@@ -34,14 +35,22 @@ public class TestGeopackage extends HMTestCase {
         OmsVectorWriter.writeVector(tmpGpkg.getAbsolutePath(), polygonTable, polygonFC);
         OmsVectorWriter.writeVector(tmpGpkg.getAbsolutePath(), lineTable, lineFc);
 
-        
         SimpleFeatureCollection readPolygonFC = OmsVectorReader.readVector(tmpGpkg.getAbsolutePath(), polygonTable);
+        int srid = CrsUtilities.getSrid(readPolygonFC.getSchema().getCoordinateReferenceSystem());
+        assertEquals(32632, srid);
         List<SimpleFeature> features = FeatureUtilities.featureCollectionToList(readPolygonFC);
-        assertEquals(3, features.size());
-        
-        
+        assertEquals(1, features.size());
+
+        SimpleFeatureCollection readLinesFC = OmsVectorReader.readVector(tmpGpkg.getAbsolutePath(), lineTable);
+        srid = CrsUtilities.getSrid(readLinesFC.getSchema().getCoordinateReferenceSystem());
+        assertEquals(4326, srid);
+        features = FeatureUtilities.featureCollectionToList(readLinesFC);
+        assertEquals(1, features.size());
 
     }
 
+    public static void main( String[] args ) throws Exception {
+        new TestGeopackage().testMultiVectorGeopackageIO();
+    }
 
 }

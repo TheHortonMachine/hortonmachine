@@ -182,7 +182,7 @@ public class GuiUtilities {
             HashMap<String, String[]> fields2ValuesMap ) {
         Component[] valuesFields = new Component[labels.length];
         JPanel panel = new JPanel();
-        // panel.setPreferredSize(new Dimension(400, 300));
+        panel.setPreferredSize(new Dimension(900, labels.length * 70));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         String input[] = new String[labels.length];
         panel.setLayout(new GridLayout(labels.length, 2, 5, 5));
@@ -210,9 +210,9 @@ public class GuiUtilities {
                 }
             }
         }
-        JScrollPane scrollPane = new JScrollPane(panel);
-        scrollPane.setPreferredSize(new Dimension(550, 300));
-        int result = JOptionPane.showConfirmDialog(parentComponent, scrollPane, title, JOptionPane.OK_CANCEL_OPTION);
+//        JScrollPane scrollPane = new JScrollPane(panel);
+//        scrollPane.setPreferredSize(new Dimension(800, 300));
+        int result = JOptionPane.showConfirmDialog(parentComponent, panel, title, JOptionPane.OK_CANCEL_OPTION);
         if (result != JOptionPane.OK_OPTION) {
             return null;
         }
@@ -420,8 +420,7 @@ public class GuiUtilities {
      * @param pathTextField
      * @param browseButton
      */
-    public static void setFolderBrowsingOnWidgets( JTextField pathTextField, JButton browseButton ,
-            Runnable postRunnable) {
+    public static void setFolderBrowsingOnWidgets( JTextField pathTextField, JButton browseButton, Runnable postRunnable ) {
         browseButton.addActionListener(e -> {
             File lastFile = PreferencesHandler.getLastFile();
             File[] res = showOpenFolderDialog(browseButton, "Select folder", false, lastFile);

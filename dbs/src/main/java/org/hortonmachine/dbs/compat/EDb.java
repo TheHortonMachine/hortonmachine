@@ -50,7 +50,7 @@ public enum EDb {
     POSTGIS(6, "", "", "org.hortonmachine.dbs.postgis.PostgisDb", true, "org.hortonmachine.dbs.postgis.PostgisSqlTemplates",
             "jdbc:postgresql://", true, true, false, false), //
     GEOPACKAGE(7, ".gpkg", "gpkg", "org.hortonmachine.dbs.geopackage.GeopackageDb", true,
-            "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, true, true), //
+            "org.hortonmachine.dbs.geopackage.GeopackageSqlTemplates", "jdbc:sqlite:", false, false, true, true), //
     ; //
 
     private int _code;
