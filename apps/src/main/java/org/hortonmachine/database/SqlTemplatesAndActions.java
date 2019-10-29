@@ -163,6 +163,9 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getCreateSpatialIndexAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
+        if (!sqlTemplates.hasCreateSpatialIndex()) {
+            return null;
+        }
         return new AbstractAction("Create spatial index"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -490,6 +493,8 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getReprojectTableAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
+        if (!sqlTemplates.hasReprojectTable())
+            return null;
         return new AbstractAction("Reproject table"){
             @Override
             public void actionPerformed( ActionEvent e ) {

@@ -200,6 +200,11 @@ public class SpatialDbsImportUtils {
                     h2gisDb.createSpatialIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE);
             } else if (db instanceof GeopackageDb) {
                 GeopackageDb gpkgDb = (GeopackageDb) db;
+
+                int srid = Integer.parseInt(sridString);
+                CoordinateReferenceSystem crs = CrsUtilities.getCrsFromSrid(srid);
+                gpkgDb.addCRS("EPSG", srid, crs.toWKT());
+
                 String[] array = attrSql.toArray(new String[0]);
                 gpkgDb.createSpatialTable(newTableName, Integer.parseInt(sridString), GEOMFIELD_FOR_SHAPEFILE + " " + typeString,
                         array, null, avoidSpatialIndex);

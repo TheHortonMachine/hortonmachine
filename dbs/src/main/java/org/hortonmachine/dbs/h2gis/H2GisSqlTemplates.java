@@ -104,15 +104,7 @@ public class H2GisSqlTemplates extends ASqlTemplates {
     @Override
     public String reprojectTable( TableLevel table, ASpatialDb db, ColumnLevel geometryColumn, String tableName,
             String newTableName, String newSrid ) throws Exception {
-        // TODO
-        String letter = tableName.substring(0, 1);
-        String columnName = letter + "." + geometryColumn.columnName;
-        String query = DbsUtilities.getSelectQuery(db, table, false);
-        query = query.replaceFirst(columnName, "ST_Transform(" + columnName + ", " + newSrid + ")");
-        query = "create table " + newTableName + " as " + query + ";\n";
-        query += "SELECT RecoverGeometryColumn('" + newTableName + "', '" + geometryColumn.columnName + "'," + newSrid + ",'"
-                + geometryColumn.columnType + "'," + geometryColumn.geomColumn.coordinatesDimension + ");";
-        return query;
+        return null;
     }
 
     @Override
@@ -146,6 +138,16 @@ public class H2GisSqlTemplates extends ASqlTemplates {
             geometryColumnName = "the_geom";
         TableLocation tableLocation = TableLocation.parse(tableName);
         return String.format("ALTER TABLE %s ADD CHECK ST_SRID(" + geometryColumnName + ")=%d", tableLocation.toString(), srid);
+    }
+
+    @Override
+    public boolean hasReprojectTable() {
+        return false;
+    }
+
+    @Override
+    public boolean hasCreateSpatialIndex() {
+        return true;
     }
 
 }

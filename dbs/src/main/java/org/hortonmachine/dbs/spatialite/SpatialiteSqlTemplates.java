@@ -166,4 +166,14 @@ public class SpatialiteSqlTemplates extends ASqlTemplates {
         return "-- added during geometry column creation";
     }
 
+    @Override
+    public boolean hasReprojectTable() {
+        return true;
+    }
+
+    @Override
+    public boolean hasCreateSpatialIndex() {
+        return true;
+    }
+
 }

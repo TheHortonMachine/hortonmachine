@@ -35,7 +35,7 @@ public class GeopackageSqlTemplates extends ASqlTemplates {
     public boolean hasAddGeometryColumn() {
         return false;
     }
-    
+
     @Override
     public boolean hasRecoverGeometryColumn() {
         return false;
@@ -45,7 +45,7 @@ public class GeopackageSqlTemplates extends ASqlTemplates {
     public boolean hasAttachShapefile() {
         return false;
     }
-    
+
     @Override
     public boolean hasRecoverSpatialIndex() {
         return false;
@@ -94,15 +94,12 @@ public class GeopackageSqlTemplates extends ASqlTemplates {
 
     @Override
     public String dropTable( String tableName, String geometryColumnName ) {
-        String query = "";
-        query += "drop table if exists rtree_" + tableName + "_the_geom;\n";
+        String query = "drop table if exists rtree_" + tableName + "_the_geom;\n";
         query += "drop table if exists rtree_" + tableName + "_the_geom_rowid;\n";
         query += "drop table if exists rtree_" + tableName + "_the_geom_parent;\n";
         query += "drop table if exists rtree_" + tableName + "_the_geom_node;\n";
-        if (geometryColumnName != null) {
-            query += "DELETE FROM gpkg_geometry_columns WHERE table_name = \"" + tableName + "\";\n" + 
-                    "DELETE FROM gpkg_contents WHERE table_name = \"" + tableName + "\";\n";
-        }
+        query += "delete from gpkg_geometry_columns where table_name = \"" + tableName + "\";\n";
+        query += "delete from gpkg_contents where table_name = \"" + tableName + "\";\n";
         query += "drop table if exists " + tableName + ";\n";
         return query;
     }
@@ -110,14 +107,7 @@ public class GeopackageSqlTemplates extends ASqlTemplates {
     @Override
     public String reprojectTable( TableLevel table, ASpatialDb db, ColumnLevel geometryColumn, String tableName,
             String newTableName, String newSrid ) throws Exception {
-        String letter = tableName.substring(0, 1);
-        String columnName = letter + "." + geometryColumn.columnName;
-        String query = DbsUtilities.getSelectQuery(db, table, false);
-        query = query.replaceFirst(columnName, "ST_Transform(" + columnName + ", " + newSrid + ")");
-        query = "create table " + newTableName + " as " + query + ";\n";
-        query += "SELECT RecoverGeometryColumn('" + newTableName + "', '" + geometryColumn.columnName + "'," + newSrid + ",'"
-                + geometryColumn.columnType + "'," + geometryColumn.geomColumn.coordinatesDimension + ");";
-        return query;
+        return null;
     }
 
     @Override
@@ -127,7 +117,7 @@ public class GeopackageSqlTemplates extends ASqlTemplates {
 
     @Override
     public String getGeoJsonSyntax( String geomPart, int precision ) {
-        return "AsGeoJson(" + geomPart + "," + precision + ",0)";
+        return null;
     }
 
     @Override
@@ -150,7 +140,17 @@ public class GeopackageSqlTemplates extends ASqlTemplates {
 
     @Override
     public String addSrid( String tableName, int srid, String geometryColumnName ) {
-        return "-- added during geometry column creation";
+        return "INSERT INTO gpkg_spatial_ref_sys (srs_id, srs_name, organization, organization_coordsys_id, definition, description) VALUES (?,?,?,?,?,?);";
+    }
+
+    @Override
+    public boolean hasReprojectTable() {
+        return false;
+    }
+
+    @Override
+    public boolean hasCreateSpatialIndex() {
+        return false;
     }
 
 }

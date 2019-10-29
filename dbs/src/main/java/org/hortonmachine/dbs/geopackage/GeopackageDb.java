@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -881,11 +880,8 @@ public class GeopackageDb extends ASpatialDb {
      * @throws Exception
      */
     public void deleteGeoTable( String tableName ) throws Exception {
-        String sql = "SELECT DropGeoTable('" + tableName + "');";// TODO
-
-        try (IHMStatement stmt = sqliteDb.getConnectionInternal().createStatement()) {
-            stmt.execute(sql);
-        }
+        String sql = getType().getSqlTemplates().dropTable(tableName, null);
+        sqliteDb.executeInsertUpdateDeleteSql(sql);
     }
 
     public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg,

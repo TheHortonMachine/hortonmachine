@@ -58,8 +58,8 @@ public class PostgisSqlTemplates extends ASqlTemplates {
             dimension = "2";
         }
 
-        String sql = "SELECT AddGeometryColumn('" + tableName + "','" + columnName + "', " + srid + ", '" + geomType
-                + "', " + dimension + ")";
+        String sql = "SELECT AddGeometryColumn('" + tableName + "','" + columnName + "', " + srid + ", '" + geomType + "', "
+                + dimension + ")";
         return sql;
     }
 
@@ -156,5 +156,15 @@ public class PostgisSqlTemplates extends ASqlTemplates {
     @Override
     public String addSrid( String tableName, int srid, String geometryColumnName ) {
         return "-- SRID is added during addGeometryColumn";
+    }
+
+    @Override
+    public boolean hasReprojectTable() {
+        return true;
+    }
+
+    @Override
+    public boolean hasCreateSpatialIndex() {
+        return true;
     }
 }

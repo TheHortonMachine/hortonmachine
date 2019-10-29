@@ -45,7 +45,11 @@ public abstract class ASqlTemplates {
 
     public abstract boolean hasRecoverSpatialIndex();
 
+    public abstract boolean hasCreateSpatialIndex();
+
     public abstract boolean hasAttachShapefile();
+
+    public abstract boolean hasReprojectTable();
 
     public abstract String addSrid( String tableName, int srid, String geometryColumnName );
 
