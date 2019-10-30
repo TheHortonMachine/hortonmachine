@@ -47,7 +47,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * Defines if the connection should be pooled. True by default.
      */
     protected boolean makePooled = true;
-    public boolean mPrintInfos = false;
+    public boolean mPrintInfos = true;
 
     /**
      * Get the database type.

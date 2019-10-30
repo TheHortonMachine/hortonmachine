@@ -109,6 +109,8 @@ public class GeopackageDb extends ASpatialDb {
     private SqliteDb sqliteDb;
 
     private boolean supportsRtree = true;
+    private boolean isGpgkInitialized = false;
+    private String gpkgVersion;
 
     public GeopackageDb() {
         sqliteDb = new SqliteDb();
@@ -143,9 +145,28 @@ public class GeopackageDb extends ASpatialDb {
 
         this.mDbPath = sqliteDb.getDatabasePath();
 
+        // see if we have to create the table structure
+        long appId = execOnConnection(connection -> {
+            // 1196444487 (the 32-bit integer value of 0x47504B47 or GPKG in ASCII) for GPKG 1.2 and
+            // greater
+            // 1196437808 (the 32-bit integer value of 0x47503130 or GP10 in ASCII) for GPKG 1.0 or
+            // 1.1
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery("PRAGMA application_id")) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+                return 0l;
+            }
+        });
+        if (0x47503130 == appId) {
+            gpkgVersion = "1.0/1.1";
+        } else if (0x47504B47 == appId) {
+            gpkgVersion = "1.2";
+        }
+
         if (mPrintInfos) {
-            String[] dbInfo = sqliteDb.getDbInfo();
-            Logger.INSTANCE.insertInfo(null, "Geopackage database with Sqlite Version: " + dbInfo[0]);
+            if (gpkgVersion != null)
+                Logger.INSTANCE.insertInfo(null, "Geopackage Version: " + gpkgVersion);
         }
         return dbExists;
     }
@@ -154,14 +175,8 @@ public class GeopackageDb extends ASpatialDb {
     public void initSpatialMetadata( String options ) throws Exception {
         Connection cx = sqliteDb.getJdbcConnection();
         createFunctions(cx);
-        // see if we have to create the table structure
-        boolean initialized = false;
-        try (Statement st = cx.createStatement(); ResultSet rs = st.executeQuery("PRAGMA application_id")) {
-            if (rs.next()) {
-                int applicationId = rs.getInt(1);
-                initialized = (0x47503130 == applicationId);
-            }
-        }
+
+        isGpgkInitialized = gpkgVersion != null;
 
         try {
             String checkTable = "rtree_test_check";
@@ -174,7 +189,7 @@ public class GeopackageDb extends ASpatialDb {
             supportsRtree = false;
         }
 
-        if (!initialized) {
+        if (!isGpgkInitialized) {
             runScript(SPATIAL_REF_SYS + ".sql");
             runScript(GEOMETRY_COLUMNS + ".sql");
             runScript(GEOPACKAGE_CONTENTS + ".sql");
