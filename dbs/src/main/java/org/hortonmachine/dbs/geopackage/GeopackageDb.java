@@ -164,15 +164,6 @@ public class GeopackageDb extends ASpatialDb {
             gpkgVersion = "1.2";
         }
 
-        if (mPrintInfos) {
-            if (gpkgVersion != null)
-                Logger.INSTANCE.insertInfo(null, "Geopackage Version: " + gpkgVersion);
-        }
-        return dbExists;
-    }
-
-    @Override
-    public void initSpatialMetadata( String options ) throws Exception {
         Connection cx = sqliteDb.getJdbcConnection();
         createFunctions(cx);
 
@@ -203,7 +194,19 @@ public class GeopackageDb extends ASpatialDb {
             addDefaultSpatialReferences(cx);
 
             sqliteDb.executeInsertUpdateDeleteSql("PRAGMA application_id = 0x47503130;");
+            gpkgVersion = "1.0/1.1";
         }
+
+        if (mPrintInfos) {
+            if (gpkgVersion != null)
+                Logger.INSTANCE.insertInfo(null, "Geopackage Version: " + gpkgVersion);
+        }
+        return dbExists;
+    }
+
+    @Override
+    public void initSpatialMetadata( String options ) throws Exception {
+
     }
 
     /** Returns list of contents of the geopackage. 

@@ -17,36 +17,22 @@
  */
 package org.hortonmachine.gears.modules.r.scanline;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_COLS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_EAST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_NORTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_ROWS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_SOUTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_WEST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_STATUS;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.*;
+import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
 import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.gridGeometry2RegionParamsMap;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionValues;
 
 import java.awt.image.WritableRaster;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.media.jai.iterator.RandomIter;
+import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -60,8 +46,10 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -74,6 +62,13 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.geom.TopologyException;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.locationtech.jts.operation.union.CascadedPolygonUnion;
+import org.locationtech.jts.precision.GeometryPrecisionReducer;
+import org.locationtech.jts.precision.SimpleGeometryPrecisionReducer;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -140,13 +135,43 @@ public class OmsScanLineRasterizer extends HMModel {
     @In
     public Integer pCols = null;
 
-    @Description("An optional raster to take the values and region from.")
+    @Description(OMSSCANLINERASTERIZER_P_USEPIP_DESCRIPTION)
+    @In
+    public Boolean pUsePointInPolygon = false;
+
+    @Description(OMSSCANLINERASTERIZER_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
     @Description(OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
+
+    // PARAMS DESCR START
+    public static final String OMSSCANLINERASTERIZER_DESCRIPTION = "Module for polygon vector to raster conversion.";
+    public static final String OMSSCANLINERASTERIZER_DOCUMENTATION = "OmsScanLineRasterizer.html";
+    public static final String OMSSCANLINERASTERIZER_KEYWORDS = "Raster, Vector, Rasterize";
+    public static final String OMSSCANLINERASTERIZER_LABEL = RASTERPROCESSING;
+    public static final String OMSSCANLINERASTERIZER_NAME = "rscanline";
+    public static final int OMSSCANLINERASTERIZER_STATUS = 40;
+    public static final String OMSSCANLINERASTERIZER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSSCANLINERASTERIZER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSSCANLINERASTERIZER_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION = "The vector to rasterize.";
+    public static final String OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION = "The value to use as raster value if no field is given.";
+    public static final String OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION = "The field to use to retrieve the category value for the raster.";
+    public static final String OMSSCANLINERASTERIZER_P_NORTH_DESCRIPTION = "The north bound of the region to consider";
+    public static final String OMSSCANLINERASTERIZER_P_SOUTH_DESCRIPTION = "The south bound of the region to consider";
+    public static final String OMSSCANLINERASTERIZER_P_WEST_DESCRIPTION = "The west bound of the region to consider";
+    public static final String OMSSCANLINERASTERIZER_P_EAST_DESCRIPTION = "The east bound of the region to consider";
+    public static final String OMSSCANLINERASTERIZER_P_ROWS_DESCRIPTION = "The rows of the region to consider";
+    public static final String OMSSCANLINERASTERIZER_P_COLS_DESCRIPTION = "The cols of the region to consider";
+    public static final String OMSSCANLINERASTERIZER_P_MAX_THREADS_DESCRIPTION = "Max threads to use (default 4)";
+
+    public static final String OMSSCANLINERASTERIZER_P_USEPIP_DESCRIPTION = "Use point in polygon (needs an input raster). In case scanline doesn't work.";
+    public static final String OMSSCANLINERASTERIZER_IN_RASTER_DESCRIPTION = "An optional raster to take the values and region from.";
+    public static final String OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION = "The output raster.";
+    // PARAMS DESCR END
 
     private WritableRaster outWR;
 
@@ -211,14 +236,41 @@ public class OmsScanLineRasterizer extends HMModel {
         } else if (EGeometryType.isLine(geometryDescriptor)) {
             throw new ModelsRuntimeException("Not implemented yet for lines", this.getClass().getSimpleName());
         } else if (EGeometryType.isPolygon(geometryDescriptor)) {
-            rasterizepolygon(pGrid);
+
+            if (pUsePointInPolygon) {
+                if (inRaster == null) {
+                    throw new ModelsIllegalargumentException("The point in polygon mode needs an input raster to work on.", this);
+                }
+                pm.beginTask("Prepare input data...", IHMProgressMonitor.UNKNOWN);
+                List<Geometry> allGeoms = FeatureUtilities.featureCollectionToGeometriesList(inVector, false, null);
+                Geometry allGeomsUnion = CascadedPolygonUnion.union(allGeoms);
+                PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(allGeomsUnion);
+                pm.done();
+
+                double value = pValue;
+                pm.beginTask("Rasterizing...", height);
+                WritableRandomIter wIter = CoverageUtilities.getWritableRandomIterator(outWR);
+                for( int row = 0; row < height; row++ ) {
+                    for( int col = 0; col < width; col++ ) {
+                        Coordinate coord = CoverageUtilities.coordinateFromColRow(col, row, pGrid);
+                        if (preparedGeometry.intersects(gf.createPoint(coord))) {
+                            wIter.setSample(col, col, 0, value);
+                        }
+                    }
+                    pm.worked(1);
+                }
+                pm.done();
+                wIter.done();
+            } else {
+                rasterizepolygon(pGrid);
+            }
         } else {
-            throw new ModelsIllegalargumentException("Couldn't recognize the geometry type of the file.", this.getClass()
-                    .getSimpleName(), pm);
+            throw new ModelsIllegalargumentException("Couldn't recognize the geometry type of the file.",
+                    this.getClass().getSimpleName(), pm);
         }
 
-        outRaster = CoverageUtilities.buildCoverage("rasterized", outWR, paramsMap, inVector.getSchema()
-                .getCoordinateReferenceSystem());
+        outRaster = CoverageUtilities.buildCoverage("rasterized", outWR, paramsMap,
+                inVector.getSchema().getCoordinateReferenceSystem());
 
     }
     private void rasterizepolygon( final GridGeometry2D gridGeometry ) throws InvalidGridGeometryException, TransformException {

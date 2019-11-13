@@ -17,6 +17,31 @@
  */
 package org.hortonmachine.modules;
 
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_IN_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_LABEL;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_LICENSE;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_NAME;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_P_COLS_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_P_EAST_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_P_NORTH_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_P_ROWS_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_P_SOUTH_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_P_USEPIP_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_P_WEST_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_STATUS;
+
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -27,31 +52,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_COLS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_EAST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_NORTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_ROWS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_SOUTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_P_WEST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_STATUS;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer;
-import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
 
 @Description(OMSSCANLINERASTERIZER_DESCRIPTION)
 @Author(name = OMSSCANLINERASTERIZER_AUTHORNAMES, contact = OMSSCANLINERASTERIZER_AUTHORCONTACTS)
@@ -104,6 +104,15 @@ public class ScanLineRasterizer extends HMModel {
     @UI(HMConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer pCols = null;
+    
+    @Description(OMSSCANLINERASTERIZER_P_USEPIP_DESCRIPTION)
+    @In
+    public Boolean pUsePointInPolygon = false;
+    
+    @Description(OMSSCANLINERASTERIZER_IN_RASTER_DESCRIPTION)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @In
+    public String inRaster;
 
     @Description(OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -114,6 +123,7 @@ public class ScanLineRasterizer extends HMModel {
     public void process() throws Exception {
         OmsScanLineRasterizer scanlinerasterizer = new OmsScanLineRasterizer();
         scanlinerasterizer.inVector = getVector(inVector);
+        scanlinerasterizer.inRaster = getRaster(inRaster);
         scanlinerasterizer.pValue = pValue;
         scanlinerasterizer.fCat = fCat;
         scanlinerasterizer.pNorth = pNorth;
@@ -122,6 +132,7 @@ public class ScanLineRasterizer extends HMModel {
         scanlinerasterizer.pEast = pEast;
         scanlinerasterizer.pRows = pRows;
         scanlinerasterizer.pCols = pCols;
+        scanlinerasterizer.pUsePointInPolygon = pUsePointInPolygon;
         scanlinerasterizer.pm = pm;
         scanlinerasterizer.doProcess = doProcess;
         scanlinerasterizer.doReset = doReset;

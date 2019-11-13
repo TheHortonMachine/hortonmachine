@@ -35,13 +35,15 @@ public class TestGeopackage extends HMTestCase {
         OmsVectorWriter.writeVector(tmpGpkg.getAbsolutePath(), polygonTable, polygonFC);
         OmsVectorWriter.writeVector(tmpGpkg.getAbsolutePath(), lineTable, lineFc);
 
-        SimpleFeatureCollection readPolygonFC = OmsVectorReader.readVector(tmpGpkg.getAbsolutePath(), polygonTable);
+        SimpleFeatureCollection readPolygonFC = OmsVectorReader
+                .readVector(tmpGpkg.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + polygonTable);
         int srid = CrsUtilities.getSrid(readPolygonFC.getSchema().getCoordinateReferenceSystem());
         assertEquals(32632, srid);
         List<SimpleFeature> features = FeatureUtilities.featureCollectionToList(readPolygonFC);
         assertEquals(1, features.size());
 
-        SimpleFeatureCollection readLinesFC = OmsVectorReader.readVector(tmpGpkg.getAbsolutePath(), lineTable);
+        SimpleFeatureCollection readLinesFC = OmsVectorReader
+                .readVector(tmpGpkg.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + lineTable);
         srid = CrsUtilities.getSrid(readLinesFC.getSchema().getCoordinateReferenceSystem());
         assertEquals(4326, srid);
         features = FeatureUtilities.featureCollectionToList(readLinesFC);

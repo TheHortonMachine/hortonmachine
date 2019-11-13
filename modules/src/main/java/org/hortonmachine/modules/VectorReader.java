@@ -27,9 +27,6 @@ import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORR
 import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_NAME;
 import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_OUT_VECTOR_DESCRIPTION;
 import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_STATUS;
-import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORREADER_TABLE_DESCRIPTION;
-
-import java.io.IOException;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
@@ -61,10 +58,6 @@ public class VectorReader extends HMModel {
     @In
     public String file = null;
 
-    @Description(OMSVECTORREADER_TABLE_DESCRIPTION)
-    @In
-    public String table = null;
-
     @Description(OMSVECTORREADER_OUT_VECTOR_DESCRIPTION)
     @In
     public SimpleFeatureCollection outVector = null;
@@ -73,7 +66,6 @@ public class VectorReader extends HMModel {
     public void process() throws Exception {
         OmsVectorReader vectorreader = new OmsVectorReader();
         vectorreader.file = file;
-        vectorreader.table = table;
         vectorreader.pm = pm;
         vectorreader.doProcess = doProcess;
         vectorreader.doReset = doReset;
@@ -84,9 +76,4 @@ public class VectorReader extends HMModel {
     public static SimpleFeatureCollection readVector( String path ) throws Exception {
         return OmsVectorReader.readVector(path);
     }
-
-    public static SimpleFeatureCollection readVector( String path, String table ) throws Exception {
-        return OmsVectorReader.readVector(path, table);
-    }
-
 }

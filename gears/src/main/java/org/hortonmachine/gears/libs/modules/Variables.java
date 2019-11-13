@@ -144,4 +144,8 @@ public interface Variables {
      */
     public String TRIWEIGHT = "triweight";
 
+    
+    public String TOPOLOGYPRESERVINGSIMPLIFIER = "TopologyPreservingSimplifier";
+    public String DOUGLAS_PEUCKER = "Douglas Peucker";
+    public String PRECISION_REDUCER = "Reduce coordinate precision";
 }

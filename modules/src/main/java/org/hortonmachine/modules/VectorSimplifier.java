@@ -17,18 +17,10 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_OUT_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_P_TOLERANCE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_P_TYPE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_STATUS;
+import static org.hortonmachine.gears.libs.modules.Variables.DOUGLAS_PEUCKER;
+import static org.hortonmachine.gears.libs.modules.Variables.PRECISION_REDUCER;
+import static org.hortonmachine.gears.libs.modules.Variables.TOPOLOGYPRESERVINGSIMPLIFIER;
+import static org.hortonmachine.gears.modules.v.vectorsimplifier.OmsVectorSimplifier.*;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -60,13 +52,18 @@ public class VectorSimplifier extends HMModel {
     public String inVector;
 
     @Description(OMSVECTORSIMPLIFIER_P_TYPE_DESCRIPTION)
+    @UI("combo:" + TOPOLOGYPRESERVINGSIMPLIFIER + "," + DOUGLAS_PEUCKER + "," + PRECISION_REDUCER)
     @In
-    public int pType = 0;
+    public String pType = TOPOLOGYPRESERVINGSIMPLIFIER;
 
     @Description(OMSVECTORSIMPLIFIER_P_TOLERANCE_DESCRIPTION)
     @In
     public double pTolerance = 0.2;
 
+    @Description(OMSVECTORSIMPLIFIER_P_SCALE_DESCRIPTION)
+    @In
+    public Double pScale = 1000.0;
+    
     @Description(OMSVECTORSIMPLIFIER_OUT_VECTOR_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
@@ -77,6 +74,7 @@ public class VectorSimplifier extends HMModel {
         OmsVectorSimplifier vectorsimplifier = new OmsVectorSimplifier();
         vectorsimplifier.inVector = getVector(inVector);
         vectorsimplifier.pType = pType;
+        vectorsimplifier.pScale = pScale;
         vectorsimplifier.pTolerance = pTolerance;
         vectorsimplifier.pm = pm;
         vectorsimplifier.doProcess = doProcess;

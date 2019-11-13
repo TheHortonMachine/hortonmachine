@@ -249,6 +249,8 @@ public class HMConstants {
     public static final String LAS = "las";
     public static final String LAZ = "laz";
 
+    public static final String DB_TABLE_PATH_SEPARATOR = "#";
+
     public static final String[] SUPPORTED_VECTOR_EXTENSIONS = {SHP, GPKG};
     public static final String[] SUPPORTED_LIDAR_EXTENSIONS = {LAS};
     public static final String[] SUPPORTED_RASTER_EXTENSIONS = {GEOTIFF, GEOTIF, ESRIGRID};

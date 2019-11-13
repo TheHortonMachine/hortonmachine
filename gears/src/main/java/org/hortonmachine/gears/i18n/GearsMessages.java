@@ -508,27 +508,6 @@ public class GearsMessages {
     public static final String OMSRASTERDIFF_DO_NEGATIVES_DESCRIPTION = "Allow negative values.";
     public static final String OMSRASTERDIFF_OUT_RASTER_DESCRIPTION = "The output raster.";
 
-    public static final String OMSSCANLINERASTERIZER_DESCRIPTION = "Module for polygon vector to raster conversion.";
-    public static final String OMSSCANLINERASTERIZER_DOCUMENTATION = "OmsScanLineRasterizer.html";
-    public static final String OMSSCANLINERASTERIZER_KEYWORDS = "Raster, Vector, Rasterize";
-    public static final String OMSSCANLINERASTERIZER_LABEL = RASTERPROCESSING;
-    public static final String OMSSCANLINERASTERIZER_NAME = "rscanline";
-    public static final int OMSSCANLINERASTERIZER_STATUS = 40;
-    public static final String OMSSCANLINERASTERIZER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSSCANLINERASTERIZER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSSCANLINERASTERIZER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION = "The vector to rasterize.";
-    public static final String OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION = "The value to use as raster value if no field is given.";
-    public static final String OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION = "The field to use to retrieve the category value for the raster.";
-    public static final String OMSSCANLINERASTERIZER_P_NORTH_DESCRIPTION = "The north bound of the region to consider";
-    public static final String OMSSCANLINERASTERIZER_P_SOUTH_DESCRIPTION = "The south bound of the region to consider";
-    public static final String OMSSCANLINERASTERIZER_P_WEST_DESCRIPTION = "The west bound of the region to consider";
-    public static final String OMSSCANLINERASTERIZER_P_EAST_DESCRIPTION = "The east bound of the region to consider";
-    public static final String OMSSCANLINERASTERIZER_P_ROWS_DESCRIPTION = "The rows of the region to consider";
-    public static final String OMSSCANLINERASTERIZER_P_COLS_DESCRIPTION = "The cols of the region to consider";
-    public static final String OMSSCANLINERASTERIZER_P_MAX_THREADS_DESCRIPTION = "Max threads to use (default 4)";
-    public static final String OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION = "The output raster.";
-
     public static final String OMSRASTERRESOLUTIONRESAMPLER_DESCRIPTION = "Module to do coverage resolution resampling.";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_DOCUMENTATION = "";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_KEYWORDS = "IO, Coverage, Raster, Convert";
@@ -757,20 +736,6 @@ public class GearsMessages {
     public static final String OMSTMSGENERATOR_DO_LEGACY_GRASS_DESCRIPTION = "Optional flag to force a legacy GRASS driver usage.";
     public static final String OMSTMSGENERATOR_IN_PATH_DESCRIPTION = "The folder inside which to create the tiles.";
     public static final String OMSTMSGENERATOR_P_MAX_THREADS_DESCRIPTION = "Max threads to use (default 1)";
-
-    public static final String OMSVECTORSIMPLIFIER_DESCRIPTION = "Collection of vector simplification algorithms.";
-    public static final String OMSVECTORSIMPLIFIER_DOCUMENTATION = "OmsVectorSimplifier.html";
-    public static final String OMSVECTORSIMPLIFIER_KEYWORDS = "Simplify, OmsLineSmootherMcMaster, OmsLineSmootherJaitools";
-    public static final String OMSVECTORSIMPLIFIER_LABEL = VECTORPROCESSING;
-    public static final String OMSVECTORSIMPLIFIER_NAME = "vsimplify";
-    public static final int OMSVECTORSIMPLIFIER_STATUS = 40;
-    public static final String OMSVECTORSIMPLIFIER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSVECTORSIMPLIFIER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSVECTORSIMPLIFIER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSVECTORSIMPLIFIER_IN_VECTOR_DESCRIPTION = "The vector to be simplified.";
-    public static final String OMSVECTORSIMPLIFIER_P_TYPE_DESCRIPTION = "The simplification type: TopologyPreservingSimplifier = 0, Douglas Peucker = 1 (default = 0).";
-    public static final String OMSVECTORSIMPLIFIER_P_TOLERANCE_DESCRIPTION = "The distance tolerance for the simplification.";
-    public static final String OMSVECTORSIMPLIFIER_OUT_VECTOR_DESCRIPTION = "The simplified vector.";
 
     public static final String OMSCOVERAGELISTER_DESCRIPTION = "A module that reads rasters.";
     public static final String OMSCOVERAGELISTER_DOCUMENTATION = "";

@@ -79,10 +79,6 @@ public class OmsVectorReader extends HMModel {
     @In
     public String file = null;
 
-    @Description(OMSVECTORREADER_TABLE_DESCRIPTION)
-    @In
-    public String table = null;
-
     @Description(OMSVECTORREADER_OUT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector = null;
@@ -122,13 +118,21 @@ public class OmsVectorReader extends HMModel {
             if (outVector.getSchema().getCoordinateReferenceSystem() == null) {
                 pm.errorMessage("The coordinate reference system could not be defined for: " + reader.file);
             }
-        } else if (name.toLowerCase().endsWith(HMConstants.GPKG)) {
-            if (table == null || table.length() == 0) {
+        } else if (name.toLowerCase().contains("." + HMConstants.GPKG)) {
+            if (!name.contains(HMConstants.DB_TABLE_PATH_SEPARATOR)) {
                 throw new ModelsIllegalargumentException(
-                        "The geopackage contains several tables, the table neame needs to be specified.", this);
+                        "The table name needs to be specified in the geopackage path after the #.", this);
             }
+            String[] split = file.split(HMConstants.DB_TABLE_PATH_SEPARATOR);
+            if (split.length == 1 || split[1].trim().length() == 0) {
+                throw new ModelsIllegalargumentException(
+                        "The geopackage contains several tables, the table neame needs to be specified in the path after the #.",
+                        this);
+            }
+            String table = split[1];
+            String dbPath = split[0];
             try (GeopackageDb db = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb()) {
-                db.open(file);
+                db.open(dbPath);
                 db.initSpatialMetadata(null);
                 outVector = SpatialDbsImportUtils.tableToFeatureFCollection(db, table, -1, -1, null);
             }
@@ -164,15 +168,6 @@ public class OmsVectorReader extends HMModel {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         return featureSource.getBounds();
-    }
-
-    public static SimpleFeatureCollection readVector( String path, String table ) throws Exception {
-        OmsVectorReader reader = new OmsVectorReader();
-        reader.file = path;
-        reader.table = table;
-        reader.process();
-        SimpleFeatureCollection fc = reader.outVector;
-        return fc;
     }
 
 }
