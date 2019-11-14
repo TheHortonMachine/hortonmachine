@@ -31,9 +31,9 @@ public class TestGeopackage extends HMTestCase {
         LineString line = GeometryUtilities.createDummyLine();
         SimpleFeatureCollection lineFc = FeatureUtilities.featureCollectionFromGeometry(DefaultGeographicCRS.WGS84, line);
 
-        File tmpGpkg = File.createTempFile("hm_test_multi_vector_", HMConstants.GPKG);
-        OmsVectorWriter.writeVector(tmpGpkg.getAbsolutePath(), polygonTable, polygonFC);
-        OmsVectorWriter.writeVector(tmpGpkg.getAbsolutePath(), lineTable, lineFc);
+        File tmpGpkg = File.createTempFile("hm_test_multi_vector_", "." + HMConstants.GPKG);
+        OmsVectorWriter.writeVector(tmpGpkg.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + polygonTable, polygonFC);
+        OmsVectorWriter.writeVector(tmpGpkg.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + lineTable, lineFc);
 
         SimpleFeatureCollection readPolygonFC = OmsVectorReader
                 .readVector(tmpGpkg.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + polygonTable);

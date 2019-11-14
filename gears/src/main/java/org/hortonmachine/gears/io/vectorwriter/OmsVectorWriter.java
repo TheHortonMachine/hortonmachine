@@ -36,6 +36,7 @@ import org.geotools.feature.FeatureCollection;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.geopackage.GeopackageDb;
 import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureWriter;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
@@ -74,10 +75,6 @@ public class OmsVectorWriter extends HMModel {
     // currently not used, for future compatibility
     public String pType = null;
 
-    @Description(OMSVECTORWRITER_TABLE_DESCRIPTION)
-    @In
-    public String table = null;
-
     @Description(OMSVECTORWRITER_FILE_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
@@ -111,13 +108,22 @@ public class OmsVectorWriter extends HMModel {
         String name = vectorFile.getName();
         if (name.toLowerCase().endsWith(HMConstants.SHP) || (pType != null && pType.equals(HMConstants.SHP))) {
             OmsShapefileFeatureWriter.writeShapefile(vectorFile.getAbsolutePath(), inVector, pm);
-        } else if (name.toLowerCase().endsWith(HMConstants.GPKG) || (pType != null && pType.equals(HMConstants.GPKG))) {
-            File outFile = new File(file);
-            if (table == null || table.length() == 0) {
-                table = FileUtilities.getNameWithoutExtention(outFile);
+        } else if (name.toLowerCase().contains("." + HMConstants.GPKG)) {
+            if (!name.contains(HMConstants.DB_TABLE_PATH_SEPARATOR)) {
+                throw new ModelsIllegalargumentException(
+                        "The table name needs to be specified in the geopackage path after the #.", this);
             }
+            String[] split = file.split(HMConstants.DB_TABLE_PATH_SEPARATOR);
+            if (split.length == 1 || split[1].trim().length() == 0) {
+                throw new ModelsIllegalargumentException(
+                        "The geopackage contains several tables, the table neame needs to be specified in the path after the #.",
+                        this);
+            }
+            String table = split[1];
+            String dbPath = split[0];
+
             try (GeopackageDb db = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb()) {
-                db.open(file);
+                db.open(dbPath);
                 db.initSpatialMetadata(null);
 
                 CoordinateReferenceSystem crs = inVector.getBounds().getCoordinateReferenceSystem();
@@ -145,12 +151,5 @@ public class OmsVectorWriter extends HMModel {
         writer.process();
     }
 
-    public static void writeVector( String path, String table, SimpleFeatureCollection featureCollection ) throws Exception {
-        OmsVectorWriter writer = new OmsVectorWriter();
-        writer.file = path;
-        writer.table = table;
-        writer.inVector = featureCollection;
-        writer.process();
-    }
 
 }
