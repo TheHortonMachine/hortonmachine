@@ -601,7 +601,7 @@ public class GeometryUtilities {
      * @param geometries the list of geometries.
      * @return the {@link STRtree}.
      */
-    public static STRtree geometriesToSRTree( List<Geometry> geometries ) {
+    public static STRtree geometriesToSRTree( List< ? extends Geometry> geometries ) {
         STRtree tree = new STRtree();
         for( Geometry geometry : geometries ) {
             tree.insert(geometry.getEnvelopeInternal(), geometry);
@@ -609,7 +609,27 @@ public class GeometryUtilities {
         return tree;
     }
 
-    public static Quadtree geometriesToQuadTree( List<Geometry> geometries ) {
+    /**
+     * Query and test intersection on the result of an STRtree index containing geometries.
+     * 
+     * @param tree the index.
+     * @param intersectionGeometry the geometry to check;
+     * @return the intersecting geometries.
+     */
+    public static List<Geometry> queryAndIntersectGeometryTree( STRtree tree, Geometry intersectionGeometry ) {
+        @SuppressWarnings("unchecked")
+        List<Geometry> result = tree.query(intersectionGeometry.getEnvelopeInternal());
+        result.removeIf(item -> {
+            Geometry g = (Geometry) item;
+            if (g.intersects(intersectionGeometry)) {
+                return false;
+            }
+            return true;
+        });
+        return result;
+    }
+
+    public static Quadtree geometriesToQuadTree( List< ? extends Geometry> geometries ) {
         Quadtree tree = new Quadtree();
         for( Geometry geometry : geometries ) {
             tree.insert(geometry.getEnvelopeInternal(), geometry);

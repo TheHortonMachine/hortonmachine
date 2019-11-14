@@ -59,7 +59,7 @@ public class TestFeatureUtils extends HMTestCase {
         int nCols = regionMap.getCols();
         int nRows = regionMap.getRows();
 
-        List<Polygon> cellPolygons = FeatureUtilities.gridcoverageToCellPolygons(inElev);
+        List<Polygon> cellPolygons = CoverageUtilities.gridcoverageToCellPolygons(inElev, null);
         int size = nCols * nRows;
         assertEquals(size, cellPolygons.size());
 

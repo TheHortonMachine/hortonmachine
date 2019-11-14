@@ -99,7 +99,7 @@ public class TestScanLineRasterizer extends HMTestCase {
         RandomIter rasterIter = CoverageUtilities.getRandomIterator(elevationCoverage);
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(elevationCoverage);
 
-        List<Coordinate> coordinates = FeatureUtilities.extractPolygonOnCoverage(rasterIter, regionMap.getCols(),
+        List<Coordinate> coordinates = CoverageUtilities.extractPolygonOnCoverage(rasterIter, regionMap.getCols(),
                 regionMap.getRows(), regionMap.getXres(), elevationCoverage.getGridGeometry(), polygon, 0);
 
         int index = 0;
