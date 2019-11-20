@@ -605,6 +605,7 @@ public class GeopackageDb extends ASpatialDb {
                 if (reprojectSrid == -1 || reprojectSrid == gCol.srid) {
                     items.add(geomColLower);
                 } else {
+                    // FIXME this will not work, needs to be done outside the db
                     items.add("ST_Transform(" + geomColLower + "," + reprojectSrid + ") AS " + geomColLower);
                 }
             } else {
@@ -1064,6 +1065,53 @@ public class GeopackageDb extends ASpatialDb {
         InputStream resourceAsStream = GeopackageDb.class.getResourceAsStream(SPATIAL_INDEX + ".sql");
         runScript(resourceAsStream, getJdbcConnection(), properties);
     }
+    
+//    public void recreateSpatialIndex( String tableName, String geometryName ) throws Exception {
+//        if(!hasTable(tableName)) {
+//            return;
+//        }
+//        
+//        String pkCol = SpatialiteCommonMethods.getPrimaryKey(sqliteDb, tableName);
+//        if(pkCol==null) {
+//            return;
+//        }
+//
+//        
+////        String delSql = "delete from rtree_" + tableName + "_" + geometryName
+//        
+//    }
+//    
+//    private HashMap<Long, Envelope> getEnvelopesIn( String tableName, String pkCol) throws Exception {
+//        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
+//        String sql = "SELECT " +pkCol+","+ gCol.geometryColumnName + " FROM " + tableName;
+//        IGeometryParser geometryParser = getType().getGeometryParser();
+//        
+//        
+//        return execOnConnection(connection -> {
+//            HashMap<Long, Envelope> geoms = new HashMap<Long, Envelope>;
+//            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+//                while( rs.next() ) {
+//                    rs.
+//                    Geometry geometry = geometryParser.fromResultSet(rs, 1);
+//                    geoms.add(geometry);
+//                }
+//            } catch (Exception e) {
+//                geoms.clear();
+//                if (e.getMessage().toLowerCase().contains("no such table: rtree_")) {
+//                    try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sqlNoIndex)) {
+//                        while( rs.next() ) {
+//                            Geometry geometry = geometryParser.fromResultSet(rs, 1);
+//                            geoms.add(geometry);
+//                        }
+//                    }
+//                } else {
+//                    throw e;
+//                }
+//            }
+//            return geoms;
+//        });
+//    }
+    
 
     public void runScript( InputStream stream, Connection cx, Map<String, String> properties ) throws SQLException {
 

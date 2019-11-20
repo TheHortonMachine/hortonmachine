@@ -25,11 +25,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.geotools.referencing.GeodeticCalculator;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.geopackage.GeopackageDb;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.postgis.PostgisDb;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteThreadsafeDb;
+import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.chart.CategoryHistogram;
 import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
@@ -42,6 +47,8 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.OmsMatrixCharter;
 import org.jfree.chart.ChartPanel;
+import org.joda.time.DateTime;
+import org.locationtech.jts.geom.Coordinate;
 
 import geoscript.style.Style;
 import geoscript.style.io.SLDReader;
@@ -55,6 +62,57 @@ import groovy.lang.Script;
  */
 @SuppressWarnings("rawtypes")
 public class HM {
+
+    public static String methods() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Open a simple spatial viewer on a folder of data:").append("\n");
+        sb.append("\tshowFolder( String folderPath )").append("\n");
+        sb.append("Load an external geoscript file:").append("\n");
+        sb.append("\tload( String scriptPath )").append("\n");
+        sb.append("Chart a matrix of numeric data:").append("\n");
+        sb.append(
+                "\tchartMatrix( String title, String xLabel, String yLabel, double[][] data, List<String> series, List<String> colors, boolean doLegend )")
+                .append("\n");
+        sb.append("Chart a category histogram:").append("\n");
+        sb.append("\thistogram( Map<String, Object> options, List<String> categories, List<Number> values )").append("\n");
+        sb.append("Chart a numeric histogram:").append("\n");
+        sb.append("\thistogram( Map<String, Object> options, List<List<Number>> values )").append("\n");
+        sb.append("Chart series of points:").append("\n");
+        sb.append("\tscatterPlot( List<List<List<Number>>> data )").append("\n");
+        sb.append("Chart series of points with rendering options:").append("\n");
+        sb.append("\tscatterPlot( Map<String, Object> options, List<List<List<Number>>> data )").append("\n");
+        sb.append("Calculate a log regression:").append("\n");
+        sb.append("\tRegressionLine logRegression( List<List<Double>> data, List<List<Double>> result )").append("\n");
+        sb.append("Calculate a polynomial regression:").append("\n");
+        sb.append("\tRegressionLine polynomialRegression( Number degree, List<List<Double>> data, List<List<Double>> result )")
+                .append("\n");
+        sb.append("Connect to PostGIS:").append("\n");
+        sb.append("\tASpatialDb connectPostgis( String host, int port, String database, String user, String pwd )").append("\n");
+        sb.append("Connect to Spatialite:").append("\n");
+        sb.append("\tASpatialDb connectSpatialite( String databasePath )").append("\n");
+        sb.append("Connect to Geopackage:").append("\n");
+        sb.append("\tASpatialDb connectGeopackage( String databasePath )").append("\n");
+        sb.append("Connect to Sqlite:").append("\n");
+        sb.append("\tSqliteDb connectSqlite( String databasePath )").append("\n");
+        sb.append("Connect to H2GIS:").append("\n");
+        sb.append("\tASpatialDb connectH2GIS( String databasePath, String user, String pwd )").append("\n");
+        sb.append("Print the available raster colortables:").append("\n");
+        sb.append("\tString printColorTables()").append("\n");
+        sb.append("Calculate the distance between two lat/long WGS84 coordinates:").append("\n");
+        sb.append("\tdouble distanceLL( Coordinate c1, Coordinate c2 )").append("\n");
+        sb.append("Calculate the distance between two lat/long WGS84 coordinates:").append("\n");
+        sb.append("\tdouble distanceLL( double lon1, double lat1, double lon2, double lat2 )").append("\n");
+        sb.append("Create the style object for a given colortable:").append("\n");
+        sb.append("\tStyle styleForColorTable( String tableName, double min, double max, double opacity )").append("\n");
+        sb.append("Convert an milliseconds epoch timestamp to string:").append("\n");
+        sb.append("\tString ts2str( long millis )").append("\n");
+        sb.append("Convert an iso timestamp string to milliseconds:").append("\n");
+        sb.append("\tlong str2ts( String isoString )").append("\n");
+
+        return sb.toString();
+    }
+
     public static void showFolder( String folderPath ) {
         HMMapframe.openFolder(new File(folderPath));
     }
@@ -322,6 +380,20 @@ public class HM {
         return spatialDb;
     }
 
+    public static GeopackageDb connectGeopackage( String databasePath ) throws Exception {
+        GeopackageDb spatialDb = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb();
+        spatialDb.setMakePooled(false);
+        spatialDb.open(databasePath);
+        return spatialDb;
+    }
+
+    public static SqliteDb connectSqlite( String databasePath ) throws Exception {
+        SqliteDb spatialDb = (SqliteDb) EDb.SQLITE.getDb();
+        spatialDb.setMakePooled(false);
+        spatialDb.open(databasePath);
+        return spatialDb;
+    }
+
     public static ASpatialDb connectH2GIS( String databasePath, String user, String pwd ) throws Exception {
         H2GisDb spatialDb = (H2GisDb) EDb.H2GIS.getSpatialDb();
         if (user != null && pwd != null) {
@@ -342,9 +414,36 @@ public class HM {
         return sb.substring(1);
     }
 
+    /**
+     * Calculate the orthodromic distance between two coordinates.
+     * 
+     * @param c1 the first coordinate.
+     * @param c2 the second coordinate.
+     * @return the distance in meters.
+     */
+    public static double distanceLL( Coordinate c1, Coordinate c2 ) {
+        return distanceLL(c1.x, c1.y, c2.x, c2.y);
+    }
+
+    public static double distanceLL( double lon1, double lat1, double lon2, double lat2 ) {
+        GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
+        gc.setStartingGeographicPoint(lon1, lat1);
+        gc.setDestinationGeographicPoint(lon2, lat2);
+        double distance = gc.getOrthodromicDistance();
+        return distance;
+    }
+
     public static Style styleForColorTable( String tableName, double min, double max, double opacity ) throws Exception {
         return new SLDReader().read(
                 RasterStyleUtilities.styleToString(RasterStyleUtilities.createStyleForColortable(tableName, min, max, opacity)));
+    }
+
+    public static String ts2str( long millis ) {
+        return new DateTime(millis).toString(HMConstants.utcDateFormatterYYYYMMDDHHMMSS);
+    }
+
+    public static long str2ts( String isoString ) {
+        return HMConstants.utcDateFormatterYYYYMMDDHHMMSS.parseDateTime(isoString).getMillis();
     }
 
 }

@@ -24,6 +24,8 @@ import static java.lang.Double.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
 /**
  * Class to help out with numeric issues, mostly due to floating point usage.
  * 
