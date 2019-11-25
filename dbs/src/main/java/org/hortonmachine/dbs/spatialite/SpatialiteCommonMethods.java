@@ -326,14 +326,15 @@ public class SpatialiteCommonMethods {
      */
     public static List<String[]> getTableColumns( ADb db, String tableName ) throws Exception {
         String sql;
+        tableName = DbsUtilities.fixTableName(tableName);
         if (tableName.indexOf('.') != -1) {
             // it is an attached database
             String[] split = tableName.split("\\.");
             String dbName = split[0];
             String tmpTableName = split[1];
-            sql = "PRAGMA " + dbName + ".table_info('" + tmpTableName + "')";
+            sql = "PRAGMA " + dbName + ".table_info(" + tmpTableName + ")";
         } else {
-            sql = "PRAGMA table_info('" + tableName + "')";
+            sql = "PRAGMA table_info(" + tableName + ")";
         }
 
         return db.execOnConnection(connection -> {
@@ -395,14 +396,15 @@ public class SpatialiteCommonMethods {
      */
     public static String getPrimaryKey( ADb db, String tableName ) throws Exception {
         String sql;
+        tableName = DbsUtilities.fixTableName(tableName);
         if (tableName.indexOf('.') != -1) {
             // it is an attached database
             String[] split = tableName.split("\\.");
             String dbName = split[0];
             String tmpTableName = split[1];
-            sql = "PRAGMA " + dbName + ".table_info('" + tmpTableName + "')";
+            sql = "PRAGMA " + dbName + ".table_info(" + tmpTableName + ")";
         } else {
-            sql = "PRAGMA table_info('" + tableName + "')";
+            sql = "PRAGMA table_info(" + tableName + ")";
         }
 
         return db.execOnConnection(connection -> {
@@ -572,6 +574,7 @@ public class SpatialiteCommonMethods {
             // {0}", attachedStr));
         }
 
+        String tableNameNoApex = tableName.replaceAll("'", ""); // in case added due to special name
         String sql = "select " + SpatialiteGeometryColumns.F_TABLE_NAME + ", " //
                 + SpatialiteGeometryColumns.F_GEOMETRY_COLUMN + ", " //
                 + SpatialiteGeometryColumns.GEOMETRY_TYPE + "," //
@@ -579,7 +582,7 @@ public class SpatialiteCommonMethods {
                 + SpatialiteGeometryColumns.SRID + ", " //
                 + SpatialiteGeometryColumns.SPATIAL_INDEX_ENABLED + " from " //
                 + attachedStr + SpatialiteGeometryColumns.TABLENAME + " where Lower(" + SpatialiteGeometryColumns.F_TABLE_NAME
-                + ")=Lower('" + tableName + "')";
+                + ")=Lower('" + tableNameNoApex + "')";
         try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
                 SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();

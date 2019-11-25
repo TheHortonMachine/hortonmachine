@@ -191,7 +191,11 @@ public class DbsUtilities {
      */
     public static String getSelectQuery( ASpatialDb db, final TableLevel selectedTable, boolean geomFirst ) throws Exception {
         String tableName = selectedTable.tableName;
-        String letter = tableName.substring(0, 1);
+        String letter = "tbl";
+        if (!Character.isDigit(tableName.charAt(0))) {
+            letter = tableName.substring(0, 1);
+        }
+        tableName = fixTableName(tableName);
         List<String[]> tableColumns = db.getTableColumns(tableName);
         GeometryColumn geometryColumns = null;
         try {

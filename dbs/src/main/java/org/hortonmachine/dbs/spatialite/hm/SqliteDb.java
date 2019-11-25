@@ -38,6 +38,7 @@ import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
+import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.sqlite.SQLiteConfig;
 
 /**
@@ -195,6 +196,7 @@ public class SqliteDb extends ADb {
         try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 String name = rs.getString(1);
+                name = DbsUtilities.fixTableName(name);
                 if (name.equalsIgnoreCase(tableName)) {
                     return true;
                 }
@@ -218,9 +220,9 @@ public class SqliteDb extends ADb {
             String[] split = tableName.split("\\.");
             String dbName = split[0];
             String tmpTableName = split[1];
-            sql = "PRAGMA " + dbName + ".foreign_key_list(" + tmpTableName + ")";
+            sql = "PRAGMA " + dbName + ".foreign_key_list(" + DbsUtilities.fixTableName(tmpTableName) + ")";
         } else {
-            sql = "PRAGMA foreign_key_list(" + tableName + ")";
+            sql = "PRAGMA foreign_key_list(" + DbsUtilities.fixTableName(tableName) + ")";
         }
 
         List<ForeignKey> fKeys = new ArrayList<ForeignKey>();
