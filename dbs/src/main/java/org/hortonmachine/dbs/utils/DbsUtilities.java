@@ -65,7 +65,7 @@ public class DbsUtilities {
             "UNIQUE", "UPDATE", "USING", "VACUUM", "VALUES", "VIEW", "VIRTUAL", "WHEN", "WHERE", "WITH", "WITHOUT");
 
     public static final SimpleDateFormat dbDateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    
+
     public static final SimpleDateFormat SQLITE_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
     public static final SimpleDateFormat SQLITE_DATETIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     private static GeometryFactory geomFactory;
@@ -205,7 +205,7 @@ public class DbsUtilities {
             List<String> nonGeomCols = new ArrayList<String>();
             for( int i = 0; i < tableColumns.size(); i++ ) {
                 String colName = tableColumns.get(i)[0];
-                if(DbsUtilities.isReservedName(colName)) {
+                if (DbsUtilities.isReservedName(colName)) {
                     colName = DbsUtilities.fixReservedNameForQuery(colName);
                 }
                 if (geometryColumns != null && colName.equals(geometryColumns.geometryColumnName)) {
@@ -225,7 +225,7 @@ public class DbsUtilities {
                 if (i > 0)
                     query += ",";
                 String colName = tableColumns.get(i)[0];
-                if(DbsUtilities.isReservedName(colName)) {
+                if (DbsUtilities.isReservedName(colName)) {
                     colName = DbsUtilities.fixReservedNameForQuery(colName);
                 }
                 if (geometryColumns != null && colName.equals(geometryColumns.geometryColumnName)) {
@@ -335,5 +335,17 @@ public class DbsUtilities {
             }
         }
         return pieces;
+    }
+
+    /**
+     * Check the tablename and fix it if necessary.
+     * 
+     * @param tableName the name to check.
+     * @return the fixed name.
+     */
+    public static String fixTableName( String tableName ) {
+        if (Character.isDigit(tableName.charAt(0)))
+            return "'" + tableName + "'";
+        return tableName;
     }
 }

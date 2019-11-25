@@ -255,9 +255,11 @@ public class SpatialiteCommonMethods {
             }
         }
 
+        tableName = DbsUtilities.fixTableName(tableName);
+
         String sql = "SELECT ";
         sql += DbsUtilities.joinByComma(items);
-        sql += " FROM " + tableName;
+        sql += " FROM " + DbsUtilities.fixTableName(tableName);
 
         List<String> whereStrings = new ArrayList<>();
         if (envelope != null) {
@@ -329,9 +331,9 @@ public class SpatialiteCommonMethods {
             String[] split = tableName.split("\\.");
             String dbName = split[0];
             String tmpTableName = split[1];
-            sql = "PRAGMA " + dbName + ".table_info(" + tmpTableName + ")";
+            sql = "PRAGMA " + dbName + ".table_info('" + tmpTableName + "')";
         } else {
-            sql = "PRAGMA table_info(" + tableName + ")";
+            sql = "PRAGMA table_info('" + tableName + "')";
         }
 
         return db.execOnConnection(connection -> {
@@ -398,9 +400,9 @@ public class SpatialiteCommonMethods {
             String[] split = tableName.split("\\.");
             String dbName = split[0];
             String tmpTableName = split[1];
-            sql = "PRAGMA " + dbName + ".table_info(" + tmpTableName + ")";
+            sql = "PRAGMA " + dbName + ".table_info('" + tmpTableName + "')";
         } else {
-            sql = "PRAGMA table_info(" + tableName + ")";
+            sql = "PRAGMA table_info('" + tableName + "')";
         }
 
         return db.execOnConnection(connection -> {
@@ -832,7 +834,7 @@ public class SpatialiteCommonMethods {
         String sql;
         if (fields == null || fields.length == 0) {
             sql = "SELECT AsGeoJson(ST_Collect(ST_Transform(" + gCol.geometryColumnName + ",4326)), " + precision + ",0) FROM "
-                    + tableName;
+                    + DbsUtilities.fixTableName(tableName);
             if (wherePiece != null) {
                 sql += " WHERE " + wherePiece;
             }
@@ -852,7 +854,7 @@ public class SpatialiteCommonMethods {
                 sb.append("\n").append(fieldsList.get(i));
             }
             sql += sb.toString() + " || \"}}\") || \"]}\"";
-            sql += " FROM " + tableName;
+            sql += " FROM " + DbsUtilities.fixTableName(tableName);
             if (wherePiece != null) {
                 sql += " WHERE " + wherePiece;
             }

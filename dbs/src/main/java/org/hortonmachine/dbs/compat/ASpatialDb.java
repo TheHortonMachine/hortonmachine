@@ -290,7 +290,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         }
 
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName;
+        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + DbsUtilities.fixTableName(tableName);
 
         String sqlNoIndex = sql + (wheres.size() > 0 ? " WHERE " + DbsUtilities.joinBySeparator(wheres, " AND ") : "");
 
@@ -366,7 +366,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
             }
         }
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName;
+        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + DbsUtilities.fixTableName(tableName);
 
         if (intersectionGeometry != null) {
             intersectionGeometry.setSRID(gCol.srid);

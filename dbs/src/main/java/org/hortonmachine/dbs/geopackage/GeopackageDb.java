@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -227,7 +228,7 @@ public class GeopackageDb extends ASpatialDb {
                         e = createFeatureEntry(rs);
                         break;
                     case Tile:
-//                        e = createTileEntry(rs, cx);
+                        e = createTileEntry(rs);
                         break;
                     default:
                         throw new IllegalStateException("unexpected type in GeoPackage");
@@ -321,6 +322,15 @@ public class GeopackageDb extends ASpatialDb {
 
     private FeatureEntry createFeatureEntry( IHMResultSet rs ) throws Exception {
         FeatureEntry e = new FeatureEntry();
+        initEntry(rs, e);
+        e.setGeometryColumn(rs.getString("column_name"));
+        e.setGeometryType(EGeometryType.forTypeName(rs.getString("geometry_type_name")));
+        e.setZ(rs.getBoolean("z"));
+        e.setM(rs.getBoolean("m"));
+        return e;
+    }
+
+    private void initEntry( IHMResultSet rs, Entry e ) throws Exception, IOException {
         e.setIdentifier(rs.getString("identifier"));
         e.setDescription(rs.getString("description"));
         e.setTableName(rs.getString("table_name"));
@@ -335,11 +345,78 @@ public class GeopackageDb extends ASpatialDb {
         int srid = rs.getInt("srs_id");
         e.setSrid(srid);
         e.setBounds(new Envelope(rs.getDouble("min_x"), rs.getDouble("max_x"), rs.getDouble("min_y"), rs.getDouble("max_y")));
+    }
 
-        e.setGeometryColumn(rs.getString("column_name"));
-        e.setGeometryType(EGeometryType.forTypeName(rs.getString("geometry_type_name")));
-        e.setZ(rs.getBoolean("z"));
-        e.setM(rs.getBoolean("m"));
+    private TileEntry createTileEntry( IHMResultSet rs ) throws SQLException, IOException {
+        TileEntry e = new TileEntry();
+//        initEntry(rs, e);
+//
+//        // load all the tile matrix entries (and join with the data table to see if a certain level
+//        // has tiles available, given the indexes in the data table, it should be real quick)
+//        PreparedStatement psm = cx.prepareStatement(format(
+//                "SELECT *, exists(SELECT 1 FROM %s data where data.zoom_level = tileMatrix.zoom_level) as has_tiles"
+//                        + " FROM %s as tileMatrix" + " WHERE table_name = ?" + " ORDER BY zoom_level ASC",
+//                e.getTableName(), TILE_MATRIX_METADATA));
+//        try {
+//            psm.setString(1, e.getTableName());
+//
+//            ResultSet rsm = psm.executeQuery();
+//            try {
+//                while( rsm.next() ) {
+//                    TileMatrix m = new TileMatrix();
+//                    m.setZoomLevel(rsm.getInt("zoom_level"));
+//                    m.setMatrixWidth(rsm.getInt("matrix_width"));
+//                    m.setMatrixHeight(rsm.getInt("matrix_height"));
+//                    m.setTileWidth(rsm.getInt("tile_width"));
+//                    m.setTileHeight(rsm.getInt("tile_height"));
+//                    m.setXPixelSize(rsm.getDouble("pixel_x_size"));
+//                    m.setYPixelSize(rsm.getDouble("pixel_y_size"));
+//                    m.setTiles(rsm.getBoolean("has_tiles"));
+//
+//                    e.getTileMatricies().add(m);
+//                }
+//            } finally {
+//                close(rsm);
+//            }
+//        } finally {
+//            close(psm);
+//        }
+//        // use the tile matrix set bounds rather that gpkg_contents bounds
+//        // per spec, the tile matrix set bounds should be exact and used to calculate tile
+//        // coordinates
+//        // and in contrast the gpkg_contents is "informational" only
+//        psm = cx.prepareStatement(
+//                format("SELECT * FROM %s a, %s b " + "WHERE a.table_name = ? " + "AND a.srs_id = b.srs_id " + "LIMIT 1",
+//                        TILE_MATRIX_SET, SPATIAL_REF_SYS));
+//        try {
+//            psm.setString(1, e.getTableName());
+//
+//            ResultSet rsm = psm.executeQuery();
+//            try {
+//                if (rsm.next()) {
+//
+//                    int srid = rsm.getInt("organization_coordsys_id");
+//                    e.setSrid(srid);
+//
+//                    CoordinateReferenceSystem crs;
+//                    try {
+//                        crs = CRS.decode("EPSG:" + srid);
+//                    } catch (Exception ex) {
+//                        // not a major concern, by spec the tile matrix set srs should match the
+//                        // gpkg_contents srs_id
+//                        // which can found in the tile entry bounds
+//                        crs = e.getBounds().getCoordinateReferenceSystem();
+//                    }
+//
+//                    e.setTileMatrixSetBounds(new ReferencedEnvelope(rsm.getDouble("min_x"), rsm.getDouble("max_x"),
+//                            rsm.getDouble("min_y"), rsm.getDouble("max_y"), crs));
+//                }
+//            } finally {
+//                close(rsm);
+//            }
+//        } finally {
+//            close(psm);
+//        }
         return e;
     }
 
@@ -1065,7 +1142,7 @@ public class GeopackageDb extends ASpatialDb {
         InputStream resourceAsStream = GeopackageDb.class.getResourceAsStream(SPATIAL_INDEX + ".sql");
         runScript(resourceAsStream, getJdbcConnection(), properties);
     }
-    
+
 //    public void recreateSpatialIndex( String tableName, String geometryName ) throws Exception {
 //        if(!hasTable(tableName)) {
 //            return;
@@ -1111,7 +1188,6 @@ public class GeopackageDb extends ASpatialDb {
 //            return geoms;
 //        });
 //    }
-    
 
     public void runScript( InputStream stream, Connection cx, Map<String, String> properties ) throws SQLException {
 

@@ -28,6 +28,7 @@ import java.util.List;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.HMConnectionConsumer;
 
 /**
@@ -322,7 +323,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @throws Exception
      */
     public long getCount( String tableName ) throws Exception {
-        String sql = "select count(*) from " + tableName;
+        String sql = "select count(*) from " + DbsUtilities.fixTableName(tableName);
         Long count = execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 if (rs.next()) {
@@ -343,7 +344,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @throws Exception
      */
     public long getMax( String tableName, String fieldName ) throws Exception {
-        String sql = "select max(" + fieldName + ") from " + tableName;
+        String sql = "select max(" + fieldName + ") from " + DbsUtilities.fixTableName(tableName);
         Long max = execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 if (rs.next()) {

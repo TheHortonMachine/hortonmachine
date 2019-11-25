@@ -21,6 +21,7 @@ import java.io.File;
 
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
+import org.hortonmachine.dbs.utils.DbsUtilities;
 
 /**
  * Simple queries templates interface.
@@ -30,7 +31,7 @@ import org.hortonmachine.dbs.compat.objects.TableLevel;
 public abstract class ASqlTemplates {
 
     public String selectOnColumn( String columnName, String tableName ) {
-        String query = "SELECT * FROM " + tableName + " WHERE " + columnName + "=?";
+        String query = "SELECT * FROM " + DbsUtilities.fixTableName(tableName) + " WHERE " + columnName + "=?";
         return query;
     }
 
@@ -72,8 +73,8 @@ public abstract class ASqlTemplates {
     public abstract String showSpatialMetadata( String tableName, String columnName );
 
     public String combinedSelect( String refTable, String refColumn, String tableName, String columnName ) {
-        String query = "SELECT t1.*, t2.* FROM " + tableName + " t1, " + refTable + " t2" + "\nWHERE t1." + columnName + "=t2."
-                + refColumn;
+        String query = "SELECT t1.*, t2.* FROM " + DbsUtilities.fixTableName(tableName) + " t1, "
+                + DbsUtilities.fixTableName(refTable) + " t2" + "\nWHERE t1." + columnName + "=t2." + refColumn;
         return query;
     }
 
