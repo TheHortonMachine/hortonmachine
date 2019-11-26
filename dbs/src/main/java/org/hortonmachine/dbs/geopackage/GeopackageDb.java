@@ -28,8 +28,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
@@ -70,6 +68,7 @@ import org.hortonmachine.dbs.spatialite.SpatialiteGeometryColumns;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.MercatorUtils;
 import org.hortonmachine.dbs.utils.ResultSetToObjectFunction;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -102,6 +101,13 @@ public class GeopackageDb extends ASpatialDb {
     public static final String EXTENSIONS = "gpkg_extensions";
 
     public static final String SPATIAL_INDEX = "gpkg_spatial_index";
+
+    public final static String COL_TILES_ZOOM_LEVEL = "zoom_level";
+    public final static String COL_TILES_TILE_COLUMN = "tile_column";
+    public final static String COL_TILES_TILE_ROW = "tile_row";
+    public final static String COL_TILES_TILE_DATA = "tile_data";
+    public final static String SELECTQUERY = "SELECT " + COL_TILES_TILE_DATA + " from %s where " + COL_TILES_ZOOM_LEVEL
+            + "=? AND " + COL_TILES_TILE_COLUMN + "=? AND " + COL_TILES_TILE_ROW + "=?";
 
     static final String DATE_FORMAT_STRING = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
@@ -216,8 +222,7 @@ public class GeopackageDb extends ASpatialDb {
 
         return execOnConnection(connection -> {
             List<Entry> contents = new ArrayList<Entry>();
-            String sql = "SELECT c.*, g.column_name, g.geometry_type_name, g.z , g.m FROM " + GEOPACKAGE_CONTENTS + " c, "
-                    + GEOMETRY_COLUMNS + " g where c.table_name=g.table_name";
+            String sql = "SELECT * FROM " + GEOPACKAGE_CONTENTS;
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {
                     String dt = rs.getString("data_type");
@@ -267,6 +272,29 @@ public class GeopackageDb extends ASpatialDb {
         });
     }
 
+    /** Lists all the tile entries in the geopackage. */
+    public List<TileEntry> tiles() throws Exception {
+        return execOnConnection(connection -> {
+            List<TileEntry> contents = new ArrayList<TileEntry>();
+            String sql = format("SELECT a.*, c.organization_coordsys_id, c.definition" //
+                    + " FROM %s a, %s c"//
+                    + " WHERE a.srs_id = c.srs_id"//
+                    + " AND a.data_type = ?", //
+                    GEOPACKAGE_CONTENTS, SPATIAL_REF_SYS);
+
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
+                pStmt.setString(1, DataType.Tile.value());
+
+                IHMResultSet rs = pStmt.executeQuery();
+                while( rs.next() ) {
+                    contents.add(createTileEntry(rs));
+                }
+
+                return contents;
+            }
+        });
+    }
+
     /**
      * Looks up a feature entry by name.
      *
@@ -295,6 +323,83 @@ public class GeopackageDb extends ASpatialDb {
                 return null;
             }
         });
+    }
+
+    /**
+     * Looks up a tile entry by name.
+     *
+     * @param name THe name of the tile entry.
+     * @return The entry, or <code>null</code> if no such entry exists.
+     */
+    public TileEntry tile( String name ) throws Exception {
+        if (!sqliteDb.hasTable(GEOMETRY_COLUMNS)) {
+            return null;
+        }
+        return sqliteDb.execOnConnection(connection -> {
+            String sql = format("SELECT a.*, c.organization_coordsys_id, c.definition"//
+                    + " FROM %s a, %s c"//
+                    + " WHERE a.srs_id = c.srs_id"//
+                    + " AND Lower(a.table_name) = Lower(?)"//
+                    + " AND a.data_type = ?", //
+                    GEOPACKAGE_CONTENTS, SPATIAL_REF_SYS);
+
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
+                pStmt.setString(1, name);
+                pStmt.setString(2, DataType.Tile.value());
+
+                IHMResultSet rs = pStmt.executeQuery();
+                if (rs.next()) {
+                    return createTileEntry(rs);
+                }
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Get a Tile's image bytes from the database for a given table.
+     * 
+     * @param tableName the table name to get the image from.
+     * @param tx the x tile index.
+     * @param ty the y tile index, the osm way.
+     * @param zoom the zoom level.
+     * @return the tile image bytes.
+     * @throws Exception
+     */
+    public byte[] getTile( String tableName, int tx, int ty, int zoom ) throws Exception {
+//        if (tileRowType.equals("tms")) { // if it is not OSM way
+//            int[] tmsTileXY = MercatorUtils.osmTile2TmsTile(tx, ty, zoom);
+//            ty = tmsTileXY[1];
+//        }
+        String sql = format(SELECTQUERY, tableName);
+        return sqliteDb.execOnConnection(connection -> {
+            try (IHMPreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setInt(1, zoom);
+                statement.setInt(2, tx);
+                statement.setInt(3, ty);
+                IHMResultSet resultSet = statement.executeQuery();
+                if (resultSet.next()) {
+                    byte[] imageBytes = resultSet.getBytes(1);
+                    return imageBytes;
+                }
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Get a Tile's image bytes from the database for a given table.
+     * 
+     * @param tableName the table name to get the image from.
+     * @param lon the longitude of interest.
+     * @param lat the latitude of interest.
+     * @param zoom the zoom level.
+     * @return the tile image bytes.
+     * @throws Exception
+     */
+    public byte[] getTile( String tableName, double lon, double lat, int zoom ) throws Exception {
+        int[] zxy = MercatorUtils.getTileNumber(lat, lon, zoom);
+        return getTile(tableName, zxy[1], zxy[2], zoom);
     }
 
     /**
@@ -330,7 +435,7 @@ public class GeopackageDb extends ASpatialDb {
         return e;
     }
 
-    private void initEntry( IHMResultSet rs, Entry e ) throws Exception, IOException {
+    private void initEntry( IHMResultSet rs, Entry e ) throws Exception {
         e.setIdentifier(rs.getString("identifier"));
         e.setDescription(rs.getString("description"));
         e.setTableName(rs.getString("table_name"));
@@ -347,76 +452,57 @@ public class GeopackageDb extends ASpatialDb {
         e.setBounds(new Envelope(rs.getDouble("min_x"), rs.getDouble("max_x"), rs.getDouble("min_y"), rs.getDouble("max_y")));
     }
 
-    private TileEntry createTileEntry( IHMResultSet rs ) throws SQLException, IOException {
+    private TileEntry createTileEntry( IHMResultSet rs ) throws Exception {
         TileEntry e = new TileEntry();
-//        initEntry(rs, e);
-//
-//        // load all the tile matrix entries (and join with the data table to see if a certain level
-//        // has tiles available, given the indexes in the data table, it should be real quick)
-//        PreparedStatement psm = cx.prepareStatement(format(
-//                "SELECT *, exists(SELECT 1 FROM %s data where data.zoom_level = tileMatrix.zoom_level) as has_tiles"
-//                        + " FROM %s as tileMatrix" + " WHERE table_name = ?" + " ORDER BY zoom_level ASC",
-//                e.getTableName(), TILE_MATRIX_METADATA));
-//        try {
-//            psm.setString(1, e.getTableName());
-//
-//            ResultSet rsm = psm.executeQuery();
-//            try {
-//                while( rsm.next() ) {
-//                    TileMatrix m = new TileMatrix();
-//                    m.setZoomLevel(rsm.getInt("zoom_level"));
-//                    m.setMatrixWidth(rsm.getInt("matrix_width"));
-//                    m.setMatrixHeight(rsm.getInt("matrix_height"));
-//                    m.setTileWidth(rsm.getInt("tile_width"));
-//                    m.setTileHeight(rsm.getInt("tile_height"));
-//                    m.setXPixelSize(rsm.getDouble("pixel_x_size"));
-//                    m.setYPixelSize(rsm.getDouble("pixel_y_size"));
-//                    m.setTiles(rsm.getBoolean("has_tiles"));
-//
-//                    e.getTileMatricies().add(m);
-//                }
-//            } finally {
-//                close(rsm);
-//            }
-//        } finally {
-//            close(psm);
-//        }
-//        // use the tile matrix set bounds rather that gpkg_contents bounds
-//        // per spec, the tile matrix set bounds should be exact and used to calculate tile
-//        // coordinates
-//        // and in contrast the gpkg_contents is "informational" only
-//        psm = cx.prepareStatement(
-//                format("SELECT * FROM %s a, %s b " + "WHERE a.table_name = ? " + "AND a.srs_id = b.srs_id " + "LIMIT 1",
-//                        TILE_MATRIX_SET, SPATIAL_REF_SYS));
-//        try {
-//            psm.setString(1, e.getTableName());
-//
-//            ResultSet rsm = psm.executeQuery();
-//            try {
-//                if (rsm.next()) {
-//
-//                    int srid = rsm.getInt("organization_coordsys_id");
-//                    e.setSrid(srid);
-//
-//                    CoordinateReferenceSystem crs;
-//                    try {
-//                        crs = CRS.decode("EPSG:" + srid);
-//                    } catch (Exception ex) {
-//                        // not a major concern, by spec the tile matrix set srs should match the
-//                        // gpkg_contents srs_id
-//                        // which can found in the tile entry bounds
-//                        crs = e.getBounds().getCoordinateReferenceSystem();
-//                    }
-//
-//                    e.setTileMatrixSetBounds(new ReferencedEnvelope(rsm.getDouble("min_x"), rsm.getDouble("max_x"),
-//                            rsm.getDouble("min_y"), rsm.getDouble("max_y"), crs));
-//                }
-//            } finally {
-//                close(rsm);
-//            }
-//        } finally {
-//            close(psm);
-//        }
+        initEntry(rs, e);
+
+        // load all the tile matrix entries (and join with the data table to see if a certain level
+        // has tiles available, given the indexes in the data table, it should be real quick)
+        sqliteDb.execOnConnection(connection -> {
+            String sql = format(
+                    "SELECT *, exists(SELECT 1 FROM %s data where data.zoom_level = tileMatrix.zoom_level) as has_tiles"
+                            + " FROM %s as tileMatrix" + " WHERE table_name = ?" + " ORDER BY zoom_level ASC",
+                    e.getTableName(), TILE_MATRIX_METADATA);
+            try (IHMPreparedStatement pstmt = connection.prepareStatement(sql);) {
+                pstmt.setString(1, e.getTableName());
+                IHMResultSet rsm = pstmt.executeQuery();
+                while( rsm.next() ) {
+                    TileMatrix m = new TileMatrix();
+                    m.setZoomLevel(rsm.getInt("zoom_level"));
+                    m.setMatrixWidth(rsm.getInt("matrix_width"));
+                    m.setMatrixHeight(rsm.getInt("matrix_height"));
+                    m.setTileWidth(rsm.getInt("tile_width"));
+                    m.setTileHeight(rsm.getInt("tile_height"));
+                    m.setXPixelSize(rsm.getDouble("pixel_x_size"));
+                    m.setYPixelSize(rsm.getDouble("pixel_y_size"));
+                    m.setTiles(rsm.getBoolean("has_tiles"));
+
+                    e.getTileMatricies().add(m);
+                }
+                return "";
+            }
+        });
+
+        // use the tile matrix set bounds rather that gpkg_contents bounds
+        // per spec, the tile matrix set bounds should be exact and used to calculate tile
+        // coordinates
+        // and in contrast the gpkg_contents is "informational" only
+        sqliteDb.execOnConnection(connection -> {
+            String sql = format("SELECT * FROM %s a, %s b WHERE lower(a.table_name) = lower(?) AND a.srs_id = b.srs_id LIMIT 1",
+                    TILE_MATRIX_SET, SPATIAL_REF_SYS);
+            try (IHMPreparedStatement pstmt = connection.prepareStatement(sql);) {
+                pstmt.setString(1, e.getTableName());
+                IHMResultSet rsm = pstmt.executeQuery();
+                if (rsm.next()) {
+                    int srid = rsm.getInt("organization_coordsys_id");
+                    e.setSrid(srid);
+                    e.setTileMatrixSetBounds(new Envelope(rsm.getDouble("min_x"), rsm.getDouble("max_x"), rsm.getDouble("min_y"),
+                            rsm.getDouble("max_y")));
+                }
+                return "";
+            }
+        });
+
         return e;
     }
 
