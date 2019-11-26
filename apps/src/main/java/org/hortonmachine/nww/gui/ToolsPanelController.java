@@ -23,6 +23,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,9 @@ import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.geopackage.FeatureEntry;
+import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.TileEntry;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Db;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -59,6 +63,7 @@ import org.hortonmachine.nww.layers.defaults.annotations.HtmlScreenAnnotation.Bu
 import org.hortonmachine.nww.layers.defaults.other.CurrentGpsPointLayer;
 import org.hortonmachine.nww.layers.defaults.other.SimplePointsLayer;
 import org.hortonmachine.nww.layers.defaults.other.WhiteNwwLayer;
+import org.hortonmachine.nww.layers.defaults.raster.GeopackageTilesNwwLayer;
 import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer;
 import org.hortonmachine.nww.layers.defaults.raster.ImageMosaicNwwLayer;
 import org.hortonmachine.nww.layers.defaults.raster.MBTilesNwwLayer;
@@ -72,6 +77,7 @@ import org.hortonmachine.nww.layers.defaults.spatialite.SpatialitePolygonLayer;
 import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionLinesLayer;
 import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionPointsLayer;
 import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionPolygonLayer;
+import org.hortonmachine.nww.layers.defaults.vector.GeopackageVectorLayer;
 import org.hortonmachine.nww.layers.defaults.vector.RasterizedFeatureCollectionLayer;
 import org.hortonmachine.nww.layers.defaults.vector.RasterizedShapefilesFolderNwwLayer;
 import org.hortonmachine.nww.layers.defaults.vector.ShapefilesFolderLayer;
@@ -520,6 +526,31 @@ public class ToolsPanelController extends ToolsPanelView {
                 MBTilesNwwLayer mbTileLayer = new MBTilesNwwLayer(selectedFile);
                 wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
                 layerEventsListener.onLayerAdded(mbTileLayer);
+            } else if (selectedFile.getName().endsWith(".gpkg")) {
+                List<String> tilesTables = new ArrayList<>();
+                List<String> featureTables = new ArrayList<>();
+                try (GeopackageDb db = new GeopackageDb()) {
+                    db.open(selectedFile.getAbsolutePath());
+                    List<TileEntry> tiles = db.tiles();
+                    for( TileEntry tileEntry : tiles ) {
+                        tilesTables.add(tileEntry.getTableName());
+                    }
+                    List<FeatureEntry> features = db.features();
+                    for( FeatureEntry featureEntry : features ) {
+                        featureTables.add(featureEntry.getTableName());
+                    }
+                }
+                for( String tableName : tilesTables ) {
+                    GeopackageTilesNwwLayer gpkgTilesLayer = new GeopackageTilesNwwLayer(selectedFile, tableName);
+                    wwjPanel.getWwd().getModel().getLayers().add(gpkgTilesLayer);
+                    layerEventsListener.onLayerAdded(gpkgTilesLayer);
+                }
+                for( String tableName : featureTables ) {
+                    GeopackageVectorLayer gpkgVectorLayer = new GeopackageVectorLayer(selectedFile.getAbsolutePath(), tableName);
+                    wwjPanel.getWwd().getModel().getLayers().add(gpkgVectorLayer);
+                    layerEventsListener.onLayerAdded(gpkgVectorLayer);
+                }
+
             } else if (selectedFile.getName().endsWith(".map")) {
                 String layerName = FileUtilities.getNameWithoutExtention(selectedFile);
                 MapsforgeNwwLayer mbTileLayer = new MapsforgeNwwLayer(layerName, new File[]{selectedFile}, null, null);

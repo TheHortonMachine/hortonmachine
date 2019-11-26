@@ -19,8 +19,10 @@ package org.hortonmachine.dbs.geopackage;
 
 import static java.lang.String.format;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -39,6 +41,8 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.imageio.ImageIO;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ConnectionData;
@@ -70,6 +74,7 @@ import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.MercatorUtils;
 import org.hortonmachine.dbs.utils.ResultSetToObjectFunction;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.sqlite.Function;
@@ -108,6 +113,9 @@ public class GeopackageDb extends ASpatialDb {
     public final static String COL_TILES_TILE_DATA = "tile_data";
     public final static String SELECTQUERY = "SELECT " + COL_TILES_TILE_DATA + " from %s where " + COL_TILES_ZOOM_LEVEL
             + "=? AND " + COL_TILES_TILE_COLUMN + "=? AND " + COL_TILES_TILE_ROW + "=?";
+    
+    public final static int MERCATOR_SRID = 3857;
+    public final static int WGS84LL_SRID = 4326;
 
     static final String DATE_FORMAT_STRING = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
@@ -118,6 +126,16 @@ public class GeopackageDb extends ASpatialDb {
     private boolean supportsRtree = true;
     private boolean isGpgkInitialized = false;
     private String gpkgVersion;
+
+    /**
+     * If true, this forces mobile compatibility, which means that:
+     * 
+     *  <ul>
+     *      <li>tiles: accept only srid 3857</li>
+     *      <li>vectors: accept only srid 3857 or 4326</li>
+     *  </ul>
+     */
+    private boolean forceMobileCompatibility = true;
 
     public GeopackageDb() {
         sqliteDb = new SqliteDb();
@@ -216,6 +234,10 @@ public class GeopackageDb extends ASpatialDb {
 
     }
 
+    public void setForceMobileCompatibility( boolean forceMobileCompatibility ) {
+        this.forceMobileCompatibility = forceMobileCompatibility;
+    }
+
     /** Returns list of contents of the geopackage. 
      * @throws Exception */
     public List<Entry> contents() throws Exception {
@@ -231,9 +253,15 @@ public class GeopackageDb extends ASpatialDb {
                     switch( type ) {
                     case Feature:
                         e = createFeatureEntry(rs);
+                        if (forceMobileCompatibility && e != null && e.srid != null && e.srid != 4326 && e.srid != 3857) {
+                            e = null;
+                        }
                         break;
                     case Tile:
                         e = createTileEntry(rs);
+                        if (forceMobileCompatibility && e != null && e.srid != null && e.srid != 3857) {
+                            e = null;
+                        }
                         break;
                     default:
                         throw new IllegalStateException("unexpected type in GeoPackage");
@@ -264,7 +292,12 @@ public class GeopackageDb extends ASpatialDb {
 
                 IHMResultSet rs = pStmt.executeQuery();
                 while( rs.next() ) {
-                    contents.add(createFeatureEntry(rs));
+                    FeatureEntry e = createFeatureEntry(rs);
+                    if (forceMobileCompatibility && e != null && e.srid != null && e.srid != 4326 && e.srid != 3857) {
+                        e = null;
+                    }
+                    if (e != null)
+                        contents.add(e);
                 }
 
                 return contents;
@@ -287,7 +320,12 @@ public class GeopackageDb extends ASpatialDb {
 
                 IHMResultSet rs = pStmt.executeQuery();
                 while( rs.next() ) {
-                    contents.add(createTileEntry(rs));
+                    TileEntry e = createTileEntry(rs);
+                    if (forceMobileCompatibility && e != null && e.srid != null && e.srid != 3857) {
+                        e = null;
+                    }
+                    if (e != null)
+                        contents.add(e);
                 }
 
                 return contents;
@@ -318,7 +356,11 @@ public class GeopackageDb extends ASpatialDb {
 
                 IHMResultSet rs = pStmt.executeQuery();
                 if (rs.next()) {
-                    return createFeatureEntry(rs);
+                    FeatureEntry e = createFeatureEntry(rs);
+                    if (forceMobileCompatibility && e != null && e.srid != null && e.srid != 4326 && e.srid != 3857) {
+                        return null;
+                    }
+                    return e;
                 }
                 return null;
             }
@@ -349,7 +391,11 @@ public class GeopackageDb extends ASpatialDb {
 
                 IHMResultSet rs = pStmt.executeQuery();
                 if (rs.next()) {
-                    return createTileEntry(rs);
+                    TileEntry e = createTileEntry(rs);
+                    if (forceMobileCompatibility && e != null && e.srid != null && e.srid != 4326 && e.srid != 3857) {
+                        return null;
+                    }
+                    return e;
                 }
                 return null;
             }
@@ -373,17 +419,18 @@ public class GeopackageDb extends ASpatialDb {
 //        }
         String sql = format(SELECTQUERY, tableName);
         return sqliteDb.execOnConnection(connection -> {
+            byte[] imageBytes = null;
             try (IHMPreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setInt(1, zoom);
                 statement.setInt(2, tx);
                 statement.setInt(3, ty);
                 IHMResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
-                    byte[] imageBytes = resultSet.getBytes(1);
-                    return imageBytes;
+                    imageBytes = resultSet.getBytes(1);
                 }
             }
-            return null;
+
+            return imageBytes;
         });
     }
 
@@ -1432,7 +1479,7 @@ public class GeopackageDb extends ASpatialDb {
             }
         });
     }
-//
+
 //    void deleteGeometryColumnsEntry( FeatureEntry e ) throws IOException {
 //        String sql = format("DELETE FROM %s WHERE table_name = ?", GEOMETRY_COLUMNS);
 //        try {

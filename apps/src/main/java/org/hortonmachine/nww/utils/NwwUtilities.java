@@ -56,7 +56,7 @@ import gov.nasa.worldwindx.hm.ToolTipController;
 
 public class NwwUtilities {
 
-    public static final String[] SUPPORTED_EXTENSIONS = {"shp", "mbtiles", "map", "rl2", "sqlite", "asc", "tiff"};
+    public static final String[] SUPPORTED_EXTENSIONS = {"shp", "mbtiles", "map", "rl2", "sqlite", "asc", "tiff", "gpkg"};
 
     public static final CoordinateReferenceSystem GPS_CRS = DefaultGeographicCRS.WGS84;
     public static final int GPS_CRS_SRID = 4326;

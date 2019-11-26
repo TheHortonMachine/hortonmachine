@@ -1,4 +1,11 @@
 package org.hortonmachine.dbs.utils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+
 /**
  * Mercator tiling system utils.
  * 
@@ -12,6 +19,63 @@ public class MercatorUtils {
 
     private static double originShift = 2 * Math.PI * 6378137 / 2.0;
     private static final double METER_TO_FEET_CONVERSION_FACTOR = 3.2808399;
+
+    public static Coordinate convert3857To4326( Coordinate coordinate3857 ) {
+        double[] latLon = metersToLatLon(coordinate3857.x, coordinate3857.y);
+        return new Coordinate(latLon[1], latLon[0]);
+    }
+
+    public static Coordinate convert4326To3857( Coordinate coordinate4326 ) {
+        double[] xy = latLonToMeters(coordinate4326.y, coordinate4326.x);
+        return new Coordinate(xy[0], xy[1]);
+    }
+
+    /**
+     * Get the tiles that fit into a given tile at lower zoomlevel.
+     * 
+     * @param origTx the original tile x.
+     * @param origTy the original tile y.
+     * @param origZoom the original tile zoom.
+     * @param higherZoom the requested zoom.
+     * @param tileSize the used tile size.
+     * @return the ordered list of tiles.
+     */
+    public static List<int[]> getTilesAtHigherZoom( int origTx, int origTy, int origZoom, int higherZoom, int tileSize ) {
+        Envelope boundsLL = tileEnvelopeLL(origTx, origTy, origZoom);
+
+        int delta = higherZoom - origZoom;
+        int splits = (int) Math.pow(2, delta);
+
+        double intervalX = boundsLL.getWidth() / splits;
+        double intervalY = boundsLL.getHeight() / splits;
+
+        List<int[]> tilesList = new ArrayList<>();
+        for( double y = boundsLL.getMaxY() - intervalY / 2.0; y > boundsLL.getMinY(); y = y - intervalY ) {
+            for( double x = boundsLL.getMinX() + intervalX / 2.0; x < boundsLL.getMaxX(); x = x + intervalX ) {
+                int[] tileNumber = getTileNumber(y, x, higherZoom);
+                tilesList.add(tileNumber);
+            }
+        }
+        return tilesList;
+    }
+
+    public static Envelope tileEnvelopeLL( final int x, final int y, final int zoom ) {
+        double north = tile2lat(y, zoom);
+        double south = tile2lat(y + 1, zoom);
+        double west = tile2lon(x, zoom);
+        double east = tile2lon(x + 1, zoom);
+        Envelope envelope = new Envelope(west, east, south, north);
+        return envelope;
+    }
+
+    private static double tile2lon( int x, int z ) {
+        return x / Math.pow(2.0, z) * 360.0 - 180.0;
+    }
+
+    private static double tile2lat( int y, int z ) {
+        double n = Math.PI - (2.0 * Math.PI * y) / Math.pow(2.0, z);
+        return Math.toDegrees(Math.atan(Math.sinh(n)));
+    }
 
     /**
      * Converts TMS tile coordinates to Osm slippy map Tile coordinates.
@@ -62,21 +126,21 @@ public class MercatorUtils {
         return quadKey;
     }
 
-    /**
-     * Get lat-long bounds from tile index.
-     *
-     * @param tx       tile x.
-     * @param ty       tile y.
-     * @param zoom     zoomlevel.
-     * @param tileSize tile size.
-     * @return [minx, miny, maxx, maxy]
-     */
-    public static double[] tileLatLonBounds( int tx, int ty, int zoom, int tileSize ) {
-        double[] bounds = tileBounds3857(tx, ty, zoom, tileSize);
-        double[] mins = metersToLatLon(bounds[0], bounds[1]);
-        double[] maxs = metersToLatLon(bounds[2], bounds[3]);
-        return new double[]{mins[1], maxs[0], maxs[1], mins[0]};
-    }
+//    /**
+//     * Get lat-long bounds from tile index.
+//     *
+//     * @param tx       tile x.
+//     * @param ty       tile y.
+//     * @param zoom     zoomlevel.
+//     * @param tileSize tile size.
+//     * @return [minx, miny, maxx, maxy]
+//     */
+//    public static double[] tileLatLonBounds( int tx, int ty, int zoom, int tileSize ) {
+//        double[] bounds = tileBounds3857(tx, ty, zoom, tileSize);
+//        double[] mins = metersToLatLon(bounds[0], bounds[1]);
+//        double[] maxs = metersToLatLon(bounds[2], bounds[3]);
+//        return new double[]{mins[1], maxs[0], maxs[1], mins[0]};
+//    }
 
     /**
      * Returns bounds of the given tile in EPSG:3857 coordinates
@@ -85,17 +149,16 @@ public class MercatorUtils {
      * @param ty       tile y.
      * @param zoom     zoomlevel.
      * @param tileSize tile size.
-     * @return [minx, miny, maxx, maxy]
+     * @return the Envelope.
      */
-    public static double[] tileBounds3857( int tx, int ty, int zoom, int tileSize ) {
+    public static Envelope tileBounds3857( int tx, int ty, int zoom, int tileSize ) {
         double[] min = pixelsToMeters(tx * tileSize, ty * tileSize, zoom, tileSize);
         double minx = min[0], miny = min[1];
         double[] max = pixelsToMeters((tx + 1) * tileSize, (ty + 1) * tileSize, zoom, tileSize);
         double maxx = max[0], maxy = max[1];
-        return new double[]{minx, miny, maxx, maxy};
+        return new Envelope(minx, maxx, miny, maxy);
     }
-    
-    
+
     /**
      * <p>Code copied from: http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Lon..2Flat._to_tile_numbers </p>
      * 20131128: corrections added to correct going over or under max/min extent
@@ -134,7 +197,7 @@ public class MercatorUtils {
         double lat = (my / originShift) * 180.0;
 
         lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180.0)) - Math.PI / 2.0);
-        return new double[]{-lat, lon};
+        return new double[]{lat, lon};
     }
 
     /**
