@@ -48,6 +48,7 @@ import org.hortonmachine.dbs.geopackage.GeopackageDb;
 import org.hortonmachine.dbs.geopackage.TileEntry;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Db;
+import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.hortonmachine.gears.utils.PreferencesHandler;
@@ -545,10 +546,36 @@ public class ToolsPanelController extends ToolsPanelView {
                     wwjPanel.getWwd().getModel().getLayers().add(gpkgTilesLayer);
                     layerEventsListener.onLayerAdded(gpkgTilesLayer);
                 }
-                for( String tableName : featureTables ) {
-                    GeopackageVectorLayer gpkgVectorLayer = new GeopackageVectorLayer(selectedFile.getAbsolutePath(), tableName);
-                    wwjPanel.getWwd().getModel().getLayers().add(gpkgVectorLayer);
-                    layerEventsListener.onLayerAdded(gpkgVectorLayer);
+
+                if (_useRasterizedCheckbox.isSelected()) {
+                    for( String tableName : featureTables ) {
+                        SimpleFeatureCollection readFC = OmsVectorReader
+                                .readVector(selectedFile.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName);
+                        String sldString = null;
+                        try (GeopackageDb db = new GeopackageDb()) {
+                            db.open(selectedFile.getAbsolutePath());
+                            sldString = db.getSldString(tableName);
+                        }
+                        Style style;
+                        if (sldString != null) {
+                            style = SldUtilities.getStyleFromSldString(sldString);
+                        } else {
+                            style = SLD.createSimpleStyle(readFC.getSchema(), Color.BLUE);
+                        }
+                        String n = selectedFile.getName() + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName;
+                        RasterizedFeatureCollectionLayer collectionLayer = new RasterizedFeatureCollectionLayer(n, readFC, style,
+                                null, true);
+
+                        wwjPanel.getWwd().getModel().getLayers().add(collectionLayer);
+                        layerEventsListener.onLayerAdded(collectionLayer);
+                    }
+                } else {
+                    for( String tableName : featureTables ) {
+                        GeopackageVectorLayer gpkgVectorLayer = new GeopackageVectorLayer(selectedFile.getAbsolutePath(),
+                                tableName);
+                        wwjPanel.getWwd().getModel().getLayers().add(gpkgVectorLayer);
+                        layerEventsListener.onLayerAdded(gpkgVectorLayer);
+                    }
                 }
 
             } else if (selectedFile.getName().endsWith(".map")) {
