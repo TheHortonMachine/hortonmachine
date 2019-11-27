@@ -218,7 +218,7 @@ public class GeopaparazziSpatialiteCreator extends HMModel {
                             RuleWrapper ruleWrapper = rulesWrapperList.get(0);
                             SymbolizerWrapper geometrySymbolizersWrapper = ruleWrapper.getGeometrySymbolizersWrapper();
                             if (geometrySymbolizersWrapper != null) {
-                                org.hortonmachine.gears.io.geopaparazzi.styles.Style gpStyle = createBaseStyle(db, uniqueName,
+                                org.hortonmachine.dbs.utils.BasicStyle gpStyle = createBaseStyle(db, uniqueName,
                                         rulesWrapperList);
 
                                 populateStyleObject(gpStyle, geometrySymbolizersWrapper);
@@ -226,13 +226,13 @@ public class GeopaparazziSpatialiteCreator extends HMModel {
                                 GeopaparazziDatabaseProperties.updateStyle(db, gpStyle);
                             }
                         } else if (rulesWrapperList.size() > 1) {
-                            org.hortonmachine.gears.io.geopaparazzi.styles.Style gpStyle = createBaseStyle(db, uniqueName,
+                            org.hortonmachine.dbs.utils.BasicStyle gpStyle = createBaseStyle(db, uniqueName,
                                     rulesWrapperList);
                             gpStyle.themeMap = new HashMap<>();
                             for( RuleWrapper ruleWrapper : rulesWrapperList ) {
                                 SymbolizerWrapper geometrySymbolizersWrapper = ruleWrapper.getGeometrySymbolizersWrapper();
 
-                                org.hortonmachine.gears.io.geopaparazzi.styles.Style themeStyle = createBaseStyle(null, uniqueName,
+                                org.hortonmachine.dbs.utils.BasicStyle themeStyle = createBaseStyle(null, uniqueName,
                                         rulesWrapperList);
                                 populateStyleObject(themeStyle, geometrySymbolizersWrapper);
 
@@ -263,7 +263,7 @@ public class GeopaparazziSpatialiteCreator extends HMModel {
 
             QueryResult qres = db.getTableRecordsMapFromRawSql("select * from dataproperties", 100);
             pm.message("Dataproperties inserted: ");
-            int theme = qres.names.indexOf(ISpatialiteTableAndFieldsNames.THEME);
+            int theme = qres.names.indexOf(org.hortonmachine.dbs.utils.BasicStyle.THEME);
             for( Object[] objs : qres.data ) {
                 String themeString = objs[theme].toString().replaceAll("\\s+", " ");
                 if (themeString.length() > 20) {
@@ -276,8 +276,8 @@ public class GeopaparazziSpatialiteCreator extends HMModel {
 
     }
 
-    private void setFilter( org.hortonmachine.gears.io.geopaparazzi.styles.Style mainStyle,
-            org.hortonmachine.gears.io.geopaparazzi.styles.Style themeStyle, Expression expression ) {
+    private void setFilter( org.hortonmachine.dbs.utils.BasicStyle mainStyle,
+            org.hortonmachine.dbs.utils.BasicStyle themeStyle, Expression expression ) {
         if (expression instanceof AttributeExpressionImpl) {
             AttributeExpressionImpl attr = (AttributeExpressionImpl) expression;
             mainStyle.themeField = attr.getPropertyName();
@@ -287,7 +287,7 @@ public class GeopaparazziSpatialiteCreator extends HMModel {
         }
     }
 
-    private void populateStyleObject( org.hortonmachine.gears.io.geopaparazzi.styles.Style gpStyle,
+    private void populateStyleObject( org.hortonmachine.dbs.utils.BasicStyle gpStyle,
             SymbolizerWrapper geometrySymbolizersWrapper ) {
         if (geometrySymbolizersWrapper instanceof PointSymbolizerWrapper) {
             PointSymbolizerWrapper psw = (PointSymbolizerWrapper) geometrySymbolizersWrapper;
@@ -318,7 +318,7 @@ public class GeopaparazziSpatialiteCreator extends HMModel {
         }
     }
 
-    private org.hortonmachine.gears.io.geopaparazzi.styles.Style createBaseStyle( ASpatialDb db, String uniqueName,
+    private org.hortonmachine.dbs.utils.BasicStyle createBaseStyle( ASpatialDb db, String uniqueName,
             List<RuleWrapper> rulesWrapperListForTextSymbolizer ) throws Exception {
         String fieldLabel = "";
         TextSymbolizerWrapper textSymbolizersWrapper = null;
@@ -333,7 +333,7 @@ public class GeopaparazziSpatialiteCreator extends HMModel {
             }
         }
 
-        org.hortonmachine.gears.io.geopaparazzi.styles.Style gpStyle = GeopaparazziDatabaseProperties
+        org.hortonmachine.dbs.utils.BasicStyle gpStyle = GeopaparazziDatabaseProperties
                 .createDefaultPropertiesForTable(db, uniqueName, fieldLabel);
         if (fieldLabel != null && fieldLabel.trim().length() > 0 && textSymbolizersWrapper != null) {
             String fontSize = textSymbolizersWrapper.getFontSize();

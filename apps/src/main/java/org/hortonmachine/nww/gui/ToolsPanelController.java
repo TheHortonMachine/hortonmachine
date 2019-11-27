@@ -54,8 +54,6 @@ import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
-import org.hortonmachine.gears.utils.style.SimpleStyle;
-import org.hortonmachine.gears.utils.style.SimpleStyleUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.nww.gui.listeners.GenericSelectListener;
 import org.hortonmachine.nww.layers.defaults.annotations.HtmlScreenAnnotation;
@@ -86,6 +84,8 @@ import org.hortonmachine.nww.utils.EGlobeModes;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
 import org.hortonmachine.nww.utils.selection.ObjectsOnScreenByBoxSelector;
+import org.hortonmachine.style.SimpleStyle;
+import org.hortonmachine.style.SimpleStyleUtilities;
 import org.joda.time.DateTime;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTReader;
@@ -661,7 +661,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
-                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, EGeometryType.POLYGON);
+                SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(absolutePath, EGeometryType.POLYGON.name());
                 if (style != null) {
                     featureCollectionPolygonLayer.setStyle(style);
                 }
@@ -673,7 +673,7 @@ public class ToolsPanelController extends ToolsPanelView {
                         featureStore, field2ValuesMap);
                 featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
-                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, EGeometryType.LINESTRING);
+                SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(absolutePath, EGeometryType.LINESTRING.name());
                 if (style != null) {
                     featureCollectionLinesLayer.setStyle(style);
                 }
@@ -692,7 +692,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
                 FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name, readFC,
                         featureStore, field2ValuesMap, imagePath);
-                SimpleStyle style = SimpleStyleUtilities.getStyle(absolutePath, EGeometryType.POINT);
+                SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(absolutePath, EGeometryType.POINT.name());
                 if (style != null) {
                     featureCollectionPointsLayer.setStyle(style);
                 }

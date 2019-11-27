@@ -17,7 +17,7 @@
  */
 package org.hortonmachine.nww.layers.defaults;
 
-import org.hortonmachine.gears.utils.style.SimpleStyle;
+import org.hortonmachine.style.SimpleStyle;
 
 /**
  * Common interface for layers.

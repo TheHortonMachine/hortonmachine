@@ -17,6 +17,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
+import org.geotools.filter.AttributeExpressionImpl;
+import org.geotools.filter.IsEqualsToImpl;
+import org.geotools.filter.LiteralExpressionImpl;
 import org.geotools.filter.function.FilterFunction_offset;
 import org.geotools.styling.ExternalGraphic;
 import org.geotools.styling.FeatureTypeConstraint;
@@ -38,9 +41,11 @@ import org.geotools.styling.StyleFactory;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.styling.Symbolizer;
 import org.geotools.styling.UserLayer;
+import org.hortonmachine.dbs.utils.BasicStyle;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.Function;
@@ -1074,6 +1079,136 @@ public class StyleUtilities {
         } else {
             throw new IllegalArgumentException("unsupported line cap");
         }
+    }
+
+    public static BasicStyle getBasicStyle( Style style ) throws Exception {
+        BasicStyle basicStyle = new BasicStyle();
+        StyleWrapper styleWrapper = new StyleWrapper(style);
+        List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = styleWrapper.getFeatureTypeStylesWrapperList();
+        if (featureTypeStylesWrapperList.size() > 0) {
+            List<RuleWrapper> rulesWrapperList = new ArrayList<>();
+            for( FeatureTypeStyleWrapper ftsWrapper : featureTypeStylesWrapperList ) {
+                List<RuleWrapper> rulesWrappers = ftsWrapper.getRulesWrapperList();
+                rulesWrapperList.addAll(rulesWrappers);
+            }
+
+            if (rulesWrapperList.size() == 1) {
+                RuleWrapper ruleWrapper = rulesWrapperList.get(0);
+                SymbolizerWrapper geometrySymbolizersWrapper = ruleWrapper.getGeometrySymbolizersWrapper();
+                if (geometrySymbolizersWrapper != null) {
+                    basicStyle = createBaseStyle(rulesWrapperList);
+                    populateStyleObject(basicStyle, geometrySymbolizersWrapper);
+                }
+            } else if (rulesWrapperList.size() > 1) {
+                basicStyle = createBaseStyle(rulesWrapperList);
+                basicStyle.themeMap = new HashMap<>();
+                for( RuleWrapper ruleWrapper : rulesWrapperList ) {
+                    SymbolizerWrapper geometrySymbolizersWrapper = ruleWrapper.getGeometrySymbolizersWrapper();
+
+                    BasicStyle themeStyle = createBaseStyle(rulesWrapperList);
+                    populateStyleObject(themeStyle, geometrySymbolizersWrapper);
+
+                    Filter filter = ruleWrapper.getRule().getFilter();
+                    if (filter instanceof IsEqualsToImpl) {
+                        IsEqualsToImpl equalsFilter = (IsEqualsToImpl) filter;
+                        Expression expression1 = equalsFilter.getExpression1();
+                        Expression expression2 = equalsFilter.getExpression2();
+
+                        setFilter(basicStyle, themeStyle, expression1);
+                        setFilter(basicStyle, themeStyle, expression2);
+                    }
+                }
+            }
+        }
+
+        return basicStyle;
+    }
+
+    private static void setFilter( BasicStyle mainStyle, BasicStyle themeStyle, Expression expression ) {
+        if (expression instanceof AttributeExpressionImpl) {
+            AttributeExpressionImpl attr = (AttributeExpressionImpl) expression;
+            mainStyle.themeField = attr.getPropertyName();
+        } else if (expression instanceof LiteralExpressionImpl) {
+            LiteralExpressionImpl attr = (LiteralExpressionImpl) expression;
+            mainStyle.themeMap.put(attr.getValue().toString(), themeStyle);
+        }
+    }
+
+    private static void populateStyleObject( BasicStyle gpStyle, SymbolizerWrapper geometrySymbolizersWrapper ) {
+        if (geometrySymbolizersWrapper instanceof PointSymbolizerWrapper) {
+            PointSymbolizerWrapper psw = (PointSymbolizerWrapper) geometrySymbolizersWrapper;
+
+            gpStyle.shape = psw.getMarkName();
+            gpStyle.size = getFloat(psw.getSize(), gpStyle.size);
+
+            gpStyle.width = getFloat(psw.getStrokeWidth(), gpStyle.width);
+            gpStyle.strokealpha = getFloat(psw.getStrokeOpacity(), gpStyle.strokealpha);
+            gpStyle.strokecolor = getString(psw.getStrokeColor(), null);
+
+            gpStyle.fillalpha = getFloat(psw.getFillOpacity(), gpStyle.fillalpha);
+            gpStyle.fillcolor = getString(psw.getFillColor(), null);
+        } else if (geometrySymbolizersWrapper instanceof PolygonSymbolizerWrapper) {
+            PolygonSymbolizerWrapper psw = (PolygonSymbolizerWrapper) geometrySymbolizersWrapper;
+
+            gpStyle.width = getFloat(psw.getStrokeWidth(), gpStyle.width);
+            gpStyle.strokealpha = getFloat(psw.getStrokeOpacity(), gpStyle.strokealpha);
+            gpStyle.strokecolor = getString(psw.getStrokeColor(), null);
+            gpStyle.fillalpha = getFloat(psw.getFillOpacity(), gpStyle.fillalpha);
+            gpStyle.fillcolor = getString(psw.getFillColor(), null);
+        } else if (geometrySymbolizersWrapper instanceof LineSymbolizerWrapper) {
+            LineSymbolizerWrapper lsw = (LineSymbolizerWrapper) geometrySymbolizersWrapper;
+
+            gpStyle.width = getFloat(lsw.getStrokeWidth(), gpStyle.width);
+            gpStyle.strokealpha = getFloat(lsw.getStrokeOpacity(), gpStyle.strokealpha);
+            gpStyle.strokecolor = getString(lsw.getStrokeColor(), null);
+        }
+    }
+
+    private static BasicStyle createBaseStyle( List<RuleWrapper> rulesWrapperListForTextSymbolizer ) throws Exception {
+        String fieldLabel = "";
+        TextSymbolizerWrapper textSymbolizersWrapper = null;
+        if (rulesWrapperListForTextSymbolizer != null) {
+            // use first available textsymbolizer
+            for( RuleWrapper ruleWrapper : rulesWrapperListForTextSymbolizer ) {
+                textSymbolizersWrapper = ruleWrapper.getTextSymbolizersWrapper();
+                if (textSymbolizersWrapper != null) {
+                    fieldLabel = textSymbolizersWrapper.getLabelName();
+                    break;
+                }
+            }
+        }
+        BasicStyle gpStyle = new BasicStyle();
+        if (fieldLabel.trim().length() > 0) {
+            gpStyle.labelfield = fieldLabel;
+            gpStyle.labelvisible = 1;
+        }
+
+        if (fieldLabel != null && fieldLabel.trim().length() > 0 && textSymbolizersWrapper != null) {
+            String fontSize = textSymbolizersWrapper.getFontSize();
+            try {
+                double fontSizeDouble = Double.parseDouble(fontSize);
+                gpStyle.labelsize = (float) fontSizeDouble;
+            } catch (Exception e) {
+                // ignore size
+            }
+        }
+        return gpStyle;
+    }
+
+    private static float getFloat( String value, float defaultValue ) {
+        float num = defaultValue;
+        try {
+            num = Float.parseFloat(value);
+        } catch (Exception e) {
+            // ignore and get default
+        }
+        return num;
+    }
+
+    private static String getString( String value, String defaultValue ) {
+        if (value == null || value.trim().length() == 0)
+            value = defaultValue;
+        return value;
     }
 
 }

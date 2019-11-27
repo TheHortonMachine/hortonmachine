@@ -176,12 +176,6 @@
 			<artifactId>jna</artifactId>
 		</dependency>
 
-		<!-- geopap -->
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-		</dependency>
-
 	</dependencies>
 
 </project>

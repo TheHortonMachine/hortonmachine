@@ -44,6 +44,7 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
+import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
@@ -85,6 +86,8 @@ import org.sqlite.Function;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class GeopackageDb extends ASpatialDb {
+    private static final String HM_STYLES_TABLE = "hm_styles";
+
     public static final String GEOPACKAGE_CONTENTS = "gpkg_contents";
 
     public static final String GEOMETRY_COLUMNS = "gpkg_geometry_columns";
@@ -1501,6 +1504,44 @@ public class GeopackageDb extends ASpatialDb {
                 return null;
             }
         });
+    }
+
+    public String getSldString( String tableName ) throws Exception {
+        checkStyleTable();
+        String sql = "select sld from " + HM_STYLES_TABLE + " where tablename='" + tableName + "'";
+        return sqliteDb.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    return rs.getString(1);
+                }
+                return null;
+            }
+        });
+    }
+
+    public void updateSldString( String tableName, String sldString, String simplified ) throws Exception {
+        String sql = "INSERT OR REPLACE INTO " + HM_STYLES_TABLE + "(tablename, sld, simplified) VALUES(?,?, ?)";
+        sqliteDb.execOnConnection(connection -> {
+            try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
+                pstmt.setString(1, tableName);
+                pstmt.setString(2, sldString);
+                pstmt.setString(3, simplified);
+                pstmt.executeUpdate();
+                return null;
+            }
+        });
+    }
+
+    private void checkStyleTable() throws Exception {
+        if (!sqliteDb.hasTable(HM_STYLES_TABLE)) {
+            ADatabaseSyntaxHelper dt = sqliteDb.getType().getDatabaseSyntaxHelper();
+            sqliteDb.createTable(HM_STYLES_TABLE, //
+                    "tablename " + dt.TEXT(), //
+                    "sld " + dt.TEXT(), //
+                    "simplified " + dt.TEXT() //
+            );
+            sqliteDb.createIndex(HM_STYLES_TABLE, "tablename", true);
+        }
     }
 
 //    void deleteGeometryColumnsEntry( FeatureEntry e ) throws IOException {

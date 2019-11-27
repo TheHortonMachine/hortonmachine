@@ -29,12 +29,12 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.hortonmachine.gears.utils.style.SimpleStyle;
-import org.hortonmachine.gears.utils.style.SimpleStyleUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.shapes.FeatureLine;
 import org.hortonmachine.nww.shapes.FeaturePolygon;
 import org.hortonmachine.nww.utils.NwwUtilities;
+import org.hortonmachine.style.SimpleStyle;
+import org.hortonmachine.style.SimpleStyleUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.GeometryDescriptor;
 
@@ -110,7 +110,7 @@ public class ShapefilesFolderLayer extends RenderableLayer implements NwwLayer {
                         double fillOpacity = 0.7;
                         double strokeWidth = 2;
                         BasicShapeAttributes shapeAttributes = new BasicShapeAttributes();
-                        SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), EGeometryType.POLYGON);
+                        SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(shpFile.getAbsolutePath(), EGeometryType.POLYGON.name());
                         if (style != null) {
                             fillMaterial = new Material(style.fillColor);
                             fillOpacity = style.fillOpacity;
@@ -135,7 +135,7 @@ public class ShapefilesFolderLayer extends RenderableLayer implements NwwLayer {
                         Material strokeMaterial = Material.BLACK;
                         double strokeWidth = 2;
                         BasicShapeAttributes shapeAttributes = new BasicShapeAttributes();
-                        SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), EGeometryType.LINESTRING);
+                        SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(shpFile.getAbsolutePath(), EGeometryType.LINESTRING.name());
                         if (style != null) {
                             strokeMaterial = new Material(style.strokeColor);
                             strokeWidth = style.strokeWidth;
@@ -155,7 +155,7 @@ public class ShapefilesFolderLayer extends RenderableLayer implements NwwLayer {
                     } else if (EGeometryType.isPoint(geometryDescriptor)) {
                         Material fillMaterial = Material.GREEN;
                         double markerSize = 5d;
-                        SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), EGeometryType.POINT);
+                        SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(shpFile.getAbsolutePath(), EGeometryType.POINT.name());
                         if (style != null) {
                             fillMaterial = new Material(style.fillColor);
                             markerSize = style.shapeSize;

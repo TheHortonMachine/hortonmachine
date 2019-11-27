@@ -23,6 +23,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.utils.BasicStyle;
+
+import static org.hortonmachine.dbs.utils.BasicStyle.*;
 
 /**
  * geopaparazzi related database utilities.
@@ -105,7 +108,7 @@ public class GeopaparazziDatabaseProperties implements ISpatialiteTableAndFields
      * @return the created style object.
      * @throws Exception if something goes wrong.
      */
-    public static Style createDefaultPropertiesForTable( ASpatialDb database, String spatialTableUniqueName,
+    public static BasicStyle createDefaultPropertiesForTable( ASpatialDb database, String spatialTableUniqueName,
             String spatialTableLabelField ) throws Exception {
         StringBuilder sbIn = new StringBuilder();
         sbIn.append("insert into ").append(PROPERTIESTABLE);
@@ -130,7 +133,7 @@ public class GeopaparazziDatabaseProperties implements ISpatialiteTableAndFields
         sbIn.append(" ) ");
         sbIn.append(" values ");
         sbIn.append(" ( ");
-        Style style = new Style();
+        BasicStyle style = new BasicStyle();
         style.name = spatialTableUniqueName;
         style.labelfield = spatialTableLabelField;
         if (spatialTableLabelField != null && spatialTableLabelField.trim().length() > 0) {
@@ -150,10 +153,10 @@ public class GeopaparazziDatabaseProperties implements ISpatialiteTableAndFields
      * Update a style definition.
      *
      * @param database the db to use.
-     * @param style    the {@link Style} to set.
+     * @param style    the {@link BasicStyle} to set.
      * @throws Exception if something goes wrong.
      */
-    public static void updateStyle( ASpatialDb database, Style style ) throws Exception {
+    public static void updateStyle( ASpatialDb database, BasicStyle style ) throws Exception {
         StringBuilder sbIn = new StringBuilder();
         sbIn.append("update ").append(PROPERTIESTABLE);
         sbIn.append(" set ");

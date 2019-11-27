@@ -28,12 +28,12 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.hortonmachine.gears.utils.style.SimpleStyle;
 import org.hortonmachine.nww.layers.defaults.NwwEditableVectorLayer;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
 import org.hortonmachine.nww.shapes.FeatureLine;
 import org.hortonmachine.nww.shapes.FeatureStoreInfo;
 import org.hortonmachine.nww.utils.NwwUtilities;
+import org.hortonmachine.style.SimpleStyle;
 import org.opengis.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;

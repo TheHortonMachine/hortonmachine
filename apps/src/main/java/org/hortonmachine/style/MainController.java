@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -44,6 +45,8 @@ import org.geotools.styling.Rule;
 import org.geotools.styling.Style;
 import org.geotools.swing.JMapPane;
 import org.hortonmachine.database.DatabaseViewer;
+import org.hortonmachine.dbs.geopackage.FeatureEntry;
+import org.hortonmachine.dbs.geopackage.GeopackageDb;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.CrsUtilities;
@@ -71,6 +74,9 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.modules.VectorReader;
+import org.hortonmachine.style.objects.FileWithStyle;
+import org.hortonmachine.style.objects.GpkgWithStyle;
+import org.hortonmachine.style.objects.IObjectWithStyle;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
@@ -105,7 +111,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
     private GeometryDescriptor geometryDescriptor;
 
-    private File selectedFile;
+    private IObjectWithStyle objectWithStyle;
 
     private SimpleFeatureCollection currentFeatureCollection;
 
@@ -175,7 +181,50 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             if (result == JFileChooser.APPROVE_OPTION) {
                 File[] selectedFiles = fileChooser.getSelectedFiles();
                 if (selectedFiles != null && selectedFiles.length > 0) {
-                    selectedFile = selectedFiles[0];
+                    File file = selectedFiles[0];
+                    if (file.getName().toLowerCase().endsWith(HMConstants.GPKG)) {
+                        String tableName = null;
+                        try (GeopackageDb db = new GeopackageDb()) {
+                            db.open(file.getAbsolutePath());
+                            List<FeatureEntry> features = db.features();
+                            if (features.size() == 0) {
+                                GuiUtilities.showWarningMessage(this, "No feature tables found in geopackage.");
+                                return;
+                            } else if (features.size() == 1) {
+                                tableName = features.get(0).getTableName();
+                            } else {
+                                List<String> tableNames = features.stream().map(f -> f.getTableName())
+                                        .collect(Collectors.toList());
+                                String selection = GuiUtilities.showComboDialog(this, "Select", "Select the table to style",
+                                        tableNames.toArray(new String[0]), tableNames.get(0));
+                                if (selection == null) {
+                                    return;
+                                }
+                                tableName = selection;
+
+                            }
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
+                        if (tableName != null) {
+                            objectWithStyle = new GpkgWithStyle();
+                            try {
+                                objectWithStyle.setDataFile(file, tableName);
+                            } catch (Exception e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+
+                    } else {
+                        objectWithStyle = new FileWithStyle();
+                        String nameWithoutExtention = FileUtilities.getNameWithoutExtention(file);
+                        try {
+                            objectWithStyle.setDataFile(file, nameWithoutExtention);
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+
                     openSelectedFile();
                 }
             }
@@ -211,10 +260,8 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                     return;
                 }
                 String xml = styleWrapper.toXml();
-                String nameWithoutExtention = FileUtilities.getNameWithoutExtention(selectedFile);
-                File sldFile = new File(selectedFile.getParentFile(), nameWithoutExtention + ".sld");
 
-                FileUtilities.writeFile(xml, sldFile);
+                objectWithStyle.saveSld(xml);
 
             } catch (Exception e1) {
                 // TODO Auto-generated catch block
@@ -223,16 +270,22 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         });
 
         if (fileToOpen != null && fileToOpen.exists()) {
-            selectedFile = fileToOpen;
+            objectWithStyle = new FileWithStyle();
+            String nameWithoutExtention = FileUtilities.getNameWithoutExtention(fileToOpen);
+            try {
+                objectWithStyle.setDataFile(fileToOpen, nameWithoutExtention);
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
             openSelectedFile();
         }
 
     }
 
     private void openSelectedFile() {
-        String absolutePath = selectedFile.getAbsolutePath();
+        String absolutePath = objectWithStyle.getDataFile().getAbsolutePath();
         PreferencesHandler.setLastPath(absolutePath);
-        _filepathField.setText(absolutePath);
+        _filepathField.setText(objectWithStyle.getNormalizedPath());
 
         if (currentLayer != null) {
             mapContent.removeLayer(currentLayer);
@@ -246,9 +299,9 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         currentFeatureCollection = null;
 
         try {
-            if (HMConstants.isVector(selectedFile)) {
+            if (objectWithStyle.isVector()) {
 
-                currentFeatureCollection = VectorReader.readVector(absolutePath);
+                currentFeatureCollection = VectorReader.readVector(objectWithStyle.getNormalizedPath());
 
                 geometryDescriptor = currentFeatureCollection.getSchema().getGeometryDescriptor();
 
@@ -258,7 +311,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 CoordinateReferenceSystem currentCRS = currentFeatureCollection.getSchema().getCoordinateReferenceSystem();
                 mapContent.getViewport().setCoordinateReferenceSystem(currentCRS);
 
-                Style style = SldUtilities.getStyleFromFile(selectedFile);
+                Style style = SldUtilities.getStyleFromSldString(objectWithStyle.getSldString());
                 if (style == null) {
                     style = StyleUtilities.createDefaultStyle(currentFeatureCollection);
                 }
@@ -274,9 +327,9 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 _stylePanel.removeAll();
                 _stylePanel.revalidate();
                 _stylePanel.repaint();
-            } else if (HMConstants.isRaster(selectedFile)) {
+            } else if (objectWithStyle.isRaster()) {
                 currentRaster = OmsRasterReader.readRaster(absolutePath);
-                Style style = SldUtilities.getStyleFromFile(selectedFile);
+                Style style = SldUtilities.getStyleFromSldString(objectWithStyle.getSldString());
                 if (style == null) {
                     style = RasterStyleUtilities.createDefaultRasterStyle();
                 }

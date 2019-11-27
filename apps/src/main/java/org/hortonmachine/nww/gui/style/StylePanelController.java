@@ -11,9 +11,9 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JColorChooser;
 import javax.swing.SwingUtilities;
 
-import org.hortonmachine.gears.utils.style.SimpleStyle;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
+import org.hortonmachine.style.SimpleStyle;
 
 import gov.nasa.worldwind.render.markers.BasicMarkerShape;
 

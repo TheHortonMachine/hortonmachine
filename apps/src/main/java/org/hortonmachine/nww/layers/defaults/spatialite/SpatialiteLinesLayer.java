@@ -26,11 +26,10 @@ import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteDb;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.hortonmachine.gears.utils.CrsUtilities;
-import org.hortonmachine.gears.utils.style.SimpleStyle;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
 import org.hortonmachine.nww.shapes.InfoLine;
 import org.hortonmachine.nww.utils.NwwUtilities;
-
+import org.hortonmachine.style.SimpleStyle;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;

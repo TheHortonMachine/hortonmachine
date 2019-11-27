@@ -1,4 +1,4 @@
-package org.hortonmachine.gears.utils.style;
+package org.hortonmachine.style;
 
 import java.awt.Color;
 

@@ -15,9 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.gears.io.geopaparazzi.styles;
-
-import static org.hortonmachine.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames.*;
+package org.hortonmachine.dbs.utils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,8 +28,28 @@ import org.json.JSONObject;
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-@SuppressWarnings("nls")
-public class Style {
+public class BasicStyle {
+    public static final String ID = "_id";
+    public static final String NAME = "name";
+    public static final String SIZE = "size";
+    public static final String FILLCOLOR = "fillcolor";
+    public static final String STROKECOLOR = "strokecolor";
+    public static final String FILLALPHA = "fillalpha";
+    public static final String STROKEALPHA = "strokealpha";
+    public static final String SHAPE = "shape";
+    public static final String WIDTH = "width";
+    public static final String ENABLED = "enabled";
+    public static final String ORDER = "layerorder";
+    public static final String DECIMATION = "decimationfactor";
+    public static final String DASH = "dashpattern";
+    public static final String MINZOOM = "minzoom";
+    public static final String MAXZOOM = "maxzoom";
+    public static final String LABELFIELD = "labelfield";
+    public static final String LABELSIZE = "labelsize";
+    public static final String LABELVISIBLE = "labelvisible";
+    public static final String UNIQUEVALUES = "uniquevalues";
+    public static final String THEME = "theme";
+
     /**
      *
      */
@@ -123,7 +141,7 @@ public class Style {
      * If a unique style is defined, the hashmap contains in key the unique value
      * and in value the style to apply. 
      */
-    public HashMap<String, Style> themeMap;
+    public HashMap<String, BasicStyle> themeMap;
 
     public String themeField;
 
@@ -231,18 +249,17 @@ public class Style {
             root.put(UNIQUEVALUES, unique);
             JSONObject sub = new JSONObject();
             unique.put(themeField, sub);
-            for( Entry<String, Style> entry : themeMap.entrySet() ) {
+            for( Entry<String, BasicStyle> entry : themeMap.entrySet() ) {
                 String key = entry.getKey();
-                Style value = entry.getValue();
-
-                sub.put(key, value.toJsonObject());
+                BasicStyle value = entry.getValue();
+                sub.put(key, value.toJson());
             }
-            return root.toString(2);
+            return root.toString();
         }
         return "";
     }
 
-    private JSONObject toJsonObject() {
+    private JSONObject toJson() {
         JSONObject jobj = new JSONObject();
         jobj.put(ID, id);
         jobj.put(NAME, name);
@@ -267,4 +284,13 @@ public class Style {
 
         return jobj;
     }
+
+    public String toString() {
+        String jsonStr = getTheme();
+        if (jsonStr.length() == 0) {
+            return toJson().toString();
+        }
+        return jsonStr;
+    }
+
 }

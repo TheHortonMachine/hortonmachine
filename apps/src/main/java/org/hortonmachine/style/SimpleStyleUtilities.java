@@ -16,7 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.hortonmachine.gears.utils.style;
+package org.hortonmachine.style;
 
 import java.awt.Color;
 import java.io.File;
@@ -28,6 +28,13 @@ import org.geotools.styling.Rule;
 import org.geotools.styling.Style;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
+import org.hortonmachine.gears.utils.style.FeatureTypeStyleWrapper;
+import org.hortonmachine.gears.utils.style.LineSymbolizerWrapper;
+import org.hortonmachine.gears.utils.style.PointSymbolizerWrapper;
+import org.hortonmachine.gears.utils.style.PolygonSymbolizerWrapper;
+import org.hortonmachine.gears.utils.style.RuleWrapper;
+import org.hortonmachine.gears.utils.style.StyleUtilities;
+import org.hortonmachine.gears.utils.style.StyleWrapper;
 
 /**
  * Simple styles generator.
@@ -73,8 +80,9 @@ public class SimpleStyleUtilities {
      */
     public static Rule createSimpleLineRule( Color color, float width ) {
         LineSymbolizer lineSymbolizer = StyleUtilities.sf.createLineSymbolizer();
-        lineSymbolizer.setStroke(StyleUtilities.sf.createStroke(
-                StyleUtilities.ff.literal("#" + Integer.toHexString(color.getRGB() & 0xffffff)), StyleUtilities.ff.literal(width)));
+        lineSymbolizer.setStroke(
+                StyleUtilities.sf.createStroke(StyleUtilities.ff.literal("#" + Integer.toHexString(color.getRGB() & 0xffffff)),
+                        StyleUtilities.ff.literal(width)));
 
         Rule rule = StyleUtilities.sf.createRule();
         rule.setName("New rule");
@@ -83,7 +91,7 @@ public class SimpleStyleUtilities {
         return rule;
     }
 
-    public static SimpleStyle getStyle( String path, EGeometryType geomType ) throws Exception {
+    public static SimpleStyle getSimpleStyle( String path, String geomTypeString ) throws Exception {
         SimpleStyle simpleStyle = new SimpleStyle();
         if (path == null) {
             return simpleStyle;
@@ -93,6 +101,13 @@ public class SimpleStyleUtilities {
         if (style == null)
             return null;
 
+        return getSimpleStyle(style, geomTypeString);
+    }
+
+    public static SimpleStyle getSimpleStyle( Style style, String geomTypeString ) {
+        EGeometryType geomType = EGeometryType.forWktName(geomTypeString);
+        
+        SimpleStyle simpleStyle = new SimpleStyle();
         StyleWrapper styleWrapper = new StyleWrapper(style);
         List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = styleWrapper.getFeatureTypeStylesWrapperList();
         for( FeatureTypeStyleWrapper featureTypeStyleWrapper : featureTypeStylesWrapperList ) {

@@ -23,15 +23,18 @@ import java.util.List;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.styling.Style;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageDb;
-import org.hortonmachine.dbs.geopackage.TileEntry;
 import org.hortonmachine.dbs.utils.MercatorUtils;
+import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.shapes.FeatureLine;
 import org.hortonmachine.nww.shapes.FeaturePolygon;
+import org.hortonmachine.style.SimpleStyle;
+import org.hortonmachine.style.SimpleStyleUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -92,13 +95,18 @@ public class GeopackageVectorLayer extends RenderableLayer implements NwwLayer {
                     double fillOpacity = 0.7;
                     double strokeWidth = 2;
                     BasicShapeAttributes shapeAttributes = new BasicShapeAttributes();
-//                SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), EGeometryType.POLYGON);
-//                if (style != null) {
-//                    fillMaterial = new Material(style.fillColor);
-//                    fillOpacity = style.fillOpacity;
-//                    strokeMaterial = new Material(style.strokeColor);
-//                    strokeWidth = style.strokeWidth;
-//                }
+
+                    String sldString = db.getSldString(tableName);
+                    if (sldString != null) {
+                        Style st = SldUtilities.getStyleFromSldString(sldString);
+                        SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(st, EGeometryType.POLYGON.name());
+                        if (style != null) {
+                            fillMaterial = new Material(style.fillColor);
+                            fillOpacity = style.fillOpacity;
+                            strokeMaterial = new Material(style.strokeColor);
+                            strokeWidth = style.strokeWidth;
+                        }
+                    }
                     shapeAttributes.setInteriorMaterial(fillMaterial);
                     shapeAttributes.setInteriorOpacity(fillOpacity);
                     shapeAttributes.setOutlineMaterial(strokeMaterial);
@@ -112,11 +120,13 @@ public class GeopackageVectorLayer extends RenderableLayer implements NwwLayer {
                     Material strokeMaterial = Material.BLACK;
                     double strokeWidth = 2;
                     BasicShapeAttributes shapeAttributes = new BasicShapeAttributes();
-//                SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), EGeometryType.LINESTRING);
-//                if (style != null) {
-//                    strokeMaterial = new Material(style.strokeColor);
-//                    strokeWidth = style.strokeWidth;
-//                }
+                    String sldString = db.getSldString(tableName);
+                    if (sldString != null) {
+                        Style st = SldUtilities.getStyleFromSldString(sldString);
+                        SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(st, EGeometryType.LINESTRING.name());
+                        strokeMaterial = new Material(style.strokeColor);
+                        strokeWidth = style.strokeWidth;
+                    }
                     shapeAttributes.setOutlineMaterial(strokeMaterial);
                     shapeAttributes.setOutlineWidth(strokeWidth);
 
@@ -126,11 +136,14 @@ public class GeopackageVectorLayer extends RenderableLayer implements NwwLayer {
                 } else if (geometryType.isPoint()) {
                     Material fillMaterial = Material.GREEN;
                     double markerSize = 5d;
-//                SimpleStyle style = SimpleStyleUtilities.getStyle(shpFile.getAbsolutePath(), EGeometryType.POINT);
-//                if (style != null) {
-//                    fillMaterial = new Material(style.fillColor);
-//                    markerSize = style.shapeSize;
-//                }
+
+                    String sldString = db.getSldString(tableName);
+                    if (sldString != null) {
+                        Style st = SldUtilities.getStyleFromSldString(sldString);
+                        SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(st, EGeometryType.POINT.name());
+                        fillMaterial = new Material(style.fillColor);
+                        markerSize = style.shapeSize;
+                    }
                     PointPlacemarkAttributes basicMarkerAttributes = new PointPlacemarkAttributes();
                     Color color = fillMaterial.getDiffuse();
                     basicMarkerAttributes.setImageColor(color);

@@ -33,7 +33,6 @@ import org.geotools.styling.FeatureTypeConstraint;
 import org.geotools.styling.FeatureTypeStyle;
 import org.geotools.styling.RasterSymbolizer;
 import org.geotools.styling.SLD;
-import org.geotools.styling.SLDParser;
 import org.geotools.styling.SLDTransformer;
 import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
@@ -55,6 +54,7 @@ import org.opengis.filter.expression.Expression;
  * @since 0.7.0
  */
 public class SldUtilities {
+    public static final String SLD_EXTENSION = "sld";
 
     /**
      * The default {@link StyleFactory} to use.
@@ -84,30 +84,48 @@ public class SldUtilities {
      * @throws IOException
      */
     public static Style getStyleFromFile( File file ) {
-        Style style = null;
         try {
-            String name = file.getName();
-            if (!name.endsWith("sld")) {
-                String nameWithoutExtention = FileUtilities.getNameWithoutExtention(file);
-                File sldFile = new File(file.getParentFile(), nameWithoutExtention + ".sld");
-                if (sldFile.exists()) {
-                    file = sldFile;
-                } else {
-                    // no style file here
-                    return null;
-                }
-            }
+            File styleFile = getStyleFile(file);
+            if (styleFile == null)
+                return null;
 
-            SLDHandler h = new SLDHandler();
-            StyledLayerDescriptor sld = h.parse(file, null, null, null);
-//            SLDParser stylereader = new SLDParser(sf, file);
-//            StyledLayerDescriptor sld = stylereader.parseSLD();
-            style = getDefaultStyle(sld);
-            return style;
+            String sldString = FileUtilities.readFile(styleFile);
+            return getStyleFromSldString(sldString);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Get the style file related to a given datafile.
+     * 
+     * @param dataFile the file that should have the style file as sidecar file.
+     * @return the style file, if available.
+     */
+    public static File getStyleFile( File dataFile ) {
+        String name = dataFile.getName();
+        if (!name.toLowerCase().endsWith(SLD_EXTENSION)) {
+            String nameWithoutExtention = FileUtilities.getNameWithoutExtention(dataFile);
+            File sldFile = new File(dataFile.getParentFile(), nameWithoutExtention + "." + SLD_EXTENSION);
+            if (sldFile.exists()) {
+                return sldFile;
+            } else {
+                // no style file here
+                return null;
+            }
+        } else {
+            return dataFile;
+        }
+    }
+
+    public static Style getStyleFromSldString( String sldString ) throws IOException {
+        if (sldString == null)
+            return null;
+        SLDHandler h = new SLDHandler();
+        StyledLayerDescriptor sld = h.parse(sldString, null, null, null);
+        Style style = getDefaultStyle(sld);
+        return style;
     }
 
     public static Style getStyleFromRasterFile( File file ) throws Exception {
