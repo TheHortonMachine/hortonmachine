@@ -113,7 +113,7 @@ public class GeopackageDb extends ASpatialDb {
     public final static String COL_TILES_TILE_DATA = "tile_data";
     public final static String SELECTQUERY = "SELECT " + COL_TILES_TILE_DATA + " from %s where " + COL_TILES_ZOOM_LEVEL
             + "=? AND " + COL_TILES_TILE_COLUMN + "=? AND " + COL_TILES_TILE_ROW + "=?";
-    
+
     public final static int MERCATOR_SRID = 3857;
     public final static int WGS84LL_SRID = 4326;
 
@@ -447,6 +447,29 @@ public class GeopackageDb extends ASpatialDb {
     public byte[] getTile( String tableName, double lon, double lat, int zoom ) throws Exception {
         int[] zxy = MercatorUtils.getTileNumber(lat, lon, zoom);
         return getTile(tableName, zxy[1], zxy[2], zoom);
+    }
+
+    /**
+     * Get the list of zoomlevels that contain data.
+     * 
+     * @param tableName the name of the table.
+     * @return the list of zoom levels.
+     * @throws Exception
+     */
+    public List<Integer> getTileZoomLevelsWithData( String tableName ) throws Exception {
+        String sql = "select distinct " + GeopackageDb.COL_TILES_ZOOM_LEVEL + " from " + tableName + " order by "
+                + GeopackageDb.COL_TILES_ZOOM_LEVEL;
+
+        return sqliteDb.execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                List<Integer> list = new ArrayList<>();
+                while( rs.next() ) {
+                    int zoomLevel = rs.getInt(1);
+                    list.add(zoomLevel);
+                }
+                return list;
+            }
+        });
     }
 
     /**

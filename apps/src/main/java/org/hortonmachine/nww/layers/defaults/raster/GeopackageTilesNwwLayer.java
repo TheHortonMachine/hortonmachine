@@ -19,7 +19,6 @@ package org.hortonmachine.nww.layers.defaults.raster;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -29,12 +28,10 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import org.hortonmachine.dbs.compat.IHMPreparedStatement;
-import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.geopackage.GeopackageDb;
 import org.hortonmachine.dbs.geopackage.TileEntry;
 import org.hortonmachine.dbs.utils.MercatorUtils;
-import org.hortonmachine.gears.utils.images.ImageUtilities;
+import org.hortonmachine.gears.utils.images.TileUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
 import org.locationtech.jts.geom.Coordinate;
@@ -62,9 +59,7 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
 
     private static final int TILESIZE = 256;
 
-    private static final Color transparent = new Color(0f, 0f, 0f, 0f);
-
-    protected static final boolean DEBUG = true;
+    protected static final boolean DEBUG = false;
     protected static final boolean DEBUG_ALSO_WITHOUT_IMAGE = true;
 
     private Coordinate centerCoordinate;
@@ -125,6 +120,8 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
             cacheFolder.mkdirs();
         }
 
+        List<Integer> tileZoomLevelsWithData = gpkgDb.getTileZoomLevelsWithData(tableName);
+
         params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder(){
 
             public URL getURL( Tile tile, String altImageFormat ) throws MalformedURLException {
@@ -171,42 +168,33 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
                             int from = zoom + 1;
                             int to = Math.min(zoom + 5, 19);
                             for( int higherZoom = from; higherZoom < to; higherZoom++ ) {
-                                List<int[]> tilesAtHigherZoom = MercatorUtils.getTilesAtHigherZoom(x, y, zoom, higherZoom,
-                                        tileSize);
-                                int delta = higherZoom - zoom;
-                                int splits = (int) Math.pow(2, delta);
-                                int size = splits * tileSize;
-                                BufferedImage finalImage = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-                                Graphics2D g2d = (Graphics2D) finalImage.getGraphics();
-                                g2d.setColor(Color.white);
-                                g2d.fillRect(0, 0, size, size);
-                                int runningX = 0;
-                                int runningY = 0;
-                                boolean hasOne = false;
-                                for( int[] zxy2 : tilesAtHigherZoom ) {
-                                    byte[] tile2 = gpkgDb.getTile(tableName, zxy2[1], zxy2[2], zxy2[0]);
-                                    if (tile2 != null) {
-                                        hasOne = true;
-                                        ByteArrayInputStream bais = new ByteArrayInputStream(tile2);
-                                        BufferedImage img = ImageIO.read(bais);
-                                        int imageX = runningX * tileSize;
-                                        int imageY = runningY * tileSize;
-                                        g2d.drawImage(img, imageX, imageY, null);
-                                    }
-                                    runningX++;
-                                    if (runningX == splits) {
-                                        runningX = 0;
-                                        runningY++;
-                                    }
+                                if (!tileZoomLevelsWithData.contains(higherZoom)) {
+                                    continue;
                                 }
 
-                                if (hasOne) {
-                                    // if we arrive here, the image was fully covered
-//                                    int scaledSize = (int) Math.round(tileSize / (double) splits);
-//                                    Image scaledInstance = img.getScaledInstance(scaledSize, scaledSize, Image.SCALE_FAST);
-                                    finalImage = ImageUtilities.scaleImage(finalImage, tileSize);
-                                    bImg = finalImage;
+                                BufferedImage img = TileUtilities.getTileFromDifferentZoomlevel(gpkgDb, tableName, x, y, zoom,
+                                        tileSize, higherZoom);
+                                if (img != null) {
+                                    bImg = img;
                                     break;
+                                }
+                            }
+
+                            if (bImg == null) {
+                                // then try upscaling from lower resolution
+                                from = zoom - 1;
+                                int zoomLevelTotry = 5;
+                                to = Math.max(zoom - zoomLevelTotry, 1);
+                                for( int lowerZoom = from; lowerZoom > to; lowerZoom-- ) {
+                                    if (!tileZoomLevelsWithData.contains(lowerZoom)) {
+                                        continue;
+                                    }
+                                    BufferedImage img = TileUtilities.getTileFromDifferentZoomlevel(gpkgDb, tableName, x, y, zoom,
+                                            tileSize, lowerZoom);
+                                    if (img != null) {
+                                        bImg = img;
+                                        break;
+                                    }
                                 }
                             }
 
