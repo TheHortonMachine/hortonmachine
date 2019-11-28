@@ -1,6 +1,7 @@
 package org.hortonmachine.style;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,6 +36,7 @@ import javax.swing.tree.TreePath;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;
@@ -47,15 +50,20 @@ import org.geotools.swing.JMapPane;
 import org.hortonmachine.database.DatabaseViewer;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.SldUtilities;
+import org.hortonmachine.gears.utils.colors.ColorInterpolator;
+import org.hortonmachine.gears.utils.colors.ColorUtilities;
+import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.features.FilterUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.style.FeatureTypeStyleWrapper;
@@ -83,6 +91,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.filter.Filter;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @SuppressWarnings("serial")
@@ -712,6 +721,17 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             popupMenu.add(item);
             item.setHorizontalTextPosition(JMenuItem.RIGHT);
 
+            action = new AbstractAction("Remove all Rules"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    currentSelectedFSW.clear();
+                    reloadGroupsAndRules();
+                }
+            };
+            item = new JMenuItem(action);
+            popupMenu.add(item);
+            item.setHorizontalTextPosition(JMenuItem.RIGHT);
+
             List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = styleWrapper.getFeatureTypeStylesWrapperList();
             int ftIndex = featureTypeStylesWrapperList.indexOf(currentSelectedFSW);
             int ftSize = featureTypeStylesWrapperList.size();
@@ -825,7 +845,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             popupMenu.add(item);
             item.setHorizontalTextPosition(JMenuItem.RIGHT);
         } else if (currentSelectedFeatureAttributeNode != null && !isRaster) {
-            AbstractAction action = new AbstractAction("View field stats"){
+            AbstractAction action1 = new AbstractAction("View field stats"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     String fieldName = currentSelectedFeatureAttributeNode.getFieldName();
@@ -861,9 +881,104 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 }
 
             };
-            JMenuItem item = new JMenuItem(action);
-            popupMenu.add(item);
-            item.setHorizontalTextPosition(JMenuItem.RIGHT);
+            JMenuItem item1 = new JMenuItem(action1);
+            popupMenu.add(item1);
+            item1.setHorizontalTextPosition(JMenuItem.RIGHT);
+            AbstractAction action2 = new AbstractAction("Create unique rules based on this attribute"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    FeatureTypeStyleWrapper fsw = currentSelectedFSW;
+                    if (fsw == null) {
+                        // use the first available
+                        List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = styleWrapper
+                                .getFeatureTypeStylesWrapperList();
+                        fsw = featureTypeStylesWrapperList.get(0);
+                    }
+
+                    String fieldName = currentSelectedFeatureAttributeNode.getFieldName();
+                    TreeSet<String> set = new TreeSet<>();
+                    boolean isStringAttr = false;
+                    for( SimpleFeature simpleFeature : currentFeaturesList ) {
+                        Object attribute = simpleFeature.getAttribute(fieldName);
+                        if (attribute != null) {
+                            String attrStr = attribute.toString();
+                            set.add(attrStr);
+                        }
+                        if (attribute instanceof String) {
+                            isStringAttr = true;
+                        }
+                    }
+
+                    int fillAlpha = 100;
+                    float fillAlphaf = fillAlpha / 255f;
+                    ColorInterpolator interpFill = new ColorInterpolator(EColorTables.rainbow.name(), 0, set.size(), null);
+                    ColorInterpolator interpStroke = new ColorInterpolator(EColorTables.rainbow.name(), 0, set.size(), null);
+
+                    EGeometryType type = EGeometryType.forGeometryDescriptor(geometryDescriptor);
+                    // create new rules for each attribute value
+                    int index = 0;
+                    for( String value : set ) {
+                        try {
+                            Rule rule = StyleUtilities.sf.createRule();
+                            RuleWrapper rw = new RuleWrapper(rule, fsw);
+                            fsw.addRule(rw);
+
+                            String tmpName = fieldName + " == " + value;
+                            tmpName = WrapperUtilities.checkSameNameRule(fsw.getRulesWrapperList(), tmpName);
+                            rw.setName(tmpName);
+
+                            String escapedValue = value.replaceAll("'", "''");
+                            String filterValue = escapedValue;
+                            if (isStringAttr) {
+                                filterValue = "'" + escapedValue + "'";
+                            }
+                            Filter filter = FilterUtilities.getCQLFilter(fieldName + "=" + filterValue);
+                            rule.setFilter(filter);
+
+                            Color fill = interpFill.getColorFor(index);
+                            Color stroke = interpStroke.getColorFor(index);
+                            String fillHex = ColorUtilities.asHex(fill);
+                            String strokeHex = ColorUtilities.asHex(stroke);
+
+                            switch( type ) {
+                            case POINT:
+                            case MULTIPOINT:
+                                PointSymbolizerWrapper pointSW = rw.addSymbolizer(null, PointSymbolizerWrapper.class);
+                                pointSW.setFillColor(fillHex);
+                                pointSW.setFillOpacity(fillAlphaf + "", false);
+                                pointSW.setStrokeColor(strokeHex);
+                                break;
+                            case LINESTRING:
+                            case MULTILINESTRING:
+                                LineSymbolizerWrapper lineSW = rw.addSymbolizer(null, LineSymbolizerWrapper.class);
+                                lineSW.setStrokeColor(strokeHex, false);
+                                break;
+                            case POLYGON:
+                            case MULTIPOLYGON:
+                                PolygonSymbolizerWrapper polygonSW = rw.addSymbolizer(null, PolygonSymbolizerWrapper.class);
+                                polygonSW.setFillColor(fillHex, false);
+                                polygonSW.setFillOpacity(fillAlphaf + "", false);
+                                polygonSW.setStrokeColor(strokeHex, false);
+                                break;
+                            default:
+                                break;
+                            }
+
+                            index++;
+                        } catch (Exception e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
+                    }
+
+                    reloadGroupsAndRules();
+                    applyStyle();
+                }
+
+            };
+            JMenuItem item2 = new JMenuItem(action2);
+            popupMenu.add(item2);
+            item2.setHorizontalTextPosition(JMenuItem.RIGHT);
         }
     }
 
