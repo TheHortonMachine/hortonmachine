@@ -121,8 +121,9 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     /**
      * Default constructor
      * @param fileToOpen optional file to open.
+     * @param optionalTableName 
      */
-    public MainController( File fileToOpen ) {
+    public MainController( File fileToOpen, String optionalTableName ) {
         setPreferredSize(new Dimension(1400, 800));
 
         _rulesTree.setCellRenderer(new CustomTreeCellRenderer());
@@ -183,29 +184,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 if (selectedFiles != null && selectedFiles.length > 0) {
                     File file = selectedFiles[0];
                     if (file.getName().toLowerCase().endsWith(HMConstants.GPKG)) {
-                        String tableName = null;
-                        try (GeopackageDb db = new GeopackageDb()) {
-                            db.open(file.getAbsolutePath());
-                            List<FeatureEntry> features = db.features();
-                            if (features.size() == 0) {
-                                GuiUtilities.showWarningMessage(this, "No feature tables found in geopackage.");
-                                return;
-                            } else if (features.size() == 1) {
-                                tableName = features.get(0).getTableName();
-                            } else {
-                                List<String> tableNames = features.stream().map(f -> f.getTableName())
-                                        .collect(Collectors.toList());
-                                String selection = GuiUtilities.showComboDialog(this, "Select", "Select the table to style",
-                                        tableNames.toArray(new String[0]), tableNames.get(0));
-                                if (selection == null) {
-                                    return;
-                                }
-                                tableName = selection;
-
-                            }
-                        } catch (Exception e1) {
-                            e1.printStackTrace();
-                        }
+                        String tableName = promptTableName(file);
                         if (tableName != null) {
                             objectWithStyle = new GpkgWithStyle();
                             try {
@@ -270,16 +249,50 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         });
 
         if (fileToOpen != null && fileToOpen.exists()) {
-            objectWithStyle = new FileWithStyle();
-            String nameWithoutExtention = FileUtilities.getNameWithoutExtention(fileToOpen);
-            try {
-                objectWithStyle.setDataFile(fileToOpen, nameWithoutExtention);
-            } catch (Exception e1) {
-                e1.printStackTrace();
+            if (fileToOpen.getName().toLowerCase().endsWith(HMConstants.GPKG)) {
+                objectWithStyle = new GpkgWithStyle();
+                try {
+                    objectWithStyle.setDataFile(fileToOpen, optionalTableName);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            } else {
+                objectWithStyle = new FileWithStyle();
+                String nameWithoutExtention = FileUtilities.getNameWithoutExtention(fileToOpen);
+                try {
+                    objectWithStyle.setDataFile(fileToOpen, nameWithoutExtention);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
             }
             openSelectedFile();
         }
 
+    }
+
+    private static String promptTableName( File geopackageFile ) {
+        String tableName = null;
+        try (GeopackageDb db = new GeopackageDb()) {
+            db.open(geopackageFile.getAbsolutePath());
+            List<FeatureEntry> features = db.features();
+            if (features.size() == 0) {
+                GuiUtilities.showWarningMessage(null, "No feature tables found in geopackage.");
+                return null;
+            } else if (features.size() == 1) {
+                tableName = features.get(0).getTableName();
+            } else {
+                List<String> tableNames = features.stream().map(f -> f.getTableName()).collect(Collectors.toList());
+                String selection = GuiUtilities.showComboDialog(null, "Select", "Select the table to style",
+                        tableNames.toArray(new String[0]), tableNames.get(0));
+                if (selection == null) {
+                    return null;
+                }
+                tableName = selection;
+            }
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+        return tableName;
     }
 
     private void openSelectedFile() {
@@ -595,8 +608,12 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         if (args.length > 0 && new File(args[0]).exists()) {
             openFile = new File(args[0]);
         }
+        String selectedTableName = null;
+        if (openFile != null && openFile.getName().toLowerCase().endsWith(HMConstants.GPKG)) {
+            selectedTableName = promptTableName(openFile);
+        }
 
-        final MainController controller = new MainController(openFile);
+        final MainController controller = new MainController(openFile, selectedTableName);
         SettingsController.applySettings(controller);
 
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine SLD Editor");

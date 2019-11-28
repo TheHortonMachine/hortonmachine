@@ -87,6 +87,7 @@ import org.sqlite.Function;
  */
 public class GeopackageDb extends ASpatialDb {
     private static final String HM_STYLES_TABLE = "hm_styles";
+    private static final String QGIS_STYLES_TABLE = "layer_styles";
 
     public static final String GEOPACKAGE_CONTENTS = "gpkg_contents";
 
@@ -1508,14 +1509,30 @@ public class GeopackageDb extends ASpatialDb {
 
     public String getSldString( String tableName ) throws Exception {
         checkStyleTable();
-        String sql = "select sld from " + HM_STYLES_TABLE + " where tablename='" + tableName + "'";
+
         return sqliteDb.execOnConnection(connection -> {
+            String sql = "select sld from " + HM_STYLES_TABLE + " where lower(tablename)='" + tableName.toLowerCase() + "'";
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 if (rs.next()) {
                     return rs.getString(1);
                 }
-                return null;
             }
+            if (sqliteDb.hasTable(QGIS_STYLES_TABLE)) {
+                // check is maybe there is a qgis style available
+                sql = "select styleSLD from " + QGIS_STYLES_TABLE + " where lower(f_table_name)='" + tableName.toLowerCase()
+                        + "'";
+                try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                    if (rs.next()) {
+                        String sld = rs.getString(1);
+                        if (sld != null) {
+                            if (sld.trim().length() == 0)
+                                return null;
+                        }
+                        return sld;
+                    }
+                }
+            }
+            return null;
         });
     }
 

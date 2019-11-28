@@ -82,6 +82,7 @@ import javax.swing.tree.TreePath;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.styling.Style;
 import org.geotools.swing.JMapFrame.Tool;
 import org.h2.jdbc.JdbcSQLException;
 import org.hortonmachine.database.tree.DatabaseTreeCellRenderer;
@@ -1408,7 +1409,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             if (geomsList.size() > 0) {
                                 List<SimpleFeatureCollection> fcs = FeatureUtilities.featureCollectionsFromGeometry(null,
                                         geomsList.toArray(new Geometry[0]));
-                                showInMapFrame(false, fcs.toArray(new SimpleFeatureCollection[0]));
+                                showInMapFrame(false, fcs.toArray(new SimpleFeatureCollection[0]), null);
                             }
 
                         }
@@ -1452,7 +1453,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 if (geomsList.size() > 0) {
                                     List<SimpleFeatureCollection> fcs = FeatureUtilities.featureCollectionsFromGeometry(null,
                                             geomsList.toArray(new Geometry[0]));
-                                    showInMapFrame(false, fcs.toArray(new SimpleFeatureCollection[0]));
+                                    showInMapFrame(false, fcs.toArray(new SimpleFeatureCollection[0]), null);
                                 }
 
                             }
@@ -2110,7 +2111,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         layoutTree(dbLevel, true);
     }
 
-    protected void showInMapFrame( boolean withLayers, SimpleFeatureCollection... fcs ) {
+    protected void showInMapFrame( boolean withLayers, SimpleFeatureCollection[] fcs, Style[] styles ) {
         if (mapFrame == null || !mapFrame.isVisible()) {
             Class<DatabaseController> class1 = DatabaseController.class;
             ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
@@ -2130,8 +2131,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
         }
         ReferencedEnvelope renv = null;
-        for( SimpleFeatureCollection fc : fcs ) {
-            mapFrame.addLayer(fc);
+        for( int i = 0; i < fcs.length; i++ ) {
+            SimpleFeatureCollection fc = fcs[i];
+            if (styles != null) {
+                mapFrame.addLayer(fc, styles[i]);
+            } else {
+                mapFrame.addLayer(fc);
+            }
             ReferencedEnvelope bounds = fc.getBounds();
             if (renv == null) {
                 renv = bounds;

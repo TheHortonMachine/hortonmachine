@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -51,8 +52,11 @@ import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
+import org.hortonmachine.gui.settings.SettingsController;
+import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
+import org.hortonmachine.style.MainController;
 import org.joda.time.DateTime;
 
 /**
@@ -544,12 +548,37 @@ public class SqlTemplatesAndActions {
             public void actionPerformed( ActionEvent e ) {
                 try {
                     String query = DbsUtilities.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
-                    spatialiteViewer.viewSpatialQueryResult(table.tableName, query, spatialiteViewer.pm);
+                    spatialiteViewer.viewSpatialQueryResult(table.tableName, query, spatialiteViewer.pm, true);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
         };
+    }
+
+    public Action getOpenInSldEditorAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
+        if (spatialiteViewer.currentConnectedDatabase.getType() == EDb.GEOPACKAGE) {
+            return new AbstractAction("Open in SLD editor"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    try {
+
+                        DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
+                        String databasePath = spatialiteViewer.currentConnectedDatabase.getDatabasePath();
+
+                        final MainController controller = new MainController(new File(databasePath), table.tableName);
+                        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine SLD Editor");
+                        Class<DatabaseViewer> class1 = DatabaseViewer.class;
+                        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
+                        frame.setIconImage(icon.getImage());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            };
+        } else {
+            return null;
+        }
     }
 
     public Action getUpdateLayerStats( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {

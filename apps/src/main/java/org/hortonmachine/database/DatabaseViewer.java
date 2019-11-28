@@ -33,16 +33,20 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.styling.Style;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
+import org.hortonmachine.dbs.geopackage.GeopackageDb;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.PreferencesHandler;
+import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.settings.SettingsController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
@@ -97,7 +101,7 @@ public class DatabaseViewer extends DatabaseController {
                 boolean hadErrors = false;
                 try {
                     logConsole.beginProcess("Run query");
-                    hadErrors = viewSpatialQueryResult(null, sqlText, pm);
+                    hadErrors = viewSpatialQueryResult(null, sqlText, pm, false);
                 } catch (Exception ex) {
                     pm.errorMessage(ex.getLocalizedMessage());
                     hadErrors = true;
@@ -145,16 +149,30 @@ public class DatabaseViewer extends DatabaseController {
         return hasError;
     }
 
-    public boolean viewSpatialQueryResult( String title, String sqlText, IHMProgressMonitor pm ) {
+    public boolean viewSpatialQueryResult( String tableName, String sqlText, IHMProgressMonitor pm, boolean isTableQuery ) {
         boolean hasError = false;
         if (sqlText.trim().length() == 0) {
             return false;
         }
         try {
             pm.beginTask("Run query: " + sqlText, IHMProgressMonitor.UNKNOWN);
-            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(title, currentConnectedDatabase, sqlText, null);
+            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(tableName, currentConnectedDatabase, sqlText,
+                    null);
             ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
-            showInMapFrame(true, rfc);
+
+            Style[] styles = null;
+            if (isTableQuery && tableName != null) {
+                // try to get some style
+                if (currentConnectedDatabase.getType() == EDb.GEOPACKAGE) {
+                    String sldString = ((GeopackageDb) currentConnectedDatabase).getSldString(tableName);
+                    if (sldString != null) {
+                        Style style = SldUtilities.getStyleFromSldString(sldString);
+                        styles = new Style[]{style};
+                    }
+                }
+            }
+
+            showInMapFrame(true, new SimpleFeatureCollection[]{rfc}, styles);
 
             addQueryToHistoryCombo(sqlText);
 
@@ -318,6 +336,7 @@ public class DatabaseViewer extends DatabaseController {
             addIfNotNull(actions, sqlTemplatesAndActions.getImportShapefileDataAction(guiBridge, selectedTable, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewTableAction(selectedTable, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewTableGeometriesAction(selectedTable, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getOpenInSldEditorAction(selectedTable, this));
         }
 
         return actions;

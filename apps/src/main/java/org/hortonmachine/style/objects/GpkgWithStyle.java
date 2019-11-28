@@ -24,7 +24,12 @@ public class GpkgWithStyle implements IObjectWithStyle {
 
         db = new GeopackageDb();
         db.open(dataFile.getAbsolutePath());
-        featureEntry = db.feature(tableName);
+        if (tableName != null) {
+            featureEntry = db.feature(tableName);
+        } else {
+            featureEntry = db.features().get(0);
+            tableName = featureEntry.getTableName();
+        }
     }
 
     public String getName() {
