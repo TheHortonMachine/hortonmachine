@@ -31,16 +31,11 @@ public class TileMatrix {
     Double yPixelSize;
     boolean tiles;
 
-    public TileMatrix() {}
+    public TileMatrix() {
+    }
 
-    public TileMatrix(
-            Integer zoomLevel,
-            Integer matrixWidth,
-            Integer matrixHeight,
-            Integer tileWidth,
-            Integer tileHeight,
-            Double xPixelSize,
-            Double yPixelSize) {
+    public TileMatrix( Integer zoomLevel, Integer matrixWidth, Integer matrixHeight, Integer tileWidth, Integer tileHeight,
+            Double xPixelSize, Double yPixelSize ) {
         super();
         this.zoomLevel = zoomLevel;
         this.matrixWidth = matrixWidth;
@@ -55,7 +50,7 @@ public class TileMatrix {
         return zoomLevel;
     }
 
-    public void setZoomLevel(Integer zoomLevel) {
+    public void setZoomLevel( Integer zoomLevel ) {
         this.zoomLevel = zoomLevel;
     }
 
@@ -63,7 +58,7 @@ public class TileMatrix {
         return matrixWidth;
     }
 
-    public void setMatrixWidth(Integer matrixWidth) {
+    public void setMatrixWidth( Integer matrixWidth ) {
         this.matrixWidth = matrixWidth;
     }
 
@@ -71,7 +66,7 @@ public class TileMatrix {
         return matrixHeight;
     }
 
-    public void setMatrixHeight(Integer matrixHeight) {
+    public void setMatrixHeight( Integer matrixHeight ) {
         this.matrixHeight = matrixHeight;
     }
 
@@ -79,7 +74,7 @@ public class TileMatrix {
         return tileWidth;
     }
 
-    public void setTileWidth(Integer tileWidth) {
+    public void setTileWidth( Integer tileWidth ) {
         this.tileWidth = tileWidth;
     }
 
@@ -87,7 +82,7 @@ public class TileMatrix {
         return tileHeight;
     }
 
-    public void setTileHeight(Integer tileHeight) {
+    public void setTileHeight( Integer tileHeight ) {
         this.tileHeight = tileHeight;
     }
 
@@ -95,7 +90,7 @@ public class TileMatrix {
         return xPixelSize;
     }
 
-    public void setXPixelSize(Double xPixelSize) {
+    public void setXPixelSize( Double xPixelSize ) {
         this.xPixelSize = xPixelSize;
     }
 
@@ -103,7 +98,7 @@ public class TileMatrix {
         return yPixelSize;
     }
 
-    public void setYPixelSize(Double yPixelSize) {
+    public void setYPixelSize( Double yPixelSize ) {
         this.yPixelSize = yPixelSize;
     }
 
@@ -111,28 +106,14 @@ public class TileMatrix {
         return tiles;
     }
 
-    public void setTiles(boolean tiles) {
+    public void setTiles( boolean tiles ) {
         this.tiles = tiles;
     }
 
     @Override
     public String toString() {
-        return "TileMatrix [zoomLevel="
-                + zoomLevel
-                + ", matrixWidth="
-                + matrixWidth
-                + ", matrixHeight="
-                + matrixHeight
-                + ", tileWidth="
-                + tileWidth
-                + ", tileHeight="
-                + tileHeight
-                + ", xPixelSize="
-                + xPixelSize
-                + ", yPixelSize="
-                + yPixelSize
-                + ", tiles="
-                + tiles
-                + "]";
+        return "TileMatrix [zoomLevel=" + zoomLevel + ", matrixWidth=" + matrixWidth + ", matrixHeight=" + matrixHeight
+                + ", tileWidth=" + tileWidth + ", tileHeight=" + tileHeight + ", xPixelSize=" + xPixelSize + ", yPixelSize="
+                + yPixelSize + ", tiles=" + tiles + "]";
     }
 }

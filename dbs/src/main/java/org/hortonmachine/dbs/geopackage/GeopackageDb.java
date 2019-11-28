@@ -139,7 +139,7 @@ public class GeopackageDb extends ASpatialDb {
      *      <li>vectors: accept only srid 3857 or 4326</li>
      *  </ul>
      */
-    private boolean forceMobileCompatibility = true;
+    private boolean forceMobileCompatibility = false;
 
     public GeopackageDb() {
         sqliteDb = new SqliteDb();
