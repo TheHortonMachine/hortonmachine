@@ -143,26 +143,7 @@ public class ImageUtilities {
             gridCoverage2D = (GridCoverage2D) Operations.DEFAULT.resample(gridCoverage2D, resampleCrs);
         }
         RenderedImage image = gridCoverage2D.getRenderedImage();
-        if (image instanceof BufferedImage) {
-            BufferedImage bImage = (BufferedImage) image;
-            return bImage;
-        } else {
-            ColorModel cm = image.getColorModel();
-            int width = image.getWidth();
-            int height = image.getHeight();
-            WritableRaster raster = cm.createCompatibleWritableRaster(width, height);
-            boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-            Hashtable properties = new Hashtable();
-            String[] keys = image.getPropertyNames();
-            if (keys != null) {
-                for( int i = 0; i < keys.length; i++ ) {
-                    properties.put(keys[i], image.getProperty(keys[i]));
-                }
-            }
-            BufferedImage result = new BufferedImage(cm, raster, isAlphaPremultiplied, properties);
-            image.copyData(raster);
-            return result;
-        }
+        return rendereImage2BufferedImage(image);
     }
 
     /**
@@ -234,4 +215,24 @@ public class ImageUtilities {
         return true;
     }
 
+    public static BufferedImage rendereImage2BufferedImage( RenderedImage renderedImage ) {
+        if (renderedImage instanceof BufferedImage) {
+            return (BufferedImage) renderedImage;
+        }
+        ColorModel cm = renderedImage.getColorModel();
+        int width = renderedImage.getWidth();
+        int height = renderedImage.getHeight();
+        WritableRaster raster = cm.createCompatibleWritableRaster(width, height);
+        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+        Hashtable<String, Object> properties = new Hashtable<>();
+        String[] keys = renderedImage.getPropertyNames();
+        if (keys != null) {
+            for( int i = 0; i < keys.length; i++ ) {
+                properties.put(keys[i], renderedImage.getProperty(keys[i]));
+            }
+        }
+        BufferedImage result = new BufferedImage(cm, raster, isAlphaPremultiplied, properties);
+        renderedImage.copyData(raster);
+        return result;
+    }
 }

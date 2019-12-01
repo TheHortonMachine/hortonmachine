@@ -1,15 +1,15 @@
 package org.hortonmachine.dbs;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
 
 import org.hortonmachine.dbs.utils.MercatorUtils;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Tests for utilities
@@ -45,6 +45,48 @@ public class TestUtils {
         y = 400344.88;
 
         test(lon, lat, x, y);
+    }
+
+    @Test
+    public void testTiles() throws Exception {
+        int tx = 0;
+        int ty = 0;
+        int tz = 0;
+
+        Envelope env4326 = MercatorUtils.tileBounds4326(tx, ty, tz);
+        Envelope env3857 = MercatorUtils.tileBounds3857(tx, ty, tz);
+
+        Coordinate ll3857 = new Coordinate(env3857.getMinX(), env3857.getMinY());
+        Coordinate ur3857 = new Coordinate(env3857.getMaxX(), env3857.getMaxY());
+
+        Coordinate ll4326transf = MercatorUtils.convert3857To4326(ll3857);
+        Coordinate ur4326transf = MercatorUtils.convert3857To4326(ur3857);
+        Coordinate ll4326 = new Coordinate(env4326.getMinX(), env4326.getMinY());
+        Coordinate ur4326 = new Coordinate(env4326.getMaxX(), env4326.getMaxY());
+
+        double tolerance = 0.0000001;
+        assertTrue(ll4326transf.equals2D(ll4326, tolerance));
+        assertTrue(ur4326transf.equals2D(ur4326, tolerance));
+    }
+
+    @Test
+    public void testTiles2() throws Exception {
+        int zoomLevel = 8;
+        double tolerance = 0.0000001;
+
+        Coordinate c1 = new Coordinate(1289079.2130195359, 5900910.886700573);
+        Coordinate c2 = new Coordinate(1298888.6991376826, 5909656.474824957);
+        Envelope env3857 = new Envelope(c1, c2);
+        Envelope env4326 = MercatorUtils.convert3857To4326(env3857);
+
+        Coordinate centre = env4326.centre();
+        assertTrue(centre.equals2D(new Coordinate(11.62405565150858, 46.77412159831822), tolerance));
+
+        int[] tileNumberFrom3857 = MercatorUtils.getTileNumberFrom3857(env3857.centre(), zoomLevel);
+        assertEquals(136, tileNumberFrom3857[1]);
+        assertEquals(90, tileNumberFrom3857[2]);
+        assertEquals(8, tileNumberFrom3857[0]);
+
     }
 
     @Test

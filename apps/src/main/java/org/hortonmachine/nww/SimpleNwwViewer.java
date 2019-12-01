@@ -59,6 +59,7 @@ public class SimpleNwwViewer {
 
             Component nwwComponent = NwwPanel.createNwwPanel(true);
             NwwPanel wwjPanel = null;
+
             LayersPanelController layerPanel = null;
             ToolsPanelController toolsPanel = null;
 
@@ -80,45 +81,59 @@ public class SimpleNwwViewer {
 //            JPanel mapPanel = new JPanel(new BorderLayout());
 //            mapPanel.add(nwwComponent, BorderLayout.CENTER);
             nwwFrame.getContentPane().add(nwwComponent, BorderLayout.CENTER);
+            nwwFrame.getContentPane().add(layerPanel, BorderLayout.WEST);
+            nwwFrame.getContentPane().add(toolsPanel, BorderLayout.EAST);
             nwwFrame.setResizable(true);
-            nwwFrame.setPreferredSize(new Dimension(800, 800));
+            nwwFrame.setPreferredSize(new Dimension(1200, 900));
             nwwFrame.pack();
             WWUtil.alignComponent(null, nwwFrame, AVKey.CENTER);
 
-            if (wwjPanel != null) {
-                final JFrame layersFrame = new JFrame();
-                layersFrame.setTitle(appName + ": layers view");
-                layersFrame.setIconImage(icon.getImage());
-                java.awt.EventQueue.invokeLater(new Runnable(){
+//            final JFrame nwwFrame = new JFrame();
+//            nwwFrame.setTitle(appName + ": map view");
+//            nwwFrame.setIconImage(icon.getImage());
+//
+////            JPanel mapPanel = new JPanel(new BorderLayout());
+////            mapPanel.add(nwwComponent, BorderLayout.CENTER);
+//            nwwFrame.getContentPane().add(nwwComponent, BorderLayout.CENTER);
+//            nwwFrame.setResizable(true);
+//            nwwFrame.setPreferredSize(new Dimension(800, 800));
+//            nwwFrame.pack();
+//            WWUtil.alignComponent(null, nwwFrame, AVKey.CENTER);
+//
+//            if (wwjPanel != null) {
+//                final JFrame layersFrame = new JFrame();
+//                layersFrame.setTitle(appName + ": layers view");
+//                layersFrame.setIconImage(icon.getImage());
+//                java.awt.EventQueue.invokeLater(new Runnable(){
+//
+//                    public void run() {
+//                        layersFrame.setVisible(true);
+//                    }
+//                });
+//                layersFrame.getContentPane().add(layerPanel, BorderLayout.CENTER);
+//                layersFrame.setResizable(true);
+//                layersFrame.setPreferredSize(new Dimension(400, 500));
+//                layersFrame.setLocation(0, 0);
+//                layersFrame.pack();
+//                final JFrame toolsFrame = new JFrame();
+//                toolsFrame.setTitle(appName + ": tools view");
+//                toolsFrame.setIconImage(icon.getImage());
+//                java.awt.EventQueue.invokeLater(new Runnable(){
+//
+//                    public void run() {
+//                        toolsFrame.setVisible(true);
+//                    }
+//                });
+//                toolsFrame.getContentPane().add(toolsPanel, BorderLayout.CENTER);
+//                toolsFrame.setResizable(true);
+//                toolsFrame.setPreferredSize(new Dimension(400, 400));
+//                toolsFrame.setLocation(0, 510);
+//                toolsFrame.pack();
+//                
+//                toolsFrame.setDefaultCloseOperation(onCloseAction);
+//                layersFrame.setDefaultCloseOperation(onCloseAction);
+//            }
 
-                    public void run() {
-                        layersFrame.setVisible(true);
-                    }
-                });
-                layersFrame.getContentPane().add(layerPanel, BorderLayout.CENTER);
-                layersFrame.setResizable(true);
-                layersFrame.setPreferredSize(new Dimension(400, 500));
-                layersFrame.setLocation(0, 0);
-                layersFrame.pack();
-                final JFrame toolsFrame = new JFrame();
-                toolsFrame.setTitle(appName + ": tools view");
-                toolsFrame.setIconImage(icon.getImage());
-                java.awt.EventQueue.invokeLater(new Runnable(){
-
-                    public void run() {
-                        toolsFrame.setVisible(true);
-                    }
-                });
-                toolsFrame.getContentPane().add(toolsPanel, BorderLayout.CENTER);
-                toolsFrame.setResizable(true);
-                toolsFrame.setPreferredSize(new Dimension(400, 400));
-                toolsFrame.setLocation(0, 510);
-                toolsFrame.pack();
-                
-                toolsFrame.setDefaultCloseOperation(onCloseAction);
-                layersFrame.setDefaultCloseOperation(onCloseAction);
-            }
-            
             nwwFrame.setDefaultCloseOperation(onCloseAction);
 
             java.awt.EventQueue.invokeLater(new Runnable(){

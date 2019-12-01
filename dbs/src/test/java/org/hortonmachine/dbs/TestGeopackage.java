@@ -5,18 +5,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.UTFDataFormatException;
 import java.net.URL;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.imageio.ImageIO;
-
-import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.geopackage.Entry;
@@ -25,7 +19,6 @@ import org.hortonmachine.dbs.geopackage.GeopackageDb;
 import org.hortonmachine.dbs.geopackage.GeopackageTableNames;
 import org.hortonmachine.dbs.geopackage.TileEntry;
 import org.hortonmachine.dbs.geopackage.TileMatrix;
-import org.hortonmachine.dbs.utils.MercatorUtils;
 import org.junit.Test;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;

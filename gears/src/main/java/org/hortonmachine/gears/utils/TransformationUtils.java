@@ -165,7 +165,7 @@ public class TransformationUtils {
     /**
      * Given a transformation, transform an envelope by it.
      * 
-     * @param transformation the transformation to use.
+     * @param transformation the AffineTransform to use.
      * @param env the envelope to transform.
      * @return the transformed envelope.
      */
@@ -184,6 +184,23 @@ public class TransformationUtils {
         Point2D toPoint = new Point2D.Double();
         transformation.transform(fromPoint, toPoint);
         return new Coordinate(toPoint.getX(), toPoint.getY());
+    }
+    
+    /**
+     * Given a transformation, transform an envelope by it.
+     * 
+     * @param transformation the AffineTransformation to use.
+     * @param env the envelope to transform.
+     * @return the transformed envelope.
+     */
+    public static Envelope transformEnvelope( AffineTransformation transformation, Envelope env ) {
+        Coordinate llFromPoint = new Coordinate(env.getMinX(), env.getMinY());
+        Coordinate urFromPoint = new Coordinate(env.getMaxX(), env.getMaxY());
+        Coordinate ll = new Coordinate();
+        Coordinate ur = new Coordinate();
+        transformation.transform(llFromPoint, ll);
+        transformation.transform(urFromPoint, ur);
+        return new Envelope(ll.getX(), ur.getX(), ll.getY(), ur.getY());
     }
 
 }

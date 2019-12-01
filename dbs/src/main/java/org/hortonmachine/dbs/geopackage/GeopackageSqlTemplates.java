@@ -98,9 +98,11 @@ public class GeopackageSqlTemplates extends ASqlTemplates {
         query += "drop table if exists rtree_" + tableName + "_the_geom_rowid;\n";
         query += "drop table if exists rtree_" + tableName + "_the_geom_parent;\n";
         query += "drop table if exists rtree_" + tableName + "_the_geom_node;\n";
+        query += "delete from gpkg_tile_matrix where table_name = \"" + tableName + "\";\n";
+        query += "delete from gpkg_tile_matrix_set where table_name = \"" + tableName + "\";\n";
         query += "delete from gpkg_geometry_columns where table_name = \"" + tableName + "\";\n";
         query += "delete from gpkg_contents where table_name = \"" + tableName + "\";\n";
-        query += "drop table if exists " + tableName + ";\n";
+        query += "drop table if exists " + DbsUtilities.fixTableName(tableName) + ";\n";
         return query;
     }
 

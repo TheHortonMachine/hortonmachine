@@ -19,10 +19,8 @@ package org.hortonmachine.dbs.geopackage;
 
 import static java.lang.String.format;
 
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -41,8 +39,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.imageio.ImageIO;
 
 import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.ASpatialDb;
@@ -73,6 +69,7 @@ import org.hortonmachine.dbs.spatialite.SpatialiteGeometryColumns;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.ITilesProducer;
 import org.hortonmachine.dbs.utils.MercatorUtils;
 import org.hortonmachine.dbs.utils.ResultSetToObjectFunction;
 import org.locationtech.jts.geom.Coordinate;
@@ -117,6 +114,8 @@ public class GeopackageDb extends ASpatialDb {
     public final static String COL_TILES_TILE_DATA = "tile_data";
     public final static String SELECTQUERY = "SELECT " + COL_TILES_TILE_DATA + " from %s where " + COL_TILES_ZOOM_LEVEL
             + "=? AND " + COL_TILES_TILE_COLUMN + "=? AND " + COL_TILES_TILE_ROW + "=?";
+    public final static String INSERTQUERY = "insert or replace into %s (" + COL_TILES_ZOOM_LEVEL + ", " + COL_TILES_TILE_COLUMN
+            + ", " + COL_TILES_TILE_ROW + ", " + COL_TILES_TILE_DATA + ") VALUES (?,?,?,?)";
 
     public final static int MERCATOR_SRID = 3857;
     public final static int WGS84LL_SRID = 4326;
@@ -421,7 +420,7 @@ public class GeopackageDb extends ASpatialDb {
 //            int[] tmsTileXY = MercatorUtils.osmTile2TmsTile(tx, ty, zoom);
 //            ty = tmsTileXY[1];
 //        }
-        String sql = format(SELECTQUERY, tableName);
+        String sql = format(SELECTQUERY, DbsUtilities.fixTableName(tableName));
         return sqliteDb.execOnConnection(connection -> {
             byte[] imageBytes = null;
             try (IHMPreparedStatement statement = connection.prepareStatement(sql)) {
@@ -461,8 +460,8 @@ public class GeopackageDb extends ASpatialDb {
      * @throws Exception
      */
     public List<Integer> getTileZoomLevelsWithData( String tableName ) throws Exception {
-        String sql = "select distinct " + GeopackageDb.COL_TILES_ZOOM_LEVEL + " from " + tableName + " order by "
-                + GeopackageDb.COL_TILES_ZOOM_LEVEL;
+        String sql = "select distinct " + GeopackageDb.COL_TILES_ZOOM_LEVEL + " from " + DbsUtilities.fixTableName(tableName)
+                + " order by " + GeopackageDb.COL_TILES_ZOOM_LEVEL;
 
         return sqliteDb.execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
@@ -536,7 +535,7 @@ public class GeopackageDb extends ASpatialDb {
             String sql = format(
                     "SELECT *, exists(SELECT 1 FROM %s data where data.zoom_level = tileMatrix.zoom_level) as has_tiles"
                             + " FROM %s as tileMatrix" + " WHERE table_name = ?" + " ORDER BY zoom_level ASC",
-                    e.getTableName(), TILE_MATRIX_METADATA);
+                    DbsUtilities.fixTableName(e.getTableName()), TILE_MATRIX_METADATA);
             try (IHMPreparedStatement pstmt = connection.prepareStatement(sql);) {
                 pstmt.setString(1, e.getTableName());
                 IHMResultSet rsm = pstmt.executeQuery();
@@ -790,7 +789,8 @@ public class GeopackageDb extends ASpatialDb {
         });
 
         String[] g = geometryFieldData.split("\\s+");
-        addGeoPackageContentsEntry(tableName, tableSrid, null, null);
+        String dataType = Entry.DataType.Feature.value();
+        addGeoPackageContentsEntry(dataType, tableName, tableSrid, null, null);
         addGeometryColumnsEntry(tableName, g[0], g[1], tableSrid, false, false);
 
         addGeometryXYColumnAndIndex(tableName, g[0], g[1], String.valueOf(tableSrid), avoidIndex);
@@ -804,6 +804,7 @@ public class GeopackageDb extends ASpatialDb {
 
     public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, int limit, int reprojectSrid, String whereStr )
             throws Exception {
+        tableName = DbsUtilities.fixTableName(tableName);
         QueryResult queryResult = new QueryResult();
         GeometryColumn gCol = null;
         String geomColLower = null;
@@ -1409,7 +1410,7 @@ public class GeopackageDb extends ASpatialDb {
         }
     }
 
-    private void addGeoPackageContentsEntry( String tableName, int srid, String description, Envelope crsBounds )
+    private void addGeoPackageContentsEntry( String dataType, String tableName, int srid, String description, Envelope crsBounds )
             throws Exception {
         if (!hasCrs(srid))
             throw new IOException("The srid is not yet present in the package. Please add it before proceeding.");
@@ -1450,7 +1451,7 @@ public class GeopackageDb extends ASpatialDb {
 
                 int i = 1;
                 pStmt.setString(i++, tableName);
-                pStmt.setString(i++, Entry.DataType.Feature.value());
+                pStmt.setString(i++, dataType);
                 pStmt.setString(i++, tableName);
                 if (description != null)
                     pStmt.setString(i++, description);
@@ -1559,6 +1560,176 @@ public class GeopackageDb extends ASpatialDb {
             );
             sqliteDb.createIndex(HM_STYLES_TABLE, "tablename", true);
         }
+    }
+
+    /**
+     * Creates a new tile entry in the geopackage.
+     * 
+     * <p>If the table exists, data are added to that one.
+     * <p>Only 3857 tiles are supported. The data need to be in that projection.
+     *
+     */
+    public void addTilestable( String tableName, String description, Envelope dataBounds, ITilesProducer tilesProducer )
+            throws Exception {
+        String fixedTableName = DbsUtilities.fixTableName(tableName);
+
+        boolean hasTheTable = sqliteDb.hasTable(fixedTableName);
+        if (!hasTheTable) {
+            String createTableSql = format("CREATE TABLE %s (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
+                    + COL_TILES_ZOOM_LEVEL + " INTEGER NOT NULL, " + COL_TILES_TILE_COLUMN + " INTEGER NOT NULL,"
+                    + COL_TILES_TILE_ROW + " INTEGER NOT NULL, " + COL_TILES_TILE_DATA + " BLOB NOT NULL)", fixedTableName);
+            sqliteDb.executeInsertUpdateDeleteSql(createTableSql);
+        }
+        // update the metadata tables
+        addGeoPackageContentsEntry(DataType.Tile.value, tableName, MERCATOR_SRID, description, dataBounds);
+
+        // insert the tiles
+        double w = dataBounds.getMinX();
+        double s = dataBounds.getMinY();
+        double e = dataBounds.getMaxX();
+        double n = dataBounds.getMaxY();
+
+        int tileSize = tilesProducer.getTileSize();
+        int minZoom = tilesProducer.getMinZoom();
+        int maxZoom = tilesProducer.getMaxZoom();
+
+        List<Tile> tilesList = new ArrayList<>();
+        for( int z = minZoom; z <= maxZoom; z++ ) {
+            if (tilesProducer.cancelled()) {
+                break;
+            }
+
+            // get ul and lr tile number
+            int[] llTileNumber = MercatorUtils.getTileNumberFrom3857(new Coordinate(w, s), z);
+            int[] urTileNumber = MercatorUtils.getTileNumberFrom3857(new Coordinate(e, n), z);
+
+            int startXTile = llTileNumber[1];
+            int startYTile = urTileNumber[2];
+            int endXTile = urTileNumber[1];
+            int endYTile = llTileNumber[2];
+
+            int xTileCount = 1 + endXTile - startXTile;
+            int yTileCount = 1 + endYTile - startYTile;
+            int count = xTileCount * yTileCount;
+            tilesProducer.startWorkingOnZoomLevel(z, count);
+
+            final Envelope levelBounds3857 = new Envelope();
+
+            Envelope sampleTileBounds3857 = null;
+            for( int x = startXTile; x <= endXTile; x++ ) {
+                if (tilesProducer.cancelled()) {
+                    break;
+                }
+                for( int y = startYTile; y <= endYTile; y++ ) {
+                    if (tilesProducer.cancelled()) {
+                        break;
+                    }
+
+                    Envelope tileBounds3857 = MercatorUtils.tileBounds3857(x, y, z);
+                    if (sampleTileBounds3857 == null) {
+                        sampleTileBounds3857 = tileBounds3857;
+                    }
+                    levelBounds3857.expandToInclude(tileBounds3857);
+
+                    byte[] imageData = tilesProducer.getTileData(tileBounds3857);
+                    if (imageData != null) {
+                        Tile tile = new Tile();
+                        tile.x = x;
+                        tile.y = y;
+                        tile.z = z;
+                        tile.imageBytes = imageData;
+                        tilesList.add(tile);
+
+                        if (tilesList.size() == 1000) {
+                            putTiles(fixedTableName, tilesList);
+                            tilesList.clear();
+                        }
+                    }
+                    tilesProducer.worked();
+                }
+            }
+            tilesProducer.done();
+
+            String sql = format("INSERT or replace INTO %s (table_name, srs_id, min_x, min_y, max_x, max_y) VALUES (?,?,?,?,?,?)",
+                    TILE_MATRIX_SET);
+            sqliteDb.executeInsertUpdateDeletePreparedSql(sql, new Object[]{tableName, MERCATOR_SRID, levelBounds3857.getMinX(),
+                    levelBounds3857.getMinY(), levelBounds3857.getMaxX(), levelBounds3857.getMaxY()});
+
+            sql = format(
+                    "INSERT INTO %s (table_name, zoom_level, matrix_width, matrix_height, tile_width, tile_height, pixel_x_size, pixel_y_size) VALUES (?,?,?,?,?,?,?,?)",
+                    TILE_MATRIX_METADATA);
+            sqliteDb.executeInsertUpdateDeletePreparedSql(sql, new Object[]{tableName, z, xTileCount, yTileCount, tileSize,
+                    tileSize, sampleTileBounds3857.getWidth() / tileSize, sampleTileBounds3857.getHeight() / tileSize});
+            // update level data
+        }
+
+        if (tilesList.size() > 0) {
+            putTiles(fixedTableName, tilesList);
+        }
+
+        // add index at the end
+        if (!hasTheTable) {
+            String createIndexSql = format("create index idx%s_zyx_idx on %s(" + COL_TILES_ZOOM_LEVEL + ", "
+                    + COL_TILES_TILE_COLUMN + ", " + COL_TILES_TILE_ROW + ");", tableName, fixedTableName);
+            sqliteDb.executeInsertUpdateDeleteSql(createIndexSql);
+        }
+
+    }
+
+    /**
+     * Add a tile to the geopackage.
+     *
+     * @param tableName the tabel into which to insert the tile.
+     * @param tx the col of the tile.
+     * @param ty the row of the tile.
+     * @param zoom the zoomlevel of the tile.
+     * @param tileData the tile image data.
+     * @throws Exception
+     */
+    public void putTile( String tableName, int tx, int ty, int zoom, byte[] tileData ) throws Exception {
+        String sql = format(INSERTQUERY, tableName);
+        sqliteDb.execOnConnection(connection -> {
+            try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
+                pstmt.setInt(1, zoom);
+                pstmt.setInt(2, tx);
+                pstmt.setInt(3, ty);
+                pstmt.setBytes(4, tileData);
+                pstmt.executeUpdate();
+                return null;
+            }
+        });
+    }
+
+    public void putTiles( String tableName, List<Tile> tilesList ) throws Exception {
+        String sql = format(INSERTQUERY, tableName);
+
+        sqliteDb.execOnConnection(connection -> {
+            boolean autoCommit = connection.getAutoCommit();
+            connection.enableAutocommit(false);
+            try {
+                try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
+
+                    for( Tile tile : tilesList ) {
+                        pstmt.setInt(1, tile.z);
+                        pstmt.setInt(2, tile.x);
+                        pstmt.setInt(3, tile.y);
+                        pstmt.setBytes(4, tile.imageBytes);
+                        pstmt.addBatch();
+                    }
+                    pstmt.executeBatch();
+                    return null;
+                }
+            } finally {
+                connection.enableAutocommit(autoCommit);
+            }
+        });
+    }
+
+    public static class Tile {
+        public int x;
+        public int y;
+        public int z;
+        public byte[] imageBytes;
     }
 
 //    void deleteGeometryColumnsEntry( FeatureEntry e ) throws IOException {

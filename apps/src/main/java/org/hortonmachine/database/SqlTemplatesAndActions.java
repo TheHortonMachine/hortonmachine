@@ -27,6 +27,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -35,7 +36,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.processing.Operations;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ASqlTemplates;
 import org.hortonmachine.dbs.compat.ConnectionData;
@@ -43,21 +47,27 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
+import org.hortonmachine.dbs.geopackage.GeopackageDb;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.ITilesProducer;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.PreferencesHandler;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
-import org.hortonmachine.gui.settings.SettingsController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.style.MainController;
 import org.joda.time.DateTime;
+import org.locationtech.jts.geom.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Simple queries templates.
@@ -678,6 +688,107 @@ public class SqlTemplatesAndActions {
     public static Object convertFromBytes( byte[] bytes ) throws Exception {
         try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes); ObjectInput in = new ObjectInputStream(bis)) {
             return in.readObject();
+        }
+    }
+
+    public Action getImportRaster2TilesTableAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
+        if (databaseViewer.currentConnectedDatabase.getType() == EDb.GEOPACKAGE) {
+            return new AbstractAction("Import raster image to tiles"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    try {
+                        File[] openFiles = guiBridge.showOpenFileDialog("Open raster file", PreferencesHandler.getLastFile(),
+                                HMConstants.rasterFileFilter);
+                        if (openFiles != null && openFiles.length > 0) {
+                            try {
+                                PreferencesHandler.setLastPath(openFiles[0].getAbsolutePath());
+                            } catch (Exception e1) {
+                                logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
+                            }
+                        } else {
+                            return;
+                        }
+                        try {
+                            String nameWithoutExtention = FileUtilities.getNameWithoutExtention(openFiles[0]);
+
+                            String[] zoomLevels = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+                                    "13", "14", "15", "16", "17", "18", "19"};
+                            HashMap<String, String[]> fields2ValuesMap = new HashMap<>();
+                            String minZoomLevelLabel = "min zoom level";
+                            String maxZoomLevelLabel = "max zoom level";
+                            fields2ValuesMap.put(minZoomLevelLabel, zoomLevels);
+                            fields2ValuesMap.put(maxZoomLevelLabel, zoomLevels);
+
+                            String[] result = GuiUtilities.showMultiInputDialog(databaseViewer, "Select parameters", //
+                                    new String[]{minZoomLevelLabel, maxZoomLevelLabel}, //
+                                    new String[]{"8", "16"}, //
+                                    null);
+
+                            final LogConsoleController logConsole = new LogConsoleController(null);
+                            IHMProgressMonitor pm = logConsole.getProgressMonitor();
+                            Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
+                            Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
+                            JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+                            new Thread(() -> {
+                                boolean hadErrors = false;
+                                try {
+                                    logConsole.beginProcess("Import raster image to tileset");
+
+                                    pm.message("Checking input parameters...");
+                                    int minZoom = 8;
+                                    int maxZoom = 16;
+                                    if (result != null) {
+                                        try {
+                                            minZoom = Integer.parseInt(result[0]);
+                                            maxZoom = Integer.parseInt(result[1]);
+                                        } catch (Exception e1) {
+                                            pm.errorMessage("The min or max zoomlevel were not entered correctly, exiting.");
+                                            hadErrors = true;
+                                            return;
+                                        }
+                                    }
+
+                                    String rasterPath = openFiles[0].getAbsolutePath();
+                                    GridCoverage2D raster = OmsRasterReader.readRaster(rasterPath);
+                                    String codeFromCrs = CrsUtilities.getCodeFromCrs(raster.getCoordinateReferenceSystem());
+                                    String targetEpsg = "epsg:" + GeopackageDb.MERCATOR_SRID;
+                                    if (!codeFromCrs.toLowerCase().equals(targetEpsg)) {
+                                        // need to reproject
+                                        CoordinateReferenceSystem mercatorCrs = CrsUtilities.getCrsFromEpsg(targetEpsg, null);
+                                        raster = (GridCoverage2D) Operations.DEFAULT.resample(raster, mercatorCrs);
+                                    }
+                                    Envelope envelopeInternal = CoverageUtilities.getRegionPolygon(raster).getEnvelopeInternal();
+
+                                    ITilesProducer tileProducer = new GeopackageTilesProducer(pm, raster, minZoom, maxZoom, 256);
+                                    ((GeopackageDb) databaseViewer.currentConnectedDatabase).addTilestable(nameWithoutExtention,
+                                            "HM import of " + openFiles[0].getName(), envelopeInternal, tileProducer);
+
+                                    databaseViewer.refreshDatabaseTree();
+
+                                } catch (Exception ex) {
+                                    pm.errorMessage(ex.getLocalizedMessage());
+                                    hadErrors = true;
+                                } finally {
+                                    logConsole.finishProcess();
+                                    logConsole.stopLogging();
+                                    Logger.INSTANCE.resetStreams();
+                                    if (!hadErrors) {
+                                        logConsole.setVisible(false);
+                                        window.dispose();
+                                    }
+                                }
+                            }, "DatabaseController->Import raster image to tileset").start();
+
+                        } catch (Exception e1) {
+                            GuiUtilities.handleError(databaseViewer, e1);
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            };
+        } else {
+            return null;
         }
     }
 }

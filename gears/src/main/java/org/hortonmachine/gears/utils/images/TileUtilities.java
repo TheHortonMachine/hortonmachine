@@ -94,7 +94,7 @@ public class TileUtilities {
             }
         } else {
             // for lower zoomlevels the piece needs to be extracted and resized to fit the tile
-            Envelope swEnv = MercatorUtils.tileEnvelopeLL(x, y, zoom);
+            Envelope swEnv = MercatorUtils.tileBounds4326(x, y, zoom);
             Coordinate centre = swEnv.centre();
             double swx2 = swEnv.getMaxX();
             double swx1 = swEnv.getMinX();
@@ -106,7 +106,7 @@ public class TileUtilities {
             if (tileBytes != null) {
                 ByteArrayInputStream bais = new ByteArrayInputStream(tileBytes);
                 BufferedImage img = ImageIO.read(bais);
-                Envelope wEnv = MercatorUtils.tileEnvelopeLL(zxy3[1], zxy3[2], zxy3[0]);
+                Envelope wEnv = MercatorUtils.tileBounds4326(zxy3[1], zxy3[2], zxy3[0]);
 
                 double wx2 = wEnv.getMaxX();
                 double wx1 = wEnv.getMinX();
