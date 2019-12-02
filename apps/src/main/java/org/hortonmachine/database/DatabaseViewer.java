@@ -331,6 +331,7 @@ public class DatabaseViewer extends DatabaseController {
         addIfNotNull(actions, sqlTemplatesAndActions.getCountRowsAction(selectedTable, this));
         actions.add(null);
         addIfNotNull(actions, sqlTemplatesAndActions.getSelectAction(selectedTable, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getInsertAction(selectedTable, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getDropAction(selectedTable, this));
         actions.add(null);
         addIfNotNull(actions, sqlTemplatesAndActions.getReprojectTableAction(selectedTable, this));

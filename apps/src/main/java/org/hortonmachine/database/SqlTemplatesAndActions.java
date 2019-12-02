@@ -29,6 +29,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -431,6 +432,27 @@ public class SqlTemplatesAndActions {
             }
         };
     }
+
+    public Action getInsertAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
+        return new AbstractAction("Insert statement"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                try {
+                    List<String[]> tableColumns = spatialiteViewer.currentConnectedDatabase.getTableColumns(table.tableName);
+
+                    String cols = tableColumns.stream().map(tc -> tc[0]).collect(Collectors.joining(","));
+                    String quest = tableColumns.stream().map(tc -> "?").collect(Collectors.joining(","));
+
+                    String query = "INSERT INTO " + table.tableName + " (" + cols + ") VALUES (" + quest + ");";
+                    DbsUtilities.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
+                    spatialiteViewer.addTextToQueryEditor(query);
+                } catch (Exception e1) {
+                    logger.insertError("SqlTemplatesAndActions", "Error", e1);
+                }
+            }
+        };
+    }
+
 
     public Action getDropAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Drop table statement"){
