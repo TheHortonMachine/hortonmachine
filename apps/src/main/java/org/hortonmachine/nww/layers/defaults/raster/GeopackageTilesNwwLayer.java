@@ -95,7 +95,7 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
     private static LevelSet makeLevels( File gpkgFile, GeopackageDb gpkgDb, String tableName ) throws Exception {
         AVList params = new AVListImpl();
 
-        String cacheRelativePath = "gpkg/" + gpkgFile.getName() + "-tiles";
+        String cacheRelativePath = "gpkg/" + gpkgFile.getName() + "-" + tableName + "-tiles";
 
         TileEntry tile = gpkgDb.tile(tableName);
         int tileSize = tile.getTileMatricies().get(0).getTileWidth();

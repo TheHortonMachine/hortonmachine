@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -31,6 +32,9 @@ public class RasterStyleView extends JPanel
    JComboBox _opacityCombo = new JComboBox();
    JLabel _novalueLabel = new JLabel();
    JTextField _novalueTextfield = new JTextField();
+   JLabel _selectColorTableLabel1 = new JLabel();
+   JCheckBox _shadedReliefCheck = new JCheckBox();
+   JTextField _reliefFactorField = new JTextField();
 
    /**
     * Default constructor
@@ -122,7 +126,7 @@ public class RasterStyleView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.3),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.3),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(0.5),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -156,7 +160,15 @@ public class RasterStyleView extends JPanel
       jpanel1.add(_customStyleButton,new CellConstraints(15,6,1,1,CellConstraints.DEFAULT,CellConstraints.CENTER));
 
       jpanel1.add(createPanel1(),cc.xywh(2,2,14,1));
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16 },new int[]{ 1,2,3,4,5,6,7 });
+      _selectColorTableLabel1.setName("selectColorTableLabel");
+      _selectColorTableLabel1.setText("Add shaded relief");
+      jpanel1.add(_selectColorTableLabel1,cc.xy(2,9));
+
+      _shadedReliefCheck.setName("shadedReliefCheck");
+      jpanel1.add(_shadedReliefCheck,cc.xy(4,9));
+
+      jpanel1.add(createPanel2(),cc.xywh(7,9,7,1));
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11 });
       return jpanel1;
    }
 
@@ -184,6 +196,24 @@ public class RasterStyleView extends JPanel
       jpanel1.add(_novalueTextfield,cc.xy(7,1));
 
       addFillComponents(jpanel1,new int[]{ 2,4,6,8,9 },new int[0]);
+      return jpanel1;
+   }
+
+   public JPanel createPanel2()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:24DLU:NONE","CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      JLabel jlabel1 = new JLabel();
+      jlabel1.setText("relief factor");
+      jpanel1.add(jlabel1,cc.xy(1,1));
+
+      _reliefFactorField.setName("reliefFactorField");
+      jpanel1.add(_reliefFactorField,cc.xy(3,1));
+
+      addFillComponents(jpanel1,new int[]{ 2 },new int[0]);
       return jpanel1;
    }
 

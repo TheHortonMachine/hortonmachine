@@ -37,6 +37,7 @@ import org.locationtech.jts.geom.Envelope;
  * @since 0.9.7
  */
 public class TileUtilities {
+    public static final Color transparent = new Color(255, 255, 255, 0);
 
     /**
      * Produce a geopackage tile for a different zoomlevel applying patching/clipping and scaling.
@@ -64,8 +65,8 @@ public class TileUtilities {
             int size = splits * tileSize;
             BufferedImage finalImage = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = (Graphics2D) finalImage.getGraphics();
-            g2d.setColor(Color.white);
-            g2d.fillRect(0, 0, size, size);
+//            g2d.setColor(transparent);
+//            g2d.fillRect(0, 0, size, size);
             int runningX = 0;
             int runningY = 0;
             boolean hasOne = false;

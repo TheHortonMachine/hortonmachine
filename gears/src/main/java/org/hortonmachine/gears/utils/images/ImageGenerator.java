@@ -546,9 +546,8 @@ public class ImageGenerator {
         }
 
         Rectangle imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
-        BufferedImage dumpImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+        BufferedImage dumpImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = dumpImage.createGraphics();
-        g2d.fillRect(0, 0, imageWidth, imageHeight);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         renderer.paint(g2d, imageBounds, ref);

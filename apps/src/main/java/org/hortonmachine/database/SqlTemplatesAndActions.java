@@ -35,11 +35,15 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileFilter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.coverage.processing.Operations;
+import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ASqlTemplates;
 import org.hortonmachine.dbs.compat.ConnectionData;
@@ -67,6 +71,7 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.style.MainController;
 import org.joda.time.DateTime;
 import org.locationtech.jts.geom.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -693,102 +698,147 @@ public class SqlTemplatesAndActions {
 
     public Action getImportRaster2TilesTableAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
         if (databaseViewer.currentConnectedDatabase.getType() == EDb.GEOPACKAGE) {
-            return new AbstractAction("Import raster image to tiles"){
+            return new AbstractAction("Import raster to tileset"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
-                    try {
-                        File[] openFiles = guiBridge.showOpenFileDialog("Open raster file", PreferencesHandler.getLastFile(),
-                                HMConstants.rasterFileFilter);
-                        if (openFiles != null && openFiles.length > 0) {
-                            try {
-                                PreferencesHandler.setLastPath(openFiles[0].getAbsolutePath());
-                            } catch (Exception e1) {
-                                logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
-                            }
-                        } else {
-                            return;
-                        }
-                        try {
-                            String nameWithoutExtention = FileUtilities.getNameWithoutExtention(openFiles[0]);
-
-                            String[] zoomLevels = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
-                                    "13", "14", "15", "16", "17", "18", "19"};
-                            HashMap<String, String[]> fields2ValuesMap = new HashMap<>();
-                            String minZoomLevelLabel = "min zoom level";
-                            String maxZoomLevelLabel = "max zoom level";
-                            fields2ValuesMap.put(minZoomLevelLabel, zoomLevels);
-                            fields2ValuesMap.put(maxZoomLevelLabel, zoomLevels);
-
-                            String[] result = GuiUtilities.showMultiInputDialog(databaseViewer, "Select parameters", //
-                                    new String[]{minZoomLevelLabel, maxZoomLevelLabel}, //
-                                    new String[]{"8", "16"}, //
-                                    null);
-
-                            final LogConsoleController logConsole = new LogConsoleController(null);
-                            IHMProgressMonitor pm = logConsole.getProgressMonitor();
-                            Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
-                            Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
-                            JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
-                            new Thread(() -> {
-                                boolean hadErrors = false;
-                                try {
-                                    logConsole.beginProcess("Import raster image to tileset");
-
-                                    pm.message("Checking input parameters...");
-                                    int minZoom = 8;
-                                    int maxZoom = 16;
-                                    if (result != null) {
-                                        try {
-                                            minZoom = Integer.parseInt(result[0]);
-                                            maxZoom = Integer.parseInt(result[1]);
-                                        } catch (Exception e1) {
-                                            pm.errorMessage("The min or max zoomlevel were not entered correctly, exiting.");
-                                            hadErrors = true;
-                                            return;
-                                        }
-                                    }
-
-                                    String rasterPath = openFiles[0].getAbsolutePath();
-                                    GridCoverage2D raster = OmsRasterReader.readRaster(rasterPath);
-                                    String codeFromCrs = CrsUtilities.getCodeFromCrs(raster.getCoordinateReferenceSystem());
-                                    String targetEpsg = "epsg:" + GeopackageDb.MERCATOR_SRID;
-                                    if (!codeFromCrs.toLowerCase().equals(targetEpsg)) {
-                                        // need to reproject
-                                        CoordinateReferenceSystem mercatorCrs = CrsUtilities.getCrsFromEpsg(targetEpsg, null);
-                                        raster = (GridCoverage2D) Operations.DEFAULT.resample(raster, mercatorCrs);
-                                    }
-                                    Envelope envelopeInternal = CoverageUtilities.getRegionPolygon(raster).getEnvelopeInternal();
-
-                                    ITilesProducer tileProducer = new GeopackageTilesProducer(pm, raster, minZoom, maxZoom, 256);
-                                    ((GeopackageDb) databaseViewer.currentConnectedDatabase).addTilestable(nameWithoutExtention,
-                                            "HM import of " + openFiles[0].getName(), envelopeInternal, tileProducer);
-
-                                    databaseViewer.refreshDatabaseTree();
-
-                                } catch (Exception ex) {
-                                    pm.errorMessage(ex.getLocalizedMessage());
-                                    hadErrors = true;
-                                } finally {
-                                    logConsole.finishProcess();
-                                    logConsole.stopLogging();
-                                    Logger.INSTANCE.resetStreams();
-                                    if (!hadErrors) {
-                                        logConsole.setVisible(false);
-                                        window.dispose();
-                                    }
-                                }
-                            }, "DatabaseController->Import raster image to tileset").start();
-
-                        } catch (Exception e1) {
-                            GuiUtilities.handleError(databaseViewer, e1);
-                        }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
+                    doTiles(guiBridge, databaseViewer, true);
                 }
             };
         } else {
             return null;
+        }
+    }
+    public Action getImportVector2TilesTableAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
+        if (databaseViewer.currentConnectedDatabase.getType() == EDb.GEOPACKAGE) {
+            return new AbstractAction("Import vector to tileset"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    doTiles(guiBridge, databaseViewer, false);
+                }
+            };
+        } else {
+            return null;
+        }
+    }
+
+    private static void doTiles( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer, boolean isRaster ) {
+        try {
+
+            String label = isRaster ? "raster" : "vector";
+            FileFilter fileFilter = isRaster ? HMConstants.rasterFileFilter : HMConstants.vectorFileFilter;
+
+            String title = "Open " + label + " file";
+            File[] openFiles = GuiUtilities.showOpenFilesDialog(databaseViewer, title, false, PreferencesHandler.getLastFile(),
+                    fileFilter);
+            if (openFiles != null && openFiles.length > 0) {
+                try {
+                    PreferencesHandler.setLastPath(openFiles[0].getAbsolutePath());
+                } catch (Exception e1) {
+                    logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
+                }
+            } else {
+                return;
+            }
+            try {
+                String nameWithoutExtention = FileUtilities.getNameWithoutExtention(openFiles[0]);
+
+                String[] zoomLevels = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
+                        "15", "16", "17", "18", "19"};
+                HashMap<String, String[]> fields2ValuesMap = new HashMap<>();
+                String minZoomLevelLabel = "min zoom level";
+                String maxZoomLevelLabel = "max zoom level";
+                fields2ValuesMap.put(minZoomLevelLabel, zoomLevels);
+                fields2ValuesMap.put(maxZoomLevelLabel, zoomLevels);
+
+                String[] result = GuiUtilities.showMultiInputDialog(databaseViewer, "Select parameters", //
+                        new String[]{minZoomLevelLabel, maxZoomLevelLabel}, //
+                        new String[]{"8", "16"}, //
+                        null);
+                if (result == null) {
+                    return;
+                }
+
+                final LogConsoleController logConsole = new LogConsoleController(null);
+                IHMProgressMonitor pm = logConsole.getProgressMonitor();
+                Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
+                Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
+                JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+                new Thread(() -> {
+                    boolean hadErrors = false;
+                    try {
+                        logConsole.beginProcess("Import " + label + " to tileset");
+
+                        pm.message("Checking input parameters...");
+                        int minZoom = 8;
+                        int maxZoom = 16;
+                        try {
+                            minZoom = Integer.parseInt(result[0]);
+                            maxZoom = Integer.parseInt(result[1]);
+                        } catch (Exception e1) {
+                            pm.errorMessage("The min or max zoomlevel were not entered correctly, exiting.");
+                            hadErrors = true;
+                            return;
+                        }
+
+                        String dataPath = openFiles[0].getAbsolutePath();
+
+                        Envelope envelopeInternal = null;
+
+                        String targetEpsg = "epsg:" + GeopackageDb.MERCATOR_SRID;
+                        CoordinateReferenceSystem mercatorCrs = CrsUtilities.getCrsFromEpsg(targetEpsg, null);
+
+                        File file = new File(dataPath);
+
+                        if (isRaster) {
+                            AbstractGridFormat format = GridFormatFinder.findFormat(file);
+                            AbstractGridCoverage2DReader reader = format.getReader(file, null);
+                            GeneralEnvelope originalEnvelope = reader.getOriginalEnvelope();
+                            CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
+                            double[] ll = originalEnvelope.getLowerCorner().getCoordinate();
+                            double[] ur = originalEnvelope.getUpperCorner().getCoordinate();
+                            ReferencedEnvelope renv = new ReferencedEnvelope(ll[0], ur[0], ll[1], ur[1], crs);
+                            envelopeInternal = renv.transform(mercatorCrs, true);
+                        } else {
+                            ReferencedEnvelope renv = OmsVectorReader.readEnvelope(file.getAbsolutePath());
+                            envelopeInternal = renv.transform(mercatorCrs, true);
+                        }
+
+//                        GridCoverage2D raster = OmsRasterReader.readRaster(dataPath);
+//                        String codeFromCrs = CrsUtilities.getCodeFromCrs(raster.getCoordinateReferenceSystem());
+//                        String targetEpsg = "epsg:" + GeopackageDb.MERCATOR_SRID;
+//                        if (!codeFromCrs.toLowerCase().equals(targetEpsg)) {
+//                            // need to reproject
+//                            CoordinateReferenceSystem mercatorCrs = CrsUtilities.getCrsFromEpsg(targetEpsg, null);
+//                            raster = (GridCoverage2D) Operations.DEFAULT.resample(raster, mercatorCrs);
+//                        }
+//                        Envelope envelopeInternal = CoverageUtilities.getRegionPolygon(raster).getEnvelopeInternal();
+//                        // TODO remove double reading
+
+                        ITilesProducer tileProducer = new GeopackageTilesProducer(pm, dataPath, isRaster, minZoom, maxZoom, 256);
+                        ((GeopackageDb) databaseViewer.currentConnectedDatabase).addTilestable(nameWithoutExtention,
+                                "HM import of " + openFiles[0].getName(), envelopeInternal, tileProducer);
+
+                        databaseViewer.refreshDatabaseTree();
+
+                    } catch (Exception ex) {
+                        pm.errorMessage(ex.getLocalizedMessage());
+                        hadErrors = true;
+                    } finally {
+                        logConsole.finishProcess();
+                        logConsole.stopLogging();
+                        Logger.INSTANCE.resetStreams();
+                        if (!hadErrors) {
+                            logConsole.setVisible(false);
+                            window.dispose();
+                        }
+                    }
+                }, "DatabaseController->Import " + label + " to tileset").start();
+
+            } catch (Exception e1) {
+                GuiUtilities.handleError(databaseViewer, e1);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 }
