@@ -19,7 +19,11 @@ package org.hortonmachine.gears.utils.coverage;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static org.hortonmachine.gears.libs.modules.HMConstants.*;
+import static org.hortonmachine.gears.libs.modules.HMConstants.doesOverFlow;
+import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
+import static org.hortonmachine.gears.libs.modules.HMConstants.intNovalue;
+import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
+import static org.hortonmachine.gears.libs.modules.HMConstants.shortNovalue;
 
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
@@ -60,6 +64,7 @@ import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.parameter.Parameter;
+import org.geotools.process.ProcessException;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
@@ -76,14 +81,6 @@ import org.hortonmachine.gears.utils.features.FastLiteShape;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
-import org.opengis.coverage.grid.GridCoverageReader;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.Envelope;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.parameter.ParameterValue;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -94,6 +91,13 @@ import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.linearref.LengthIndexedLine;
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
+import org.opengis.coverage.grid.GridCoverageReader;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
+import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.parameter.ParameterValue;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 /**
  * <p>
@@ -378,6 +382,48 @@ public class CoverageUtilities {
         GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
         GridCoverage2D coverage2D = factory.create("newraster", writableRaster, writeEnvelope);
         return coverage2D;
+    }
+
+    public static GridCoverage2D clipCoverage( GridCoverage2D coverage, ReferencedEnvelope envelope ) throws Exception {
+        RegionMap regionMap = getRegionParamsFromGridCoverage(coverage);
+        double xRes = regionMap.getXres();
+        double yRes = regionMap.getYres();
+
+        envelope = envelope.transform(coverage.getCoordinateReferenceSystem(), true);
+
+        // snap the envelope to the grid in order to properly crop the raster
+        RegionMap subRegion = regionMap.toSubRegion(envelope);
+        envelope = new ReferencedEnvelope(subRegion.toEnvelope(), coverage.getCoordinateReferenceSystem());
+
+        double west = envelope.getMinX();
+        double south = envelope.getMinY();
+        double east = envelope.getMaxX();
+        double north = envelope.getMaxY();
+
+        int cols = (int) ((east - west) / xRes);
+        int rows = (int) ((north - south) / yRes);
+        ComponentSampleModel sampleModel = new ComponentSampleModel(DataBuffer.TYPE_DOUBLE, cols, rows, 1, cols, new int[]{0});
+
+        WritableRaster writableRaster = RasterFactory.createWritableRaster(sampleModel, null);
+        Envelope2D writeEnvelope = new Envelope2D(coverage.getCoordinateReferenceSystem(), west, south, east - west,
+                north - south);
+        GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
+        GridCoverage2D clippedCoverage = factory.create("newraster", writableRaster, writeEnvelope);
+
+        GridGeometry2D destGG = clippedCoverage.getGridGeometry();
+        GridGeometry2D sourceGG = coverage.getGridGeometry();
+
+        RandomIter iter = getRandomIterator(coverage);
+        for( int y = 0; y < rows; y++ ) {
+            for( int x = 0; x < cols; x++ ) {
+                DirectPosition world = destGG.gridToWorld(new GridCoordinates2D(x, y));
+                GridCoordinates2D sourceGrid = sourceGG.worldToGrid(world);
+                double value = iter.getSampleDouble(sourceGrid.x, sourceGrid.y, 0);
+                writableRaster.setSample(x, y, 0, value);
+            }
+        }
+        iter.done();
+        return clippedCoverage;
     }
 
     /**

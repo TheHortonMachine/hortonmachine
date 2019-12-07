@@ -29,6 +29,7 @@ import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
@@ -124,9 +125,9 @@ public class SpatialiteCommonMethods {
                 queryResult.geometryIndex = index;
 
                 if (reprojectSrid == -1 || reprojectSrid == gCol.srid) {
-                    items.add(geomColLower);
+                    items.add("ST_AsBinary(" + geomColLower + ")");
                 } else {
-                    items.add("ST_Transform(" + geomColLower + "," + reprojectSrid + ") AS " + geomColLower);
+                    items.add("ST_AsBinary(ST_Transform(" + geomColLower + "," + reprojectSrid + ")) AS " + geomColLower);
                 }
             } else {
                 items.add(columnName);
@@ -282,7 +283,7 @@ public class SpatialiteCommonMethods {
         if (limit > 0) {
             sql += " LIMIT " + limit;
         }
-        SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+        IGeometryParser gp = db.getType().getGeometryParser();
 
         String _sql = sql;
         return db.execOnConnection(connection -> {
@@ -292,9 +293,8 @@ public class SpatialiteCommonMethods {
                     Object[] rec = new Object[columnCount];
                     for( int j = 1; j <= columnCount; j++ ) {
                         if (queryResult.geometryIndex == j - 1) {
-                            byte[] geomBytes = rs.getBytes(j);
-                            if (geomBytes != null) {
-                                Geometry geometry = wkbReader.read(geomBytes);
+                            Geometry geometry = gp.fromResultSet(rs, j);
+                            if (geometry != null) {
                                 rec[j - 1] = geometry;
                             }
                         } else {

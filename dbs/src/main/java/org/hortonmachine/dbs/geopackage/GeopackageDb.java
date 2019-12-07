@@ -66,7 +66,6 @@ import org.hortonmachine.dbs.geopackage.geom.GeometryFunction;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryColumns;
-import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.ITilesProducer;
@@ -1213,7 +1212,7 @@ public class GeopackageDb extends ASpatialDb {
      */
     public void runRawSqlToCsv( String sql, File csvFile, boolean doHeader, String separator ) throws Exception {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {
-            SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+            IGeometryParser gp = getType().getGeometryParser();
             try (IHMStatement stmt = sqliteDb.getConnectionInternal().createStatement();
                     IHMResultSet rs = stmt.executeQuery(sql)) {
                 IHMResultSetMetaData rsmd = rs.getMetaData();
@@ -1236,14 +1235,20 @@ public class GeopackageDb extends ASpatialDb {
                         if (j > 1) {
                             bw.write(separator);
                         }
-                        byte[] geomBytes = null;
                         if (j == geometryIndex) {
-                            geomBytes = rs.getBytes(j);
-                        }
-                        if (geomBytes != null) {
                             try {
-                                Geometry geometry = wkbReader.read(geomBytes);
-                                bw.write(geometry.toText());
+                                Geometry geometry = gp.fromResultSet(rs, j);
+                                if (geometry == null) {
+                                    Object object = rs.getObject(j);
+                                    if (object instanceof Clob) {
+                                        object = rs.getString(j);
+                                    }
+                                    if (object != null) {
+                                        bw.write(object.toString());
+                                    } else {
+                                        bw.write("");
+                                    }
+                                }
                             } catch (Exception e) {
                                 // write it as it comes
                                 Object object = rs.getObject(j);
@@ -1255,16 +1260,6 @@ public class GeopackageDb extends ASpatialDb {
                                 } else {
                                     bw.write("");
                                 }
-                            }
-                        } else {
-                            Object object = rs.getObject(j);
-                            if (object instanceof Clob) {
-                                object = rs.getString(j);
-                            }
-                            if (object != null) {
-                                bw.write(object.toString());
-                            } else {
-                                bw.write("");
                             }
                         }
                     }

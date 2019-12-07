@@ -31,6 +31,7 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IDbVisitor;
+import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
@@ -43,7 +44,6 @@ import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryColumns;
 import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
-import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.utils.OsCheck;
 import org.hortonmachine.dbs.utils.OsCheck.OSType;
 import org.locationtech.jts.geom.Envelope;
@@ -317,21 +317,20 @@ public class SpatialiteDb extends ASpatialDb {
                 queryResult.names.add(columnName);
                 String columnTypeName = rsmd.getColumnTypeName(i);
                 queryResult.types.add(columnTypeName);
-                if (ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
+                if (columnName.toLowerCase().contains("st_asbinary") || ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
                     geometryIndex = i;
                     queryResult.geometryIndex = i - 1;
                 }
             }
             int count = 0;
-            SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+            IGeometryParser gp = getType().getGeometryParser();
             long start = System.currentTimeMillis();
             while( rs.next() ) {
                 Object[] rec = new Object[columnCount];
                 for( int j = 1; j <= columnCount; j++ ) {
                     if (j == geometryIndex) {
-                        byte[] geomBytes = rs.getBytes(j);
-                        if (geomBytes != null) {
-                            Geometry geometry = wkbReader.read(geomBytes);
+                        Geometry geometry = gp.fromResultSet(rs, j);
+                        if (geometry != null) {
                             rec[j - 1] = geometry;
                         }
                     } else {
@@ -368,7 +367,7 @@ public class SpatialiteDb extends ASpatialDb {
      */
     public void runRawSqlToCsv( String sql, File csvFile, boolean doHeader, String separator ) throws Exception {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {
-            SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
+            IGeometryParser gp = getType().getGeometryParser();
             try (IHMStatement stmt = sqliteDb.getConnectionInternal().createStatement();
                     IHMResultSet rs = stmt.executeQuery(sql)) {
                 IHMResultSetMetaData rsmd = rs.getMetaData();
@@ -381,7 +380,7 @@ public class SpatialiteDb extends ASpatialDb {
                     String columnTypeName = rsmd.getColumnTypeName(i);
                     String columnName = rsmd.getColumnName(i);
                     bw.write(columnName);
-                    if (ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
+                    if (columnName.toLowerCase().contains("st_asbinary") || ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
                         geometryIndex = i;
                     }
                 }
@@ -391,14 +390,20 @@ public class SpatialiteDb extends ASpatialDb {
                         if (j > 1) {
                             bw.write(separator);
                         }
-                        byte[] geomBytes = null;
                         if (j == geometryIndex) {
-                            geomBytes = rs.getBytes(j);
-                        }
-                        if (geomBytes != null) {
                             try {
-                                Geometry geometry = wkbReader.read(geomBytes);
-                                bw.write(geometry.toText());
+                                Geometry geometry = gp.fromResultSet(rs, j);
+                                if (geometry == null) {
+                                    Object object = rs.getObject(j);
+                                    if (object instanceof Clob) {
+                                        object = rs.getString(j);
+                                    }
+                                    if (object != null) {
+                                        bw.write(object.toString());
+                                    } else {
+                                        bw.write("");
+                                    }
+                                }
                             } catch (Exception e) {
                                 // write it as it comes
                                 Object object = rs.getObject(j);
@@ -410,16 +415,6 @@ public class SpatialiteDb extends ASpatialDb {
                                 } else {
                                     bw.write("");
                                 }
-                            }
-                        } else {
-                            Object object = rs.getObject(j);
-                            if (object instanceof Clob) {
-                                object = rs.getString(j);
-                            }
-                            if (object != null) {
-                                bw.write(object.toString());
-                            } else {
-                                bw.write("");
                             }
                         }
                     }

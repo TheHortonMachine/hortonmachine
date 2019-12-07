@@ -381,6 +381,54 @@ public enum ESpatialiteGeometryType {
         }
     }
 
+    public boolean hasZ() {
+        switch( this ) {
+        case POINT_XYZ:
+        case POINT_XYZM:
+        case LINESTRING_XYZ:
+        case LINESTRING_XYZM:
+        case POLYGON_XYZ:
+        case POLYGON_XYZM:
+        case MULTIPOINT_XYZ:
+        case MULTIPOINT_XYZM:
+        case MULTILINESTRING_XYZ:
+        case MULTILINESTRING_XYZM:
+        case MULTIPOLYGON_XYZ:
+        case MULTIPOLYGON_XYZM:
+        case GEOMETRY_XYZ:
+        case GEOMETRY_XYZM:
+        case GEOMETRYCOLLECTION_XYZ:
+        case GEOMETRYCOLLECTION_XYZM:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    public boolean hasM() {
+        switch( this ) {
+        case POINT_XYM:
+        case POINT_XYZM:
+        case LINESTRING_XYM:
+        case LINESTRING_XYZM:
+        case POLYGON_XYM:
+        case POLYGON_XYZM:
+        case MULTIPOINT_XYM:
+        case MULTIPOINT_XYZM:
+        case MULTILINESTRING_XYM:
+        case MULTILINESTRING_XYZM:
+        case MULTIPOLYGON_XYM:
+        case MULTIPOLYGON_XYZM:
+        case GEOMETRY_XYM:
+        case GEOMETRY_XYZM:
+        case GEOMETRYCOLLECTION_XYM:
+        case GEOMETRYCOLLECTION_XYZM:
+            return true;
+        default:
+            return false;
+        }
+    }
+
     /**
      * Get the {@link ESpatialiteGeometryType} int value from the geometry type name as of spatialite 3.
      * <p/>

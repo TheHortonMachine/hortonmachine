@@ -66,10 +66,21 @@ public class HM {
     public static String methods() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Open a simple spatial viewer on a folder of data:").append("\n");
-        sb.append("\tshowFolder( String folderPath )").append("\n");
+        sb.append("\n");
+        sb.append("Generic tools").append("\n");
+        sb.append("-------------").append("\n");
         sb.append("Load an external geoscript file:").append("\n");
         sb.append("\tload( String scriptPath )").append("\n");
+        sb.append("Convert an milliseconds epoch timestamp to string:").append("\n");
+        sb.append("\tString ts2str( long millis )").append("\n");
+        sb.append("Convert an iso timestamp string to milliseconds:").append("\n");
+        sb.append("\tlong str2ts( String isoString )").append("\n");
+        sb.append("Adds a prj file to all the files inside a folder:").append("\n");
+        sb.append("\taddPrjs( String folder, int epsg )").append("\n");
+
+        sb.append("\n");
+        sb.append("Chart tools").append("\n");
+        sb.append("-----------").append("\n");
         sb.append("Chart a matrix of numeric data:").append("\n");
         sb.append(
                 "\tchartMatrix( String title, String xLabel, String yLabel, double[][] data, List<String> series, List<String> colors, boolean doLegend )")
@@ -87,6 +98,10 @@ public class HM {
         sb.append("Calculate a polynomial regression:").append("\n");
         sb.append("\tRegressionLine polynomialRegression( Number degree, List<List<Double>> data, List<List<Double>> result )")
                 .append("\n");
+
+        sb.append("\n");
+        sb.append("Databases tools").append("\n");
+        sb.append("---------------").append("\n");
         sb.append("Connect to PostGIS:").append("\n");
         sb.append("\tASpatialDb connectPostgis( String host, int port, String database, String user, String pwd )").append("\n");
         sb.append("Connect to Spatialite:").append("\n");
@@ -97,18 +112,41 @@ public class HM {
         sb.append("\tSqliteDb connectSqlite( String databasePath )").append("\n");
         sb.append("Connect to H2GIS:").append("\n");
         sb.append("\tASpatialDb connectH2GIS( String databasePath, String user, String pwd )").append("\n");
+
+        sb.append("\n");
+        sb.append("Rendering tools").append("\n");
+        sb.append("---------------").append("\n");
+        sb.append("Open a simple spatial viewer on a folder of data:").append("\n");
+        sb.append("\tshowFolder( String folderPath )").append("\n");
         sb.append("Print the available raster colortables:").append("\n");
         sb.append("\tString printColorTables()").append("\n");
+        sb.append("Create the style object for a given colortable:").append("\n");
+        sb.append("\tStyle styleForColorTable( String tableName, double min, double max, double opacity )").append("\n");
+
+        sb.append("\n");
+        sb.append("Distance tools").append("\n");
+        sb.append("--------------").append("\n");
         sb.append("Calculate the distance between two lat/long WGS84 coordinates:").append("\n");
         sb.append("\tdouble distanceLL( Coordinate c1, Coordinate c2 )").append("\n");
         sb.append("Calculate the distance between two lat/long WGS84 coordinates:").append("\n");
         sb.append("\tdouble distanceLL( double lon1, double lat1, double lon2, double lat2 )").append("\n");
-        sb.append("Create the style object for a given colortable:").append("\n");
-        sb.append("\tStyle styleForColorTable( String tableName, double min, double max, double opacity )").append("\n");
-        sb.append("Convert an milliseconds epoch timestamp to string:").append("\n");
-        sb.append("\tString ts2str( long millis )").append("\n");
-        sb.append("Convert an iso timestamp string to milliseconds:").append("\n");
-        sb.append("\tlong str2ts( String isoString )").append("\n");
+
+        sb.append("\n");
+        sb.append("Dialogs").append("\n");
+        sb.append("-------").append("\n");
+
+        sb.append("Dialog to prompt for user input:").append("\n");
+        sb.append("\tString showInputDialog( String message, String defaultInput )").append("\n");
+        sb.append("Dialog to prompt user for yes or no:").append("\n");
+        sb.append("\tboolean showYesNoDialog( String message )").append("\n");
+        sb.append("Combo box dialog for multiple choice:").append("\n");
+        sb.append("\tString showComboDialog( String title, String message, String[] values, String selectedValue )").append("\n");
+        sb.append("Info message dialog:").append("\n");
+        sb.append("\tshowInfoMessage( String message )").append("\n");
+        sb.append("Warning message dialog:").append("\n");
+        sb.append("\tshowWarningMessage( String message )").append("\n");
+        sb.append("Error message dialog:").append("\n");
+        sb.append("\tshowErrorMessage( String message )").append("\n");
 
         return sb.toString();
     }
@@ -444,6 +482,36 @@ public class HM {
 
     public static long str2ts( String isoString ) {
         return HMConstants.utcDateFormatterYYYYMMDDHHMMSS.parseDateTime(isoString).getMillis();
+    }
+
+    public static String showInputDialog( String message, String defaultInput ) {
+        String answer = GuiUtilities.showInputDialog(null, message, defaultInput);
+        return answer;
+    }
+
+    public static boolean showYesNoDialog( String message ) {
+        return GuiUtilities.showYesNoDialog(null, message);
+    }
+
+    public static String showComboDialog( String title, String message, String[] values, String selectedValue ) {
+        String result = GuiUtilities.showComboDialog(null, message, title, values, selectedValue);
+        return result;
+    }
+
+    public static void showInfoMessage( String message ) {
+        GuiUtilities.showInfoMessage(null, null, message);
+    }
+
+    public static void showWarningMessage( String message ) {
+        GuiUtilities.showWarningMessage(null, null, message);
+    }
+
+    public static void showErrorMessage( String message ) {
+        GuiUtilities.showErrorMessage(null, null, message);
+    }
+
+    public static void addPrjs( String folder, int epsg ) throws Exception {
+        FileIterator.addPrj(folder, "EPSG:" + epsg);
     }
 
 }

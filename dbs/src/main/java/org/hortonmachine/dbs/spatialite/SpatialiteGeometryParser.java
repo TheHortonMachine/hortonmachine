@@ -19,18 +19,26 @@ package org.hortonmachine.dbs.spatialite;
 
 import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMResultSet;
-
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.WKBReader;
 
 public class SpatialiteGeometryParser implements IGeometryParser {
     SpatialiteWKBReader wkbReader = new SpatialiteWKBReader();
     SpatialiteWKBWriter wkbWriter = new SpatialiteWKBWriter();
+    WKBReader jtsWkbReader = new WKBReader();
 
     @Override
     public Geometry fromResultSet( IHMResultSet rs, int index ) throws Exception {
         byte[] geomBytes = rs.getBytes(index);
         if (geomBytes != null) {
-            Geometry geometry = wkbReader.read(geomBytes);
+            Geometry geometry;
+            try {
+                // in case of spatialite to use ST_AsBinary is suggested, since there are so many fast changing specs
+                geometry = jtsWkbReader.read(geomBytes);
+            } catch (Exception e) {
+                // in case it doesn't work, try the latest spatialite WKB parser
+                geometry = wkbReader.read(geomBytes);
+            }
             return geometry;
         }
         return null;
