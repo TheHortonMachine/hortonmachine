@@ -110,7 +110,7 @@ public class SqlTemplatesAndActions {
             public void actionPerformed( ActionEvent e ) {
                 String tableName = column.parent.tableName;
                 String columnName = column.columnName;
-                String query = sqlTemplates.updateOnColumn(tableName, columnName);
+                String query = sqlTemplates.updateOnColumn(DbsUtilities.fixTableName(tableName), columnName);
                 spatialiteViewer.addTextToQueryEditor(query);
             }
         };
@@ -443,8 +443,7 @@ public class SqlTemplatesAndActions {
                     String cols = tableColumns.stream().map(tc -> tc[0]).collect(Collectors.joining(","));
                     String quest = tableColumns.stream().map(tc -> "?").collect(Collectors.joining(","));
 
-                    String query = "INSERT INTO " + table.tableName + " (" + cols + ") VALUES (" + quest + ");";
-                    DbsUtilities.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
+                    String query = "INSERT INTO " + DbsUtilities.fixTableName(table.tableName) + " (" + cols + ") VALUES (" + quest + ");";
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception e1) {
                     logger.insertError("SqlTemplatesAndActions", "Error", e1);

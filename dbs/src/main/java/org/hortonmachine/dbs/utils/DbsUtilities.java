@@ -29,6 +29,7 @@ import java.util.TreeMap;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMResultSet;
@@ -58,8 +59,8 @@ public class DbsUtilities {
             "CURRENT_TIMESTAMP", "DATABASE", "DEFAULT", "DEFERRABLE", "DEFERRED", "DELETE", "DESC", "DETACH", "DISTINCT", "DROP",
             "EACH", "ELSE", "END", "ESCAPE", "EXCEPT", "EXCLUSIVE", "EXISTS", "EXPLAIN", "FAIL", "FOR", "FOREIGN", "FROM", "FULL",
             "GLOB", "GROUP", "HAVING", "IF", "IGNORE", "IMMEDIATE", "IN", "INDEX", "INDEXED", "INITIALLY", "INNER", "INSERT",
-            "INSTEAD", "INTERSECT", "INTO", "IS", "ISNULL", "JOIN", "LEFT", "LIKE", "LIMIT", "MATCH", "NATURAL", "NO",
-            "NOT", "NOTNULL", "NULL", "OF", "OFFSET", "ON", "OR", "ORDER", "OUTER", "PLAN", "PRAGMA", "PRIMARY", "QUERY", "RAISE",
+            "INSTEAD", "INTERSECT", "INTO", "IS", "ISNULL", "JOIN", "LEFT", "LIKE", "LIMIT", "MATCH", "NATURAL", "NO", "NOT",
+            "NOTNULL", "NULL", "OF", "OFFSET", "ON", "OR", "ORDER", "OUTER", "PLAN", "PRAGMA", "PRIMARY", "QUERY", "RAISE",
             "RECURSIVE", "REFERENCES", "REGEXP", "REINDEX", "RELEASE", "RENAME", "REPLACE", "RESTRICT", "RIGHT", "ROLLBACK",
             "ROW", "SAVEPOINT", "SELECT", "SET", "TABLE", "TEMP", "TEMPORARY", "THEN", "TO", "TRANSACTION", "TRIGGER", "UNION",
             "UNIQUE", "UPDATE", "USING", "VACUUM", "VALUES", "VIEW", "VIRTUAL", "WHEN", "WHERE", "WITH", "WITHOUT");
@@ -195,7 +196,6 @@ public class DbsUtilities {
         if (!Character.isDigit(tableName.charAt(0))) {
             letter = tableName.substring(0, 1);
         }
-        tableName = fixTableName(tableName);
         List<String[]> tableColumns = db.getTableColumns(tableName);
         GeometryColumn geometryColumns = null;
         try {
@@ -203,6 +203,10 @@ public class DbsUtilities {
         } catch (Exception e) {
             // ignore
         }
+
+        EDb type = db.getType();
+        boolean isSpatialite = type == EDb.SPATIALITE || type == EDb.SPATIALITE4ANDROID;
+
         String query = "SELECT ";
         if (geomFirst) {
             // first geom
@@ -212,8 +216,12 @@ public class DbsUtilities {
                 if (DbsUtilities.isReservedName(colName)) {
                     colName = DbsUtilities.fixReservedNameForQuery(colName);
                 }
-                if (geometryColumns != null && colName.equals(geometryColumns.geometryColumnName)) {
-                    colName = letter + "." + colName + " as " + colName;
+                if (geometryColumns != null && colName.equalsIgnoreCase(geometryColumns.geometryColumnName)) {
+                    if (!isSpatialite) {
+                        colName = letter + "." + colName + " as " + colName;
+                    } else {
+                        colName = "ST_asBinary(" + letter + "." + colName + ") as " + colName;
+                    }
                     query += colName;
                 } else {
                     nonGeomCols.add(colName);
@@ -232,15 +240,19 @@ public class DbsUtilities {
                 if (DbsUtilities.isReservedName(colName)) {
                     colName = DbsUtilities.fixReservedNameForQuery(colName);
                 }
-                if (geometryColumns != null && colName.equals(geometryColumns.geometryColumnName)) {
-                    colName = letter + "." + colName + " as " + colName;
+                if (geometryColumns != null && colName.equalsIgnoreCase(geometryColumns.geometryColumnName)) {
+                    if (!isSpatialite) {
+                        colName = letter + "." + colName + " as " + colName;
+                    } else {
+                        colName = "ST_asBinary(" + letter + "." + colName + ") as " + colName;
+                    }
                     query += colName;
                 } else {
                     query += letter + "." + colName;
                 }
             }
         }
-        query += " FROM " + tableName + " " + letter;
+        query += " FROM " + fixTableName(tableName) + " " + letter;
         return query;
     }
 
@@ -348,8 +360,12 @@ public class DbsUtilities {
      * @return the fixed name.
      */
     public static String fixTableName( String tableName ) {
-        if (Character.isDigit(tableName.charAt(0)))
+        if (Character.isDigit(tableName.charAt(0))) {
             return "'" + tableName + "'";
+        }
+        if (tableName.matches(".*\\s+.*")) {
+            return "'" + tableName + "'";
+        }
         return tableName;
     }
 }

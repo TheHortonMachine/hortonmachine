@@ -35,12 +35,11 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.utils.CrsUtilities;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Polygon;
 
 /**
  * Database spatial helper methods.
@@ -65,13 +64,16 @@ public class DbsHelper {
      */
     public static DefaultFeatureCollection runRawSqlToFeatureCollection( String name, ASpatialDb db, String simpleSql,
             Polygon roi ) throws Exception {
-        String[] split = simpleSql.split("\\s+");
+        int indexOf = simpleSql.toLowerCase().indexOf("from");
+        String afterFrom = simpleSql.substring(indexOf + 5).trim();
+
         String tableName = null;
-        for( int i = 0; i < split.length; i++ ) {
-            if (split[i].toLowerCase().equals("from")) {
-                tableName = split[i + 1];
-                break;
-            }
+        if (afterFrom.startsWith("'")) {
+            int nextAp = afterFrom.indexOf("'", 1) + 1;
+            tableName = afterFrom.substring(0, nextAp);
+        } else {
+            int nextSpace = afterFrom.indexOf(' ');
+            tableName = afterFrom.substring(0, nextSpace);
         }
 
         if (tableName == null) {

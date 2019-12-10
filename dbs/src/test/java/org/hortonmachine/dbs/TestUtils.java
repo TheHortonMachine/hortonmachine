@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.MercatorUtils;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -154,6 +155,17 @@ public class TestUtils {
         Coordinate coord4326 = MercatorUtils.convert3857To4326(new Coordinate(x, y));
         assertEquals(lon, coord4326.x, delta);
         assertEquals(lat, coord4326.y, delta);
+    }
+
+    @Test
+    public void testDbUtils() throws Exception {
+        String name = "123name";
+        String fixedName = DbsUtilities.fixTableName(name);
+        assertEquals("'" + name + "'", fixedName);
+
+        name = "name with space";
+        fixedName = DbsUtilities.fixTableName(name);
+        assertEquals("'" + name + "'", fixedName);
     }
 
 }

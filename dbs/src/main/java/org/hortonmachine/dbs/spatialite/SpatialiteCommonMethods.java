@@ -256,8 +256,6 @@ public class SpatialiteCommonMethods {
             }
         }
 
-        tableName = DbsUtilities.fixTableName(tableName);
-
         String sql = "SELECT ";
         sql += DbsUtilities.joinByComma(items);
         sql += " FROM " + DbsUtilities.fixTableName(tableName);
