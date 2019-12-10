@@ -27,7 +27,8 @@ import org.geotools.styling.Style;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
+import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.utils.MercatorUtils;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
@@ -61,7 +62,7 @@ public class GeopackageVectorLayer extends RenderableLayer implements NwwLayer {
     private String title;
     private AirspaceAttributes highlightAttrs;
     private ReferencedEnvelope bounds;
-    private GeopackageDb db;
+    private GeopackageCommonDb db;
     private String tableName;
 
     public GeopackageVectorLayer( String gpkgPath, String tableName ) throws Exception {
@@ -84,7 +85,7 @@ public class GeopackageVectorLayer extends RenderableLayer implements NwwLayer {
             try {
                 FeatureEntry feature = db.feature(tableName);
                 int srid = feature.getSrid();
-                boolean convert = srid != GeopackageDb.WGS84LL_SRID;
+                boolean convert = srid != GeopackageCommonDb.WGS84LL_SRID;
                 GeometryColumn geometryColumns = db.getGeometryColumnsForTable(tableName);
                 EGeometryType geometryType = geometryColumns.geometryType;
                 List<Geometry> geometries = db.getGeometriesIn(tableName, (Envelope) null, null);

@@ -41,7 +41,7 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -164,7 +164,7 @@ public class DatabaseViewer extends DatabaseController {
             if (isTableQuery && tableName != null) {
                 // try to get some style
                 if (currentConnectedDatabase.getType() == EDb.GEOPACKAGE) {
-                    String sldString = ((GeopackageDb) currentConnectedDatabase).getSldString(tableName);
+                    String sldString = ((GeopackageCommonDb) currentConnectedDatabase).getSldString(tableName);
                     if (sldString != null) {
                         Style style = SldUtilities.getStyleFromSldString(sldString);
                         styles = new Style[]{style};

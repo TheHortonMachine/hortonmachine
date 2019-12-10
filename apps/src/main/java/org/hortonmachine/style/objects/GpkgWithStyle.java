@@ -4,7 +4,8 @@ import java.io.File;
 
 import org.geotools.styling.Style;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
+import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.utils.BasicStyle;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.SldUtilities;
@@ -15,7 +16,7 @@ public class GpkgWithStyle implements IObjectWithStyle {
     private File dataFile;
     private String tableName;
 
-    private GeopackageDb db;
+    private GeopackageCommonDb db;
     private FeatureEntry featureEntry;
 
     public void setDataFile( File dataFile, String tableName ) throws Exception {

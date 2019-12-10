@@ -29,7 +29,7 @@ import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.postgis.PostgisDb;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteThreadsafeDb;
@@ -418,8 +418,8 @@ public class HM {
         return spatialDb;
     }
 
-    public static GeopackageDb connectGeopackage( String databasePath ) throws Exception {
-        GeopackageDb spatialDb = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb();
+    public static GeopackageCommonDb connectGeopackage( String databasePath ) throws Exception {
+        GeopackageCommonDb spatialDb = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb();
         spatialDb.setMakePooled(false);
         spatialDb.open(databasePath);
         return spatialDb;

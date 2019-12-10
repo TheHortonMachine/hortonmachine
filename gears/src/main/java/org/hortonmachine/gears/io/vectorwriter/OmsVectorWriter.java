@@ -34,7 +34,7 @@ import java.io.IOException;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -122,7 +122,7 @@ public class OmsVectorWriter extends HMModel {
             String table = split[1];
             String dbPath = split[0];
 
-            try (GeopackageDb db = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb()) {
+            try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
                 db.open(dbPath);
                 db.initSpatialMetadata(null);
 

@@ -15,7 +15,7 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.geopackage.Entry;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.GeopackageTableNames;
 import org.hortonmachine.dbs.geopackage.TileEntry;
 import org.hortonmachine.dbs.geopackage.TileMatrix;
@@ -33,7 +33,7 @@ public class TestGeopackage {
 
         URL dataUrl = TestGeopackage.class.getClassLoader().getResource("gdal_sample.gpkg");
         File gpkgFile = new File(dataUrl.toURI());
-        try (GeopackageDb db = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb()) {
+        try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
             db.open(gpkgFile.getAbsolutePath());
             db.initSpatialMetadata(null);
 
@@ -109,7 +109,7 @@ public class TestGeopackage {
 
         URL dataUrl = TestGeopackage.class.getClassLoader().getResource("test_tiles_srid.gpkg");
         File gpkgFile = new File(dataUrl.toURI());
-        try (GeopackageDb db = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb()) {
+        try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
             db.open(gpkgFile.getAbsolutePath());
             db.initSpatialMetadata(null);
 
@@ -149,7 +149,7 @@ public class TestGeopackage {
 
         URL dataUrl = TestGeopackage.class.getClassLoader().getResource("test_3857.gpkg");
         File gpkgFile = new File(dataUrl.toURI());
-        try (GeopackageDb db = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb()) {
+        try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
             db.open(gpkgFile.getAbsolutePath());
             db.initSpatialMetadata(null);
 
@@ -207,14 +207,14 @@ public class TestGeopackage {
 
         File gpkgFile = TestUtilities.createTmpFile(".gpkg");
         gpkgFile.delete();
-        try (GeopackageDb db = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb()) {
+        try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
             db.open(gpkgFile.getAbsolutePath());
             db.initSpatialMetadata(null);
 
             TestUtilities.createGeomTablesAndPopulate(db);
         }
         // reopen
-        try (GeopackageDb db = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb()) {
+        try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
             db.open(gpkgFile.getAbsolutePath());
             db.initSpatialMetadata(null);
 

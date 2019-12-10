@@ -51,6 +51,8 @@ public enum EDb {
             "jdbc:postgresql://", true, true, false, false), //
     GEOPACKAGE(7, ".gpkg", "gpkg", "org.hortonmachine.dbs.geopackage.GeopackageDb", true,
             "org.hortonmachine.dbs.geopackage.GeopackageSqlTemplates", "jdbc:sqlite:", false, false, true, true), //
+    GEOPACKAGE4ANDROID(8, ".gpkg", "gpkg", "org.hortonmachine.dbs.geopackage.android.GPGeopackageDb", true,
+            "org.hortonmachine.dbs.geopackage.GeopackageSqlTemplates", "", false, false, true, false), //
     ; //
 
     private int _code;

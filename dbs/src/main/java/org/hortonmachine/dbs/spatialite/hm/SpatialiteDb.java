@@ -169,7 +169,7 @@ public class SpatialiteDb extends ASpatialDb {
     }
 
     @Override
-    protected IHMConnection getConnectionInternal() throws Exception {
+    public IHMConnection getConnectionInternal() throws Exception {
         return sqliteDb.getConnectionInternal();
     }
 

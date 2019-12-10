@@ -49,7 +49,8 @@ import org.geotools.styling.Style;
 import org.geotools.swing.JMapPane;
 import org.hortonmachine.database.DatabaseViewer;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
+import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -281,7 +282,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
     private static String promptTableName( File geopackageFile ) {
         String tableName = null;
-        try (GeopackageDb db = new GeopackageDb()) {
+        try (GeopackageCommonDb db = new GeopackageDb()) {
             db.open(geopackageFile.getAbsolutePath());
             List<FeatureEntry> features = db.features();
             if (features.size() == 0) {

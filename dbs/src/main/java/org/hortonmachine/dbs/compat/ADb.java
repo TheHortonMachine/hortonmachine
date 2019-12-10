@@ -137,13 +137,13 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @return the jdbc connection.
      * @throws Exception 
      */
-    protected abstract Connection getJdbcConnection() throws Exception;
+    public abstract Connection getJdbcConnection() throws Exception;
 
     /**
      * @return the connection to the database.
      * @throws Exception 
      */
-    protected abstract IHMConnection getConnectionInternal() throws Exception;
+    public abstract IHMConnection getConnectionInternal() throws Exception;
 
     /**
      * Get database infos.

@@ -285,6 +285,48 @@ public class BasicStyle {
         return jobj;
     }
 
+    public void setFromJson( String json ) {
+        JSONObject jobj = new JSONObject(json);
+        
+        // note that getDouble is used to have android compatibility (do not use getFloat)
+        id = jobj.getLong(ID);
+        if (jobj.has(NAME))
+            name = jobj.getString(NAME);
+        if (jobj.has(SIZE))
+            size = (float) jobj.getDouble(SIZE);
+        if (jobj.has(FILLCOLOR))
+            fillcolor = jobj.getString(FILLCOLOR);
+        if (jobj.has(STROKECOLOR))
+            strokecolor = jobj.getString(STROKECOLOR);
+        if (jobj.has(FILLALPHA))
+            fillalpha = (float) jobj.getDouble(FILLALPHA);
+        if (jobj.has(STROKEALPHA))
+            strokealpha = (float) jobj.getDouble(STROKEALPHA);
+        if (jobj.has(SHAPE))
+            shape = jobj.getString(SHAPE);
+        if (jobj.has(WIDTH))
+            width = (float) jobj.getDouble(WIDTH);
+        if (jobj.has(LABELSIZE))
+            labelsize = (float) jobj.getDouble(LABELSIZE);
+        if (jobj.has(LABELFIELD))
+            labelfield = jobj.getString(LABELFIELD);
+        if (jobj.has(LABELVISIBLE))
+            labelvisible = jobj.getInt(LABELVISIBLE);
+        if (jobj.has(ENABLED))
+            enabled = jobj.getInt(ENABLED);
+        if (jobj.has(ORDER))
+            order = jobj.getInt(ORDER);
+        if (jobj.has(DASH))
+            dashPattern = jobj.getString(DASH);
+        if (jobj.has(MINZOOM))
+            minZoom = jobj.getInt(MINZOOM);
+        if (jobj.has(MAXZOOM))
+            maxZoom = jobj.getInt(MAXZOOM);
+        if (jobj.has(DECIMATION))
+            decimationFactor = (float) jobj.getDouble(DECIMATION);
+
+    }
+
     public String toString() {
         String jsonStr = getTheme();
         if (jsonStr.length() == 0) {

@@ -40,7 +40,8 @@ import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.datatypes.EDataType;
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
+import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.postgis.PostgisDb;
@@ -199,7 +200,7 @@ public class SpatialDbsImportUtils {
                 if (!avoidSpatialIndex)
                     h2gisDb.createSpatialIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE);
             } else if (db instanceof GeopackageDb) {
-                GeopackageDb gpkgDb = (GeopackageDb) db;
+                GeopackageCommonDb gpkgDb = (GeopackageCommonDb) db;
 
                 int srid = Integer.parseInt(sridString);
                 CoordinateReferenceSystem crs = CrsUtilities.getCrsFromSrid(srid);

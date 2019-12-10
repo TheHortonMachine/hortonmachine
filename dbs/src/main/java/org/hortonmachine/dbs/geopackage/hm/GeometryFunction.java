@@ -14,10 +14,12 @@
  *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *    Lesser General Public License for more details.
  */
-package org.hortonmachine.dbs.geopackage.geom;
+package org.hortonmachine.dbs.geopackage.hm;
 
 import java.io.IOException;
 import java.sql.SQLException;
+
+import org.hortonmachine.dbs.geopackage.geom.GeoPkgGeomReader;
 import org.sqlite.Function;
 
 /**

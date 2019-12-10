@@ -44,8 +44,9 @@ import org.geotools.styling.Style;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.TileEntry;
+import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Db;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
@@ -530,7 +531,7 @@ public class ToolsPanelController extends ToolsPanelView {
             } else if (selectedFile.getName().endsWith(".gpkg")) {
                 List<String> tilesTables = new ArrayList<>();
                 List<String> featureTables = new ArrayList<>();
-                try (GeopackageDb db = new GeopackageDb()) {
+                try (GeopackageCommonDb db = new GeopackageDb()) {
                     db.open(selectedFile.getAbsolutePath());
                     List<TileEntry> tiles = db.tiles();
                     for( TileEntry tileEntry : tiles ) {
@@ -552,7 +553,7 @@ public class ToolsPanelController extends ToolsPanelView {
                         SimpleFeatureCollection readFC = OmsVectorReader
                                 .readVector(selectedFile.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName);
                         String sldString = null;
-                        try (GeopackageDb db = new GeopackageDb()) {
+                        try (GeopackageCommonDb db = new GeopackageDb()) {
                             db.open(selectedFile.getAbsolutePath());
                             sldString = db.getSldString(tableName);
                         }

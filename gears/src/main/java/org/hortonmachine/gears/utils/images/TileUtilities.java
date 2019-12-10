@@ -25,7 +25,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.utils.MercatorUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -54,7 +54,7 @@ public class TileUtilities {
      * @return the tile image or null if none is available..
      * @throws Exception
      */
-    public static BufferedImage getTileFromDifferentZoomlevel( GeopackageDb gpkgDb, String tableName, int x, int y, int zoom,
+    public static BufferedImage getTileFromDifferentZoomlevel( GeopackageCommonDb gpkgDb, String tableName, int x, int y, int zoom,
             int tileSize, int otherZoomLevel ) throws Exception {
 
         if (otherZoomLevel > zoom) {

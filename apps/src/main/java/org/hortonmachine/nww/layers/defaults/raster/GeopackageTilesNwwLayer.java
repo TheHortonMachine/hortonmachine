@@ -28,8 +28,9 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.TileEntry;
+import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.utils.MercatorUtils;
 import org.hortonmachine.gears.utils.images.TileUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
@@ -69,7 +70,7 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
         this.layerName = tableName;
         this.setUseTransparentTextures(true);
 
-        try (GeopackageDb db = new GeopackageDb()) {
+        try (GeopackageCommonDb db = new GeopackageDb()) {
             db.open(gpkgFile.getAbsolutePath());
 
             TileEntry tile = db.tile(tableName);
@@ -81,8 +82,8 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
         }
     }
 
-    private static GeopackageDb getTilegenerator( File gpkgFile ) {
-        GeopackageDb gpkgDb = new GeopackageDb();
+    private static GeopackageCommonDb getTilegenerator( File gpkgFile ) {
+        GeopackageCommonDb gpkgDb = new GeopackageDb();
         try {
             gpkgDb.open(gpkgFile.getAbsolutePath());
         } catch (Exception e) {
@@ -92,7 +93,7 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
         return gpkgDb;
     }
 
-    private static LevelSet makeLevels( File gpkgFile, GeopackageDb gpkgDb, String tableName ) throws Exception {
+    private static LevelSet makeLevels( File gpkgFile, GeopackageCommonDb gpkgDb, String tableName ) throws Exception {
         AVList params = new AVListImpl();
 
         String cacheRelativePath = "gpkg/" + gpkgFile.getName() + "-" + tableName + "-tiles";

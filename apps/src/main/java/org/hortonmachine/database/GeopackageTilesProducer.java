@@ -6,7 +6,7 @@ import java.io.ByteArrayOutputStream;
 import javax.imageio.ImageIO;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.utils.ITilesProducer;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
@@ -30,7 +30,7 @@ public class GeopackageTilesProducer implements ITilesProducer {
         this.maxZoom = maxZoom;
         this.tileSize = tileSize;
 
-        mercatorCrs = CrsUtilities.getCrsFromEpsg("EPSG:" + GeopackageDb.MERCATOR_SRID, null);
+        mercatorCrs = CrsUtilities.getCrsFromEpsg("EPSG:" + GeopackageCommonDb.MERCATOR_SRID, null);
 
         imageGen = new ImageGenerator(pm, mercatorCrs);
         if (isRaster) {

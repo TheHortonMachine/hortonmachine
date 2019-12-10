@@ -1,20 +1,3 @@
-/*
- * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
- * The HortonMachine is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 package org.hortonmachine.dbs.geopackage;
 
 import static java.lang.String.format;
@@ -41,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
+import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
@@ -62,11 +46,12 @@ import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.geopackage.Entry.DataType;
 import org.hortonmachine.dbs.geopackage.geom.GeoPkgGeomReader;
-import org.hortonmachine.dbs.geopackage.geom.GeometryFunction;
+import org.hortonmachine.dbs.geopackage.hm.GeometryFunction;
+import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryColumns;
-import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
+import org.hortonmachine.dbs.utils.BasicStyle;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.ITilesProducer;
 import org.hortonmachine.dbs.utils.MercatorUtils;
@@ -75,73 +60,48 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.sqlite.Function;
+public abstract class GeopackageCommonDb extends ASpatialDb {
 
-/**
- * A spatialite database.
- * 
- * @author Andrea Antonello (www.hydrologis.com)
- */
-public class GeopackageDb extends ASpatialDb {
     private static final String HM_STYLES_TABLE = "hm_styles";
     private static final String QGIS_STYLES_TABLE = "layer_styles";
-
     public static final String GEOPACKAGE_CONTENTS = "gpkg_contents";
-
     public static final String GEOMETRY_COLUMNS = "gpkg_geometry_columns";
-
     public static final String SPATIAL_REF_SYS = "gpkg_spatial_ref_sys";
-
     public static final String RASTER_COLUMNS = "gpkg_data_columns";
-
     public static final String TILE_MATRIX_METADATA = "gpkg_tile_matrix";
-
     public static final String METADATA = "gpkg_metadata";
-
     public static final String METADATA_REFERENCE = "gpkg_metadata_reference";
-
     public static final String TILE_MATRIX_SET = "gpkg_tile_matrix_set";
-
     public static final String DATA_COLUMN_CONSTRAINTS = "gpkg_data_column_constraints";
-
     public static final String EXTENSIONS = "gpkg_extensions";
-
     public static final String SPATIAL_INDEX = "gpkg_spatial_index";
-
-    public final static String COL_TILES_ZOOM_LEVEL = "zoom_level";
-    public final static String COL_TILES_TILE_COLUMN = "tile_column";
-    public final static String COL_TILES_TILE_ROW = "tile_row";
-    public final static String COL_TILES_TILE_DATA = "tile_data";
-    public final static String SELECTQUERY = "SELECT " + COL_TILES_TILE_DATA + " from %s where " + COL_TILES_ZOOM_LEVEL
+    public static final String COL_TILES_ZOOM_LEVEL = "zoom_level";
+    public static final String COL_TILES_TILE_COLUMN = "tile_column";
+    public static final String COL_TILES_TILE_ROW = "tile_row";
+    public static final String COL_TILES_TILE_DATA = "tile_data";
+    public static final String SELECTQUERY = "SELECT " + COL_TILES_TILE_DATA + " from %s where " + COL_TILES_ZOOM_LEVEL
             + "=? AND " + COL_TILES_TILE_COLUMN + "=? AND " + COL_TILES_TILE_ROW + "=?";
-    public final static String INSERTQUERY = "insert or replace into %s (" + COL_TILES_ZOOM_LEVEL + ", " + COL_TILES_TILE_COLUMN
+    public static final String INSERTQUERY = "insert or replace into %s (" + COL_TILES_ZOOM_LEVEL + ", " + COL_TILES_TILE_COLUMN
             + ", " + COL_TILES_TILE_ROW + ", " + COL_TILES_TILE_DATA + ") VALUES (?,?,?,?)";
-
-    public final static int MERCATOR_SRID = 3857;
-    public final static int WGS84LL_SRID = 4326;
-
+    public static final int MERCATOR_SRID = 3857;
+    public static final int WGS84LL_SRID = 4326;
     static final String DATE_FORMAT_STRING = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-
     private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
-
-    private SqliteDb sqliteDb;
-
-    private boolean supportsRtree = true;
-    private boolean isGpgkInitialized = false;
-    private String gpkgVersion;
-
+    protected ADb sqliteDb;
+    protected boolean supportsRtree = true;
+    protected boolean isGpgkInitialized = false;
+    protected String gpkgVersion;
     /**
      * If true, this forces mobile compatibility, which means that:
      * 
      *  <ul>
      *      <li>tiles: accept only srid 3857</li>
-     *      <li>vectors: accept only srid 3857 or 4326</li>
+     *      <li>vectors: accept only srid 4326</li>
      *  </ul>
      */
-    private boolean forceMobileCompatibility = false;
+    protected boolean forceMobileCompatibility = false;
 
-    public GeopackageDb() {
-        sqliteDb = new SqliteDb();
-    }
+    public abstract void createFunctions() throws Exception;
 
     @Override
     public EDb getType() {
@@ -191,8 +151,7 @@ public class GeopackageDb extends ASpatialDb {
             gpkgVersion = "1.2";
         }
 
-        Connection cx = sqliteDb.getJdbcConnection();
-        createFunctions(cx);
+        createFunctions();
 
         isGpgkInitialized = gpkgVersion != null;
 
@@ -218,7 +177,7 @@ public class GeopackageDb extends ASpatialDb {
             runScript(METADATA_REFERENCE + ".sql");
             runScript(DATA_COLUMN_CONSTRAINTS + ".sql");
             runScript(EXTENSIONS + ".sql");
-            addDefaultSpatialReferences(cx);
+            addDefaultSpatialReferences();
 
             sqliteDb.executeInsertUpdateDeleteSql("PRAGMA application_id = 0x47503130;");
             gpkgVersion = "1.0/1.1";
@@ -255,13 +214,13 @@ public class GeopackageDb extends ASpatialDb {
                     switch( type ) {
                     case Feature:
                         e = createFeatureEntry(rs);
-                        if (forceMobileCompatibility && e != null && e.srid != null && e.srid != 4326 && e.srid != 3857) {
+                        if (forceMobileCompatibility && e != null && e.srid != null && e.srid != WGS84LL_SRID) {
                             e = null;
                         }
                         break;
                     case Tile:
                         e = createTileEntry(rs);
-                        if (forceMobileCompatibility && e != null && e.srid != null && e.srid != 3857) {
+                        if (forceMobileCompatibility && e != null && e.srid != null && e.srid != MERCATOR_SRID) {
                             e = null;
                         }
                         break;
@@ -295,7 +254,7 @@ public class GeopackageDb extends ASpatialDb {
                 IHMResultSet rs = pStmt.executeQuery();
                 while( rs.next() ) {
                     FeatureEntry e = createFeatureEntry(rs);
-                    if (forceMobileCompatibility && e != null && e.srid != null && e.srid != 4326 && e.srid != 3857) {
+                    if (forceMobileCompatibility && e != null && e.srid != null && e.srid != WGS84LL_SRID) {
                         e = null;
                     }
                     if (e != null)
@@ -323,7 +282,7 @@ public class GeopackageDb extends ASpatialDb {
                 IHMResultSet rs = pStmt.executeQuery();
                 while( rs.next() ) {
                     TileEntry e = createTileEntry(rs);
-                    if (forceMobileCompatibility && e != null && e.srid != null && e.srid != 3857) {
+                    if (forceMobileCompatibility && e != null && e.srid != null && e.srid != MERCATOR_SRID) {
                         e = null;
                     }
                     if (e != null)
@@ -359,7 +318,7 @@ public class GeopackageDb extends ASpatialDb {
                 IHMResultSet rs = pStmt.executeQuery();
                 if (rs.next()) {
                     FeatureEntry e = createFeatureEntry(rs);
-                    if (forceMobileCompatibility && e != null && e.srid != null && e.srid != 4326 && e.srid != 3857) {
+                    if (forceMobileCompatibility && e != null && e.srid != null && e.srid != WGS84LL_SRID) {
                         return null;
                     }
                     return e;
@@ -394,7 +353,7 @@ public class GeopackageDb extends ASpatialDb {
                 IHMResultSet rs = pStmt.executeQuery();
                 if (rs.next()) {
                     TileEntry e = createTileEntry(rs);
-                    if (forceMobileCompatibility && e != null && e.srid != null && e.srid != 4326 && e.srid != 3857) {
+                    if (forceMobileCompatibility && e != null && e.srid != null && e.srid != MERCATOR_SRID) {
                         return null;
                     }
                     return e;
@@ -415,10 +374,10 @@ public class GeopackageDb extends ASpatialDb {
      * @throws Exception
      */
     public byte[] getTile( String tableName, int tx, int ty, int zoom ) throws Exception {
-//        if (tileRowType.equals("tms")) { // if it is not OSM way
-//            int[] tmsTileXY = MercatorUtils.osmTile2TmsTile(tx, ty, zoom);
-//            ty = tmsTileXY[1];
-//        }
+        // if (tileRowType.equals("tms")) { // if it is not OSM way
+        // int[] tmsTileXY = MercatorUtils.osmTile2TmsTile(tx, ty, zoom);
+        // ty = tmsTileXY[1];
+        // }
         String sql = format(SELECTQUERY, DbsUtilities.fixTableName(tableName));
         return sqliteDb.execOnConnection(connection -> {
             byte[] imageBytes = null;
@@ -595,17 +554,17 @@ public class GeopackageDb extends ASpatialDb {
         transactionExecuter.execute();
     }
 
-    private void addDefaultSpatialReferences( Connection cx ) throws Exception {
+    private void addDefaultSpatialReferences() throws Exception {
         try {
             addCRS(-1, "Undefined cartesian SRS", "NONE", -1, "undefined", "undefined cartesian coordinate reference system");
             addCRS(0, "Undefined geographic SRS", "NONE", 0, "undefined", "undefined geographic coordinate reference system");
-            addCRS(4326, "WGS 84 geodetic", "EPSG", 4326,
+            addCRS(WGS84LL_SRID, "WGS 84 geodetic", "EPSG", WGS84LL_SRID,
                     "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\","
                             + "6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],"
                             + "PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,"
                             + "AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]",
                     "longitude/latitude coordinates in decimal degrees on the WGS 84 spheroid");
-            addCRS(3857, "WGS 84 Pseudo-Mercator", "EPSG", 4326, "PROJCS[\"WGS 84 / Pseudo-Mercator\", \n"
+            addCRS(MERCATOR_SRID, "WGS 84 Pseudo-Mercator", "EPSG", MERCATOR_SRID, "PROJCS[\"WGS 84 / Pseudo-Mercator\", \n"
                     + "  GEOGCS[\"WGS 84\", \n" + "    DATUM[\"World Geodetic System 1984\", \n"
                     + "      SPHEROID[\"WGS 84\", 6378137.0, 298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], \n"
                     + "      AUTHORITY[\"EPSG\",\"6326\"]], \n"
@@ -681,46 +640,11 @@ public class GeopackageDb extends ASpatialDb {
         });
     }
 
-    static void createFunctions( Connection cx ) throws SQLException {
-        // minx
-        Function.create(cx, "ST_MinX", new GeometryFunction(){
-            @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
-                return reader.getEnvelope().getMinX();
-            }
-        });
-
-        // maxx
-        Function.create(cx, "ST_MaxX", new GeometryFunction(){
-            @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
-                return reader.getEnvelope().getMaxX();
-            }
-        });
-
-        // miny
-        Function.create(cx, "ST_MinY", new GeometryFunction(){
-            @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
-                return reader.getEnvelope().getMinY();
-            }
-        });
-
-        // maxy
-        Function.create(cx, "ST_MaxY", new GeometryFunction(){
-            @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
-                return reader.getEnvelope().getMaxY();
-            }
-        });
-
-        // empty
-        Function.create(cx, "ST_IsEmpty", new GeometryFunction(){
-            @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
-                return reader.getHeader().getFlags().isEmpty();
-            }
-        });
+    public static class Tile {
+        public int x;
+        public int y;
+        public int z;
+        public byte[] imageBytes;
     }
 
     @Override
@@ -728,12 +652,12 @@ public class GeopackageDb extends ASpatialDb {
         return sqliteDb.getJdbcUrlPre();
     }
 
-    public Connection getJdbcConnection() {
+    public Connection getJdbcConnection() throws Exception {
         return sqliteDb.getJdbcConnection();
     }
 
     @Override
-    protected IHMConnection getConnectionInternal() throws Exception {
+    public IHMConnection getConnectionInternal() throws Exception {
         return sqliteDb.getConnectionInternal();
     }
 
@@ -1070,6 +994,11 @@ public class GeopackageDb extends ASpatialDb {
         return sql;
     }
 
+    public String getPrimaryKey( String tableName ) throws Exception {
+        String pk = SpatialiteCommonMethods.getPrimaryKey(sqliteDb, tableName);
+        return pk;
+    }
+
     public String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry ) throws Exception {
         // this is not possible in gpkg, backing on envelope intersection
         Envelope env = geometry.getEnvelopeInternal();
@@ -1098,11 +1027,11 @@ public class GeopackageDb extends ASpatialDb {
     @Override
     public List<String> getTables( boolean doOrder ) throws Exception {
         return sqliteDb.getTables(doOrder);
-//        Stream<String> map = features().stream().map(e -> e.tableName);
-//        if (doOrder) {
-//            map = map.sorted();
-//        }
-//        return map.collect(Collectors.toList());
+        // Stream<String> map = features().stream().map(e -> e.tableName);
+        // if (doOrder) {
+        // map = map.sorted();
+        // }
+        // return map.collect(Collectors.toList());
     }
 
     @Override
@@ -1138,6 +1067,31 @@ public class GeopackageDb extends ASpatialDb {
     public void deleteGeoTable( String tableName ) throws Exception {
         String sql = getType().getSqlTemplates().dropTable(tableName, null);
         sqliteDb.executeInsertUpdateDeleteSql(sql);
+    }
+
+    public void insertGeometry( String tableName, Geometry geometry, String epsgStr ) throws Exception {
+        int epsg = 4326;
+        if (epsgStr != null) {
+            try {
+                epsg = Integer.parseInt(epsgStr);
+            } catch (Exception e) {
+            }
+        }
+
+        IGeometryParser gp = getType().getGeometryParser();
+        geometry.setSRID(epsg);
+        Object obj = gp.toSqlObject(geometry);
+        GeometryColumn gc = getGeometryColumnsForTable(tableName);
+        String sql = "INSERT INTO " + tableName + " (" + gc.geometryColumnName + ") VALUES (?)";
+
+        execOnConnection(connection -> {
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
+                pStmt.setObject(1, obj);
+                pStmt.executeUpdate();
+            }
+            return null;
+        });
+
     }
 
     public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg,
@@ -1299,52 +1253,6 @@ public class GeopackageDb extends ASpatialDb {
         runScript(resourceAsStream, getJdbcConnection(), properties);
     }
 
-//    public void recreateSpatialIndex( String tableName, String geometryName ) throws Exception {
-//        if(!hasTable(tableName)) {
-//            return;
-//        }
-//        
-//        String pkCol = SpatialiteCommonMethods.getPrimaryKey(sqliteDb, tableName);
-//        if(pkCol==null) {
-//            return;
-//        }
-//
-//        
-////        String delSql = "delete from rtree_" + tableName + "_" + geometryName
-//        
-//    }
-//    
-//    private HashMap<Long, Envelope> getEnvelopesIn( String tableName, String pkCol) throws Exception {
-//        GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-//        String sql = "SELECT " +pkCol+","+ gCol.geometryColumnName + " FROM " + tableName;
-//        IGeometryParser geometryParser = getType().getGeometryParser();
-//        
-//        
-//        return execOnConnection(connection -> {
-//            HashMap<Long, Envelope> geoms = new HashMap<Long, Envelope>;
-//            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-//                while( rs.next() ) {
-//                    rs.
-//                    Geometry geometry = geometryParser.fromResultSet(rs, 1);
-//                    geoms.add(geometry);
-//                }
-//            } catch (Exception e) {
-//                geoms.clear();
-//                if (e.getMessage().toLowerCase().contains("no such table: rtree_")) {
-//                    try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sqlNoIndex)) {
-//                        while( rs.next() ) {
-//                            Geometry geometry = geometryParser.fromResultSet(rs, 1);
-//                            geoms.add(geometry);
-//                        }
-//                    }
-//                } else {
-//                    throw e;
-//                }
-//            }
-//            return geoms;
-//        });
-//    }
-
     public void runScript( InputStream stream, Connection cx, Map<String, String> properties ) throws SQLException {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
@@ -1463,25 +1371,6 @@ public class GeopackageDb extends ASpatialDb {
 
     }
 
-//    void deleteGeoPackageContentsEntry( Entry e ) throws IOException {
-//        String sql = format("DELETE FROM %s WHERE table_name = ?", GEOPACKAGE_CONTENTS);
-//        try {
-//            Connection cx = connPool.getConnection();
-//            try {
-//                PreparedStatement ps = prepare(cx, sql).set(e.getTableName()).log(Level.FINE).statement();
-//                try {
-//                    ps.execute();
-//                } finally {
-//                    close(ps);
-//                }
-//            } finally {
-//                close(cx);
-//            }
-//        } catch (SQLException ex) {
-//            throw new IOException(ex);
-//        }
-//    }
-//
     private void addGeometryColumnsEntry( String tableName, String geometryName, String geometryType, int srid, boolean hasZ,
             boolean hasM ) throws Exception {
         // geometryless tables should not be inserted into this table.
@@ -1529,6 +1418,23 @@ public class GeopackageDb extends ASpatialDb {
                 }
             }
             return null;
+        });
+    }
+
+    public BasicStyle getBasicStyle( String tableName ) throws Exception {
+        checkStyleTable();
+
+        return sqliteDb.execOnConnection(connection -> {
+            BasicStyle basicStyle = new BasicStyle();
+            String sql = "select simplified from " + HM_STYLES_TABLE + " where lower(tablename)='" + tableName.toLowerCase()
+                    + "'";
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    String styleJson = rs.getString(1);
+                    basicStyle.setFromJson(styleJson);
+                }
+            }
+            return basicStyle;
         });
     }
 
@@ -1720,60 +1626,8 @@ public class GeopackageDb extends ASpatialDb {
         });
     }
 
-    public static class Tile {
-        public int x;
-        public int y;
-        public int z;
-        public byte[] imageBytes;
+    public GeopackageCommonDb() {
+        super();
     }
 
-//    void deleteGeometryColumnsEntry( FeatureEntry e ) throws IOException {
-//        String sql = format("DELETE FROM %s WHERE table_name = ?", GEOMETRY_COLUMNS);
-//        try {
-//            Connection cx = connPool.getConnection();
-//            try {
-//                PreparedStatement ps = prepare(cx, sql).set(e.getTableName()).log(Level.FINE).statement();
-//                try {
-//                    ps.execute();
-//                } finally {
-//                    close(ps);
-//                }
-//            } finally {
-//                close(cx);
-//            }
-//        } catch (SQLException ex) {
-//            throw new IOException(ex);
-//        }
-//    }
-//
-//    /**
-//     * Create a spatial index
-//     *
-//     * @param e feature entry to create spatial index for
-//     */
-//    public void createSpatialIndex( FeatureEntry e ) throws IOException {
-//        Map<String, String> properties = new HashMap<String, String>();
-//
-//        PrimaryKey pk = ((JDBCFeatureStore) (dataStore.getFeatureSource(e.getTableName()))).getPrimaryKey();
-//        if (pk.getColumns().size() != 1) {
-//            throw new IOException("Spatial index only supported for primary key of single column.");
-//        }
-//
-//        properties.put("t", e.getTableName());
-//        properties.put("c", e.getGeometryColumn());
-//        properties.put("i", pk.getColumns().get(0).getName());
-//
-//        Connection cx;
-//        try {
-//            cx = connPool.getConnection();
-//            try {
-//                runScript(SPATIAL_INDEX + ".sql", cx, properties);
-//            } finally {
-//                cx.close();
-//            }
-//
-//        } catch (SQLException ex) {
-//            throw new IOException(ex);
-//        }
-//    }
 }

@@ -52,7 +52,7 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.ITilesProducer;
@@ -806,7 +806,7 @@ public class SqlTemplatesAndActions {
 
                         Envelope envelopeInternal = null;
 
-                        String targetEpsg = "epsg:" + GeopackageDb.MERCATOR_SRID;
+                        String targetEpsg = "epsg:" + GeopackageCommonDb.MERCATOR_SRID;
                         CoordinateReferenceSystem mercatorCrs = CrsUtilities.getCrsFromEpsg(targetEpsg, null);
 
                         File file = new File(dataPath);
@@ -837,7 +837,7 @@ public class SqlTemplatesAndActions {
 //                        // TODO remove double reading
 
                         ITilesProducer tileProducer = new GeopackageTilesProducer(pm, dataPath, isRaster, minZoom, maxZoom, 256);
-                        ((GeopackageDb) databaseViewer.currentConnectedDatabase).addTilestable(nameWithoutExtention,
+                        ((GeopackageCommonDb) databaseViewer.currentConnectedDatabase).addTilestable(nameWithoutExtention,
                                 "HM import of " + openFiles[0].getName(), envelopeInternal, tileProducer);
 
                         databaseViewer.refreshDatabaseTree();

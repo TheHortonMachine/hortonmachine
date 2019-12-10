@@ -52,6 +52,7 @@ import jsqlite.Database;
 public class GPSpatialiteDb extends ASpatialDb {
     private GPConnection mConn;
     private ConnectionData connectionData;
+    private Database database;
 
     @Override
     public EDb getType() {
@@ -71,6 +72,10 @@ public class GPSpatialiteDb extends ASpatialDb {
     public ConnectionData getConnectionData() {
         return connectionData;
     }
+    
+    public Database getDatabase() {
+        return database;
+    }
 
     public boolean open( String dbPath ) throws Exception {
         this.mDbPath = dbPath;
@@ -88,7 +93,7 @@ public class GPSpatialiteDb extends ASpatialDb {
             dbExists = true;
         }
 
-        Database database = new Database();
+        database = new Database();
         database.open(dbPath, jsqlite.Constants.SQLITE_OPEN_READWRITE | jsqlite.Constants.SQLITE_OPEN_CREATE);
 
         mConn = new GPConnection(database);
@@ -115,7 +120,7 @@ public class GPSpatialiteDb extends ASpatialDb {
     }
 
     @Override
-    protected IHMConnection getConnectionInternal() throws Exception {
+    public IHMConnection getConnectionInternal() throws Exception {
         return mConn;
     }
 

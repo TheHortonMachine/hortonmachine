@@ -38,7 +38,7 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.geopackage.GeopackageDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.gears.io.properties.OmsPropertiesFeatureReader;
 import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -131,7 +131,7 @@ public class OmsVectorReader extends HMModel {
             }
             String table = split[1];
             String dbPath = split[0];
-            try (GeopackageDb db = (GeopackageDb) EDb.GEOPACKAGE.getSpatialDb()) {
+            try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
                 db.open(dbPath);
                 db.initSpatialMetadata(null);
                 outVector = SpatialDbsImportUtils.tableToFeatureFCollection(db, table, -1, -1, null);

@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.utils.DbsUtilities;
-
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
@@ -194,7 +193,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         if (epsg == null) {
             epsgStr = epsg;
         }
-
+        
         GeometryColumn gc = getGeometryColumnsForTable(tableName);
         String sql = "INSERT INTO " + tableName + " (" + gc.geometryColumnName + ") VALUES (ST_GeomFromText(?, " + epsgStr + "))";
 
