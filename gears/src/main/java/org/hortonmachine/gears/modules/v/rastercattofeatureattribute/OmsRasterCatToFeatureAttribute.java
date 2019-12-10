@@ -187,10 +187,10 @@ public class OmsRasterCatToFeatureAttribute extends HMModel {
                 if (fExt == null) {
                     String max = fNew + "_max";
                     String min = fNew + "_min";
-                    String sum = fNew + "_sum";
                     String avg = fNew + "_avg";
+                    String sum = fNew + "_sum";
                     fExt = new FeatureExtender(featureType, //
-                            new String[]{min, max, sum, avg}, //
+                            new String[]{min, max, avg, sum}, //
                             new Class< ? >[]{Double.class, Double.class, Double.class, Double.class});
                 }
 
@@ -217,8 +217,8 @@ public class OmsRasterCatToFeatureAttribute extends HMModel {
                 // } else {
                 // c = coordinates[0];
                 // }
-                SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{minMaxAvgSum[0], minMaxAvgSum[1],
-                        minMaxAvgSum[2], minMaxAvgSum[3]});
+                SimpleFeature extendedFeature = fExt.extendFeature(feature,
+                        new Object[]{minMaxAvgSum[0], minMaxAvgSum[1], minMaxAvgSum[2], minMaxAvgSum[3]});
                 ((DefaultFeatureCollection) outVector).add(extendedFeature);
             } else {
                 throw new ModelsIllegalargumentException("The Geometry type is not supported.", this, pm);

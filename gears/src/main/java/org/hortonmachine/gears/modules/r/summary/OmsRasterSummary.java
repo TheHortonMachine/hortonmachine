@@ -248,7 +248,7 @@ public class OmsRasterSummary extends HMModel {
         double max = summary.outMax;
         double avg = summary.outMean;
         double sum = summary.outSum;
-        return new double[]{min, max, sum, avg};
+        return new double[]{min, max, avg, sum};
     }
 
 }
