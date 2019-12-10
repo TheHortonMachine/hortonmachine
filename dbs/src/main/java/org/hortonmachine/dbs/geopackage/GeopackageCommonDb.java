@@ -418,8 +418,8 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
      * @throws Exception
      */
     public List<Integer> getTileZoomLevelsWithData( String tableName ) throws Exception {
-        String sql = "select distinct " + GeopackageDb.COL_TILES_ZOOM_LEVEL + " from " + DbsUtilities.fixTableName(tableName)
-                + " order by " + GeopackageDb.COL_TILES_ZOOM_LEVEL;
+        String sql = "select distinct " + COL_TILES_ZOOM_LEVEL + " from " + DbsUtilities.fixTableName(tableName) + " order by "
+                + COL_TILES_ZOOM_LEVEL;
 
         return sqliteDb.execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
@@ -538,7 +538,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
     }
 
     private void runScript( String filename ) throws Exception {
-        InputStream resourceAsStream = GeopackageDb.class.getResourceAsStream(filename);
+        InputStream resourceAsStream = GeopackageCommonDb.class.getResourceAsStream(filename);
         List<String> sqlStatements = DbsUtilities.streamToStringList(resourceAsStream, ";");
 
         HMTransactionExecuter transactionExecuter = new HMTransactionExecuter(sqliteDb){
@@ -1249,7 +1249,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
         properties.put("c", geometryName);
         properties.put("i", pk);
 
-        InputStream resourceAsStream = GeopackageDb.class.getResourceAsStream(SPATIAL_INDEX + ".sql");
+        InputStream resourceAsStream = GeopackageCommonDb.class.getResourceAsStream(SPATIAL_INDEX + ".sql");
         runScript(resourceAsStream, getJdbcConnection(), properties);
     }
 
