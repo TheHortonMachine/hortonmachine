@@ -49,7 +49,7 @@ public enum EDb {
             "jdbc:postgresql://", true, true, false, false), //
     POSTGIS(6, "", "", "org.hortonmachine.dbs.postgis.PostgisDb", true, "org.hortonmachine.dbs.postgis.PostgisSqlTemplates",
             "jdbc:postgresql://", true, true, false, false), //
-    GEOPACKAGE(7, ".gpkg", "gpkg", "org.hortonmachine.dbs.geopackage.GeopackageDb", true,
+    GEOPACKAGE(7, ".gpkg", "gpkg", "org.hortonmachine.dbs.geopackage.hm.GeopackageDb", true,
             "org.hortonmachine.dbs.geopackage.GeopackageSqlTemplates", "jdbc:sqlite:", false, false, true, true), //
     GEOPACKAGE4ANDROID(8, ".gpkg", "gpkg", "org.hortonmachine.dbs.geopackage.android.GPGeopackageDb", true,
             "org.hortonmachine.dbs.geopackage.GeopackageSqlTemplates", "", false, false, true, false), //
