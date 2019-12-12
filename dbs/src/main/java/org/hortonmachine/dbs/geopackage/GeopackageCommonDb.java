@@ -1438,13 +1438,24 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
         });
     }
 
-    public void updateSldString( String tableName, String sldString, String simplified ) throws Exception {
-        String sql = "INSERT OR REPLACE INTO " + HM_STYLES_TABLE + "(tablename, sld, simplified) VALUES(?,?, ?)";
+    public void updateSldStyle( String tableName, String sldString ) throws Exception {
+        String sql = "INSERT OR REPLACE INTO " + HM_STYLES_TABLE + "(tablename, sld) VALUES(?,?)";
         sqliteDb.execOnConnection(connection -> {
             try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
                 pstmt.setString(1, tableName);
                 pstmt.setString(2, sldString);
-                pstmt.setString(3, simplified);
+                pstmt.executeUpdate();
+                return null;
+            }
+        });
+    }
+
+    public void updateSimplifiedStyle( String tableName, String simplified ) throws Exception {
+        String sql = "INSERT OR REPLACE INTO " + HM_STYLES_TABLE + "(tablename, simplified) VALUES(?,?)";
+        sqliteDb.execOnConnection(connection -> {
+            try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
+                pstmt.setString(1, tableName);
+                pstmt.setString(2, simplified);
                 pstmt.executeUpdate();
                 return null;
             }

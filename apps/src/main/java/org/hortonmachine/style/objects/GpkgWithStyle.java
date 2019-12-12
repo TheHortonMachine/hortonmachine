@@ -64,9 +64,10 @@ public class GpkgWithStyle implements IObjectWithStyle {
 
     @Override
     public void saveSld( String xml ) throws Exception {
+        db.updateSldStyle(tableName, xml);
         Style style = SldUtilities.getStyleFromSldString(xml);
         BasicStyle basicStyle = StyleUtilities.getBasicStyle(style);
-        db.updateSldString(tableName, xml, basicStyle.toString());
+        db.updateSimplifiedStyle(tableName, basicStyle.toString());
     }
 
 }

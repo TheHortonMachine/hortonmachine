@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.dbs.utils;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -28,7 +29,9 @@ import org.json.JSONObject;
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class BasicStyle {
+public class BasicStyle implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     public static final String ID = "_id";
     public static final String NAME = "name";
     public static final String SIZE = "size";
@@ -50,34 +53,13 @@ public class BasicStyle {
     public static final String UNIQUEVALUES = "uniquevalues";
     public static final String THEME = "theme";
 
-    /**
-     *
-     */
     public long id;
-    /**
-     *
-     */
     public String name;
-    /**
-     *
-     */
-    public float size = 5;
-    /**
-     *
-     */
+    public double size = 5;
     public String fillcolor = "red";
-    /**
-     *
-     */
     public String strokecolor = "black";
-    /**
-     *
-     */
-    public float fillalpha = 0.3f;
-    /**
-     *
-     */
-    public float strokealpha = 1.0f;
+    public double fillalpha = 0.3;
+    public double strokealpha = 1.0;
     /**
      * WKT shape name.
      */
@@ -85,11 +67,11 @@ public class BasicStyle {
     /**
      * The stroke width.
      */
-    public float width = 3f;
+    public double width = 3;
     /**
      * The text size.
      */
-    public float labelsize = 15f;
+    public double labelsize = 15;
 
     /**
      * Field to use for labeling.
@@ -135,7 +117,7 @@ public class BasicStyle {
     /**
      * Decimation factor for geometries.
      */
-    public float decimationFactor = 0.0f;
+    public double decimationFactor = 0.0;
 
     /**
      * If a unique style is defined, the hashmap contains in key the unique value
@@ -144,6 +126,30 @@ public class BasicStyle {
     public HashMap<String, BasicStyle> themeMap;
 
     public String themeField;
+
+    public BasicStyle duplicate() {
+        BasicStyle dup = new BasicStyle();
+        dup.id = id;
+        dup.name = name;
+        dup.size = size;
+        dup.fillcolor = fillcolor;
+        dup.strokecolor = strokecolor;
+        dup.fillalpha = fillalpha;
+        dup.strokealpha = strokealpha;
+        dup.shape = shape;
+        dup.width = width;
+        dup.labelsize = labelsize;
+        dup.labelfield = labelfield;
+        dup.labelvisible = labelvisible;
+        dup.enabled = enabled;
+        dup.order = order;
+        dup.dashPattern = dashPattern;
+        dup.minZoom = minZoom;
+        dup.maxZoom = maxZoom;
+        dup.decimationFactor = decimationFactor;
+        dup.themeMap = themeMap;
+        return dup;
+    }
 
     /**
      * @return a string that can be used in a sql insert statement with
@@ -242,7 +248,7 @@ public class BasicStyle {
         return shiftAndDash[0];
     }
 
-    public String getTheme() {
+    public String getTheme() throws Exception {
         if (themeMap != null && themeMap.size() > 0 && themeField != null && themeField.trim().length() > 0) {
             JSONObject root = new JSONObject();
             JSONObject unique = new JSONObject();
@@ -259,7 +265,7 @@ public class BasicStyle {
         return "";
     }
 
-    private JSONObject toJson() {
+    private JSONObject toJson() throws Exception {
         JSONObject jobj = new JSONObject();
         jobj.put(ID, id);
         jobj.put(NAME, name);
@@ -285,29 +291,29 @@ public class BasicStyle {
         return jobj;
     }
 
-    public void setFromJson( String json ) {
+    public void setFromJson( String json ) throws Exception {
         JSONObject jobj = new JSONObject(json);
-        
+
         // note that getDouble is used to have android compatibility (do not use getFloat)
         id = jobj.getLong(ID);
         if (jobj.has(NAME))
             name = jobj.getString(NAME);
         if (jobj.has(SIZE))
-            size = (float) jobj.getDouble(SIZE);
+            size = jobj.getDouble(SIZE);
         if (jobj.has(FILLCOLOR))
             fillcolor = jobj.getString(FILLCOLOR);
         if (jobj.has(STROKECOLOR))
             strokecolor = jobj.getString(STROKECOLOR);
         if (jobj.has(FILLALPHA))
-            fillalpha = (float) jobj.getDouble(FILLALPHA);
+            fillalpha = jobj.getDouble(FILLALPHA);
         if (jobj.has(STROKEALPHA))
-            strokealpha = (float) jobj.getDouble(STROKEALPHA);
+            strokealpha = jobj.getDouble(STROKEALPHA);
         if (jobj.has(SHAPE))
             shape = jobj.getString(SHAPE);
         if (jobj.has(WIDTH))
-            width = (float) jobj.getDouble(WIDTH);
+            width = jobj.getDouble(WIDTH);
         if (jobj.has(LABELSIZE))
-            labelsize = (float) jobj.getDouble(LABELSIZE);
+            labelsize = jobj.getDouble(LABELSIZE);
         if (jobj.has(LABELFIELD))
             labelfield = jobj.getString(LABELFIELD);
         if (jobj.has(LABELVISIBLE))
@@ -323,16 +329,21 @@ public class BasicStyle {
         if (jobj.has(MAXZOOM))
             maxZoom = jobj.getInt(MAXZOOM);
         if (jobj.has(DECIMATION))
-            decimationFactor = (float) jobj.getDouble(DECIMATION);
+            decimationFactor = jobj.getDouble(DECIMATION);
 
     }
 
     public String toString() {
-        String jsonStr = getTheme();
-        if (jsonStr.length() == 0) {
-            return toJson().toString();
+        try {
+            String jsonStr = getTheme();
+            if (jsonStr.length() == 0) {
+                return toJson().toString();
+            }
+            return jsonStr;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return jsonStr;
+        return "";
     }
 
 }

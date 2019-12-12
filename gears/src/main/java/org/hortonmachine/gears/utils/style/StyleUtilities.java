@@ -1139,27 +1139,27 @@ public class StyleUtilities {
             PointSymbolizerWrapper psw = (PointSymbolizerWrapper) geometrySymbolizersWrapper;
 
             gpStyle.shape = psw.getMarkName();
-            gpStyle.size = getFloat(psw.getSize(), gpStyle.size);
+            gpStyle.size = getDouble(psw.getSize(), gpStyle.size);
 
-            gpStyle.width = getFloat(psw.getStrokeWidth(), gpStyle.width);
-            gpStyle.strokealpha = getFloat(psw.getStrokeOpacity(), gpStyle.strokealpha);
+            gpStyle.width = getDouble(psw.getStrokeWidth(), gpStyle.width);
+            gpStyle.strokealpha = getDouble(psw.getStrokeOpacity(), gpStyle.strokealpha);
             gpStyle.strokecolor = getString(psw.getStrokeColor(), null);
 
-            gpStyle.fillalpha = getFloat(psw.getFillOpacity(), gpStyle.fillalpha);
+            gpStyle.fillalpha = getDouble(psw.getFillOpacity(), gpStyle.fillalpha);
             gpStyle.fillcolor = getString(psw.getFillColor(), null);
         } else if (geometrySymbolizersWrapper instanceof PolygonSymbolizerWrapper) {
             PolygonSymbolizerWrapper psw = (PolygonSymbolizerWrapper) geometrySymbolizersWrapper;
 
-            gpStyle.width = getFloat(psw.getStrokeWidth(), gpStyle.width);
-            gpStyle.strokealpha = getFloat(psw.getStrokeOpacity(), gpStyle.strokealpha);
+            gpStyle.width = getDouble(psw.getStrokeWidth(), gpStyle.width);
+            gpStyle.strokealpha = getDouble(psw.getStrokeOpacity(), gpStyle.strokealpha);
             gpStyle.strokecolor = getString(psw.getStrokeColor(), null);
-            gpStyle.fillalpha = getFloat(psw.getFillOpacity(), gpStyle.fillalpha);
+            gpStyle.fillalpha = getDouble(psw.getFillOpacity(), gpStyle.fillalpha);
             gpStyle.fillcolor = getString(psw.getFillColor(), null);
         } else if (geometrySymbolizersWrapper instanceof LineSymbolizerWrapper) {
             LineSymbolizerWrapper lsw = (LineSymbolizerWrapper) geometrySymbolizersWrapper;
 
-            gpStyle.width = getFloat(lsw.getStrokeWidth(), gpStyle.width);
-            gpStyle.strokealpha = getFloat(lsw.getStrokeOpacity(), gpStyle.strokealpha);
+            gpStyle.width = getDouble(lsw.getStrokeWidth(), gpStyle.width);
+            gpStyle.strokealpha = getDouble(lsw.getStrokeOpacity(), gpStyle.strokealpha);
             gpStyle.strokecolor = getString(lsw.getStrokeColor(), null);
         }
     }
@@ -1195,10 +1195,10 @@ public class StyleUtilities {
         return gpStyle;
     }
 
-    private static float getFloat( String value, float defaultValue ) {
-        float num = defaultValue;
+    private static double getDouble( String value, double defaultValue ) {
+        double num = defaultValue;
         try {
-            num = Float.parseFloat(value);
+            num = Double.parseDouble(value);
         } catch (Exception e) {
             // ignore and get default
         }
