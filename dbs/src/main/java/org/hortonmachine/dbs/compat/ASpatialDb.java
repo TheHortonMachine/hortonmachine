@@ -27,6 +27,8 @@ import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 
 /**
  * Abstract spatial db class.
@@ -37,6 +39,8 @@ import org.locationtech.jts.geom.Point;
 public abstract class ASpatialDb extends ADb implements AutoCloseable {
 
     public final static String DEFAULT_GEOM_FIELD_NAME = "the_geom";
+
+    protected boolean supportsSpatialIndex = true;
 
     /**
      * Open the connection to a database.
@@ -193,7 +197,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         if (epsg == null) {
             epsgStr = epsg;
         }
-        
+
         GeometryColumn gc = getGeometryColumnsForTable(tableName);
         String sql = "INSERT INTO " + tableName + " (" + gc.geometryColumnName + ") VALUES (ST_GeomFromText(?, " + epsgStr + "))";
 
@@ -291,9 +295,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
         String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + DbsUtilities.fixTableName(tableName);
 
-        String sqlNoIndex = sql + (wheres.size() > 0 ? " WHERE " + DbsUtilities.joinBySeparator(wheres, " AND ") : "");
-
-        if (envelope != null) {
+        if (envelope != null && supportsSpatialIndex) {
             double x1 = envelope.getMinX();
             double y1 = envelope.getMinY();
             double x2 = envelope.getMaxX();
@@ -314,19 +316,13 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
                 while( rs.next() ) {
                     Geometry geometry = geometryParser.fromResultSet(rs, 1);
-                    geoms.add(geometry);
-                }
-            } catch (Exception e) {
-                geoms.clear();
-                if (e.getMessage().toLowerCase().contains("no such table: rtree_")) {
-                    try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sqlNoIndex)) {
-                        while( rs.next() ) {
-                            Geometry geometry = geometryParser.fromResultSet(rs, 1);
-                            geoms.add(geometry);
+                    if (!supportsSpatialIndex && envelope != null) {
+                        // need to check manually
+                        if (!geometry.getEnvelopeInternal().intersects(envelope)) {
+                            continue;
                         }
                     }
-                } else {
-                    throw e;
+                    geoms.add(geometry);
                 }
             }
             return geoms;
@@ -367,9 +363,11 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
         String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + DbsUtilities.fixTableName(tableName);
 
-        if (intersectionGeometry != null) {
+        if (intersectionGeometry != null && supportsSpatialIndex) {
             intersectionGeometry.setSRID(gCol.srid);
-            wheres.add(getSpatialindexGeometryWherePiece(tableName, null, intersectionGeometry));
+            String spatialindexGeometryWherePiece = getSpatialindexGeometryWherePiece(tableName, null, intersectionGeometry);
+            if (spatialindexGeometryWherePiece != null)
+                wheres.add(spatialindexGeometryWherePiece);
         }
 
         if (wheres.size() > 0) {
@@ -379,9 +377,16 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         IGeometryParser geometryParser = getType().getGeometryParser();
         String _sql = sql;
         return execOnConnection(connection -> {
+            PreparedGeometry prepGeom = null;
+            if (!supportsSpatialIndex) {
+                prepGeom = PreparedGeometryFactory.prepare(intersectionGeometry);
+            }
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
                 while( rs.next() ) {
                     Geometry geometry = geometryParser.fromResultSet(rs, 1);
+                    if (prepGeom != null && !prepGeom.intersects(geometry)) {
+                        continue;
+                    }
                     geoms.add(geometry);
                 }
                 return geoms;

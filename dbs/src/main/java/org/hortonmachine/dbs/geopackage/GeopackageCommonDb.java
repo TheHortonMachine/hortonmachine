@@ -45,9 +45,6 @@ import org.hortonmachine.dbs.datatypes.EDataType;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.geopackage.Entry.DataType;
-import org.hortonmachine.dbs.geopackage.geom.GeoPkgGeomReader;
-import org.hortonmachine.dbs.geopackage.hm.GeometryFunction;
-import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryColumns;
@@ -59,7 +56,6 @@ import org.hortonmachine.dbs.utils.ResultSetToObjectFunction;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.sqlite.Function;
 public abstract class GeopackageCommonDb extends ASpatialDb {
 
     private static final String HM_STYLES_TABLE = "hm_styles";
@@ -88,7 +84,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
     static final String DATE_FORMAT_STRING = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
     protected ADb sqliteDb;
-    protected boolean supportsRtree = true;
+
     protected boolean isGpgkInitialized = false;
     protected String gpkgVersion;
     /**
@@ -161,9 +157,9 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
             sqliteDb.executeInsertUpdateDeleteSql(checkRtree);
             String drop = "DROP TABLE " + checkTable;
             sqliteDb.executeInsertUpdateDeleteSql(drop);
-            supportsRtree = true;
+            supportsSpatialIndex = true;
         } catch (Exception e) {
-            supportsRtree = false;
+            supportsSpatialIndex = false;
         }
 
         if (!isGpgkInitialized) {
@@ -901,7 +897,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
         sql += " FROM " + tableName;
 
         List<String> whereStrings = new ArrayList<>();
-        if (envelope != null) {
+        if (envelope != null && supportsSpatialIndex) {
             double x1 = envelope.getMinX();
             double y1 = envelope.getMinY();
             double x2 = envelope.getMaxX();
@@ -928,11 +924,19 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
             long start = System.currentTimeMillis();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
                 while( rs.next() ) {
+                    boolean addGeometry = true;
                     Object[] rec = new Object[columnCount];
                     for( int j = 1; j <= columnCount; j++ ) {
                         if (queryResult.geometryIndex == j - 1) {
                             Geometry geometry = gp.fromResultSet(rs, j);
                             if (geometry != null) {
+                                if (!supportsSpatialIndex && envelope != null) {
+                                    // need to check manually
+                                    if (!geometry.getEnvelopeInternal().intersects(envelope)) {
+                                        addGeometry = false;
+                                        break;
+                                    }
+                                }
                                 rec[j - 1] = geometry;
                             }
                         } else {
@@ -944,7 +948,8 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
                             rec[j - 1] = object;
                         }
                     }
-                    queryResult.data.add(rec);
+                    if (addGeometry)
+                        queryResult.data.add(rec);
                 }
                 long end = System.currentTimeMillis();
                 queryResult.queryTimeMillis = end - start;
@@ -977,7 +982,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
 
     public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 )
             throws Exception {
-        if (!supportsRtree)
+        if (!supportsSpatialIndex)
             return null;
         FeatureEntry feature = feature(tableName);
         String spatial_index = getSpatialIndexName(feature);
