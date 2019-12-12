@@ -693,7 +693,7 @@ public class SpatialiteCommonMethods {
         String rowid = "";
         if (alias == null) {
             alias = "";
-            rowid = tableName + ".ROWID";
+            rowid = DbsUtilities.fixTableName(tableName) + ".ROWID";
         } else {
             rowid = alias + ".ROWID";
             alias = alias + ".";
