@@ -38,33 +38,35 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
-import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
-import org.geotools.coverage.processing.Operations;
 import org.geotools.geometry.GeneralEnvelope;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ASqlTemplates;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
+import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.ITilesProducer;
-import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.PreferencesHandler;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
@@ -72,8 +74,15 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.style.MainController;
 import org.joda.time.DateTime;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.geometry.DirectPosition;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.locationtech.jts.operation.union.CascadedPolygonUnion;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 
 /**
  * Simple queries templates.
@@ -443,7 +452,8 @@ public class SqlTemplatesAndActions {
                     String cols = tableColumns.stream().map(tc -> tc[0]).collect(Collectors.joining(","));
                     String quest = tableColumns.stream().map(tc -> "?").collect(Collectors.joining(","));
 
-                    String query = "INSERT INTO " + DbsUtilities.fixTableName(table.tableName) + " (" + cols + ") VALUES (" + quest + ");";
+                    String query = "INSERT INTO " + DbsUtilities.fixTableName(table.tableName) + " (" + cols + ") VALUES ("
+                            + quest + ");";
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception e1) {
                     logger.insertError("SqlTemplatesAndActions", "Error", e1);
@@ -451,7 +461,6 @@ public class SqlTemplatesAndActions {
             }
         };
     }
-
 
     public Action getDropAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Drop table statement"){
@@ -749,7 +758,7 @@ public class SqlTemplatesAndActions {
             FileFilter fileFilter = isRaster ? HMConstants.rasterFileFilter : HMConstants.vectorFileFilter;
 
             String title = "Open " + label + " file";
-            File[] openFiles = GuiUtilities.showOpenFilesDialog(databaseViewer, title, false, PreferencesHandler.getLastFile(),
+            File[] openFiles = GuiUtilities.showOpenFilesDialog(databaseViewer, title, true, PreferencesHandler.getLastFile(),
                     fileFilter);
             if (openFiles != null && openFiles.length > 0) {
                 try {
@@ -761,97 +770,131 @@ public class SqlTemplatesAndActions {
                 return;
             }
             try {
-                String nameWithoutExtention = FileUtilities.getNameWithoutExtention(openFiles[0]);
+                String targetEpsg = "epsg:" + GeopackageCommonDb.MERCATOR_SRID;
+                CoordinateReferenceSystem mercatorCrs = CrsUtilities.getCrsFromEpsg(targetEpsg, null);
+                GeopackageCommonDb db = (GeopackageCommonDb) databaseViewer.currentConnectedDatabase;
+                List<FeatureEntry> features4326 = db.features();
+                PreparedGeometry limitsGeom3857 = null;
+                if (features4326.size() > 0) {
+                    List<String> names = features4326.stream().map(f -> f.getTableName()).collect(Collectors.toList());
+                    String selectedTable = GuiUtilities.showComboDialog(databaseViewer, "Area of interest",
+                            "It is possible to use one of the vector tables as area of interest. Tiles outside the area will be ignored.",
+                            names.toArray(new String[0]), "");
+                    if (selectedTable != null) {
+                        GeometryColumn gc = db.getGeometryColumnsForTable(selectedTable);
+                        List<Geometry> geometries = db.getGeometriesIn(selectedTable, (Envelope) null, (String[]) null);
+                        int dataSrid = db.feature(selectedTable).getSrid();
+                        List<Geometry> geometries3857;
+                        if (dataSrid == GeopackageCommonDb.MERCATOR_SRID) {
+                            geometries3857 = geometries;
+                        } else {
+                            String sourceEpsg = "epsg:" + dataSrid;
+                            CoordinateReferenceSystem sourceCRS = CrsUtilities.getCrsFromEpsg(sourceEpsg, null);;
+                            MathTransform transform = CRS.findMathTransform(sourceCRS, mercatorCrs);
+                            geometries3857 = geometries.stream().map(g -> {
+                                try {
+                                    return JTS.transform(g, transform);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    return null;
+                                }
+                            }).collect(Collectors.toList());
+                        }
+
+                        if (gc.geometryType.isPolygon()) {
+                            // use polygons
+                            Geometry union = CascadedPolygonUnion.union(geometries3857);
+                            limitsGeom3857 = PreparedGeometryFactory.prepare(union);
+                        } else {
+                            // use envelopes
+                            Envelope env = new Envelope();
+                            for( Geometry geometry : geometries3857 ) {
+                                env.expandToInclude(geometry.getEnvelopeInternal());
+                            }
+                            Polygon polyEnv = GeometryUtilities.createPolygonFromEnvelope(env);
+                            limitsGeom3857 = PreparedGeometryFactory.prepare(polyEnv);
+                        }
+
+                    }
+                }
+
+                String nameForTable = FileUtilities.getNameWithoutExtention(openFiles[0]);
 
                 String[] zoomLevels = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
                         "15", "16", "17", "18", "19"};
                 HashMap<String, String[]> fields2ValuesMap = new HashMap<>();
+                String newTableLabel = "name of the new table";
                 String minZoomLevelLabel = "min zoom level";
                 String maxZoomLevelLabel = "max zoom level";
                 fields2ValuesMap.put(minZoomLevelLabel, zoomLevels);
                 fields2ValuesMap.put(maxZoomLevelLabel, zoomLevels);
 
                 String[] result = GuiUtilities.showMultiInputDialog(databaseViewer, "Select parameters", //
-                        new String[]{minZoomLevelLabel, maxZoomLevelLabel}, //
-                        new String[]{"8", "16"}, //
+                        new String[]{newTableLabel, minZoomLevelLabel, maxZoomLevelLabel}, //
+                        new String[]{nameForTable, "8", "16"}, //
                         null);
                 if (result == null) {
                     return;
                 }
 
+                PreparedGeometry _limitsGeom3857 = limitsGeom3857;
                 final LogConsoleController logConsole = new LogConsoleController(null);
                 IHMProgressMonitor pm = logConsole.getProgressMonitor();
                 Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
                 Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
-                JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+                guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
                 new Thread(() -> {
-                    boolean hadErrors = false;
                     try {
                         logConsole.beginProcess("Import " + label + " to tileset");
 
                         pm.message("Checking input parameters...");
+                        String _nameForTable = result[0];
                         int minZoom = 8;
                         int maxZoom = 16;
                         try {
-                            minZoom = Integer.parseInt(result[0]);
-                            maxZoom = Integer.parseInt(result[1]);
+                            minZoom = Integer.parseInt(result[1]);
+                            maxZoom = Integer.parseInt(result[2]);
                         } catch (Exception e1) {
                             pm.errorMessage("The min or max zoomlevel were not entered correctly, exiting.");
-                            hadErrors = true;
                             return;
                         }
 
-                        String dataPath = openFiles[0].getAbsolutePath();
+                        for( File file : openFiles ) {
+                            String dataPath = file.getAbsolutePath();
 
-                        Envelope envelopeInternal = null;
+                            Envelope envelopeInternal = null;
 
-                        String targetEpsg = "epsg:" + GeopackageCommonDb.MERCATOR_SRID;
-                        CoordinateReferenceSystem mercatorCrs = CrsUtilities.getCrsFromEpsg(targetEpsg, null);
+                            if (isRaster) {
+                                AbstractGridFormat format = GridFormatFinder.findFormat(file);
+                                AbstractGridCoverage2DReader reader = format.getReader(file, null);
+                                GeneralEnvelope originalEnvelope = reader.getOriginalEnvelope();
+                                CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
+                                double[] ll = originalEnvelope.getLowerCorner().getCoordinate();
+                                double[] ur = originalEnvelope.getUpperCorner().getCoordinate();
+                                ReferencedEnvelope renv = new ReferencedEnvelope(ll[0], ur[0], ll[1], ur[1], crs);
+                                envelopeInternal = renv.transform(mercatorCrs, true);
+                            } else {
+                                ReferencedEnvelope renv = OmsVectorReader.readEnvelope(file.getAbsolutePath());
+                                envelopeInternal = renv.transform(mercatorCrs, true);
+                            }
 
-                        File file = new File(dataPath);
+                            ITilesProducer tileProducer = new GeopackageTilesProducer(pm, dataPath, isRaster, minZoom, maxZoom,
+                                    256, _limitsGeom3857);
+                            String description = "HM import of " + openFiles[0].getName();
+                            int addedTiles = ((GeopackageCommonDb) databaseViewer.currentConnectedDatabase)
+                                    .addTilestable(_nameForTable, description, envelopeInternal, tileProducer);
 
-                        if (isRaster) {
-                            AbstractGridFormat format = GridFormatFinder.findFormat(file);
-                            AbstractGridCoverage2DReader reader = format.getReader(file, null);
-                            GeneralEnvelope originalEnvelope = reader.getOriginalEnvelope();
-                            CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
-                            double[] ll = originalEnvelope.getLowerCorner().getCoordinate();
-                            double[] ur = originalEnvelope.getUpperCorner().getCoordinate();
-                            ReferencedEnvelope renv = new ReferencedEnvelope(ll[0], ur[0], ll[1], ur[1], crs);
-                            envelopeInternal = renv.transform(mercatorCrs, true);
-                        } else {
-                            ReferencedEnvelope renv = OmsVectorReader.readEnvelope(file.getAbsolutePath());
-                            envelopeInternal = renv.transform(mercatorCrs, true);
+                            pm.message("Inserted " + addedTiles + " new tiles.");
                         }
-
-//                        GridCoverage2D raster = OmsRasterReader.readRaster(dataPath);
-//                        String codeFromCrs = CrsUtilities.getCodeFromCrs(raster.getCoordinateReferenceSystem());
-//                        String targetEpsg = "epsg:" + GeopackageDb.MERCATOR_SRID;
-//                        if (!codeFromCrs.toLowerCase().equals(targetEpsg)) {
-//                            // need to reproject
-//                            CoordinateReferenceSystem mercatorCrs = CrsUtilities.getCrsFromEpsg(targetEpsg, null);
-//                            raster = (GridCoverage2D) Operations.DEFAULT.resample(raster, mercatorCrs);
-//                        }
-//                        Envelope envelopeInternal = CoverageUtilities.getRegionPolygon(raster).getEnvelopeInternal();
-//                        // TODO remove double reading
-
-                        ITilesProducer tileProducer = new GeopackageTilesProducer(pm, dataPath, isRaster, minZoom, maxZoom, 256);
-                        ((GeopackageCommonDb) databaseViewer.currentConnectedDatabase).addTilestable(nameWithoutExtention,
-                                "HM import of " + openFiles[0].getName(), envelopeInternal, tileProducer);
 
                         databaseViewer.refreshDatabaseTree();
 
                     } catch (Exception ex) {
                         pm.errorMessage(ex.getLocalizedMessage());
-                        hadErrors = true;
                     } finally {
                         logConsole.finishProcess();
                         logConsole.stopLogging();
                         Logger.INSTANCE.resetStreams();
-                        if (!hadErrors) {
-                            logConsole.setVisible(false);
-                            window.dispose();
-                        }
                     }
                 }, "DatabaseController->Import " + label + " to tileset").start();
 

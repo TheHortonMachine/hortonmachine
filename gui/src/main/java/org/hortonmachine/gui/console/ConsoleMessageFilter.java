@@ -32,12 +32,12 @@ public class ConsoleMessageFilter {
     private static List<String> containsStrings;
     private static List<String> endStrings;
     static {
-
         containsStrings = new ArrayList<String>();
         containsStrings.add("Kakadu");
         containsStrings.add("no gdaljni in java.library.path");
         containsStrings.add("Error while parsing JAI registry");
         containsStrings.add("Call MapContent dispose() to prevent memory leaks");
+        containsStrings.add("org.geotools.map.MapContent finalize");
         containsStrings.add("A descriptor is already registered");
         containsStrings.add("Error in registry file");
         containsStrings.add("Logging initialized");
@@ -51,16 +51,27 @@ public class ConsoleMessageFilter {
         containsStrings.add("Caused by: java.lang.ClassNotFoundException: com.sun.medialib.mlib.Image");
         containsStrings.add("Failed to load the GDAL native libs");//. This is not a problem unless you need to use the GDAL plugins: they won't be enabled.\n" + 
         containsStrings.add("Unable to set ordering between tiff readers spi");
+        containsStrings.add("org.geotools.image.ImageWorker <clinit>");
+        containsStrings.add("INFO: Warp/affine reduction enabled");
+        containsStrings.add("org.geotools.gce.imagemosaic.Utils loadMosaicProperties");
+        containsStrings.add("INFO: properties file doesn't exist");
+        containsStrings.add("org.geotools.resources.coverage.CoverageUtilities loadPropertiesFromURL");
+        containsStrings.add("replaceTIFF");
+        containsStrings.add("WARNING: This granule catalog was not properly dispose as it still points to:ServiceInfo");
+         
         // "\tat ", //
         // "\t... ", //
 
         endStrings = new ArrayList<String>();
+        endStrings.add("AbstractGTDataStoreGranuleCatalog finalize");
+        endStrings.add("description=Features from ShapefileDataStore");
         endStrings.add("factory.epsg.ThreadedEpsgFactory <init>");
         endStrings.add("to a 1800000ms timeout");
         endStrings.add("Native library load failed.");
         endStrings.add("gdalframework.GDALUtilities loadGDAL");
         endStrings.add("org.gdal.gdal.gdalJNI.HasThreadSupport()I");
         endStrings.add("org.gdal.gdal.gdalJNI.VersionInfo__SWIG_0(Ljava/lang/String;)Ljava/lang/String;");
+        endStrings.add(".properties (No such file or directory)");
 
     }
 
@@ -80,7 +91,6 @@ public class ConsoleMessageFilter {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(line);
         return false;
     }
 

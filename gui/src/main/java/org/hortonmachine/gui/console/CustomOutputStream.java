@@ -29,15 +29,29 @@ import javax.swing.JTextArea;
 public class CustomOutputStream extends OutputStream {
     private JTextArea textArea;
 
+    private final StringBuilder sb = new StringBuilder();
+
     public CustomOutputStream( JTextArea textArea ) {
         this.textArea = textArea;
     }
 
     @Override
     public void write( int b ) throws IOException {
-        // redirects data to the text area
-        textArea.append(String.valueOf((char) b));
-        // scrolls the text area to the end of data
-        textArea.setCaretPosition(textArea.getDocument().getLength());
+        char c = (char) b;
+        if (c == '\r')
+            return;
+
+        if (c == '\n') {
+            final String text = sb.toString();
+            if (!ConsoleMessageFilter.doRemove(text)) {
+                textArea.append(text);
+                textArea.append("\n");
+                textArea.setCaretPosition(textArea.getDocument().getLength());
+            }
+            sb.setLength(0);
+        } else {
+            sb.append(c);
+        }
+
     }
 }

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1376,6 +1377,34 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
 
     }
 
+    private void updateGeoPackageContentsEntry( String tableName, Envelope crsBounds ) throws Exception {
+        String sql = "update " + GEOPACKAGE_CONTENTS + " set min_x=?, min_y=?, max_x=?, max_y=? where table_name=?";
+        sqliteDb.execOnConnection(connection -> {
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
+                double minx = 0;
+                double miny = 0;
+                double maxx = 0;
+                double maxy = 0;
+                if (crsBounds != null) {
+                    minx = crsBounds.getMinX();
+                    miny = crsBounds.getMinY();
+                    maxx = crsBounds.getMaxX();
+                    maxy = crsBounds.getMaxY();
+                }
+                int i = 1;
+                pStmt.setDouble(i++, minx);
+                pStmt.setDouble(i++, miny);
+                pStmt.setDouble(i++, maxx);
+                pStmt.setDouble(i++, maxy);
+                pStmt.setString(i++, tableName);
+
+                pStmt.executeUpdate();
+                return null;
+            }
+        });
+
+    }
+
     private void addGeometryColumnsEntry( String tableName, String geometryName, String geometryType, int srid, boolean hasZ,
             boolean hasM ) throws Exception {
         // geometryless tables should not be inserted into this table.
@@ -1486,25 +1515,35 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
      * <p>Only 3857 tiles are supported. The data need to be in that projection.
      *
      */
-    public void addTilestable( String tableName, String description, Envelope dataBounds, ITilesProducer tilesProducer )
+    public int addTilestable( String tableName, String description, Envelope dataBounds3857, ITilesProducer tilesProducer )
             throws Exception {
         String fixedTableName = DbsUtilities.fixTableName(tableName);
+        int insertedCount = 0;
 
-        boolean hasTheTable = sqliteDb.hasTable(fixedTableName);
-        if (!hasTheTable) {
+        TileEntry tileEntry = tile(fixedTableName);
+        if (tileEntry == null) {
             String createTableSql = format("CREATE TABLE %s (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
                     + COL_TILES_ZOOM_LEVEL + " INTEGER NOT NULL, " + COL_TILES_TILE_COLUMN + " INTEGER NOT NULL,"
                     + COL_TILES_TILE_ROW + " INTEGER NOT NULL, " + COL_TILES_TILE_DATA + " BLOB NOT NULL)", fixedTableName);
             sqliteDb.executeInsertUpdateDeleteSql(createTableSql);
+            // update the metadata tables
+            addGeoPackageContentsEntry(DataType.Tile.value, tableName, MERCATOR_SRID, description, dataBounds3857);
+        } else {
+            updateGeoPackageContentsEntry(fixedTableName, dataBounds3857);
         }
-        // update the metadata tables
-        addGeoPackageContentsEntry(DataType.Tile.value, tableName, MERCATOR_SRID, description, dataBounds);
 
         // insert the tiles
-        double w = dataBounds.getMinX();
-        double s = dataBounds.getMinY();
-        double e = dataBounds.getMaxX();
-        double n = dataBounds.getMaxY();
+        double w = dataBounds3857.getMinX();
+        double s = dataBounds3857.getMinY();
+        double e = dataBounds3857.getMaxX();
+        double n = dataBounds3857.getMaxY();
+        Envelope areaConstraint = tilesProducer.areaConstraint();
+        if (areaConstraint != null) {
+            w = Math.max(w, areaConstraint.getMinX());
+            s = Math.max(s, areaConstraint.getMinY());
+            e = Math.min(e, areaConstraint.getMaxX());
+            n = Math.min(n, areaConstraint.getMaxY());
+        }
 
         int tileSize = tilesProducer.getTileSize();
         int minZoom = tilesProducer.getMinZoom();
@@ -1531,6 +1570,10 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
             tilesProducer.startWorkingOnZoomLevel(z, count);
 
             final Envelope levelBounds3857 = new Envelope();
+            if (tileEntry != null) {
+                Envelope bound = tileEntry.getTileMatrixSetBounds();
+                levelBounds3857.expandToInclude(bound);
+            }
 
             Envelope sampleTileBounds3857 = null;
             for( int x = startXTile; x <= endXTile; x++ ) {
@@ -1543,13 +1586,16 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
                     }
 
                     Envelope tileBounds3857 = MercatorUtils.tileBounds3857(x, y, z);
-                    if (sampleTileBounds3857 == null) {
-                        sampleTileBounds3857 = tileBounds3857;
+                    if (!dataBounds3857.intersects(tileBounds3857)) {
+                        continue;
                     }
-                    levelBounds3857.expandToInclude(tileBounds3857);
-
                     byte[] imageData = tilesProducer.getTileData(tileBounds3857);
                     if (imageData != null) {
+                        if (sampleTileBounds3857 == null) {
+                            sampleTileBounds3857 = tileBounds3857;
+                        }
+                        levelBounds3857.expandToInclude(tileBounds3857);
+
                         Tile tile = new Tile();
                         tile.x = x;
                         tile.y = y;
@@ -1559,6 +1605,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
 
                         if (tilesList.size() == 1000) {
                             putTiles(fixedTableName, tilesList);
+                            insertedCount += tilesList.size();
                             tilesList.clear();
                         }
                     }
@@ -1573,24 +1620,38 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
                     levelBounds3857.getMinY(), levelBounds3857.getMaxX(), levelBounds3857.getMaxY()});
 
             sql = format(
-                    "INSERT INTO %s (table_name, zoom_level, matrix_width, matrix_height, tile_width, tile_height, pixel_x_size, pixel_y_size) VALUES (?,?,?,?,?,?,?,?)",
+                    "INSERT or replace INTO %s (table_name, zoom_level, matrix_width, matrix_height, tile_width, tile_height, pixel_x_size, pixel_y_size) VALUES (?,?,?,?,?,?,?,?)",
                     TILE_MATRIX_METADATA);
-            sqliteDb.executeInsertUpdateDeletePreparedSql(sql, new Object[]{tableName, z, xTileCount, yTileCount, tileSize,
-                    tileSize, sampleTileBounds3857.getWidth() / tileSize, sampleTileBounds3857.getHeight() / tileSize});
-            // update level data
+            if (tileEntry == null) {
+                sqliteDb.executeInsertUpdateDeletePreparedSql(sql, new Object[]{tableName, z, xTileCount, yTileCount, tileSize,
+                        tileSize, sampleTileBounds3857.getWidth() / tileSize, sampleTileBounds3857.getHeight() / tileSize});
+            } else {
+                List<TileMatrix> tileMatricies = tileEntry.getTileMatricies();
+                int _z = z;
+                Optional<TileMatrix> firstZ = tileMatricies.stream().filter(tm -> tm.getZoomLevel() == _z).findFirst();
+                if (firstZ.isPresent()) {
+                    TileMatrix tm = firstZ.get();
+                    sqliteDb.executeInsertUpdateDeletePreparedSql(sql,
+                            new Object[]{tableName, z, tm.matrixWidth + xTileCount, tm.matrixHeight + yTileCount, tileSize,
+                                    tileSize, sampleTileBounds3857.getWidth() / tileSize,
+                                    sampleTileBounds3857.getHeight() / tileSize});
+                }
+            }
         }
 
         if (tilesList.size() > 0) {
             putTiles(fixedTableName, tilesList);
+            insertedCount += tilesList.size();
         }
 
         // add index at the end
-        if (!hasTheTable) {
+        if (tileEntry == null) {
             String createIndexSql = format("create index idx%s_zyx_idx on %s(" + COL_TILES_ZOOM_LEVEL + ", "
                     + COL_TILES_TILE_COLUMN + ", " + COL_TILES_TILE_ROW + ");", tableName, fixedTableName);
             sqliteDb.executeInsertUpdateDeleteSql(createIndexSql);
         }
 
+        return insertedCount;
     }
 
     /**

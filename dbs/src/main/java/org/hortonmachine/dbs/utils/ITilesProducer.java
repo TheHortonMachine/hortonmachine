@@ -11,6 +11,11 @@ public interface ITilesProducer {
     boolean cancelled();
 
     int getTileSize();
+    
+    /**
+     * @return an envelope of there is a constraint. Else null.
+     */
+    Envelope areaConstraint();
 
     byte[] getTileData( Envelope tileBounds3857 );
 
