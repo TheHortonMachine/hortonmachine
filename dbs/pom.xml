@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
-		<version>0.9.7</version>
+		<version>0.9.8-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hm-dbs</artifactId>
-	<version>0.9.7</version>
+	<version>0.9.8-SNAPSHOT</version>
 	<packaging>jar</packaging>
     <name>HM Databases Support</name>
 
