@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
-		<version>0.9.7-SNAPSHOT</version>
+		<version>0.9.7</version>
 	</parent>
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hm-gui</artifactId>
-	<version>0.9.7-SNAPSHOT</version>
+	<version>0.9.7</version>
 	<packaging>jar</packaging>
 	<name>HM GUI Components</name>
 
@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-modules</artifactId>
-			<version>0.9.7-SNAPSHOT</version>
+			<version>0.9.7</version>
 		</dependency>
 
 		<dependency>
