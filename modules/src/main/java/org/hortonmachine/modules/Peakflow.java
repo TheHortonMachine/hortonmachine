@@ -33,6 +33,7 @@ import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.Oms
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pCelerity_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pDiffusion_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pN_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pOutputStepArg_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pSat_DESCRIPTION;
 
 import java.io.File;
@@ -89,6 +90,11 @@ public class Peakflow extends HMModel {
     @Unit("%")
     @In
     public double pSat = -1f;
+    
+    @Description(OMSPEAKFLOW_pOutputStepArg_DESCRIPTION)
+    @Unit("s")
+    @In
+    public double pOutputStepArg = 60;
 
     @Description(OMSPEAKFLOW_inTopindex_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
@@ -129,6 +135,7 @@ public class Peakflow extends HMModel {
         peakflow.pCelerity = pCelerity;
         peakflow.pDiffusion = pDiffusion;
         peakflow.pSat = pSat;
+        peakflow.pOutputStepArg = pOutputStepArg;
         peakflow.inTopindex = getRaster(inTopindex);
         peakflow.inSat = getRaster(inSat);
         peakflow.inRescaledsup = getRaster(inRescaledsup);

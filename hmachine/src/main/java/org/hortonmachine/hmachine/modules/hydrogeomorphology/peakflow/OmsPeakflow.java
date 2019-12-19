@@ -98,6 +98,11 @@ public class OmsPeakflow extends HMModel {
     @Unit("%")
     @In
     public double pSat = -1f;
+    
+    @Description(OMSPEAKFLOW_pOutputStepArg_DESCRIPTION)
+    @Unit("s")
+    @In
+    public double pOutputStepArg = 60;
 
     @Description(OMSPEAKFLOW_inTopindex_DESCRIPTION)
     @In
@@ -137,6 +142,7 @@ public class OmsPeakflow extends HMModel {
     public static final String OMSPEAKFLOW_pCelerity_DESCRIPTION = "The channel celerity parameter.";
     public static final String OMSPEAKFLOW_pDiffusion_DESCRIPTION = "The diffusion parameter.";
     public static final String OMSPEAKFLOW_pSat_DESCRIPTION = "The saturation percentage.";
+    public static final String OMSPEAKFLOW_pOutputStepArg_DESCRIPTION = "The output timestep for discharge.";
     public static final String OMSPEAKFLOW_inTopindex_DESCRIPTION = "The map of Topindex.";
     public static final String OMSPEAKFLOW_inSat_DESCRIPTION = "Optional map of saturation.";
     public static final String OMSPEAKFLOW_inRescaledsup_DESCRIPTION = "The map of superficial rescaled distance.";
@@ -144,7 +150,7 @@ public class OmsPeakflow extends HMModel {
     public static final String OMSPEAKFLOW_inRainfall_DESCRIPTION = "The sorted hasmap of rainfall data per timestep.";
     public static final String OMSPEAKFLOW_outDischarge_DESCRIPTION = "The sorted hashmap of peakflow output per timestep.";
 
-    public double outputStepArg = 100;
+    
 
     // private int basinStatus = 0; // dry/normal/wet
     // private double phi = -1d;
@@ -319,7 +325,7 @@ public class OmsPeakflow extends HMModel {
             pm.message("Maximum discharge value: " + qtotal.calculateQmax());
 
             for( int i = 0; i < calculateQ.length; i++ ) {
-                if (i % outputStepArg != 0)
+                if (i % pOutputStepArg != 0)
                     continue;
                 DateTime tmpDate = dummyDate.plusSeconds((int) calculateQ[i][0]);
                 double[] value = new double[1];
@@ -348,7 +354,7 @@ public class OmsPeakflow extends HMModel {
             // pm.message("Maximum discharge value: " + qtotal.calculateQmax());
             DateTime firstDate = jeffC.getFirstDate();
             for( int i = 0; i < calculateQ.length; i++ ) {
-                if (i % outputStepArg != 0)
+                if (i % pOutputStepArg != 0)
                     continue;
                 DateTime tmpDate = firstDate.plusSeconds((int) calculateQ[i][0]);
                 double[] value = new double[1];
