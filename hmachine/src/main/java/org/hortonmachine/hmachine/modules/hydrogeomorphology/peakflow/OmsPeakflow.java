@@ -161,8 +161,8 @@ public class OmsPeakflow extends HMModel {
     /*
      * width functions
      */
-    private double[][] widthFunctionSuperficial;
-    private double[][] widthFunctionSubSuperficial;
+    public double[][] widthFunctionSuperficial;
+    public double[][] widthFunctionSubSuperficial;
 
     private double residentTime = -1;
     private double[] timeSubArray;
