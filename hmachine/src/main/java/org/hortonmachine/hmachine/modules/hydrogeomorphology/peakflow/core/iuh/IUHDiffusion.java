@@ -68,7 +68,7 @@ public class IUHDiffusion implements IUHCalculator {
 
         if (effectsBox.ampi_subExists()) {
             area_sub = fixedParams.getArea_sub();
-            double[][] ampi_help_sub = effectsBox.getAmpi_help_sub();
+            double[][] ampi_help_sub = effectsBox.getAmpi_sub();
 
             IUHSubSurface iuhSubSurface = new IUHSubSurface(ampi_help_sub, fixedParams, pm);
             ampisubsurface = iuhSubSurface.calculateIUH();

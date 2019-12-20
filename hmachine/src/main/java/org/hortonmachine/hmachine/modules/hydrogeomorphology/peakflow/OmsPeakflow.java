@@ -162,7 +162,6 @@ public class OmsPeakflow extends HMModel {
      * width functions
      */
     private double[][] widthFunctionSuperficial;
-    private double[][] widthFunctionSubSuperficialHelper;
     private double[][] widthFunctionSubSuperficial;
 
     private double residentTime = -1;
@@ -228,7 +227,7 @@ public class OmsPeakflow extends HMModel {
 
         setSuperficialWidthFunction(widthfunctionSupCb);
         if (inRescaledsub != null) {
-            setSubSuperficialAmplitude(widthfunctionSubCb);
+            setSubSuperficialWidthFunction(widthfunctionSubCb);
         }
 
         // check the case
@@ -292,7 +291,6 @@ public class OmsPeakflow extends HMModel {
             parameterBox.setResid_time(residentTime);
 
             effectsBox.setAmpi_sub(widthFunctionSubSuperficial);
-            effectsBox.setAmpi_help_sub(widthFunctionSubSuperficialHelper);
         }
 
         // if (isScs) {
@@ -468,7 +466,7 @@ public class OmsPeakflow extends HMModel {
         }
     }
 
-    private void setSubSuperficialAmplitude( double[][] widthfunctionSubCb ) {
+    private void setSubSuperficialWidthFunction( double[][] widthfunctionSubCb ) {
         int widthFunctionLength = widthfunctionSubCb.length;
 
         pixelTotalSub = 0;
@@ -491,13 +489,12 @@ public class OmsPeakflow extends HMModel {
         residentTime = avgTime / pCelerity;
 
         widthFunctionSubSuperficial = new double[widthFunctionLength][3];
-        widthFunctionSubSuperficialHelper = new double[widthFunctionLength][3];
         double cum = 0f;
         for( int i = 0; i < widthFunctionLength; i++ ) {
-            widthFunctionSubSuperficialHelper[i][0] = timeSubArray[i] / pCelerity;
-            widthFunctionSubSuperficialHelper[i][1] = pixelSubArray[i] * xRes * yRes / deltaSub * pCelerity;
+            widthFunctionSubSuperficial[i][0] = timeSubArray[i] / pCelerity;
+            widthFunctionSubSuperficial[i][1] = pixelSubArray[i] * xRes * yRes / deltaSub * pCelerity;
             cum = cum + pixelSubArray[i] / pixelTotalSub;
-            widthFunctionSubSuperficialHelper[i][2] = cum;
+            widthFunctionSubSuperficial[i][2] = cum;
         }
     }
 

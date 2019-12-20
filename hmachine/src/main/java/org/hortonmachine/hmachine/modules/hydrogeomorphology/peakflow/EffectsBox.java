@@ -24,7 +24,6 @@ public class EffectsBox {
 
     private double[][] ampi = null;
     private double[][] ampi_sub = null;
-    private double[][] ampi_help_sub = null;
 
     private boolean isSubsuperficial = false;
     private boolean rainDataExists;
@@ -61,9 +60,6 @@ public class EffectsBox {
         this.ampi = ampi;
     }
 
-    /*
-     * SUBSUPERFICIAL
-     */
     public boolean ampi_subExists() {
         if (ampi_sub != null) {
             return true;
@@ -77,21 +73,6 @@ public class EffectsBox {
 
     public void setAmpi_sub( double[][] ampi_sub ) {
         this.ampi_sub = ampi_sub;
-    }
-
-    public boolean ampi_help_subExists() {
-        if (ampi_help_sub != null) {
-            return true;
-        }
-        return false;
-    }
-
-    public double[][] getAmpi_help_sub() {
-        return ampi_help_sub;
-    }
-
-    public void setAmpi_help_sub( double[][] ampi_help_sub ) {
-        this.ampi_help_sub = ampi_help_sub;
     }
 
     public void setRainDataExists( boolean rainDataExists ) {
