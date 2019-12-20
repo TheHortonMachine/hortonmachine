@@ -90,7 +90,7 @@ public class Peakflow extends HMModel {
     @Unit("%")
     @In
     public double pSat = -1f;
-    
+
     @Description(OMSPEAKFLOW_pOutputStepArg_DESCRIPTION)
     @Unit("s")
     @In
@@ -126,6 +126,9 @@ public class Peakflow extends HMModel {
     @In
     public String outDischarge;
 
+    public double[][] widthFunctionSuperficial;
+    public double[][] widthFunctionSubSuperficial;
+
     @Execute
     public void process() throws Exception {
 
@@ -152,7 +155,10 @@ public class Peakflow extends HMModel {
         peakflow.doProcess = doProcess;
         peakflow.doReset = doReset;
         peakflow.process();
-        
+
+        widthFunctionSuperficial = peakflow.widthFunctionSuperficial;
+        widthFunctionSubSuperficial = peakflow.widthFunctionSubSuperficial;
+
         OmsTimeSeriesWriter writer = new OmsTimeSeriesWriter();
         writer.columns = "date, discharge";
         writer.file = outDischarge;
@@ -161,6 +167,6 @@ public class Peakflow extends HMModel {
         writer.tablename = "discharge";
         writer.write();
         writer.close();
-        
+
     }
 }
