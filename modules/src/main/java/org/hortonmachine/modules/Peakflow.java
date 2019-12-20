@@ -128,6 +128,7 @@ public class Peakflow extends HMModel {
 
     public double[][] widthFunctionSuperficial;
     public double[][] widthFunctionSubSuperficial;
+    public double[][] volumeCheckMatrix;
 
     @Execute
     public void process() throws Exception {
@@ -158,6 +159,7 @@ public class Peakflow extends HMModel {
 
         widthFunctionSuperficial = peakflow.widthFunctionSuperficial;
         widthFunctionSubSuperficial = peakflow.widthFunctionSubSuperficial;
+        volumeCheckMatrix = peakflow.volumeCheckMatrix;
 
         OmsTimeSeriesWriter writer = new OmsTimeSeriesWriter();
         writer.columns = "date, discharge";

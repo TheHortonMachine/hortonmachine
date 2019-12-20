@@ -38,6 +38,15 @@ public interface DischargeCalculator {
     public double[][] calculateQ();
 
     /**
+     * Getter for the volume check matrix.
+     * 
+     * <b>This is available only after {@link #calculateQ()}.
+     * 
+     * @return the volumecheck matrix.
+     */
+    public double[][] getVolumeCheck();
+
+    /**
      * Calculates the maximum rain time.
      * 
      * @return the maximum rain time.

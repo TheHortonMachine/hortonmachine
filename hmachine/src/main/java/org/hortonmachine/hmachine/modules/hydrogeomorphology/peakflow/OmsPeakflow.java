@@ -163,6 +163,7 @@ public class OmsPeakflow extends HMModel {
      */
     public double[][] widthFunctionSuperficial;
     public double[][] widthFunctionSubSuperficial;
+    public double[][] volumeCheckMatrix;
 
     private double residentTime = -1;
     private double[] timeSubArray;
@@ -318,6 +319,7 @@ public class OmsPeakflow extends HMModel {
             pm.message("Q calculation...");
             QStatistic qtotal = new QStatistic(parameterBox, iuhC, jeffC, pm);
             double[][] calculateQ = qtotal.calculateQ();
+            volumeCheckMatrix = qtotal.getVolumeCheck();
 
             pm.message("Maximum rainfall duration: " + qtotal.getTpMax());
             pm.message("Maximum discharge value: " + qtotal.calculateQmax());
@@ -347,6 +349,7 @@ public class OmsPeakflow extends HMModel {
             pm.message("Q calculation...");
             QReal qtotal = new QReal(parameterBox, iuhC, jeffC, pm);
             double[][] calculateQ = qtotal.calculateQ();
+            volumeCheckMatrix = qtotal.getVolumeCheck();
 
             // pm.message("Maximum rainfall duration: " + qtotal.getTpMax());
             // pm.message("Maximum discharge value: " + qtotal.calculateQmax());
