@@ -160,6 +160,18 @@ public class HM {
         return gsh.parse(new File(scriptPath));
     }
 
+    public static void chartMatrix( String title, String xLabel, String yLabel, List<List<Number>> data, List<String> series,
+            List<String> colors, boolean doLegend ) {
+        double[][] dataMatrix = new double[data.size()][data.get(0).size()];
+        for( int i = 0; i < data.size(); i++ ) {
+            List<Number> row = data.get(i);
+            for( int j = 0; j < row.size(); j++ ) {
+                dataMatrix[i][j] = row.get(j).doubleValue();
+            }
+        }
+        chartMatrix(title, xLabel, yLabel, dataMatrix, series, colors, doLegend);
+    }
+    
     public static void chartMatrix( String title, String xLabel, String yLabel, double[][] data, List<String> series,
             List<String> colors, boolean doLegend ) {
         OmsMatrixCharter charter = new OmsMatrixCharter();
