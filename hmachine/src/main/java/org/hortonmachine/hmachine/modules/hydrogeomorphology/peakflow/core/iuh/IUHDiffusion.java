@@ -35,8 +35,8 @@ public class IUHDiffusion implements IUHCalculator {
 
     private double tstarmax = 0f;
 
-    private double[][] ampisubsurface = null;
-    private double[][] ampiDiffusionSurface = null;
+    private double[][] iuhDiffusionSubSup = null;
+    private double[][] iuhDiffusionSup = null;
 
     private final IHMProgressMonitor pm;
 
@@ -64,19 +64,19 @@ public class IUHDiffusion implements IUHCalculator {
         double[][] ampiSuper = effectsBox.getAmpi();
 
         IUHDiffusionSurface iuhDiffSurface = new IUHDiffusionSurface(ampiSuper, fixedParams, pm);
-        ampiDiffusionSurface = iuhDiffSurface.calculateIUH();
+        iuhDiffusionSup = iuhDiffSurface.calculateIUH();
 
         if (effectsBox.ampi_subExists()) {
             areaSub = fixedParams.getArea_sub();
             double[][] ampi_help_sub = effectsBox.getAmpi_sub();
 
             IUHSubSurface iuhSubSurface = new IUHSubSurface(ampi_help_sub, fixedParams, pm);
-            ampisubsurface = iuhSubSurface.calculateIUH();
+            iuhDiffusionSubSup = iuhSubSurface.calculateIUH();
         }
 
-        double tcorr = ampiDiffusionSurface[ampiDiffusionSurface.length - 1][0];
+        double tcorr = iuhDiffusionSup[iuhDiffusionSup.length - 1][0];
 
-        totalAmpiDiffusion = calculateTotalDiffusion(ampiDiffusionSurface, ampisubsurface, deltaSup, deltaSubSup, vc, tcorr,
+        totalAmpiDiffusion = calculateTotalDiffusion(iuhDiffusionSup, iuhDiffusionSubSup, deltaSup, deltaSubSup, vc, tcorr,
                 areaSub, area);
 
         /*
@@ -129,59 +129,57 @@ public class IUHDiffusion implements IUHCalculator {
     /**
      * Calculate the total IUH by summing the superficial and the subsuperficial IUH
      */
-    private double[][] calculateTotalDiffusion( double[][] widthFunctionDiffSup, double[][] widthFunctionDiffSubSup, double deltaSup,
+    private double[][] calculateTotalDiffusion( double[][] iuhDiffSup, double[][] iuhDiffSubSup, double deltaSup,
             double deltaSubSup, double channelVelocity, double tcorr, double areaSubSup, double areaSup ) {
 
-        double[][] totalDiff = null;
+        double[][] totalIuhDiff = null;
 
-        if (widthFunctionDiffSubSup == null) {
-            totalDiff = widthFunctionDiffSup;
+        if (iuhDiffSubSup == null) {
+            totalIuhDiff = iuhDiffSup;
         } else {
             /*
              * calculate how many rows are in ampi_sub after ampi_sup has finished
              */
             int imstantInAmpiSubSupWhereAmpiSupFinishes = 0;
-            for( int i = 0; i < widthFunctionDiffSubSup.length; i++ ) {
-                if (widthFunctionDiffSubSup[i][0] >= widthFunctionDiffSup[widthFunctionDiffSup.length - 1][0]) {
+            for( int i = 0; i < iuhDiffSubSup.length; i++ ) {
+                if (iuhDiffSubSup[i][0] >= iuhDiffSup[iuhDiffSup.length - 1][0]) {
                     imstantInAmpiSubSupWhereAmpiSupFinishes = i;
                     break;
                 }
             }
 
-            int totalLength = widthFunctionDiffSup.length + widthFunctionDiffSubSup.length - imstantInAmpiSubSupWhereAmpiSupFinishes;
+            int totalLength = iuhDiffSup.length + iuhDiffSubSup.length - imstantInAmpiSubSupWhereAmpiSupFinishes;
 
-            totalDiff = new double[totalLength][3];
+            totalIuhDiff = new double[totalLength][3];
 
-            double intSubSup = 0;
-            double intSup = 0;
-            for( int i = 0; i < widthFunctionDiffSup.length; i++ ) {
-                totalDiff[i][0] = widthFunctionDiffSup[i][0];
-                intSubSup = (double) ModelsEngine.widthInterpolate(widthFunctionDiffSubSup, widthFunctionDiffSup[i][0], 0, 1);
-                intSup = widthFunctionDiffSup[i][1];
+            for( int i = 0; i < iuhDiffSup.length; i++ ) {
+                totalIuhDiff[i][0] = iuhDiffSup[i][0];
+                double intSubSup = (double) ModelsEngine.widthInterpolate(iuhDiffSubSup, iuhDiffSup[i][0], 0, 1);
+                double intSup = iuhDiffSup[i][1];
                 if (isNovalue(intSubSup)) {
                     pm.errorMessage("Found undefined interpolated value for subsuperficial. Not summing it. Index: " + i);
-                    totalDiff[i][1] = intSup;
+                    totalIuhDiff[i][1] = intSup;
                 } else {
-                    totalDiff[i][1] = intSup + intSubSup;
+                    totalIuhDiff[i][1] = intSup + intSubSup;
 
                 }
 
             }
-            for( int i = widthFunctionDiffSup.length, j = imstantInAmpiSubSupWhereAmpiSupFinishes; i < totalLength; i++, j++ ) {
-                totalDiff[i][0] = widthFunctionDiffSubSup[j][0];
-                totalDiff[i][1] = widthFunctionDiffSubSup[j][1];
+            for( int i = iuhDiffSup.length, j = imstantInAmpiSubSupWhereAmpiSupFinishes; i < totalLength; i++, j++ ) {
+                totalIuhDiff[i][0] = iuhDiffSubSup[j][0];
+                totalIuhDiff[i][1] = iuhDiffSubSup[j][1];
             }
 
             double totalDiffSum = 0;
-            for( int i = 0; i < totalDiff.length; i++ ) {
-                totalDiffSum +=  totalDiff[i][1];
+            for( int i = 0; i < totalIuhDiff.length; i++ ) {
+                totalDiffSum +=  totalIuhDiff[i][1];
             }
             double widthFunctionSum = 0;
-            for( int i = 0; i < widthFunctionDiffSup.length; i++ ) {
-                widthFunctionSum +=  widthFunctionDiffSup[i][1];
+            for( int i = 0; i < iuhDiffSup.length; i++ ) {
+                widthFunctionSum +=  iuhDiffSup[i][1];
             }
-            for( int i = 0; i < widthFunctionDiffSubSup.length; i++ ) {
-                widthFunctionSum +=  widthFunctionDiffSubSup[i][1];
+            for( int i = 0; i < iuhDiffSubSup.length; i++ ) {
+                widthFunctionSum +=  iuhDiffSubSup[i][1];
             }
             pm.message("Widthfunction sum = " + widthFunctionSum);
             pm.message("Total diff sum = " + totalDiffSum);
@@ -192,17 +190,17 @@ public class IUHDiffusion implements IUHCalculator {
              * contributes, after that the delta is the one of the subsuperficial.
              */
             double cum = 0f;
-            for( int i = 0; i < widthFunctionDiffSup.length; i++ ) {
-                cum = cum + (totalDiff[i][1] * deltaSup) / ((areaSup + areaSubSup) * channelVelocity);
-                totalDiff[i][2] = cum;
+            for( int i = 0; i < iuhDiffSup.length; i++ ) {
+                cum = cum + (totalIuhDiff[i][1] * deltaSup) / ((areaSup + areaSubSup) * channelVelocity);
+                totalIuhDiff[i][2] = cum;
             }
-            for( int i = widthFunctionDiffSup.length; i < totalLength; i++ ) {
-                cum = cum + (totalDiff[i][1] * deltaSubSup) / ((areaSup + areaSubSup) * channelVelocity);
-                totalDiff[i][2] = cum;
+            for( int i = iuhDiffSup.length; i < totalLength; i++ ) {
+                cum = cum + (totalIuhDiff[i][1] * deltaSubSup) / ((areaSup + areaSubSup) * channelVelocity);
+                totalIuhDiff[i][2] = cum;
             }
         }
 
-        return totalDiff;
+        return totalIuhDiff;
     }
 
     public double[][] calculateIUH() {
@@ -218,11 +216,11 @@ public class IUHDiffusion implements IUHCalculator {
     }
 
     public double[][] getIUHSuperficial() {
-        return ampiDiffusionSurface;
+        return iuhDiffusionSup;
     }
 
     public double[][] getIUHSubsuperficial() {
-        return ampisubsurface;
+        return iuhDiffusionSubSup;
     }
 
 }
