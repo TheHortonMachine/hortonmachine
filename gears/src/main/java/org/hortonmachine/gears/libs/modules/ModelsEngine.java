@@ -995,7 +995,7 @@ public class ModelsEngine {
      *            - column of data in which you find the y values
      * @return
      */
-    public static double width_interpolate( double[][] data, double x, int nx, int ny ) {
+    public static double widthInterpolate( double[][] data, double x, int nx, int ny ) {
 
         int rows = data.length;
         double xuno = 0, xdue = 0, yuno = 0, ydue = 0, y = 0;
@@ -1068,12 +1068,12 @@ public class ModelsEngine {
                     y = muno * x + a;
                     if (x >= data[(j - 1)][0] && x <= data[j][0] && x - tp >= data[(i - 1)][0] && x - tp <= data[i][0]) {
 
-                        ydue = width_interpolate(data, x - tp, 0, 1);
+                        ydue = widthInterpolate(data, x - tp, 0, 1);
                         n++;
 
-                        s_uno = width_interpolate(data, x - tp, 0, 2);
+                        s_uno = widthInterpolate(data, x - tp, 0, 2);
 
-                        s_due = width_interpolate(data, x, 0, 2);
+                        s_due = widthInterpolate(data, x, 0, 2);
 
                         if (s_due - s_uno > smax) {
                             smax = s_due - s_uno;

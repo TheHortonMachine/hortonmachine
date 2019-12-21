@@ -118,8 +118,8 @@ public class IUHKinematic implements IUHCalculator {
             if (tstar < tcorr) {
                 prov = n_idf
                         - 1
-                        + (tp * (double) ModelsEngine.width_interpolate(totalAmpiKinematic, tstar, 0, 1) / (area * ((double) ModelsEngine
-                                .width_interpolate(totalAmpiKinematic, tstar, 0, 2) - (double) ModelsEngine.width_interpolate(
+                        + (tp * (double) ModelsEngine.widthInterpolate(totalAmpiKinematic, tstar, 0, 1) / (area * ((double) ModelsEngine
+                                .widthInterpolate(totalAmpiKinematic, tstar, 0, 2) - (double) ModelsEngine.widthInterpolate(
                                 totalAmpiKinematic, dt, 0, 2))));
 
                 if (Math.abs(prov) < error) {
@@ -174,7 +174,7 @@ public class IUHKinematic implements IUHCalculator {
             double intSup = 0f;
             for( int i = 0; i < ampiKineSurface.length; i++ ) {
                 totalKinematic[i][0] = ampiKineSurface[i][0];
-                intSubSup = (double) ModelsEngine.width_interpolate(ampiSubSurface, ampiKineSurface[i][0], 0, 1);
+                intSubSup = (double) ModelsEngine.widthInterpolate(ampiSubSurface, ampiKineSurface[i][0], 0, 1);
                 intSup = ampiKineSurface[i][1];
 
                 totalKinematic[i][1] = intSup + intSubSup;

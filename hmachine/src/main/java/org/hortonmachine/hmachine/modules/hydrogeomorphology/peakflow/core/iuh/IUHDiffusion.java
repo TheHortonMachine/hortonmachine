@@ -110,9 +110,9 @@ public class IUHDiffusion implements IUHCalculator {
             tstar = tp + dt;
             if (tstar < tcorr) {
                 prov = n_idf - 1
-                        + (tp * (double) ModelsEngine.width_interpolate(totalAmpiDiffusion, tstar, 0, 1)
-                                / (areaTot * ((double) ModelsEngine.width_interpolate(totalAmpiDiffusion, tstar, 0, 2)
-                                        - (double) ModelsEngine.width_interpolate(totalAmpiDiffusion, dt, 0, 2))));
+                        + (tp * (double) ModelsEngine.widthInterpolate(totalAmpiDiffusion, tstar, 0, 1)
+                                / (areaTot * ((double) ModelsEngine.widthInterpolate(totalAmpiDiffusion, tstar, 0, 2)
+                                        - (double) ModelsEngine.widthInterpolate(totalAmpiDiffusion, dt, 0, 2))));
 
                 if (Math.abs(prov) < error) {
                     tpmax = tp;
@@ -128,42 +128,36 @@ public class IUHDiffusion implements IUHCalculator {
 
     /**
      * Calculate the total IUH by summing the superficial and the subsuperficial IUH
-     * 
-     * @param ampiDiffSurface
-     * @param ampidiffsubsurface
-     * @return
      */
-    private double[][] calculateTotalDiffusion( double[][] ampiDiffSurface, double[][] ampiSubSurface, double delta_sup,
-            double delta_sub, double vc, double tcorr, double area_sub, double area_super ) {
+    private double[][] calculateTotalDiffusion( double[][] widthFunctionDiffSup, double[][] widthFunctionDiffSubSup, double deltaSup,
+            double deltaSubSup, double channelVelocity, double tcorr, double areaSubSup, double areaSup ) {
 
         double[][] totalDiff = null;
 
-        if (ampiSubSurface == null) {
-            totalDiff = new double[ampiDiffSurface.length][3];
-            totalDiff = ampiDiffSurface;
-
+        if (widthFunctionDiffSubSup == null) {
+            totalDiff = widthFunctionDiffSup;
         } else {
             /*
              * calculate how many rows are in ampi_sub after ampi_sup has finished
              */
-            int rowInAmpiSubSupWhereAmpiSupFinishes = 0;
-            for( int i = 0; i < ampiSubSurface.length; i++ ) {
-                if (ampiSubSurface[i][0] >= ampiDiffSurface[ampiDiffSurface.length - 1][0]) {
-                    rowInAmpiSubSupWhereAmpiSupFinishes = i;
+            int imstantInAmpiSubSupWhereAmpiSupFinishes = 0;
+            for( int i = 0; i < widthFunctionDiffSubSup.length; i++ ) {
+                if (widthFunctionDiffSubSup[i][0] >= widthFunctionDiffSup[widthFunctionDiffSup.length - 1][0]) {
+                    imstantInAmpiSubSupWhereAmpiSupFinishes = i;
                     break;
                 }
             }
 
-            int totalLength = ampiDiffSurface.length + ampiSubSurface.length - rowInAmpiSubSupWhereAmpiSupFinishes;
+            int totalLength = widthFunctionDiffSup.length + widthFunctionDiffSubSup.length - imstantInAmpiSubSupWhereAmpiSupFinishes;
 
             totalDiff = new double[totalLength][3];
 
-            double intSubSup = 0f;
-            double intSup = 0f;
-            for( int i = 0; i < ampiDiffSurface.length; i++ ) {
-                totalDiff[i][0] = ampiDiffSurface[i][0];
-                intSubSup = (double) ModelsEngine.width_interpolate(ampiSubSurface, ampiDiffSurface[i][0], 0, 1);
-                intSup = ampiDiffSurface[i][1];
+            double intSubSup = 0;
+            double intSup = 0;
+            for( int i = 0; i < widthFunctionDiffSup.length; i++ ) {
+                totalDiff[i][0] = widthFunctionDiffSup[i][0];
+                intSubSup = (double) ModelsEngine.widthInterpolate(widthFunctionDiffSubSup, widthFunctionDiffSup[i][0], 0, 1);
+                intSup = widthFunctionDiffSup[i][1];
                 if (isNovalue(intSubSup)) {
                     pm.errorMessage("Found undefined interpolated value for subsuperficial. Not summing it. Index: " + i);
                     totalDiff[i][1] = intSup;
@@ -173,23 +167,37 @@ public class IUHDiffusion implements IUHCalculator {
                 }
 
             }
-            for( int i = ampiDiffSurface.length, j = rowInAmpiSubSupWhereAmpiSupFinishes; i < totalLength; i++, j++ ) {
-                totalDiff[i][0] = ampiSubSurface[j][0];
-                totalDiff[i][1] = ampiSubSurface[j][1];
+            for( int i = widthFunctionDiffSup.length, j = imstantInAmpiSubSupWhereAmpiSupFinishes; i < totalLength; i++, j++ ) {
+                totalDiff[i][0] = widthFunctionDiffSubSup[j][0];
+                totalDiff[i][1] = widthFunctionDiffSubSup[j][1];
             }
 
+            double totalDiffSum = 0;
+            for( int i = 0; i < totalDiff.length; i++ ) {
+                totalDiffSum +=  totalDiff[i][1];
+            }
+            double widthFunctionSum = 0;
+            for( int i = 0; i < widthFunctionDiffSup.length; i++ ) {
+                widthFunctionSum +=  widthFunctionDiffSup[i][1];
+            }
+            for( int i = 0; i < widthFunctionDiffSubSup.length; i++ ) {
+                widthFunctionSum +=  widthFunctionDiffSubSup[i][1];
+            }
+            pm.message("Widthfunction sum = " + widthFunctionSum);
+            pm.message("Total diff sum = " + totalDiffSum);
+            
             /*
              * calculation of the third column = cumulated The normalization occurs by means of the
              * superficial delta in the first part of the hydrogram, i.e. until the superficial
              * contributes, after that the delta is the one of the subsuperficial.
              */
             double cum = 0f;
-            for( int i = 0; i < ampiDiffSurface.length; i++ ) {
-                cum = cum + (totalDiff[i][1] * delta_sup) / ((area_super + area_sub) * vc);
+            for( int i = 0; i < widthFunctionDiffSup.length; i++ ) {
+                cum = cum + (totalDiff[i][1] * deltaSup) / ((areaSup + areaSubSup) * channelVelocity);
                 totalDiff[i][2] = cum;
             }
-            for( int i = ampiDiffSurface.length; i < totalLength; i++ ) {
-                cum = cum + (totalDiff[i][1] * delta_sub) / ((area_super + area_sub) * vc);
+            for( int i = widthFunctionDiffSup.length; i < totalLength; i++ ) {
+                cum = cum + (totalDiff[i][1] * deltaSubSup) / ((areaSup + areaSubSup) * channelVelocity);
                 totalDiff[i][2] = cum;
             }
         }

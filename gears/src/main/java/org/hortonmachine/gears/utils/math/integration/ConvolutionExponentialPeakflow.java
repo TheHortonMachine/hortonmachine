@@ -52,7 +52,7 @@ public class ConvolutionExponentialPeakflow extends SimpsonIntegral implements I
     }
 
     protected double equation( double time ) {
-        double d = 1.0 / k * Math.exp(-t / k) * ModelsEngine.width_interpolate(ampi_sub, time, 0, 1);
+        double d = 1.0 / k * Math.exp(-t / k) * ModelsEngine.widthInterpolate(ampi_sub, time, 0, 1);
         return d;
     }
 
