@@ -29,11 +29,11 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.ParameterB
  */
 public class IUHKinematic implements IUHCalculator {
 
-    private double[][] ampikinematic = null;
+    private double[][] ampiKinematic = null;
 
-    private double[][] ampisubsurface = null;
+    private double[][] ampiSubSurface = null;
 
-    private double[][] totalampikinematic = null;
+    private double[][] totalAmpiKinematic = null;
 
     private double tpmax = 0f;
 
@@ -65,9 +65,9 @@ public class IUHKinematic implements IUHCalculator {
          * Copy the ampi matrix in the ampikinematic because it represents the superficial
          * contribute in the kinematic algorithm.
          */
-        ampikinematic = new double[ampi.length][ampi[0].length];
+        ampiKinematic = new double[ampi.length][ampi[0].length];
         for( int i = 0; i < ampi.length; i++ ) {
-            System.arraycopy(ampi[i], 0, ampikinematic[i], 0, ampi[0].length);
+            System.arraycopy(ampi[i], 0, ampiKinematic[i], 0, ampi[0].length);
         }
 
         if (effectsBox.ampi_subExists()) {
@@ -75,10 +75,10 @@ public class IUHKinematic implements IUHCalculator {
             double[][] ampi_help_sub = effectsBox.getAmpi_sub();
 
             IUHSubSurface iuhSubSurface = new IUHSubSurface(ampi_help_sub, fixedParams, pm);
-            ampisubsurface = iuhSubSurface.calculateIUH();
+            ampiSubSurface = iuhSubSurface.calculateIUH();
         }
 
-        totalampikinematic = calculateTotalKinematic(ampikinematic, ampisubsurface, delta_sup, delta_sub, vc, tcorr, area_sub,
+        totalAmpiKinematic = calculateTotalKinematic(ampiKinematic, ampiSubSurface, delta_sup, delta_sub, vc, tcorr, area_sub,
                 area);
 
         /*
@@ -113,14 +113,14 @@ public class IUHKinematic implements IUHCalculator {
             } else {
                 index++;
             }
-            dt = ModelsEngine.henderson(totalampikinematic, tp);
+            dt = ModelsEngine.henderson(totalAmpiKinematic, tp);
             tstar = tp + dt;
             if (tstar < tcorr) {
                 prov = n_idf
                         - 1
-                        + (tp * (double) ModelsEngine.width_interpolate(totalampikinematic, tstar, 0, 1) / (area * ((double) ModelsEngine
-                                .width_interpolate(totalampikinematic, tstar, 0, 2) - (double) ModelsEngine.width_interpolate(
-                                totalampikinematic, dt, 0, 2))));
+                        + (tp * (double) ModelsEngine.width_interpolate(totalAmpiKinematic, tstar, 0, 1) / (area * ((double) ModelsEngine
+                                .width_interpolate(totalAmpiKinematic, tstar, 0, 2) - (double) ModelsEngine.width_interpolate(
+                                totalAmpiKinematic, dt, 0, 2))));
 
                 if (Math.abs(prov) < error) {
                     tpmax = tp;
@@ -136,8 +136,8 @@ public class IUHKinematic implements IUHCalculator {
     /**
      * Calculate the total IUH by summing the superficial and the subsuperficial IUH
      * 
-     * @param ampikinesurface
-     * @param ampisubsurface
+     * @param ampiKineSurface
+     * @param ampiSubSurface
      * @param delta_sup
      * @param delta_sub
      * @param vc
@@ -146,43 +146,42 @@ public class IUHKinematic implements IUHCalculator {
      * @param area
      * @return
      */
-    private double[][] calculateTotalKinematic( double[][] ampikinesurface, double[][] ampisubsurface, double delta_sup,
+    private double[][] calculateTotalKinematic( double[][] ampiKineSurface, double[][] ampiSubSurface, double delta_sup,
             double delta_sub, double vc, double tcorr, double area_sub, double area_super ) {
 
         double[][] totalKinematic = null;
 
-        if (ampisubsurface == null) {
-            totalKinematic = new double[ampikinesurface.length][3];
-            totalKinematic = ampikinesurface;
-
+        if (ampiSubSurface == null) {
+            totalKinematic = new double[ampiKineSurface.length][3];
+            totalKinematic = ampiKineSurface;
         } else {
             /*
              * calculate how many rows are in ampi_sub after ampi_sup has finished
              */
-            int rowinampisubwhereampisupfinishes = 0;
-            for( int i = 0; i < ampisubsurface.length; i++ ) {
-                if (ampisubsurface[i][0] >= ampikinesurface[ampikinesurface.length - 1][0]) {
-                    rowinampisubwhereampisupfinishes = i;
+            int rowInAmpiSubSupWhereAmpiSupFinishes = 0;
+            for( int i = 0; i < ampiSubSurface.length; i++ ) {
+                if (ampiSubSurface[i][0] >= ampiKineSurface[ampiKineSurface.length - 1][0]) {
+                    rowInAmpiSubSupWhereAmpiSupFinishes = i;
                     break;
                 }
             }
 
-            int totallength = ampikinesurface.length + ampisubsurface.length - rowinampisubwhereampisupfinishes;
+            int totallength = ampiKineSurface.length + ampiSubSurface.length - rowInAmpiSubSupWhereAmpiSupFinishes;
 
             totalKinematic = new double[totallength][3];
 
-            double intsub = 0f;
-            double intsup = 0f;
-            for( int i = 0; i < ampikinesurface.length; i++ ) {
-                totalKinematic[i][0] = ampikinesurface[i][0];
-                intsub = (double) ModelsEngine.width_interpolate(ampisubsurface, ampikinesurface[i][0], 0, 1);
-                intsup = ampikinesurface[i][1];
+            double intSubSup = 0f;
+            double intSup = 0f;
+            for( int i = 0; i < ampiKineSurface.length; i++ ) {
+                totalKinematic[i][0] = ampiKineSurface[i][0];
+                intSubSup = (double) ModelsEngine.width_interpolate(ampiSubSurface, ampiKineSurface[i][0], 0, 1);
+                intSup = ampiKineSurface[i][1];
 
-                totalKinematic[i][1] = intsup + intsub;
+                totalKinematic[i][1] = intSup + intSubSup;
             }
-            for( int i = ampikinesurface.length, j = rowinampisubwhereampisupfinishes; i < totallength; i++, j++ ) {
-                totalKinematic[i][0] = ampisubsurface[j][0];
-                totalKinematic[i][1] = ampisubsurface[j][1];
+            for( int i = ampiKineSurface.length, j = rowInAmpiSubSupWhereAmpiSupFinishes; i < totallength; i++, j++ ) {
+                totalKinematic[i][0] = ampiSubSurface[j][0];
+                totalKinematic[i][1] = ampiSubSurface[j][1];
             }
 
             /*
@@ -191,11 +190,11 @@ public class IUHKinematic implements IUHCalculator {
              * contributes, after that the delta is the one of the subsuperficial.
              */
             double cum = 0f;
-            for( int i = 0; i < ampikinesurface.length; i++ ) {
+            for( int i = 0; i < ampiKineSurface.length; i++ ) {
                 cum = cum + (totalKinematic[i][1] * delta_sup) / ((area_super + area_sub) * vc);
                 totalKinematic[i][2] = cum;
             }
-            for( int i = ampikinesurface.length, j = rowinampisubwhereampisupfinishes; i < totallength; i++, j++ ) {
+            for( int i = ampiKineSurface.length; i < totallength; i++ ) {
                 cum = cum + (totalKinematic[i][1] * delta_sub) / ((area_super + area_sub) * vc);
                 totalKinematic[i][2] = cum;
             }
@@ -205,39 +204,23 @@ public class IUHKinematic implements IUHCalculator {
     }
 
     public double[][] calculateIUH() {
-        return totalampikinematic;
+        return totalAmpiKinematic;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see bsh.commands.h.peakflow.iuh.IUHCalculator#getTpMax()
-     */
     public double getTpMax() {
         return tpmax;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see bsh.commands.h.peakflow.iuh.IUHCalculator#getTstarMax()
-     */
     public double getTstarMax() {
         return tstarmax;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see bsh.commands.h.hydropeak.core.iuh.IUHCalculator#getIUHSuperficial()
-     */
     public double[][] getIUHSuperficial() {
-        return ampikinematic;
+        return ampiKinematic;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see bsh.commands.h.hydropeak.core.iuh.IUHCalculator#getIUHSubsuperficial()
-     */
     public double[][] getIUHSubsuperficial() {
-        return ampisubsurface;
+        return ampiSubSurface;
     }
 
 }

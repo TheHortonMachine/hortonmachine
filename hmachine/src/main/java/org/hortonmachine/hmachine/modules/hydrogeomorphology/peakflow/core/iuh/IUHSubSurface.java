@@ -29,8 +29,8 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.ParameterB
  */
 public class IUHSubSurface {
 
-    private double[][] ampi_sub = null;
-    private double[][] ampi_help = null;
+    private double[][] ampiSubSup = null;
+    private double[][] ampiHelp = null;
     private double vc = 0f;
     private double delta_sub = 0f;
     private double xres = 0f;
@@ -39,13 +39,13 @@ public class IUHSubSurface {
     private double resid_time = 0f;
     private final IHMProgressMonitor pm;
 
-    public IUHSubSurface( double[][] _ampi, ParameterBox fixedParameters, IHMProgressMonitor pm ) {
-        ampi_help = _ampi;
+    public IUHSubSurface( double[][] ampi, ParameterBox fixedParameters, IHMProgressMonitor pm ) {
+        ampiHelp = ampi;
         this.pm = pm;
-        ampi_sub = new double[ampi_help.length][ampi_help[0].length];
+        ampiSubSup = new double[ampiHelp.length][ampiHelp[0].length];
 
-        for( int i = 0; i < ampi_help.length; i++ ) {
-            ampi_sub[i][0] = ampi_help[i][0];
+        for( int i = 0; i < ampiHelp.length; i++ ) {
+            ampiSubSup[i][0] = ampiHelp[i][0];
         }
 
         vc = fixedParameters.getVc();
@@ -65,27 +65,27 @@ public class IUHSubSurface {
          * next part calculates the convolution between the aplitude function and the exponential
          * equation
          */
-        pm.beginTask("Calculating subsurface IUH...", ampi_help.length - 1);
-        for( int i = 0; i < ampi_help.length - 1; i++ ) {
-            t = ampi_sub[i + 1][0];
+        pm.beginTask("Calculating subsurface IUH...", ampiHelp.length - 1);
+        for( int i = 0; i < ampiHelp.length - 1; i++ ) {
+            t = ampiSubSup[i + 1][0];
 
-            double upperintegrationlimit = ampi_sub[ampi_sub.length - 1][0];
+            double upperIntegrationLimit = ampiSubSup[ampiSubSup.length - 1][0];
             ConvolutionExponentialPeakflow expIntegral = new ConvolutionExponentialPeakflow(0.0,
-                    upperintegrationlimit, 20, 0.00001, ampi_help, resid_time, t);
+                    upperIntegrationLimit, 20, 0.00001, ampiHelp, resid_time, t);
 
             integral = expIntegral.integrate();
-            ampi_sub[i + 1][1] = integral;
+            ampiSubSup[i + 1][1] = integral;
             /*
              * if (isScs) { cum += integral delta_sub / (xres yres npixel_sub vc / vcvv); } else {
              */
             cum += integral * delta_sub / (xres * yres * npixel_sub * vc);
 
-            ampi_sub[i + 1][2] = cum;
+            ampiSubSup[i + 1][2] = cum;
 
             pm.worked(1);
         }
         pm.done();
 
-        return ampi_sub;
+        return ampiSubSup;
     }
 }
