@@ -18,6 +18,8 @@
  */
 package org.hortonmachine.gears.utils.math.integration;
 
+import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
+
 /**
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -82,8 +84,7 @@ public abstract class SimpsonIntegral {
         int j = 0;
 
         if (n == 1) {
-            strapezoid = 0.5f * (upperlimit - lowerlimit)
-                    * (equation(lowerlimit) + equation(upperlimit));
+            strapezoid = 0.5f * (upperlimit - lowerlimit) * (equation(lowerlimit) + equation(upperlimit));
         } else {
             /*
              * for (it = 1, j = 1; j < n - 1; j++) { it <<= 1; }
@@ -95,7 +96,7 @@ public abstract class SimpsonIntegral {
             x = lowerlimit + 0.5f * del;
             for( sum = 0f, j = 1; j <= it; j++, x += del ) {
                 if (x >= upperlimit) {
-                    System.out.println("hoi");
+                    throw new ModelsRuntimeException("x >= upperlimit -> " + x + ">=" + upperlimit, this);
                 }
                 sum += equation(x);
             }

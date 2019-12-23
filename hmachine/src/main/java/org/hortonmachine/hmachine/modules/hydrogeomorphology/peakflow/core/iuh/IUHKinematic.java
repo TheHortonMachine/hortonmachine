@@ -74,7 +74,7 @@ public class IUHKinematic implements IUHCalculator {
             area_sub = fixedParams.getArea_sub();
             double[][] ampi_help_sub = effectsBox.getAmpi_sub();
 
-            IUHSubSurface iuhSubSurface = new IUHSubSurface(ampi_help_sub, fixedParams, pm);
+            IUHDiffusionSubSurface iuhSubSurface = new IUHDiffusionSubSurface(ampi_help_sub, fixedParams, pm);
             ampiSubSurface = iuhSubSurface.calculateIUH();
         }
 

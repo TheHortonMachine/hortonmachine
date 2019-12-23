@@ -98,7 +98,7 @@ public class OmsPeakflow extends HMModel {
     @Unit("%")
     @In
     public double pSat = -1f;
-    
+
     @Description(OMSPEAKFLOW_pOutputStepArg_DESCRIPTION)
     @Unit("s")
     @In
@@ -149,8 +149,6 @@ public class OmsPeakflow extends HMModel {
     public static final String OMSPEAKFLOW_inRescaledsub_DESCRIPTION = "The map of sub-superficial rescaled distance.";
     public static final String OMSPEAKFLOW_inRainfall_DESCRIPTION = "The sorted hasmap of rainfall data per timestep.";
     public static final String OMSPEAKFLOW_outDischarge_DESCRIPTION = "The sorted hashmap of peakflow output per timestep.";
-
-    
 
     // private int basinStatus = 0; // dry/normal/wet
     // private double phi = -1d;

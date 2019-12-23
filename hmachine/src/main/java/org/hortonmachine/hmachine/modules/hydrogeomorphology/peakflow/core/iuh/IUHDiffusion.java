@@ -21,6 +21,8 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.chart.PlotFrame;
+import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.EffectsBox;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
 /**
@@ -70,7 +72,7 @@ public class IUHDiffusion implements IUHCalculator {
             areaSub = fixedParams.getArea_sub();
             double[][] ampi_help_sub = effectsBox.getAmpi_sub();
 
-            IUHSubSurface iuhSubSurface = new IUHSubSurface(ampi_help_sub, fixedParams, pm);
+            IUHDiffusionSubSurface iuhSubSurface = new IUHDiffusionSubSurface(ampi_help_sub, fixedParams, pm);
             iuhDiffusionSubSup = iuhSubSurface.calculateIUH();
         }
 
@@ -140,15 +142,15 @@ public class IUHDiffusion implements IUHCalculator {
             /*
              * calculate how many rows are in ampi_sub after ampi_sup has finished
              */
-            int imstantInAmpiSubSupWhereAmpiSupFinishes = 0;
+            int instantInAmpiSubSupWhereAmpiSupFinishes = 0;
             for( int i = 0; i < iuhDiffSubSup.length; i++ ) {
                 if (iuhDiffSubSup[i][0] >= iuhDiffSup[iuhDiffSup.length - 1][0]) {
-                    imstantInAmpiSubSupWhereAmpiSupFinishes = i;
+                    instantInAmpiSubSupWhereAmpiSupFinishes = i;
                     break;
                 }
             }
 
-            int totalLength = iuhDiffSup.length + iuhDiffSubSup.length - imstantInAmpiSubSupWhereAmpiSupFinishes;
+            int totalLength = iuhDiffSup.length + iuhDiffSubSup.length - instantInAmpiSubSupWhereAmpiSupFinishes;
 
             totalIuhDiff = new double[totalLength][3];
 
@@ -165,25 +167,25 @@ public class IUHDiffusion implements IUHCalculator {
                 }
 
             }
-            for( int i = iuhDiffSup.length, j = imstantInAmpiSubSupWhereAmpiSupFinishes; i < totalLength; i++, j++ ) {
+            for( int i = iuhDiffSup.length, j = instantInAmpiSubSupWhereAmpiSupFinishes; i < totalLength; i++, j++ ) {
                 totalIuhDiff[i][0] = iuhDiffSubSup[j][0];
                 totalIuhDiff[i][1] = iuhDiffSubSup[j][1];
             }
 
             double totalDiffSum = 0;
             for( int i = 0; i < totalIuhDiff.length; i++ ) {
-                totalDiffSum +=  totalIuhDiff[i][1];
+                totalDiffSum += totalIuhDiff[i][1];
             }
             double widthFunctionSum = 0;
             for( int i = 0; i < iuhDiffSup.length; i++ ) {
-                widthFunctionSum +=  iuhDiffSup[i][1];
+                widthFunctionSum += iuhDiffSup[i][1];
             }
             for( int i = 0; i < iuhDiffSubSup.length; i++ ) {
-                widthFunctionSum +=  iuhDiffSubSup[i][1];
+                widthFunctionSum += iuhDiffSubSup[i][1];
             }
             pm.message("Widthfunction sum = " + widthFunctionSum);
             pm.message("Total diff sum = " + totalDiffSum);
-            
+
             /*
              * calculation of the third column = cumulated The normalization occurs by means of the
              * superficial delta in the first part of the hydrogram, i.e. until the superficial

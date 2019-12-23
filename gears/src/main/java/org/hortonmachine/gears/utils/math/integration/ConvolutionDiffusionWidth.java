@@ -19,13 +19,14 @@
 package org.hortonmachine.gears.utils.math.integration;
 
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
+import static java.lang.Math.*;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class ConvolutionDiffusionWidth extends SimpsonIntegral implements IntegrableFunction {
 
-    private double[][] ampi_diffusion = null;
+    private double[][] ampiFunction = null;
 
     private double D = 0f;
 
@@ -50,7 +51,7 @@ public class ConvolutionDiffusionWidth extends SimpsonIntegral implements Integr
         maxsteps = maximalsteps;
         accuracy = integrationaccuracy;
         strapezoid = 0f;
-        ampi_diffusion = ampiFunction;
+        this.ampiFunction = ampiFunction;
         D = diffusionparam;
         t = time;
     }
@@ -64,11 +65,14 @@ public class ConvolutionDiffusionWidth extends SimpsonIntegral implements Integr
     }
 
     protected double equation( double x ) {
-        double result = x > ampi_diffusion[ampi_diffusion.length - 1][0] ? 0.0 : 1
-                / Math.sqrt(4 * Math.PI * D * Math.pow(t, 3.0f)) * ModelsEngine.widthInterpolate(ampi_diffusion, x, 0, 1) * x
-                / (Math.exp(Math.pow((x - t), 2) / (4 * D * t)));
-
-        return result;
+        boolean xMajorThanLast = x > ampiFunction[ampiFunction.length - 1][0];
+        if (xMajorThanLast) {
+            return 0.0;
+        } else {
+            double wfValue = ModelsEngine.widthInterpolate(ampiFunction, x, 0, 1);
+            double result = 1 / sqrt(4 * PI * D * pow(t, 3.0f)) * wfValue * x / (exp(pow((x - t), 2) / (4 * D * t)));
+            return result;
+        }
     }
 
 }

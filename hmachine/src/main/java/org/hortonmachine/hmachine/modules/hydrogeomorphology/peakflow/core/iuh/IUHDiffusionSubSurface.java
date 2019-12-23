@@ -27,7 +27,7 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.ParameterB
  * @author Andrea Antonello (www.hydrologis.com)
  * @author Silvano Pisoni
  */
-public class IUHSubSurface {
+public class IUHDiffusionSubSurface {
 
     private double[][] ampiSubSup = null;
     private double[][] ampiHelp = null;
@@ -39,7 +39,7 @@ public class IUHSubSurface {
     private double resid_time = 0f;
     private final IHMProgressMonitor pm;
 
-    public IUHSubSurface( double[][] ampi, ParameterBox fixedParameters, IHMProgressMonitor pm ) {
+    public IUHDiffusionSubSurface( double[][] ampi, ParameterBox fixedParameters, IHMProgressMonitor pm ) {
         ampiHelp = ampi;
         this.pm = pm;
         ampiSubSup = new double[ampiHelp.length][ampiHelp[0].length];

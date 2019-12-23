@@ -23,6 +23,8 @@ import java.util.Set;
 
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.chart.PlotFrame;
+import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.core.iuh.IUHCalculator;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.core.jeff.RealJeff;
@@ -187,6 +189,9 @@ public class QReal implements DischargeCalculator {
         /*
          * sum the discharge contributes
          */
+        // TODO remove x,y used for debug plots
+        double[] x = new double[totalQshiftMatrix[0].length];
+        double[] y = new double[totalQshiftMatrix[0].length];
         Qtot = new double[totalQshiftMatrix[0].length][2];
         double tottime = 0f;
         for( int k = 0; k < Qtot.length; k++ ) {
@@ -199,18 +204,26 @@ public class QReal implements DischargeCalculator {
 
             Qtot[k][1] = sum;
             Qtot[k][0] = tottime;
+            y[k] = sum;
+            x[k] = tottime;
         }
 
         double total_vol = 0f;
         for( int k = 0; k < Qtot.length; k++ ) {
             total_vol = total_vol + Qtot[k][1];
         }
+
         double total_rain = 0.0;
         for( DateTime dateTime : dates ) {
             double J = jeff.get(dateTime);
             total_rain = total_rain + J;
         }
         total_rain = total_rain * area_tot * raintimestep;
+
+        pm.message("Total volume for QReal: " + total_vol);
+        pm.message("Total rain for QReal: " + total_rain);
+
+
 
         return Qtot;
     }
