@@ -1065,7 +1065,7 @@ public class ModelsEngine {
 
                     b = data[j][1] - data[j][0] * mdue;
                     x = (a - b) / (mdue - muno);
-                    y = muno * x + a;
+                    y = mdue * x + b;
                     if (x >= data[(j - 1)][0] && x <= data[j][0] && x - tp >= data[(i - 1)][0] && x - tp <= data[i][0]) {
 
                         ydue = widthInterpolate(data, x - tp, 0, 1);

@@ -32,7 +32,9 @@ public interface IntegralConstants
   /*
    * diffusion integral
    */
-  public double diffusionaccurancy = 0.0001;
-  public int diffusionmaxsteps = 25;
+  public double diffusionSupAccurancy = 0.0001;
+  public int diffusionSupMaxsteps = 25;
+  public double diffusionSubSupAccurancy = 0.0001;
+  public int diffusionSubSupMaxsteps = 20;
 
 }

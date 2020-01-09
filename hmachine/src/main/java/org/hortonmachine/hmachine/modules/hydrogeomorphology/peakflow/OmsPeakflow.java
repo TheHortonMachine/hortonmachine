@@ -78,26 +78,31 @@ public class OmsPeakflow extends HMModel {
     @Description(OMSPEAKFLOW_pA_DESCRIPTION)
     @Unit("mm/h^m")
     @In
-    public double pA = -1f;
+    public double pA = -1.0;
 
     @Description(OMSPEAKFLOW_pN_DESCRIPTION)
     @In
-    public double pN = -1f;
+    public double pN = -1.0;
 
     @Description(OMSPEAKFLOW_pCelerity_DESCRIPTION)
     @Unit("m/s")
     @In
-    public double pCelerity = -1f;
+    public double pCelerity = -1.0;
 
-    @Description(OMSPEAKFLOW_pDiffusion_DESCRIPTION)
+    @Description(OMSPEAKFLOW_pDiffusionSup_DESCRIPTION)
     @Unit("m2/s")
     @In
-    public double pDiffusion = -1f;
+    public double pDiffusionSup = -9999.0;
+
+    @Description(OMSPEAKFLOW_pDiffusionSubSup_DESCRIPTION)
+    @Unit("m2/s")
+    @In
+    public double pDiffusionSubSup = -9999.0;
 
     @Description(OMSPEAKFLOW_pSat_DESCRIPTION)
     @Unit("%")
     @In
-    public double pSat = -1f;
+    public double pSat = -1.0;
     
     @Description(OMSPEAKFLOW_pOutputStepArg_DESCRIPTION)
     @Unit("s")
@@ -140,7 +145,8 @@ public class OmsPeakflow extends HMModel {
     public static final String OMSPEAKFLOW_pA_DESCRIPTION = "The a parameter for statistic rain calculations.";
     public static final String OMSPEAKFLOW_pN_DESCRIPTION = "The n parameter for statistic rain calculations.";
     public static final String OMSPEAKFLOW_pCelerity_DESCRIPTION = "The channel celerity parameter.";
-    public static final String OMSPEAKFLOW_pDiffusion_DESCRIPTION = "The diffusion parameter.";
+    public static final String OMSPEAKFLOW_pDiffusionSup_DESCRIPTION = "The superficial diffusion parameter.";
+    public static final String OMSPEAKFLOW_pDiffusionSubSup_DESCRIPTION = "The subsuperficial diffusion parameter.";
     public static final String OMSPEAKFLOW_pSat_DESCRIPTION = "The saturation percentage.";
     public static final String OMSPEAKFLOW_pOutputStepArg_DESCRIPTION = "The output timestep for discharge.";
     public static final String OMSPEAKFLOW_inTopindex_DESCRIPTION = "The map of Topindex.";
@@ -232,11 +238,11 @@ public class OmsPeakflow extends HMModel {
         }
 
         // check the case
-        if (pA != -1 && pN != -1 && widthfunctionSupCb != null && pCelerity != -1 && pDiffusion != -1) {
+        if (pA != -1 && pN != -1 && widthfunctionSupCb != null && pCelerity != -1 && pDiffusionSup != -1) {
             pm.message("Peakflow launched in statistic mode...");
             isStatistics = true;
             isReal = false;
-        } else if (widthfunctionSupCb != null && pCelerity != -1 && pDiffusion != -1 && inRainfall != null) {
+        } else if (widthfunctionSupCb != null && pCelerity != -1 && pDiffusionSup != -1 && inRainfall != null) {
             pm.message("Peakflow launched with real rain...");
             isStatistics = false;
             isReal = true;
@@ -270,7 +276,7 @@ public class OmsPeakflow extends HMModel {
         parameterBox.setA_idf(pA);
         parameterBox.setArea(areaSup);
         parameterBox.setTimestep(timestep);
-        parameterBox.setDiffusionparameter(pDiffusion);
+        parameterBox.setDiffusionParameterSup(pDiffusionSup);
         parameterBox.setVc(pCelerity);
         parameterBox.setDelta(deltaSup);
         parameterBox.setXres(xRes);
@@ -284,6 +290,7 @@ public class OmsPeakflow extends HMModel {
 
         if (timeSubArray != null) {
             parameterBox.setSubsuperficial(true);
+            parameterBox.setDiffusionParameterSubSup(pDiffusionSubSup);
             parameterBox.setDelta_sub(deltaSub);
             parameterBox.setNpixel_sub(pixelTotalSub);
             parameterBox.setTime_sub(timeSubArray);
@@ -307,7 +314,7 @@ public class OmsPeakflow extends HMModel {
             DateTime dummyDate = new DateTime();
             IUHCalculator iuhC = null;
 
-            if (pDiffusion < 10) {
+            if (pDiffusionSup < 10) {
                 pm.message("IUH Kinematic...");
                 iuhC = new IUHKinematic(effectsBox, parameterBox, pm);
             } else {
@@ -335,7 +342,7 @@ public class OmsPeakflow extends HMModel {
         } else if (isReal) {
             IUHCalculator iuhC = null;
 
-            if (pDiffusion < 10) {
+            if (pDiffusionSup < 10) {
                 pm.message("IUH Kinematic...");
                 iuhC = new IUHKinematic(effectsBox, parameterBox, pm);
             } else {

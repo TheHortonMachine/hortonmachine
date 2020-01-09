@@ -29,7 +29,8 @@ public class ParameterBox {
     private double a_idf = -9999.0f;
     private double area = -9999.0f;
     private double timestep = -9999.0f;
-    private double diffusionparameter = -9999.0f;
+    private double diffusionParameterSup = -9999.0f;
+    private double diffusionParameterSubSup = -9999.0f;
     private double vc = -9999.0f;
     private double delta = -9999.0f;
     private double xres = -9999.0f;
@@ -145,19 +146,28 @@ public class ParameterBox {
         this.timestep = timestep;
     }
 
-    public boolean diffusionparameterExists() {
-        if (diffusionparameter != -9999.0f) {
-            return true;
-        }
-        return false;
+    public boolean diffusionParameterSupExists() {
+        return diffusionParameterSup != -9999.0f;
     }
 
-    public double getDiffusionparameter() {
-        return diffusionparameter;
+    public double getDiffusionParameterSup() {
+        return diffusionParameterSup;
     }
 
-    public void setDiffusionparameter( double diffusionparameter ) {
-        this.diffusionparameter = diffusionparameter;
+    public void setDiffusionParameterSup( double diffusionparameter ) {
+        this.diffusionParameterSup = diffusionparameter;
+    }
+
+    public boolean diffusionParameterSubSupExists() {
+    	return diffusionParameterSubSup != -9999.0f;
+    }
+    
+    public double getDiffusionParameterSubSup() {
+    	return diffusionParameterSubSup;
+    }
+    
+    public void setDiffusionParameterSubSup( double diffusionparameter ) {
+    	this.diffusionParameterSubSup = diffusionparameter;
     }
 
     public boolean vcExists() {

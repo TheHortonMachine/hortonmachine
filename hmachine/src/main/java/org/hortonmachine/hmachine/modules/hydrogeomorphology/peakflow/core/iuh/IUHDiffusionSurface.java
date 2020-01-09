@@ -31,7 +31,7 @@ public class IUHDiffusionSurface {
 
     private double[][] ampiDiffusion = null;
     private double[][] ampi = null;
-    private double diffusionParameter = 0f;
+    private double diffusionParameterSup = 0f;
     private double vc = 0f;
     private double delta = 0f;
     private double xres = 0f;
@@ -49,7 +49,7 @@ public class IUHDiffusionSurface {
         this.pm = pm;
         delta = fixedParameters.getDelta();
 
-        double threshold = 5000f;
+        double threshold = 1000f;
         ampiDiffusion = new double[(int) (ampi.length + threshold / delta)][ampi[0].length];
 
         for( int i = 0; i < ampi.length; i++ ) {
@@ -59,7 +59,7 @@ public class IUHDiffusionSurface {
             ampiDiffusion[ampi.length - 1 + i][0] = ampi[ampi.length - 1][0] + i * delta;
         }
 
-        diffusionParameter = fixedParameters.getDiffusionparameter();
+        diffusionParameterSup = fixedParameters.getDiffusionParameterSup();
         vc = fixedParameters.getVc();
         xres = fixedParameters.getXres();
         yres = fixedParameters.getYres();
@@ -76,8 +76,8 @@ public class IUHDiffusionSurface {
          * equation
          */
         ConvolutionDiffusionWidth diffIntegral = new ConvolutionDiffusionWidth(0.0,
-                ampiDiffusion[ampiDiffusion.length - 1][0], IntegralConstants.diffusionmaxsteps,
-                IntegralConstants.diffusionaccurancy, ampi, diffusionParameter, t);
+                ampiDiffusion[ampiDiffusion.length - 1][0], IntegralConstants.diffusionSupMaxsteps,
+                IntegralConstants.diffusionSupAccurancy, ampi, diffusionParameterSup, t);
 
         pm.beginTask("Calculating diffusion...", ampiDiffusion.length - 1);
         for( int i = 0; i < ampiDiffusion.length - 1; i++ ) {

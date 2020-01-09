@@ -130,7 +130,7 @@ public class QReal implements DischargeCalculator {
                             - ModelsEngine.widthInterpolate(ampi, t - tpmax, 0, 2)));
                     Q[j][2] = Q[j - 1][2] + Q[j][1];
                 }
-                double diffJ = (area_tot * J - Q[j][2]) * timestep;
+                double diffJ = (area_tot * J - Q[j][1]) * timestep;
                 volumeCheck[j][0] = Q[j][0];
                 volumeCheck[j][1] = diffJ;
             }
@@ -145,7 +145,7 @@ public class QReal implements DischargeCalculator {
                         * (ampi[ampi.length - 1][2] - ModelsEngine.widthInterpolate(ampi, t - tpmax, 0, 2)));
                 Q[j][2] = Q[j - 1][2] + Q[j][1];
 
-                double diffJ = (area_tot * J - Q[j][2]) * timestep;
+                double diffJ = (area_tot * J - Q[j][1]) * timestep;
                 volumeCheck[j][0] = Q[j][0];
                 volumeCheck[j][1] = diffJ;
             }
