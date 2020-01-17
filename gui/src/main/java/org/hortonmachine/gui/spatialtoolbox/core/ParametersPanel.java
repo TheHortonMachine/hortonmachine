@@ -19,6 +19,10 @@ package org.hortonmachine.gui.spatialtoolbox.core;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -51,7 +55,6 @@ import org.hortonmachine.gears.JGrassGears;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
-import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.hmachine.HortonMachine;
 
 import com.jgoodies.forms.layout.CellConstraints;
@@ -330,6 +333,7 @@ public class ParametersPanel extends JPanel implements MouseListener {
         return f;
     }
 
+    @SuppressWarnings("serial")
     private void handleTextField( FieldData inputField, int row, int col, CellConstraints cc, boolean onlyNumbers,
             TypeCheck typeCheck ) {
         String defaultFieldValue = inputField.fieldValue;
@@ -338,7 +342,9 @@ public class ParametersPanel extends JPanel implements MouseListener {
             if (!onlyNumbers) {
                 textField = new JTextField();
             } else {
-                NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.US); // always use dot as comma
+                NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.US); // always use
+                                                                                       // dot as
+                                                                                       // comma
                 DecimalFormat decimalFormat = (DecimalFormat) numberFormat;
                 decimalFormat.setGroupingUsed(false);
                 textField = new JFormattedTextField(decimalFormat);
@@ -376,7 +382,6 @@ public class ParametersPanel extends JPanel implements MouseListener {
                 fieldName2ValueHolderMap.put(inputField.fieldName, textField);
             }
             textField.setText(defaultFieldValue);
-
         } else {
 
             boolean isVector = false;
@@ -485,6 +490,21 @@ public class ParametersPanel extends JPanel implements MouseListener {
                 }
 
                 textField.setText(defaultFieldValue);
+                textField.setDropTarget(new DropTarget(){
+                    public synchronized void drop( DropTargetDropEvent evt ) {
+                        try {
+                            evt.acceptDrop(DnDConstants.ACTION_COPY);
+                            @SuppressWarnings("unchecked")
+                            List<File> droppedFiles = (List<File>) evt.getTransferable()
+                                    .getTransferData(DataFlavor.javaFileListFlavor);
+                            for( File file : droppedFiles ) {
+                                textField.setText(file.getAbsolutePath());
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                });
             }
 
         }
