@@ -327,8 +327,15 @@ public class GuiUtilities {
     }
 
     public static void handleError( Component parentComponent, Exception e ) {
-        Logger.INSTANCE.insertError("GuiUtilities", e.getLocalizedMessage(), e);
-        showErrorMessage(parentComponent, "ERROR", e.getLocalizedMessage());
+        String localizedMessage = e.getLocalizedMessage();
+        if (localizedMessage == null || localizedMessage.trim().length() == 0) {
+            localizedMessage = e.getMessage();
+            if (localizedMessage == null || localizedMessage.trim().length() == 0) {
+                localizedMessage = "A not identified error occurred. The system didn't supply any further information.";
+            }
+        }
+        Logger.INSTANCE.insertError("GuiUtilities", localizedMessage, e);
+        showErrorMessage(parentComponent, "ERROR", localizedMessage);
     }
 
     public static void showErrorMessage( Component parentComponent, String title, String message ) {

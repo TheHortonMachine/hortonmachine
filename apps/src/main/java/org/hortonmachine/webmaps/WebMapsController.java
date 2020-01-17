@@ -35,6 +35,7 @@ import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -44,7 +45,9 @@ import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.locationtech.jts.geom.Polygon;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 @SuppressWarnings("unchecked")
 public class WebMapsController extends WebMapsView implements IOnCloseListener {
@@ -58,6 +61,8 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
 
     private ReferencedEnvelope readEnvelope;
 
+    private CRSEnvelope selectedCrsEnv;
+
     public WebMapsController() {
         setPreferredSize(new Dimension(1400, 750));
 
@@ -65,13 +70,23 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
     }
     private void init() {
         _loadButton.addActionListener(e -> {
-            String url = _getCapabilitiesField.getText();
-            if (simpleCheck(url)) {
+            try {
+                String url = _getCapabilitiesField.getText();
+
+                boolean doProceed = simpleCheck(url);
+                if (!doProceed) {
+                    doProceed = GuiUtilities.showYesNoDialog(this,
+                            "The url doesn't contain the usual WMS service parameters (service=wms, request=getcapabilities).\nDo you want to proceed?");
+                    if (!doProceed) {
+                        return;
+                    }
+                }
+
                 currentWms = new WmsWrapper(url);
                 name2LayersMap.clear();
 
                 WMSCapabilities capabilities = currentWms.getCapabilities();
-                String serverName = capabilities.getService().getName();
+                String serverName = capabilities.getService().getName() + "   (version: " + capabilities.getVersion() + ")";
                 String serverTitle = capabilities.getService().getTitle();
 
                 _serverNameLabel.setText(serverName);
@@ -95,8 +110,11 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
                     loadLayerInfo(selectedLayer);
                 });
                 loadLayerInfo(first);
-
+            } catch (Exception e1) {
+                e1.printStackTrace();
+                GuiUtilities.handleError(this, e1);
             }
+
         });
 
         _layerNameFilterField.addKeyListener(new KeyListener(){
@@ -127,7 +145,13 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
             }
         });
 
+        _boundsFileField.setEditable(false);
         _boundsLoadButton.addActionListener(e -> {
+            if (selectedCrsEnv == null) {
+                GuiUtilities.showWarningMessage(this, "Please select a CRS first.");
+                return;
+            }
+
             File[] selFile = GuiUtilities.showOpenFilesDialog(this, "Select file", false, PreferencesHandler.getLastFile(),
                     new FileFilter(){
 
@@ -155,8 +179,9 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
 
                 try {
                     readEnvelope = OmsVectorReader.readEnvelope(selFile[0].getAbsolutePath());
+                    updateFileExportBounds();
                 } catch (Exception e1) {
-                    GuiUtilities.handleError(_boundsFileField, e1);
+                    GuiUtilities.handleError(this, e1);
                 }
             }
 
@@ -211,22 +236,25 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
             int imageWidth = Integer.parseInt(_outputWithField.getText());
             int imageHeight = Integer.parseInt(_outputHeightField.getText());
 
-            String filePath = _boundsFileField.getText();
-            ReferencedEnvelope envelope = null;
-
-            try {
-                if (filePath.endsWith(HMConstants.SUPPORTED_VECTOR_EXTENSIONS[0])) {
-                    envelope = OmsVectorReader.readEnvelope(filePath);
-                } else {
-                    GridCoverage2D raster = OmsRasterReader.readRaster(filePath);
-                    Polygon regionPolygon = CoverageUtilities.getRegionPolygon(raster);
-                    envelope = new ReferencedEnvelope(regionPolygon.getEnvelopeInternal(), raster.getCoordinateReferenceSystem());
-                }
-            } catch (Exception e2) {
-                e2.printStackTrace();
-                GuiUtilities.showErrorMessage(this, "Could not load bounds from file: " + e2.getLocalizedMessage());
-                return;
+//            String filePath = _boundsFileField.getText();
+            if (readEnvelope == null) {
+                GuiUtilities.showWarningMessage(this, "A bounds file has to be loaded to export to geotiff.");
             }
+            ReferencedEnvelope envelope = readEnvelope;
+
+//            try {
+//                if (filePath.endsWith(HMConstants.SUPPORTED_VECTOR_EXTENSIONS[0])) {
+//                    envelope = OmsVectorReader.readEnvelope(filePath);
+//                } else {
+//                    GridCoverage2D raster = OmsRasterReader.readRaster(filePath);
+//                    Polygon regionPolygon = CoverageUtilities.getRegionPolygon(raster);
+//                    envelope = new ReferencedEnvelope(regionPolygon.getEnvelopeInternal(), raster.getCoordinateReferenceSystem());
+//                }
+//            } catch (Exception e2) {
+//                e2.printStackTrace();
+//                GuiUtilities.showErrorMessage(this, "Could not load bounds from file: " + e2.getLocalizedMessage());
+//                return;
+//            }
 
             try {
 
@@ -315,6 +343,9 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
                 double s = crsEnvelope.getMinY();
                 double n = crsEnvelope.getMaxY();
                 ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, crs);
+                if (readEnvelope != null) {
+                    env = readEnvelope;
+                }
 
                 GetMapRequest mapRequest = currentWms.getMapRequest(layer, selectedFormat, epsg, imageWidth, imageHeight, env,
                         null, styleImpl);
@@ -325,10 +356,21 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
                 } else {
                     String message = currentWms.getMessage(mapRequest);
                     if (message.contains("ServiceException")) {
-                        final Pattern pattern = Pattern.compile("<ServiceException>(.+?)</ServiceException>", Pattern.DOTALL);
-                        final Matcher matcher = pattern.matcher(message);
-                        matcher.find();
-                        message = matcher.group(1);
+                        message = message.replace("ServiceExceptionReport", "");
+                        String[] split = message.split("<ServiceException");
+                        if (split.length == 2) {
+                            message = split[1];
+                            int indexOf = message.indexOf('>');
+                            message = message.substring(indexOf + 1).trim();
+                            indexOf = message.indexOf('<');
+                            message = message.substring(0, indexOf);
+                        } else {
+                            final Pattern pattern = Pattern.compile("<ServiceException(.+?)>(.+?)</ServiceException>",
+                                    Pattern.DOTALL);
+                            final Matcher matcher = pattern.matcher(message);
+                            matcher.find();
+                            message = matcher.group(1);
+                        }
                         if (message != null) {
                             message = message.trim();
                             GuiUtilities.showWarningMessage(this, message);
@@ -339,11 +381,27 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
                 }
 
             } catch (Exception e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
+                GuiUtilities.handleError(this, e1);
             }
 
         });
+    }
+    private void updateFileExportBounds() throws Exception {
+        if (readEnvelope != null) {
+            CoordinateReferenceSystem selectedCrs = getCrs(selectedCrsEnv.getEPSGCode());
+            readEnvelope = readEnvelope.transform(selectedCrs, true);
+
+            double north = readEnvelope.getMaxY();
+            double south = readEnvelope.getMinY();
+            double east = readEnvelope.getMaxX();
+            double west = readEnvelope.getMinX();
+
+            _northCrsFileLabel.setText(String.valueOf(north));
+            _southCrsFileLabel.setText(String.valueOf(south));
+            _westCrsFileLabel.setText(String.valueOf(west));
+            _eastCrsFileLabel.setText(String.valueOf(east));
+        }
     }
 
     private CoordinateReferenceSystem getCrs( String epsg ) throws Exception {
@@ -371,17 +429,22 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
         _crsCombo.addActionListener(e -> {
             String crsName = _crsCombo.getSelectedItem().toString();
             loadCrsInfo(crsName);
+            try {
+                updateFileExportBounds();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
         });
         loadCrsInfo(_crsCombo.getSelectedItem().toString());
 
     }
 
     private void loadCrsInfo( String crsName ) {
-        CRSEnvelope crsEnv = crsMap.get(crsName);
-        double north = crsEnv.getMaxY();
-        double south = crsEnv.getMinY();
-        double east = crsEnv.getMaxX();
-        double west = crsEnv.getMinX();
+        selectedCrsEnv = crsMap.get(crsName);
+        double north = selectedCrsEnv.getMaxY();
+        double south = selectedCrsEnv.getMinY();
+        double east = selectedCrsEnv.getMaxX();
+        double west = selectedCrsEnv.getMinX();
 
         _northCrsLabel.setText(String.valueOf(north));
         _southCrsLabel.setText(String.valueOf(south));

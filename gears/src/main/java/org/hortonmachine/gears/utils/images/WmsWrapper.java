@@ -2,21 +2,16 @@ package org.hortonmachine.gears.utils.images;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 
-import org.geotools.data.ServiceInfo;
 import org.geotools.data.ows.CRSEnvelope;
 import org.geotools.data.ows.Layer;
 import org.geotools.data.ows.StyleImpl;
@@ -26,12 +21,7 @@ import org.geotools.data.wms.WebMapServer;
 import org.geotools.data.wms.request.GetMapRequest;
 import org.geotools.data.wms.response.GetMapResponse;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.ows.ServiceException;
 import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
-import org.hortonmachine.gears.utils.ByteUtilities;
-import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.StringUtilities;
 
 public class WmsWrapper {
@@ -39,7 +29,7 @@ public class WmsWrapper {
     private WebMapServer wms = null;
     private WMSCapabilities capabilities;
 
-    public WmsWrapper( String urlString ) {
+    public WmsWrapper( String urlString ) throws Exception {
         URL url = null;
         try {
             url = new URL(urlString);
@@ -47,16 +37,7 @@ public class WmsWrapper {
             // will not happen
         }
 
-        try {
-            wms = new WebMapServer(url);
-        } catch (IOException e) {
-            // There was an error communicating with the server
-            // For example, the server is down
-            e.printStackTrace();
-        } catch (ServiceException e) {
-            // The server returned a ServiceException (unusual in this case)
-            e.printStackTrace();
-        }
+        wms = new WebMapServer(url);
     }
 
     public WMSCapabilities getCapabilities() {

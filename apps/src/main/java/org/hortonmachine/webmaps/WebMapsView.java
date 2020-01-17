@@ -36,11 +36,15 @@ public class WebMapsView extends JPanel
    JComboBox _formatsCombo = new JComboBox();
    JComboBox _layersCombo = new JComboBox();
    JTextField _layerNameFilterField = new JTextField();
+   JTextField _boundsFileField = new JTextField();
+   JButton _boundsLoadButton = new JButton();
+   JLabel _northCrsFileLabel = new JLabel();
+   JLabel _southCrsFileLabel = new JLabel();
+   JLabel _westCrsFileLabel = new JLabel();
+   JLabel _eastCrsFileLabel = new JLabel();
    JButton _loadPreviewButton = new JButton();
    JTextField _outputWithField = new JTextField();
    JTextField _outputHeightField = new JTextField();
-   JTextField _boundsFileField = new JTextField();
-   JButton _boundsLoadButton = new JButton();
    JTextField _outputFileField = new JTextField();
    JButton _outputSaveButton = new JButton();
    JButton _wms2tiffButton = new JButton();
@@ -141,7 +145,7 @@ public class WebMapsView extends JPanel
       jpanel1.setLayout(formlayout1);
 
       jpanel1.add(createPanel1(),cc.xy(2,2));
-      jpanel1.add(createPanel5(),cc.xy(4,2));
+      jpanel1.add(createPanel7(),cc.xy(4,2));
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3 });
       return jpanel1;
    }
@@ -149,7 +153,7 @@ public class WebMapsView extends JPanel
    public JPanel createPanel1()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -203,7 +207,9 @@ public class WebMapsView extends JPanel
       jpanel1.add(_formatsCombo,cc.xywh(2,15,3,1));
 
       jpanel1.add(createPanel4(),cc.xywh(2,7,3,1));
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 });
+      jpanel1.add(createPanel5(),cc.xywh(2,21,3,1));
+      jpanel1.add(createPanel6(),cc.xywh(2,23,3,1));
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23 });
       return jpanel1;
    }
 
@@ -293,6 +299,74 @@ public class WebMapsView extends JPanel
    public JPanel createPanel5()
    {
       JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:24DLU:NONE","CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      JLabel jlabel1 = new JLabel();
+      jlabel1.setText("Bounds from file");
+      jpanel1.add(jlabel1,cc.xy(1,1));
+
+      _boundsFileField.setName("boundsFileField");
+      jpanel1.add(_boundsFileField,cc.xy(3,1));
+
+      _boundsLoadButton.setActionCommand("load");
+      _boundsLoadButton.setName("boundsLoadButton");
+      _boundsLoadButton.setText("...");
+      jpanel1.add(_boundsLoadButton,cc.xy(5,1));
+
+      addFillComponents(jpanel1,new int[]{ 2,4 },new int[0]);
+      return jpanel1;
+   }
+
+   public JPanel createPanel6()
+   {
+      JPanel jpanel1 = new JPanel();
+      TitledBorder titledborder1 = new TitledBorder(null,"File/Export Bounds ",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      jpanel1.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(0.5),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      JLabel jlabel1 = new JLabel();
+      jlabel1.setText("North");
+      jpanel1.add(jlabel1,cc.xy(1,1));
+
+      JLabel jlabel2 = new JLabel();
+      jlabel2.setText("South");
+      jpanel1.add(jlabel2,cc.xy(1,3));
+
+      JLabel jlabel3 = new JLabel();
+      jlabel3.setText("West");
+      jpanel1.add(jlabel3,cc.xy(1,5));
+
+      JLabel jlabel4 = new JLabel();
+      jlabel4.setText("East");
+      jpanel1.add(jlabel4,cc.xy(1,7));
+
+      _northCrsFileLabel.setName("northCrsFileLabel");
+      _northCrsFileLabel.setText("- nv -");
+      jpanel1.add(_northCrsFileLabel,cc.xy(3,1));
+
+      _southCrsFileLabel.setName("southCrsFileLabel");
+      _southCrsFileLabel.setText("- nv -");
+      jpanel1.add(_southCrsFileLabel,cc.xy(3,3));
+
+      _westCrsFileLabel.setName("westCrsFileLabel");
+      _westCrsFileLabel.setText("- nv -");
+      jpanel1.add(_westCrsFileLabel,cc.xy(3,5));
+
+      _eastCrsFileLabel.setName("eastCrsFileLabel");
+      _eastCrsFileLabel.setText("- nv -");
+      jpanel1.add(_eastCrsFileLabel,cc.xy(3,7));
+
+      addFillComponents(jpanel1,new int[]{ 2 },new int[]{ 2,4,6 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel7()
+   {
+      JPanel jpanel1 = new JPanel();
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","FILL:300PX:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
@@ -302,18 +376,18 @@ public class WebMapsView extends JPanel
       _loadPreviewButton.setText("Load Preview");
       jpanel1.add(_loadPreviewButton,cc.xy(2,2));
 
-      jpanel1.add(createPanel6(),cc.xywh(2,4,1,17));
-      jpanel1.add(createPanel7(),cc.xy(2,1));
+      jpanel1.add(createPanel8(),cc.xywh(2,4,1,17));
+      jpanel1.add(createPanel9(),cc.xy(2,1));
       addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 });
       return jpanel1;
    }
 
-   public JPanel createPanel6()
+   public JPanel createPanel8()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Download Geotiff",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:24DLU:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:24DLU:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -332,39 +406,27 @@ public class WebMapsView extends JPanel
       jpanel1.add(_outputHeightField,cc.xywh(3,3,3,1));
 
       JLabel jlabel3 = new JLabel();
-      jlabel3.setText("Bounds from file");
+      jlabel3.setText("Output geotiff file");
       jpanel1.add(jlabel3,cc.xy(1,5));
 
-      _boundsFileField.setName("boundsFileField");
-      jpanel1.add(_boundsFileField,cc.xy(3,5));
-
-      _boundsLoadButton.setActionCommand("load");
-      _boundsLoadButton.setName("boundsLoadButton");
-      _boundsLoadButton.setText("...");
-      jpanel1.add(_boundsLoadButton,cc.xy(5,5));
-
-      JLabel jlabel4 = new JLabel();
-      jlabel4.setText("Output geotiff file");
-      jpanel1.add(jlabel4,cc.xy(1,7));
-
       _outputFileField.setName("outputFileField");
-      jpanel1.add(_outputFileField,cc.xy(3,7));
+      jpanel1.add(_outputFileField,cc.xy(3,5));
 
       _outputSaveButton.setActionCommand("load");
       _outputSaveButton.setName("outputSaveButton");
       _outputSaveButton.setText("...");
-      jpanel1.add(_outputSaveButton,cc.xy(5,7));
+      jpanel1.add(_outputSaveButton,cc.xy(5,5));
 
       _wms2tiffButton.setActionCommand("Load Preview");
       _wms2tiffButton.setName("wms2tiffButton");
       _wms2tiffButton.setText("Convert WMS to Geotiff");
-      jpanel1.add(_wms2tiffButton,cc.xywh(1,9,5,1));
+      jpanel1.add(_wms2tiffButton,cc.xywh(1,7,5,1));
 
-      addFillComponents(jpanel1,new int[]{ 2,4,5 },new int[]{ 2,4,6,8,10 });
+      addFillComponents(jpanel1,new int[]{ 2,4,5 },new int[]{ 2,4,6,8 });
       return jpanel1;
    }
 
-   public JPanel createPanel7()
+   public JPanel createPanel9()
    {
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Preview",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
