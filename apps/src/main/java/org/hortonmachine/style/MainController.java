@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -36,7 +35,6 @@ import javax.swing.tree.TreePath;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;
@@ -51,7 +49,6 @@ import org.hortonmachine.database.DatabaseViewer;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
-import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.CrsUtilities;
@@ -306,6 +303,8 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     }
 
     private void openSelectedFile() {
+        if (objectWithStyle == null)
+            return;
         String absolutePath = objectWithStyle.getDataFile().getAbsolutePath();
         PreferencesHandler.setLastPath(absolutePath);
         _filepathField.setText(objectWithStyle.getNormalizedPath());

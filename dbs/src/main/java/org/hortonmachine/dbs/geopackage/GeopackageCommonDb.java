@@ -1473,27 +1473,65 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
     }
 
     public void updateSldStyle( String tableName, String sldString ) throws Exception {
-        String sql = "INSERT OR REPLACE INTO " + HM_STYLES_TABLE + "(tablename, sld) VALUES(?,?)";
-        sqliteDb.execOnConnection(connection -> {
-            try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
-                pstmt.setString(1, tableName);
-                pstmt.setString(2, sldString);
-                pstmt.executeUpdate();
+        Long count = sqliteDb.getLong(
+                "select count(*) from " + HM_STYLES_TABLE + " where tablename='" + DbsUtilities.fixTableName(tableName) + "'");
+        String sql;
+        if (count == 0) {
+            sql = "INSERT INTO " + HM_STYLES_TABLE + "(tablename, sld) VALUES(?,?)";
+            sqliteDb.execOnConnection(connection -> {
+                try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    pstmt.setString(1, tableName);
+                    pstmt.setString(2, sldString);
+                    pstmt.executeUpdate();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 return null;
-            }
-        });
+            });
+        } else {
+            sql = "update " + HM_STYLES_TABLE + " set sld=? where tablename=?";
+            sqliteDb.execOnConnection(connection -> {
+                try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    pstmt.setString(1, sldString);
+                    pstmt.setString(2, tableName);
+                    pstmt.executeUpdate();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            });
+        }
     }
 
     public void updateSimplifiedStyle( String tableName, String simplified ) throws Exception {
-        String sql = "INSERT OR REPLACE INTO " + HM_STYLES_TABLE + "(tablename, simplified) VALUES(?,?)";
-        sqliteDb.execOnConnection(connection -> {
-            try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
-                pstmt.setString(1, tableName);
-                pstmt.setString(2, simplified);
-                pstmt.executeUpdate();
+        Long count = sqliteDb.getLong(
+                "select count(*) from " + HM_STYLES_TABLE + " where tablename='" + DbsUtilities.fixTableName(tableName) + "'");
+        String sql;
+        if (count == 0) {
+            sql = "INSERT INTO " + HM_STYLES_TABLE + "(tablename, simplified) VALUES(?,?)";
+            sqliteDb.execOnConnection(connection -> {
+                try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    pstmt.setString(1, tableName);
+                    pstmt.setString(2, simplified);
+                    pstmt.executeUpdate();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 return null;
-            }
-        });
+            });
+        } else {
+            sql = "update " + HM_STYLES_TABLE + " set simplified=? where tablename=?";
+            sqliteDb.execOnConnection(connection -> {
+                try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    pstmt.setString(1, simplified);
+                    pstmt.setString(2, tableName);
+                    pstmt.executeUpdate();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            });
+        }
     }
 
     private void checkStyleTable() throws Exception {
