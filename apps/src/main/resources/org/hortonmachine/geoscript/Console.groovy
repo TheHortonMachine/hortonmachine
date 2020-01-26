@@ -83,7 +83,7 @@ import org.hortonmachine.geoscript.ConsoleView
  */
 class Console implements CaretListener, HyperlinkListener, ComponentListener, FocusListener {
 	static String myTitle = 'Geoscript and Hortonmachine GroovyConsole';
-	static String myVersions = ' Geoscript Version 1.10\n Hortonmachine Version 0.9.1 \n Groovy Version '; 
+	static String myVersions = ' Geoscript Version 1.10\n Hortonmachine Version 0.9.8 \n Groovy Version '; 
 
 
     static final String DEFAULT_SCRIPT_NAME_START = 'ConsoleScript'
@@ -99,10 +99,10 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
         Boolean.valueOf(System.getProperty('groovy.full.stacktrace', 'false')))
     Action fullStackTracesAction
 
-    boolean showScriptInOutput = prefs.getBoolean('showScriptInOutput', true)
+    boolean showScriptInOutput = prefs.getBoolean('showScriptInOutput', false)
     Action showScriptInOutputAction
 
-    boolean visualizeScriptResults = prefs.getBoolean('visualizeScriptResults', false)
+    boolean visualizeScriptResults = prefs.getBoolean('visualizeScriptResults', true)
     Action visualizeScriptResultsAction
 
     boolean showToolbar = prefs.getBoolean('showToolbar', true)
@@ -268,7 +268,7 @@ options:
                     title: myTitle,
                     //location: [100,100], // in groovy 2.0 use platform default location
                     iconImage: imageIcon('/org/hortonmachine/images/hm150.png').image,
-                    defaultCloseOperation: JFrame.EXIT_ON_CLOSE, //DO_NOTHING_ON_CLOSE,
+                    defaultCloseOperation: JFrame.DISPOSE_ON_CLOSE, // TODO DO_NOTHING_ON_CLOSE,
                 ) {
                     try {
                         current.locationByPlatform = true
