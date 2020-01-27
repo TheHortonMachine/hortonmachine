@@ -14,24 +14,27 @@
 	<modules>
 		<module>dbs</module>
 		<module>gears</module>
-		<module>hmachine</module>
+	<!--	
+        <module>hmachine</module>
 		<module>lesto</module>
 		<module>modules</module>
 		<module>gui</module>
-		<module>apps</module>
+		<module>apps</module> 
+    -->
 	</modules>
 
 	<properties>
-		<gt.version>20.0</gt.version>
-		<groovy.version>2.4.15</groovy.version>
-		<geoscript.version>1.12.0</geoscript.version>
-		<c3p0.version>0.9.5.3</c3p0.version>
+		<gt.version>23-SNAPSHOT</gt.version>
+		<groovy.version>2.5.8</groovy.version>
+		<geoscript.version>1.14.0</geoscript.version>
+
+		<c3p0.version>0.9.5.5</c3p0.version>
 		<h2gis.version>1.5.0</h2gis.version>
-		<sqlitejdbc.version>3.28.0</sqlitejdbc.version>
+		<sqlitejdbc.version>3.30.1</sqlitejdbc.version>
 		<jt.version>1.5.0</jt.version>
 
 		<imageio.ext.version>1.1.25</imageio.ext.version>
-		<jts.version>1.16.0</jts.version>
+		<jts.version>1.16.1</jts.version>
 		<jaiext.version>1.1.1</jaiext.version>
 		<jackson.version>2.3.1</jackson.version>
 
@@ -789,19 +792,54 @@
 			</extension>
 		</extensions>
 		<plugins>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <executions>
+              <execution>
+                <id>remove_hm_from_modulename</id>
+                <goals>
+                  <goal>regex-property</goal>
+                </goals>
+                <configuration>
+                  <name>moduleIdentifierStep1</name>
+                  <value>${project.groupId}.${project.artifactId}</value>
+                  <regex>hm-</regex>
+                  <replacement></replacement>
+                  <failIfNoMatch>false</failIfNoMatch>
+                </configuration>
+              </execution>
+              <execution>
+                <id>remove_dashes_from_modulename</id>
+                <goals>
+                  <goal>regex-property</goal>
+                </goals>
+                <configuration>
+                  <name>moduleIdentifier</name>
+                  <value>${moduleIdentifierStep1}</value>
+                  <regex>-</regex>
+                  <replacement>_</replacement>
+                  <failIfNoMatch>false</failIfNoMatch>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.6.1</version>
+				<version>3.8.1</version>
 				<configuration>
-					<source>1.8</source>
+					<!--<source>1.8</source>
 					<target>1.8</target>
-					<encoding>UTF-8</encoding>
+					<encoding>UTF-8</encoding>-->
+                    <release>13</release>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
+				<version>3.2.0</version>
 				<configuration>
 					<archive>
 						<manifest>
@@ -818,7 +856,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.0.2</version>
+				<version>3.1.0</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
 				</configuration>
@@ -826,7 +864,7 @@
 
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.0.1</version>
+				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<goals>
@@ -838,7 +876,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9</version>
+				<version>3.1.1</version>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
@@ -846,7 +884,8 @@
 							<goal>jar</goal>
 						</goals>
 						<configuration>
-							<additionalparam>-Xdoclint:none</additionalparam>
+							<!--<additionalparam>-Xdoclint:none</additionalparam>-->
+                            <doclint>none</doclint>
 						</configuration>
 					</execution>
 				</executions>
@@ -854,6 +893,7 @@
 
 			<plugin>
 				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.1</version>
 				<executions>
 					<execution>
 						<phase>install</phase>
@@ -869,7 +909,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.0.0-M2</version>
+				<version>3.0.0-M3</version>
 				<configuration>
 					<rules>
 						<dependencyConvergence />
@@ -882,7 +922,7 @@
               <version>1.6.7</version>
               <extensions>true</extensions>
               <configuration>
-                 <serverId>ossrh</serverId>
+           	     <serverId>ossrh</serverId>
                  <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                  <autoReleaseAfterClose>true</autoReleaseAfterClose>
               </configuration>
@@ -919,5 +959,4 @@
 			</build>
 		</profile>
 	</profiles>
-
 </project>
