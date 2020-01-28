@@ -1,13 +1,11 @@
 package org.hortonmachine.hmachine.models.hm;
 
-import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 
-import org.geotools.data.DataUtilities;
+import org.geotools.util.URLs;
 import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
-import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
 import org.hortonmachine.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.etp.OmsFaoEtpDaily;
@@ -93,7 +91,7 @@ public class TestFaoEtpDaily extends HMTestCase {
     private OmsTimeSeriesIteratorReader getTimeseriesReader( URL url, String id, String startDate, String endDate,
             int timeStepMinutes ) throws URISyntaxException {
         OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
-        reader.file = DataUtilities.urlToFile(url).getAbsolutePath();
+        reader.file = URLs.urlToFile(url).getAbsolutePath();
         reader.idfield = "ID";
         reader.tStart = "2005-05-01 00:00";
         reader.tTimestep = 1440;

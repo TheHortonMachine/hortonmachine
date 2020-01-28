@@ -4,7 +4,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 
-import org.geotools.data.DataUtilities;
+import org.geotools.util.URLs;
 import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.hortonmachine.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
@@ -119,7 +119,7 @@ public class TestPrestleyTaylorModel extends HMTestCase {
     private OmsTimeSeriesIteratorReader getTimeseriesReader( URL url, String id, String startDate, String endDate,
             int timeStepMinutes ) throws URISyntaxException {
         OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
-        reader.file = DataUtilities.urlToFile(url).getAbsolutePath();
+        reader.file = URLs.urlToFile(url).getAbsolutePath();
         reader.idfield = "ID";
         reader.tStart = startDate;
         reader.tTimestep = timeStepMinutes;
