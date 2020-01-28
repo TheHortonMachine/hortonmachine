@@ -24,7 +24,7 @@
 	</modules>
 
 	<properties>
-		<gt.version>23-SNAPSHOT</gt.version>
+		<gt.version>22.3</gt.version>
 		<groovy.version>2.5.8</groovy.version>
 		<geoscript.version>1.14.0</geoscript.version>
 
@@ -532,6 +532,16 @@
 			<!-- GeoTools -->
 			<dependency>
 				<groupId>org.geotools</groupId>
+				<artifactId>gt-main</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-render</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
 				<artifactId>gt-referencing</artifactId>
 				<version>${gt.version}</version>
 			</dependency>
@@ -543,11 +553,6 @@
 			<dependency>
 				<groupId>org.geotools</groupId>
 				<artifactId>gt-epsg-extension</artifactId>
-				<version>${gt.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.geotools</groupId>
-				<artifactId>gt-data</artifactId>
 				<version>${gt.version}</version>
 			</dependency>
 			<dependency>
@@ -649,7 +654,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
-				<version>3.7</version>
+				<version>3.8.1</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
@@ -729,7 +734,7 @@
         <repository>
           <id>central.maven.org</id>
           <name>Central Maven repository</name>
-          <url>http://central.maven.org/maven2</url>
+          <url>https://repo1.maven.org/maven2/</url>
           <snapshots>
             <enabled>false</enabled>
           </snapshots>

@@ -71,7 +71,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 
-import javax.imageio.metadata.IIOMetadata;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import javax.media.jai.iterator.RandomIter;
@@ -85,7 +84,6 @@ import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.coverageio.gdal.BaseGDALGridCoverage2DReader;
 import org.geotools.coverageio.gdal.aig.AIGReader;
-import org.geotools.factory.Hints;
 import org.geotools.gce.arcgrid.ArcGridReader;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.gce.grassraster.GrassCoverageReader;
@@ -96,6 +94,7 @@ import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
 import org.geotools.gce.image.WorldImageReader;
 import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.util.factory.Hints;
 import org.hortonmachine.gears.io.grasslegacy.OmsGrassLegacyReader;
 import org.hortonmachine.gears.io.grasslegacy.utils.GrassLegacyUtilities;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -106,10 +105,9 @@ import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import org.locationtech.jts.geom.Envelope;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

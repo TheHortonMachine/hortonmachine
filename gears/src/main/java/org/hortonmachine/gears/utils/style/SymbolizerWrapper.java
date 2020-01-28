@@ -1,18 +1,20 @@
 package org.hortonmachine.gears.utils.style;
 
-import static org.hortonmachine.gears.utils.style.StyleUtilities.*;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.getFormat;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.sb;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.sf;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.factory.GeoTools;
 import org.geotools.filter.LiteralExpressionImpl;
 import org.geotools.styling.ExternalGraphic;
 import org.geotools.styling.Graphic;
 import org.geotools.styling.Symbolizer;
 import org.geotools.styling.TextSymbolizer;
+import org.geotools.util.factory.GeoTools;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.PropertyName;

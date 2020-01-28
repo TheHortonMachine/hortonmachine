@@ -19,17 +19,16 @@ package org.hortonmachine.gears.utils.features;
 
 import java.util.List;
 
-import org.geotools.factory.FactoryRegistryException;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.util.factory.FactoryRegistryException;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
-
-import org.locationtech.jts.geom.Geometry;
 
 /**
  * Utility to clone features by modify only the geometry.

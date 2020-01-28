@@ -37,6 +37,21 @@ import java.awt.image.RenderedImage;
 import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.map.GridCoverageLayer;
+import org.geotools.map.MapContent;
+import org.geotools.styling.ColorMap;
+import org.geotools.styling.ColorMapEntry;
+import org.geotools.styling.RasterSymbolizer;
+import org.geotools.styling.SLD;
+import org.geotools.styling.Style;
+import org.geotools.styling.StyleBuilder;
+import org.geotools.styling.StyleFactory;
+import org.geotools.swing.JMapFrame;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.opengis.filter.expression.Expression;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -48,21 +63,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.map.DefaultMapContext;
-import org.geotools.map.MapContext;
-import org.geotools.styling.ColorMap;
-import org.geotools.styling.ColorMapEntry;
-import org.geotools.styling.RasterSymbolizer;
-import org.geotools.styling.SLD;
-import org.geotools.styling.Style;
-import org.geotools.styling.StyleBuilder;
-import org.geotools.styling.StyleFactory;
-import org.geotools.swing.JMapFrame;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.opengis.filter.expression.Expression;
 
 @Description(OMSCOVERAGEVIEWER_DESCRIPTION)
 @Documentation(OMSCOVERAGEVIEWER_DOCUMENTATION)
@@ -78,7 +78,6 @@ public class OmsCoverageViewer extends HMModel {
     @Description(OMSCOVERAGEVIEWER_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D raster = null;
-
 
     @Execute
     public void viewCoverage() throws Exception {
@@ -111,10 +110,10 @@ public class OmsCoverageViewer extends HMModel {
         // red to blue
         Color fromColor = Color.blue;
         Color toColor = Color.red;
-        Expression fromColorExpr = sB.colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor
-                .getBlue(), 255));
-        Expression toColorExpr = sB.colorExpression(new java.awt.Color(toColor.getRed(), toColor.getGreen(), toColor.getBlue(),
-                255));
+        Expression fromColorExpr = sB
+                .colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor.getBlue(), 255));
+        Expression toColorExpr = sB
+                .colorExpression(new java.awt.Color(toColor.getRed(), toColor.getGreen(), toColor.getBlue(), 255));
         Expression fromExpr = sB.literalExpression(min);
         Expression toExpr = sB.literalExpression(max);
 
@@ -133,9 +132,9 @@ public class OmsCoverageViewer extends HMModel {
         Style rasterStyle = SLD.wrapSymbolizers(rasterSym);
 
         // Set up a MapContext with the two layers
-        final MapContext map = new DefaultMapContext();
+        final MapContent map = new MapContent();
         map.setTitle("Coverage Viewer");
-        map.addLayer(raster, rasterStyle);
+        map.addLayer(new GridCoverageLayer(raster, rasterStyle));
 
         // Create a JMapFrame with a menu to choose the display style for the
         final JMapFrame frame = new JMapFrame(map);

@@ -34,7 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -49,29 +48,21 @@ import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.data.wms.WebMapServer;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.gce.grassraster.GrassCoverageReader;
-import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.GridReaderLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
-import org.geotools.map.WMSLayer;
-import org.geotools.map.WMSMapLayer;
+import org.geotools.ows.wms.WebMapServer;
+import org.geotools.ows.wms.map.WMSLayer;
 import org.geotools.renderer.lite.StreamingRenderer;
-import org.geotools.styling.ColorMap;
-import org.geotools.styling.ColorMapEntry;
-import org.geotools.styling.RasterSymbolizer;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
-import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
-import org.hortonmachine.gears.io.grasslegacy.map.color.ColorRule;
-import org.hortonmachine.gears.io.grasslegacy.map.color.GrassColorTable;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -81,14 +72,12 @@ import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.filter.expression.Expression;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Envelope;
 
 /**
  * An utility class for simple image map generation. 
@@ -246,7 +235,7 @@ public class ImageGenerator {
         if (wmsURL != null) {
             String[] split = wmsURL.split("#");
             WebMapServer server = new WebMapServer(new URL(split[0]));
-            org.geotools.data.ows.Layer wmsLayer = getWMSLayer(server, split[1]);
+            org.geotools.ows.wms.Layer wmsLayer = getWMSLayer(server, split[1]);
             WMSLayer layer = new WMSLayer(server, wmsLayer);
             layers.add(layer);
 
@@ -417,8 +406,8 @@ public class ImageGenerator {
         }
     }
 
-    private org.geotools.data.ows.Layer getWMSLayer( WebMapServer server, String layerName ) {
-        for( org.geotools.data.ows.Layer layer : server.getCapabilities().getLayerList() ) {
+    private org.geotools.ows.wms.Layer getWMSLayer( WebMapServer server, String layerName ) {
+        for( org.geotools.ows.wms.Layer layer : server.getCapabilities().getLayerList() ) {
             if (layerName.equals(layer.getName())) {
                 return layer;
             }
@@ -515,7 +504,7 @@ public class ImageGenerator {
 
         if (forceCrs != null) {
             content.getViewport().setCoordinateReferenceSystem(forceCrs);
-             content.getViewport().setBounds(ref);
+            content.getViewport().setBounds(ref);
         }
 
         synchronized (synchronizedLayers) {

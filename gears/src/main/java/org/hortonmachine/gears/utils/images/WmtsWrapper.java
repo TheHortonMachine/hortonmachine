@@ -1,7 +1,6 @@
 package org.hortonmachine.gears.utils.images;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -9,25 +8,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.imageio.ImageIO;
-
-import org.geotools.data.ows.CRSEnvelope;
-import org.geotools.data.ows.Layer;
-import org.geotools.data.ows.StyleImpl;
-import org.geotools.data.ows.WMSCapabilities;
-import org.geotools.data.wms.WMSUtils;
-import org.geotools.data.wms.WebMapServer;
-import org.geotools.data.wms.request.GetMapRequest;
-import org.geotools.data.wms.response.GetMapResponse;
-import org.geotools.data.wmts.WebMapTileServer;
-import org.geotools.data.wmts.model.WMTSCapabilities;
-import org.geotools.data.wmts.model.WMTSLayer;
-import org.geotools.data.wmts.request.GetTileRequest;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.ows.ServiceException;
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.hortonmachine.gears.utils.CrsUtilities;
+import org.geotools.ows.wms.CRSEnvelope;
+import org.geotools.ows.wms.Layer;
+import org.geotools.ows.wms.StyleImpl;
+import org.geotools.ows.wmts.WebMapTileServer;
+import org.geotools.ows.wmts.model.WMTSCapabilities;
+import org.geotools.ows.wmts.model.WMTSLayer;
+import org.geotools.ows.wmts.request.GetTileRequest;
 
 public class WmtsWrapper {
 
@@ -147,7 +136,7 @@ public class WmtsWrapper {
 //            System.err.println("no image for found for: " + finalURL);
 //        }
 //        return image;
-        
+
         return null;
     }
 
