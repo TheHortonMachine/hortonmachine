@@ -15,12 +15,10 @@
 		<module>dbs</module>
 		<module>gears</module>
         <module>hmachine</module>
-	<!--	
 		<module>lesto</module>
 		<module>modules</module>
 		<module>gui</module>
 		<module>apps</module> 
-    -->
 	</modules>
 
 	<properties>
