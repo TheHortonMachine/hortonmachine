@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.modules;
+package org.hortonmachine;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -46,6 +46,7 @@ import org.hortonmachine.gears.utils.math.regressions.RegressionLine;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.OmsMatrixCharter;
+import org.hortonmachine.modules.FileIterator;
 import org.jfree.chart.ChartPanel;
 import org.joda.time.DateTime;
 import org.locationtech.jts.geom.Coordinate;
