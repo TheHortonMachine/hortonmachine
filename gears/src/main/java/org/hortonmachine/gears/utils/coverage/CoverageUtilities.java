@@ -19,7 +19,6 @@ package org.hortonmachine.gears.utils.coverage;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static org.hortonmachine.gears.libs.modules.HMConstants.doesOverFlow;
 import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
 import static org.hortonmachine.gears.libs.modules.HMConstants.intNovalue;
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
@@ -68,10 +67,6 @@ import org.geotools.process.ProcessException;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
-import org.hortonmachine.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
-import org.hortonmachine.gears.io.grasslegacy.GrassLegacyRandomIter;
-import org.hortonmachine.gears.io.grasslegacy.GrassLegacyWritableRaster;
-import org.hortonmachine.gears.io.grasslegacy.utils.Window;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
@@ -127,11 +122,11 @@ public class CoverageUtilities {
      * @return the iterator.
      */
     public static RandomIter getRandomIterator( GridCoverage2D coverage ) {
-        if (coverage instanceof GrassLegacyGridCoverage2D) {
-            GrassLegacyGridCoverage2D grassGC = (GrassLegacyGridCoverage2D) coverage;
-            GrassLegacyRandomIter iter = new GrassLegacyRandomIter(grassGC.getData());
-            return iter;
-        }
+//        if (coverage instanceof GrassLegacyGridCoverage2D) {
+//            GrassLegacyGridCoverage2D grassGC = (GrassLegacyGridCoverage2D) coverage;
+//            GrassLegacyRandomIter iter = new GrassLegacyRandomIter(grassGC.getData());
+//            return iter;
+//        }
         RenderedImage renderedImage = coverage.getRenderedImage();
         RandomIter iter = RandomIterFactory.create(renderedImage, null);
         return iter;
@@ -150,10 +145,6 @@ public class CoverageUtilities {
      * @return the iterator.
      */
     public static WritableRandomIter getWritableRandomIterator( int width, int height ) {
-        if (doesOverFlow(width, height)) {
-            GrassLegacyRandomIter iter = new GrassLegacyRandomIter(new double[height][width]);
-            return iter;
-        }
         WritableRaster pitRaster = CoverageUtilities.createWritableRaster(width, height, null, null, null);
         WritableRandomIter iter = RandomIterFactory.createWritable(pitRaster, null);
         return iter;
@@ -172,11 +163,6 @@ public class CoverageUtilities {
      * @return the iterator.
      */
     public static WritableRandomIter getWritableRandomIterator( WritableRaster raster ) {
-        if (raster instanceof GrassLegacyWritableRaster) {
-            GrassLegacyWritableRaster wRaster = (GrassLegacyWritableRaster) raster;
-            double[][] data = wRaster.getData();
-            getWritableRandomIterator(data[0].length, data.length);
-        }
         WritableRandomIter iter = RandomIterFactory.createWritable(raster, null);
         return iter;
     }
@@ -231,69 +217,64 @@ public class CoverageUtilities {
             }
         }
 
-        if (!doesOverFlow(width, height)) {
-            if (sampleModel == null) {
-                sampleModel = new ComponentSampleModel(dataType, width, height, 1, width, new int[]{0});
-            }
+        if (sampleModel == null) {
+            sampleModel = new ComponentSampleModel(dataType, width, height, 1, width, new int[]{0});
+        }
 
-            WritableRaster raster = RasterFactory.createWritableRaster(sampleModel, null);
-            if (value != null) {
-                // autobox only once
-                if (value instanceof Double) {
-                    Double valueObj = (Double) value;
-                    double v = valueObj;
-                    double[] dArray = new double[sampleModel.getNumBands()];
-                    for( int i = 0; i < dArray.length; i++ ) {
-                        dArray[i] = v;
-                    }
-                    for( int y = 0; y < height; y++ ) {
-                        for( int x = 0; x < width; x++ ) {
-                            raster.setPixel(x, y, dArray);
-                        }
-                    }
-                } else if (value instanceof Integer) {
-                    Integer valueObj = (Integer) value;
-                    int v = valueObj;
-                    int[] dArray = new int[sampleModel.getNumBands()];
-                    for( int i = 0; i < dArray.length; i++ ) {
-                        dArray[i] = v;
-                    }
-                    for( int y = 0; y < height; y++ ) {
-                        for( int x = 0; x < width; x++ ) {
-                            raster.setPixel(x, y, dArray);
-                        }
-                    }
-                } else if (value instanceof Float) {
-                    Float valueObj = (Float) value;
-                    float v = valueObj;
-                    float[] dArray = new float[sampleModel.getNumBands()];
-                    for( int i = 0; i < dArray.length; i++ ) {
-                        dArray[i] = v;
-                    }
-                    for( int y = 0; y < height; y++ ) {
-                        for( int x = 0; x < width; x++ ) {
-                            raster.setPixel(x, y, dArray);
-                        }
-                    }
-                } else {
-                    double v = ((Number) value).doubleValue();
-                    double[] dArray = new double[sampleModel.getNumBands()];
-                    for( int i = 0; i < dArray.length; i++ ) {
-                        dArray[i] = v;
-                    }
-                    for( int y = 0; y < height; y++ ) {
-                        for( int x = 0; x < width; x++ ) {
-                            raster.setPixel(x, y, dArray);
-                        }
+        WritableRaster raster = RasterFactory.createWritableRaster(sampleModel, null);
+        if (value != null) {
+            // autobox only once
+            if (value instanceof Double) {
+                Double valueObj = (Double) value;
+                double v = valueObj;
+                double[] dArray = new double[sampleModel.getNumBands()];
+                for( int i = 0; i < dArray.length; i++ ) {
+                    dArray[i] = v;
+                }
+                for( int y = 0; y < height; y++ ) {
+                    for( int x = 0; x < width; x++ ) {
+                        raster.setPixel(x, y, dArray);
                     }
                 }
-
+            } else if (value instanceof Integer) {
+                Integer valueObj = (Integer) value;
+                int v = valueObj;
+                int[] dArray = new int[sampleModel.getNumBands()];
+                for( int i = 0; i < dArray.length; i++ ) {
+                    dArray[i] = v;
+                }
+                for( int y = 0; y < height; y++ ) {
+                    for( int x = 0; x < width; x++ ) {
+                        raster.setPixel(x, y, dArray);
+                    }
+                }
+            } else if (value instanceof Float) {
+                Float valueObj = (Float) value;
+                float v = valueObj;
+                float[] dArray = new float[sampleModel.getNumBands()];
+                for( int i = 0; i < dArray.length; i++ ) {
+                    dArray[i] = v;
+                }
+                for( int y = 0; y < height; y++ ) {
+                    for( int x = 0; x < width; x++ ) {
+                        raster.setPixel(x, y, dArray);
+                    }
+                }
+            } else {
+                double v = ((Number) value).doubleValue();
+                double[] dArray = new double[sampleModel.getNumBands()];
+                for( int i = 0; i < dArray.length; i++ ) {
+                    dArray[i] = v;
+                }
+                for( int y = 0; y < height; y++ ) {
+                    for( int x = 0; x < width; x++ ) {
+                        raster.setPixel(x, y, dArray);
+                    }
+                }
             }
-            return raster;
-        } else {
-            WritableRaster raster = new GrassLegacyWritableRaster(new double[height][width]);
-            return raster;
+
         }
+        return raster;
     }
 
     /**
@@ -935,28 +916,15 @@ public class CoverageUtilities {
      */
     public static GridCoverage2D buildCoverage( String name, WritableRaster writableRaster,
             HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs ) {
-        if (writableRaster instanceof GrassLegacyWritableRaster) {
-            GrassLegacyWritableRaster wRaster = (GrassLegacyWritableRaster) writableRaster;
-            double west = envelopeParams.get(WEST);
-            double south = envelopeParams.get(SOUTH);
-            double east = envelopeParams.get(EAST);
-            double north = envelopeParams.get(NORTH);
-            int rows = envelopeParams.get(ROWS).intValue();
-            int cols = envelopeParams.get(COLS).intValue();
-            Window window = new Window(west, east, south, north, rows, cols);
-            GrassLegacyGridCoverage2D coverage2D = new GrassLegacyGridCoverage2D(window, wRaster.getData(), crs);
-            return coverage2D;
-        } else {
-            double west = envelopeParams.get(WEST);
-            double south = envelopeParams.get(SOUTH);
-            double east = envelopeParams.get(EAST);
-            double north = envelopeParams.get(NORTH);
-            Envelope2D writeEnvelope = new Envelope2D(crs, west, south, east - west, north - south);
-            GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
+        double west = envelopeParams.get(WEST);
+        double south = envelopeParams.get(SOUTH);
+        double east = envelopeParams.get(EAST);
+        double north = envelopeParams.get(NORTH);
+        Envelope2D writeEnvelope = new Envelope2D(crs, west, south, east - west, north - south);
+        GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
 
-            GridCoverage2D coverage2D = factory.create(name, writableRaster, writeEnvelope);
-            return coverage2D;
-        }
+        GridCoverage2D coverage2D = factory.create(name, writableRaster, writeEnvelope);
+        return coverage2D;
     }
 
     /**

@@ -34,17 +34,6 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.GRASS;
 
 import java.io.File;
 
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.imageio.GeoToolsWriteParams;
@@ -56,12 +45,8 @@ import org.geotools.gce.geotiff.GeoTiffWriteParams;
 import org.geotools.gce.geotiff.GeoTiffWriter;
 import org.geotools.gce.grassraster.GrassCoverageWriter;
 import org.geotools.gce.grassraster.JGrassMapEnvironment;
-import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.gce.grassraster.format.GrassCoverageFormat;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
-import org.hortonmachine.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
-import org.hortonmachine.gears.io.grasslegacy.OmsGrassLegacyWriter;
-import org.hortonmachine.gears.io.grasslegacy.utils.GrassLegacyUtilities;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -69,6 +54,17 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description(OMSRASTERWRITER_DESCRIPTION)
 @Author(name = OMSRASTERWRITER_AUTHORNAMES, contact = OMSRASTERWRITER_AUTHORCONTACTS)
@@ -156,37 +152,10 @@ public class OmsRasterWriter extends HMModel {
         File cellFile = mapFile;
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(cellFile);
         GeneralParameterValue[] readParams = null;
-        JGrassRegion jGrassRegion = null;
-        boolean doLarge = false;
-        if (inRaster instanceof GrassLegacyGridCoverage2D) {
-            doLarge = true;
-        }
-        // if (doActive) {
-        // jGrassRegion = mapEnvironment.getActiveRegion();
-        // if (!doLarge) {
-        // readParams =
-        // CoverageUtilities.createGridGeometryGeneralParameter(jGrassRegion.getCols(),
-        // jGrassRegion.getRows(), jGrassRegion.getNorth(), jGrassRegion.getSouth(),
-        // jGrassRegion.getEast(),
-        // jGrassRegion.getWest(), mapEnvironment.getCoordinateReferenceSystem());
-        // }
-        // }
-
-        if (!doLarge) {
-            GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
-            GrassCoverageWriter writer = format.getWriter(mapEnvironment.getCELL(), null);
-            writer.write(inRaster, readParams);
-            writer.dispose();
-        } else {
-            GrassLegacyGridCoverage2D gd2 = (GrassLegacyGridCoverage2D) inRaster;
-            OmsGrassLegacyWriter writer = new OmsGrassLegacyWriter();
-            writer.geodata = gd2.getData();
-            writer.file = file;
-            if (jGrassRegion == null)
-                jGrassRegion = mapEnvironment.getActiveRegion();
-            writer.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(jGrassRegion);
-            writer.writeRaster();
-        }
+        GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
+        GrassCoverageWriter writer = format.getWriter(mapEnvironment.getCELL(), null);
+        writer.write(inRaster, readParams);
+        writer.dispose();
 
     }
 

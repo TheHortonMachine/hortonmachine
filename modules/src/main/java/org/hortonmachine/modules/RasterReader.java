@@ -119,10 +119,6 @@ public class RasterReader extends HMModel {
     @In
     public Integer pCols = null;
 
-    @Description(OMSRASTERREADER_DO_LEGACY_GRASS_DESCRIPTION)
-    @In
-    public Boolean doLegacyGrass = false;
-
     @Description(OMSRASTERREADER_OUT_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D outRaster = null;
@@ -151,7 +147,6 @@ public class RasterReader extends HMModel {
         rasterreader.pYres = pYres;
         rasterreader.pRows = pRows;
         rasterreader.pCols = pCols;
-        rasterreader.doLegacyGrass = doLegacyGrass;
         rasterreader.doEnvelope = doEnvelope;
         rasterreader.pm = pm;
         rasterreader.doProcess = doProcess;

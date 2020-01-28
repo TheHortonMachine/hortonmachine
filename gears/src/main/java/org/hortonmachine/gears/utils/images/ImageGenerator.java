@@ -95,7 +95,6 @@ import org.opengis.referencing.operation.TransformException;
  */
 public class ImageGenerator {
 
-    public boolean doLegacyGrass = false;
 
     private String wmsURL = null;
     private List<String> featurePaths = new ArrayList<String>();
@@ -124,10 +123,6 @@ public class ImageGenerator {
         if (monitor != null)
             this.monitor = monitor;
         sf = CommonFactoryFinder.getStyleFactory(null);
-    }
-
-    public void setDoLegacyGrass( boolean doLegacyGrass ) {
-        this.doLegacyGrass = doLegacyGrass;
     }
 
     /**
@@ -292,7 +287,6 @@ public class ImageGenerator {
                         rreader.pEast = e;
                         rreader.pXres = xres;
                         rreader.pYres = yres;
-                        rreader.doLegacyGrass = doLegacyGrass;
                         rreader.process();
                         raster = rreader.outRaster;
                     }

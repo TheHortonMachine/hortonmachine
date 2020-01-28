@@ -22,7 +22,7 @@ public class GeoscriptConsole {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class< ? > clazz = gcl.parseClass(classString);
         gcl.close();
-        Object obj = clazz.newInstance();
+        Object obj = clazz.getDeclaredConstructor().newInstance();
         Method method = obj.getClass().getMethod("run");
         method.invoke(obj);
     }

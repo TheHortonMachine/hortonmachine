@@ -1,16 +1,16 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.hortonmachine</groupId>
-    <artifactId>hortonmachine</artifactId>
-    <version>0.9.9-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
+	<parent>
+		<groupId>org.hortonmachine</groupId>
+		<artifactId>hortonmachine</artifactId>
+		<version>0.9.9-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
-	<groupId>org.hortonmachine</groupId>
 	<artifactId>hm-hmachine</artifactId>
-    <version>0.9.9-SNAPSHOT</version>    
 	<packaging>jar</packaging>
 	<name>The Horton Machine modules</name>
 
@@ -20,15 +20,15 @@
 			<artifactId>hm-gears</artifactId>
 			<version>0.9.9-SNAPSHOT</version>
 		</dependency>
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.5</version>
 			<scope>test</scope>
-		</dependency>		
+		</dependency>
 	</dependencies>
 </project>

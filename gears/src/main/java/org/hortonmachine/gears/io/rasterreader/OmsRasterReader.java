@@ -20,7 +20,6 @@ package org.hortonmachine.gears.io.rasterreader;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_DO_LEGACY_GRASS_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_FILE_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_FILE_NOVALUE_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_GEO_DATA_NOVALUE_DESCRIPTION;
@@ -95,8 +94,6 @@ import org.geotools.gce.image.WorldImageReader;
 import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.factory.Hints;
-import org.hortonmachine.gears.io.grasslegacy.OmsGrassLegacyReader;
-import org.hortonmachine.gears.io.grasslegacy.utils.GrassLegacyUtilities;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -183,10 +180,6 @@ public class OmsRasterReader extends HMModel {
     @In
     public Integer pCols = null;
 
-    @Description(OMSRASTERREADER_DO_LEGACY_GRASS_DESCRIPTION)
-    @In
-    public Boolean doLegacyGrass = false;
-
     @Description(OMSRASTERREADER_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
@@ -211,16 +204,10 @@ public class OmsRasterReader extends HMModel {
     private double internalFileNovalue = -9999.0;
     private double internalGeodataNovalue = doubleNovalue;
 
-    private boolean doLegacyGrassAutoBoxed = false;
-
     @Execute
     public void process() throws Exception {
         if (!concatOr(outRaster == null, doReset)) {
             return;
-        }
-
-        if (doLegacyGrass != null && doLegacyGrass) {
-            doLegacyGrassAutoBoxed = true;
         }
 
         if (fileNovalue != null) {
@@ -323,24 +310,13 @@ public class OmsRasterReader extends HMModel {
         }
 
         if (!doEnvelope) {
-            int r = readRegion.getRows();
-            int c = readRegion.getCols();
-            if (!HMConstants.doesOverFlow(r, c) && !doLegacyGrassAutoBoxed) {
-                if (generalParameter == null) {
-                    generalParameter = createGridGeometryGeneralParameter(readRegion.getCols(), readRegion.getRows(),
-                            readRegion.getNorth(), readRegion.getSouth(), readRegion.getEast(), readRegion.getWest(), crs);
-                }
-                GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
-                GrassCoverageReader reader = format.getReader(mapEnvironment.getCELL());
-                outRaster = (GridCoverage2D) reader.read(generalParameter);
-            } else {
-                OmsGrassLegacyReader reader = new OmsGrassLegacyReader();
-                reader.file = file;
-                reader.pm = pm;
-                reader.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(readRegion);
-                reader.readCoverage();
-                outRaster = reader.outGC;
+            if (generalParameter == null) {
+                generalParameter = createGridGeometryGeneralParameter(readRegion.getCols(), readRegion.getRows(),
+                        readRegion.getNorth(), readRegion.getSouth(), readRegion.getEast(), readRegion.getWest(), crs);
             }
+            GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
+            GrassCoverageReader reader = format.getReader(mapEnvironment.getCELL());
+            outRaster = (GridCoverage2D) reader.read(generalParameter);
             checkNovalues();
         }
     }
@@ -372,9 +348,9 @@ public class OmsRasterReader extends HMModel {
             geoTiffReader = new WorldImageReader(mapFile);
         } else {
             geoTiffReader = new GeoTiffReader(mapFile);
-            final GeoTiffIIOMetadataDecoder metadata =((GeoTiffReader) geoTiffReader).getMetadata();
-            if (metadata.hasNoData()){
-                fileNovalue  = metadata.getNoData();
+            final GeoTiffIIOMetadataDecoder metadata = ((GeoTiffReader) geoTiffReader).getMetadata();
+            if (metadata.hasNoData()) {
+                fileNovalue = metadata.getNoData();
             }
         }
         originalEnvelope = geoTiffReader.getOriginalEnvelope();

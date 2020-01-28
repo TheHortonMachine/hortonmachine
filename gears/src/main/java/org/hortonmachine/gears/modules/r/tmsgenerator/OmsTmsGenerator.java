@@ -21,7 +21,6 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSTMSGENERATOR_AUTHORC
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSTMSGENERATOR_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSTMSGENERATOR_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSTMSGENERATOR_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSTMSGENERATOR_DO_LEGACY_GRASS_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSTMSGENERATOR_DO_LENIENT_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSTMSGENERATOR_IN_PATH_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSTMSGENERATOR_IN_RASTER_BOUNDS_DESCRIPTION;
@@ -51,18 +50,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Documentation;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.JTS;
@@ -80,9 +67,6 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.images.ImageGenerator;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -90,6 +74,20 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Documentation;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description(OMSTMSGENERATOR_DESCRIPTION)
 @Documentation(OMSTMSGENERATOR_DOCUMENTATION)
@@ -180,10 +178,6 @@ public class OmsTmsGenerator extends HMModel {
     @Description(OMSTMSGENERATOR_P_CHECK_COLOR_DESCRIPTION)
     @In
     public int[] pCheckcolor = new int[]{255, 255, 255};
-
-    @Description(OMSTMSGENERATOR_DO_LEGACY_GRASS_DESCRIPTION)
-    @In
-    public Boolean doLegacyGrass = false;
 
     @Description("Do mbtiles database.")
     @In
@@ -289,7 +283,6 @@ public class OmsTmsGenerator extends HMModel {
             if (inWMS != null) {
                 imgGen.setWMS(inWMS);
             }
-            imgGen.doLegacyGrass = doLegacyGrass;
 
             String notLoading = "Not loading non-existing file: ";
             if (inRasters != null)
