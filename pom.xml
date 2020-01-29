@@ -839,13 +839,14 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
 				<configuration>
-                    <!--
                     <source>1.8</source>
 					<target>1.8</target>
 					<encoding>UTF-8</encoding>
                     <debug>true</debug>
-                    -->
+                    <!--
+                     activate in case of java 13
                     <release>13</release>
+                    -->
 				</configuration>
 			</plugin>
                     <!--
@@ -956,7 +957,6 @@
 							<goal>jar</goal>
 						</goals>
 						<configuration>
-                            <includeDependencySources>true</includeDependencySources>
                             <doclint>none</doclint>
                             <quiet>true</quiet>
                             <failOnWarnings>false</failOnWarnings>
