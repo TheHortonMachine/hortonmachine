@@ -142,6 +142,8 @@ public class StageScriptExecutor {
             String classpathJars = "\"" + groovyJarFiles[0].getAbsolutePath() + File.pathSeparator
                     + jgtLibsFolder.getAbsolutePath() + "/*" + File.pathSeparator + ".\"";
             classPath = classpathJars;
+        } else {
+            classPath = "\".\"";
         }
 
     }

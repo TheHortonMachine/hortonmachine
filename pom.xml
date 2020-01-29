@@ -508,38 +508,44 @@
 				<artifactId>joda-time</artifactId>
 				<version>2.9.4</version>
 			</dependency>
+<!--
             <dependency>
 				<groupId>org.codehaus.groovy</groupId>
 				<artifactId>groovy-all</artifactId>
 				<version>${groovy.version}</version>
 			</dependency>
-<!--
+-->
             <dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy</artifactId>
-                <version>${groovy.version}</version>
+                <version>3.0.0-rc-3</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-sql</artifactId>
-                <version>${groovy.version}</version>
+                <version>3.0.0-rc-3</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-xml</artifactId>
-                <version>${groovy.version}</version>
+                <version>3.0.0-rc-3</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-json</artifactId>
-                <version>${groovy.version}</version>
+                <version>3.0.0-rc-3</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-swing</artifactId>
-                <version>${groovy.version}</version>
+                <version>3.0.0-rc-3</version>
             </dependency>
--->
+            <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-console</artifactId>
+                <version>3.0.0-rc-3</version>
+            </dependency>
+
 			<dependency>
 				<groupId>org.orbisgis</groupId>
 				<artifactId>h2gis</artifactId>
@@ -957,6 +963,7 @@
 							<goal>jar</goal>
 						</goals>
 						<configuration>
+                            <source>8</source>
                             <doclint>none</doclint>
                             <quiet>true</quiet>
                             <failOnWarnings>false</failOnWarnings>
