@@ -64,52 +64,48 @@ public class IUHSubSurface {
 		double cum = 0f;
 		double t = 0;
 		double integral = 0;
-		double integralTotal = 0;
 
 		/*
 		 * next part calculates the convolution between the aplitude function and the
 		 * exponential equation
 		 */
-		pm.beginTask("Calculating subsurface IUH...", ampiHelp.length - 1);
-		for (int i = 0; i < ampiHelp.length - 1; i++) {
-			t = ampiSubSup[i + 1][0];
+		double upperIntegrationLimit = ampiSubSup[ampiSubSup.length - 1][0];
+		ConvolutionDiffusionWidth diffIntegral = new ConvolutionDiffusionWidth(0.0, upperIntegrationLimit,
+				IntegralConstants.diffusionSubSupMaxsteps, IntegralConstants.diffusionSubSupAccurancy, ampiHelp,
+				diffusionParameterSubSup, t);
 
-			double upperIntegrationLimit = ampiSubSup[ampiSubSup.length - 1][0];
-			ConvolutionDiffusionWidth expIntegral = new ConvolutionDiffusionWidth(0.0, upperIntegrationLimit,
-					IntegralConstants.diffusionSubSupMaxsteps, IntegralConstants.diffusionSubSupAccurancy, ampiHelp,
-					diffusionParameterSubSup, t);
+		pm.beginTask("Calculating subsurface IUH...", ampiHelp.length);
+		for (int i = 0; i < ampiHelp.length; i++) {
+			t = ampiSubSup[i][0];
 
 			// ConvolutionExponentialPeakflow expIntegral = new
 			// ConvolutionExponentialPeakflow(0.0,
 			// upperIntegrationLimit, 20, 0.00001, ampiHelp, resid_time, t);
 
-			integral = expIntegral.integrate();
-			ampiSubSup[i + 1][1] = integral;
+			diffIntegral.updateTime((int) t);
+			integral = diffIntegral.integrate();
+			ampiSubSup[i][1] = integral;
 			/*
 			 * if (isScs) { cum += integral delta_sub / (xres yres npixel_sub vc / vcvv); }
 			 * else {
 			 */
 			cum += integral * delta_sub / (xres * yres * npixel_sub * vc);
 
-			ampiSubSup[i + 1][2] = cum;
-			integralTotal = integral + integralTotal;
+			ampiSubSup[i][2] = cum;
 
 			pm.worked(1);
 		}
 
-		// for( int i = 0; i < ampiSubSup.length - 1; i++ ) {
-		//
-		// ampiSubSup[i + 1][1] = integral;
-		// /*
-		// * if (isScs) { cum += integral delta_sub / (xres yres npixel_sub vc / vcvv);
-		// } else {
-		// */
-		// cum += integral * delta_sub / (xres * yres * npixel_sub * vc);
-		//
-		// ampiSubSup[i + 1][2] = cum;
-		//
-		// pm.worked(1);
-		// }
+		double maxCum = ampiSubSup[ampiSubSup.length - 1][2];
+		double factor = 1.0 / maxCum;
+
+		for (int i = 0; i < ampiSubSup.length; i++) {
+
+			ampiSubSup[i][1] = ampiSubSup[i][1] * factor;
+			ampiSubSup[i][2] = ampiSubSup[i][2] * factor;
+
+			pm.worked(1);
+		}
 
 		pm.done();
 
