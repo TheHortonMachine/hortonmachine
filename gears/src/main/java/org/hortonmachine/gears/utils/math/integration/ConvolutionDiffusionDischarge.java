@@ -61,7 +61,7 @@ public class ConvolutionDiffusionDischarge extends SimpsonIntegral implements In
     protected double equation( double tau ) {
 
         double result = t <= tau ? 0.0 : tau > q[q.length - 1][0] ? 0.0 : 1
-                / (Math.sqrt(4 * Math.PI * D * Math.pow((t - tau), 3))) * ModelsEngine.width_interpolate(q, tau, 0, 1) * dist
+                / (Math.sqrt(4 * Math.PI * D * Math.pow((t - tau), 3))) * ModelsEngine.widthInterpolate(q, tau, 0, 1) * dist
                 / (Math.exp(Math.pow(dist - c * (t - tau), 2) / (4 * D * (t - tau))));
 
         return (double) result;

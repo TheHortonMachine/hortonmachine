@@ -27,11 +27,11 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.ParameterB
  * @author Silvia Franceschi (www.hydrologis.com)
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class IUHDiffusionSurface {
+public class IUHSurface {
 
-    private double[][] ampi_diffusion = null;
+    private double[][] ampiDiffusion = null;
     private double[][] ampi = null;
-    private double diffusionparameter = 0f;
+    private double diffusionParameterSup = 0f;
     private double vc = 0f;
     private double delta = 0f;
     private double xres = 0f;
@@ -43,23 +43,23 @@ public class IUHDiffusionSurface {
      * @param out 
     * 
     */
-    public IUHDiffusionSurface( double[][] _ampi, ParameterBox fixedParameters,
+    public IUHSurface( double[][] _ampi, ParameterBox fixedParameters,
             IHMProgressMonitor pm ) {
         ampi = _ampi;
         this.pm = pm;
         delta = fixedParameters.getDelta();
 
-        double threshold = 5000f;
-        ampi_diffusion = new double[(int) (ampi.length + threshold / delta)][ampi[0].length];
+        double threshold = 1000f;
+        ampiDiffusion = new double[(int) (ampi.length + threshold / delta)][ampi[0].length];
 
         for( int i = 0; i < ampi.length; i++ ) {
-            ampi_diffusion[i][0] = ampi[i][0];
+            ampiDiffusion[i][0] = ampi[i][0];
         }
         for( int i = 1; i < threshold / delta; i++ ) {
-            ampi_diffusion[ampi.length - 1 + i][0] = ampi[ampi.length - 1][0] + i * delta;
+            ampiDiffusion[ampi.length - 1 + i][0] = ampi[ampi.length - 1][0] + i * delta;
         }
 
-        diffusionparameter = fixedParameters.getDiffusionparameter();
+        diffusionParameterSup = fixedParameters.getDiffusionParameterSup();
         vc = fixedParameters.getVc();
         xres = fixedParameters.getXres();
         yres = fixedParameters.getYres();
@@ -76,26 +76,39 @@ public class IUHDiffusionSurface {
          * equation
          */
         ConvolutionDiffusionWidth diffIntegral = new ConvolutionDiffusionWidth(0.0,
-                ampi_diffusion[ampi_diffusion.length - 1][0], IntegralConstants.diffusionmaxsteps,
-                IntegralConstants.diffusionaccurancy, ampi, diffusionparameter, t);
+                ampiDiffusion[ampiDiffusion.length - 1][0], IntegralConstants.diffusionSupMaxsteps,
+                IntegralConstants.diffusionSupAccurancy, ampi, diffusionParameterSup, t);
 
-        pm.beginTask("Calculating diffusion...", ampi_diffusion.length - 1);
-        for( int i = 0; i < ampi_diffusion.length - 1; i++ ) {
+        pm.beginTask("Calculating diffusion...", ampiDiffusion.length);
+        for( int i = 0; i < ampiDiffusion.length; i++ ) {
 
-            t = ampi_diffusion[i + 1][0];
+            t = ampiDiffusion[i][0];
 
             diffIntegral.updateTime((int) t);
             integral = diffIntegral.integrate();
 
-            ampi_diffusion[i + 1][1] = integral;
+            ampiDiffusion[i][1] = integral;
             cum += integral * delta / (xres * yres * npixel * vc);
-            ampi_diffusion[i + 1][2] = cum;
+            ampiDiffusion[i][2] = cum;
 
             pm.worked(1);
         }
         pm.done();
         
-        return ampi_diffusion;
+        
+		double maxCum = ampiDiffusion[ampiDiffusion.length - 1][2];
+		double factor = 1.0 / maxCum;
+
+		for (int i = 0; i < ampiDiffusion.length; i++) {
+
+			ampiDiffusion[i][1] = ampiDiffusion[i][1] * factor;
+			ampiDiffusion[i][2] = ampiDiffusion[i][2] * factor;
+
+			pm.worked(1);
+		}
+
+        
+        return ampiDiffusion;
     }
 
 }

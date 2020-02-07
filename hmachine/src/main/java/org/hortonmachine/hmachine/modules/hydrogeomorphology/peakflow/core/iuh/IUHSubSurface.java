@@ -19,7 +19,9 @@
 package org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.core.iuh;
 
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.math.integration.ConvolutionDiffusionWidth;
 import org.hortonmachine.gears.utils.math.integration.ConvolutionExponentialPeakflow;
+import org.hortonmachine.gears.utils.math.integration.IntegralConstants;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
 
 /**
@@ -29,63 +31,84 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.ParameterB
  */
 public class IUHSubSurface {
 
-    private double[][] ampi_sub = null;
-    private double[][] ampi_help = null;
-    private double vc = 0f;
-    private double delta_sub = 0f;
-    private double xres = 0f;
-    private double yres = 0f;
-    private double npixel_sub = 0f;
-    private double resid_time = 0f;
-    private final IHMProgressMonitor pm;
+	private double[][] ampiSubSup = null;
+	private double[][] ampiHelp = null;
+	private double vc = 0f;
+	private double delta_sub = 0f;
+	private double xres = 0f;
+	private double yres = 0f;
+	private double npixel_sub = 0f;
+	private double resid_time = 0f;
+	private final IHMProgressMonitor pm;
+	private double diffusionParameterSubSup;
 
-    public IUHSubSurface( double[][] _ampi, ParameterBox fixedParameters, IHMProgressMonitor pm ) {
-        ampi_help = _ampi;
-        this.pm = pm;
-        ampi_sub = new double[ampi_help.length][ampi_help[0].length];
+	public IUHSubSurface(double[][] ampi, ParameterBox fixedParameters, IHMProgressMonitor pm) {
+		ampiHelp = ampi;
+		this.pm = pm;
+		ampiSubSup = new double[ampiHelp.length][ampiHelp[0].length];
 
-        for( int i = 0; i < ampi_help.length; i++ ) {
-            ampi_sub[i][0] = ampi_help[i][0];
-        }
+		for (int i = 0; i < ampiHelp.length; i++) {
+			ampiSubSup[i][0] = ampiHelp[i][0];
+		}
 
-        vc = fixedParameters.getVc();
-        delta_sub = fixedParameters.getDelta_sub();
-        xres = fixedParameters.getXres();
-        yres = fixedParameters.getYres();
-        npixel_sub = fixedParameters.getNpixel_sub();
-        resid_time = fixedParameters.getResid_time();
-    }
+		diffusionParameterSubSup = fixedParameters.getDiffusionParameterSubSup();
+		vc = fixedParameters.getVc();
+		delta_sub = fixedParameters.getDelta_sub();
+		xres = fixedParameters.getXres();
+		yres = fixedParameters.getYres();
+		npixel_sub = fixedParameters.getNpixel_sub();
+		resid_time = fixedParameters.getResid_time();
+	}
 
-    public double[][] calculateIUH() {
-        double cum = 0f;
-        double t = 0;
-        double integral = 0;
+	public double[][] calculateIUH() {
+		double cum = 0f;
+		double t = 0;
+		double integral = 0;
 
-        /*
-         * next part calculates the convolution between the aplitude function and the exponential
-         * equation
-         */
-        pm.beginTask("Calculating subsurface IUH...", ampi_help.length - 1);
-        for( int i = 0; i < ampi_help.length - 1; i++ ) {
-            t = ampi_sub[i + 1][0];
+		/*
+		 * next part calculates the convolution between the aplitude function and the
+		 * exponential equation
+		 */
+		double upperIntegrationLimit = ampiSubSup[ampiSubSup.length - 1][0];
+		ConvolutionDiffusionWidth diffIntegral = new ConvolutionDiffusionWidth(0.0, upperIntegrationLimit,
+				IntegralConstants.diffusionSubSupMaxsteps, IntegralConstants.diffusionSubSupAccurancy, ampiHelp,
+				diffusionParameterSubSup, t);
 
-            double upperintegrationlimit = ampi_sub[ampi_sub.length - 1][0];
-            ConvolutionExponentialPeakflow expIntegral = new ConvolutionExponentialPeakflow(0.0,
-                    upperintegrationlimit, 20, 0.00001, ampi_help, resid_time, t);
+		pm.beginTask("Calculating subsurface IUH...", ampiHelp.length);
+		for (int i = 0; i < ampiHelp.length; i++) {
+			t = ampiSubSup[i][0];
 
-            integral = expIntegral.integrate();
-            ampi_sub[i + 1][1] = integral;
-            /*
-             * if (isScs) { cum += integral delta_sub / (xres yres npixel_sub vc / vcvv); } else {
-             */
-            cum += integral * delta_sub / (xres * yres * npixel_sub * vc);
+			// ConvolutionExponentialPeakflow expIntegral = new
+			// ConvolutionExponentialPeakflow(0.0,
+			// upperIntegrationLimit, 20, 0.00001, ampiHelp, resid_time, t);
 
-            ampi_sub[i + 1][2] = cum;
+			diffIntegral.updateTime((int) t);
+			integral = diffIntegral.integrate();
+			ampiSubSup[i][1] = integral;
+			/*
+			 * if (isScs) { cum += integral delta_sub / (xres yres npixel_sub vc / vcvv); }
+			 * else {
+			 */
+			cum += integral * delta_sub / (xres * yres * npixel_sub * vc);
 
-            pm.worked(1);
-        }
-        pm.done();
+			ampiSubSup[i][2] = cum;
 
-        return ampi_sub;
-    }
+			pm.worked(1);
+		}
+
+		double maxCum = ampiSubSup[ampiSubSup.length - 1][2];
+		double factor = 1.0 / maxCum;
+
+		for (int i = 0; i < ampiSubSup.length; i++) {
+
+			ampiSubSup[i][1] = ampiSubSup[i][1] * factor;
+			ampiSubSup[i][2] = ampiSubSup[i][2] * factor;
+
+			pm.worked(1);
+		}
+
+		pm.done();
+
+		return ampiSubSup;
+	}
 }

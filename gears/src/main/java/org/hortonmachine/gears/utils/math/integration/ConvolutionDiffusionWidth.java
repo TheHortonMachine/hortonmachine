@@ -65,7 +65,7 @@ public class ConvolutionDiffusionWidth extends SimpsonIntegral implements Integr
 
     protected double equation( double x ) {
         double result = x > ampi_diffusion[ampi_diffusion.length - 1][0] ? 0.0 : 1
-                / Math.sqrt(4 * Math.PI * D * Math.pow(t, 3.0f)) * ModelsEngine.width_interpolate(ampi_diffusion, x, 0, 1) * x
+                / Math.sqrt(4 * Math.PI * D * Math.pow(t, 3.0f)) * ModelsEngine.widthInterpolate(ampi_diffusion, x, 0, 1) * x
                 / (Math.exp(Math.pow((x - t), 2) / (4 * D * t)));
 
         return result;

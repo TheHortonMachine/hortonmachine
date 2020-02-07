@@ -29,14 +29,14 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.ParameterB
  */
 public class IUHDiffusion implements IUHCalculator {
 
-    private double[][] totalampidiffusion = null;
+    private double[][] totalAmpiDiffusion = null;
 
     private double tpmax = 0f;
 
     private double tstarmax = 0f;
 
-    private double[][] ampisubsurface = null;
-    private double[][] ampidiffsurface = null;
+    private double[][] iuhDiffusionSubSup = null;
+    private double[][] iuhDiffusionSup = null;
 
     private final IHMProgressMonitor pm;
 
@@ -51,48 +51,46 @@ public class IUHDiffusion implements IUHCalculator {
         double n_idf = fixedParams.getN_idf();
         double area = fixedParams.getArea();
         double timestep = fixedParams.getTimestep();
-        double delta_sup = fixedParams.getDelta();
-        double delta_sub = fixedParams.getDelta_sub();
+        double deltaSup = fixedParams.getDelta();
+        double deltaSubSup = fixedParams.getDelta_sub();
         double vc = fixedParams.getVc();
         double prov = 0f;
         double dt = 0f;
         double tstar = 0f;
         double error = 100f;
-        double area_tot = 0f;
-        double area_sub = 0f;
+        double areaTot = 0f;
+        double areaSub = 0f;
 
-        double[][] ampi_super = effectsBox.getAmpi();
+        double[][] ampiSuper = effectsBox.getAmpi();
 
-        IUHDiffusionSurface iuhDiffSurface = new IUHDiffusionSurface(ampi_super, fixedParams, pm);
-        ampidiffsurface = iuhDiffSurface.calculateIUH();
+        IUHSurface iuhDiffSurface = new IUHSurface(ampiSuper, fixedParams, pm);
+        iuhDiffusionSup = iuhDiffSurface.calculateIUH();
 
         if (effectsBox.ampi_subExists()) {
-            area_sub = fixedParams.getArea_sub();
+            areaSub = fixedParams.getArea_sub();
             double[][] ampi_help_sub = effectsBox.getAmpi_sub();
 
             IUHSubSurface iuhSubSurface = new IUHSubSurface(ampi_help_sub, fixedParams, pm);
-            ampisubsurface = iuhSubSurface.calculateIUH();
+            iuhDiffusionSubSup = iuhSubSurface.calculateIUH();
         }
 
-        double tcorr = ampidiffsurface[ampidiffsurface.length - 1][0];
+        double tcorr = iuhDiffusionSup[iuhDiffusionSup.length - 1][0];
 
-        totalampidiffusion = calculateTotalDiffusion(ampidiffsurface, ampisubsurface, delta_sup, delta_sub, vc, tcorr, area_sub,
-                area);
+        totalAmpiDiffusion = calculateTotalDiffusion(iuhDiffusionSup, iuhDiffusionSubSup, deltaSup, deltaSubSup, vc, tcorr,
+                areaSub, area);
 
         /*
          * next calculates the maximum rain time
          */
-
         if (effectsBox.ampi_subExists()) {
-            area_tot = area_sub + area;
+            areaTot = areaSub + area;
         } else {
-            area_tot = area;
+            areaTot = area;
         }
 
         /*
          * Skip the tpmax calculation if real rainfall data
          */
-
         if (effectsBox.rainDataExists()) {
             tpmax = 0f;
             return;
@@ -108,14 +106,13 @@ public class IUHDiffusion implements IUHCalculator {
                 index++;
             }
 
-            dt = ModelsEngine.henderson(totalampidiffusion, tp);
+            dt = ModelsEngine.henderson(totalAmpiDiffusion, tp);
             tstar = tp + dt;
             if (tstar < tcorr) {
-                prov = n_idf
-                        - 1
-                        + (tp * (double) ModelsEngine.width_interpolate(totalampidiffusion, tstar, 0, 1) / (area_tot * ((double) ModelsEngine
-                                .width_interpolate(totalampidiffusion, tstar, 0, 2) - (double) ModelsEngine.width_interpolate(
-                                totalampidiffusion, dt, 0, 2))));
+                prov = n_idf - 1
+                        + (tp * (double) ModelsEngine.widthInterpolate(totalAmpiDiffusion, tstar, 0, 1)
+                                / (areaTot * ((double) ModelsEngine.widthInterpolate(totalAmpiDiffusion, tstar, 0, 2)
+                                        - (double) ModelsEngine.widthInterpolate(totalAmpiDiffusion, dt, 0, 2))));
 
                 if (Math.abs(prov) < error) {
                     tpmax = tp;
@@ -131,104 +128,99 @@ public class IUHDiffusion implements IUHCalculator {
 
     /**
      * Calculate the total IUH by summing the superficial and the subsuperficial IUH
-     * 
-     * @param ampidiffsurface
-     * @param ampidiffsubsurface
-     * @return
      */
-    private double[][] calculateTotalDiffusion( double[][] ampidiffsurface, double[][] ampisubsurface, double delta_sup,
-            double delta_sub, double vc, double tcorr, double area_sub, double area_super ) {
+    private double[][] calculateTotalDiffusion( double[][] iuhDiffSup, double[][] iuhDiffSubSup, double deltaSup,
+            double deltaSubSup, double channelVelocity, double tcorr, double areaSubSup, double areaSup ) {
 
-        double[][] totaldiff = null;
+        double[][] totalIuhDiff = null;
 
-        if (ampisubsurface == null) {
-            totaldiff = new double[ampidiffsurface.length][3];
-            totaldiff = ampidiffsurface;
-
+        if (iuhDiffSubSup == null) {
+            totalIuhDiff = iuhDiffSup;
         } else {
             /*
              * calculate how many rows are in ampi_sub after ampi_sup has finished
              */
-            int rowinampisubwhereampisupfinishes = 0;
-            for( int i = 0; i < ampisubsurface.length; i++ ) {
-                if (ampisubsurface[i][0] >= ampidiffsurface[ampidiffsurface.length - 1][0]) {
-                    rowinampisubwhereampisupfinishes = i;
+            int imstantInAmpiSubSupWhereAmpiSupFinishes = 0;
+            for( int i = 0; i < iuhDiffSubSup.length; i++ ) {
+                if (iuhDiffSubSup[i][0] >= iuhDiffSup[iuhDiffSup.length - 1][0]) {
+                    imstantInAmpiSubSupWhereAmpiSupFinishes = i;
                     break;
                 }
             }
 
-            int totallength = ampidiffsurface.length + ampisubsurface.length - rowinampisubwhereampisupfinishes;
+            int totalLength = iuhDiffSup.length + iuhDiffSubSup.length - imstantInAmpiSubSupWhereAmpiSupFinishes;
 
-            totaldiff = new double[totallength][3];
+            totalIuhDiff = new double[totalLength][3];
 
-            double intsub = 0f;
-            double intsup = 0f;
-            for( int i = 0; i < ampidiffsurface.length; i++ ) {
-                totaldiff[i][0] = ampidiffsurface[i][0];
-                intsub = (double) ModelsEngine.width_interpolate(ampisubsurface, ampidiffsurface[i][0], 0, 1);
-                intsup = ampidiffsurface[i][1];
-                if (isNovalue(intsub)) {
+            for( int i = 0; i < iuhDiffSup.length; i++ ) {
+                totalIuhDiff[i][0] = iuhDiffSup[i][0];
+                double intSubSup = (double) ModelsEngine.widthInterpolate(iuhDiffSubSup, iuhDiffSup[i][0], 0, 1);
+                double intSup = iuhDiffSup[i][1];
+                if (isNovalue(intSubSup)) {
                     pm.errorMessage("Found undefined interpolated value for subsuperficial. Not summing it. Index: " + i);
-                    totaldiff[i][1] = intsup;
+                    totalIuhDiff[i][1] = intSup;
                 } else {
-                    totaldiff[i][1] = intsup + intsub;
+                    totalIuhDiff[i][1] = intSup + intSubSup;
 
                 }
 
             }
-            for( int i = ampidiffsurface.length, j = rowinampisubwhereampisupfinishes; i < totallength; i++, j++ ) {
-                totaldiff[i][0] = ampisubsurface[j][0];
-                totaldiff[i][1] = ampisubsurface[j][1];
+            for( int i = iuhDiffSup.length, j = imstantInAmpiSubSupWhereAmpiSupFinishes; i < totalLength; i++, j++ ) {
+                totalIuhDiff[i][0] = iuhDiffSubSup[j][0];
+                totalIuhDiff[i][1] = iuhDiffSubSup[j][1];
             }
 
+            double totalDiffSum = 0;
+            for( int i = 0; i < totalIuhDiff.length; i++ ) {
+                totalDiffSum +=  totalIuhDiff[i][1];
+            }
+            double widthFunctionSum = 0;
+            for( int i = 0; i < iuhDiffSup.length; i++ ) {
+                widthFunctionSum +=  iuhDiffSup[i][1];
+            }
+            for( int i = 0; i < iuhDiffSubSup.length; i++ ) {
+                widthFunctionSum +=  iuhDiffSubSup[i][1];
+            }
+            pm.message("Widthfunction sum = " + widthFunctionSum);
+            pm.message("Total diff sum = " + totalDiffSum);
+            
             /*
              * calculation of the third column = cumulated The normalization occurs by means of the
              * superficial delta in the first part of the hydrogram, i.e. until the superficial
              * contributes, after that the delta is the one of the subsuperficial.
              */
             double cum = 0f;
-            for( int i = 0; i < ampidiffsurface.length; i++ ) {
-                cum = cum + (totaldiff[i][1] * delta_sup) / ((area_super + area_sub) * vc);
-                totaldiff[i][2] = cum;
+            for( int i = 0; i < iuhDiffSup.length; i++ ) {
+                cum = cum + (totalIuhDiff[i][1] * deltaSup) / ((areaSup + areaSubSup) * channelVelocity);
+                totalIuhDiff[i][2] = cum;
             }
-            for( int i = ampidiffsurface.length, j = rowinampisubwhereampisupfinishes; i < totallength; i++, j++ ) {
-                cum = cum + (totaldiff[i][1] * delta_sub) / ((area_super + area_sub) * vc);
-                totaldiff[i][2] = cum;
+            for( int i = iuhDiffSup.length; i < totalLength; i++ ) {
+                cum = cum + (totalIuhDiff[i][1] * deltaSubSup) / ((areaSup + areaSubSup) * channelVelocity);
+                totalIuhDiff[i][2] = cum;
             }
         }
 
-        return totaldiff;
-    }
-    /*
-     * (non-Javadoc)
-     * @see bsh.commands.h.peakflow.iuh.IUHCalculator#calculateIUH()
-     */
-    public double[][] calculateIUH() {
-        return totalampidiffusion;
+        return totalIuhDiff;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see bsh.commands.h.peakflow.iuh.IUHCalculator#getTpMax()
-     */
+    public double[][] calculateIUH() {
+        return totalAmpiDiffusion;
+    }
+
     public double getTpMax() {
         return tpmax;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see bsh.commands.h.peakflow.iuh.IUHCalculator#getTstarMax()
-     */
     public double getTstarMax() {
         return tstarmax;
     }
 
     public double[][] getIUHSuperficial() {
-        return ampidiffsurface;
+        return iuhDiffusionSup;
     }
 
     public double[][] getIUHSubsuperficial() {
-        return ampisubsurface;
+        return iuhDiffusionSubSup;
     }
 
 }

@@ -32,11 +32,17 @@ import org.joda.time.Interval;
  */
 public class RealJeff {
 
-    private double rain_timestep = 0f;
+    private double rainTimestep = 0f;
     private final HashMap<DateTime, double[]> rainfallMap;
 
     private DateTime first;
     private DateTime second;
+
+    /*
+     * Jeff is returned in m/s instead of mm/h (which is the dimension
+     * of rain height over timestep. Therefore let's do some conversion.
+     */
+    private double converter = 1.0 / (1000.0 * 3600.0);
 
     /**
      * @param rainfallMap the sorted map of rainfall values in time. <b>This has to be a sorted map.</b>
@@ -55,16 +61,11 @@ public class RealJeff {
         }
 
         Interval interval = new Interval(first, second);
-        rain_timestep = interval.toDuration().getStandardSeconds();
+        rainTimestep = interval.toDuration().getStandardSeconds();
     }
 
     public Map<DateTime, Double> calculateJeff() {
         Map<DateTime, Double> jeffData = new LinkedHashMap<DateTime, Double>();
-        /*
-         * Jeff is returned in m/s instead of mm/h (which is the dimension
-         * of rain height over timestep. Therefore let's do some conversion.
-         */
-        double converter = 1.0 / (1000.0 * 3600.0);
 
         Set<Entry<DateTime, double[]>> entrySet = rainfallMap.entrySet();
         for( Entry<DateTime, double[]> entry : entrySet ) {
@@ -80,7 +81,7 @@ public class RealJeff {
     }
 
     public double getRain_timestep() {
-        return rain_timestep;
+        return rainTimestep;
     }
 
     public DateTime getFirstDate() {

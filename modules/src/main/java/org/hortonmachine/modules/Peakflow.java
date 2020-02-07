@@ -17,7 +17,7 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_AUTHORCONTACTS;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.*;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_AUTHORNAMES;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_KEYWORDS;
@@ -31,7 +31,6 @@ import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.Oms
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_inTopindex_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pA_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pCelerity_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pDiffusion_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pN_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pOutputStepArg_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow.OMSPEAKFLOW_pSat_DESCRIPTION;
@@ -81,10 +80,15 @@ public class Peakflow extends HMModel {
     @In
     public double pCelerity = -1f;
 
-    @Description(OMSPEAKFLOW_pDiffusion_DESCRIPTION)
+    @Description(OMSPEAKFLOW_pDiffusionSup_DESCRIPTION)
     @Unit("m2/s")
     @In
-    public double pDiffusion = -1f;
+    public double pDiffusionSup = -9999.0;
+
+    @Description(OMSPEAKFLOW_pDiffusionSubSup_DESCRIPTION)
+    @Unit("m2/s")
+    @In
+    public double pDiffusionSubSup = -9999.0;
 
     @Description(OMSPEAKFLOW_pSat_DESCRIPTION)
     @Unit("%")
@@ -137,7 +141,8 @@ public class Peakflow extends HMModel {
         peakflow.pA = pA;
         peakflow.pN = pN;
         peakflow.pCelerity = pCelerity;
-        peakflow.pDiffusion = pDiffusion;
+        peakflow.pDiffusionSup = pDiffusionSup;
+        peakflow.pDiffusionSubSup = pDiffusionSubSup;
         peakflow.pSat = pSat;
         peakflow.pOutputStepArg = pOutputStepArg;
         peakflow.inTopindex = getRaster(inTopindex);
