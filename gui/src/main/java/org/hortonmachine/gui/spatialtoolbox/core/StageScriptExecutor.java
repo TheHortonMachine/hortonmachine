@@ -143,7 +143,7 @@ public class StageScriptExecutor {
                     + jgtLibsFolder.getAbsolutePath() + "/*" + File.pathSeparator + ".\"";
             classPath = classpathJars;
         } else {
-            classPath = "\".\"";
+            classPath = "\"." + File.pathSeparator + jgtLibsFolder.getAbsolutePath() + File.separatorChar + "*\"";
         }
 
     }
