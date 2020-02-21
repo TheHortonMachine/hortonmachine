@@ -69,6 +69,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
@@ -79,6 +82,9 @@ import javax.media.jai.iterator.WritableRandomIter;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.coverage.grid.io.GridFormatFinder;
+import org.geotools.coverage.grid.io.UnknownFormat;
 import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.coverageio.gdal.BaseGDALGridCoverage2DReader;
@@ -104,8 +110,10 @@ import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import it.geosolutions.jaiext.range.NoDataContainer;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -229,54 +237,48 @@ public class OmsRasterReader extends HMModel {
         if (hasRowColsRequest()) {
             pRowcol = new int[]{pRows, pCols};
         }
-
-        String pType = null;
-        // try to guess from the extension
-        if (file.toLowerCase().endsWith(ESRIGRID)) {
-            pType = ESRIGRID;
-        } else if (file.toLowerCase().endsWith(AIG)) {
-            pType = AIG;
-        } else if (file.toLowerCase().endsWith(GEOTIFF) || file.toLowerCase().endsWith(GEOTIF)) {
-            pType = GEOTIFF;
-        } else if (file.toLowerCase().endsWith(JPEG) || file.toLowerCase().endsWith(JPG)) {
-            pType = JPG;
-        } else if (file.toLowerCase().endsWith(PNG)) {
-            pType = PNG;
-        } else if (CoverageUtilities.isGrass(file)) {
-            pType = GRASS;
-        } else
-            throw new ModelsIllegalargumentException(
-                    "Can't recognize the data format. Supported are: asc, tiff, jpg, png, grass.",
-                    this.getClass().getSimpleName(), pm);
-
         File mapFile = new File(file);
-        try {
-            pm.beginTask("Reading coverage: " + mapFile.getName(), IHMProgressMonitor.UNKNOWN);
-
-            if (pType.equals(ESRIGRID)) {
-                readArcGrid(mapFile);
-            } else if (pType.equals(GEOTIFF)) {
-                readGeotiff(mapFile);
-            } else if (pType.equals(JPG)) {
-                readWorldImage(mapFile);
-            } else if (pType.equals(PNG)) {
-                readWorldImage(mapFile);
-            } else if (pType.equals(AIG) || pType.endsWith("w001001x.adf")) {
-                readAig(mapFile);
-            } else if (pType.equals(GRASS)) {
-                readGrass(mapFile);
-            } else {
-                throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName(),
+        AbstractGridFormat format = GridFormatFinder.findFormat(mapFile);
+        if (format != null && !(format instanceof GrassCoverageFormat)) {
+            if (format instanceof UnknownFormat) {
+                throw new ModelsIllegalargumentException("Unupported format for: " + mapFile, this.getClass().getSimpleName(),
                         pm);
-            }
+            } else {
+                try {
+                    pm.beginTask("Reading coverage: " + mapFile.getName(), IHMProgressMonitor.UNKNOWN);
+                    AbstractGridCoverage2DReader rasterReader = format.getReader(mapFile);
+                    originalEnvelope = rasterReader.getOriginalEnvelope();
+                    if (!doEnvelope) {
+                        outRaster = rasterReader.read(generalParameter);
 
-            boolean crsValid = CrsUtilities.isCrsValid(outRaster.getCoordinateReferenceSystem());
-            if (!crsValid) {
-                pm.errorMessage(
-                        "The read CRS doesn't seem to be valid. This could lead to unexpected results. Consider adding a .prj file with the proper CRS definition if none is present.");
+                        Double noValueObj = CoverageUtilities.getNovalue(outRaster);
+                        if (noValueObj != null) {
+                            fileNovalue = noValueObj;
+                        }
+
+                        resample();
+                        checkNovalues();
+                    }
+
+                    boolean crsValid = CrsUtilities.isCrsValid(outRaster.getCoordinateReferenceSystem());
+                    if (!crsValid) {
+                        pm.errorMessage(
+                                "The read CRS doesn't seem to be valid. This could lead to unexpected results. Consider adding a .prj file with the proper CRS definition if none is present.");
+                    }
+                } finally {
+                    pm.done();
+                }
             }
-        } finally {
-            pm.done();
+        } else if (CoverageUtilities.isGrass(file)) {
+            try {
+                pm.beginTask("Reading coverage: " + mapFile.getName(), IHMProgressMonitor.UNKNOWN);
+                readGrass(mapFile);
+            } finally {
+                pm.done();
+            }
+        } else {
+            throw new ModelsIllegalargumentException("Can't recognize the data format for: " + mapFile,
+                    this.getClass().getSimpleName(), pm);
         }
 
     }
@@ -318,69 +320,6 @@ public class OmsRasterReader extends HMModel {
             GrassCoverageReader reader = format.getReader(mapEnvironment.getCELL());
             outRaster = (GridCoverage2D) reader.read(generalParameter);
             checkNovalues();
-        }
-    }
-
-    private void readAig( File mapFile ) throws IllegalArgumentException, IOException {
-        final ImageLayout l = new ImageLayout();
-        l.setTileGridXOffset(0).setTileGridYOffset(0).setTileHeight(512).setTileWidth(512);
-
-        Hints hints = new Hints();
-        hints.add(new RenderingHints(JAI.KEY_IMAGE_LAYOUT, l));
-
-        final URL url = mapFile.toURI().toURL();
-        final Object source = url;
-        final BaseGDALGridCoverage2DReader reader = new AIGReader(source, hints);
-        originalEnvelope = reader.getOriginalEnvelope();
-        if (!doEnvelope) {
-            outRaster = (GridCoverage2D) reader.read(generalParameter);
-
-            resample();
-            checkNovalues();
-        }
-    }
-
-    private void readGeotiff( File mapFile ) throws IOException {
-        String nameWithoutExtention = FileUtilities.getNameWithoutExtention(mapFile);
-        File twfFile = new File(mapFile.getParentFile(), nameWithoutExtention + ".tfw");
-        AbstractGridCoverage2DReader geoTiffReader;
-        if (twfFile.exists()) {
-            geoTiffReader = new WorldImageReader(mapFile);
-        } else {
-            geoTiffReader = new GeoTiffReader(mapFile);
-            final GeoTiffIIOMetadataDecoder metadata = ((GeoTiffReader) geoTiffReader).getMetadata();
-            if (metadata.hasNoData()) {
-                fileNovalue = metadata.getNoData();
-            }
-        }
-        originalEnvelope = geoTiffReader.getOriginalEnvelope();
-        if (!doEnvelope) {
-            outRaster = geoTiffReader.read(generalParameter);
-
-            resample();
-            checkNovalues();
-        }
-    }
-
-    private void readArcGrid( File mapFile ) throws IllegalArgumentException, IOException {
-        ArcGridReader arcGridReader = new ArcGridReader(mapFile);
-        originalEnvelope = arcGridReader.getOriginalEnvelope();
-        if (!doEnvelope) {
-            outRaster = arcGridReader.read(generalParameter);
-
-            resample();
-            checkNovalues();
-        }
-    }
-
-    private void readWorldImage( File mapFile ) throws IllegalArgumentException, IOException {
-        WorldImageReader worldImageReader = new WorldImageReader(mapFile);
-        originalEnvelope = worldImageReader.getOriginalEnvelope();
-        if (!doEnvelope) {
-            outRaster = worldImageReader.read(generalParameter);
-
-            resample();
-            // checkNovalues();
         }
     }
 
@@ -496,4 +435,5 @@ public class OmsRasterReader extends HMModel {
         GridCoverage2D geodata = reader.outRaster;
         return geodata;
     }
+
 }

@@ -39,6 +39,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 import javax.media.jai.ROI;
@@ -93,6 +94,8 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+
+import it.geosolutions.jaiext.range.NoDataContainer;
 
 /**
  * <p>
@@ -1801,5 +1804,24 @@ public class CoverageUtilities {
         }
 
         return coordinatesList;
+    }
+
+    /**
+     * Get the novalue defined for the raster.
+     * 
+     * @param raster 
+     * @return the novalue or null if none defined.
+     */
+    public static Double getNovalue( GridCoverage2D raster ) {
+        Map< ? , ? > properties = raster.getProperties();
+        if (properties != null) {
+            Object object = properties.get(NoDataContainer.GC_NODATA);
+            if (object instanceof NoDataContainer) {
+                NoDataContainer nodataContainer = (NoDataContainer) object;
+                double noValue = nodataContainer.getAsSingleValue();
+                return noValue;
+            }
+        }
+        return null;
     }
 }

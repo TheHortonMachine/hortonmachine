@@ -141,15 +141,22 @@
 				<version>1.1</version>
 			</dependency>
 
+<!--
 			<dependency>
 				<groupId>org.gdal</groupId>
 				<artifactId>gdal</artifactId>
 				<version>2.1.0</version>
 			</dependency>
-
+-->
 
 
 			<!-- ImageIO-Ext -->
+            <dependency>
+              <groupId>org.geotools</groupId>
+              <artifactId>gt-imageio-ext-gdal</artifactId>
+              <version>${gt.version}</version>
+            </dependency>
+<!--
 			<dependency>
 				<groupId>it.geosolutions.imageio-ext</groupId>
 				<artifactId>imageio-ext-tiff</artifactId>
@@ -280,7 +287,7 @@
 				<artifactId>imageio-ext-png</artifactId>
 				<version>${imageio.ext.version}</version>
 			</dependency>
-
+-->
 			<!-- JAITools -->
 			<dependency>
 				<groupId>org.jaitools</groupId>
