@@ -4,7 +4,7 @@
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hortonmachine</artifactId>
-	<version>0.9.9</version>
+	<version>0.9.10-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>The Horton Machine</name>
@@ -141,153 +141,12 @@
 				<version>1.1</version>
 			</dependency>
 
-<!--
-			<dependency>
-				<groupId>org.gdal</groupId>
-				<artifactId>gdal</artifactId>
-				<version>2.1.0</version>
-			</dependency>
--->
-
-
 			<!-- ImageIO-Ext -->
             <dependency>
               <groupId>org.geotools</groupId>
               <artifactId>gt-imageio-ext-gdal</artifactId>
               <version>${gt.version}</version>
             </dependency>
-<!--
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-tiff</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-arcgrid</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalarcbinarygrid</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalmrsid</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalecw</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdaldted</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalkakadujp2</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalidrisi</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalmrsidjp2</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalecwjp2</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalehdr</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalenvihdr</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalerdasimg</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalnitf</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalrpftoc</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalvrt</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-gdalsrp</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-imagereadmt</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-kakadu</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-utilities</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-streams</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-netcdf</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-geocore</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-hdf4</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-grib1</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>it.geosolutions.imageio-ext</groupId>
-				<artifactId>imageio-ext-png</artifactId>
-				<version>${imageio.ext.version}</version>
-			</dependency>
--->
 			<!-- JAITools -->
 			<dependency>
 				<groupId>org.jaitools</groupId>
@@ -639,11 +498,6 @@
 			<dependency>
 				<groupId>org.geotools</groupId>
 				<artifactId>gt-swing</artifactId>
-				<version>${gt.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.geotools</groupId>
-				<artifactId>gt-imageio-ext-gdal</artifactId>
 				<version>${gt.version}</version>
 			</dependency>
 			<dependency>
