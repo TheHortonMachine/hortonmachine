@@ -360,8 +360,7 @@ public class DatabaseViewer extends DatabaseController {
         SettingsController.applySettings(controller);
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Database Viewer");
 
-        frame.setIconImage(ImageCache.getBuffered(ImageCache.HORTONMACHINE_FRAME_ICON));
-
+        GuiUtilities.setDefaultFrameIcon(frame);
         GuiUtilities.addClosingListener(frame, controller);
 
         File openFile = null;

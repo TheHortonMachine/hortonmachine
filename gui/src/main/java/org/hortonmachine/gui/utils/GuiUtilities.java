@@ -25,6 +25,7 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -36,6 +37,7 @@ import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -276,6 +278,39 @@ public class GuiUtilities {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Set the default frame icon, also considering the macos case.
+     * 
+     * @param frame the frame to set the icon for.
+     */
+    public static void setDefaultFrameIcon( JFrame frame ) {
+        setDefaultFrameIcon(frame, null);
+    }
+    
+    /**
+     * Set the frame icon, also considering the macos case.
+     * 
+     * @param frame the frame to set the icon for.
+     * @param forceIcon an icon to set. If null, the default icon is used.
+     */
+    public static void setDefaultFrameIcon( JFrame frame, Image forceIcon ) {
+        if (forceIcon == null) {
+            forceIcon = ImageCache.getBuffered(ImageCache.HORTONMACHINE_FRAME_ICON);
+        }
+        frame.setIconImage(forceIcon);
+        OSType osType = OsCheck.getOperatingSystemType();
+        if (osType == OSType.MacOS) {
+            try {
+                Class< ? > classFN = Class.forName("com.apple.eawt.Application", false, null);
+                Method getAppMethod = classFN.getMethod("getApplication");
+                Object application = getAppMethod.invoke(null);
+                Method setDockIconMethod = classFN.getMethod("setDockIconImage", Image.class);
+                setDockIconMethod.invoke(application, forceIcon);
+            } catch (Exception e) {
+            }
         }
     }
 

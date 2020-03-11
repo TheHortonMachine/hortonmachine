@@ -1287,9 +1287,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Geopaparazzi Form Builder");
 
-        Class<FormBuilderController> class1 = FormBuilderController.class;
-        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
-        frame.setIconImage(icon.getImage());
+        GuiUtilities.setDefaultFrameIcon(frame);
 
         GuiUtilities.addClosingListener(frame, controller);
 

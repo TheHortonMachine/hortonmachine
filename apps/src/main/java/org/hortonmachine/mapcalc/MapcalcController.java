@@ -460,9 +460,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         final MapcalcController controller = new MapcalcController(gBridge, true);
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Mapcalc");
 
-        Class<DatabaseViewer> class1 = DatabaseViewer.class;
-        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
-        frame.setIconImage(icon.getImage());
+        GuiUtilities.setDefaultFrameIcon(frame);
 
         GuiUtilities.addClosingListener(frame, controller);
 

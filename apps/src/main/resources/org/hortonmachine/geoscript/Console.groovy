@@ -44,6 +44,7 @@ import org.codehaus.groovy.runtime.StringGroovyMethods
 import org.codehaus.groovy.syntax.SyntaxException
 import org.codehaus.groovy.tools.shell.util.MessageSource
 import org.codehaus.groovy.transform.ThreadInterruptibleASTTransformation
+import org.hortonmachine.gui.utils.GuiUtilities
 
 import javax.swing.Action
 import javax.swing.Icon
@@ -468,6 +469,8 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
             nativeFullScreenForMac(swing.consoleFrame)
             swing.consoleFrame.pack()
             swing.consoleFrame.show()
+            
+            GuiUtilities.setDefaultFrameIcon(swing.consoleFrame);
         }
         installInterceptor()
         updateTitle() // Title changes based on indy setting

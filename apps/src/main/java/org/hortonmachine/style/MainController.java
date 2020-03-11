@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -45,7 +44,6 @@ import org.geotools.styling.FeatureTypeStyle;
 import org.geotools.styling.Rule;
 import org.geotools.styling.Style;
 import org.geotools.swing.JMapPane;
-import org.hortonmachine.database.DatabaseViewer;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
@@ -127,8 +125,9 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
     /**
      * Default constructor
-     * @param fileToOpen optional file to open.
-     * @param optionalTableName 
+     * 
+     * @param fileToOpen        optional file to open.
+     * @param optionalTableName
      */
     public MainController( File fileToOpen, String optionalTableName ) {
         setPreferredSize(new Dimension(1400, 800));
@@ -604,6 +603,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     public void onClose() {
         SettingsController.onCloseHandleSettings();
     }
+
     public boolean canCloseWithoutPrompt() {
         return false;
     }
@@ -627,9 +627,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine SLD Editor");
 
-        Class<DatabaseViewer> class1 = DatabaseViewer.class;
-        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
-        frame.setIconImage(icon.getImage());
+        GuiUtilities.setDefaultFrameIcon(frame);
 
         GuiUtilities.addClosingListener(frame, controller);
 

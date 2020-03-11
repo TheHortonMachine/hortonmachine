@@ -713,9 +713,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
 
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Las Info Viewer");
 
-        Class<DatabaseViewer> class1 = DatabaseViewer.class;
-        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
-        frame.setIconImage(icon.getImage());
+        GuiUtilities.setDefaultFrameIcon(frame);
 
         GuiUtilities.addClosingListener(frame, controller);
 

@@ -60,7 +60,7 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
 
     private static final int TILESIZE = 256;
 
-    protected static final boolean DEBUG = false;
+    protected static final boolean DEBUG = true;
     protected static final boolean DEBUG_ALSO_WITHOUT_IMAGE = true;
 
     private Coordinate centerCoordinate;

@@ -20,6 +20,7 @@ package org.hortonmachine;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.chart.CategoryHistogram;
 import org.hortonmachine.gears.utils.chart.Scatter;
+import org.hortonmachine.gears.utils.chart.TimeSeries;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
@@ -90,6 +92,8 @@ public class HM {
         sb.append("\thistogram( Map<String, Object> options, List<String> categories, List<Number> values )").append("\n");
         sb.append("Chart a numeric histogram:").append("\n");
         sb.append("\thistogram( Map<String, Object> options, List<List<Number>> values )").append("\n");
+        sb.append("Chart a time series:").append("\n");
+        sb.append("\ttimeseries( Map<String, Object> options, List<String> seriesNames, List<List<Number>> times, List<List<Number>> values )").append("\n");
         sb.append("Chart series of points:").append("\n");
         sb.append("\tscatterPlot( List<List<List<Number>>> data )").append("\n");
         sb.append("Chart series of points with rendering options:").append("\n");
@@ -198,6 +202,64 @@ public class HM {
         }
     }
 
+    public static void timeseries( Map<String, Object> options, List<String> seriesNames, List<List<Number>> times, List<List<Number>> values ) {
+        String title = "";
+        String xLabel = "x";
+        String yLabel = "y";
+        int width = 1600;
+        int height = 1000;
+        if (options != null) {
+            Object object = options.get("title");
+            if (object instanceof String) {
+                title = (String) object;
+            }
+            object = options.get("xlabel");
+            if (object instanceof String) {
+                xLabel = (String) object;
+            }
+            object = options.get("ylabel");
+            if (object instanceof String) {
+                yLabel = (String) object;
+            }
+            object = options.get("width");
+            if (object instanceof Number) {
+                width = ((Number) object).intValue();
+            }
+            object = options.get("height");
+            if (object instanceof Number) {
+                height = ((Number) object).intValue();
+            }
+        }
+        
+        List<double[]> allValuesList = new ArrayList<>();
+        for (List<Number> list : values) {
+        	double[] valuesDouble = new double[list.size()];
+            for( int i = 0; i < valuesDouble.length; i++ ) {
+                valuesDouble[i] = list.get(i).doubleValue();
+            }
+            allValuesList.add(valuesDouble);
+		}
+        List<long[]> allTimesList = new ArrayList<>();
+        for (List<Number> list : times) {
+        	long[] timesLong = new long[list.size()];
+        	for( int i = 0; i < timesLong.length; i++ ) {
+        		timesLong[i] = list.get(i).longValue();
+        	}
+        	allTimesList.add(timesLong);
+        }
+        
+        
+        TimeSeries timeseriesChart = new TimeSeries(title, seriesNames, allTimesList, allValuesList);
+        timeseriesChart.setXLabel(xLabel);
+        timeseriesChart.setYLabel(yLabel);
+        
+        ChartPanel chartPanel = new ChartPanel(timeseriesChart.getChart(), true);
+        Dimension preferredSize = new Dimension(width, height);
+        chartPanel.setPreferredSize(preferredSize);
+
+        GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
+    }
+    
     public static void histogram( Map<String, Object> options, List<String> categories, List<Number> values ) {
         String title = "";
         String xLabel = "x";

@@ -197,7 +197,7 @@ public class GeopaparazziViewer extends GeopaparazziController {
         return actions;
 
     }
-    
+
     public boolean canCloseWithoutPrompt() {
         return false;
     }
@@ -212,6 +212,8 @@ public class GeopaparazziViewer extends GeopaparazziController {
         Class<GeopaparazziViewer> class1 = GeopaparazziViewer.class;
         ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/geopaparazzi_icon.png"));
         frame.setIconImage(icon.getImage());
+
+        GuiUtilities.setDefaultFrameIcon(frame);
 
         GuiUtilities.addClosingListener(frame, controller);
     }

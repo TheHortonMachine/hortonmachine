@@ -10,7 +10,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
 import org.hortonmachine.dbs.log.Logger;
@@ -54,9 +53,6 @@ public class SimpleNwwViewer {
                 onCloseAction = JFrame.EXIT_ON_CLOSE;
             }
 
-            Class<SimpleNwwViewer> class1 = SimpleNwwViewer.class;
-            ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
-
             Component nwwComponent = NwwPanel.createNwwPanel(true);
             NwwPanel wwjPanel = null;
 
@@ -76,7 +72,7 @@ public class SimpleNwwViewer {
 
             final JFrame nwwFrame = new JFrame();
             nwwFrame.setTitle(appName + ": map view");
-            nwwFrame.setIconImage(icon.getImage());
+            GuiUtilities.setDefaultFrameIcon(nwwFrame);
 
 //            JPanel mapPanel = new JPanel(new BorderLayout());
 //            mapPanel.add(nwwComponent, BorderLayout.CENTER);
