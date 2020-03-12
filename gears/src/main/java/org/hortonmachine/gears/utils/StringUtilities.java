@@ -181,4 +181,18 @@ public class StringUtilities {
         }
         return array;
     }
+    
+    public static String[] parseCommand(String command) {
+        Pattern parsingPattern = Pattern.compile("[^\"\\s]+|\"(\\.|[^\\\"])*\"");
+        List<String> params = null;
+        params = new ArrayList<String>();
+
+        String token = null;
+        Scanner scanner = new Scanner(command);
+        while( (token = scanner.findInLine(parsingPattern)) != null ) {
+            params.add(token);
+        }
+        scanner.close();
+        return (String[]) params.toArray(new String[params.size()]);
+    }
 }

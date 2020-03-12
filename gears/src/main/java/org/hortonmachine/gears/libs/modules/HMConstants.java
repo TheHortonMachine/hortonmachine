@@ -287,6 +287,7 @@ public class HMConstants {
     public static final String HILLSLOPE = "HortonMachine/Hillslope";
     public static final String NETWORK = "HortonMachine/Network";
     public static final String STATISTICS = "HortonMachine/Statistics";
+    public static final String DOCKER = "Docker";
 
     public static final String GPL3_LICENSE = "General Public License Version 3 (GPLv3)";
 

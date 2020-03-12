@@ -27,6 +27,8 @@ org.hortonmachine.modules.FileIterator
 org.hortonmachine.modules.FilesInFolderOrganizer
 org.hortonmachine.modules.FlowDirections
 org.hortonmachine.modules.Gc
+org.hortonmachine.modules.GdalCommandExecutor
+org.hortonmachine.modules.GdalInfo
 org.hortonmachine.modules.Geomorphon
 org.hortonmachine.modules.GeomorphonMaximaFinder
 org.hortonmachine.modules.Geopaparazzi3Converter
@@ -66,7 +68,7 @@ org.hortonmachine.modules.LW10_SingleTree_AreaToNetpointAssociator
 org.hortonmachine.modules.LW11_NetworkPropagator
 org.hortonmachine.modules.Labeler
 org.hortonmachine.modules.LasConverter
-org.hortonmachine.modules.LasNativeChecker
+org.hortonmachine.modules.LasFilter
 org.hortonmachine.modules.LeastCostFlowDirections
 org.hortonmachine.modules.LineSmootherJaitools
 org.hortonmachine.modules.LineSmootherMcMaster
@@ -122,6 +124,7 @@ org.hortonmachine.modules.Tc
 org.hortonmachine.modules.Tca
 org.hortonmachine.modules.Tca3d
 org.hortonmachine.modules.TopIndex
+org.hortonmachine.modules.TrentoP
 org.hortonmachine.modules.Variogram
 org.hortonmachine.modules.VectorClipper
 org.hortonmachine.modules.VectorConverter

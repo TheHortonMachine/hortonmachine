@@ -20,6 +20,13 @@
 			<artifactId>hm-lesto</artifactId>
 			<version>0.9.10-SNAPSHOT</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.spotify/docker-client -->
+		<dependency>
+			<groupId>com.spotify</groupId>
+			<artifactId>docker-client</artifactId>
+			<version>8.16.0</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>junit</groupId>

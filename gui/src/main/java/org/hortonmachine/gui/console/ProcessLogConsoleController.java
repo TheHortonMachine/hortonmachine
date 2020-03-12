@@ -34,6 +34,8 @@ import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
+import org.hortonmachine.gears.utils.processes.ELogStyle;
+import org.hortonmachine.gears.utils.processes.IProcessListener;
 import org.hortonmachine.gui.utils.GuiUtilities;
 
 /**

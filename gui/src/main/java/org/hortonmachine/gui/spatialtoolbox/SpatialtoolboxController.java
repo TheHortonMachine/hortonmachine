@@ -629,46 +629,54 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
     private void runModuleInNewJVM( ProcessLogConsoleController logConsole ) throws Exception {
         ModuleDescription module = pPanel.getModule();
         HashMap<String, Object> fieldName2ValueHolderMap = pPanel.getFieldName2ValueHolderMap();
-        List<String> outputFieldNames = pPanel.getOutputFieldNames();
-        final HashMap<String, String> outputStringsMap = new HashMap<>();
-        Class< ? > moduleClass = module.getModuleClass();
 
-        StringBuilder scriptBuilder = getScript(fieldName2ValueHolderMap, outputFieldNames, outputStringsMap, moduleClass);
+//        String className = module.getClassName();
+//        if (className.contains("CommandExecutor")) {
+//            
+//
+//        } else {
+            List<String> outputFieldNames = pPanel.getOutputFieldNames();
+            final HashMap<String, String> outputStringsMap = new HashMap<>();
+            Class< ? > moduleClass = module.getModuleClass();
 
-        StageScriptExecutor exec = new StageScriptExecutor(guiBridge.getLibsFolder());
-        exec.addProcessListener(logConsole);
+            StringBuilder scriptBuilder = getScript(fieldName2ValueHolderMap, outputFieldNames, outputStringsMap, moduleClass);
 
-        Runnable finishRunnable = new Runnable(){
-            public void run() {
-                // finished, try to load results
-                for( Entry<String, String> outputStringFieldEntry : outputStringsMap.entrySet() ) {
-                    try {
-                        String value = outputStringFieldEntry.getValue();
-                        File file = new File(value);
-                        if (file.exists()) {
-                            if (DataUtilities.isSupportedVectorExtension(value)) {
-                                loadVectorLayer(file);
-                            } else if (DataUtilities.isSupportedRasterExtension(value)) {
-                                loadRasterLayer(file);
+            StageScriptExecutor exec = new StageScriptExecutor(guiBridge.getLibsFolder());
+            exec.addProcessListener(logConsole);
+
+            Runnable finishRunnable = new Runnable(){
+                public void run() {
+                    // finished, try to load results
+                    for( Entry<String, String> outputStringFieldEntry : outputStringsMap.entrySet() ) {
+                        try {
+                            String value = outputStringFieldEntry.getValue();
+                            File file = new File(value);
+                            if (file.exists()) {
+                                if (DataUtilities.isSupportedVectorExtension(value)) {
+                                    loadVectorLayer(file);
+                                } else if (DataUtilities.isSupportedRasterExtension(value)) {
+                                    loadRasterLayer(file);
+                                }
                             }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
                 }
-            }
-        };
-        logConsole.addFinishRunnable(finishRunnable);
+            };
+            logConsole.addFinishRunnable(finishRunnable);
 
-        String logLevel = _debugCheckbox.isSelected()
-                ? SpatialToolboxConstants.LOGLEVEL_GUI_ON
-                : SpatialToolboxConstants.LOGLEVEL_GUI_OFF;
-        String ramLevel = _heapCombo.getSelectedItem().toString();
+            String logLevel = _debugCheckbox.isSelected()
+                    ? SpatialToolboxConstants.LOGLEVEL_GUI_ON
+                    : SpatialToolboxConstants.LOGLEVEL_GUI_OFF;
+            String ramLevel = _heapCombo.getSelectedItem().toString();
 
-        String sessionId = moduleClass.getSimpleName() + " "
-                + ETimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.format(new Date());
-        Process process = exec.exec(sessionId, scriptBuilder.toString(), logLevel, ramLevel, null);
-        logConsole.beginProcess(process, sessionId);
+            String sessionId = moduleClass.getSimpleName() + " "
+                    + ETimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.format(new Date());
+            Process process = exec.exec(sessionId, scriptBuilder.toString(), logLevel, ramLevel, null);
+            logConsole.beginProcess(process, sessionId);
+
+//        }
     }
 
     private StringBuilder getScript( HashMap<String, Object> fieldName2ValueHolderMap, List<String> outputFieldNames,
@@ -960,6 +968,9 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         if (libsFile == null || !libsFile.exists() || !libsFile.isDirectory()) {
             Logger.INSTANCE.insertWarning("", "The libraries folder is missing or not properly set.");
             libsFile = new File("/home/hydrologis/development/hortonmachine-git/extras/deploy/libs");
+            if(!libsFile.exists()) {
+                libsFile = new File("/Users/hydrologis/development/hortonmachine-git/extras/deploy/libs");
+            }
             // System.exit(1);
         }
 
@@ -971,9 +982,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         final SpatialtoolboxController controller = new SpatialtoolboxController(gBridge);
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "The HortonMachine Spatial Toolbox");
 
-        Class<SpatialtoolboxController> class1 = SpatialtoolboxController.class;
-        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
-        frame.setIconImage(icon.getImage());
+        GuiUtilities.setDefaultFrameIcon(frame);
 
         GuiUtilities.addClosingListener(frame, controller);
     }

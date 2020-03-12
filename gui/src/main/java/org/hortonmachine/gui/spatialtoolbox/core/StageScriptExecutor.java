@@ -29,14 +29,15 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.libs.exceptions.ModelsUserCancelException;
+import org.hortonmachine.gears.utils.processes.ELogStyle;
+import org.hortonmachine.gears.utils.processes.IProcessListener;
 import org.hortonmachine.gui.console.ConsoleMessageFilter;
-import org.hortonmachine.gui.console.ELogStyle;
-import org.hortonmachine.gui.console.IProcessListener;
 
 import groovy.ui.GroovyMain;
 
@@ -135,12 +136,16 @@ public class StageScriptExecutor {
 
         File[] groovyJarFiles = jgtLibsFolder.listFiles(new FilenameFilter(){
             public boolean accept( File dir, String name ) {
-                return name.toLowerCase().contains("groovy-all");
+                return name.toLowerCase().contains("groovy-");
             }
         });
-        if (groovyJarFiles.length == 1 && groovyJarFiles[0] != null) {
-            String classpathJars = "\"" + groovyJarFiles[0].getAbsolutePath() + File.pathSeparator
-                    + jgtLibsFolder.getAbsolutePath() + "/*" + File.pathSeparator + ".\"";
+        if (groovyJarFiles != null && groovyJarFiles.length > 0 ) {
+            String groovyFiles = "";
+            for( File file : groovyJarFiles ) {
+                groovyFiles += file.getAbsolutePath() + File.pathSeparator;
+            }
+
+            String classpathJars = "\"" + groovyFiles + jgtLibsFolder.getAbsolutePath() + "/*" + File.pathSeparator + ".\"";
             classPath = classpathJars;
         } else {
             classPath = "\"." + File.pathSeparator + jgtLibsFolder.getAbsolutePath() + File.separatorChar + "*\"";
