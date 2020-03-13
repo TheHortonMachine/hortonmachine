@@ -44,21 +44,23 @@ public class GdalInstaller extends GdalDockerModel {
 
     @Execute
     public void process() throws Exception {
+        try {
+            checkDockerInstall();
 
-        checkDockerInstall();
+            String imageId = hasImage();
+            if (imageId != null && doForce) {
+                removeImage(imageId);
+                imageId = hasImage();
+            }
 
-        String imageId = hasImage();
-        if (imageId != null && doForce) {
-            removeImage(imageId);
-            imageId = hasImage();
+            if (imageId == null) {
+                pm.beginTask("Downloading gdal osgeo image. This will take a while depending on your network quality...", -1);
+                pullImage(pm);
+                pm.done();
+            }
+        } finally {
+            closeClient();
         }
-
-        if (imageId == null) {
-            pm.beginTask("Downloading gdal osgeo image. This will take a while depending on your network quality...", -1);
-            pullImage(pm);
-            pm.done();
-        }
-
     }
 
     public static void main( String[] args ) throws Exception {

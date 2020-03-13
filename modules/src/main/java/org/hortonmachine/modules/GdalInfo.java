@@ -51,17 +51,21 @@ public class GdalInfo extends GdalDockerModel {
 
     @Execute
     public void process() throws Exception {
-        if (doShowFormats || inPath == null) {
-            String cmd = "gdalinfo --formats";
-            startContainer(null);
-            execCommand(cmd);
-        } else {
-            checkFileExists(inPath);
-            File file = new File(inPath);
-            String workspace = file.getParentFile().getAbsolutePath();
-            String cmd = "gdalinfo " + file.getName();
-            startContainer(workspace);
-            execCommand(cmd);
+        try {
+            if (doShowFormats || inPath == null) {
+                String cmd = "gdalinfo --formats";
+                startContainer(null);
+                execCommand(cmd);
+            } else {
+                checkFileExists(inPath);
+                File file = new File(inPath);
+                String workspace = file.getParentFile().getAbsolutePath();
+                String cmd = "gdalinfo " + file.getName();
+                startContainer(workspace);
+                execCommand(cmd);
+            }
+        } finally {
+            closeClient();
         }
     }
 

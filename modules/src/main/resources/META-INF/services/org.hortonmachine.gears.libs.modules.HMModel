@@ -27,8 +27,9 @@ org.hortonmachine.modules.FileIterator
 org.hortonmachine.modules.FilesInFolderOrganizer
 org.hortonmachine.modules.FlowDirections
 org.hortonmachine.modules.Gc
-org.hortonmachine.modules.GdalCommandExecutor
 org.hortonmachine.modules.GdalInfo
+org.hortonmachine.modules.GdalInstaller
+org.hortonmachine.modules.GdalTilesGeopackageCreator
 org.hortonmachine.modules.Geomorphon
 org.hortonmachine.modules.GeomorphonMaximaFinder
 org.hortonmachine.modules.Geopaparazzi3Converter

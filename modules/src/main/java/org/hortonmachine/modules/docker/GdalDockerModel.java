@@ -53,7 +53,7 @@ public class GdalDockerModel extends HMModel {
         return dockerHandler.hasImage(OSGEO_GDAL_WITHTAG);
     }
 
-    protected void pullImage(IHMProgressMonitor pm) throws Exception {
+    protected void pullImage( IHMProgressMonitor pm ) throws Exception {
         dockerHandler.pullImage(OSGEO_GDAL, TAG, pm);
     }
 
@@ -62,11 +62,10 @@ public class GdalDockerModel extends HMModel {
     }
 
     public void execCommand( String command ) throws Exception {
-        try {
-            dockerHandler.execCommand(command);
-        } finally {
-            dockerHandler.closeClient();
-        }
+        dockerHandler.execCommand(command);
+    }
+    public void closeClient() throws Exception {
+        dockerHandler.closeClient();
     }
 
 }
