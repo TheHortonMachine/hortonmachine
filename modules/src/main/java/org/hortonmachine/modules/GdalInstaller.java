@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.hortonmachine.modules;
-import java.io.File;
-
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.modules.docker.GdalDockerModel;
 
@@ -30,45 +28,41 @@ import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
-import oms3.annotations.UI;
 
-@Description("GdalInfo command.")
+@Description("Gdal installer command.")
 @Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
 @Keywords("gdal, docker")
 @Label(HMConstants.GDAL)
-@Name("_gdalinfo")
+@Name("_gdalinstaller")
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")
-public class GdalInfo extends GdalDockerModel {
-    @Description("The gdal file to check.")
-    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
-    @In
-    public String inPath = null;
+public class GdalInstaller extends GdalDockerModel {
 
-    @Description("Show the supported formats and exit.")
+    @Description("Force image removal and new download.")
     @In
-    public boolean doShowFormats = false;
+    public boolean doForce = false;
 
     @Execute
     public void process() throws Exception {
-        if (doShowFormats || inPath == null) {
-            String cmd = "gdalinfo --formats";
-            startContainer(null);
-            execCommand(cmd);
-        } else {
-            checkFileExists(inPath);
-            File file = new File(inPath);
-            String workspace = file.getParentFile().getAbsolutePath();
-            String cmd = "gdalinfo " + file.getName();
-            startContainer(workspace);
-            execCommand(cmd);
+
+        checkDockerInstall();
+
+        String imageId = hasImage();
+        if (imageId != null && doForce) {
+            removeImage(imageId);
+            imageId = hasImage();
         }
+
+        if (imageId == null) {
+            pm.beginTask("Downloading gdal osgeo image. This will take a while depending on your network quality...", -1);
+            pullImage(pm);
+            pm.done();
+        }
+
     }
 
     public static void main( String[] args ) throws Exception {
-        GdalInfo i = new GdalInfo();
-        i.inPath = "/Users/hydrologis/data/DTM_calvello/aspect.asc";
-        i.doShowFormats = false;
+        GdalInstaller i = new GdalInstaller();
         i.process();
     }
 }

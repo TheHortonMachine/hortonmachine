@@ -16,59 +16,57 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.hortonmachine.modules.docker;
+
+import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.StringUtilities;
+import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.LogStream;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerCreation;
-import com.spotify.docker.client.messages.ExecCreation;
-
+/**
+ * @author hydrologis
+ *
+ */
 public class GdalDockerModel extends HMModel {
 
-    private DockerClient docker;
+    private static final String TAG = "latest";
+    private static final String OSGEO_GDAL = "osgeo/gdal";
+    private static final String OSGEO_GDAL_WITHTAG = OSGEO_GDAL + ":" + TAG;
+    protected DockerHandler dockerHandler = new DockerHandler();
 
-    protected String startContainer() throws Exception {
-        docker = DefaultDockerClient.fromEnv().build();
-
-        // Pull an image
-        // docker.pull("osgeo/gdal");
-
-        // Create container with exposed ports
-        final ContainerConfig containerConfig = ContainerConfig.builder().image("osgeo/gdal")
-                .cmd("sh", "-c", "while :; do sleep 1; done").build();
-
-        final ContainerCreation creation = docker.createContainer(containerConfig);
-        final String id = creation.id();
-        // Start container
-        docker.startContainer(id);
-        return id;
+    protected void startContainer( String volumePath ) throws Exception {
+        checkDockerInstall();
+        dockerHandler.startContainer(OSGEO_GDAL, volumePath);
     }
 
-    public void execCommand( String containerId, String command ) throws Exception {
-        try {
-            // Exec command inside running container with attached STDOUT and STDERR
-            String[] commandArray = StringUtilities.parseCommand(command);
-
-            final ExecCreation execCreation = docker.execCreate(containerId, commandArray,
-                    DockerClient.ExecCreateParam.attachStdout(), DockerClient.ExecCreateParam.attachStderr());
-            final LogStream output = docker.execStart(execCreation.id());
-            final String execOutput = output.readFully();
-            pm.message(execOutput);
-
-        } finally {
-            // Kill container
-            docker.killContainer(containerId);
-            // Remove container
-            docker.removeContainer(containerId);
+    /**
+     * Checks if docker client is initialized and if not, inits it.
+     * 
+     * If it can't init it, it throws an exception.
+     */
+    protected void checkDockerInstall() {
+        if (!dockerHandler.initDocker()) {
+            throw new ModelsRuntimeException("An error occurred with the docker instance. Is docker running on your machine?",
+                    this);
         }
     }
 
-    protected void closeClient() {
-        // Close the docker client
-        docker.close();
+    protected String hasImage() {
+        return dockerHandler.hasImage(OSGEO_GDAL_WITHTAG);
+    }
+
+    protected void pullImage(IHMProgressMonitor pm) throws Exception {
+        dockerHandler.pullImage(OSGEO_GDAL, TAG, pm);
+    }
+
+    protected void removeImage( String id ) {
+        dockerHandler.removeImage(id);
+    }
+
+    public void execCommand( String command ) throws Exception {
+        try {
+            dockerHandler.execCommand(command);
+        } finally {
+            dockerHandler.closeClient();
+        }
     }
 
 }

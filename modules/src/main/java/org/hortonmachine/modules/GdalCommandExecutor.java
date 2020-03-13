@@ -16,20 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.hortonmachine.modules;
-import static org.hortonmachine.gears.libs.modules.HMConstants.DOCKER;
-
 import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.processes.CommandExecutor;
-import org.hortonmachine.gears.utils.processes.SystemoutProcessListener;
 import org.hortonmachine.modules.docker.GdalDockerModel;
-
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.LogStream;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerCreation;
-import com.spotify.docker.client.messages.ExecCreation;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -45,7 +33,7 @@ import oms3.annotations.UI;
 @Description("Executes gdal commands using a docker image.")
 @Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
 @Keywords("gdal, docker")
-@Label(DOCKER)
+@Label(HMConstants.GDAL)
 @Name("_gdalexec")
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")
@@ -61,14 +49,9 @@ public class GdalCommandExecutor extends GdalDockerModel {
 
     @Execute
     public void process() throws Exception {
-        try {
-            String id = startContainer();
+        startContainer(inWorkspace);
 
-            execCommand(id, inCommand);
-
-        } finally {
-            closeClient();
-        }
+        execCommand(inCommand);
     }
 
     public static void main( String[] args ) throws Exception {
