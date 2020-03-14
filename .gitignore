@@ -19,3 +19,4 @@ install_into_stage.sh
 apps/*.so
 gpserver/*.so
 bin/
+.DS_Store
