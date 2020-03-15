@@ -76,6 +76,7 @@ import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsPoint;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.Image;
+import org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTableFields;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTableFields;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -198,8 +199,11 @@ public class OmsGeopaparazzi4Converter extends HMModel {
         try (SqliteDb db = new SqliteDb()) {
             db.open(geopapDatabaseFile.getAbsolutePath());
 
+            boolean hasMetadata = db.hasTable(TableDescriptions.TABLE_METADATA);
+
             db.execOnConnection(connection -> {
-                projectInfo(connection, outputFolderFile);
+                if (hasMetadata)
+                    projectInfo(connection, outputFolderFile);
 
                 /*
                  * import notes as shapefile
@@ -230,6 +234,9 @@ public class OmsGeopaparazzi4Converter extends HMModel {
         sb.append("----------------------\n\n");
 
         LinkedHashMap<String, String> metadataMap = GeopaparazziUtilities.getProjectMetadata(connection);
+        if (metadataMap == null || metadataMap.size() == 0) {
+            return;
+        }
         for( Entry<String, String> entry : metadataMap.entrySet() ) {
             sb.append(entry.getKey()).append(" = ").append(entry.getValue()).append("\n");
         }

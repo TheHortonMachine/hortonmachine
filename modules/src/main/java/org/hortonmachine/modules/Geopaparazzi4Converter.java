@@ -94,12 +94,12 @@ public class Geopaparazzi4Converter extends HMModel {
     
     public static void main( String[] args ) throws Exception {
         Geopaparazzi4Converter geopaparazziconverter = new Geopaparazzi4Converter();
-        geopaparazziconverter.inGeopaparazzi = "/home/hydrologis/Dropbox/hydrologis/lavori/2019_projects/intern_coop_ramat/geopaparazzi_20190806_test02.gpap";
+        geopaparazziconverter.inGeopaparazzi = "/Users/hydrologis/Desktop/rilievo/smash_20200313_valfloriana.gpap";
         geopaparazziconverter.doNotes = true;
         geopaparazziconverter.doLoglines = true;
         geopaparazziconverter.doLogpoints = false;
         geopaparazziconverter.doMedia = true;
-        geopaparazziconverter.outData = "/home/hydrologis/Dropbox/hydrologis/lavori/2019_projects/intern_coop_ramat/output";
+        geopaparazziconverter.outData = "/Users/hydrologis/Desktop/rilievo/output";
         geopaparazziconverter.process();
     }
 
