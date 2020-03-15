@@ -57,6 +57,12 @@
 			<groupId>com.github.pcmehlitz</groupId>
 			<artifactId>worldwind-pcm</artifactId>
 			<version>2.1.0.187</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jogamp.jogl</groupId>
+					<artifactId>h2</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -81,7 +87,23 @@
 				</exclusion>
 				<exclusion>
 					<groupId>org.geotools</groupId>
+					<artifactId>gt-gtopo30</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt-imagepyramid</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
 					<artifactId>gt-css</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt-mbtiles</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt-geobuf</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>no.ecc.vectortile</groupId>
@@ -101,32 +123,31 @@
 				</exclusion>
 				<exclusion>
 					<groupId>org.geotools.jdbc</groupId>
+					<artifactId>gt-jdbc-postgis</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools.jdbc</groupId>
 					<artifactId>gt-jdbc-spatialite</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools.jdbc</groupId>
+					<artifactId>gt-jdbc-h2</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools.jdbc</groupId>
+					<artifactId>gt-jdbc-mysql</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.geotools</groupId>
 					<artifactId>gt-ogr-jni</artifactId>
 				</exclusion>
-        
 				<exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy</artifactId>
+					<groupId>com.miglayout</groupId>
+					<artifactId>miglayout</artifactId>
 				</exclusion>
 				<exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy-sql</artifactId>
-				</exclusion>
-				<exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy-xml</artifactId>
-				</exclusion>
-				<exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy-json</artifactId>
-				</exclusion>
-				<exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy-swing</artifactId>
+					<groupId>com.opencsv</groupId>
+					<artifactId>opencsv</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
