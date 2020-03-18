@@ -17,7 +17,6 @@
  */
 package org.hortonmachine.modules.docker;
 
-import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 
@@ -33,20 +32,20 @@ public class GdalDockerModel extends HMModel {
     protected DockerHandler dockerHandler = new DockerHandler();
 
     protected void startContainer( String volumePath ) throws Exception {
-        checkDockerInstall();
         dockerHandler.startContainer(OSGEO_GDAL, volumePath);
     }
 
     /**
      * Checks if docker client is initialized and if not, inits it.
      * 
-     * If it can't init it, it throws an exception.
+     * If it can't init it: it returns an error string, else null.
      */
-    protected void checkDockerInstall() {
-        if (!dockerHandler.initDocker()) {
-            throw new ModelsRuntimeException("An error occurred with the docker instance. Is docker running on your machine?",
-                    this);
+    protected String checkDockerInstall() {
+        String error = dockerHandler.initDocker();
+        if (error !=null) {
+            return error;
         }
+        return null;
     }
 
     protected String hasImage() {

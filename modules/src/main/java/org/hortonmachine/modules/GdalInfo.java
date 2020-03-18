@@ -51,28 +51,33 @@ public class GdalInfo extends GdalDockerModel {
 
     @Execute
     public void process() throws Exception {
-        try {
-            if (doShowFormats || inPath == null) {
-                String cmd = "gdalinfo --formats";
-                startContainer(null);
-                execCommand(cmd);
-            } else {
-                checkFileExists(inPath);
-                File file = new File(inPath);
-                String workspace = file.getParentFile().getAbsolutePath();
-                String cmd = "gdalinfo " + file.getName();
-                startContainer(workspace);
-                execCommand(cmd);
+        String error = checkDockerInstall();
+        if (error == null) {
+            try {
+                if (doShowFormats || inPath == null) {
+                    String cmd = "gdalinfo --formats";
+                    startContainer(null);
+                    execCommand(cmd);
+                } else {
+                    checkFileExists(inPath);
+                    File file = new File(inPath);
+                    String workspace = file.getParentFile().getAbsolutePath();
+                    String cmd = "gdalinfo " + file.getName();
+                    startContainer(workspace);
+                    execCommand(cmd);
+                }
+            } finally {
+                closeClient();
             }
-        } finally {
-            closeClient();
+        } else {
+            pm.errorMessage(error);
         }
     }
 
     public static void main( String[] args ) throws Exception {
         GdalInfo i = new GdalInfo();
         i.inPath = "/Users/hydrologis/data/DTM_calvello/aspect.asc";
-        i.doShowFormats = false;
+        i.doShowFormats = true;
         i.process();
     }
 }

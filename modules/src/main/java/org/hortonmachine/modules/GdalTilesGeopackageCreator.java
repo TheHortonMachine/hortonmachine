@@ -60,39 +60,44 @@ public class GdalTilesGeopackageCreator extends GdalDockerModel {
 
     @Execute
     public void process() throws Exception {
-        try {
-            checkNull(inRaster);
+        String error = checkDockerInstall();
+        if (error == null) {
+            try {
+                checkNull(inRaster);
 
-            checkFileExists(inRaster);
-            File file = new File(inRaster);
+                checkFileExists(inRaster);
+                File file = new File(inRaster);
 
-            if (inName == null) {
-                inName = FileUtilities.getNameWithoutExtention(file);
-            }
-            if (inTable == null) {
-                inTable = inName;
-            }
+                if (inName == null) {
+                    inName = FileUtilities.getNameWithoutExtention(file);
+                }
+                if (inTable == null) {
+                    inTable = inName;
+                }
 
-            if (!inName.endsWith("gpkg")) {
-                inName += ".gpkg";
-            }
+                if (!inName.endsWith("gpkg")) {
+                    inName += ".gpkg";
+                }
 
-            String workspace = file.getParentFile().getAbsolutePath();
+                String workspace = file.getParentFile().getAbsolutePath();
 
-            String cmd = "gdal_translate -of GPKG " + file.getName() + " " + inName
-                    + " -co  APPEND_SUBDATASET=YES -co RASTER_TABLE=" + inTable + " -co TILING_SCHEME=GoogleMapsCompatible";
-            pm.message(cmd);
-            startContainer(workspace);
-            execCommand(cmd);
-
-            if (doLowerZoomLevels) {
-                cmd = "gdaladdo -r cubic " + inName + " 2 4 8 16 32";
+                String cmd = "gdal_translate -of GPKG " + file.getName() + " " + inName
+                        + " -co  APPEND_SUBDATASET=YES -co RASTER_TABLE=" + inTable + " -co TILING_SCHEME=GoogleMapsCompatible";
                 pm.message(cmd);
-
+                startContainer(workspace);
                 execCommand(cmd);
+
+                if (doLowerZoomLevels) {
+                    cmd = "gdaladdo -r cubic " + inName + " 2 4 8 16 32";
+                    pm.message(cmd);
+
+                    execCommand(cmd);
+                }
+            } finally {
+                closeClient();
             }
-        } finally {
-            closeClient();
+        } else {
+            pm.errorMessage(error);
         }
     }
 

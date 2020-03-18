@@ -18,8 +18,9 @@
 package org.hortonmachine.modules.docker;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
+import org.hortonmachine.dbs.utils.OsCheck;
+import org.hortonmachine.dbs.utils.OsCheck.OSType;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -35,6 +36,7 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.api.model.ResponseItem.ProgressDetail;
+import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
@@ -42,6 +44,9 @@ import com.github.dockerjava.core.command.ExecStartResultCallback;
 @SuppressWarnings("deprecation")
 public class DockerHandler {
     private static final String WORKSPACE = "/workspace";
+
+    private static final String MSG_NOTRUNNING = "An error occurred with the docker instance. Is docker running on your machine?";
+    private static final String MSG_WIN_SOCKET = "If docker is running, make sure set \n\nExpose daemon on tcp://localhost:2375 without TLS\n\nin the docker General docker Settings.";
 
     public static final String[] keepAliveCmd = {"sh", "-c", "while :; do sleep 1; done"};
 
@@ -120,17 +125,29 @@ public class DockerHandler {
         resultCallback.awaitCompletion();
     }
 
-    public boolean initDocker() {
+    /**
+     * Initialize the docker client. 
+     * 
+     * @return an error message if there were issues, <code>null</code> if everyhtin gwent smooth.
+     */
+    public String initDocker() {
         try {
-            DefaultDockerClientConfig.Builder config = DefaultDockerClientConfig.createDefaultConfigBuilder();
-            dockerClient = DockerClientBuilder.getInstance(config).build();
+            DefaultDockerClientConfig.Builder builder = DefaultDockerClientConfig.createDefaultConfigBuilder();
+            if (OsCheck.getOperatingSystemType() == OSType.Windows) {
+                builder.withDockerHost("tcp://localhost:2375");
+            }
+            dockerClient = DockerClientBuilder.getInstance(builder).build();
 
             dockerClient.versionCmd().exec();
         } catch (Exception e) {
-            return false;
+            String msg = MSG_NOTRUNNING;
+            if (OsCheck.getOperatingSystemType() == OSType.Windows) {
+                msg += "\n" + MSG_WIN_SOCKET;
+            }
+            return msg;
         }
 
-        return true;
+        return null;
     }
 
     public void startContainer( String imageName, String volumePath ) throws Exception {
@@ -151,11 +168,12 @@ public class DockerHandler {
 
         CreateContainerResponse container;
         if (volumePath != null) {
+            Volume v = new Volume(WORKSPACE);
             container = dockerClient.createContainerCmd(imageName)//
                     .withCmd(keepAliveCmd)//
                     .withName(name + ts)//
                     .withWorkingDir(WORKSPACE)//
-                    .withBinds(Bind.parse(volumePath + ":" + WORKSPACE))//
+                    .withBinds(new Bind(volumePath, v))//
                     .exec();
         } else {
             container = dockerClient.createContainerCmd(imageName)//
@@ -189,8 +207,10 @@ public class DockerHandler {
 
     public void closeClient() throws Exception {
         try {
-            dockerClient.stopContainerCmd(containerId).withTimeout(2).exec();
-            dockerClient.removeContainerCmd(containerId).exec();
+            if (containerId != null) {
+                dockerClient.stopContainerCmd(containerId).withTimeout(2).exec();
+                dockerClient.removeContainerCmd(containerId).exec();
+            }
         } finally {
             dockerClient.close();
         }
