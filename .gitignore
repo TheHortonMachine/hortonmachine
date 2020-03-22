@@ -20,3 +20,4 @@ apps/*.so
 gpserver/*.so
 bin/
 .DS_Store
+.vscode

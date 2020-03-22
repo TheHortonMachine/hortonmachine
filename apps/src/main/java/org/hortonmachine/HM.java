@@ -39,6 +39,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.chart.CategoryHistogram;
 import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.gears.utils.chart.TimeSeries;
+import org.hortonmachine.gears.utils.colors.ColorInterpolator;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
@@ -80,6 +81,8 @@ public class HM {
         sb.append("\tlong str2ts( String isoString )").append("\n");
         sb.append("Adds a prj file to all the files inside a folder:").append("\n");
         sb.append("\taddPrjs( String folder, int epsg )").append("\n");
+        sb.append("Get colortable colorinterpolator to use the with getColorFor( double value ):").append("\n");
+        sb.append("\tgetColorInterpolator( String colortable, double min, double max, Integer alpha )").append("\n");
 
         sb.append("\n");
         sb.append("Chart tools").append("\n");
@@ -587,6 +590,11 @@ public class HM {
 
     public static void addPrjs( String folder, int epsg ) throws Exception {
         FileIterator.addPrj(folder, "EPSG:" + epsg);
+    }
+
+    public static ColorInterpolator getColorInterpolator( String colortable, double min, double max, Integer alpha ){
+        ColorInterpolator ci = new ColorInterpolator(colortable,min, max, alpha);
+        return ci;
     }
 
 }

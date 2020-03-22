@@ -143,6 +143,18 @@ public class DefaultTables {
                 "0 0 0\n";
         map.put(EColorTables.greyscaleinverse.name(), greyscaleInverse);
 
+        String reds = "255 213 213\n" + //
+                "255 170 170\n" + //
+                "255 128 128\n" + //
+                "255 85 85\n" + //
+                "255 42 42\n" + //
+                "255 0 0\n" + //
+                "212 0 0\n" + //
+                "170 0 0\n" + //
+                "128 0 0\n" + //
+                "85 0 0\n"; //
+        map.put(EColorTables.reds.name(), reds);
+        
         String shalstab = "1.0 255 0 0 1.0 255 0 0\n" + //
                 "2.0 0 255 0 2.0 0 255 0\n" + //
                 "3.0 255 255 0 3.0 255 255 0\n" + //

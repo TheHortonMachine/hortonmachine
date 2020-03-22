@@ -25,6 +25,6 @@ IF EXIST "%~dp0\jre\bin\java.exe" (
 
 set MEM="-Xmx2g"
 set PATH=%~dp0\natives\;%PATH%
-"%JAVAEXE%" -splash:imgs/splash_geoscript.png %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path=%~dp0\natives\ -cp ".\libs\*" org.hortonmachine.geoscript.GeoscriptConsole
+"%JAVAEXE%" -splash:imgs/splash_geoscript.png %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path=%~dp0\natives\ -cp "%~dp0\libs\*" org.hortonmachine.geoscript.GeoscriptConsole
 
 endlocal
