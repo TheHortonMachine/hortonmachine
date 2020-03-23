@@ -43,7 +43,7 @@ import com.github.dockerjava.core.command.ExecStartResultCallback;
 
 @SuppressWarnings("deprecation")
 public class DockerHandler {
-    private static final String WORKSPACE = "/workspace";
+    public static final String WORKSPACE = "/workspace";
 
     private static final String MSG_NOTRUNNING = "An error occurred with the docker instance. Is docker running on your machine?";
     private static final String MSG_WIN_SOCKET = "If docker is running, make sure set \n\nExpose daemon on tcp://localhost:2375 without TLS\n\nin the docker General docker Settings.";
@@ -196,8 +196,12 @@ public class DockerHandler {
         // Exec command inside running container with attached STDOUT and STDERR
         String[] commandArray = StringUtilities.parseCommand(command);
 
-        ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(containerId).withAttachStdout(true)
-                .withCmd(commandArray).withUser("root").exec();
+        ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(containerId)//
+                .withAttachStdout(true) //
+                .withAttachStderr(true)//
+                .withCmd(commandArray)//
+                .withUser("root")//
+                .exec();
         dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(new ExecStartResultCallback(System.out, System.err))
                 .awaitCompletion();
 

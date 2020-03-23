@@ -17,8 +17,14 @@
  */
 package org.hortonmachine.modules.docker;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * @author hydrologis
@@ -26,13 +32,13 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
  */
 public class PdalDockerModel extends HMModel {
 
-    private static final String TAG = "latest";
+    private static final String TAG = "2.0";
     private static final String PDAL = "pdal/pdal";
     private static final String PDAL_WITHTAG = PDAL + ":" + TAG;
     protected DockerHandler dockerHandler = new DockerHandler();
 
     protected void startContainer( String volumePath ) throws Exception {
-        dockerHandler.startContainer(PDAL, volumePath);
+        dockerHandler.startContainer(PDAL_WITHTAG, volumePath);
     }
 
     /**
@@ -42,7 +48,7 @@ public class PdalDockerModel extends HMModel {
      */
     protected String checkDockerInstall() {
         String error = dockerHandler.initDocker();
-        if (error !=null) {
+        if (error != null) {
             return error;
         }
         return null;
@@ -65,6 +71,34 @@ public class PdalDockerModel extends HMModel {
     }
     public void closeClient() throws Exception {
         dockerHandler.closeClient();
+    }
+
+    public File getPipelineFile( File workspaceFile, String filterJson ) throws IOException {
+        File pipeLineFile = new File(workspaceFile, "pipeline.json");
+        FileUtilities.writeFile(filterJson, pipeLineFile);
+        return pipeLineFile;
+    }
+
+    public String getPipelineJson( String inName, String outName, JSONObject filter ) {
+        JSONObject root = new JSONObject();
+        JSONArray pipelineArray = new JSONArray();
+        root.put("pipeline", pipelineArray);
+
+        JSONObject reader = new JSONObject();
+        reader.put("type", "readers.las");
+        reader.put("filename", inName);
+        pipelineArray.put(reader);
+
+        pipelineArray.put(filter);
+
+        JSONObject writer = new JSONObject();
+        writer.put("type", "writers.las");
+        writer.put("minor_version", 1);
+        writer.put("filename", outName);
+        pipelineArray.put(writer);
+
+        String filterJson = root.toString(2);
+        return filterJson;
     }
 
 }

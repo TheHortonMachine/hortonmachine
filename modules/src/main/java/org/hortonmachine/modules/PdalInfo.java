@@ -34,9 +34,9 @@ import oms3.annotations.UI;
 
 @Description("GdalInfo command.")
 @Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
-@Keywords("gdal, docker")
-@Label(HMConstants.GDAL)
-@Name("_gdalinfo")
+@Keywords("pdal, docker")
+@Label(HMConstants.PDAL)
+@Name("_pdalinfo")
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")
 public class PdalInfo extends PdalDockerModel {
@@ -44,6 +44,18 @@ public class PdalInfo extends PdalDockerModel {
     @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String inPath = null;
+
+    @Description("Print metadata.")
+    @In
+    public boolean doMetadata = true;
+
+    @Description("Print schema.")
+    @In
+    public boolean doSchema = false;
+
+    @Description("Print statistics on all points (reads the dataset).")
+    @In
+    public boolean doStats = false;
 
     @Description("A range of points information to print out.")
     @In
@@ -58,9 +70,21 @@ public class PdalInfo extends PdalDockerModel {
                 File file = new File(inPath);
                 String workspace = file.getParentFile().getAbsolutePath();
                 String cmd = "pdal info " + file.getName();
+
+                if (doMetadata) {
+                    cmd += " --metadata";
+                }
+                if (doSchema) {
+                    cmd += " --schema";
+                }
+                if (doStats) {
+                    cmd += " --stats";
+                }
+
                 if (pPointsRange.trim().length() > 0) {
                     cmd += " -p " + pPointsRange;
                 }
+                pm.message(cmd);
                 startContainer(workspace);
                 execCommand(cmd);
             } finally {
@@ -73,7 +97,9 @@ public class PdalInfo extends PdalDockerModel {
 
     public static void main( String[] args ) throws Exception {
         PdalInfo i = new PdalInfo();
-        i.inPath = "/Users/hydrologis/data/las/EXAMPLE_river.laz";
+        i.inPath = "/Users/hydrologis/data/las/EXAMPLE_river.las";
+        i.doMetadata = true;
+        i.doSchema = true;
         i.pPointsRange = "1-2";
         i.process();
     }

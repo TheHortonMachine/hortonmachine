@@ -33,14 +33,14 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("PDAL filter.returns command.")
+@Description("PDAL filter.elm command: Extended Local Minimum")
 @Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
-@Keywords("pdal, docker")
+@Keywords("pdal, filter, elm, docker")
 @Label(HMConstants.PDAL)
-@Name("_pdal_filter_returns")
+@Name("_pdal_filter_elm")
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")
-public class PdalFilterReturns extends PdalDockerModel {
+public class PdalFilterElm extends PdalDockerModel {
     @Description("The pdal file to filter.")
     @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
@@ -50,9 +50,17 @@ public class PdalFilterReturns extends PdalDockerModel {
     @In
     public String outName = null;
 
-    @Description("List of impulses to extract. Can be one or more of: first, last, intermediate, only")
+    @Description("Threshold value to identify low noise points.")
     @In
-    public String pGroups = "last, only";
+    public Double pThreshold = 1.0;
+
+    @Description("Cell size.")
+    @In
+    public Double pCell = 10.0;
+    
+    @Description("Classification value to apply to noise points.")
+    @In
+    public Double pClassification;
 
     @Execute
     public void process() throws Exception {
@@ -65,9 +73,18 @@ public class PdalFilterReturns extends PdalDockerModel {
                 File workspaceFile = file.getParentFile();
                 String workspace = workspaceFile.getAbsolutePath();
 
+//                {
+//                    "type":"filters.elm",
+//                    "threshold": 30.0,
+//                    "cell": 10.0
+//                }
                 JSONObject filter = new JSONObject();
-                filter.put("type", "filters.returns");
-                filter.put("groups", pGroups);
+                filter.put("type", "filters.elm");
+                filter.put("threshold", pThreshold);
+                filter.put("cell", pCell);
+                if(pClassification!=null) {
+                    filter.put("class", pClassification);
+                }
 
                 String pipelineJson = getPipelineJson(inName, outName, filter);
                 pm.message("Running pipeline with filter:");
@@ -92,9 +109,10 @@ public class PdalFilterReturns extends PdalDockerModel {
 
 
     public static void main( String[] args ) throws Exception {
-        PdalFilterReturns i = new PdalFilterReturns();
+        PdalFilterElm i = new PdalFilterElm();
         i.inPath = "/Users/hydrologis/data/las/EXAMPLE_river.las";
-        i.pGroups = "last, only";
+        i.pThreshold = 30.0;
+        i.pThreshold = 10.0;
         i.outName = "filtered.las";
         i.process();
     }

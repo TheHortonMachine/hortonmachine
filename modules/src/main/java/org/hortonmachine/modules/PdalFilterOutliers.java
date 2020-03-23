@@ -33,14 +33,14 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("PDAL filter.returns command.")
+@Description("PDAL filter.outliers command: Extended Local Minimum")
 @Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
-@Keywords("pdal, docker")
+@Keywords("pdal, filter, outliers, docker")
 @Label(HMConstants.PDAL)
-@Name("_pdal_filter_returns")
+@Name("_pdal_filter_outliers")
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")
-public class PdalFilterReturns extends PdalDockerModel {
+public class PdalFilterOutliers extends PdalDockerModel {
     @Description("The pdal file to filter.")
     @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
@@ -50,9 +50,29 @@ public class PdalFilterReturns extends PdalDockerModel {
     @In
     public String outName = null;
 
-    @Description("List of impulses to extract. Can be one or more of: first, last, intermediate, only")
+    @Description("The classification value to apply to outliers.")
     @In
-    public String pGroups = "last, only";
+    public Double pClass = 7.0;
+
+    @Description("The outlier removal method (statistical or radius).")
+    @In
+    public String pMethod = "statistical";
+
+    @Description("Minimum number of neighbors in radius (radius method only).")
+    @In
+    public Double pMinK = 2.0;
+
+    @Description("Radius (radius method only).")
+    @In
+    public Double pRadius = 1.0;
+
+    @Description("Mean number of neighbors (statistical method only).")
+    @In
+    public Double pMeanK = 8.0;
+
+    @Description("Standard deviation threshold (statistical method only).")
+    @In
+    public Double pMultiplier = 2.0;
 
     @Execute
     public void process() throws Exception {
@@ -65,9 +85,30 @@ public class PdalFilterReturns extends PdalDockerModel {
                 File workspaceFile = file.getParentFile();
                 String workspace = workspaceFile.getAbsolutePath();
 
+//                {
+//                    "type": "filters.outlier",
+//                                "method": "statistical",
+//                                "multiplier": 2,
+//                                "mean_k": 10
+//                        }
                 JSONObject filter = new JSONObject();
-                filter.put("type", "filters.returns");
-                filter.put("groups", pGroups);
+                filter.put("type", "filters.outlier");
+                filter.put("method", pMethod);
+                if (pClass != null) {
+                    filter.put("class", pClass);
+                }
+                if (pMinK != null) {
+                    filter.put("min_k", pMinK);
+                }
+                if (pMeanK != null) {
+                    filter.put("mean_k", pMeanK);
+                }
+                if (pRadius != null) {
+                    filter.put("radius", pRadius);
+                }
+                if (pMultiplier != null) {
+                    filter.put("multiplier", pMultiplier);
+                }
 
                 String pipelineJson = getPipelineJson(inName, outName, filter);
                 pm.message("Running pipeline with filter:");
@@ -80,7 +121,7 @@ public class PdalFilterReturns extends PdalDockerModel {
                 pm.beginTask("Running command...", -1);
                 execCommand(cmd);
                 pm.done();
-                
+
                 pipelineFile.delete();
             } finally {
                 closeClient();
@@ -90,11 +131,12 @@ public class PdalFilterReturns extends PdalDockerModel {
         }
     }
 
-
     public static void main( String[] args ) throws Exception {
-        PdalFilterReturns i = new PdalFilterReturns();
+        PdalFilterOutliers i = new PdalFilterOutliers();
         i.inPath = "/Users/hydrologis/data/las/EXAMPLE_river.las";
-        i.pGroups = "last, only";
+        i.pMethod = "statistical";
+        i.pMultiplier = 2.0;
+        i.pMeanK = 10.0;
         i.outName = "filtered.las";
         i.process();
     }

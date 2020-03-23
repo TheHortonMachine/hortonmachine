@@ -68,6 +68,7 @@ public class PdalInstaller extends PdalDockerModel {
 
     public static void main( String[] args ) throws Exception {
         PdalInstaller i = new PdalInstaller();
+        i.doForce = true;
         i.process();
     }
 }
