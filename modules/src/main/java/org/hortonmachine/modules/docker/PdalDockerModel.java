@@ -24,16 +24,15 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
  * @author hydrologis
  *
  */
-public class GdalDockerModel extends HMModel {
+public class PdalDockerModel extends HMModel {
 
     private static final String TAG = "latest";
-    private static final String OSGEO_GDAL = "osgeo/gdal";
-    private static final String OSGEO_GDAL_WITHTAG = OSGEO_GDAL + ":" + TAG;
-    
+    private static final String PDAL = "pdal/pdal";
+    private static final String PDAL_WITHTAG = PDAL + ":" + TAG;
     protected DockerHandler dockerHandler = new DockerHandler();
 
     protected void startContainer( String volumePath ) throws Exception {
-        dockerHandler.startContainer(OSGEO_GDAL, volumePath);
+        dockerHandler.startContainer(PDAL, volumePath);
     }
 
     /**
@@ -50,11 +49,11 @@ public class GdalDockerModel extends HMModel {
     }
 
     protected String hasImage() {
-        return dockerHandler.hasImage(OSGEO_GDAL_WITHTAG);
+        return dockerHandler.hasImage(PDAL_WITHTAG);
     }
 
     protected void pullImage( IHMProgressMonitor pm ) throws Exception {
-        dockerHandler.pullImage(OSGEO_GDAL, TAG, pm);
+        dockerHandler.pullImage(PDAL, TAG, pm);
     }
 
     protected void removeImage( String id ) {
