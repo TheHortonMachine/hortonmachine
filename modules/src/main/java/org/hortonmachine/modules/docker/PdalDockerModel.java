@@ -79,7 +79,7 @@ public class PdalDockerModel extends HMModel {
         return pipeLineFile;
     }
 
-    public String getPipelineJson( String inName, String outName, JSONObject filter ) {
+    public String getPipelineJson( String inName, String outName, JSONObject... filters ) {
         JSONObject root = new JSONObject();
         JSONArray pipelineArray = new JSONArray();
         root.put("pipeline", pipelineArray);
@@ -89,7 +89,9 @@ public class PdalDockerModel extends HMModel {
         reader.put("filename", inName);
         pipelineArray.put(reader);
 
-        pipelineArray.put(filter);
+        for( JSONObject filter : filters ) {
+            pipelineArray.put(filter);
+        }
 
         JSONObject writer = new JSONObject();
         writer.put("type", "writers.las");

@@ -29,6 +29,7 @@ org.hortonmachine.modules.FlowDirections
 org.hortonmachine.modules.Gc
 org.hortonmachine.modules.GdalInfo
 org.hortonmachine.modules.GdalInstaller
+org.hortonmachine.modules.GdalRaster2TiffConverter
 org.hortonmachine.modules.GdalTilesGeopackageCreator
 org.hortonmachine.modules.Geomorphon
 org.hortonmachine.modules.GeomorphonMaximaFinder
@@ -86,6 +87,14 @@ org.hortonmachine.modules.Nabla
 org.hortonmachine.modules.NetDiff
 org.hortonmachine.modules.NetNumbering
 org.hortonmachine.modules.NetworkAttributesBuilder
+org.hortonmachine.modules.PdalFilterElm
+org.hortonmachine.modules.PdalFilterOutliers
+org.hortonmachine.modules.PdalFilterPmf
+org.hortonmachine.modules.PdalFilterRange
+org.hortonmachine.modules.PdalFilterReturns
+org.hortonmachine.modules.PdalFilterSmrf
+org.hortonmachine.modules.PdalInfo
+org.hortonmachine.modules.PdalInstaller
 org.hortonmachine.modules.Peakflow
 org.hortonmachine.modules.Pitfiller
 org.hortonmachine.modules.PointsRasterizer
