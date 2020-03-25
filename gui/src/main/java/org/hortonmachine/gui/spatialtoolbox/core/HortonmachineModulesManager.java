@@ -90,19 +90,15 @@ public class HortonmachineModulesManager {
         // Lesto.getInstance().moduleName2Fields;
 
         // also gather horton and gears
-        Logger.INSTANCE.insertDebug("", "init HortonMachine");
         HortonMachine.getInstance();
-        Logger.INSTANCE.insertDebug("", "init JGrassGears");
         Map<String, Class< ? >> gearsModuleName2Class = JGrassGears.getInstance().moduleName2Class;
 
-        Logger.INSTANCE.insertDebug("", "Collecting classes:");
         for( Entry<String, Class< ? >> entry : lestoModuleNames2Class.entrySet() ) {
             String name = entry.getKey();
             if (name.startsWith("Oms")) {
                 continue;
             }
 
-            Logger.INSTANCE.insertDebug("", "\t-> " + name);
             moduleNames2Classes.put(name, entry.getValue());
         }
         for( Entry<String, Class< ? >> entry : gearsModuleName2Class.entrySet() ) {
@@ -111,7 +107,6 @@ public class HortonmachineModulesManager {
                 continue;
             }
 
-            Logger.INSTANCE.insertDebug("", "\t-> " + name);
             moduleNames2Classes.put(name, entry.getValue());
         }
 

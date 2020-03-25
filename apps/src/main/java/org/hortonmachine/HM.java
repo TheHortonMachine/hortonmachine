@@ -94,16 +94,18 @@ public class HM {
         sb.append("Chart a category histogram:").append("\n");
         sb.append("\thistogram( Map<String, Object> options, List<String> categories, List<Number> values )").append("\n");
         sb.append("Chart a numeric histogram:").append("\n");
-        sb.append("\thistogram( Map<String, Object> options, List<List<Number>> values )").append("\n");
+        sb.append("\thistogram( Map<String, Object> options, List<List<Number>> pairsValuesList )").append("\n");
         sb.append("Chart a time series:").append("\n");
-        sb.append("\ttimeseries( Map<String, Object> options, List<String> seriesNames, List<List<Number>> times, List<List<Number>> values )").append("\n");
+        sb.append("\ttimeseries( Map<String, Object> options, List<List<List<Number>>> pairsValuesLists )").append("\n");
+        sb.append("Chart a time series:").append("\n");
+        sb.append("\ttimeseries( List<List<List<Number>>> pairsValuesLists )").append("\n");
         sb.append("Chart series of points:").append("\n");
-        sb.append("\tscatterPlot( List<List<List<Number>>> data )").append("\n");
+        sb.append("\tscatterPlot( List<List<List<Number>>> pairsValuesLists )").append("\n");
         sb.append("Chart series of points with rendering options:").append("\n");
-        sb.append("\tscatterPlot( Map<String, Object> options, List<List<List<Number>>> data )").append("\n");
-        sb.append("Calculate a log regression:").append("\n");
+        sb.append("\tscatterPlot( Map<String, Object> options, List<List<List<Number>>> pairsValuesLists )").append("\n");
+        sb.append("Calculate a log regression (use result.predict( x ) to get y):").append("\n");
         sb.append("\tRegressionLine logRegression( List<List<Double>> data, List<List<Double>> result )").append("\n");
-        sb.append("Calculate a polynomial regression:").append("\n");
+        sb.append("Calculate a polynomial regression (use result.predict( x ) to get y):").append("\n");
         sb.append("\tRegressionLine polynomialRegression( Number degree, List<List<Double>> data, List<List<Double>> result )")
                 .append("\n");
 
@@ -179,7 +181,7 @@ public class HM {
         }
         chartMatrix(title, xLabel, yLabel, dataMatrix, series, colors, doLegend);
     }
-    
+
     public static void chartMatrix( String title, String xLabel, String yLabel, double[][] data, List<String> series,
             List<String> colors, boolean doLegend ) {
         OmsMatrixCharter charter = new OmsMatrixCharter();
@@ -205,7 +207,8 @@ public class HM {
         }
     }
 
-    public static void timeseries( Map<String, Object> options, List<String> seriesNames, List<List<Number>> times, List<List<Number>> values ) {
+    public static void timeseries( Map<String, Object> options, List<String> seriesNames, List<List<Number>> times,
+            List<List<Number>> values ) {
         String title = "";
         String xLabel = "x";
         String yLabel = "y";
@@ -233,36 +236,179 @@ public class HM {
                 height = ((Number) object).intValue();
             }
         }
-        
+
         List<double[]> allValuesList = new ArrayList<>();
-        for (List<Number> list : values) {
-        	double[] valuesDouble = new double[list.size()];
+        for( List<Number> list : values ) {
+            double[] valuesDouble = new double[list.size()];
             for( int i = 0; i < valuesDouble.length; i++ ) {
                 valuesDouble[i] = list.get(i).doubleValue();
             }
             allValuesList.add(valuesDouble);
-		}
-        List<long[]> allTimesList = new ArrayList<>();
-        for (List<Number> list : times) {
-        	long[] timesLong = new long[list.size()];
-        	for( int i = 0; i < timesLong.length; i++ ) {
-        		timesLong[i] = list.get(i).longValue();
-        	}
-        	allTimesList.add(timesLong);
         }
-        
-        
+        List<long[]> allTimesList = new ArrayList<>();
+        for( List<Number> list : times ) {
+            long[] timesLong = new long[list.size()];
+            for( int i = 0; i < timesLong.length; i++ ) {
+                timesLong[i] = list.get(i).longValue();
+            }
+            allTimesList.add(timesLong);
+        }
+
         TimeSeries timeseriesChart = new TimeSeries(title, seriesNames, allTimesList, allValuesList);
         timeseriesChart.setXLabel(xLabel);
         timeseriesChart.setYLabel(yLabel);
-        
+
         ChartPanel chartPanel = new ChartPanel(timeseriesChart.getChart(), true);
         Dimension preferredSize = new Dimension(width, height);
         chartPanel.setPreferredSize(preferredSize);
 
         GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
     }
-    
+
+    public static void timeseries( Map<String, Object> options, List<String> seriesNames,
+            List<List<List<Number>>> timesValuesList ) {
+        String title = "";
+        String xLabel = "x";
+        String yLabel = "y";
+        int width = 1600;
+        int height = 1000;
+        if (options != null) {
+            Object object = options.get("title");
+            if (object instanceof String) {
+                title = (String) object;
+            }
+            object = options.get("xlabel");
+            if (object instanceof String) {
+                xLabel = (String) object;
+            }
+            object = options.get("ylabel");
+            if (object instanceof String) {
+                yLabel = (String) object;
+            }
+            object = options.get("width");
+            if (object instanceof Number) {
+                width = ((Number) object).intValue();
+            }
+            object = options.get("height");
+            if (object instanceof Number) {
+                height = ((Number) object).intValue();
+            }
+        }
+
+        List<double[]> allValuesList = new ArrayList<>();
+        List<long[]> allTimesList = new ArrayList<>();
+        for( List<List<Number>> list : timesValuesList ) {
+            double[] valuesDouble = new double[list.size()];
+            long[] timesLong = new long[list.size()];
+            for( int i = 0; i < valuesDouble.length; i++ ) {
+                List<Number> timeValue = list.get(i);
+                valuesDouble[i] = timeValue.get(1).doubleValue();
+                timesLong[i] = timeValue.get(0).longValue();
+            }
+            allValuesList.add(valuesDouble);
+            allTimesList.add(timesLong);
+        }
+
+        TimeSeries timeseriesChart = new TimeSeries(title, seriesNames, allTimesList, allValuesList);
+        timeseriesChart.setXLabel(xLabel);
+        timeseriesChart.setYLabel(yLabel);
+
+        ChartPanel chartPanel = new ChartPanel(timeseriesChart.getChart(), true);
+        Dimension preferredSize = new Dimension(width, height);
+        chartPanel.setPreferredSize(preferredSize);
+
+        GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
+    }
+    public static void timeseries( List<List<List<Number>>> timesValuesList ) {
+        timeseries(null, timesValuesList);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void timeseries( Map<String, Object> options, List<List<List<Number>>> timesValuesList ) {
+        String title = "";
+        String xLabel = "x";
+        String yLabel = "y";
+        List<String> series = null;
+        List<String> colors = null;
+        List<Boolean> doLines = null;
+        List<Boolean> doShapes = null;
+        int width = 1600;
+        int height = 1000;
+        if (options != null) {
+            Object object = options.get("title");
+            if (object instanceof String) {
+                title = (String) object;
+            }
+            object = options.get("xlabel");
+            if (object instanceof String) {
+                xLabel = (String) object;
+            }
+            object = options.get("ylabel");
+            if (object instanceof String) {
+                yLabel = (String) object;
+            }
+            object = options.get("width");
+            if (object instanceof Number) {
+                width = ((Number) object).intValue();
+            }
+            object = options.get("height");
+            if (object instanceof Number) {
+                height = ((Number) object).intValue();
+            }
+            object = options.get("series");
+            if (object instanceof List) {
+                series = (List) object;
+            }
+            object = options.get("colors");
+            if (object instanceof List) {
+                colors = (List) object;
+            }
+            object = options.get("dolines");
+            if (object instanceof List) {
+                doLines = (List) object;
+            }
+            object = options.get("doshapes");
+            if (object instanceof List) {
+                doShapes = (List) object;
+            }
+        }
+
+        List<double[]> allValuesList = new ArrayList<>();
+        List<long[]> allTimesList = new ArrayList<>();
+        for( List<List<Number>> list : timesValuesList ) {
+            double[] valuesDouble = new double[list.size()];
+            long[] timesLong = new long[list.size()];
+            for( int i = 0; i < valuesDouble.length; i++ ) {
+                List<Number> timeValue = list.get(i);
+                valuesDouble[i] = timeValue.get(1).doubleValue();
+                timesLong[i] = timeValue.get(0).longValue();
+            }
+            allValuesList.add(valuesDouble);
+            allTimesList.add(timesLong);
+        }
+
+        TimeSeries timeseriesChart = new TimeSeries(title, series, allTimesList, allValuesList);
+        timeseriesChart.setXLabel(xLabel);
+        timeseriesChart.setYLabel(yLabel);
+        if (doLines != null)
+            timeseriesChart.setShowLines(doLines);
+        if (doShapes != null)
+            timeseriesChart.setShowShapes(doShapes);
+
+        if (colors != null) {
+            List<Color> colorsList = colors.stream().map(cStr -> {
+                return ColorUtilities.fromHex(cStr);
+            }).collect(Collectors.toList());
+            timeseriesChart.setColors(colorsList.toArray(new Color[0]));
+        }
+
+        ChartPanel chartPanel = new ChartPanel(timeseriesChart.getChart(), true);
+        Dimension preferredSize = new Dimension(width, height);
+        chartPanel.setPreferredSize(preferredSize);
+
+        GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
+    }
+
     public static void histogram( Map<String, Object> options, List<String> categories, List<Number> values ) {
         String title = "";
         String xLabel = "x";
@@ -592,8 +738,8 @@ public class HM {
         FileIterator.addPrj(folder, "EPSG:" + epsg);
     }
 
-    public static ColorInterpolator getColorInterpolator( String colortable, double min, double max, Integer alpha ){
-        ColorInterpolator ci = new ColorInterpolator(colortable,min, max, alpha);
+    public static ColorInterpolator getColorInterpolator( String colortable, double min, double max, Integer alpha ) {
+        ColorInterpolator ci = new ColorInterpolator(colortable, min, max, alpha);
         return ci;
     }
 

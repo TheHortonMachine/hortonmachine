@@ -122,5 +122,7 @@ public class ColorUtilities {
         Color transparentColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
         return transparentColor;
     }
+    
+    
 
 }

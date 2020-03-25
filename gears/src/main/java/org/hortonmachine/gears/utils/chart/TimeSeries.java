@@ -17,11 +17,15 @@
  */
 package org.hortonmachine.gears.utils.chart;
 
+import java.awt.Color;
 import java.util.Date;
 import java.util.List;
 
+import org.hortonmachine.gears.utils.colors.ColorBrewer;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeriesCollection;
 
@@ -40,6 +44,9 @@ public class TimeSeries implements IChart {
     private String yLabel = "Value";
     private String xLabel = "Time";
     private List<String> seriesNames;
+    private Color[] colors;
+    protected List<Boolean> showLines;
+    protected List<Boolean> showShapes;
 
     public TimeSeries( List<String> seriesNames, List<long[]> times, List<double[]> values ) {
         this("Time Series", seriesNames, times, values);
@@ -57,10 +64,13 @@ public class TimeSeries implements IChart {
     }
 
     private void createDataset() {
-        for( int i = 0; i < timesList.size(); i++ ) {
+        int size = timesList.size();
+        for( int i = 0; i < size; i++ ) {
             long[] ts = timesList.get(i);
             double[] values = valuesList.get(i);
-            String name = seriesNames.get(i);
+            String name = "series" + (i + 1);
+            if (seriesNames != null && seriesNames.size() == size)
+                name = seriesNames.get(i);
             org.jfree.data.time.TimeSeries series = new org.jfree.data.time.TimeSeries(name);
             for( int j = 0; j < ts.length; j++ ) {
                 series.add(new Day(new Date(ts[j])), values[j]);
@@ -75,6 +85,17 @@ public class TimeSeries implements IChart {
 
     public void setYLabel( String yLabel ) {
         this.yLabel = yLabel;
+    }
+    public void setColors( Color[] colors ) {
+        this.colors = colors;
+    }
+
+    public void setShowLines( List<Boolean> showLines ) {
+        this.showLines = showLines;
+    }
+
+    public void setShowShapes( List<Boolean> showShapes ) {
+        this.showShapes = showShapes;
     }
 
     public JFreeChart getChart() {
@@ -96,6 +117,29 @@ public class TimeSeries implements IChart {
             // URLs?
             );
         }
+
+        XYPlot plot = (XYPlot) chart.getPlot();
+
+        if (colors == null) {
+            colors = ColorBrewer.getPairedColors(seriesNames.size());
+        }
+        for( int i = 0; i < colors.length; i++ ) {
+            plot.getRenderer().setSeriesPaint(i, colors[i]);
+        }
+        setShapeLinesVisibility(plot);
         return chart;
+    }
+
+    private void setShapeLinesVisibility( XYPlot plot ) {
+        XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+        int seriesCount = plot.getSeriesCount();
+        for( int i = 0; i < seriesCount; i++ ) {
+            if (showShapes != null) {
+                renderer.setSeriesShapesVisible(i, showShapes.get(i));
+            }
+            if (showLines != null) {
+                renderer.setSeriesLinesVisible(i, showLines.get(i));
+            }
+        }
     }
 }

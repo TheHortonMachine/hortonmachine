@@ -23,6 +23,7 @@ import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+import org.hortonmachine.gears.utils.colors.ColorBrewer;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYTextAnnotation;
@@ -162,10 +163,11 @@ public class Scatter implements IChart {
                 plot.setRangeAxis(yAxis);
             }
 
-            if (colors != null) {
-                for( int i = 0; i < colors.length; i++ ) {
-                    plot.getRenderer().setSeriesPaint(i, colors[i]);
-                }
+            if (colors == null) {
+                colors = ColorBrewer.getPairedColors(dataset.getSeriesCount());
+            }
+            for( int i = 0; i < colors.length; i++ ) {
+                plot.getRenderer().setSeriesPaint(i, colors[i]);
             }
 
             ValueAxis rangeAxis = plot.getRangeAxis();
@@ -195,7 +197,7 @@ public class Scatter implements IChart {
             }
         }
     }
-    
+
     public void setXRange( double min, double max ) {
         XYPlot plot = (XYPlot) getChart().getPlot();
         ValueAxis domainAxis = plot.getDomainAxis();
