@@ -81,6 +81,9 @@ public enum Logger implements ILogDb {
         }
     }
 
+    public boolean i( String msg ) {
+        return insertInfo(null, msg);
+    }
     public boolean insertInfo( String tag, String msg ) {
         if (doLogStd) {
             out.println("INFO:: " + getTag(tag) + msg);
@@ -96,6 +99,9 @@ public enum Logger implements ILogDb {
         }
     }
 
+    public boolean w( String msg ) {
+        return insertWarning(null, msg);
+    }
     public boolean insertWarning( String tag, String msg ) {
         if (doLogStd) {
             out.println("WARNING:: " + getTag(tag) + msg);
@@ -111,6 +117,9 @@ public enum Logger implements ILogDb {
         }
     }
 
+    public boolean d( String msg ) {
+        return insertDebug(null, msg);
+    }
     public boolean insertDebug( String tag, String msg ) {
         if (doLogStd) {
             out.println("DEBUG:: " + getTag(tag) + msg);
@@ -126,6 +135,9 @@ public enum Logger implements ILogDb {
         }
     }
 
+    public boolean a( String msg ) {
+        return insertAccess(null, msg);
+    }
     public boolean insertAccess( String tag, String msg ) {
         if (doLogStd) {
             out.println("ACCESS:: " + getTag(tag) + msg);
@@ -141,6 +153,12 @@ public enum Logger implements ILogDb {
         }
     }
 
+    public boolean e( String msg ) {
+        return insertError(null, msg, null);
+    }
+    public boolean e( String msg, Throwable t ) {
+        return insertError(null, msg, t);
+    }
     public boolean insertError( String tag, String msg, Throwable t ) {
         if (doLogStd) {
             out.println("ERROR:: " + getTag(tag) + msg);

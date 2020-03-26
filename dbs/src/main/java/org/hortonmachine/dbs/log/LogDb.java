@@ -175,22 +175,45 @@ public class LogDb implements AutoCloseable, ILogDb {
     public boolean insertInfo( String tag, String msg ) throws Exception {
         return insert(EMessageType.INFO, tag, msg);
     }
+    @Override
+    public boolean i( String msg ) throws Exception {
+        return insert(EMessageType.INFO, null, msg);
+    }
 
     @Override
     public boolean insertWarning( String tag, String msg ) throws Exception {
         return insert(EMessageType.WARNING, tag, msg);
+    }
+    @Override
+    public boolean w( String msg ) throws Exception {
+        return insert(EMessageType.WARNING, null, msg);
     }
 
     @Override
     public boolean insertDebug( String tag, String msg ) throws Exception {
         return insert(EMessageType.DEBUG, tag, msg);
     }
+    @Override
+    public boolean d( String msg ) throws Exception {
+        return insert(EMessageType.DEBUG, null, msg);
+    }
 
     @Override
     public boolean insertAccess( String tag, String msg ) throws Exception {
         return insert(EMessageType.ACCESS, tag, msg);
     }
+    @Override
+    public boolean a( String msg ) throws Exception {
+        return insert(EMessageType.ACCESS, null, msg);
+    }
 
+    @Override
+    public boolean e( String msg, Throwable t ) throws Exception {
+        return insertError(null, msg, t);
+    }
+    public boolean e( String msg ) throws Exception {
+        return insertError(null, msg, null);
+    }
     @Override
     public boolean insertError( String tag, String msg, Throwable t ) throws Exception {
         // the id is generated
@@ -198,15 +221,17 @@ public class LogDb implements AutoCloseable, ILogDb {
                 " (" + getInsertFieldsString() + //
                 ") VALUES (?,?,?,?)";
 
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        t.printStackTrace(pw);
-        String printStackTrace = sw.toString();
         if (msg == null) {
             msg = "";
         }
+        if (t != null) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            t.printStackTrace(pw);
+            String printStackTrace = sw.toString();
 
-        msg += printStackTrace;
+            msg += printStackTrace;
+        }
         final String _msg = msg;
         logDb.execOnConnection(connection -> {
             try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {

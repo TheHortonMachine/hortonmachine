@@ -32,14 +32,20 @@ public interface ILogDb {
     boolean insert( EMessageType type, String tag, String msg ) throws Exception;
 
     boolean insertInfo( String tag, String msg ) throws Exception;
+    boolean i( String msg ) throws Exception;
 
     boolean insertWarning( String tag, String msg ) throws Exception;
+    boolean w( String msg ) throws Exception;
 
     boolean insertDebug( String tag, String msg ) throws Exception;
+    boolean d( String msg ) throws Exception;
 
     boolean insertAccess( String tag, String msg ) throws Exception;
+    boolean a( String msg ) throws Exception;
 
     boolean insertError( String tag, String msg, Throwable t ) throws Exception;
+    boolean e( String msg, Throwable t ) throws Exception;
+    boolean e( String msg ) throws Exception;
 
     List<Message> getList() throws Exception;
 

@@ -20,11 +20,13 @@ package org.hortonmachine.database;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -38,15 +40,22 @@ import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.styling.Style;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.IHMResultSet;
+import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
+import org.hortonmachine.dbs.log.EMessageType;
+import org.hortonmachine.dbs.log.LogDb;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.SldUtilities;
+import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.simplereport.HtmlReport;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.settings.SettingsController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
@@ -59,6 +68,7 @@ import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.gui.ToolsPanelController;
 import org.hortonmachine.nww.gui.ViewControlsLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
+import org.joda.time.DateTime;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.util.Logging;
@@ -326,6 +336,7 @@ public class DatabaseViewer extends DatabaseController {
         return actions;
     }
 
+    @SuppressWarnings("serial")
     protected List<Action> makeTableAction( final TableLevel selectedTable ) {
         List<Action> actions = new ArrayList<>();
         addIfNotNull(actions, sqlTemplatesAndActions.getCountRowsAction(selectedTable, this));
@@ -341,6 +352,77 @@ public class DatabaseViewer extends DatabaseController {
             addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewTableAction(selectedTable, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewTableGeometriesAction(selectedTable, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getOpenInSldEditorAction(selectedTable, this));
+        }
+        if (selectedTable.tableName.equals(LogDb.TABLE_MESSAGES)) {
+            actions.add(new AbstractAction("Show HTML report"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    try {
+//                        public static final String ID_NAME = "id";
+//                        public static final String TimeStamp_NAME = "ts";
+//                        public static final String type_NAME = "type";
+//                        public static final String tag_NAME = "tag";
+//                        public static final String message_NAME = "msg";
+
+                        String sql = "select  " + LogDb.type_NAME + ", " + LogDb.TimeStamp_NAME + ", " + LogDb.tag_NAME + ","
+                                + LogDb.message_NAME + " from " + LogDb.TABLE_MESSAGES + " order by " + LogDb.TimeStamp_NAME
+                                + " desc";
+
+                        HtmlReport rep = new HtmlReport();
+                        StringBuilder sb = new StringBuilder();
+                        rep.openReport(sb, "Log Messages");
+                        rep.openTable(sb, 90);
+                        String white = "#FFFFFF";
+                        String warning = "#ffb380";
+                        String debug = "#afe9af";
+                        String error = "#ff5555";
+
+                        currentConnectedDatabase.execOnConnection(connection -> {
+                            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                                while( rs.next() ) {
+                                    int type = rs.getInt(1);
+                                    String color = white;
+                                    if (type == EMessageType.DEBUG.getCode()) {
+                                        color = debug;
+                                    } else if (type == EMessageType.WARNING.getCode()) {
+                                        color = warning;
+                                    } else if (type == EMessageType.ERROR.getCode()) {
+                                        color = error;
+                                    }
+
+                                    long ts = rs.getLong(2);
+                                    String tag = rs.getString(3);
+                                    String msg = rs.getString(4);
+                                    if (tag != null && tag.trim().length() > 0) {
+                                        msg = tag + " -> " + msg;
+                                    }
+                                    String tsString = new DateTime(ts).toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSS);
+
+                                    rep.openRow(sb);
+                                    rep.openTableCell(sb, color, "15", null);
+                                    sb.append(tsString);
+                                    rep.closeTableCell(sb);
+                                    rep.openTableCell(sb, color, "85", null);
+                                    sb.append("<pre>").append(msg).append("</pre>");
+                                    rep.closeTableCell(sb);
+                                    rep.closeRow(sb);
+
+                                }
+                                return "";
+                            }
+                        });
+                        rep.closeTable(sb);
+                        rep.closeReport(sb);
+
+                        File tmpFile = File.createTempFile("HM-", "_debug.html");
+                        FileUtilities.writeFile(sb.toString(), tmpFile);
+                        GuiUtilities.openFile(tmpFile);
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
         }
 
         return actions;

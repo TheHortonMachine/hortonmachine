@@ -62,23 +62,27 @@ public class SqlDocument extends DefaultStyledDocument {
         StyleConstants.setForeground(quote, red);
         StyleConstants.setBold(quote, true);
 
-        InputStream keywordsStream = getClass().getResourceAsStream("/hm_sql_keywords.txt");
-        Scanner keywordsScanner = StringUtilities.streamToScanner(keywordsStream, "\n");
-        keywordsMap = new HashSet<>();
-        while( keywordsScanner.hasNext() ) {
-            String keyword = keywordsScanner.next();
-            keywordsMap.add(keyword.toUpperCase().trim());
-        }
-        keywordsScanner.close();
+        try {
+            InputStream keywordsStream = getClass().getResourceAsStream("/hm_sql_keywords.txt");
+            Scanner keywordsScanner = StringUtilities.streamToScanner(keywordsStream, "\n");
+            keywordsMap = new HashSet<>();
+            while( keywordsScanner.hasNext() ) {
+                String keyword = keywordsScanner.next();
+                keywordsMap.add(keyword.toUpperCase().trim());
+            }
+            keywordsScanner.close();
 
-        keywordsStream = getClass().getResourceAsStream("/spl_sql_keywords.txt");
-        keywordsScanner = StringUtilities.streamToScanner(keywordsStream, "\n");
-        splKeywordsMap = new HashSet<>();
-        while( keywordsScanner.hasNext() ) {
-            String keyword = keywordsScanner.next();
-            splKeywordsMap.add(keyword.toUpperCase().trim());
+            keywordsStream = getClass().getResourceAsStream("/spl_sql_keywords.txt");
+            keywordsScanner = StringUtilities.streamToScanner(keywordsStream, "\n");
+            splKeywordsMap = new HashSet<>();
+            while( keywordsScanner.hasNext() ) {
+                String keyword = keywordsScanner.next();
+                splKeywordsMap.add(keyword.toUpperCase().trim());
+            }
+            keywordsScanner.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        keywordsScanner.close();
     }
 
     /*

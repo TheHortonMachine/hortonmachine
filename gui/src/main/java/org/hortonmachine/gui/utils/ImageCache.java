@@ -19,6 +19,7 @@ package org.hortonmachine.gui.utils;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.net.URL;
 import java.util.HashMap;
 
 import javax.swing.ImageIcon;
@@ -169,7 +170,9 @@ public class ImageCache {
     }
 
     private ImageIcon createImage( String key ) {
-        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/" + key));
+        URL resource = class1.getResource("/org/hortonmachine/images/" + key);
+        
+        ImageIcon icon = new ImageIcon(resource);
         return icon;
     }
 

@@ -50,7 +50,7 @@ public class HtmlReport implements ISimpleReport {
     }
     @Override
     public void openTable( StringBuilder sb, int widthPercentage ) {
-        sb.append("<table align=\"center\" border=\"1\" cellpadding=\"2\" cellspacing=\"2\" width=\"" + widthPercentage + "%\">")
+        sb.append("<table style=\"table-layout: fixed;\" align=\"center\" border=\"1\" cellpadding=\"2\" cellspacing=\"2\" width=\"" + widthPercentage + "%\">")
                 .append("\n");
         sb.append("<tbody>").append("\n");
     }
@@ -70,7 +70,7 @@ public class HtmlReport implements ISimpleReport {
 
     @Override
     public void openTableCell( StringBuilder sb, String color, String perc, String span ) {
-        sb.append("<td align=\"center\"").append("\n");
+        sb.append("<td style=\"word-wrap: break-word\"").append("\n");
         if (color != null)
             sb.append(" bgcolor=\"" + color + "\"").append("\n");
         if (perc != null)
