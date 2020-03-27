@@ -50,7 +50,9 @@ public class HtmlReport implements ISimpleReport {
     }
     @Override
     public void openTable( StringBuilder sb, int widthPercentage ) {
-        sb.append("<table style=\"table-layout: fixed;\" align=\"center\" border=\"1\" cellpadding=\"2\" cellspacing=\"2\" width=\"" + widthPercentage + "%\">")
+        sb.append("<table style=\"border: 2px solid black; border-collapse: collapse; width: " + widthPercentage
+                + "%; word-wrap:break-word; table-layout: fixed;\">")
+//        sb.append("<table style=\"table-layout: fixed;\" align=\"center\" border=\"1\" cellpadding=\"5\" cellspacing=\"2\" width=\"" + widthPercentage + "%\">")
                 .append("\n");
         sb.append("<tbody>").append("\n");
     }
@@ -60,46 +62,50 @@ public class HtmlReport implements ISimpleReport {
         sb.append("</table>").append("\n");
     }
     @Override
-    public void openRow( StringBuilder sb ) {
-        sb.append("<tr>").append("\n");
+    public void openTableRow( StringBuilder sb ) {
+        sb.append("<tr style=\"border: 2px solid black; padding: 15px; ");
+        sb.append("\">").append("\n");
     }
     @Override
-    public void closeRow( StringBuilder sb ) {
+    public void closeTableRow( StringBuilder sb ) {
         sb.append("</tr>").append("\n");
     }
 
     @Override
-    public void openTableCell( StringBuilder sb, String color, String perc, String span ) {
-        sb.append("<td style=\"word-wrap: break-word\"").append("\n");
+    public void openTableCell( StringBuilder sb, String color, String perc, String colSpan, String rowSpan ) {
+        sb.append("<td style=\"border: 2px solid black; word-wrap: break-word; padding: 15px;\"").append("\n");
         if (color != null)
             sb.append(" bgcolor=\"" + color + "\"").append("\n");
         if (perc != null)
-            sb.append(" width=\"" + perc + "% ").append("\n");
-        if (span != null)
-            sb.append(" colspan=\"" + span + "\"").append("\n");
-        sb.append(" height=\"50%\" valign=\"middle\" >").append("\n");
+            sb.append(" width=\"" + perc + "%\"").append("\n");
+        if (colSpan != null)
+            sb.append(" colspan=\"" + colSpan + "\"").append("\n");
+        if (rowSpan != null) {
+            sb.append(" rowspan=\"" + rowSpan + "\"");
+        }
+        sb.append(" height=\"50%\" valign=\"top\" >").append("\n");
     }
 
     @Override
     public void closeTableCell( StringBuilder sb ) {
         sb.append("</td>").append("\n");
     }
-    
+
     @Override
     public void titleH1( StringBuilder sb, String title ) {
         sb.append("<h1 align=\"center\">" + title + "</h1>").append("\n");
     }
-    
+
     @Override
     public void titleH2( StringBuilder sb, String title ) {
         sb.append("<h2 align=\"center\">" + title + "</h2>").append("\n");
     }
-    
+
     @Override
     public void titleH3( StringBuilder sb, String title ) {
         sb.append("<h3 align=\"center\">" + title + "</h3>").append("\n");
     }
-    
+
     @Override
     public void titleH4( StringBuilder sb, String title ) {
         sb.append("<h4 align=\"center\">" + title + "</h4>").append("\n");

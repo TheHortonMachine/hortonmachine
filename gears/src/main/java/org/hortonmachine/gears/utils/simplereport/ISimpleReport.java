@@ -71,15 +71,16 @@ public interface ISimpleReport {
      * Open a row.
      * 
      * @param sb the {@link StringBuilder} to write to.
+     * @param span the vertical span of the row.
      */
-    public abstract void openRow( StringBuilder sb );
+    public abstract void openTableRow( StringBuilder sb );
 
     /**
      * Close a row.
      * 
      * @param sb the {@link StringBuilder} to write to.
      */
-    public abstract void closeRow( StringBuilder sb );
+    public abstract void closeTableRow( StringBuilder sb );
 
     /**
      * Open a table cell.
@@ -87,9 +88,10 @@ public interface ISimpleReport {
      * @param sb the {@link StringBuilder} to write to.
      * @param color background color for the cell. 
      * @param perc percentage of the cell for the width.
-     * @param span span of the cell.
+     * @param colSpan col span of the cell.
+     * @param rowSpan row span of the cell.
      */
-    public abstract void openTableCell( StringBuilder sb, String color, String perc, String span );
+    public abstract void openTableCell( StringBuilder sb, String color, String perc, String colSpan, String rowSpan );
 
     /**
      * Close a table.

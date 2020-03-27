@@ -24,7 +24,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -48,6 +50,7 @@ import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.log.EMessageType;
 import org.hortonmachine.dbs.log.LogDb;
+import org.hortonmachine.dbs.log.Message;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -368,49 +371,126 @@ public class DatabaseViewer extends DatabaseController {
                                 + LogDb.message_NAME + " from " + LogDb.TABLE_MESSAGES + " order by " + LogDb.TimeStamp_NAME
                                 + " desc";
 
-                        HtmlReport rep = new HtmlReport();
-                        StringBuilder sb = new StringBuilder();
-                        rep.openReport(sb, "Log Messages");
-                        rep.openTable(sb, 90);
-                        String white = "#FFFFFF";
-                        String warning = "#ffb380";
-                        String debug = "#afe9af";
-                        String error = "#ff5555";
-
+                        LinkedHashMap<String, List<Message>> day2MessageMap = new LinkedHashMap<>();
                         currentConnectedDatabase.execOnConnection(connection -> {
                             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                                 while( rs.next() ) {
                                     int type = rs.getInt(1);
-                                    String color = white;
-                                    if (type == EMessageType.DEBUG.getCode()) {
-                                        color = debug;
-                                    } else if (type == EMessageType.WARNING.getCode()) {
-                                        color = warning;
-                                    } else if (type == EMessageType.ERROR.getCode()) {
-                                        color = error;
-                                    }
-
                                     long ts = rs.getLong(2);
                                     String tag = rs.getString(3);
+                                    if (tag == null)
+                                        tag = "";
                                     String msg = rs.getString(4);
-                                    if (tag != null && tag.trim().length() > 0) {
-                                        msg = tag + " -> " + msg;
-                                    }
                                     String tsString = new DateTime(ts).toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSS);
+                                    String[] split = tsString.split(":");
+                                    String dayHour = split[0];
 
-                                    rep.openRow(sb);
-                                    rep.openTableCell(sb, color, "15", null);
-                                    sb.append(tsString);
-                                    rep.closeTableCell(sb);
-                                    rep.openTableCell(sb, color, "85", null);
-                                    sb.append("<pre>").append(msg).append("</pre>");
-                                    rep.closeTableCell(sb);
-                                    rep.closeRow(sb);
+                                    Message logMsg = new Message();
+                                    logMsg.tag = tag;
+                                    logMsg.msg = msg;
+                                    logMsg.ts = ts;
+                                    logMsg.type = type;
 
+                                    List<Message> messages = day2MessageMap.get(dayHour);
+                                    if (messages == null) {
+                                        messages = new ArrayList<Message>();
+                                        day2MessageMap.put(dayHour, messages);
+                                    }
+                                    messages.add(logMsg);
                                 }
                                 return "";
                             }
                         });
+
+                        HtmlReport rep = new HtmlReport();
+                        StringBuilder sb = new StringBuilder();
+                        rep.openReport(sb, "Log Messages");
+                        rep.openTable(sb, 98);
+                        String white = "#FFFFFF";
+                        String warning = "#ffb380";
+                        String debug = "#afe9af";
+                        String error = "#ff5555";
+                        String header = "#e6e6e6";
+                        String oddRow = "#f2f2f2";
+                        String evenRow = "#d5f9fe";
+
+                        rep.openTableRow(sb);
+                        rep.openTableCell(sb, header, "11", null, null);
+                        sb.append("DAY + HOUR ");
+                        rep.closeTableCell(sb);
+
+                        rep.openTableCell(sb, header, "6", null, null);
+                        sb.append("MIN:SEC");
+                        rep.closeTableCell(sb);
+
+                        rep.openTableCell(sb, header, "13", null, null);
+                        sb.append("TAG");
+                        rep.closeTableCell(sb);
+
+                        rep.openTableCell(sb, header, "80", null, null);
+                        sb.append("MESSAGE");
+                        rep.closeTableCell(sb);
+
+                        rep.closeTableRow(sb);
+
+                        boolean odd = false;
+                        for( Entry<String, List<Message>> entry : day2MessageMap.entrySet() ) {
+                            String day = entry.getKey();
+                            List<Message> msgList = entry.getValue();
+
+                            rep.openTableRow(sb);
+
+                            String firstColor = evenRow;
+                            if (odd) {
+                                firstColor = oddRow;
+                            }
+                            odd = !odd;
+
+                            int rowSpan = msgList.size() + 1;
+                            rep.openTableCell(sb, firstColor, "11", null, rowSpan + "");
+                            sb.append(day);
+                            rep.closeTableCell(sb);
+
+                            rep.closeTableRow(sb);
+
+                            for( Message message : msgList ) {
+                                String color = white;
+                                if (message.type == EMessageType.DEBUG.getCode()) {
+                                    color = debug;
+                                } else if (message.type == EMessageType.WARNING.getCode()) {
+                                    color = warning;
+                                } else if (message.type == EMessageType.ERROR.getCode()) {
+                                    color = error;
+                                }
+                                String tsString = new DateTime(message.ts).toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSS);
+                                String[] split = tsString.split(":");
+                                String time = split[1] + ":" + split[2];
+
+                                rep.openTableRow(sb);
+
+                                rep.openTableCell(sb, color, "6", null, null);
+                                sb.append(time);
+                                rep.closeTableCell(sb);
+
+                                if (message.tag.length() == 0) {
+                                    rep.openTableCell(sb, color, "80", "2", null);
+                                    sb.append("<pre>").append(message.msg).append("</pre>");
+                                    rep.closeTableCell(sb);
+                                } else {
+                                    rep.openTableCell(sb, color, "13", null, null);
+                                    sb.append("<b>").append(message.tag).append("<b>");
+                                    rep.closeTableCell(sb);
+
+                                    rep.openTableCell(sb, color, "70", null, null);
+                                    sb.append("<pre>").append(message.msg).append("</pre>");
+                                    rep.closeTableCell(sb);
+                                }
+
+                                rep.closeTableRow(sb);
+                            }
+
+                        }
+
                         rep.closeTable(sb);
                         rep.closeReport(sb);
 

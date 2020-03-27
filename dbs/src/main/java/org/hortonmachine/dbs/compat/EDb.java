@@ -98,7 +98,7 @@ public enum EDb {
     }
 
     public static EDb[] getSpatialTypesDesktop() {
-        return new EDb[]{H2GIS, GEOPACKAGE, POSTGIS, SPATIALITE};
+        return new EDb[]{H2GIS, GEOPACKAGE, SPATIALITE, POSTGIS};
     }
 
     public static EDb[] getSpatialTypesMobile() {

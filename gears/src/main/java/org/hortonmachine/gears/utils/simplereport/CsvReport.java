@@ -65,17 +65,17 @@ public class CsvReport implements ISimpleReport {
     }
 
     @Override
-    public void openRow( StringBuilder sb ) {
+    public void openTableRow( StringBuilder sb) {
         // nothing needed
     }
 
     @Override
-    public void closeRow( StringBuilder sb ) {
+    public void closeTableRow( StringBuilder sb ) {
         sb.append("\n");
     }
 
     @Override
-    public void openTableCell( StringBuilder sb, String color, String perc, String span ) {
+    public void openTableCell( StringBuilder sb, String color, String perc, String colSpan, String rowSpan ) {
         // nothing needed
     }
 
