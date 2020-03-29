@@ -31,7 +31,7 @@ public class PreferencesHandler {
     public static final String HM_PREF_PROXYPORT = "hm_pref_proxyport";
     public static final String HM_PREF_PROXYHOST = "hm_pref_proxyhost";
     public static final String HM_PREF_PROXYCHECK = "hm_pref_proxycheck";
-
+    
     public static final String HM_PREF_SHP_CHARSET = "hm_pref_shp_charset";
 
     public static final String PREFS_NODE_NAME = "/org/hortonmachine/gui";

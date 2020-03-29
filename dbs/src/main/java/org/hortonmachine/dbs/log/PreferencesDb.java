@@ -19,6 +19,7 @@ package org.hortonmachine.dbs.log;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.prefs.Preferences;
 
 import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.ADb;
@@ -35,6 +36,9 @@ import org.hortonmachine.dbs.utils.SerializationUtilities;
  */
 public enum PreferencesDb implements AutoCloseable {
     INSTANCE("preferences_hortonmachine.sqlite"), TESTINSTANCE("test_java_preferences_hm.sqlite");
+
+    public static final String PREFS_NODE_NAME = "/org/hortonmachine/dbs";
+    public static final String HM_PREF_PREFFOLDER = "hm_pref_preffolder";
 
     private static final String TABLE_PREFERENCES = "preferences";
 
@@ -53,15 +57,16 @@ public enum PreferencesDb implements AutoCloseable {
         try {
             EDb dbType = EDb.SQLITE;
             prefDb = dbType.getDb();
-            String userHomeFolder = System.getProperty("user.home");
-            File baseFolder = new File(userHomeFolder);
-            if (!baseFolder.canWrite()) {
-                // fallback to tmp folder
-                String tempDir = System.getProperty("java.io.tmpdir");
-                baseFolder = new File(tempDir);
-            }
 
-            prefDbFile = new File(userHomeFolder + File.separator + dbName);
+            String folderPath;
+            if (dbName.startsWith("test_java_preferences_hm")) {
+                folderPath = System.getProperty("java.io.tmpdir");
+            } else {
+                Preferences preferences = Preferences.userRoot().node(PREFS_NODE_NAME);
+                File baseFolder = getBaseFolder();
+                folderPath = preferences.get(HM_PREF_PREFFOLDER, baseFolder.getAbsolutePath());
+            }
+            prefDbFile = new File(folderPath + File.separator + dbName);
             boolean open = prefDb.open(prefDbFile.getAbsolutePath());
             if (!open) {
                 createTable(dbType);
@@ -70,6 +75,17 @@ public enum PreferencesDb implements AutoCloseable {
             e.printStackTrace();
             isValid = false;
         }
+    }
+
+    public static File getBaseFolder() {
+        String userHomeFolder = System.getProperty("user.home");
+        File baseFolder = new File(userHomeFolder);
+        if (!baseFolder.canWrite()) {
+            // fallback to tmp folder
+            String tempDir = System.getProperty("java.io.tmpdir");
+            baseFolder = new File(tempDir);
+        }
+        return baseFolder;
     }
 
     public File getDbFile() {

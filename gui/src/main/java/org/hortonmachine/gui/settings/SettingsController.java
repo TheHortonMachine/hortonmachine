@@ -1,6 +1,6 @@
 package org.hortonmachine.gui.settings;
 
-import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_PROXYCHECK;
+import static org.hortonmachine.gears.utils.PreferencesHandler.*;
 import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_PROXYHOST;
 import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_PROXYPORT;
 import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_PROXYPWD;
@@ -10,13 +10,16 @@ import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_SHP_CHARS
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
+import java.io.File;
 import java.nio.charset.Charset;
+import java.util.prefs.Preferences;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.dbs.log.PreferencesDb;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
@@ -60,6 +63,13 @@ public class SettingsController extends SettingsView implements IOnCloseListener
             }
         });
 
+        GuiUtilities.setFolderBrowsingOnWidgets(_preferencesDbPAth, _preferencesDbButton, null);
+
+        Preferences preferences = Preferences.userRoot().node(PreferencesDb.PREFS_NODE_NAME);
+        File baseFolder = PreferencesDb.getBaseFolder();
+        String folderPath = preferences.get(PreferencesDb.HM_PREF_PREFFOLDER, baseFolder.getAbsolutePath());
+        _preferencesDbPAth.setText(folderPath);
+
     }
 
     private void applySettingsAndSavePreferences() throws Exception {
@@ -86,6 +96,12 @@ public class SettingsController extends SettingsView implements IOnCloseListener
             PreferencesHandler.setPreference(HM_PREF_PROXYPORT, port);
             PreferencesHandler.setPreference(HM_PREF_PROXYUSER, user);
             PreferencesHandler.setPreference(HM_PREF_PROXYPWD, pwd);
+        }
+
+        String folderPath = _preferencesDbPAth.getText();
+        if (new File(folderPath).exists()) {
+            Preferences preferences = Preferences.userRoot().node(PreferencesDb.PREFS_NODE_NAME);
+            preferences.put(PreferencesDb.HM_PREF_PREFFOLDER, folderPath);
         }
 
     }

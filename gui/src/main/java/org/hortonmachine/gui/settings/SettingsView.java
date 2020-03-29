@@ -8,6 +8,7 @@ import java.awt.Dimension;
 
 import javax.swing.Box;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -31,6 +32,8 @@ public class SettingsView extends JPanel
    JCheckBox _proxyCheckbox = new JCheckBox();
    JTextField _charsetTextField = new JTextField();
    JComboBox _orientationCombo = new JComboBox();
+   JTextField _preferencesDbPAth = new JTextField();
+   JButton _preferencesDbButton = new JButton();
 
    /**
     * Default constructor
@@ -128,6 +131,7 @@ public class SettingsView extends JPanel
 
       _jtabbedpane1.addTab("Proxy",null,createPanel1());
       _jtabbedpane1.addTab("Internationalization",null,createPanel3());
+      _jtabbedpane1.addTab("Preferences",null,createPanel6());
       jpanel1.add(_jtabbedpane1,cc.xy(2,2));
 
       addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3 });
@@ -149,7 +153,7 @@ public class SettingsView extends JPanel
    public JPanel createPanel2()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Proxy",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"Proxy",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(0,0,0));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
@@ -208,7 +212,7 @@ public class SettingsView extends JPanel
    public JPanel createPanel4()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Charset",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"Charset",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(0,0,0));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
@@ -228,7 +232,7 @@ public class SettingsView extends JPanel
    public JPanel createPanel5()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Component Orientation",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"Component Orientation",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(0,0,0));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
@@ -238,6 +242,29 @@ public class SettingsView extends JPanel
       jpanel1.add(_orientationCombo,cc.xy(2,1));
 
       addFillComponents(jpanel1,new int[]{ 1,3 },new int[]{ 1 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel6()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:8DLU:GROW(1.0),FILL:DEFAULT:NONE,FILL:20DLU:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      JLabel jlabel1 = new JLabel();
+      jlabel1.setText("Folder to store the preferences database");
+      jpanel1.add(jlabel1,cc.xy(2,2));
+
+      _preferencesDbPAth.setName("preferencesDbPAth");
+      jpanel1.add(_preferencesDbPAth,cc.xy(4,2));
+
+      _preferencesDbButton.setActionCommand("...");
+      _preferencesDbButton.setName("preferencesDbButton");
+      _preferencesDbButton.setText("...");
+      jpanel1.add(_preferencesDbButton,cc.xy(6,2));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7 },new int[]{ 1,2,3 });
       return jpanel1;
    }
 
