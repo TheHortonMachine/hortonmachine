@@ -18,6 +18,8 @@ import org.hortonmachine.nww.gui.LayersPanelController;
 import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.gui.ToolsPanelController;
 import org.hortonmachine.nww.gui.ViewControlsLayer;
+import org.hortonmachine.nww.layers.defaults.raster.OepnvkarteLayer;
+import org.hortonmachine.nww.layers.defaults.raster.OpenTopoLayer;
 
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -63,6 +65,12 @@ public class SimpleNwwViewer {
                 wwjPanel = (NwwPanel) nwwComponent;
                 ((Component) wwjPanel.getWwd()).setPreferredSize(new Dimension(500, 500));
                 wwjPanel.addOsmLayer();
+                OpenTopoLayer openTopoLayer = new OpenTopoLayer();
+                openTopoLayer.setEnabled(false);
+                wwjPanel.addLayer(openTopoLayer);
+                OepnvkarteLayer oepnvLayer = new OepnvkarteLayer();
+                oepnvLayer.setEnabled(false);
+                wwjPanel.addLayer(oepnvLayer);
                 ViewControlsLayer viewControls = wwjPanel.addViewControls();
                 viewControls.setScale(1.5);
 

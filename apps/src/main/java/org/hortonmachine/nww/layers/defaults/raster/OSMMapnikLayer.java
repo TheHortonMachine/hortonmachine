@@ -31,7 +31,7 @@ public class OSMMapnikLayer extends BasicMercatorTiledImageLayer {
 
         params.setValue(AVKey.TILE_WIDTH, 256);
         params.setValue(AVKey.TILE_HEIGHT, 256);
-        params.setValue(AVKey.DATA_CACHE_NAME, "Earth/OSM-Mercator/OpenStreetMap Mapnik");
+        params.setValue(AVKey.DATA_CACHE_NAME, "Earth/OSM-Mercator/OpenStreetMap OpentopoMap");
         params.setValue(AVKey.SERVICE, "https://tile.openstreetmap.org/");
         params.setValue(AVKey.DATASET_NAME, "h");
         params.setValue(AVKey.FORMAT_SUFFIX, ".png");

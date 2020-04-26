@@ -22,8 +22,8 @@
 	</modules>
 
 	<properties>
-		<gt.version>22.3</gt.version>
-		<groovy.version>3.0.0-rc-3</groovy.version>
+		<gt.version>23.0</gt.version>
+		<groovy.version>3.0.1</groovy.version>
 		<geoscript.version>1.14.0</geoscript.version>
 
 		<c3p0.version>0.9.5.5</c3p0.version>
@@ -31,9 +31,9 @@
 		<sqlitejdbc.version>3.30.1</sqlitejdbc.version>
 		<jt.version>1.5.0</jt.version>
 
-		<imageio.ext.version>1.1.25</imageio.ext.version>
+		<imageio.ext.version>1.3.2</imageio.ext.version>
 		<jts.version>1.16.1</jts.version>
-		<jaiext.version>1.1.1</jaiext.version>
+		<jaiext.version>1.1.14</jaiext.version>
 		<jackson.version>2.9.8</jackson.version>
 
 		<jdk.version>8</jdk.version>
@@ -680,6 +680,14 @@
 
 <dependency><groupId>com.miglayout</groupId><artifactId>miglayout</artifactId><version>3.7.4</version></dependency>
 
+
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.10</version>
+			<scope>test</scope>
+		</dependency>
 				
 		</dependencies>
 	</dependencyManagement>
@@ -709,14 +717,16 @@
           </snapshots>
         </repository>
 
-		<repository>
-            <snapshots>
-              <enabled>false</enabled>
-            </snapshots>
-			<id>osgeo</id>
-			<name>Open Source Geospatial Foundation Repository</name>
-			<url>http://download.osgeo.org/webdav/geotools/</url>
-		</repository>
+  <repository>
+      <id>osgeo</id>
+      <name>OSGeo Nexus Release Repository</name>
+      <url>https://repo.osgeo.org/repository/release/</url>
+      <!-- contains release (including third-party-dependences)                            -->
+      <!-- ucar (https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases) -->
+      <!-- geosolutions (http://maven.geo-solutions.it/)                                   -->
+      <snapshots><enabled>false</enabled></snapshots>
+      <releases><enabled>true</enabled></releases>
+    </repository>
 
 		<repository>
             <snapshots>
@@ -736,21 +746,6 @@
 			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
 		</repository>
 
-        <repository>
-          <!-- contains snapshot and release (including third-party-dependences)               -->
-          <!-- Restlet maven Repository (http://maven.restlet.org)                             -->
-          <!-- ucar (https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases) -->
-          <!-- geosolutions (http://maven.geo-solutions.it/)                                   -->
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <id>boundless</id>
-          <name>Boundless Maven Repository</name>
-          <url>https://repo.boundlessgeo.com/main/</url>
-        </repository>
 
 		<repository>
 			<id>jzy3d-releases</id>

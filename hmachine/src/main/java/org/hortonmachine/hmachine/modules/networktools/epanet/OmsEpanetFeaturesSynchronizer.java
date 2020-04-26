@@ -58,6 +58,8 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -182,6 +184,10 @@ public class OmsEpanetFeaturesSynchronizer extends HMModel {
          */
         junctionElevatioAttributeName = FeatureUtilities.findAttributeName(inJunctions.getSchema(),
                 Junctions.ELEVATION.getAttributeName());
+        if (junctionElevatioAttributeName == null) {
+            throw new ModelsIllegalargumentException(
+                    "The junctions layer is missing the " + Junctions.ELEVATION.getAttributeName() + " attribute.", this);
+        }
         String junctionIDAttributeName = FeatureUtilities.findAttributeName(inJunctions.getSchema(),
                 Junctions.ID.getAttributeName());
         pipesStartNodeAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(),
@@ -189,6 +195,10 @@ public class OmsEpanetFeaturesSynchronizer extends HMModel {
         pipesEndNodeAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(), Pipes.END_NODE.getAttributeName());
         pipesIdAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(), Pipes.ID.getAttributeName());
         lengthAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(), Pipes.LENGTH.getAttributeName());
+        if (lengthAttributeName == null) {
+            throw new ModelsIllegalargumentException(
+                    "The pipes layer is missing the " + Pipes.LENGTH.getAttributeName() + " attribute.", this);
+        }
 
         String tanksIDAttributeName = null;
         if (inTanks != null) {
@@ -462,5 +472,4 @@ public class OmsEpanetFeaturesSynchronizer extends HMModel {
         }
         warningBuilder.append("\n");
     }
-
 }
