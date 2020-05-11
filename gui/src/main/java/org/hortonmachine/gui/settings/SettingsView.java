@@ -219,7 +219,7 @@ public class SettingsView extends JPanel
       jpanel1.setLayout(formlayout1);
 
       JLabel jlabel1 = new JLabel();
-      jlabel1.setText("Charset to use for shapefile read/write");
+      jlabel1.setText("Charset to use for some read/write (gform/shp)");
       jpanel1.add(jlabel1,cc.xy(2,1));
 
       _charsetTextField.setName("charsetTextField");
