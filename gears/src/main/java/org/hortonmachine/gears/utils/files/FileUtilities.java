@@ -19,6 +19,7 @@
 package org.hortonmachine.gears.utils.files;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +29,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+
+import org.hortonmachine.gears.utils.PreferencesHandler;
 
 /**
  * <p> Various file utilities useful when dealing with bytes, bits and numbers </p>
@@ -216,9 +219,17 @@ public class FileUtilities {
      * @throws IOException
      */
     public static void writeFile( String text, File file ) throws IOException {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+        String shpCharset = PreferencesHandler.getShpCharset();
+        if (shpCharset != null) {
+            try (BufferedWriter bw = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(file), Charset.forName(shpCharset)))) {
+                bw.write(text);
+            }
+        } else {
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+                bw.write(text);
+            }
 
-            bw.write(text);
         }
     }
 

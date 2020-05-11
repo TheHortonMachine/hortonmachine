@@ -163,16 +163,4 @@ public class LasHistogram extends HMModel {
         }
     }
 
-    public static void main( String[] args ) throws Exception {
-
-        String base = "D:/Dropbox/hydrologis/lavori/OLD/2014_unibz/aurina/elaborazioni/LAS_PLOTS/";
-
-        LasHistogram ex = new LasHistogram();
-        ex.inLas = base + "uni_bz_plot777.las";
-        ex.pType = LasUtils.CLASSIFICATION;
-
-        ex.process();
-        
-    }
-    
 }
