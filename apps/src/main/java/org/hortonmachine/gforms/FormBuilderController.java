@@ -54,6 +54,7 @@ import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemConnectedCombo;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemDate;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemDouble;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemDynamicText;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemImagelib;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemInteger;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemLabel;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemMap;
@@ -88,7 +89,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
     private String currentSelectedFormName;
     private ComponentOrientation co;
     private static enum IMAGEWIDGET {
-        PICTURE, SKETCH, MAP
+        PICTURE, IMAGELIB,  SKETCH, MAP
     };
 
     public FormBuilderController( File tagsFile ) throws Exception {
@@ -713,6 +714,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                     dynPanel.setAlignmentX(LEFT_ALIGNMENT);
                     break;
                 case ItemPicture.TYPE:
+                case ItemImagelib.TYPE:
                     JLabel pictureImage = new JLabel(ImageCache.getInstance().getImage(ImageCache.FORM_PICTURE));
                     setSizes(pictureImage);
                     widgetsPanel.add(pictureImage);
@@ -1155,6 +1157,8 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         case ItemMap.TYPE:
             if (imageType == IMAGEWIDGET.PICTURE) // change only if untouched
                 imageType = IMAGEWIDGET.MAP;
+        case ItemImagelib.TYPE:
+                imageType = IMAGEWIDGET.IMAGELIB;
         case ItemPicture.TYPE:
             JPanel picturesPanel = new JPanel(new BorderLayout());
             JTextField keyPicturesTextField = new JTextField();
@@ -1189,6 +1193,10 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                     case PICTURE:
                         ItemPicture ip = new ItemPicture(key, label, null, isMandatory);
                         textJson = ip.toString();
+                        break;
+                    case IMAGELIB:
+                        ItemImagelib il = new ItemImagelib(key, label, null, isMandatory);
+                        textJson = il.toString();
                         break;
                     default:
                         return;

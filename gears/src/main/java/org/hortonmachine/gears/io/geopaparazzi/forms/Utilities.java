@@ -32,6 +32,7 @@ import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemConnectedCombo;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemDate;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemDouble;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemDynamicText;
+import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemImagelib;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemInteger;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemLabel;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemMap;
@@ -90,11 +91,16 @@ public class Utilities {
     public static final String TYPE_SKETCH = ItemSketch.TYPE;
 
     /**
+     * Type for image from library element.
+     */ 
+    public static final String TYPE_IMAGELIB = ItemImagelib.TYPE;
+
+    /**
      * Type for map element.
      */
     public static final String TYPE_MAP = ItemMap.TYPE;
 
-    public static final String[] ITEM_NAMES = {//
+    public static final String[] ITEM_NAMES = { //
             ItemLabel.TYPE, //
             ItemLabel.TYPE_WITHLINE, //
             ItemBoolean.TYPE, //
@@ -106,6 +112,7 @@ public class Utilities {
             ItemDouble.TYPE, //
             ItemDynamicText.TYPE, //
             ItemPicture.TYPE, //
+            ItemImagelib.TYPE, //
             ItemSketch.TYPE, //
             ItemMap.TYPE, //
             ItemText.TYPE, //
@@ -113,18 +120,19 @@ public class Utilities {
             ItemOneToManyConnectedCombo.TYPE//
     };
 
-    public static boolean isStringType( String type ) {
+    public static boolean isStringType(String type) {
         boolean isString = false;
-        if (type.equals(TYPE_MAP) || type.equals(TYPE_SKETCH) || type.equals(TYPE_PICTURES) || type.equals(ItemCombo.TYPE)
-                || type.equals(ItemCombo.MULTI_TYPE) || type.equals(ItemDate.TYPE) || type.equals(ItemTime.TYPE)
-                || type.equals(ItemDynamicText.TYPE) || type.equals(ItemText.TYPE) || type.equals(ItemConnectedCombo.TYPE)
+        if (type.equals(TYPE_MAP) || type.equals(TYPE_SKETCH) || type.equals(TYPE_PICTURES)
+                || type.equals(TYPE_IMAGELIB) || type.equals(ItemCombo.TYPE) || type.equals(ItemCombo.MULTI_TYPE)
+                || type.equals(ItemDate.TYPE) || type.equals(ItemTime.TYPE) || type.equals(ItemDynamicText.TYPE)
+                || type.equals(ItemText.TYPE) || type.equals(ItemConnectedCombo.TYPE)
                 || type.equals(ItemOneToManyConnectedCombo.TYPE)) {
             isString = true;
         }
         return isString;
     }
 
-    public static boolean isIntegerType( String type ) {
+    public static boolean isIntegerType(String type) {
         boolean isInteger = false;
         if (type.equals(ItemInteger.TYPE)) {
             isInteger = true;
@@ -132,7 +140,7 @@ public class Utilities {
         return isInteger;
     }
 
-    public static boolean isDoubleType( String type ) {
+    public static boolean isDoubleType(String type) {
         boolean isDouble = false;
         if (type.equals(ItemDouble.TYPE)) {
             isDouble = true;
@@ -140,23 +148,24 @@ public class Utilities {
         return isDouble;
     }
 
-    public static boolean isMediaType( String type ) {
+    public static boolean isMediaType(String type) {
         boolean isMedia = false;
-        if (type.equals(TYPE_MAP) || type.equals(TYPE_SKETCH) || type.equals(TYPE_PICTURES)) {
+        if (type.equals(TYPE_MAP) || type.equals(TYPE_SKETCH) || type.equals(TYPE_PICTURES)
+                || type.equals(TYPE_IMAGELIB)) {
             isMedia = true;
         }
         return isMedia;
     }
 
-    public static LinkedHashMap<String, JSONObject> getSectionFromFile( String formPath ) throws IOException {
+    public static LinkedHashMap<String, JSONObject> getSectionFromFile(String formPath) throws IOException {
         String formString = FileUtilities.readFile(formPath);
         return getSectionsFromJsonString(formString);
     }
 
-    public static LinkedHashMap<String, JSONObject> getSectionsFromJsonString( String formJsonString ) {
+    public static LinkedHashMap<String, JSONObject> getSectionsFromJsonString(String formJsonString) {
         LinkedHashMap<String, JSONObject> map = new LinkedHashMap<>();
         JSONArray mainArray = new JSONArray(formJsonString);
-        for( int i = 0; i < mainArray.length(); i++ ) {
+        for (int i = 0; i < mainArray.length(); i++) {
             JSONObject sectionObject = mainArray.getJSONObject(i);
             String sectionName = sectionObject.getString(Utilities.ATTR_SECTIONNAME);
             map.put(sectionName, sectionObject);
@@ -164,14 +173,14 @@ public class Utilities {
         return map;
     }
 
-    public static void properties2Mainframe( MainFrame mainFrame, File templateFile ) throws Exception {
+    public static void properties2Mainframe(MainFrame mainFrame, File templateFile) throws Exception {
         List<String> templateLinesList = FileUtilities.readFileToLinesList(templateFile);
         String name = FileUtilities.getNameWithoutExtention(templateFile);
 
         Section currentSection = new Section(name);
         mainFrame.addSection(currentSection);
         Form currentForm = null;
-        for( int i = 0; i < templateLinesList.size(); i++ ) {
+        for (int i = 0; i < templateLinesList.size(); i++) {
             String line = templateLinesList.get(i).trim();
             if (line.length() == 0) {
                 continue;
@@ -214,7 +223,7 @@ public class Utilities {
                 }
                 String comboItems = type.replaceFirst("combo:", "");
                 String[] itemsSplit = comboItems.split(",");
-                for( int j = 0; j < itemsSplit.length; j++ ) {
+                for (int j = 0; j < itemsSplit.length; j++) {
                     itemsSplit[j] = itemsSplit[j].trim();
                 }
 
@@ -241,11 +250,11 @@ public class Utilities {
         }
     }
 
-    public static List<String> getFormNames4Section( JSONObject section ) throws JSONException {
+    public static List<String> getFormNames4Section(JSONObject section) throws JSONException {
         List<String> names = new ArrayList<String>();
         JSONArray jsonArray = section.getJSONArray(ATTR_FORMS);
         if (jsonArray != null && jsonArray.length() > 0) {
-            for( int i = 0; i < jsonArray.length(); i++ ) {
+            for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 if (jsonObject.has(ATTR_FORMNAME)) {
                     String formName = jsonObject.getString(ATTR_FORMNAME);
@@ -256,10 +265,10 @@ public class Utilities {
         return names;
     }
 
-    public static JSONObject getForm4Name( String formName, JSONObject section ) throws JSONException {
+    public static JSONObject getForm4Name(String formName, JSONObject section) throws JSONException {
         JSONArray jsonArray = section.getJSONArray(ATTR_FORMS);
         if (jsonArray != null && jsonArray.length() > 0) {
-            for( int i = 0; i < jsonArray.length(); i++ ) {
+            for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 if (jsonObject.has(ATTR_FORMNAME)) {
                     String tmpFormName = jsonObject.getString(ATTR_FORMNAME);
@@ -272,10 +281,10 @@ public class Utilities {
         return null;
     }
 
-    public static void removeFormFromSection( String formName, JSONObject section ) throws JSONException {
+    public static void removeFormFromSection(String formName, JSONObject section) throws JSONException {
         JSONArray jsonArray = section.getJSONArray(ATTR_FORMS);
         if (jsonArray != null && jsonArray.length() > 0) {
-            for( int i = 0; i < jsonArray.length(); i++ ) {
+            for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 if (jsonObject.has(ATTR_FORMNAME)) {
                     String tmpFormName = jsonObject.getString(ATTR_FORMNAME);
@@ -291,16 +300,16 @@ public class Utilities {
     /**
      * Utility method to get the formitems of a form object.
      * 
-     * <p>Note that the entering json object has to be one 
-     * object of the main array, not THE main array itself, 
-     * i.e. a choice was already done.
+     * <p>
+     * Note that the entering json object has to be one object of the main array,
+     * not THE main array itself, i.e. a choice was already done.
      * 
      * @param jsonObj the single object.
-     * @return the array of items of the contained form or <code>null</code> if 
-     *          no form is contained.
+     * @return the array of items of the contained form or <code>null</code> if no
+     *         form is contained.
      * @throws JSONException
      */
-    public static JSONArray getFormItems( JSONObject formObj ) throws JSONException {
+    public static JSONArray getFormItems(JSONObject formObj) throws JSONException {
         if (formObj.has(TAG_FORMITEMS)) {
             JSONArray formItemsArray = formObj.getJSONArray(TAG_FORMITEMS);
             return formItemsArray;
@@ -315,15 +324,15 @@ public class Utilities {
      * @return the list of images paths.
      * @throws Exception if something goes wrong.
      */
-    public static List<String> getImageIds( String formString ) throws Exception {
+    public static List<String> getImageIds(String formString) throws Exception {
         List<String> imageIds = new ArrayList<String>();
         if (formString != null && formString.length() > 0) {
             JSONObject sectionObject = new JSONObject(formString);
             List<String> formsNames = Utilities.getFormNames4Section(sectionObject);
-            for( String formName : formsNames ) {
+            for (String formName : formsNames) {
                 JSONObject form4Name = Utilities.getForm4Name(formName, sectionObject);
                 JSONArray formItems = Utilities.getFormItems(form4Name);
-                for( int i = 0; i < formItems.length(); i++ ) {
+                for (int i = 0; i < formItems.length(); i++) {
                     JSONObject formItem = formItems.getJSONObject(i);
                     if (!formItem.has(Utilities.TAG_KEY)) {
                         continue;
@@ -334,7 +343,7 @@ public class Utilities {
                     if (formItem.has(Utilities.TAG_VALUE))
                         value = formItem.getString(Utilities.TAG_VALUE);
 
-                    if (type.equals(Utilities.TYPE_PICTURES)) {
+                    if (type.equals(Utilities.TYPE_PICTURES) || type.equals(Utilities.TYPE_IMAGELIB)) {
                         if (value.trim().length() == 0) {
                             continue;
                         }
@@ -363,12 +372,13 @@ public class Utilities {
      * Create the forms root json object from the map of sections json objects.
      * 
      * @param sectionsMap the json sections map.
-     * @return the root object that can be dumped to file through the toString method.
+     * @return the root object that can be dumped to file through the toString
+     *         method.
      */
-    public static JSONArray formsRootFromSectionsMap( HashMap<String, JSONObject> sectionsMap ) {
+    public static JSONArray formsRootFromSectionsMap(HashMap<String, JSONObject> sectionsMap) {
         JSONArray rootArray = new JSONArray();
         Collection<JSONObject> objects = sectionsMap.values();
-        for( JSONObject jsonObject : objects ) {
+        for (JSONObject jsonObject : objects) {
             rootArray.put(jsonObject);
         }
         return rootArray;
