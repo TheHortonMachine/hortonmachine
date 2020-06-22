@@ -61,21 +61,24 @@ public class LogDb implements AutoCloseable, ILogDb {
 
     public LogDb( ADb existingDb ) throws Exception {
         logDb = existingDb;
-        isOpen = true;
-    }
-
-    public boolean open( String dbPath ) throws Exception {
-        boolean open = false;
-        if (isOpen) {
-            open = true;
-        } else {
-            open = logDb.open(dbPath);
-        }
         if (!logDb.hasTable(TABLE_MESSAGES)) {
             createTable();
             createIndexes();
         }
-        return open;
+        isOpen = true;
+    }
+
+    public boolean open( String dbPath ) throws Exception {
+        if (isOpen) {
+            return true;
+        } else {
+            boolean open = logDb.open(dbPath);
+            if (!logDb.hasTable(TABLE_MESSAGES)) {
+                createTable();
+                createIndexes();
+            }
+            return open;
+        }
     }
 
     public void createTable() throws Exception {
