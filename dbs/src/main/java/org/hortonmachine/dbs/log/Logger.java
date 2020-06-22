@@ -21,6 +21,7 @@ import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
 
+import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.EDb;
 
 /**
@@ -77,6 +78,18 @@ public enum Logger implements ILogDb {
         if (db == null) {
             db = new LogDb(type);
             db.open(dbPath);
+            doDbLog = true;
+        }
+    }
+    /**
+     * Initialize to log to an existing db.
+     * 
+     * @param db the database to log to.
+     * @throws Exception
+     */
+    public void init( ADb existingDb ) throws Exception {
+        if (db == null) {
+            db = new LogDb(existingDb);
             doDbLog = true;
         }
     }

@@ -49,6 +49,7 @@ public class LogDb implements AutoCloseable, ILogDb {
     public static final String message_NAME = "msg";
 
     private ADb logDb;
+    private boolean isOpen = false;
 
     public LogDb() throws Exception {
         this(EDb.SQLITE);
@@ -58,9 +59,19 @@ public class LogDb implements AutoCloseable, ILogDb {
         logDb = dbType.getDb();
     }
 
+    public LogDb( ADb existingDb ) throws Exception {
+        logDb = existingDb;
+        isOpen = true;
+    }
+
     public boolean open( String dbPath ) throws Exception {
-        boolean open = logDb.open(dbPath);
-        if (!open) {
+        boolean open = false;
+        if (isOpen) {
+            open = true;
+        } else {
+            open = logDb.open(dbPath);
+        }
+        if (!logDb.hasTable(TABLE_MESSAGES)) {
             createTable();
             createIndexes();
         }
