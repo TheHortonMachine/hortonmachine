@@ -103,8 +103,7 @@ public class AreaBasedVolume extends HMModel {
 
         inDtmGC = getRaster(inDtm);
         crs = inDtmGC.getCoordinateReferenceSystem();
-        
-        
+
         // create the base grid to work on
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDtmGC);
         double newCols = Math.ceil(regionMap.getWidth() / pAreaSize);
@@ -133,16 +132,15 @@ public class AreaBasedVolume extends HMModel {
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
-        // open the data source, supplying the dtm for normalization and the treshold for cleanup 
+        // open the data source, supplying the dtm for normalization and the treshold for cleanup
         try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inLas), inDtmGC, pThreshold, crs)) {
             lasData.open();
-            
+
             // only the vegetation class is kept
             if (pVegetationClass != null) {
                 double[] classes = StringUtilities.stringToDoubleArray(pVegetationClass, ",");
                 lasData.setClassesConstraint(classes);
             }
-
 
             // process the data, one grid cell at the time.
             pm.beginTask("Processing grid cells...", secGridGeoms.size());
@@ -167,6 +165,11 @@ public class AreaBasedVolume extends HMModel {
                 double H_mean1stR = sum / count1st;
                 double H_q502ndR = getMedianFromSet(secondReturnsHeight);
                 double volume = -151.956 + 63.458 * H_mean1stR - 43.910 * H_q502ndR;
+                if (count1st == 0 || count2nd == 0) {
+                    H_mean1stR = 0;
+                    H_q502ndR = 0;
+                    volume = 0;
+                }
 
                 Object[] values = new Object[]{gridGeom, volume, H_mean1stR, H_q502ndR, count1st, count2nd};
                 builder.addAll(values);
@@ -193,6 +196,22 @@ public class AreaBasedVolume extends HMModel {
             count++;
         }
         return threshold;
+    }
+
+    public static void main( String[] args ) throws Exception {
+        String inLas = "/Users/hydrologis/TMP/VEGTEST/plot_77.las";
+        String inDtm = "/Users/hydrologis/TMP/VEGTEST/plot_77_dtm.asc";
+        String outShp = "/Users/hydrologis/TMP/VEGTEST/out.shp";
+        double area = 5;
+
+        AreaBasedVolume abv = new AreaBasedVolume();
+        abv.inLas = inLas;
+        abv.inDtm = inDtm;
+        abv.pThreshold = 2;
+        abv.pVegetationClass = "3,4,5";
+        abv.pAreaSize = area;
+        abv.outAreas = outShp;
+        abv.process();
     }
 
 }

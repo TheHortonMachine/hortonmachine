@@ -119,7 +119,6 @@ class LasFileDataManager extends ALasDataManager {
     @SuppressWarnings("unchecked")
     @Override
     public synchronized List<LasRecord> getPointsInGeometry( Geometry checkGeom, boolean doOnlyEnvelope ) throws Exception {
-        checkOpen();
 
         ArrayList<LasRecord> pointsListForTile = new ArrayList<LasRecord>();
         Envelope checkEnvelope = checkGeom.getEnvelopeInternal();
@@ -140,6 +139,8 @@ class LasFileDataManager extends ALasDataManager {
                 pointsListForTile.add(lasDot);
             }
         } else {
+            checkOpen();
+
             pointsTree = new STRtree();
             ReferencedEnvelope overallEnvelope = getOverallEnvelope();
             if (doOnlyEnvelope && checkEnvelope.covers(overallEnvelope)) {
@@ -153,8 +154,8 @@ class LasFileDataManager extends ALasDataManager {
                     pointsListForTile.add(lasDot);
                 }
             } else {
-
-                Envelope env = checkGeom.getEnvelopeInternal();
+                // the points index has not been done yet, so the first time we need to build it for
+                // all points.
                 PreparedGeometry preparedGeometry = null;
                 if (!doOnlyEnvelope) {
                     preparedGeometry = PreparedGeometryFactory.prepare(checkGeom);
@@ -165,17 +166,9 @@ class LasFileDataManager extends ALasDataManager {
                     if (!doAccept(lasDot)) {
                         continue;
                     }
-                    Coordinate c = new Coordinate(lasDot.x, lasDot.y);
-                    pointsTree.insert(new Envelope(c), lasDot);
-                    if (!env.contains(c)) {
-                        continue;
-                    }
-
+                    // make sure to set ground height if the dtm is available, also if not in this
+                    // tile
                     if (inDem != null) {
-                        // check geom instead of only envelope?
-                        if (!doOnlyEnvelope && !preparedGeometry.contains(gf.createPoint(c))) {
-                            continue;
-                        }
                         double value = CoverageUtilities.getValue(inDem, lasDot.x, lasDot.y);
                         if (HMConstants.isNovalue(value)) {
                             continue;
@@ -183,12 +176,20 @@ class LasFileDataManager extends ALasDataManager {
                         double height = lasDot.z - value;
                         if (height > elevThreshold) {
                             lasDot.groundElevation = height;
-                            pointsListForTile.add(lasDot);
-                        }
-                    } else {
-                        if (!doOnlyEnvelope && !preparedGeometry.contains(gf.createPoint(c))) {
+                        } else {
+                            // ignore points remove by threshold
                             continue;
                         }
+                    }
+                    // and store to index
+                    Coordinate c = new Coordinate(lasDot.x, lasDot.y);
+                    pointsTree.insert(new Envelope(c), lasDot);
+
+                    if (!doOnlyEnvelope && !preparedGeometry.contains(gf.createPoint(c))) {
+                        continue;
+                    }
+                    if (checkEnvelope.contains(c)) {
+                        // add also to requested tile
                         pointsListForTile.add(lasDot);
                     }
                 }
