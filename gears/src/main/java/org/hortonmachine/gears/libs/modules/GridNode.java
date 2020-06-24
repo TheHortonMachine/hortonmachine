@@ -219,6 +219,10 @@ public class GridNode extends Node {
         return isPit;
     }
 
+    public boolean isBorderCell(){
+        return touchesBound;
+    }
+
     public boolean isPitFor( List<GridNode> existingConnectedNodes ) {
         if (!isValid || touchesBound || touchesNovalue) {
             return false;
@@ -307,8 +311,9 @@ public class GridNode extends Node {
      * 
      * @param size the size of the window in cell numbers.
      * @return the window nodes.
+     * @deprecated this should be unsed and the matrix version maked more sense.
      */
-    public List<GridNode> getWindow( int size ) {
+    public List<GridNode> getWindowDep( int size ) {
         if (size % 2 == 0) {
             size++;
         }
@@ -321,6 +326,39 @@ public class GridNode extends Node {
                 GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
                 windowNodes.add(n);
             }
+        }
+        return windowNodes;
+    }
+ 
+    /**
+     * Get a window of nodes surrounding the current node.
+     * 
+     * <p>Notes:</p>
+     * <ul>
+     *  <li>the size has to be odd, so that the current node can be in the center. 
+     *      If the size is even, size+1 will be used.</li>
+     * </ul>
+     * 
+     * @param size the size of the window in cell numbers.
+     * @return the window nodes.
+     */
+    public GridNode[][] getWindow( int size ) {
+        if (size % 2 == 0) {
+            size++;
+        }
+        GridNode[][] windowNodes = new GridNode[size][size];
+        int delta = (size - 1) / 2;
+        int newC = 0;
+        for( int c = -delta; c <= delta; c++ ) {
+            int tmpCol = col + c;
+            int newR = 0;
+            for( int r = -delta; r <= delta; r++ ) {
+                int tmpRow = row + r;
+                GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
+                windowNodes[newR][newC] = n;
+                newR++;
+            }
+            newC++;
         }
         return windowNodes;
     }

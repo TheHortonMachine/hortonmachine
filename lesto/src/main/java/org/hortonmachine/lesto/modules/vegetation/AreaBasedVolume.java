@@ -21,7 +21,6 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
-import static org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.outTops_DESCR;
 
 import java.io.File;
 import java.util.List;
@@ -89,7 +88,7 @@ public class AreaBasedVolume extends HMModel {
     @In
     public double pAreaSize = 40.0;
 
-    @Description(outTops_DESCR)
+    @Description("Output grid areas with volume definitions.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outAreas = null;
@@ -106,14 +105,16 @@ public class AreaBasedVolume extends HMModel {
 
         // create the base grid to work on
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDtmGC);
-        double newCols = Math.ceil(regionMap.getWidth() / pAreaSize);
-        double newRows = Math.ceil(regionMap.getHeight() / pAreaSize);
+        double newCols = Math.floor(regionMap.getWidth() / pAreaSize);
+        double newRows = Math.floor(regionMap.getHeight() / pAreaSize);
 
         // create the support grid used to find the seeds
         OmsGridsGenerator gridGenerator = new OmsGridsGenerator();
         gridGenerator.inRaster = inDtmGC;
         gridGenerator.pCols = (int) newCols;
         gridGenerator.pRows = (int) newRows;
+        gridGenerator.pWidth = pAreaSize;
+        gridGenerator.pHeight = pAreaSize;
         gridGenerator.process();
         SimpleFeatureCollection outTilesFC = gridGenerator.outMap;
         List<Geometry> secGridGeoms = FeatureUtilities.featureCollectionToGeometriesList(outTilesFC, true, null);
@@ -121,7 +122,7 @@ public class AreaBasedVolume extends HMModel {
         /// create the output featurecollection
         DefaultFeatureCollection outAreasFC = new DefaultFeatureCollection();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("typename");
+        b.setName("volumearea");
         b.setCRS(crs);
         b.add("the_geom", Polygon.class);
         b.add("volume", Double.class);
