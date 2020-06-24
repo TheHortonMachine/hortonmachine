@@ -293,9 +293,7 @@ public class CrownShapeIndex extends HMModel {
                 double tanAngle = (pElev - startElev) / (pp.getProgressive() - startPoint.getProgressive());
                 double angle = Math.atan(tanAngle);
 
-                if (angle > maxAngle) {
-                    maxAngle = angle;
-                }
+                maxAngle= Math.max(angle, maxAngle);
             }
             phi = 90 - maxAngle;
         } else {
