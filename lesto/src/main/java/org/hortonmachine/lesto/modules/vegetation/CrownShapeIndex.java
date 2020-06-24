@@ -208,10 +208,12 @@ public class CrownShapeIndex extends HMModel {
                     boolean isLocalMaxima = true;
                     double centerElev = node.elevation;
                     for (GridNode n : validSurroundingNodes) {
-                        double elev = n.elevation;
-                        if (elev > centerElev) {
-                            isLocalMaxima = false;
-                            break;
+                        if (n.isValid()) {
+                            double elev = n.elevation;
+                            if (elev > centerElev) {
+                                isLocalMaxima = false;
+                                break;
+                            }
                         }
                     }
                     if (isLocalMaxima) {
@@ -291,9 +293,9 @@ public class CrownShapeIndex extends HMModel {
             for (ProfilePoint pp : profilePoints) {
                 double pElev = pp.getElevation();
                 double tanAngle = (pElev - startElev) / (pp.getProgressive() - startPoint.getProgressive());
-                double angle = Math.atan(tanAngle);
+                double angleRad = Math.atan(tanAngle);
 
-                maxAngle= Math.max(angle, maxAngle);
+                maxAngle = Math.max(Math.toDegrees(angleRad), maxAngle);
             }
             phi = 90 - maxAngle;
         } else {
@@ -302,9 +304,10 @@ public class CrownShapeIndex extends HMModel {
             for (ProfilePoint pp : profilePoints) {
                 double pElev = pp.getElevation();
                 double tanAngle = (pElev - startElev) / (pp.getProgressive() - startPoint.getProgressive());
-                double angle = Math.atan(tanAngle);
+                double angleRad = Math.atan(tanAngle);
 
-                minAngle = Math.min(angle, minAngle);
+                double angleDeg = Math.toDegrees(angleRad);
+                minAngle = Math.min(Math.abs(angleDeg), minAngle);
             }
             phi = 90 + minAngle;
         }
