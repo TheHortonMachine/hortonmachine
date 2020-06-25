@@ -315,10 +315,10 @@ public class CrownShapeIndex extends HMModel {
     }
 
     public static void main(String[] args) throws Exception {
-        String inDsm = "/Users/hydrologis/TMP/VEGTEST/plot_77_dsm.asc";
-        String inDtm = "/Users/hydrologis/TMP/VEGTEST/plot_77_dtm.asc";
-        String chm = "/Users/hydrologis/TMP/VEGTEST/plot_77_chm.asc";
-        String outShp = "/Users/hydrologis/TMP/VEGTEST/out.shp";
+        String inDsm = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_dsm.asc";
+        String inDtm = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_dtm.asc";
+        String chm = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_chm.asc";
+        String outShp = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/out.shp";
         double area = 5;
 
         OmsRasterDiff rd = new OmsRasterDiff();

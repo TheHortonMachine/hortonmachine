@@ -200,9 +200,9 @@ public class AreaBasedVolume extends HMModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        String inLas = "/Users/hydrologis/TMP/VEGTEST/plot_77.las";
-        String inDtm = "/Users/hydrologis/TMP/VEGTEST/plot_77_dtm.asc";
-        String outShp = "/Users/hydrologis/TMP/VEGTEST/out.shp";
+        String inLas = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77.las";
+        String inDtm = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_dtm.asc";
+        String outShp = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/out.shp";
         double area = 5;
 
         AreaBasedVolume abv = new AreaBasedVolume();
