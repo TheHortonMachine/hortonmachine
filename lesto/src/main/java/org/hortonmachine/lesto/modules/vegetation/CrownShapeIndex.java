@@ -84,6 +84,11 @@ public class CrownShapeIndex extends HMModel {
     @In
     public String outTrees = null;
 
+    @Description("Output CSI raster.")
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outCsi = null;
+
     @Execute
     public void process() throws Exception {
         checkNull(inChm);
@@ -231,6 +236,12 @@ public class CrownShapeIndex extends HMModel {
         }
         pm.done();
         chmIter.done();
+
+        GridCoverage2D outCsiGC = CoverageUtilities.buildCoverage("csi", csiWR, regionMap,
+                inChmGC.getCoordinateReferenceSystem());
+          
+        dumpRaster(outCsiGC, outCsi);
+
         dumpVector(outTreesFC, outTrees);
     }
 
