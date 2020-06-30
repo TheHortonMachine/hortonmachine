@@ -330,6 +330,7 @@ public class CrownShapeIndex extends HMModel {
         String inDtm = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_dtm.asc";
         String chm = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_chm.asc";
         String outShp = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/out.shp";
+        String outCsi = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_csi.asc";
         double area = 5;
 
         OmsRasterDiff rd = new OmsRasterDiff();
@@ -344,6 +345,7 @@ public class CrownShapeIndex extends HMModel {
         abv.inChm = chm;
         abv.pSearchAreaSize = area;
         abv.outTrees = outShp;
+        abv.outCsi = outCsi;
         abv.process();
     }
 
