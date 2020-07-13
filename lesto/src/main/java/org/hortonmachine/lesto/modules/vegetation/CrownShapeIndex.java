@@ -88,6 +88,16 @@ public class CrownShapeIndex extends HMModel {
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outCsi = null;
+    
+    @Description("Output Positive Opennes raster.")
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outPositiveOpennes = null;
+
+    @Description("Output Negative Openness raster.")
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outNegativeOpenness = null;
 
     @Execute
     public void process() throws Exception {
@@ -120,6 +130,12 @@ public class CrownShapeIndex extends HMModel {
 
         WritableRaster csiWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null,
                 HMConstants.doubleNovalue);
+       
+        WritableRaster positiveOpennesWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null,
+        		HMConstants.doubleNovalue);
+        
+        WritableRaster negativeOpennesWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null,
+        		HMConstants.doubleNovalue);
 
         int skipCols = (int) Math.ceil(pSearchAreaSize / 2 / xRes);
         int skipRows = (int) Math.ceil(pSearchAreaSize / 2 / yRes);
@@ -162,6 +178,7 @@ public class CrownShapeIndex extends HMModel {
                 GridNode se = window[rows - 1][cols - 1];
                 double[] phi12SE = getNodePhi12(chmIter, gridGeometry, nodeCoord, se);
 
+                
                 double phi1NW = phi12NW[0];
                 double phi1N = phi12N[0];
                 double phi1NE = phi12NE[0];
@@ -198,12 +215,23 @@ public class CrownShapeIndex extends HMModel {
                 }
 
                 csiWR.setSample(col, row, 0, finalPhi3);
+                
+//              Create the output for the original values of positive and negative openness (average on 8 directions)
+                
+                double finalPhi1 = (phi1NW + phi1N + phi1NE + phi1W + phi1E + phi1SW + phi1S + phi1SE) / 8;
+                positiveOpennesWR.setSample(col, row, 0, finalPhi1);
+                
+                double finalPhi2 = (phi2NW + phi2N + phi2NE + phi2W + phi2E + phi2SW + phi2S + phi2SE) / 8;
+                negativeOpennesWR.setSample(col, row, 0, finalPhi2);
+                
             }
             pm.worked(1);
         }
         pm.done();
 
         WritableRandomIter csiIter = CoverageUtilities.getWritableRandomIterator(csiWR);
+//        WritableRandomIter potitiveIter = CoverageUtilities.getWritableRandomIterator(positiveOpennesWR);
+//        WritableRandomIter negativeIter = CoverageUtilities.getWritableRandomIterator(negativeOpennesWR);
         pm.beginTask("Finding local maxima...", (nRows - 2 * skipRows) * (nCols - 2 * skipCols));
         for (int row = skipRows; row < nRows - skipRows; row++) {
             for (int col = skipCols; col < nCols - skipCols; col++) {
@@ -239,8 +267,16 @@ public class CrownShapeIndex extends HMModel {
 
         GridCoverage2D outCsiGC = CoverageUtilities.buildCoverage("csi", csiWR, regionMap,
                 inChmGC.getCoordinateReferenceSystem());
+
+        GridCoverage2D outPositiveOpennessGC = CoverageUtilities.buildCoverage("positiveOpenness", positiveOpennesWR, regionMap,
+        		inChmGC.getCoordinateReferenceSystem());
+        
+        GridCoverage2D outNegativeOpennessGC = CoverageUtilities.buildCoverage("negativeOpenness", negativeOpennesWR, regionMap,
+        		inChmGC.getCoordinateReferenceSystem());
           
         dumpRaster(outCsiGC, outCsi);
+        dumpRaster(outPositiveOpennessGC, outPositiveOpennes);
+        dumpRaster(outNegativeOpennessGC, outNegativeOpenness);
 
         dumpVector(outTreesFC, outTrees);
     }
@@ -253,7 +289,7 @@ public class CrownShapeIndex extends HMModel {
         ProfilePoint startPoint = profilePoints.remove(0);
 
         // calculate phi1
-        double phi1 = calculatePhi(profilePoints, startPoint);
+        double phi1OriginalValue = calculatePhi(profilePoints, startPoint);
 
         // calculate phi2
         // to do so, we need to invert the profile and do the same as before
@@ -273,48 +309,68 @@ public class CrownShapeIndex extends HMModel {
         ProfilePoint reversedStartPoint = new ProfilePoint(startPoint.getProgressive(),
                 maxElev - startPoint.getElevation(), startPoint.getPosition());
 
-        double phi2 = calculatePhi(reversedProfilePoints, reversedStartPoint);
+        double phi2OriginalValue = calculatePhi(reversedProfilePoints, reversedStartPoint);
 
+        double phi1 = 0.0;
+        double phi2 = 0.0;
+        
         // apply criteria
-        if (150 <= phi1) {
+        if (150 <= phi1OriginalValue) {
             phi1 = 150;
-        } else if (phi1 >= 90 && phi1 < 150) {
+        } else if (phi1OriginalValue >= 90 && phi1OriginalValue < 150) {
             phi1 = 150;
-        } else if (phi1 >= 30 && phi1 < 90) {
+        } else if (phi1OriginalValue >= 30 && phi1OriginalValue < 90) {
             phi1 = 30;
         }
-        if (phi2 <= 30) {
+        if (phi2OriginalValue <= 30) {
             phi2 = 30;
-        } else if (phi2 > 30 && phi2 <= 90) {
+        } else if (phi2OriginalValue > 30 && phi2OriginalValue <= 90) {
             phi2 = 30;
-        } else if (phi2 > 90 && phi2 <= 150) {
+        } else if (phi2OriginalValue > 90 && phi2OriginalValue <= 150) {
             phi2 = 150;
         }
 
-        return new double[] { phi1, phi2 };
+        return new double[] { phi1, phi2, phi1OriginalValue, phi2OriginalValue };
     }
 
     private double calculatePhi(List<ProfilePoint> profilePoints, ProfilePoint startPoint) {
         double phi;
         double startElev = startPoint.getElevation();
         double lastElev = profilePoints.get(profilePoints.size() - 1).getElevation();
+        boolean dopositiveAngle = false;
 
-        if (lastElev >= startElev) {
+        // check if there is a point in the profile with an elevation greater than startElev
+        for (int i = 1; i < profilePoints.size()-1; i++) {
+            double currentElev = profilePoints.get(i).getElevation();
+            double diff = currentElev - startElev;
+            
+            if (diff >= 0.0) {
+				dopositiveAngle = true;
+				break;
+			}
+        }
+            
+        // calculate positive angle for the points with an elevation greater than startElev
+        if (dopositiveAngle) {
             double maxAngle = Double.NEGATIVE_INFINITY;
             for (ProfilePoint pp : profilePoints) {
                 double pElev = pp.getElevation();
-                double tanAngle = (pElev - startElev) / (pp.getProgressive() - startPoint.getProgressive());
-                double angleRad = Math.atan(tanAngle);
+                
+                if (pElev > startElev) {
+                	double tanAngle = (pElev - startElev) / (pp.getProgressive() - startPoint.getProgressive());
+                	double angleRad = Math.atan(tanAngle);
 
-                maxAngle = Math.max(Math.toDegrees(angleRad), maxAngle);
+                	maxAngle = Math.max(Math.toDegrees(angleRad), maxAngle);
+                }
             }
             phi = 90 - maxAngle;
         } else {
+        	// the second case is relative to negative values of the elevation angle
             // in this case the minimum angle is chosen
             double minAngle = Double.POSITIVE_INFINITY;
             for (ProfilePoint pp : profilePoints) {
                 double pElev = pp.getElevation();
-                double tanAngle = (pElev - startElev) / (pp.getProgressive() - startPoint.getProgressive());
+                double tanAngle = Math.abs(pElev - startElev) / (pp.getProgressive() - startPoint.getProgressive());
                 double angleRad = Math.atan(tanAngle);
 
                 double angleDeg = Math.toDegrees(angleRad);
@@ -331,6 +387,8 @@ public class CrownShapeIndex extends HMModel {
         String chm = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_chm.asc";
         String outShp = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/out.shp";
         String outCsi = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_csi.asc";
+        String outPositiveOpenness = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_positiveopenness_2.asc";
+        String outNegativeOpenness = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_negativeopenness_2.asc";
         double area = 5;
 
         OmsRasterDiff rd = new OmsRasterDiff();
@@ -346,6 +404,8 @@ public class CrownShapeIndex extends HMModel {
         abv.pSearchAreaSize = area;
         abv.outTrees = outShp;
         abv.outCsi = outCsi;
+        abv.outPositiveOpennes = outPositiveOpenness;
+        abv.outNegativeOpenness = outNegativeOpenness;
         abv.process();
     }
 
