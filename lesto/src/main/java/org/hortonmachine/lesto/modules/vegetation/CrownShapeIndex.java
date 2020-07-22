@@ -70,343 +70,382 @@ import oms3.annotations.UI;
 @License(OMSHYDRO_LICENSE)
 public class CrownShapeIndex extends HMModel {
 
-    @Description("Input CHM.")
-    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
-    @In
-    public String inChm;
+	@Description("Input CHM.")
+	@UI(HMConstants.FILEIN_UI_HINT_RASTER)
+	@In
+	public String inChm;
 
-    @Description("Search area size.")
-    @In
-    public double pSearchAreaSize = 40.0;
+	@Description("Search area size.")
+	@In
+	public double pSearchAreaSize = 40.0;
 
-    @Description("Output grid areas with volume definitions.")
-    @UI(HMConstants.FILEOUT_UI_HINT)
-    @In
-    public String outTrees = null;
+	@Description("Skip border.")
+	@In
+	public boolean doSkipborder = false;
 
-    @Description("Output CSI raster.")
-    @UI(HMConstants.FILEOUT_UI_HINT)
-    @In
-    public String outCsi = null;
-    
-    @Description("Output Positive Opennes raster.")
-    @UI(HMConstants.FILEOUT_UI_HINT)
-    @In
-    public String outPositiveOpennes = null;
+	@Description("Output grid areas with volume definitions.")
+	@UI(HMConstants.FILEOUT_UI_HINT)
+	@In
+	public String outTrees = null;
 
-    @Description("Output Negative Openness raster.")
-    @UI(HMConstants.FILEOUT_UI_HINT)
-    @In
-    public String outNegativeOpenness = null;
+	@Description("Output CSI raster.")
+	@UI(HMConstants.FILEOUT_UI_HINT)
+	@In
+	public String outCsi = null;
 
-    @Execute
-    public void process() throws Exception {
-        checkNull(inChm);
+	@Description("Output Positive Opennes raster.")
+	@UI(HMConstants.FILEOUT_UI_HINT)
+	@In
+	public String outPositiveOpennes = null;
 
-        GridCoverage2D inChmGC = null;
-        CoordinateReferenceSystem crs = null;
+	@Description("Output Negative Openness raster.")
+	@UI(HMConstants.FILEOUT_UI_HINT)
+	@In
+	public String outNegativeOpenness = null;
 
-        inChmGC = getRaster(inChm);
-        crs = inChmGC.getCoordinateReferenceSystem();
+	@Execute
+	public void process() throws Exception {
+		checkNull(inChm);
 
-        /// create the output featurecollection
-        DefaultFeatureCollection outTreesFC = new DefaultFeatureCollection();
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("trees");
-        b.setCRS(crs);
-        b.add("the_geom", Point.class);
-        b.add("csi", Double.class);
-        b.add("height", Double.class);
-        SimpleFeatureType type = b.buildFeatureType();
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+		GridCoverage2D inChmGC = null;
+		CoordinateReferenceSystem crs = null;
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inChmGC);
-        int nCols = regionMap.getCols();
-        int nRows = regionMap.getRows();
-        double xRes = regionMap.getXres();
-        double yRes = regionMap.getYres();
-        RandomIter chmIter = CoverageUtilities.getRandomIterator(inChmGC);
-        GridGeometry2D gridGeometry = inChmGC.getGridGeometry();
+		inChmGC = getRaster(inChm);
+		crs = inChmGC.getCoordinateReferenceSystem();
 
-        WritableRaster csiWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null,
-                HMConstants.doubleNovalue);
-       
-        WritableRaster positiveOpennesWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null,
-        		HMConstants.doubleNovalue);
-        
-        WritableRaster negativeOpennesWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null,
-        		HMConstants.doubleNovalue);
+		/// create the output featurecollection
+		DefaultFeatureCollection outTreesFC = new DefaultFeatureCollection();
+		SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+		b.setName("trees");
+		b.setCRS(crs);
+		b.add("the_geom", Point.class);
+		b.add("csi", Double.class);
+		b.add("height", Double.class);
+		SimpleFeatureType type = b.buildFeatureType();
+		SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
-        int skipCols = (int) Math.ceil(pSearchAreaSize / 2 / xRes);
-        int skipRows = (int) Math.ceil(pSearchAreaSize / 2 / yRes);
+		RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inChmGC);
+		int nCols = regionMap.getCols();
+		int nRows = regionMap.getRows();
+		double xRes = regionMap.getXres();
+		double yRes = regionMap.getYres();
+		RandomIter chmIter = CoverageUtilities.getRandomIterator(inChmGC);
+		GridGeometry2D gridGeometry = inChmGC.getGridGeometry();
 
-        int searchCells = (int) Math.ceil(pSearchAreaSize / xRes);
+		WritableRaster csiWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null,
+				HMConstants.doubleNovalue);
 
-        pm.beginTask("Calculating Crown Shape Index...", (nRows - 2 * skipRows) * (nCols - 2 * skipCols));
-        for (int row = skipRows; row < nRows - skipRows; row++) {
-            for (int col = skipCols; col < nCols - skipCols; col++) {
+		WritableRaster positiveOpennesWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null,
+				HMConstants.doubleNovalue);
 
-                GridNode node = new GridNode(chmIter, nCols, nRows, xRes, yRes, col, row);
-                if (!node.isValid()) {
-                    continue;
-                }
-                Coordinate nodeCoord = CoverageUtilities.coordinateFromColRow(col, row, gridGeometry);
+		WritableRaster negativeOpennesWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null,
+				HMConstants.doubleNovalue);
 
-                GridNode[][] window = node.getWindow(searchCells);
-                int rows = window.length;
-                int cols = window[0].length;
-                int centerX = (int) (Math.ceil(cols / 2));
-                int centerY = (int) (Math.ceil(rows / 2));
+		int skipCols = (int) Math.ceil(pSearchAreaSize / 2 / xRes);
+		int skipRows = (int) Math.ceil(pSearchAreaSize / 2 / yRes);
+		if (!doSkipborder) {
+			skipCols = 0;
+			skipRows = 0;
+		}
 
-                // get the right cells
-                GridNode nw = window[0][0];
-                double[] phi12NW = getNodePhi12(chmIter, gridGeometry, nodeCoord, nw);
-                GridNode n = window[0][centerX];
-                double[] phi12N = getNodePhi12(chmIter, gridGeometry, nodeCoord, n);
-                GridNode ne = window[0][cols - 1];
-                double[] phi12NE = getNodePhi12(chmIter, gridGeometry, nodeCoord, ne);
+		int searchCells = (int) Math.ceil(pSearchAreaSize / xRes);
 
-                GridNode w = window[centerY][0];
-                double[] phi12W = getNodePhi12(chmIter, gridGeometry, nodeCoord, w);
-                GridNode e = window[centerY][cols - 1];
-                double[] phi12E = getNodePhi12(chmIter, gridGeometry, nodeCoord, e);
+		pm.beginTask("Calculating Crown Shape Index...", (nRows - 2 * skipRows) * (nCols - 2 * skipCols));
+		for (int row = skipRows; row < nRows - skipRows; row++) {
+			for (int col = skipCols; col < nCols - skipCols; col++) {
 
-                GridNode sw = window[rows - 1][0];
-                double[] phi12SW = getNodePhi12(chmIter, gridGeometry, nodeCoord, sw);
-                GridNode s = window[rows - 1][centerX];
-                double[] phi12S = getNodePhi12(chmIter, gridGeometry, nodeCoord, s);
-                GridNode se = window[rows - 1][cols - 1];
-                double[] phi12SE = getNodePhi12(chmIter, gridGeometry, nodeCoord, se);
+				GridNode node = new GridNode(chmIter, nCols, nRows, xRes, yRes, col, row);
+				if (!node.isValid()) {
+					continue;
+				}
+				Coordinate nodeCoord = CoverageUtilities.coordinateFromColRow(col, row, gridGeometry);
 
-                
-                double phi1NW = phi12NW[0];
-                double phi1N = phi12N[0];
-                double phi1NE = phi12NE[0];
-                double phi1W = phi12W[0];
-                double phi1E = phi12E[0];
-                double phi1SW = phi12SW[0];
-                double phi1S = phi12S[0];
-                double phi1SE = phi12SE[0];
+				GridNode[][] window = node.getWindow(searchCells);
+				int rows = window.length;
+				int cols = window[0].length;
+				int centerX = (int) (Math.ceil(cols / 2));
+				int centerY = (int) (Math.ceil(rows / 2));
 
-                double phi2NW = phi12NW[1];
-                double phi2N = phi12N[1];
-                double phi2NE = phi12NE[1];
-                double phi2W = phi12W[1];
-                double phi2E = phi12E[1];
-                double phi2SW = phi12SW[1];
-                double phi2S = phi12S[1];
-                double phi2SE = phi12SE[1];
+				List<double[]> phi12List = new ArrayList<>();
+				// get the right cells
+				GridNode nw = window[0][0];
+				if (nw.isValid()) {
+					double[] phi12NW = getNodePhi12(chmIter, gridGeometry, nodeCoord, nw);
+					phi12List.add(phi12NW);
+				}
+				GridNode n = window[0][centerX];
+				if (n.isValid()) {
+					double[] phi12N = getNodePhi12(chmIter, gridGeometry, nodeCoord, n);
+					phi12List.add(phi12N);
+				}
+				GridNode ne = window[0][cols - 1];
+				if (ne.isValid()) {
+					double[] phi12NE = getNodePhi12(chmIter, gridGeometry, nodeCoord, ne);
+					phi12List.add(phi12NE);
+				}
+				GridNode w = window[centerY][0];
+				if (w.isValid()) {
+					double[] phi12W = getNodePhi12(chmIter, gridGeometry, nodeCoord, w);
+					phi12List.add(phi12W);
+				}
+				GridNode e = window[centerY][cols - 1];
+				if (e.isValid()) {
+					double[] phi12E = getNodePhi12(chmIter, gridGeometry, nodeCoord, e);
+					phi12List.add(phi12E);
+				}
+				GridNode sw = window[rows - 1][0];
+				if (sw.isValid()) {
+					double[] phi12SW = getNodePhi12(chmIter, gridGeometry, nodeCoord, sw);
+					phi12List.add(phi12SW);
+				}
+				GridNode s = window[rows - 1][centerX];
+				if (s.isValid()) {
+					double[] phi12S = getNodePhi12(chmIter, gridGeometry, nodeCoord, s);
+					phi12List.add(phi12S);
+				}
+				GridNode se = window[rows - 1][cols - 1];
+				if (se.isValid()) {
+					double[] phi12SE = getNodePhi12(chmIter, gridGeometry, nodeCoord, se);
+					phi12List.add(phi12SE);
+				}
 
-                double finalPhi3;
-                if (phi1NW < 90 && phi1N < 90 && phi1NE < 90 && phi1W < 90 && phi1E < 90 && phi1SW < 90 && phi1S < 90
-                        && phi1SE < 90) {
-                    finalPhi3 = (179.9 - 0.1) / 2;
-                } else {
-                    // calc phi3 and average
-                    double phi3NW = (phi1NW - phi2NW) / 2;
-                    double phi3N = (phi1N - phi2N) / 2;
-                    double phi3NE = (phi1NE - phi2NE) / 2;
-                    double phi3W = (phi1W - phi2W) / 2;
-                    double phi3E = (phi1E - phi2E) / 2;
-                    double phi3SW = (phi1SW - phi2SW) / 2;
-                    double phi3S = (phi1S - phi2S) / 2;
-                    double phi3SE = (phi1SE - phi2SE) / 2;
-                    finalPhi3 = (phi3NW + phi3N + phi3NE + phi3W + phi3E + phi3SW + phi3S + phi3SE) / 8;
-                }
+				boolean allPhi1Minor90 = !phi12List.stream().anyMatch(phi12 -> phi12[0] >= 90);
+				int count = phi12List.size();
 
-                csiWR.setSample(col, row, 0, finalPhi3);
-                
+				double finalPhi3;
+				if (allPhi1Minor90) {
+					finalPhi3 = (179.9 - 0.1) / 2;
+				} else {
+					// calc phi3 and average
+					double sum = 0;
+					for (double[] phi12 : phi12List) {
+						sum = sum + (phi12[0] - phi12[1]) / 2.0;
+					}
+					finalPhi3 = sum / count;
+				}
+
+				csiWR.setSample(col, row, 0, finalPhi3);
+
 //              Create the output for the original values of positive and negative openness (average on 8 directions)
-                
-                double finalPhi1 = (phi1NW + phi1N + phi1NE + phi1W + phi1E + phi1SW + phi1S + phi1SE) / 8;
-                positiveOpennesWR.setSample(col, row, 0, finalPhi1);
-                
-                double finalPhi2 = (phi2NW + phi2N + phi2NE + phi2W + phi2E + phi2SW + phi2S + phi2SE) / 8;
-                negativeOpennesWR.setSample(col, row, 0, finalPhi2);
-                
-            }
-            pm.worked(1);
-        }
-        pm.done();
+				double finalPhi1 = 0;
+				double finalPhi2 = 0;
+				for (double[] phi12 : phi12List) {
+					finalPhi1 = finalPhi1 + phi12[2];
+					finalPhi2 = finalPhi2 + phi12[3];
+				}
+				finalPhi1 = finalPhi1 / count;
+				finalPhi2 = finalPhi2 / count;
+				positiveOpennesWR.setSample(col, row, 0, finalPhi1);
+				negativeOpennesWR.setSample(col, row, 0, finalPhi2);
 
-        WritableRandomIter csiIter = CoverageUtilities.getWritableRandomIterator(csiWR);
+			}
+			pm.worked(1);
+		}
+		pm.done();
+
+		WritableRandomIter csiIter = CoverageUtilities.getWritableRandomIterator(csiWR);
 //        WritableRandomIter potitiveIter = CoverageUtilities.getWritableRandomIterator(positiveOpennesWR);
 //        WritableRandomIter negativeIter = CoverageUtilities.getWritableRandomIterator(negativeOpennesWR);
-        pm.beginTask("Finding local maxima...", (nRows - 2 * skipRows) * (nCols - 2 * skipCols));
-        for (int row = skipRows; row < nRows - skipRows; row++) {
-            for (int col = skipCols; col < nCols - skipCols; col++) {
-                GridNode node = new GridNode(csiIter, nCols, nRows, xRes, yRes, col, row);
-                List<GridNode> validSurroundingNodes = node.getValidSurroundingNodes();
-                if (node.isValid()) {
-                    boolean isLocalMaxima = true;
-                    double centerElev = node.elevation;
-                    for (GridNode n : validSurroundingNodes) {
-                        if (n.isValid()) {
-                            double elev = n.elevation;
-                            if (elev > centerElev) {
-                                isLocalMaxima = false;
-                                break;
-                            }
-                        }
-                    }
-                    if (isLocalMaxima) {
-                        double chm = chmIter.getSampleDouble(col, row, 0);
-                        Point p = gf.createPoint(CoverageUtilities.coordinateFromColRow(col, row, gridGeometry));
-                        Object[] values = new Object[] { p, centerElev, chm };
-                        builder.addAll(values);
-                        SimpleFeature feature = builder.buildFeature(null);
-                        outTreesFC.add(feature);
-                    }
-                }
+		pm.beginTask("Finding local maxima...", (nRows - 2 * skipRows) * (nCols - 2 * skipCols));
+		for (int row = skipRows; row < nRows - skipRows; row++) {
+			for (int col = skipCols; col < nCols - skipCols; col++) {
+				GridNode node = new GridNode(csiIter, nCols, nRows, xRes, yRes, col, row);
+				List<GridNode> validSurroundingNodes = node.getValidSurroundingNodes();
+				if (node.isValid()) {
+					boolean isLocalMaxima = true;
+					double centerElev = node.elevation;
+					for (GridNode n : validSurroundingNodes) {
+						if (n.isValid()) {
+							double elev = n.elevation;
+							if (elev > centerElev) {
+								isLocalMaxima = false;
+								break;
+							}
+						}
+					}
+					if (isLocalMaxima) {
+						double chm = chmIter.getSampleDouble(col, row, 0);
+						Point p = gf.createPoint(CoverageUtilities.coordinateFromColRow(col, row, gridGeometry));
+						Object[] values = new Object[] { p, centerElev, chm };
+						builder.addAll(values);
+						SimpleFeature feature = builder.buildFeature(null);
+						outTreesFC.add(feature);
+					}
+				}
 
-            }
-            pm.worked(1);
-        }
-        pm.done();
-        chmIter.done();
+			}
+			pm.worked(1);
+		}
+		pm.done();
+		chmIter.done();
 
-        GridCoverage2D outCsiGC = CoverageUtilities.buildCoverage("csi", csiWR, regionMap,
-                inChmGC.getCoordinateReferenceSystem());
+		GridCoverage2D outCsiGC = CoverageUtilities.buildCoverage("csi", csiWR, regionMap,
+				inChmGC.getCoordinateReferenceSystem());
 
-        GridCoverage2D outPositiveOpennessGC = CoverageUtilities.buildCoverage("positiveOpenness", positiveOpennesWR, regionMap,
-        		inChmGC.getCoordinateReferenceSystem());
-        
-        GridCoverage2D outNegativeOpennessGC = CoverageUtilities.buildCoverage("negativeOpenness", negativeOpennesWR, regionMap,
-        		inChmGC.getCoordinateReferenceSystem());
-          
-        dumpRaster(outCsiGC, outCsi);
-        dumpRaster(outPositiveOpennessGC, outPositiveOpennes);
-        dumpRaster(outNegativeOpennessGC, outNegativeOpenness);
+		GridCoverage2D outPositiveOpennessGC = CoverageUtilities.buildCoverage("positiveOpenness", positiveOpennesWR,
+				regionMap, inChmGC.getCoordinateReferenceSystem());
 
-        dumpVector(outTreesFC, outTrees);
-    }
+		GridCoverage2D outNegativeOpennessGC = CoverageUtilities.buildCoverage("negativeOpenness", negativeOpennesWR,
+				regionMap, inChmGC.getCoordinateReferenceSystem());
 
-    private double[] getNodePhi12(RandomIter iter, GridGeometry2D gridGeometry, Coordinate nodeCoord, GridNode node)
-            throws TransformException {
-        Coordinate nwCoord = CoverageUtilities.coordinateFromColRow(node.col, node.row, gridGeometry);
-        List<ProfilePoint> profilePoints = CoverageUtilities.doProfile(iter, gridGeometry, nodeCoord, nwCoord);
+		dumpRaster(outCsiGC, outCsi);
+		dumpRaster(outPositiveOpennessGC, outPositiveOpennes);
+		dumpRaster(outNegativeOpennessGC, outNegativeOpenness);
 
-        ProfilePoint startPoint = profilePoints.remove(0);
+		dumpVector(outTreesFC, outTrees);
+	}
 
-        // calculate phi1
-        double phi1OriginalValue = calculatePhi(profilePoints, startPoint);
+	private double[] getNodePhi12(RandomIter iter, GridGeometry2D gridGeometry, Coordinate nodeCoord, GridNode node)
+			throws TransformException {
+		Coordinate nwCoord = CoverageUtilities.coordinateFromColRow(node.col, node.row, gridGeometry);
+		List<ProfilePoint> profilePoints = CoverageUtilities.doProfile(iter, gridGeometry, nodeCoord, nwCoord);
 
-        // calculate phi2
-        // to do so, we need to invert the profile and do the same as before
-        double maxElev = startPoint.getElevation();
-        for (ProfilePoint pp : profilePoints) {
-            double pElev = pp.getElevation();
-            maxElev = Math.max(pElev, maxElev);
-        }
-        // now redefine the profile by removing the values from the max
-        List<ProfilePoint> reversedProfilePoints = new ArrayList<>();
-        for (ProfilePoint pp : profilePoints) {
-            double pElev = pp.getElevation();
+		ProfilePoint startPoint = profilePoints.remove(0);
 
-            ProfilePoint newP = new ProfilePoint(pp.getProgressive(), maxElev - pElev, pp.getPosition());
-            reversedProfilePoints.add(newP);
-        }
-        ProfilePoint reversedStartPoint = new ProfilePoint(startPoint.getProgressive(),
-                maxElev - startPoint.getElevation(), startPoint.getPosition());
+		// calculate phi1
+		double phi1OriginalValue = calculatePhi(profilePoints, startPoint);
+//		double[] phi12OriginalValue = calculatePhi2(profilePoints, startPoint);
+//		double phi1OriginalValue = phi12OriginalValue[0];
+//		double phi2OriginalValue = phi12OriginalValue[1];
 
-        double phi2OriginalValue = calculatePhi(reversedProfilePoints, reversedStartPoint);
+		// calculate phi2
+		// to do so, we need to invert the profile and do the same as before
+		double maxElev = startPoint.getElevation();
+		for (ProfilePoint pp : profilePoints) {
+			double pElev = pp.getElevation();
+			maxElev = Math.max(pElev, maxElev);
+		}
+		// now redefine the profile by removing the values from the max
+		List<ProfilePoint> reversedProfilePoints = new ArrayList<>();
+		for (ProfilePoint pp : profilePoints) {
+			double pElev = pp.getElevation();
 
-        double phi1 = 0.0;
-        double phi2 = 0.0;
-        
-        // apply criteria
-        if (150 <= phi1OriginalValue) {
-            phi1 = 150;
-        } else if (phi1OriginalValue >= 90 && phi1OriginalValue < 150) {
-            phi1 = 150;
-        } else if (phi1OriginalValue >= 30 && phi1OriginalValue < 90) {
-            phi1 = 30;
-        }
-        if (phi2OriginalValue <= 30) {
-            phi2 = 30;
-        } else if (phi2OriginalValue > 30 && phi2OriginalValue <= 90) {
-            phi2 = 30;
-        } else if (phi2OriginalValue > 90 && phi2OriginalValue <= 150) {
-            phi2 = 150;
-        }
+			ProfilePoint newP = new ProfilePoint(pp.getProgressive(), maxElev - pElev, pp.getPosition());
+			reversedProfilePoints.add(newP);
+		}
+		ProfilePoint reversedStartPoint = new ProfilePoint(startPoint.getProgressive(),
+				maxElev - startPoint.getElevation(), startPoint.getPosition());
 
-        return new double[] { phi1, phi2, phi1OriginalValue, phi2OriginalValue };
-    }
+		double phi2OriginalValue = calculatePhi(reversedProfilePoints, reversedStartPoint);
 
-    private double calculatePhi(List<ProfilePoint> profilePoints, ProfilePoint startPoint) {
-        double phi;
-        double startElev = startPoint.getElevation();
-        double lastElev = profilePoints.get(profilePoints.size() - 1).getElevation();
-        boolean dopositiveAngle = false;
+		double phi1 = 0.0;
+		double phi2 = 0.0;
 
-        // check if there is a point in the profile with an elevation greater than startElev
-        for (int i = 1; i < profilePoints.size()-1; i++) {
-            double currentElev = profilePoints.get(i).getElevation();
-            double diff = currentElev - startElev;
-            
-            if (diff >= 0.0) {
+		// apply criteria
+		if (150 <= phi1OriginalValue) {
+			phi1 = 150;
+		} else if (phi1OriginalValue >= 90 && phi1OriginalValue < 150) {
+			phi1 = 150;
+		} else if (phi1OriginalValue >= 30 && phi1OriginalValue < 90) {
+			phi1 = 30;
+		}
+		if (phi2OriginalValue <= 30) {
+			phi2 = 30;
+		} else if (phi2OriginalValue > 30 && phi2OriginalValue <= 90) {
+			phi2 = 30;
+		} else if (phi2OriginalValue > 90 && phi2OriginalValue <= 150) {
+			phi2 = 150;
+		}
+
+		return new double[] { phi1, phi2, phi1OriginalValue, phi2OriginalValue };
+	}
+
+	private double calculatePhi(List<ProfilePoint> profilePoints, ProfilePoint startPoint) {
+		double phi;
+		double startElev = startPoint.getElevation();
+		double lastElev = profilePoints.get(profilePoints.size() - 1).getElevation();
+		boolean dopositiveAngle = false;
+
+		// check if there is a point in the profile with an elevation greater than
+		// startElev
+		for (int i = 1; i < profilePoints.size() - 1; i++) {
+			double currentElev = profilePoints.get(i).getElevation();
+			double diff = currentElev - startElev;
+
+			if (diff >= 0.0) {
 				dopositiveAngle = true;
 				break;
 			}
-        }
-            
-        // calculate positive angle for the points with an elevation greater than startElev
-        if (dopositiveAngle) {
-            double maxAngle = Double.NEGATIVE_INFINITY;
-            for (ProfilePoint pp : profilePoints) {
-                double pElev = pp.getElevation();
-                
-                if (pElev > startElev) {
-                	double tanAngle = (pElev - startElev) / (pp.getProgressive() - startPoint.getProgressive());
-                	double angleRad = Math.atan(tanAngle);
+		}
 
-                	maxAngle = Math.max(Math.toDegrees(angleRad), maxAngle);
-                }
-            }
-            phi = 90 - maxAngle;
-        } else {
-        	// the second case is relative to negative values of the elevation angle
-            // in this case the minimum angle is chosen
-            double minAngle = Double.POSITIVE_INFINITY;
-            for (ProfilePoint pp : profilePoints) {
-                double pElev = pp.getElevation();
-                double tanAngle = Math.abs(pElev - startElev) / (pp.getProgressive() - startPoint.getProgressive());
-                double angleRad = Math.atan(tanAngle);
+		// calculate positive angle for the points with an elevation greater than
+		// startElev
+		if (dopositiveAngle) {
+			double maxAngle = Double.NEGATIVE_INFINITY;
+			for (ProfilePoint pp : profilePoints) {
+				double pElev = pp.getElevation();
 
-                double angleDeg = Math.toDegrees(angleRad);
-                minAngle = Math.min(Math.abs(angleDeg), minAngle);
-            }
-            phi = 90 + minAngle;
-        }
-        return phi;
-    }
+				if (pElev > startElev) {
+					double tanAngle = (pElev - startElev) / (pp.getProgressive() - startPoint.getProgressive());
+					double angleRad = Math.atan(tanAngle);
 
-    public static void main(String[] args) throws Exception {
-        String inDsm = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_dsm.asc";
-        String inDtm = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_dtm.asc";
-        String chm = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_chm.asc";
-        String outShp = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/out.shp";
-        String outCsi = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_csi.asc";
-        String outPositiveOpenness = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_positiveopenness_2.asc";
-        String outNegativeOpenness = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_negativeopenness_2.asc";
-        double area = 5;
+					maxAngle = Math.max(Math.toDegrees(angleRad), maxAngle);
+				}
+			}
+			phi = 90 - maxAngle;
+		} else {
+			// the second case is relative to negative values of the elevation angle
+			// in this case the minimum angle is chosen
+			double minAngle = Double.POSITIVE_INFINITY;
+			for (ProfilePoint pp : profilePoints) {
+				double pElev = pp.getElevation();
+				double tanAngle = Math.abs(pElev - startElev) / (pp.getProgressive() - startPoint.getProgressive());
+				double angleRad = Math.atan(tanAngle);
 
-        OmsRasterDiff rd = new OmsRasterDiff();
-        rd.inRaster1 = OmsRasterReader.readRaster(inDsm);
-        rd.inRaster2 = OmsRasterReader.readRaster(inDtm);
-        rd.doNegatives = false;
-        rd.process();
-        GridCoverage2D chmGC = rd.outRaster;
-        OmsRasterWriter.writeRaster(chm, chmGC);
+				double angleDeg = Math.toDegrees(angleRad);
+				minAngle = Math.min(Math.abs(angleDeg), minAngle);
+			}
+			phi = 90 + minAngle;
+		}
+		return phi;
+	}
 
-        CrownShapeIndex abv = new CrownShapeIndex();
-        abv.inChm = chm;
-        abv.pSearchAreaSize = area;
-        abv.outTrees = outShp;
-        abv.outCsi = outCsi;
-        abv.outPositiveOpennes = outPositiveOpenness;
-        abv.outNegativeOpenness = outNegativeOpenness;
-        abv.process();
-    }
+	private double[] calculatePhi2(List<ProfilePoint> profilePoints, ProfilePoint startPoint) {
+		double startElev = startPoint.getElevation();
+
+		double maxAngle = Double.NEGATIVE_INFINITY;
+		double minAngle = Double.POSITIVE_INFINITY;
+		for (ProfilePoint pp : profilePoints) {
+			double pElev = pp.getElevation();
+
+			double tanAngle = (pElev - startElev) / (pp.getProgressive() - startPoint.getProgressive());
+			double angleRad = Math.atan(tanAngle);
+
+			maxAngle = Math.max(Math.toDegrees(angleRad), maxAngle);
+			minAngle = Math.min(Math.toDegrees(angleRad), minAngle);
+		}
+		double phiMax = 90 - maxAngle;
+		double phiMin = 90 + maxAngle;
+
+		return new double[] { phiMax, phiMin };
+	}
+
+	public static void main(String[] args) throws Exception {
+		String inDsm = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_dsm.asc";
+		String inDtm = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_dtm.asc";
+		String chm = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_chm.asc";
+		String outShp = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/out.shp";
+		String outCsi = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_csi.asc";
+		String outPositiveOpenness = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_positiveopenness_4.asc";
+		String outNegativeOpenness = "D:\\lavori_tmp\\2020_diadalos\\WP06_VEGETATION\\test_oono/plot_77_negativeopenness_4.asc";
+		double area = 40;
+
+		OmsRasterDiff rd = new OmsRasterDiff();
+		rd.inRaster1 = OmsRasterReader.readRaster(inDsm);
+		rd.inRaster2 = OmsRasterReader.readRaster(inDtm);
+		rd.doNegatives = false;
+		rd.process();
+		GridCoverage2D chmGC = rd.outRaster;
+		OmsRasterWriter.writeRaster(chm, chmGC);
+
+		CrownShapeIndex abv = new CrownShapeIndex();
+		abv.inChm = chm;
+		abv.pSearchAreaSize = area;
+		abv.outTrees = outShp;
+		abv.outCsi = outCsi;
+		abv.outPositiveOpennes = outPositiveOpenness;
+		abv.outNegativeOpenness = outNegativeOpenness;
+		abv.process();
+	}
 
 }
