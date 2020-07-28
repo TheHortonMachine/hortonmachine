@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hortonmachine</artifactId>
@@ -14,17 +14,17 @@
 	<modules>
 		<module>dbs</module>
 		<module>gears</module>
-        <module>hmachine</module>
+		<module>hmachine</module>
 		<module>lesto</module>
 		<module>modules</module>
 		<module>gui</module>
-		<module>apps</module> 
+		<module>apps</module>
 	</modules>
 
 	<properties>
 		<gt.version>23.0</gt.version>
-		<groovy.version>3.0.1</groovy.version>
-		<geoscript.version>1.14.0</geoscript.version>
+		<groovy.version>3.0.3</groovy.version>
+		<geoscript.version>1.15.0</geoscript.version>
 
 		<c3p0.version>0.9.5.5</c3p0.version>
 		<h2gis.version>1.5.0</h2gis.version>
@@ -35,8 +35,6 @@
 		<jts.version>1.16.1</jts.version>
 		<jaiext.version>1.1.14</jaiext.version>
 		<jackson.version>2.9.8</jackson.version>
-
-		<jdk.version>8</jdk.version>
 
 		<java.awt.headless>true</java.awt.headless>
 		<sun.java2d.d3d>true</sun.java2d.d3d>
@@ -118,11 +116,11 @@
 				<version>1.7.5</version>
 			</dependency>
 
-          <dependency>
-              <groupId>systems.uom</groupId>
-              <artifactId>systems-common-java8</artifactId>
-              <version>0.7.2</version>
-          </dependency>
+			<dependency>
+				<groupId>systems.uom</groupId>
+				<artifactId>systems-common-java8</artifactId>
+				<version>0.7.2</version>
+			</dependency>
 
 			<!-- Java Advanced Imaging (JAI) -->
 			<dependency>
@@ -142,11 +140,11 @@
 			</dependency>
 
 			<!-- ImageIO-Ext -->
-            <dependency>
-              <groupId>org.geotools</groupId>
-              <artifactId>gt-imageio-ext-gdal</artifactId>
-              <version>${gt.version}</version>
-            </dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-imageio-ext-gdal</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
 			<!-- JAITools -->
 			<dependency>
 				<groupId>org.jaitools</groupId>
@@ -380,36 +378,36 @@
 				<artifactId>joda-time</artifactId>
 				<version>2.9.4</version>
 			</dependency>
-            <dependency>
-                <groupId>org.codehaus.groovy</groupId>
-                <artifactId>groovy</artifactId>
-                <version>${groovy.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.groovy</groupId>
-                <artifactId>groovy-sql</artifactId>
-                <version>${groovy.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.groovy</groupId>
-                <artifactId>groovy-xml</artifactId>
-                <version>${groovy.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.groovy</groupId>
-                <artifactId>groovy-json</artifactId>
-                <version>${groovy.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.groovy</groupId>
-                <artifactId>groovy-swing</artifactId>
-                <version>${groovy.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.groovy</groupId>
-                <artifactId>groovy-console</artifactId>
-                <version>${groovy.version}</version>
-            </dependency>
+			<dependency>
+				<groupId>org.codehaus.groovy</groupId>
+				<artifactId>groovy</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.groovy</groupId>
+				<artifactId>groovy-sql</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.groovy</groupId>
+				<artifactId>groovy-xml</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.groovy</groupId>
+				<artifactId>groovy-json</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.groovy</groupId>
+				<artifactId>groovy-swing</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.groovy</groupId>
+				<artifactId>groovy-console</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
 
 			<dependency>
 				<groupId>org.orbisgis</groupId>
@@ -468,11 +466,11 @@
 				<artifactId>gt-coverage</artifactId>
 				<version>${gt.version}</version>
 			</dependency>
-            <dependency>
-               <groupId>org.geotools</groupId>
-               <artifactId>gt-geopkg</artifactId>
-               <version>${gt.version}</version>
-            </dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-geopkg</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.geotools</groupId>
 				<artifactId>gt-geotiff</artifactId>
@@ -533,11 +531,11 @@
 				<artifactId>xpp3</artifactId>
 				<version>1.1.4c</version>
 			</dependency>
-<dependency>
-    <groupId>commons-codec</groupId>
-    <artifactId>commons-codec</artifactId>
-    <version>1.9</version>
-</dependency>
+			<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+				<version>1.9</version>
+			</dependency>
 
 			<dependency>
 				<groupId>commons-collections</groupId>
@@ -606,22 +604,22 @@
 			</dependency>
 
 			<dependency>
-			    <groupId>com.github.docker-java</groupId>
-			    <artifactId>docker-java</artifactId>
-			    <version>3.2.0</version>
-                        </dependency>
+				<groupId>com.github.docker-java</groupId>
+				<artifactId>docker-java</artifactId>
+				<version>3.2.0</version>
+			</dependency>
 
 
 			<!-- conflict management -->
 			<dependency>
-			    <groupId>com.google.guava</groupId>
-			    <artifactId>guava</artifactId>
-			    <version>25.1-jre</version>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>25.1-jre</version>
 			</dependency>
 			<dependency>
-			    <groupId>org.javassist</groupId>
-			    <artifactId>javassist</artifactId>
-			    <version>3.25.0-GA</version>
+				<groupId>org.javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<version>3.25.0-GA</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -654,41 +652,136 @@
 				<version>${jackson.version}</version>
 			</dependency>
 
-<dependency><groupId>org.geotools</groupId><artifactId>gt-jdbc</artifactId><version>${gt.version}</version> </dependency>
-<dependency><groupId>org.geotools</groupId><artifactId>gt-image</artifactId><version>${gt.version}</version> </dependency>
-<dependency><groupId>org.geotools.xsd</groupId><artifactId>gt-xsd-fes</artifactId><version>${gt.version}</version> </dependency>
-<dependency><groupId>org.geotools.xsd</groupId><artifactId>gt-xsd-ows</artifactId><version>${gt.version}</version> </dependency>
-<dependency><groupId>org.geotools.xsd</groupId><artifactId>gt-xsd-gml3</artifactId><version>${gt.version}</version> </dependency>
-<dependency><groupId>org.geotools.xsd</groupId><artifactId>gt-xsd-wfs</artifactId><version>${gt.version}</version> </dependency>
-<dependency><groupId>org.geotools.xsd</groupId><artifactId>gt-xsd-kml</artifactId><version>${gt.version}</version> </dependency>
-<dependency><groupId>org.geotools</groupId><artifactId>gt-transform</artifactId><version>${gt.version}</version> </dependency>
-<dependency><groupId>org.geotools</groupId><artifactId>gt-wfs-ng</artifactId><version>${gt.version}</version> </dependency>
-<dependency><groupId>org.geotools.ogc</groupId><artifactId>net.opengis.ows</artifactId><version>${gt.version}</version></dependency>
-<dependency><groupId>org.geotools.ogc</groupId><artifactId>org.w3.xlink</artifactId><version>${gt.version}</version></dependency>
-<dependency><groupId>org.geotools.ogc</groupId><artifactId>net.opengis.fes</artifactId><version>${gt.version}</version></dependency>
-<dependency><groupId>org.geotools</groupId><artifactId>gt-opengis</artifactId><version>${gt.version}</version> </dependency>
-<dependency><groupId>org.geotools.xsd</groupId><artifactId>gt-xsd-filter</artifactId><version>${gt.version}</version> </dependency>
-<dependency><groupId>org.geotools</groupId><artifactId>gt-process</artifactId><version>${gt.version}</version> </dependency>
-<dependency><groupId>org.geotools</groupId><artifactId>gt-cql</artifactId><version>${gt.version}</version></dependency>
-<dependency><groupId>org.geotools</groupId><artifactId>gt-xsd-gml3</artifactId><version>${gt.version}</version></dependency>
-<dependency><groupId>org.geotools</groupId><artifactId>gt-charts</artifactId><version>${gt.version}</version></dependency>
-<dependency><groupId>org.geotools</groupId><artifactId>gt-brewer</artifactId><version>${gt.version}</version></dependency>
-<dependency><groupId>org.geotools</groupId><artifactId>gt-svg</artifactId><version>${gt.version}</version></dependency>
-<dependency><groupId>org.geotools</groupId><artifactId>gt-process-feature</artifactId><version>${gt.version}</version></dependency>
-<dependency><groupId>org.geotools</groupId><artifactId>gt-process-geometry</artifactId><version>${gt.version}</version></dependency>
-<dependency><groupId>org.geotools</groupId><artifactId>gt-ysld</artifactId><version>${gt.version}</version></dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-jdbc</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-image</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools.xsd</groupId>
+				<artifactId>gt-xsd-fes</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools.xsd</groupId>
+				<artifactId>gt-xsd-ows</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools.xsd</groupId>
+				<artifactId>gt-xsd-gml3</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools.xsd</groupId>
+				<artifactId>gt-xsd-wfs</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools.xsd</groupId>
+				<artifactId>gt-xsd-kml</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-transform</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-wfs-ng</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools.ogc</groupId>
+				<artifactId>net.opengis.ows</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools.ogc</groupId>
+				<artifactId>org.w3.xlink</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools.ogc</groupId>
+				<artifactId>net.opengis.fes</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-opengis</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools.xsd</groupId>
+				<artifactId>gt-xsd-filter</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-process</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-cql</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-xsd-gml3</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-charts</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-brewer</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-svg</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-process-feature</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-process-geometry</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-ysld</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
 
-<dependency><groupId>com.miglayout</groupId><artifactId>miglayout</artifactId><version>3.7.4</version></dependency>
+			<dependency>
+				<groupId>com.miglayout</groupId>
+				<artifactId>miglayout</artifactId>
+				<version>3.7.4</version>
+			</dependency>
 
 
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.10</version>
+				<scope>test</scope>
+			</dependency>
 
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.10</version>
-			<scope>test</scope>
-		</dependency>
-				
 		</dependencies>
 	</dependencyManagement>
 
@@ -708,30 +801,34 @@
 	<!-- Maven repository is implicit and doesn't need to be specified. -->
 	<!-- ================================================================== -->
 	<repositories>
-        <repository>
-          <id>central.maven.org</id>
-          <name>Central Maven repository</name>
-          <url>https://repo1.maven.org/maven2/</url>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-        </repository>
-
-  <repository>
-      <id>osgeo</id>
-      <name>OSGeo Nexus Release Repository</name>
-      <url>https://repo.osgeo.org/repository/release/</url>
-      <!-- contains release (including third-party-dependences)                            -->
-      <!-- ucar (https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases) -->
-      <!-- geosolutions (http://maven.geo-solutions.it/)                                   -->
-      <snapshots><enabled>false</enabled></snapshots>
-      <releases><enabled>true</enabled></releases>
-    </repository>
+		<repository>
+			<id>central.maven.org</id>
+			<name>Central Maven repository</name>
+			<url>https://repo1.maven.org/maven2/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
 
 		<repository>
-            <snapshots>
-              <enabled>false</enabled>
-            </snapshots>
+			<id>osgeo</id>
+			<name>OSGeo Nexus Release Repository</name>
+			<url>https://repo.osgeo.org/repository/release/</url>
+			<!-- contains release (including third-party-dependences)                            -->
+			<!-- ucar (https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases) -->
+			<!-- geosolutions (http://maven.geo-solutions.it/)                                   -->
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+
+		<repository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 			<id>geosolutions</id>
 			<name>GeoSolutions repository used for imageio-ext, jai-ext</name>
 			<url>http://maven.geo-solutions.it/</url>
@@ -758,7 +855,7 @@
 			<name>jitpack</name>
 			<url>http://jitpack.io</url>
 		</repository>
-    </repositories>
+	</repositories>
 
 	<!-- Build configuration -->
 	<build>
@@ -770,81 +867,60 @@
 			</extension>
 		</extensions>
 		<plugins>
-
-
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
 				<configuration>
-                    <source>1.8</source>
-					<target>1.8</target>
 					<encoding>UTF-8</encoding>
-                    <debug>true</debug>
-                    <!--
-                     activate in case of java 13
-                    <release>13</release>
-                    -->
+                    <release>14</release>
+					<debug>true</debug>
 				</configuration>
 			</plugin>
-                    <!--
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.0</version>
-                <configuration>
-                    <argLine>
-                        -illegal-access=permit
-                    </argLine>
-                </configuration>
-            </plugin>
-                    -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<id>remove_hm_from_modulename</id>
+						<goals>
+							<goal>regex-property</goal>
+						</goals>
+						<configuration>
+							<name>moduleIdentifierStep1</name>
+							<value>${project.groupId}.${project.artifactId}</value>
+							<regex>hm-</regex>
+							<replacement></replacement>
+							<failIfNoMatch>false</failIfNoMatch>
+						</configuration>
+					</execution>
+					<execution>
+						<id>remove_dashes_from_modulename</id>
+						<goals>
+							<goal>regex-property</goal>
+						</goals>
+						<configuration>
+							<name>moduleIdentifier</name>
+							<value>${moduleIdentifierStep1}</value>
+							<regex>-</regex>
+							<replacement>_</replacement>
+							<failIfNoMatch>false</failIfNoMatch>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 
-
-         <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <version>3.0.0</version>
-            <executions>
-              <execution>
-                <id>remove_hm_from_modulename</id>
-                <goals>
-                  <goal>regex-property</goal>
-                </goals>
-                <configuration>
-                  <name>moduleIdentifierStep1</name>
-                  <value>${project.groupId}.${project.artifactId}</value>
-                  <regex>hm-</regex>
-                  <replacement></replacement>
-                  <failIfNoMatch>false</failIfNoMatch>
-                </configuration>
-              </execution>
-              <execution>
-                <id>remove_dashes_from_modulename</id>
-                <goals>
-                  <goal>regex-property</goal>
-                </goals>
-                <configuration>
-                  <name>moduleIdentifier</name>
-                  <value>${moduleIdentifierStep1}</value>
-                  <regex>-</regex>
-                  <replacement>_</replacement>
-                  <failIfNoMatch>false</failIfNoMatch>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-            
-            <!-- 
+			<!-- 
                 can be used to find newest versions fo plugins: mvn versions:display-plugin-updates
             -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>versions-maven-plugin</artifactId>
-                <version>2.5</version>
-                <configuration>
-                    <generateBackupPoms>false</generateBackupPoms>
-                </configuration>
-            </plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<generateBackupPoms>false</generateBackupPoms>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -888,17 +964,17 @@
 				<version>3.1.1</version>
 				<executions>
 					<execution>
-                        <id>main-javadoc</id>
-                        <phase>package</phase>
+						<id>main-javadoc</id>
+						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 						</goals>
 						<configuration>
-                            <source>8</source>
-                            <doclint>none</doclint>
-                            <quiet>true</quiet>
-                            <failOnWarnings>false</failOnWarnings>
-                            <failOnError>true</failOnError>
+							<source>8</source>
+							<doclint>none</doclint>
+							<quiet>true</quiet>
+							<failOnWarnings>false</failOnWarnings>
+							<failOnError>true</failOnError>
 						</configuration>
 					</execution>
 				</executions>
@@ -929,17 +1005,17 @@
 					</rules>
 				</configuration>
 			</plugin>
-            <plugin>
-              <groupId>org.sonatype.plugins</groupId>
-              <artifactId>nexus-staging-maven-plugin</artifactId>
-              <version>1.6.7</version>
-              <extensions>true</extensions>
-              <configuration>
-           	     <serverId>ossrh</serverId>
-                 <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                 <autoReleaseAfterClose>true</autoReleaseAfterClose>
-              </configuration>
-            </plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.7</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -972,26 +1048,26 @@
 			</build>
 		</profile>
 
-        <profile>
-          <id>jdk13</id>
-          <activation>
-            <property>
-              <name>qa</name>
-            </property>
-            <jdk>(1.8,)</jdk>
-          </activation>
-          <build>
-            <plugins>
-              <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                     <release>13</release>
-                </configuration>
-              </plugin>
-            </plugins>
-          </build>
-        </profile>
+		<profile>
+			<id>jdk8</id>
+			<activation>
+				<property>
+					<name>qa</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<version>3.8.1</version>
+						<configuration>
+							<source>1.8</source>
+							<target>1.8</target>
+							<encoding>UTF-8</encoding>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 </project>
