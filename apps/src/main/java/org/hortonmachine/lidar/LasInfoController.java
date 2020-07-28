@@ -75,12 +75,12 @@ import org.hortonmachine.gui.utils.executor.ExecutorProgressGui;
 import org.hortonmachine.gui.utils.monitor.ActionWithProgress;
 import org.hortonmachine.gui.utils.monitor.ProgressMonitor;
 import org.joda.time.DateTime;
-import org.jzy3d.analysis.AbstractAnalysis;
-import org.jzy3d.analysis.AnalysisLauncher;
-import org.jzy3d.chart.factories.AWTChartComponentFactory;
-import org.jzy3d.maths.Coord3d;
-import org.jzy3d.plot3d.primitives.Scatter;
-import org.jzy3d.plot3d.rendering.canvas.Quality;
+// import org.jzy3d.analysis.AbstractAnalysis;
+// import org.jzy3d.analysis.AnalysisLauncher;
+// import org.jzy3d.chart.factories.AWTChartComponentFactory;
+// import org.jzy3d.maths.Coord3d;
+// import org.jzy3d.plot3d.primitives.Scatter;
+// import org.jzy3d.plot3d.rendering.canvas.Quality;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -265,54 +265,55 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
             }
         });
 
-        _load3DButton.addActionListener(e -> {
-            if (checkReader()) {
-                AbstractAnalysis abstractAnalysis = new AbstractAnalysis(){
-                    @Override
-                    public void init() throws Exception {
-                        constraints.applyConstraints(lasReader, false, null);
-                        List<LasRecord> filteredPoints = constraints.getFilteredPoints();
-                        List<Coord3d> points = new ArrayList<>();
-                        List<org.jzy3d.colors.Color> colors = new ArrayList<>();
+        _load3DButton.setVisible(false);
+//         _load3DButton.addActionListener(e -> {
+//             if (checkReader()) {
+//                 AbstractAnalysis abstractAnalysis = new AbstractAnalysis(){
+//                     @Override
+//                     public void init() throws Exception {
+//                         constraints.applyConstraints(lasReader, false, null);
+//                         List<LasRecord> filteredPoints = constraints.getFilteredPoints();
+//                         List<Coord3d> points = new ArrayList<>();
+//                         List<org.jzy3d.colors.Color> colors = new ArrayList<>();
 
-                        for( LasRecord dot : filteredPoints ) {
-                            float x = (float) dot.x;
-                            float y = (float) dot.y;
-                            float z = (float) dot.z;
-                            if (!Double.isNaN(dot.groundElevation)) {
-                                z = (float) dot.groundElevation;
-                            }
-                            points.add(new Coord3d(x, y, z));
-                            short[] c = dot.color;
-                            colors.add(new org.jzy3d.colors.Color((int) c[0], (int) c[1], (int) c[2]));
-                        }
+//                         for( LasRecord dot : filteredPoints ) {
+//                             float x = (float) dot.x;
+//                             float y = (float) dot.y;
+//                             float z = (float) dot.z;
+//                             if (!Double.isNaN(dot.groundElevation)) {
+//                                 z = (float) dot.groundElevation;
+//                             }
+//                             points.add(new Coord3d(x, y, z));
+//                             short[] c = dot.color;
+//                             colors.add(new org.jzy3d.colors.Color((int) c[0], (int) c[1], (int) c[2]));
+//                         }
 
-                        Coord3d[] coord3ds = points.toArray(new Coord3d[points.size()]);
-                        org.jzy3d.colors.Color[] colorsArray = colors.toArray(new org.jzy3d.colors.Color[colors.size()]);
-                        Scatter scatterLas = new Scatter(coord3ds, colorsArray, 7f);
-                        String text = _pointSizeField.getText();
-                        int pointSize = 1;
-                        try {
-                            pointSize = Integer.parseInt(text.trim());
-                        } catch (Exception e) {
-                            // ignore
-                        }
-                        scatterLas.setWidth(pointSize);
+//                         Coord3d[] coord3ds = points.toArray(new Coord3d[points.size()]);
+//                         org.jzy3d.colors.Color[] colorsArray = colors.toArray(new org.jzy3d.colors.Color[colors.size()]);
+//                         Scatter scatterLas = new Scatter(coord3ds, colorsArray, 7f);
+//                         String text = _pointSizeField.getText();
+//                         int pointSize = 1;
+//                         try {
+//                             pointSize = Integer.parseInt(text.trim());
+//                         } catch (Exception e) {
+//                             // ignore
+//                         }
+//                         scatterLas.setWidth(pointSize);
 
-                        chart = AWTChartComponentFactory.chart(Quality.Fastest, "newt");
-                        chart.getScene().getGraph().add(scatterLas);
-//                    chart.setAxeDisplayed(false);
-                        chart.getView().setSquared(false);
+//                         chart = AWTChartComponentFactory.chart(Quality.Fastest, "newt");
+//                         chart.getScene().getGraph().add(scatterLas);
+// //                    chart.setAxeDisplayed(false);
+//                         chart.getView().setSquared(false);
 
-                    }
-                };
-                try {
-                    AnalysisLauncher.open(abstractAnalysis);
-                } catch (Exception e1) {
-                    GuiUtilities.handleError(_boundsLoadButton, e1);
-                }
-            }
-        });
+//                     }
+//                 };
+//                 try {
+//                     AnalysisLauncher.open(abstractAnalysis);
+//                 } catch (Exception e1) {
+//                     GuiUtilities.handleError(_boundsLoadButton, e1);
+//                 }
+//             }
+//         });
 
         _sliceIntervalField.setText("1");
         _sliceWidthField.setText("0.2");
