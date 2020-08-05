@@ -34,10 +34,34 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTCA_outTca_DESCR
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeSet;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoordinates2D;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.hortonmachine.gears.libs.modules.FlowNode;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.geometry.DirectPosition;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -50,13 +74,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.hortonmachine.gears.libs.modules.FlowNode;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description(OMSTCA_DESCRIPTION)
 @Documentation(OMSTCA_DOCUMENTATION)
@@ -79,12 +96,22 @@ public class OmsTca extends HMModel {
     @Out
     public SimpleFeatureCollection outLoop = null;
 
+    private SimpleFeatureType loopFT;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outTca == null, doReset)) {
             return;
         }
         checkNull(inFlow);
+
+        // prepare the loop featurecollection
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("loop");
+        b.setCRS(inFlow.getCoordinateReferenceSystem());
+        b.add("the_geom", LineString.class);
+        loopFT = b.buildFeatureType();
+        outLoop = new DefaultFeatureCollection();
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int cols = regionMap.getCols();
@@ -96,20 +123,52 @@ public class OmsTca extends HMModel {
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
         WritableRandomIter tcaIter = RandomIterFactory.createWritable(tcaWR, null);
 
+        boolean loopError = false;
+
         pm.beginTask("Calculating tca...", rows); //$NON-NLS-1$
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
                 FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
                 if (flowNode.isSource()) {
                     double previousTcaValue = 0.0;
-                    while( flowNode != null && flowNode.isValid() ) {
+
+                    TreeSet<CheckPoint> passedPoints = new TreeSet<CheckPoint>();
+                    while (flowNode != null && flowNode.isValid()) {
                         int col = flowNode.col;
                         int row = flowNode.row;
+
+                        int index = 0;
+                        if (!passedPoints.add(new CheckPoint(col, row, index++))) {
+                            // create a shapefile with the loop performed
+                            GridGeometry2D gridGeometry = inFlow.getGridGeometry();
+                            Iterator<CheckPoint> iterator = passedPoints.iterator();
+                            GeometryFactory gf = GeometryUtilities.gf();
+                            List<Coordinate> coordinates = new ArrayList<Coordinate>();
+                            while (iterator.hasNext()) {
+                                CheckPoint checkPoint = (CheckPoint) iterator.next();
+                                DirectPosition world = gridGeometry
+                                        .gridToWorld(new GridCoordinates2D(checkPoint.col, checkPoint.row));
+                                double[] coord = world.getCoordinate();
+                                coordinates.add(new Coordinate(coord[0], coord[1]));
+                            }
+                            LineString lineString = gf.createLineString(coordinates.toArray(new Coordinate[0]));
+                            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(loopFT);
+                            Object[] values = new Object[] { lineString };
+                            builder.addAll(values);
+                            SimpleFeature feature = builder.buildFeature(null);
+                            ((DefaultFeatureCollection) outLoop).add(feature);
+
+                            pm.errorMessage(MessageFormat.format(
+                                    "The downstream sum passed twice through the same position, there might be an error in your flowdirections. col = {0} row = {1}",
+                                    col, row));
+                            loopError = true;
+                            break;
+                        }
+
                         double tmpTca = tcaIter.getSampleDouble(col, row, 0);
                         double newTcaValue;
                         /*
-                         * cumulate only if first time passing, else
-                         * just propagate 
+                         * cumulate only if first time passing, else just propagate
                          */
                         if (isNovalue(tmpTca)) {
                             tmpTca = 1.0;
@@ -121,15 +180,64 @@ public class OmsTca extends HMModel {
                         tcaIter.setSample(col, row, 0, newTcaValue);
                         flowNode = flowNode.goDownstream();
                     }
+                    if (loopError) {
+                        break;
+                    }
                 }
+            }
+            if (loopError) {
+                break;
             }
             pm.worked(1);
         }
         pm.done();
         flowIter.done();
         tcaIter.done();
+        if (loopError) {
+            outTca = CoverageUtilities.buildDummyCoverage();
+        } else {
+            outLoop = null;
+            outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, inFlow.getCoordinateReferenceSystem());
+        }
+    }
 
-        outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, inFlow.getCoordinateReferenceSystem());
+    /**
+     * Class to check if the downstream trip gets into a loop.
+     * 
+     * @author Andrea Antonello (www.hydrologis.com)
+     */
+    public class CheckPoint implements Comparable<CheckPoint> {
+        public int col;
+        public int row;
+        public int index;
+
+        public CheckPoint(int col, int row, int index) {
+            this.col = col;
+            this.row = row;
+            this.index = index;
+        }
+
+        public int compareTo(CheckPoint o) {
+            /*
+             * if row and col are equal, return 0, which will anyways trigger and exception
+             */
+            if (col == o.col && row == o.row) {
+                return 0;
+            }
+
+            /*
+             * in the case of non equal row/col, we need to make the normal sort
+             */
+            if (index < o.index) {
+                return -1;
+            } else if (index > o.index) {
+                return 1;
+            } else {
+                return 0;
+            }
+
+        }
+
     }
 
 }
