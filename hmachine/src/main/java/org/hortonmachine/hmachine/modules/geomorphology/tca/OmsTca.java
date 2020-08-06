@@ -133,11 +133,11 @@ public class OmsTca extends HMModel {
                     double previousTcaValue = 0.0;
 
                     TreeSet<CheckPoint> passedPoints = new TreeSet<CheckPoint>();
+                    int index = 0;
                     while (flowNode != null && flowNode.isValid()) {
                         int col = flowNode.col;
                         int row = flowNode.row;
 
-                        int index = 0;
                         if (!passedPoints.add(new CheckPoint(col, row, index++))) {
                             // create a shapefile with the loop performed
                             GridGeometry2D gridGeometry = inFlow.getGridGeometry();

@@ -20,6 +20,7 @@ package org.hortonmachine.hmachine.models.hm;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.utils.PrintUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.geomorphology.tca.OmsTca;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -63,7 +64,7 @@ public class TestTca extends HMTestCase {
         tca.process();
         GridCoverage2D tcaCoverage = tca.outTca;
 
-        // PrintUtilities.printCoverageData(tcaCoverage);
+        PrintUtilities.printCoverageData(tcaCoverage);
         checkMatrixEqual(tcaCoverage.getRenderedImage(), HMTestMaps.tcaData);
     }
 
