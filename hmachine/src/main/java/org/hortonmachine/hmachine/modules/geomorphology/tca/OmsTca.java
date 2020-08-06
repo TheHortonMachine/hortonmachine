@@ -151,6 +151,11 @@ public class OmsTca extends HMModel {
                                 double[] coord = world.getCoordinate();
                                 coordinates.add(new Coordinate(coord[0], coord[1]));
                             }
+                            if (coordinates.size() == 1) {
+                                Coordinate first = coordinates.get(0);
+                                Coordinate dummy = new Coordinate(first.x + 0.000_000_1, first.y + 0.000_000_1);
+                                coordinates.add(dummy);
+                            }
                             LineString lineString = gf.createLineString(coordinates.toArray(new Coordinate[0]));
                             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(loopFT);
                             Object[] values = new Object[] { lineString };
