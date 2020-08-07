@@ -52,7 +52,11 @@ import org.hortonmachine.gui.utils.OmsMatrixCharter;
 import org.hortonmachine.modules.FileIterator;
 import org.jfree.chart.ChartPanel;
 import org.joda.time.DateTime;
+import org.joda.time.base.AbstractDateTime;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.index.strtree.STRtree;
 
 import geoscript.style.Style;
 import geoscript.style.io.SLDReader;
@@ -134,12 +138,14 @@ public class HM {
         sb.append("\tStyle styleForColorTable( String tableName, double min, double max, double opacity )").append("\n");
 
         sb.append("\n");
-        sb.append("Distance tools").append("\n");
+        sb.append("Spatial tools").append("\n");
         sb.append("--------------").append("\n");
         sb.append("Calculate the distance between two lat/long WGS84 coordinates:").append("\n");
         sb.append("\tdouble distanceLL( Coordinate c1, Coordinate c2 )").append("\n");
         sb.append("Calculate the distance between two lat/long WGS84 coordinates:").append("\n");
         sb.append("\tdouble distanceLL( double lon1, double lat1, double lon2, double lat2 )").append("\n");
+        sb.append("Create a spatial index from a list of [Envelope, Object] pairs:").append("\n");
+        sb.append("\tSTRtree getSpatialIndex( List<List<Object>> objects )").append("\n");
 
         sb.append("\n");
         sb.append("Dialogs").append("\n");
@@ -159,6 +165,18 @@ public class HM {
         sb.append("\tshowErrorMessage( String message )").append("\n");
 
         return sb.toString();
+    }
+
+    public static STRtree getSpatialIndex( List<List<Object>> objects ) {
+        STRtree tree = new STRtree();
+        for( Object envAndObject : objects ) {
+            if (envAndObject instanceof List) {
+                Envelope env = (Envelope) ((List) envAndObject).get(0);
+                var obj = ((List) envAndObject).get(1);
+                tree.insert(env, obj);
+            }
+        }
+        return tree;
     }
 
     public static void showFolder( String folderPath ) {

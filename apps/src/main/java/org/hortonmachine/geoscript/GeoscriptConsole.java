@@ -31,7 +31,7 @@ public class GeoscriptConsole {
         try {
             if (args.length == 1) {
                 GroovyShell shell = new GroovyShell();
-                shell.run(new File(args[0]), Collections.EMPTY_LIST);
+                shell.run(new File(args[0]), Collections.emptyList());
             } else {
                 Logger.INSTANCE.init();
                 SettingsController.applySettings(null);
