@@ -19,7 +19,7 @@ package org.hortonmachine.hmachine.modules.geomorphology.tca;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTCA_AUTHORCONTACTS;
+import static org.hortonmachine.hmachine.i18n.HortonMessages.*;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTCA_AUTHORNAMES;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTCA_DESCRIPTION;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTCA_DOCUMENTATION;
@@ -29,7 +29,7 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTCA_LICENSE;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTCA_NAME;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTCA_STATUS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTCA_inFlow_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTCA_outLoop_DESCRIPTION;
+import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTCA_doLoopCheck_DESCRIPTION;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSTCA_outTca_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
@@ -88,6 +88,10 @@ public class OmsTca extends HMModel {
     @In
     public GridCoverage2D inFlow = null;
 
+    @Description(OMSTCA_doLoopCheck_DESCRIPTION)
+    @In
+    public boolean doLoopCheck = false;
+
     @Description(OMSTCA_outTca_DESCRIPTION)
     @Out
     public GridCoverage2D outTca = null;
@@ -105,13 +109,15 @@ public class OmsTca extends HMModel {
         }
         checkNull(inFlow);
 
-        // prepare the loop featurecollection
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("loop");
-        b.setCRS(inFlow.getCoordinateReferenceSystem());
-        b.add("the_geom", LineString.class);
-        loopFT = b.buildFeatureType();
-        outLoop = new DefaultFeatureCollection();
+        if (doLoopCheck) {
+            // prepare the loop featurecollection
+            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+            b.setName("loop");
+            b.setCRS(inFlow.getCoordinateReferenceSystem());
+            b.add("the_geom", LineString.class);
+            loopFT = b.buildFeatureType();
+            outLoop = new DefaultFeatureCollection();
+        }
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int cols = regionMap.getCols();
@@ -125,26 +131,28 @@ public class OmsTca extends HMModel {
 
         boolean loopError = false;
 
+        TreeSet<CheckPoint> passedPoints = null;
         pm.beginTask("Calculating tca...", rows); //$NON-NLS-1$
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
                 if (flowNode.isSource()) {
                     double previousTcaValue = 0.0;
 
-                    TreeSet<CheckPoint> passedPoints = new TreeSet<CheckPoint>();
+                    if (doLoopCheck)
+                        passedPoints = new TreeSet<>();
                     int index = 0;
-                    while (flowNode != null && flowNode.isValid()) {
+                    while( flowNode != null && flowNode.isValid() ) {
                         int col = flowNode.col;
                         int row = flowNode.row;
 
-                        if (!passedPoints.add(new CheckPoint(col, row, index++))) {
+                        if (doLoopCheck && !passedPoints.add(new CheckPoint(col, row, index++))) {
                             // create a shapefile with the loop performed
                             GridGeometry2D gridGeometry = inFlow.getGridGeometry();
                             Iterator<CheckPoint> iterator = passedPoints.iterator();
                             GeometryFactory gf = GeometryUtilities.gf();
                             List<Coordinate> coordinates = new ArrayList<Coordinate>();
-                            while (iterator.hasNext()) {
+                            while( iterator.hasNext() ) {
                                 CheckPoint checkPoint = (CheckPoint) iterator.next();
                                 DirectPosition world = gridGeometry
                                         .gridToWorld(new GridCoordinates2D(checkPoint.col, checkPoint.row));
@@ -158,7 +166,7 @@ public class OmsTca extends HMModel {
                             }
                             LineString lineString = gf.createLineString(coordinates.toArray(new Coordinate[0]));
                             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(loopFT);
-                            Object[] values = new Object[] { lineString };
+                            Object[] values = new Object[]{lineString};
                             builder.addAll(values);
                             SimpleFeature feature = builder.buildFeature(null);
                             ((DefaultFeatureCollection) outLoop).add(feature);
@@ -216,13 +224,13 @@ public class OmsTca extends HMModel {
         public int row;
         public int index;
 
-        public CheckPoint(int col, int row, int index) {
+        public CheckPoint( int col, int row, int index ) {
             this.col = col;
             this.row = row;
             this.index = index;
         }
 
-        public int compareTo(CheckPoint o) {
+        public int compareTo( CheckPoint o ) {
             /*
              * if row and col are equal, return 0, which will anyways trigger and exception
              */

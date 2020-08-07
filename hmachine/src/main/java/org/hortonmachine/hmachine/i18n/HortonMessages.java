@@ -809,6 +809,7 @@ public class HortonMessages {
     public static final String OMSTCA_AUTHORNAMES = "Antonello Andrea";
     public static final String OMSTCA_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSTCA_inFlow_DESCRIPTION = "The map of flowdirections.";
+    public static final String OMSTCA_doLoopCheck_DESCRIPTION = "Do flow loop check.";
     public static final String OMSTCA_outTca_DESCRIPTION = "The map of total contributing areas.";
     public static final String OMSTCA_outLoop_DESCRIPTION = "The vector containing loops, if there are any.";
 

@@ -74,6 +74,9 @@ public class Tca extends HMModel {
         omstca.pm = pm;
         omstca.doProcess = doProcess;
         omstca.doReset = doReset;
+        if (outLoop != null && outLoop.strip().length() > 0) {
+            omstca.doLoopCheck = true;
+        }
         omstca.process();
         dumpRaster(omstca.outTca, outTca);
         if (omstca.outLoop != null) {
