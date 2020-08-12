@@ -49,9 +49,15 @@ public class SshTunnelHandler implements AutoCloseable {
             int remotePort ) throws JSchException {
         int port = 22;
         JSch jsch = new JSch();
+        String sshKeyPath = SshUtilities.getPreference(SshUtilities.KEYPATH, "");
+        if (sshKeyPath.trim().length() > 0) {
+            jsch.addIdentity(sshKeyPath);
+        }
+        String sshKeyPassphrase = SshUtilities.getPreference(SshUtilities.KEYPASSPHRASE, null);
+
         Session tunnelingSession = jsch.getSession(remoteSshUser, remoteHost, port);
         tunnelingSession.setPassword(remoteSshPwd);
-        HMUserInfo lui = new HMUserInfo("");
+        HMUserInfo lui = new HMUserInfo("", sshKeyPassphrase);
         tunnelingSession.setUserInfo(lui);
         tunnelingSession.setConfig("StrictHostKeyChecking", "no");
         tunnelingSession.setPortForwardingL(localPort, "localhost", remotePort);

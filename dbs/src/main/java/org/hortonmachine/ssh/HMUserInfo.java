@@ -27,13 +27,15 @@ import com.jcraft.jsch.UserInfo;
 public class HMUserInfo implements UserInfo {
 
     private String password;
+    private String passphrase;
     /**
-     * Contructor with password.  
+     * Contructor with password/passphrase.  
      * 
-     * @param password the ssh password to use.
+     * @param password the ssh password/passphrase to use.
      */
-    public HMUserInfo( String password ) {
+    public HMUserInfo( String password, String passphrase ) {
         this.password = password;
+        this.passphrase = passphrase;
     }
 
     /**
@@ -46,10 +48,15 @@ public class HMUserInfo implements UserInfo {
 
     public String getPassword() {
         if (password == null || password.trim().length() == 0) {
-            return null;
+            String thePwd = SshUtilities.getPreference(SshUtilities.PWD, "");
+            if (thePwd.trim().length() > 0) {
+                return thePwd;
+            } else {
+                return null;
+            }
+        } else {
+            return password;
         }
-        String thePwd = SshUtilities.getPreference(SshUtilities.PWD, "");
-        return thePwd;
     }
 
     public boolean promptYesNo( String str ) {
@@ -57,7 +64,16 @@ public class HMUserInfo implements UserInfo {
     }
 
     public String getPassphrase() {
-        return null;
+        if (passphrase == null || passphrase.trim().length() == 0) {
+            String thePwd = SshUtilities.getPreference(SshUtilities.PWD, "");
+            if (thePwd.trim().length() > 0) {
+                return thePwd;
+            } else {
+                return null;
+            }
+        } else {
+            return passphrase;
+        }
     }
 
     public boolean promptPassphrase( String message ) {

@@ -26,6 +26,7 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.ssh.ProxyEnabler;
+import org.hortonmachine.ssh.SshUtilities;
 
 public class SettingsController extends SettingsView implements IOnCloseListener {
 
@@ -70,6 +71,12 @@ public class SettingsController extends SettingsView implements IOnCloseListener
         String folderPath = preferences.get(PreferencesDb.HM_PREF_PREFFOLDER, baseFolder.getAbsolutePath());
         _preferencesDbPAth.setText(folderPath);
 
+        String sshKeyPath = SshUtilities.getPreference(SshUtilities.KEYPATH, "");
+        _sshKeyPathField.setText(sshKeyPath);
+        GuiUtilities.setFileBrowsingOnWidgets(_sshKeyPathField, _sshKeyButton, null, null);
+        String sshKeyPassphrase = SshUtilities.getPreference(SshUtilities.KEYPASSPHRASE, "");
+        _sshKeyPassphraseField.setText(sshKeyPassphrase);
+
     }
 
     private void applySettingsAndSavePreferences() throws Exception {
@@ -104,6 +111,13 @@ public class SettingsController extends SettingsView implements IOnCloseListener
             preferences.put(PreferencesDb.HM_PREF_PREFFOLDER, folderPath);
         }
 
+        String sshPath = _sshKeyPathField.getText().trim();
+        File sshFile = new File(sshPath);
+        if (sshFile.exists() && sshFile.isFile()) {
+            SshUtilities.setPreference(SshUtilities.KEYPATH, sshPath);
+        }
+        String sshKeyPassphrase = _sshKeyPassphraseField.getText().trim();
+        SshUtilities.setPreference(SshUtilities.KEYPASSPHRASE, sshKeyPassphrase);
     }
 
     public JComponent asJComponent() {

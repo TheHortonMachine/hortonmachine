@@ -1,25 +1,24 @@
 package org.hortonmachine.gui.settings;
 
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
-
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
-
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 
 public class SettingsView extends JPanel
@@ -34,6 +33,9 @@ public class SettingsView extends JPanel
    JComboBox _orientationCombo = new JComboBox();
    JTextField _preferencesDbPAth = new JTextField();
    JButton _preferencesDbButton = new JButton();
+   JTextField _sshKeyPathField = new JTextField();
+   JButton _sshKeyButton = new JButton();
+   JPasswordField _sshKeyPassphraseField = new JPasswordField();
 
    /**
     * Default constructor
@@ -132,6 +134,7 @@ public class SettingsView extends JPanel
       _jtabbedpane1.addTab("Proxy",null,createPanel1());
       _jtabbedpane1.addTab("Internationalization",null,createPanel3());
       _jtabbedpane1.addTab("Preferences",null,createPanel6());
+      _jtabbedpane1.addTab("SSH",null,createPanel7());
       jpanel1.add(_jtabbedpane1,cc.xy(2,2));
 
       addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3 });
@@ -265,6 +268,36 @@ public class SettingsView extends JPanel
       jpanel1.add(_preferencesDbButton,cc.xy(6,2));
 
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7 },new int[]{ 1,2,3 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel7()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:20DLU:NONE,FILL:DEFAULT:NONE,FILL:8DLU:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      JLabel jlabel1 = new JLabel();
+      jlabel1.setText("Path to the private key (id_dsa)");
+      jpanel1.add(jlabel1,cc.xy(2,2));
+
+      _sshKeyPathField.setName("sshKeyPathField");
+      jpanel1.add(_sshKeyPathField,cc.xy(4,2));
+
+      _sshKeyButton.setActionCommand("...");
+      _sshKeyButton.setName("sshKeyButton");
+      _sshKeyButton.setText("...");
+      jpanel1.add(_sshKeyButton,cc.xy(6,2));
+
+      JLabel jlabel2 = new JLabel();
+      jlabel2.setText("Passphrase");
+      jpanel1.add(jlabel2,cc.xy(2,4));
+
+      _sshKeyPassphraseField.setName("sshKeyPassphraseField");
+      jpanel1.add(_sshKeyPassphraseField,cc.xy(4,4));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8 },new int[]{ 1,2,3,4,5 });
       return jpanel1;
    }
 

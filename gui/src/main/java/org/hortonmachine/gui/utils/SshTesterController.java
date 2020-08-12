@@ -81,6 +81,10 @@ public class SshTesterController extends SshTesterView implements IOnCloseListen
 
             _proxyLabel.setText("Using proxy: " + proxyUser + "@" + proxyHost + ":" + proxyPort);
         }
+        String sshKeyCheck = SshUtilities.getPreference(SshUtilities.KEYPATH, "");
+        if (sshKeyCheck.trim().length() > 0) {
+            _proxyLabel.setText("Using key: " + sshKeyCheck);
+        }
 
         _commandField.setText("ls -l");
         _commandButton.addActionListener(( e ) -> {
@@ -94,7 +98,7 @@ public class SshTesterController extends SshTesterView implements IOnCloseListen
                 @Override
                 public void backGroundWork() throws Exception {
                     publish(new ProgressUpdate("Executing command on remote host...", 0));
-                    if (ho.length() > 0 && u.length() > 0 && p.length() > 0 && po.length() > 0) {
+                    if (ho.length() > 0 && po.length() > 0) {
                         try (HMSshSession session = new HMSshSession(ho, Integer.parseInt(po), u, p)) {
                             String res = SshUtilities.runShellCommand(session.getSession(), c);
                             _outputArea.setText(res);

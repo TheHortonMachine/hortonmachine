@@ -40,16 +40,19 @@ import com.jcraft.jsch.Session;
 public class SshUtilities {
     private static final String PREFS_NODE_NAME = "HM_SSH_TOOLS";
 
-    public static String HOST = "HM_SSH_TOOLS_HOST";
-    public static String PORT = "HM_SSH_TOOLS_PORT";
-    public static String USER = "HM_SSH_TOOLS_USER";
-    public static String PWD = "HM_SSH_TOOLS_PWD";
+    public static final String HOST = "HM_SSH_TOOLS_HOST";
+    public static final String PORT = "HM_SSH_TOOLS_PORT";
+    public static final String USER = "HM_SSH_TOOLS_USER";
+    public static final String PWD = "HM_SSH_TOOLS_PWD";
 
-    public static String TUNNELHOST = "HM_SSH_TOOLS_TUNNELHOST";
-    public static String TUNNELPORT_REMOTE = "HM_SSH_TOOLS_TUNNELPORT_REMOTE";
-    public static String TUNNELPORT_LOCAL = "HM_SSH_TOOLS_TUNNELPORT_LOCAL";
-    public static String TUNNELUSER = "HM_SSH_TOOLS_TUNNELUSER";
-    public static String TUNNELPWD = "HM_SSH_TOOLS_TUNNELPWD";
+    public static final String TUNNELHOST = "HM_SSH_TOOLS_TUNNELHOST";
+    public static final String TUNNELPORT_REMOTE = "HM_SSH_TOOLS_TUNNELPORT_REMOTE";
+    public static final String TUNNELPORT_LOCAL = "HM_SSH_TOOLS_TUNNELPORT_LOCAL";
+    public static final String TUNNELUSER = "HM_SSH_TOOLS_TUNNELUSER";
+    public static final String TUNNELPWD = "HM_SSH_TOOLS_TUNNELPWD";
+
+    public static final String KEYPATH = "HM_SSH_TOOLS_SSHKEYPATH";
+    public static final String KEYPASSPHRASE = "HM_SSH_TOOLS_SSHKEYPASSPHRASE";
 
     /**
      * Get from preference.

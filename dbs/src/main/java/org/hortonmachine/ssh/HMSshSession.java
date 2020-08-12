@@ -62,10 +62,18 @@ public class HMSshSession implements AutoCloseable {
      * @throws Exception
      */
     public HMSshSession( String host, int port, String user, String pwd ) throws Exception {
+
+        String sshKeyPath = SshUtilities.getPreference(SshUtilities.KEYPATH, "");
+        if (sshKeyPath.trim().length() > 0) {
+            jsch.addIdentity(sshKeyPath);
+        }
+        String sshKeyPassphrase = SshUtilities.getPreference(SshUtilities.KEYPASSPHRASE, null);
+
         session = jsch.getSession(user, host, port);
-        UserInfo ui = new HMUserInfo(pwd);
+        UserInfo ui = new HMUserInfo(pwd, sshKeyPassphrase);
         session.setUserInfo(ui);
-        session.setPassword(ui.getPassword().getBytes());
+        if (pwd != null && pwd.length() > 0)
+            session.setPassword(ui.getPassword().getBytes());
         java.util.Properties config = new java.util.Properties();
         config.put("StrictHostKeyChecking", "no");
         session.setConfig(config);
