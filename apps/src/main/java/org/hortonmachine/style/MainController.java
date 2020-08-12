@@ -7,20 +7,28 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.swing.AbstractAction;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.PopupMenuEvent;
@@ -43,10 +51,19 @@ import org.geotools.map.StyleLayer;
 import org.geotools.styling.FeatureTypeStyle;
 import org.geotools.styling.Rule;
 import org.geotools.styling.Style;
+import org.geotools.swing.JMapFrame.Tool;
+import org.geotools.swing.JMapFrame;
 import org.geotools.swing.JMapPane;
+import org.geotools.swing.action.InfoAction;
+import org.geotools.swing.action.PanAction;
+import org.geotools.swing.action.ResetAction;
+import org.geotools.swing.action.ZoomInAction;
+import org.geotools.swing.action.ZoomOutAction;
+import org.geotools.swing.tool.ScrollWheelTool;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
+import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.CrsUtilities;
@@ -81,6 +98,7 @@ import org.hortonmachine.modules.VectorReader;
 import org.hortonmachine.style.objects.FileWithStyle;
 import org.hortonmachine.style.objects.GpkgWithStyle;
 import org.hortonmachine.style.objects.IObjectWithStyle;
+import org.joda.time.DateTime;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
@@ -98,6 +116,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     public static final String STYLE_GROUPS_AND_RULES = "Style: Groups and Rules";
     public static final String ATTRIBUTES = "Attributes";
     public static final String DATASTORE_INFORMATION = "Datastore information";
+    public static final String KEY_PREF_TEMPLATES = "HM_KEY_PREF_TEMPLATES";
 
     public static final int COLOR_IMAGE_SIZE = 15;
 
@@ -145,6 +164,9 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         mapPane = new JMapPane(mapContent);
         _mapPaneHolder.setLayout(new BorderLayout());
         _mapPaneHolder.add(mapPane, BorderLayout.CENTER);
+
+        JToolBar mapTools = makeToolBar();
+        _mapPaneHolder.add(mapTools, BorderLayout.SOUTH);
 
         List<String> supportedExtensions = Stream
                 .of(HMConstants.SUPPORTED_VECTOR_EXTENSIONS, HMConstants.SUPPORTED_RASTER_EXTENSIONS).flatMap(Stream::of)
@@ -215,26 +237,26 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             }
         });
 
-        _nextButton.setText("");
-        _nextButton.setToolTipText("Zoom to next.");
-        _nextButton.setIcon(ImageCache.getInstance().getImage(ImageCache.ZOOM_TO_NEXT));
-        _nextButton.addActionListener(e -> {
-            currentFeatureIndex++;
-            zoomToSubItems();
-        });
-        _previousButton.setText("");
-        _previousButton.setToolTipText("Zoom to previous.");
-        _previousButton.setIcon(ImageCache.getInstance().getImage(ImageCache.ZOOM_TO_PREVIOUS));
-        _previousButton.addActionListener(e -> {
-            currentFeatureIndex--;
-            zoomToSubItems();
-        });
-        _allButton.setText("");
-        _allButton.setToolTipText("Zoom to the whole layer.");
-        _allButton.setIcon(ImageCache.getInstance().getImage(ImageCache.ZOOM_TO_ALL));
-        _allButton.addActionListener(e -> {
-            zoomToAll();
-        });
+        // _nextButton.setText("");
+        // _nextButton.setToolTipText("Zoom to next.");
+        // _nextButton.setIcon(ImageCache.getInstance().getImage(ImageCache.ZOOM_TO_NEXT));
+        // _nextButton.addActionListener(e -> {
+        // currentFeatureIndex++;
+        // zoomToSubItems();
+        // });
+        // _previousButton.setText("");
+        // _previousButton.setToolTipText("Zoom to previous.");
+        // _previousButton.setIcon(ImageCache.getInstance().getImage(ImageCache.ZOOM_TO_PREVIOUS));
+        // _previousButton.addActionListener(e -> {
+        // currentFeatureIndex--;
+        // zoomToSubItems();
+        // });
+        // _allButton.setText("");
+        // _allButton.setToolTipText("Zoom to the whole layer.");
+        // _allButton.setIcon(ImageCache.getInstance().getImage(ImageCache.ZOOM_TO_ALL));
+        // _allButton.addActionListener(e -> {
+        // zoomToAll();
+        // });
 
         _saveButton.setText("");
         _saveButton.setToolTipText("Save SLD to file.");
@@ -249,31 +271,167 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 objectWithStyle.saveSld(xml);
 
             } catch (Exception e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
+                Logger.INSTANCE.e("Error saving style to file.", e1);
+            }
+        });
+
+        // _saveTemplateButton.setIcon(ImageCache.getInstance().getImage(ImageCache.DATABASE));
+        _saveTemplateButton.setToolTipText("Save SLD to templated database.");
+        _saveTemplateButton.addActionListener(e -> {
+            try {
+                if (styleWrapper == null) {
+                    GuiUtilities.showInfoMessage(this, "No input style loaded.");
+                    return;
+                }
+
+                String ts = DateTime.now().toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSScompact);
+                String name = objectWithStyle.getName();
+                String styleName = GuiUtilities.showInputDialog(this, "Please set a name for the style.", ts + " " + name);
+                if (styleName != null && styleName.trim().length() > 0) {
+                    String xml = styleWrapper.toXml();
+                    String[] stylesArray = PreferencesHandler.getPreference(KEY_PREF_TEMPLATES, new String[0]);
+                    List<String> stylesList = new ArrayList<>();
+                    stylesList.add(styleName);
+                    stylesList.add(xml);
+                    for( String item : stylesArray ) {
+                        stylesList.add(item);
+                    }
+                    PreferencesHandler.setPreference(KEY_PREF_TEMPLATES, stylesList.toArray(new String[0]));
+                }
+
+            } catch (Exception e1) {
+                Logger.INSTANCE.e("Error saving style to file.", e1);
+            }
+        });
+
+        // _loadTemplateButton.setIcon(ImageCache.getInstance().getImage(ImageCache.DATABASE));
+        _loadTemplateButton.setToolTipText("Load SLD from templated database.");
+        _loadTemplateButton.addActionListener(e -> {
+            try {
+                String[] stylesArray = PreferencesHandler.getPreference(KEY_PREF_TEMPLATES, new String[0]);
+                if (stylesArray.length == 0) {
+                    GuiUtilities.showInfoMessage(this, "No templates saved yet.");
+                    return;
+                }
+                HashMap<String, String> name2SldMap = new HashMap<>();
+                for( int i = 0; i < stylesArray.length - 1; i = i + 2 ) {
+                    name2SldMap.put(stylesArray[i], stylesArray[i + 1]);
+                }
+
+                Set<String> namesSet = name2SldMap.keySet();
+                String[] names = namesSet.toArray(new String[0]);
+                Arrays.sort(names);
+                String selectedStyleName = GuiUtilities.showComboDialog(this, "TEMPLATES", "Select the template to load.", names,
+                        names[0]);
+                if (selectedStyleName == null) {
+                    return;
+                }
+                String sldString = name2SldMap.get(selectedStyleName);
+                loadFromStyle(sldString);
+
+            } catch (Exception e1) {
+                Logger.INSTANCE.e("Error loading style from templates.", e1);
+            }
+        });
+
+        _deleteTemplateButton.setToolTipText("Delete SLD from templated database.");
+        _deleteTemplateButton.addActionListener(e -> {
+            try {
+                String[] stylesArray = PreferencesHandler.getPreference(KEY_PREF_TEMPLATES, new String[0]);
+                if (stylesArray.length == 0) {
+                    GuiUtilities.showInfoMessage(this, "No templates saved yet.");
+                    return;
+                }
+                HashMap<String, String> name2SldMap = new HashMap<>();
+                for( int i = 0; i < stylesArray.length - 1; i = i + 2 ) {
+                    name2SldMap.put(stylesArray[i], stylesArray[i + 1]);
+                }
+
+                Set<String> namesSet = name2SldMap.keySet();
+                String[] names = namesSet.toArray(new String[0]);
+                Arrays.sort(names);
+                String selectedStyleName = GuiUtilities.showComboDialog(this, "TEMPLATES", "Select the template to delete.",
+                        names, names[0]);
+                if (selectedStyleName == null) {
+                    return;
+                }
+
+                name2SldMap.remove(selectedStyleName);
+
+                List<String> stylesList = new ArrayList<>();
+                for( Entry<String, String> item : name2SldMap.entrySet() ) {
+                    stylesList.add(item.getKey());
+                    stylesList.add(item.getValue());
+                }
+                PreferencesHandler.setPreference(KEY_PREF_TEMPLATES, stylesList.toArray(new String[0]));
+            } catch (Exception e1) {
+                Logger.INSTANCE.e("Error loading style from templates.", e1);
             }
         });
 
         if (fileToOpen != null && fileToOpen.exists()) {
-            if (fileToOpen.getName().toLowerCase().endsWith(HMConstants.GPKG)) {
-                objectWithStyle = new GpkgWithStyle();
-                try {
+            try {
+                if (fileToOpen.getName().toLowerCase().endsWith(HMConstants.GPKG)) {
+                    objectWithStyle = new GpkgWithStyle();
                     objectWithStyle.setDataFile(fileToOpen, optionalTableName);
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-            } else {
-                objectWithStyle = new FileWithStyle();
-                String nameWithoutExtention = FileUtilities.getNameWithoutExtention(fileToOpen);
-                try {
+                } else {
+                    objectWithStyle = new FileWithStyle();
+                    String nameWithoutExtention = FileUtilities.getNameWithoutExtention(fileToOpen);
                     objectWithStyle.setDataFile(fileToOpen, nameWithoutExtention);
-                } catch (Exception e1) {
-                    e1.printStackTrace();
                 }
+            } catch (Exception e1) {
+
+                Logger.INSTANCE.e("Error opening style.", e1);
             }
             openSelectedFile();
         }
 
+    }
+
+    private JToolBar makeToolBar() {
+        JToolBar toolBar = new JToolBar();
+        toolBar.setOrientation(JToolBar.HORIZONTAL);
+        toolBar.setFloatable(false);
+
+        JButton btn;
+        ButtonGroup cursorToolGrp = new ButtonGroup();
+        mapPane.addMouseListener(new ScrollWheelTool(mapPane));
+        // if (toolSet.contains(Tool.POINTER)) {
+        // btn = new JButton(new NoToolAction(mapPane));
+        // btn.setName(TOOLBAR_POINTER_BUTTON_NAME);
+        // toolBar.add(btn);
+        // cursorToolGrp.add(btn);
+        // }
+
+        btn = new JButton(new ZoomInAction(mapPane));
+        btn.setName(JMapFrame.TOOLBAR_ZOOMIN_BUTTON_NAME);
+        toolBar.add(btn);
+        cursorToolGrp.add(btn);
+
+        btn = new JButton(new ZoomOutAction(mapPane));
+        btn.setName(JMapFrame.TOOLBAR_ZOOMOUT_BUTTON_NAME);
+        toolBar.add(btn);
+        cursorToolGrp.add(btn);
+
+        toolBar.addSeparator();
+
+        btn = new JButton(new PanAction(mapPane));
+        btn.setName(JMapFrame.TOOLBAR_PAN_BUTTON_NAME);
+        toolBar.add(btn);
+        cursorToolGrp.add(btn);
+
+        toolBar.addSeparator();
+
+        btn = new JButton(new InfoAction(mapPane));
+        btn.setName(JMapFrame.TOOLBAR_INFO_BUTTON_NAME);
+        toolBar.add(btn);
+
+        toolBar.addSeparator();
+
+        btn = new JButton(new ResetAction(mapPane));
+        btn.setName(JMapFrame.TOOLBAR_RESET_BUTTON_NAME);
+        toolBar.add(btn);
+        return toolBar;
     }
 
     private static String promptTableName( File geopackageFile ) {
@@ -299,6 +457,33 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             e1.printStackTrace();
         }
         return tableName;
+    }
+
+    private void loadFromStyle( String sldString ) throws IOException {
+        Style style = SldUtilities.getStyleFromSldString(sldString);
+        if (style == null) {
+            GuiUtilities.showWarningMessage(this, "Unable to load style from SLD.");
+            return;
+        }
+
+        if (currentLayer != null) {
+            mapContent.removeLayer(currentLayer);
+        }
+        currentSelectedFSW = null;
+        currentSelectedSW = null;
+        currentSelectedRW = null;
+        currentSelectedSymW = null;
+
+        currentLayer = new FeatureLayer(currentFeatureCollection, style);
+        mapContent.addLayer(currentLayer);
+        styleWrapper = new StyleWrapper(style);
+
+        reloadGroupsAndRules();
+
+        _stylePanel.removeAll();
+        _stylePanel.revalidate();
+        _stylePanel.repaint();
+
     }
 
     private void openSelectedFile() {
@@ -342,7 +527,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
                 styleWrapper = new StyleWrapper(style);
 
-                zoomToSubItems();
+                zoomToAll();
                 reloadGroupsAndRules();
 
                 _stylePanel.removeAll();
@@ -360,13 +545,12 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
                 styleWrapper = new StyleWrapper(style);
 
-                zoomToSubItems();
+                zoomToAll();
                 reloadGroupsAndRules();
 
             }
         } catch (Exception e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+            Logger.INSTANCE.e("Error parsing style data.", e1);
         }
     }
 
@@ -606,31 +790,6 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
     public boolean canCloseWithoutPrompt() {
         return false;
-    }
-
-    public static void main( String[] args ) {
-        GuiUtilities.setDefaultLookAndFeel();
-
-        DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
-
-        File openFile = null;
-        if (args.length > 0 && new File(args[0]).exists()) {
-            openFile = new File(args[0]);
-        }
-        String selectedTableName = null;
-        if (openFile != null && openFile.getName().toLowerCase().endsWith(HMConstants.GPKG)) {
-            selectedTableName = promptTableName(openFile);
-        }
-
-        final MainController controller = new MainController(openFile, selectedTableName);
-        SettingsController.applySettings(controller);
-
-        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine SLD Editor");
-
-        GuiUtilities.setDefaultFrameIcon(frame);
-
-        GuiUtilities.addClosingListener(frame, controller);
-
     }
 
     @Override
@@ -980,4 +1139,28 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         }
     }
 
+    public static void main( String[] args ) {
+        GuiUtilities.setDefaultLookAndFeel();
+
+        DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
+
+        File openFile = null;
+        if (args.length > 0 && new File(args[0]).exists()) {
+            openFile = new File(args[0]);
+        }
+        String selectedTableName = null;
+        if (openFile != null && openFile.getName().toLowerCase().endsWith(HMConstants.GPKG)) {
+            selectedTableName = promptTableName(openFile);
+        }
+
+        final MainController controller = new MainController(openFile, selectedTableName);
+        SettingsController.applySettings(controller);
+
+        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine SLD Editor");
+
+        GuiUtilities.setDefaultFrameIcon(frame);
+
+        GuiUtilities.addClosingListener(frame, controller);
+
+    }
 }
