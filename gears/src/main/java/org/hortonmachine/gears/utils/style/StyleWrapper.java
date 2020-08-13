@@ -72,6 +72,24 @@ public class StyleWrapper {
         return null;
     }
 
+    /**
+     * Facility to get the first {@link org.geotools.styling.TextSymbolizer}, if available.
+     * 
+     * @return the first textsymbolizer or <code>null</code>.
+     */
+    public TextSymbolizerWrapper getFirstTextSymbolizer() {
+        if (featureTypeStylesWrapperList.size() > 0) {
+            FeatureTypeStyleWrapper featureTypeStyleWrapper = featureTypeStylesWrapperList.get(0);
+            List<RuleWrapper> rulesWrapperList = featureTypeStyleWrapper.getRulesWrapperList();
+            if (rulesWrapperList.size() > 0) {
+                RuleWrapper ruleWrapper = rulesWrapperList.get(0);
+                TextSymbolizerWrapper textSymbolizersWrapper = ruleWrapper.getTextSymbolizersWrapper();
+                return textSymbolizersWrapper;
+            }
+        }
+        return null;
+    }
+
     //    /**
     //     * Add a supplied or new {@link FeatureTypeStyle} to the {@link Style}.
     //     * 

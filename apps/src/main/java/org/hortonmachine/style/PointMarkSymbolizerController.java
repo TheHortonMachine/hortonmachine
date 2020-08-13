@@ -45,7 +45,7 @@ public class PointMarkSymbolizerController extends PointMarkSymbolizerView {
                 markName = wkmarknames[2];
             }
             if (markName != null) {
-                _wkmarkCombo.setSelectedItem(markName);
+                _wkmarkCombo.setSelectedItem(markName.toLowerCase());
             }
         } catch (MalformedURLException e1) {
             e1.printStackTrace();
@@ -72,7 +72,7 @@ public class PointMarkSymbolizerController extends PointMarkSymbolizerView {
 
 //        _graphicPathField.setEditable(false);
 
-        GuiUtilities.setFileBrowsingOnWidgets(_graphicPathField, _browseGraphicButton, wkmarknames, () -> {
+        GuiUtilities.setFileBrowsingOnWidgets(_graphicPathField, _browseGraphicButton, null, () -> {
             String externalGraphicPath = _graphicPathField.getText();
             try {
                 symbolizerWrapper.setExternalGraphicPath(externalGraphicPath);

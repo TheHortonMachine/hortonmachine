@@ -51,7 +51,6 @@ import org.geotools.map.StyleLayer;
 import org.geotools.styling.FeatureTypeStyle;
 import org.geotools.styling.Rule;
 import org.geotools.styling.Style;
-import org.geotools.swing.JMapFrame.Tool;
 import org.geotools.swing.JMapFrame;
 import org.geotools.swing.JMapPane;
 import org.geotools.swing.action.InfoAction;
@@ -79,6 +78,7 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.features.FilterUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
+import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.hortonmachine.gears.utils.style.FeatureTypeStyleWrapper;
 import org.hortonmachine.gears.utils.style.LineSymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.PointSymbolizerWrapper;
@@ -466,6 +466,18 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             return;
         }
 
+        styleWrapper = new StyleWrapper(style);
+        TextSymbolizerWrapper firstTextSymbolizer = styleWrapper.getFirstTextSymbolizer();
+        String labelName = firstTextSymbolizer.getLabelName();
+        if (labelName != null) {
+            String[] fields = FeatureUtilities.featureCollectionFieldNames(currentFeatureCollection);
+            List<String> fieldsList = Arrays.asList(fields);
+            if (!fieldsList.contains(labelName)) {
+                GuiUtilities.showWarningMessage(this, "The loaded style references a field '" + labelName
+                        + "', but no such field is in the loaded attributes. Make sure to check the textsymbolizer's label.");
+            }
+        }
+
         if (currentLayer != null) {
             mapContent.removeLayer(currentLayer);
         }
@@ -476,7 +488,6 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
         currentLayer = new FeatureLayer(currentFeatureCollection, style);
         mapContent.addLayer(currentLayer);
-        styleWrapper = new StyleWrapper(style);
 
         reloadGroupsAndRules();
 
@@ -608,20 +619,23 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             DefaultMutableTreeNode countNode = new DefaultMutableTreeNode("Feature count: " + currentFeatureCollection.size());
             datastoreNode.add(countNode);
 
+            var f = HMConstants.DEGREE6_FORMATTER;
             ReferencedEnvelope bounds = currentFeatureCollection.getBounds();
             DefaultMutableTreeNode boundsInfoNode = new DefaultMutableTreeNode(VECTOR_BOUNDS);
             datastoreNode.add(boundsInfoNode);
-            DefaultMutableTreeNode northNode = new DefaultMutableTreeNode("North: " + bounds.getMaxY());
+            DefaultMutableTreeNode northNode = new DefaultMutableTreeNode("North: " + f.format(bounds.getMaxY()));
             boundsInfoNode.add(northNode);
-            DefaultMutableTreeNode southNode = new DefaultMutableTreeNode("South: " + bounds.getMinY());
+            DefaultMutableTreeNode southNode = new DefaultMutableTreeNode("South: " + f.format(bounds.getMinY()));
             boundsInfoNode.add(southNode);
-            DefaultMutableTreeNode westNode = new DefaultMutableTreeNode("West: " + bounds.getMinX());
+            DefaultMutableTreeNode westNode = new DefaultMutableTreeNode("West: " + f.format(bounds.getMinX()));
             boundsInfoNode.add(westNode);
-            DefaultMutableTreeNode eastNode = new DefaultMutableTreeNode("East: " + bounds.getMaxX());
+            DefaultMutableTreeNode eastNode = new DefaultMutableTreeNode("East: " + f.format(bounds.getMaxX()));
             boundsInfoNode.add(eastNode);
-            DefaultMutableTreeNode widthNode = new DefaultMutableTreeNode("Width: " + (bounds.getMaxX() - bounds.getMinX()));
+            DefaultMutableTreeNode widthNode = new DefaultMutableTreeNode(
+                    "Width: " + f.format((bounds.getMaxX() - bounds.getMinX())));
             boundsInfoNode.add(widthNode);
-            DefaultMutableTreeNode heightNode = new DefaultMutableTreeNode("Height: " + (bounds.getMaxY() - bounds.getMinY()));
+            DefaultMutableTreeNode heightNode = new DefaultMutableTreeNode(
+                    "Height: " + f.format((bounds.getMaxY() - bounds.getMinY())));
             boundsInfoNode.add(heightNode);
 
             List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
@@ -755,28 +769,6 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             ReferencedEnvelope bounds = currentLayer.getBounds();
             mapPane.setDisplayArea(bounds);
         }
-    }
-
-    private void zoomToSubItems() {
-        if (currentFeaturesList != null) {
-            int size = currentFeaturesList.size();
-            if (currentFeatureIndex < 0) {
-                currentFeatureIndex = 0;
-            } else if (currentFeatureIndex > size - 1) {
-                currentFeatureIndex = size - 1;
-            }
-
-            SimpleFeature simpleFeature = currentFeaturesList.get(currentFeatureIndex);
-            Envelope env = ((Geometry) simpleFeature.getDefaultGeometry()).getEnvelopeInternal();
-            if (env.getWidth() == 0) {
-                env.expandBy(0.1);
-            } else {
-                env.expandBy(env.getWidth() * 0.05);
-            }
-
-            mapPane.setDisplayArea(new ReferencedEnvelope(env, simpleFeature.getFeatureType().getCoordinateReferenceSystem()));
-        }
-
     }
 
     public JComponent asJComponent() {

@@ -19,6 +19,7 @@
 package org.hortonmachine.gears.libs.modules;
 
 import java.io.File;
+import java.text.DecimalFormat;
 
 import javax.swing.filechooser.FileFilter;
 
@@ -163,6 +164,8 @@ public class HMConstants {
     public static String utcDateFormatterYYYYMMDDHHMM_string = "yyyy-MM-dd HH:mm";
     public static DateTimeFormatter utcDateFormatterYYYYMMDDHHMM = DateTimeFormat.forPattern(utcDateFormatterYYYYMMDDHHMM_string)
             .withZone(DateTimeZone.UTC);
+
+    public static DecimalFormat DEGREE6_FORMATTER = new DecimalFormat("###.######");
 
     /**
      * Enumeration defining meteo types.
