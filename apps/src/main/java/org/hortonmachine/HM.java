@@ -50,6 +50,7 @@ import org.hortonmachine.gears.utils.colors.ColorInterpolator;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.math.regressions.LogTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.PolyTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.RegressionLine;
@@ -64,6 +65,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.index.strtree.STRtree;
+import org.opengis.feature.simple.SimpleFeature;
 
 import geoscript.style.Style;
 import geoscript.style.io.SLDReader;
@@ -184,11 +186,10 @@ public class HM {
         return sb.toString();
     }
 
-
-    public static SimpleFeatureCollection readVector( String path ) throws Exception {
+    public static List<SimpleFeature> readVector( String path ) throws Exception {
         if (path == null || path.trim().length() == 0)
             return null;
-        return OmsVectorReader.readVector(path);
+        return FeatureUtilities.featureCollectionToList(OmsVectorReader.readVector(path));
     }
 
     public static ReferencedEnvelope readEnvelope( String path ) throws Exception {
@@ -214,7 +215,6 @@ public class HM {
             return;
         OmsVectorWriter.writeVector(source, vector);
     }
-
 
     public static STRtree getSpatialIndex( List<List<Object>> objects ) {
         STRtree tree = new STRtree();
