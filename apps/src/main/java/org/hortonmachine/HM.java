@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.dbs.compat.ASpatialDb;
@@ -35,6 +38,10 @@ import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.postgis.PostgisDb;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteThreadsafeDb;
 import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
+import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
+import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.chart.CategoryHistogram;
 import org.hortonmachine.gears.utils.chart.Scatter;
@@ -146,6 +153,16 @@ public class HM {
         sb.append("\tdouble distanceLL( double lon1, double lat1, double lon2, double lat2 )").append("\n");
         sb.append("Create a spatial index from a list of [Envelope, Object] pairs:").append("\n");
         sb.append("\tSTRtree getSpatialIndex( List<List<Object>> objects )").append("\n");
+        sb.append("Read a vector the geotools way as featurecollection:").append("\n");
+        sb.append("\tSimpleFeatureCollection readVector( String path )").append("\n");
+        sb.append("Read a vector's envelope the geotools way as tReferencedEnvelope:").append("\n");
+        sb.append("\tReferencedEnvelope readEnvelope( String path )").append("\n");
+        sb.append("Read a raster the geotools way as GridCoverage2D:").append("\n");
+        sb.append("\tGridCoverage2D readRaster( String source )").append("\n");
+        sb.append("Write a geotools raster to file:").append("\n");
+        sb.append("\tdumpRaster( GridCoverage2D raster, String source )").append("\n");
+        sb.append("Write a geotools vector to file:").append("\n");
+        sb.append("\tdumpVector( SimpleFeatureCollection vector, String source )").append("\n");
 
         sb.append("\n");
         sb.append("Dialogs").append("\n");
@@ -166,6 +183,38 @@ public class HM {
 
         return sb.toString();
     }
+
+
+    public static SimpleFeatureCollection readVector( String path ) throws Exception {
+        if (path == null || path.trim().length() == 0)
+            return null;
+        return OmsVectorReader.readVector(path);
+    }
+
+    public static ReferencedEnvelope readEnvelope( String path ) throws Exception {
+        if (path == null || path.trim().length() == 0)
+            return null;
+        return OmsVectorReader.readEnvelope(path);
+    }
+
+    public static GridCoverage2D readRaster( String source ) throws Exception {
+        if (source == null || source.trim().length() == 0)
+            return null;
+        return OmsRasterReader.readRaster(source);
+    }
+
+    public void dumpRaster( GridCoverage2D raster, String source ) throws Exception {
+        if (raster == null || source == null)
+            return;
+        OmsRasterWriter.writeRaster(source, raster);
+    }
+
+    public void dumpVector( SimpleFeatureCollection vector, String source ) throws Exception {
+        if (vector == null || source == null)
+            return;
+        OmsVectorWriter.writeVector(source, vector);
+    }
+
 
     public static STRtree getSpatialIndex( List<List<Object>> objects ) {
         STRtree tree = new STRtree();
