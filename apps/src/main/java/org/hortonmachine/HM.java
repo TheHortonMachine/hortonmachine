@@ -221,7 +221,7 @@ public class HM {
         for( Object envAndObject : objects ) {
             if (envAndObject instanceof List) {
                 Envelope env = (Envelope) ((List) envAndObject).get(0);
-                var obj = ((List) envAndObject).get(1);
+                Object obj = ((List) envAndObject).get(1);
                 tree.insert(env, obj);
             }
         }

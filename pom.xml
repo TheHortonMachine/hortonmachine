@@ -847,14 +847,6 @@
 			<name>jgrasstools snapshots</name>
 			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
 		</repository>
-
-
-		<repository>
-			<id>jzy3d-releases</id>
-			<name>Jzy3d Snapshots</name>
-			<url>http://maven.jzy3d.org/releases/</url>
-		</repository>
-
 		<repository>
 			<id>jitpack.io</id>
 			<name>jitpack</name>
@@ -877,7 +869,7 @@
 				<version>3.8.1</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
-                    <release>14</release>
+				        <release>14</release>
 					<debug>true</debug>
 				</configuration>
 			</plugin>

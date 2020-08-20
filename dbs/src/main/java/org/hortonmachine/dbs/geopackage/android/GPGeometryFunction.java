@@ -9,49 +9,45 @@ import jsqlite.Function;
 import jsqlite.FunctionContext;
 
 public abstract class GPGeometryFunction implements Function {
-    
-    public abstract Object execute(GeoPkgGeomReader reader) throws IOException;
 
+    public abstract Object execute( GeoPkgGeomReader reader ) throws IOException;
 
     @Override
     public void function( FunctionContext fc, String[] args ) {
-        
-        // TODO make this work, haven't been able to link to this
-//        try {
-//            if (args.length != 1) {
-//                throw new SQLException("Geometry Function expects one argument.");
-//            }
-//            String value =  args[0];
-//            System.out.println(value);
-//            
-////            fc.set_result(null);
-////            
-////            Object res;
-////            try {
-////                res = execute(new GeoPkgGeomReader(value_blob(0)));
-////            } catch (IOException e) {
-////                throw new SQLException(e);
-////            }
-////
-////            if (res == null) {
-////                result();
-////            } else if (res instanceof Integer) {
-////                result((Integer) res);
-////            } else if (res instanceof Double) {
-////                result((Double) res);
-////            } else if (res instanceof String) {
-////                result((String) res);
-////            } else if (res instanceof Long) {
-////                result((Long) res);
-////            } else if (res instanceof byte[]) {
-////                result((byte[]) res);
-////            } else if (res instanceof Boolean) {
-////                result((Boolean) res ? 1 : 0);
-////            }
-//            
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
+
+        try {
+            if (args.length != 1) {
+                throw new SQLException("Geometry Function expects one argument.");
+            }
+            byte[] value = args[0].getBytes();
+
+            Object res;
+            try {
+                res = execute(new GeoPkgGeomReader(value));
+            } catch (IOException e) {
+                throw new SQLException(e);
+            }
+
+            if (res == null) {
+                fc.set_result((byte[]) null);
+            } else if (res instanceof Integer) {
+                fc.set_result((Integer) res);
+            } else if (res instanceof Double) {
+                fc.set_result((Double) res);
+            } else if (res instanceof String) {
+                fc.set_result((String) res);
+            } else if (res instanceof Long) {
+                fc.set_result((Long) res);
+            } else if (res instanceof byte[]) {
+                fc.set_result((byte[]) res);
+            } else if (res instanceof Boolean) {
+                fc.set_result((Boolean) res ? 1 : 0);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            fc.set_error("ERROR in Geometry function with arg(" + args[0] + "):" + e);
+        }
 
     }
 

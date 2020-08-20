@@ -8,6 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -619,7 +620,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             DefaultMutableTreeNode countNode = new DefaultMutableTreeNode("Feature count: " + currentFeatureCollection.size());
             datastoreNode.add(countNode);
 
-            var f = HMConstants.DEGREE6_FORMATTER;
+            DecimalFormat f = HMConstants.DEGREE6_FORMATTER;
             ReferencedEnvelope bounds = currentFeatureCollection.getBounds();
             DefaultMutableTreeNode boundsInfoNode = new DefaultMutableTreeNode(VECTOR_BOUNDS);
             datastoreNode.add(boundsInfoNode);
