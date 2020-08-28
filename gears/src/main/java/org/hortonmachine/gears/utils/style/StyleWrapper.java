@@ -24,12 +24,12 @@ public class StyleWrapper {
     private String name;
     private List<FeatureTypeStyleWrapper> featureTypeStylesWrapperList = new ArrayList<FeatureTypeStyleWrapper>();
 
-    public StyleWrapper(Style style) {
+    public StyleWrapper( Style style ) {
         this.style = style;
         name = style.getName();
 
         List<FeatureTypeStyle> featureTypeStyles = style.featureTypeStyles();
-        for (FeatureTypeStyle featureTypeStyle : featureTypeStyles) {
+        for( FeatureTypeStyle featureTypeStyle : featureTypeStyles ) {
             FeatureTypeStyleWrapper fstW = new FeatureTypeStyleWrapper(featureTypeStyle, this);
             featureTypeStylesWrapperList.add(fstW);
         }
@@ -39,7 +39,7 @@ public class StyleWrapper {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName( String name ) {
         this.name = name;
         style.setName(name);
     }
@@ -84,41 +84,43 @@ public class StyleWrapper {
             if (rulesWrapperList.size() > 0) {
                 RuleWrapper ruleWrapper = rulesWrapperList.get(0);
                 TextSymbolizerWrapper textSymbolizersWrapper = ruleWrapper.getTextSymbolizersWrapper();
-                return textSymbolizersWrapper;
+                if (textSymbolizersWrapper != null) {
+                    return textSymbolizersWrapper;
+                }
             }
         }
         return null;
     }
 
-    //    /**
-    //     * Add a supplied or new {@link FeatureTypeStyle} to the {@link Style}.
-    //     * 
-    //     * @param tmpFts the new {@link FeatureTypeStyle} or null to create a new one.
-    //     * @return the {@link FeatureTypeStyleWrapper} for the new {@link FeatureTypeStyle}.
-    //     */
-    //    public FeatureTypeStyleWrapper addFeatureTypeStyle( FeatureTypeStyle tmpFts ) {
-    //        if (tmpFts == null)
-    //            tmpFts = Utilities.sf.createFeatureTypeStyle();
+    // /**
+    // * Add a supplied or new {@link FeatureTypeStyle} to the {@link Style}.
+    // *
+    // * @param tmpFts the new {@link FeatureTypeStyle} or null to create a new one.
+    // * @return the {@link FeatureTypeStyleWrapper} for the new {@link FeatureTypeStyle}.
+    // */
+    // public FeatureTypeStyleWrapper addFeatureTypeStyle( FeatureTypeStyle tmpFts ) {
+    // if (tmpFts == null)
+    // tmpFts = Utilities.sf.createFeatureTypeStyle();
     //
-    //        style.featureTypeStyles().add(0, tmpFts);
+    // style.featureTypeStyles().add(0, tmpFts);
     //
-    //        FeatureTypeStyleWrapper wrapper = new FeatureTypeStyleWrapper(tmpFts, this);
-    //        featureTypeStylesWrapperList.add(0, wrapper);
-    //        return wrapper;
-    //    }
+    // FeatureTypeStyleWrapper wrapper = new FeatureTypeStyleWrapper(tmpFts, this);
+    // featureTypeStylesWrapperList.add(0, wrapper);
+    // return wrapper;
+    // }
 
     /**
      * Remove a {@link FeatureTypeStyleWrapper} from the list.
      * 
      * @param ftsW the {@link FeatureTypeStyle} to remove.
      */
-    public void removeFeatureTypeStyle(FeatureTypeStyleWrapper ftsW) {
+    public void removeFeatureTypeStyle( FeatureTypeStyleWrapper ftsW ) {
         FeatureTypeStyle fts = ftsW.getFeatureTypeStyle();
         style.featureTypeStyles().remove(fts);
         featureTypeStylesWrapperList.remove(ftsW);
     }
 
-    public void addFeatureTypeStyle(FeatureTypeStyleWrapper ftsW) {
+    public void addFeatureTypeStyle( FeatureTypeStyleWrapper ftsW ) {
         FeatureTypeStyle fts = ftsW.getFeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         featureTypeStylesWrapperList.add(ftsW);
@@ -142,7 +144,7 @@ public class StyleWrapper {
     public String toXml() throws Exception {
         StyledLayerDescriptor sld = sf.createStyledLayerDescriptor();
         UserLayer layer = sf.createUserLayer();
-        layer.setLayerFeatureConstraints(new FeatureTypeConstraint[] { null });
+        layer.setLayerFeatureConstraints(new FeatureTypeConstraint[]{null});
         sld.addStyledLayer(layer);
         layer.addUserStyle(style);
 
@@ -162,14 +164,14 @@ public class StyleWrapper {
      * @param src the position first element.
      * @param dest the position second element. 
      */
-    public void swap(int src, int dest) {
+    public void swap( int src, int dest ) {
         List<FeatureTypeStyle> ftss = style.featureTypeStyles();
         if (src >= 0 && src < ftss.size() && dest >= 0 && dest < ftss.size()) {
             Collections.swap(ftss, src, dest);
             Collections.swap(featureTypeStylesWrapperList, src, dest);
         }
     }
-    
+
     @Override
     public String toString() {
         return getName();

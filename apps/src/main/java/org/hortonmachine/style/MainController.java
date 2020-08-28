@@ -469,13 +469,15 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
 
         styleWrapper = new StyleWrapper(style);
         TextSymbolizerWrapper firstTextSymbolizer = styleWrapper.getFirstTextSymbolizer();
-        String labelName = firstTextSymbolizer.getLabelName();
-        if (labelName != null) {
-            String[] fields = FeatureUtilities.featureCollectionFieldNames(currentFeatureCollection);
-            List<String> fieldsList = Arrays.asList(fields);
-            if (!fieldsList.contains(labelName)) {
-                GuiUtilities.showWarningMessage(this, "The loaded style references a field '" + labelName
-                        + "', but no such field is in the loaded attributes. Make sure to check the textsymbolizer's label.");
+        if (firstTextSymbolizer != null) {
+            String labelName = firstTextSymbolizer.getLabelName();
+            if (labelName != null) {
+                String[] fields = FeatureUtilities.featureCollectionFieldNames(currentFeatureCollection);
+                List<String> fieldsList = Arrays.asList(fields);
+                if (!fieldsList.contains(labelName)) {
+                    GuiUtilities.showWarningMessage(this, "The loaded style references a field '" + labelName
+                            + "', but no such field is in the loaded attributes. Make sure to check the textsymbolizer's label.");
+                }
             }
         }
 
