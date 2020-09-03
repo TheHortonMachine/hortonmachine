@@ -258,8 +258,13 @@ public class SpatialDbsImportUtils {
 
         List<String[]> tableInfo = db.getTableColumns(tableName);
         List<String> tableColumns = new ArrayList<>();
+        boolean hasFid = false;
         for( String[] item : tableInfo ) {
-            tableColumns.add(item[0].toUpperCase());
+            String colName = item[0].toUpperCase();
+            tableColumns.add(colName);
+            if (colName.equalsIgnoreCase(FID)) {
+                hasFid = true;
+            }
         }
         GeometryColumn geometryColumns = db.getGeometryColumnsForTable(tableName);
         String gCol = geometryColumns.geometryColumnName;
@@ -280,8 +285,8 @@ public class SpatialDbsImportUtils {
         }
 
         List<String> attrNames = new ArrayList<>();
-        String valueNames = FID;
-        String qMarks = "?";
+        String valueNames = hasFid ? FID : "";
+        String qMarks = hasFid ? "?" : "";
         for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
             String attrName = attributeDescriptor.getLocalName();
             String fidField = FeatureUtilities.findAttributeName(schema, FID);

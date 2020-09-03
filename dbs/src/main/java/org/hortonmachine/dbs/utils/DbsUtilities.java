@@ -360,10 +360,15 @@ public class DbsUtilities {
      * @return the fixed name.
      */
     public static String fixTableName( String tableName ) {
-        if (Character.isDigit(tableName.charAt(0))) {
-            return "'" + tableName + "'";
+        if(tableName.charAt(0) == '\''){
+            // already fixed
+            return tableName;
         }
-        if (tableName.matches(".*\\s+.*")) {
+        if ( //
+        Character.isDigit(tableName.charAt(0)) || //
+                tableName.matches(".*\\s+.*") || //
+                tableName.contains("-") //
+        ) {
             return "'" + tableName + "'";
         }
         return tableName;
