@@ -312,10 +312,15 @@ public class SpatialDbsImportUtils {
                 qMarks += ",?";
             }
         }
+        if (valueNames.startsWith(",")) {
+            valueNames = valueNames.substring(1);
+            qMarks = qMarks.substring(1);
+        }
         String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
 
         IGeometryParser gp = db.getType().getGeometryParser();
 
+        boolean _hasFid = hasFid;
         return db.execOnConnection(conn -> {
             boolean noErrors = true;
             boolean autoCommit = conn.getAutoCommit();
@@ -327,13 +332,17 @@ public class SpatialDbsImportUtils {
                     while( featureIterator.hasNext() ) {
                         SimpleFeature f = (SimpleFeature) featureIterator.next();
 
-                        long featureId = FeatureUtilities.getFeatureId(f);
-                        pStmt.setLong(1, featureId);
+                        int shift = 1;
+                        if (_hasFid) {
+                            long featureId = FeatureUtilities.getFeatureId(f);
+                            pStmt.setLong(1, featureId);
+                            shift = 2;
+                        }
 
                         for( int i = 0; i < attrNames.size(); i++ ) {
                             Object object = f.getAttribute(attrNames.get(i));
 
-                            int iPlus = i + 2;
+                            int iPlus = i + shift;
                             if (object == null) {
                                 pStmt.setObject(iPlus, null);
                             } else if (object instanceof Double) {
@@ -347,7 +356,9 @@ public class SpatialDbsImportUtils {
                             } else if (object instanceof String) {
                                 pStmt.setString(iPlus, (String) object);
                             } else if (object instanceof Geometry) {
-                                pStmt.setObject(iPlus, gp.toSqlObject((Geometry) object));
+                                Geometry geom = (Geometry) object;
+                                geom.setSRID(epsg);
+                                pStmt.setObject(iPlus, gp.toSqlObject(geom));
                             } else if (object instanceof Clob) {
                                 String string = ((Clob) object).toString();
                                 pStmt.setString(iPlus, string);
