@@ -36,6 +36,8 @@ public class SettingsView extends JPanel
    JTextField _sshKeyPathField = new JTextField();
    JButton _sshKeyButton = new JButton();
    JPasswordField _sshKeyPassphraseField = new JPasswordField();
+   JTextField _spatialiteModPathField = new JTextField();
+   JButton _spatialiteModButton = new JButton();
 
    /**
     * Default constructor
@@ -135,6 +137,7 @@ public class SettingsView extends JPanel
       _jtabbedpane1.addTab("Internationalization",null,createPanel3());
       _jtabbedpane1.addTab("Preferences",null,createPanel6());
       _jtabbedpane1.addTab("SSH",null,createPanel7());
+      _jtabbedpane1.addTab("Native libs",null,createPanel8());
       jpanel1.add(_jtabbedpane1,cc.xy(2,2));
 
       addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3 });
@@ -298,6 +301,29 @@ public class SettingsView extends JPanel
       jpanel1.add(_sshKeyPassphraseField,cc.xy(4,4));
 
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8 },new int[]{ 1,2,3,4,5 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel8()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:20DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      JLabel jlabel1 = new JLabel();
+      jlabel1.setText("Path to spatialite loadable modules");
+      jpanel1.add(jlabel1,cc.xy(2,2));
+
+      _spatialiteModPathField.setName("spatialiteModPathField");
+      jpanel1.add(_spatialiteModPathField,cc.xy(4,2));
+
+      _spatialiteModButton.setActionCommand("...");
+      _spatialiteModButton.setName("spatialiteModButton");
+      _spatialiteModButton.setText("...");
+      jpanel1.add(_spatialiteModButton,cc.xy(6,2));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8 },new int[]{ 1,2,3 });
       return jpanel1;
    }
 

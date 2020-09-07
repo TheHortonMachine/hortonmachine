@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.prefs.Preferences;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
@@ -52,6 +53,9 @@ public class DbsUtilities {
      * Default insert size used for bulk inserts/updates.
      */
     public static final int DEFAULT_BULK_INSERT_CHUNK_SIZE = 10000;
+
+    private static final String PREFS_NODE_NAME = "HM_DBS_TOOLS";
+    public static final String SPATIALITE_DYLIB_FOLDER = "SPATIALITE_DYLIB_FOLDER";
 
     public static List<String> reserverSqlWords = Arrays.asList("ABORT", "ACTION", "ADD", "AFTER", "ALL", "ALTER", "ANALYZE",
             "AND", "AS", "ASC", "ATTACH", "AUTOINCREMENT", "BEFORE", "BEGIN", "BETWEEN", "BY", "CASCADE", "CASE", "CAST", "CHECK",
@@ -360,7 +364,7 @@ public class DbsUtilities {
      * @return the fixed name.
      */
     public static String fixTableName( String tableName ) {
-        if(tableName.charAt(0) == '\''){
+        if (tableName.charAt(0) == '\'') {
             // already fixed
             return tableName;
         }
@@ -372,5 +376,37 @@ public class DbsUtilities {
             return "'" + tableName + "'";
         }
         return tableName;
+    }
+
+    /**
+     * Get from preference.
+     * 
+     * @param preferenceKey
+     *            the preference key.
+     * @param defaultValue
+     *            the default value in case of <code>null</code>.
+     * @return the string preference asked.
+     */
+    public static String getPreference( String preferenceKey, String defaultValue ) {
+        Preferences preferences = Preferences.userRoot().node(PREFS_NODE_NAME);
+        String preference = preferences.get(preferenceKey, defaultValue);
+        return preference;
+    }
+
+    /**
+     * Set a preference.
+     * 
+     * @param preferenceKey
+     *            the preference key.
+     * @param value
+     *            the value to set.
+     */
+    public static void setPreference( String preferenceKey, String value ) {
+        Preferences preferences = Preferences.userRoot().node(PREFS_NODE_NAME);
+        if (value != null) {
+            preferences.put(preferenceKey, value);
+        } else {
+            preferences.remove(preferenceKey);
+        }
     }
 }

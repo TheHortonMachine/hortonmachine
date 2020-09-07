@@ -44,6 +44,7 @@ import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryColumns;
 import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
+import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.OsCheck;
 import org.hortonmachine.dbs.utils.OsCheck.OSType;
 import org.locationtech.jts.geom.Envelope;
@@ -95,10 +96,13 @@ public class SpatialiteDb extends ASpatialDb {
             stmt.setQueryTimeout(30);
             // load SpatiaLite
             try {
+                String spatialiteLibsFolder = DbsUtilities.getPreference(DbsUtilities.SPATIALITE_DYLIB_FOLDER, "").trim();
+                if (spatialiteLibsFolder.length() > 0 && !spatialiteLibsFolder.endsWith("/")) {
+                    spatialiteLibsFolder += "/";
+                }
                 OSType operatingSystemType = OsCheck.getOperatingSystemType();
                 switch( operatingSystemType ) {
                 case Linux:
-                case MacOS:
                     try {
                         stmt.execute("SELECT load_extension('mod_rasterlite2.so', 'sqlite3_modrasterlite_init')");
                     } catch (Exception e) {
@@ -116,6 +120,23 @@ public class SpatialiteDb extends ASpatialDb {
                     } catch (Exception e) {
                         if (mPrintInfos) {
                             Logger.INSTANCE.insertInfo(null, "Unable to load mod_spatialite.so: " + e.getMessage());
+                        }
+                        try {
+                            stmt.execute("SELECT load_extension('mod_spatialite', 'sqlite3_modspatialite_init')");
+                        } catch (Exception e1) {
+                            Logger.INSTANCE.insertInfo(null, "Unable to load mod_spatialite: " + e1.getMessage());
+                        }
+                        throw e;
+                    }
+                    break;
+                case MacOS:
+                    try {
+                        stmt.execute("SELECT load_extension('" + spatialiteLibsFolder
+                                + "mod_spatialite.so', 'sqlite3_modspatialite_init')");
+                    } catch (Exception e) {
+                        if (mPrintInfos) {
+                            Logger.INSTANCE.insertInfo(null,
+                                    "Unable to load " + spatialiteLibsFolder + "mod_spatialite.so: " + e.getMessage());
                         }
                         try {
                             stmt.execute("SELECT load_extension('mod_spatialite', 'sqlite3_modspatialite_init')");
@@ -380,7 +401,8 @@ public class SpatialiteDb extends ASpatialDb {
                     String columnTypeName = rsmd.getColumnTypeName(i);
                     String columnName = rsmd.getColumnName(i);
                     bw.write(columnName);
-                    if (columnName.toLowerCase().contains("st_asbinary") || ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
+                    if (columnName.toLowerCase().contains("st_asbinary")
+                            || ESpatialiteGeometryType.isGeometryName(columnTypeName)) {
                         geometryIndex = i;
                     }
                 }

@@ -20,6 +20,7 @@ import javax.swing.JFrame;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.log.PreferencesDb;
+import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
@@ -77,6 +78,9 @@ public class SettingsController extends SettingsView implements IOnCloseListener
         String sshKeyPassphrase = SshUtilities.getPreference(SshUtilities.KEYPASSPHRASE, "");
         _sshKeyPassphraseField.setText(sshKeyPassphrase);
 
+        String spatialiteLibsFolder = DbsUtilities.getPreference(DbsUtilities.SPATIALITE_DYLIB_FOLDER, "");
+        _spatialiteModPathField.setText(spatialiteLibsFolder);
+        GuiUtilities.setFolderBrowsingOnWidgets(_spatialiteModPathField, _spatialiteModButton, null);
     }
 
     private void applySettingsAndSavePreferences() throws Exception {
@@ -118,6 +122,11 @@ public class SettingsController extends SettingsView implements IOnCloseListener
         }
         String sshKeyPassphrase = _sshKeyPassphraseField.getText().trim();
         SshUtilities.setPreference(SshUtilities.KEYPASSPHRASE, sshKeyPassphrase);
+
+        String spatialiteModField = _spatialiteModPathField.getText();
+        if (new File(spatialiteModField).exists() && new File(spatialiteModField).isDirectory()) {
+            DbsUtilities.setPreference(DbsUtilities.SPATIALITE_DYLIB_FOLDER, spatialiteModField);
+        }
     }
 
     public JComponent asJComponent() {
