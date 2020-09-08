@@ -224,17 +224,18 @@ public class SpatialDbsImportUtils {
      * @param shapeFile the shapefile to import.
      * @param tableName the name of the table to import to.
      * @param limit if > 0, a limit to the imported features is applied.
+     * @param useFromTextForGeom if true, the wkt form is used to insert geometries.
      * @param pm the progress monitor.
      * @return <code>false</code>, is an error occurred. 
      * @throws Exception
      */
-    public static boolean importShapefile( ASpatialDb db, File shapeFile, String tableName, int limit, IHMProgressMonitor pm )
-            throws Exception {
+    public static boolean importShapefile( ASpatialDb db, File shapeFile, String tableName, int limit, boolean useFromTextForGeom,
+            IHMProgressMonitor pm ) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureCollection features = featureSource.getFeatures();
 
-        return importFeatureCollection(db, features, tableName, limit, pm);
+        return importFeatureCollection(db, features, tableName, limit, useFromTextForGeom, pm);
 
     }
 
@@ -245,12 +246,13 @@ public class SpatialDbsImportUtils {
      * @param featureCollection the featureCollection to import.
      * @param tableName the name of the table to import to.
      * @param limit if > 0, a limit to the imported features is applied.
+     * @param useFromTextForGeom if true, the wkt form is used to insert geometries.
      * @param pm the progress monitor.
      * @return <code>false</code>, is an error occurred. 
      * @throws Exception
      */
     public static boolean importFeatureCollection( ASpatialDb db, SimpleFeatureCollection featureCollection, String tableName,
-            int limit, IHMProgressMonitor pm ) throws Exception {
+            int limit, boolean useFromTextForGeom, IHMProgressMonitor pm ) throws Exception {
         SimpleFeatureType schema = featureCollection.getSchema();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
 
@@ -298,7 +300,11 @@ public class SpatialDbsImportUtils {
             attrNames.add(attrName);
             if (attributeDescriptor instanceof GeometryDescriptor) {
                 valueNames += "," + gCol;
-                qMarks += ",?";
+                if (useFromTextForGeom) {
+                    qMarks += ",ST_GeomFromText(?, " + epsg + ")";
+                } else {
+                    qMarks += ",?";
+                }
             } else {
                 if (!tableColumns.contains(attrName.toUpperCase())) {
                     pm.errorMessage(
@@ -357,8 +363,12 @@ public class SpatialDbsImportUtils {
                                 pStmt.setString(iPlus, (String) object);
                             } else if (object instanceof Geometry) {
                                 Geometry geom = (Geometry) object;
-                                geom.setSRID(epsg);
-                                pStmt.setObject(iPlus, gp.toSqlObject(geom));
+                                if (useFromTextForGeom) {
+                                    pStmt.setString(iPlus, geom.toText());
+                                } else {
+                                    geom.setSRID(epsg);
+                                    pStmt.setObject(iPlus, gp.toSqlObject(geom));
+                                }
                             } else if (object instanceof Clob) {
                                 String string = ((Clob) object).toString();
                                 pStmt.setString(iPlus, string);

@@ -59,7 +59,7 @@ public class TestPostgisDbsMain {
         db.initSpatialMetadata("'WGS84'");
 
         removePgGeometryTables(db);
-        createGeomTablesAndPopulate(db);
+        createGeomTablesAndPopulate(db, true);
 
         tablesCount = 6;
         if (DB_TYPE == EDb.SPATIALITE) {

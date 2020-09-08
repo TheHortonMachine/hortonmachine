@@ -211,7 +211,7 @@ public class TestGeopackage {
             db.open(gpkgFile.getAbsolutePath());
             db.initSpatialMetadata(null);
 
-            TestUtilities.createGeomTablesAndPopulate(db);
+            TestUtilities.createGeomTablesAndPopulate(db, false);
         }
         // reopen
         try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {

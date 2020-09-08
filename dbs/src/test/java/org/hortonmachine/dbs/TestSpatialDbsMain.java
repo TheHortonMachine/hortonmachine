@@ -21,11 +21,15 @@ import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.IHMPreparedStatement;
+import org.hortonmachine.dbs.compat.IHMResultSet;
+import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.ISpatialTableNames;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBWriter;
+import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -51,6 +55,9 @@ public class TestSpatialDbsMain {
 
     @BeforeClass
     public static void createDb() throws Exception {
+
+        DbsUtilities.setPreference(DbsUtilities.SPATIALITE_DYLIB_FOLDER, "/opt/local/lib/");
+
         String tempDir = System.getProperty("java.io.tmpdir");
         String dbPath = tempDir + File.separator + "jgt-dbs-testspatialdbsmain" + DB_TYPE.getExtensionOnCreation();
         TestUtilities.deletePrevious(tempDir, dbPath, DB_TYPE);
@@ -59,7 +66,7 @@ public class TestSpatialDbsMain {
         db.open(dbPath);
         db.initSpatialMetadata("'WGS84'");
 
-        createGeomTablesAndPopulate(db);
+        createGeomTablesAndPopulate(db, true);
 
         tablesCount = 6;
         if (DB_TYPE == EDb.SPATIALITE) {
@@ -258,28 +265,26 @@ public class TestSpatialDbsMain {
         double n = 46.62981208577648;
 
         Envelope env = new Envelope(w, e, s, n);
-        
+
         Envelope reprojected = db.reproject(env, 4326, 32632);
         double rw = reprojected.getMinX();
         double re = reprojected.getMaxX();
         double rs = reprojected.getMinY();
         double rn = reprojected.getMaxY();
-        
+
         assertEquals(664076.6777860201, rw, 0.001);
         assertEquals(664387.1714802807, re, 0.001);
         assertEquals(5166166.626361137, rs, 0.001);
         assertEquals(5166267.775614383, rn, 0.001);
-        
-        
-        
+
         WKTReader reader = new WKTReader();
         Geometry point = reader.read("POINT (11.143413001499738 46.62897848892326)");
         Geometry reprojectedGeom = db.reproject(point, 4326, 32632);
         Geometry expected = reader.read("POINT (664076.6777860201 5166166.626361137)");
-        
+
         double distance = reprojectedGeom.distance(expected);
         assertEquals(0.0, distance, 0.00001);
-        
+
     }
 
     @Test
@@ -325,6 +330,34 @@ public class TestSpatialDbsMain {
         geom = new WKTReader().read(gCollWKT);
         checkReadWrite(geom);
 
+        // TODO check issue in spatialite writer
+        // // now check with hex from db
+        // String hexString = db.execOnConnection(connection -> {
+        //     String sql = "select Hex(ST_GeomFromText('POINT(1 2)'))";
+        //     try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+        //         if (rs.next()) {
+        //             String hex = rs.getString(1);
+        //             return hex;
+        //         }
+        //         return "";
+        //     }
+        // });
+        // System.out.println(hexString);
+        // Object sqlGeom = TestUtilities.sqlObjectFromWkt("POINT(1 2)", db);
+        // String hexString2 = db.execOnConnection(connection -> {
+        //     String sql = "select Hex(?)";
+        //     try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
+        //         byte[] bytes = (byte[]) sqlGeom;
+        //         pstmt.setBytes(1, bytes);
+        //         IHMResultSet rs = pstmt.executeQuery();
+        //         if (rs.next()) {
+        //             String hex = rs.getString(1);
+        //             return hex;
+        //         }
+        //         return "";
+        //     }
+        // });
+        // System.out.println(hexString2);
     }
 
     private void checkReadWrite( Geometry geom ) throws ParseException {

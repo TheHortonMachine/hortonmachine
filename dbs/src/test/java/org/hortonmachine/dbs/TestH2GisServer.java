@@ -62,7 +62,7 @@ public class TestH2GisServer {
             db.open(tcpServerUrl);
             db.initSpatialMetadata("'WGS84'");
 
-            createGeomTablesAndPopulate(db);
+            createGeomTablesAndPopulate(db, true);
 
             List<Geometry> intersecting = db.getGeometriesIn(MPOLY_TABLE, (Envelope) null);
             assertEquals(3, intersecting.size());

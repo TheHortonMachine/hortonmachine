@@ -8,6 +8,8 @@
  */
 package org.hortonmachine.gears.utils;
 
+import java.lang.management.ManagementFactory;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -38,8 +40,7 @@ public final class OsCheck {
 	 */
 	public static OSType getOperatingSystemType() {
 		if (detectedOS == null) {
-			String OS = System.getProperty("os.name", "generic").toLowerCase(
-					Locale.ENGLISH);
+			String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
 			if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
 				detectedOS = OSType.MacOS;
 			} else if (OS.indexOf("win") >= 0) {
@@ -51,5 +52,20 @@ public final class OsCheck {
 			}
 		}
 		return detectedOS;
+	}
+
+	/**
+	 * Checks if the run was done in debug mode.
+	 * 
+	 * @return true, if the process was run in debug mode.
+	 */
+	public static boolean isRunningInDebug() {
+		List<String> args = ManagementFactory.getRuntimeMXBean().getInputArguments();
+		for( String arg : args ) {
+			if (arg.startsWith("-Xdebug") || arg.startsWith("-agentlib:jdwp=")) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

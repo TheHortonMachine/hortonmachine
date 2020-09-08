@@ -130,7 +130,7 @@ public class OmsVectorWriter extends HMModel {
                 int srid = CrsUtilities.getSrid(crs);
                 db.addCRS("EPSG", srid, crs.toWKT());
                 SpatialDbsImportUtils.createTableFromSchema(db, inVector.getSchema(), table, null, false);
-                SpatialDbsImportUtils.importFeatureCollection(db, inVector, table, -1, pm);
+                SpatialDbsImportUtils.importFeatureCollection(db, inVector, table, -1, true, pm);
             }
         } else {
             throw new IOException("Format is currently not supported for file: " + name);
@@ -150,6 +150,5 @@ public class OmsVectorWriter extends HMModel {
         writer.inVector = featureCollection;
         writer.process();
     }
-
 
 }

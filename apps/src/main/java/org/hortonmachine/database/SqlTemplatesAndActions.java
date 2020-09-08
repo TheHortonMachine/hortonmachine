@@ -524,7 +524,7 @@ public class SqlTemplatesAndActions {
                     logConsole.beginProcess("Importing data...");
                     try {
                         hasErrors = !SpatialDbsImportUtils.importShapefile(spatialiteViewer.currentConnectedDatabase,
-                                openFiles[0], spatialiteViewer.currentSelectedTable.tableName, -1, spatialiteViewer.pm);
+                                openFiles[0], spatialiteViewer.currentSelectedTable.tableName, -1, true, spatialiteViewer.pm);
                     } catch (Exception ex) {
                         logger.insertError("SqlTemplatesAndActions", "Error importing data from shapefile", ex);
                         hasErrors = true;
