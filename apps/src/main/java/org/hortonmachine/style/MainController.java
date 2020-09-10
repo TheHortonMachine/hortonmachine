@@ -238,27 +238,6 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             }
         });
 
-        // _nextButton.setText("");
-        // _nextButton.setToolTipText("Zoom to next.");
-        // _nextButton.setIcon(ImageCache.getInstance().getImage(ImageCache.ZOOM_TO_NEXT));
-        // _nextButton.addActionListener(e -> {
-        // currentFeatureIndex++;
-        // zoomToSubItems();
-        // });
-        // _previousButton.setText("");
-        // _previousButton.setToolTipText("Zoom to previous.");
-        // _previousButton.setIcon(ImageCache.getInstance().getImage(ImageCache.ZOOM_TO_PREVIOUS));
-        // _previousButton.addActionListener(e -> {
-        // currentFeatureIndex--;
-        // zoomToSubItems();
-        // });
-        // _allButton.setText("");
-        // _allButton.setToolTipText("Zoom to the whole layer.");
-        // _allButton.setIcon(ImageCache.getInstance().getImage(ImageCache.ZOOM_TO_ALL));
-        // _allButton.addActionListener(e -> {
-        // zoomToAll();
-        // });
-
         _saveButton.setText("");
         _saveButton.setToolTipText("Save SLD to file.");
         _saveButton.setIcon(ImageCache.getInstance().getImage(ImageCache.SAVE));
@@ -335,6 +314,37 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             }
         });
 
+        _loadSldButton.setToolTipText("Load SLD from templated database.");
+        _loadSldButton.addActionListener(e -> {
+            try {
+                File lastFile = PreferencesHandler.getLastFile();
+                FileFilter filter = new FileFilter(){
+
+                    @Override
+                    public String getDescription() {
+                        return "sld";
+                    }
+
+                    @Override
+                    public boolean accept( File f ) {
+                        if (f.isDirectory()) {
+                            return true;
+                        }
+                        String name = f.getName();
+                        return name.toLowerCase().endsWith("sld");
+                    }
+                };
+                File[] res = GuiUtilities.showOpenFilesDialog(this, "Select SLD file", false, lastFile, filter);
+                if (res != null && res.length == 1) {
+                    String absolutePath = res[0].getAbsolutePath();
+                    String sldString = FileUtilities.readFile(absolutePath);
+                    loadFromStyle(sldString);
+                }
+            } catch (Exception e1) {
+                Logger.INSTANCE.e("Error loading style from SLD fileÏ.", e1);
+            }
+        });
+
         _deleteTemplateButton.setToolTipText("Delete SLD from templated database.");
         _deleteTemplateButton.addActionListener(e -> {
             try {
@@ -385,6 +395,8 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 Logger.INSTANCE.e("Error opening style.", e1);
             }
             openSelectedFile();
+        } else {
+            enableTemplateButtons(false);
         }
 
     }
@@ -563,9 +575,20 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 reloadGroupsAndRules();
 
             }
+
+            enableTemplateButtons(true);
         } catch (Exception e1) {
+            enableTemplateButtons(false);
             Logger.INSTANCE.e("Error parsing style data.", e1);
         }
+
+    }
+
+    private void enableTemplateButtons( boolean enable ) {
+        _saveTemplateButton.setEnabled(enable);
+        _loadTemplateButton.setEnabled(enable);
+        _loadSldButton.setEnabled(enable);
+        _deleteTemplateButton.setEnabled(enable);
     }
 
     private void reloadGroupsAndRules() {

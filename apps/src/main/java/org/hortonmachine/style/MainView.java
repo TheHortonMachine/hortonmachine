@@ -30,6 +30,7 @@ public class MainView extends JPanel
    JButton _saveTemplateButton = new JButton();
    JButton _loadTemplateButton = new JButton();
    JButton _deleteTemplateButton = new JButton();
+   JButton _loadSldButton = new JButton();
 
    /**
     * Default constructor
@@ -186,7 +187,7 @@ public class MainView extends JPanel
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Templates",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(0,0,0));
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:4DLU:NONE,FILL:DEFAULT:GROW(1.0),FILL:4DLU:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:4DLU:NONE,FILL:DEFAULT:GROW(1.0),FILL:4DLU:NONE,FILL:DEFAULT:GROW(1.0),FILL:4DLU:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -203,9 +204,14 @@ public class MainView extends JPanel
       _deleteTemplateButton.setActionCommand("Load from template");
       _deleteTemplateButton.setName("deleteTemplateButton");
       _deleteTemplateButton.setText("delete");
-      jpanel1.add(_deleteTemplateButton,cc.xy(5,1));
+      jpanel1.add(_deleteTemplateButton,cc.xy(7,1));
 
-      addFillComponents(jpanel1,new int[]{ 2,4 },new int[0]);
+      _loadSldButton.setActionCommand("load");
+      _loadSldButton.setName("loadSldButton");
+      _loadSldButton.setText("from sld");
+      jpanel1.add(_loadSldButton,cc.xy(5,1));
+
+      addFillComponents(jpanel1,new int[]{ 2,4,6 },new int[0]);
       return jpanel1;
    }
 

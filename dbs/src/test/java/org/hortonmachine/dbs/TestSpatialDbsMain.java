@@ -66,6 +66,8 @@ public class TestSpatialDbsMain {
         db.open(dbPath);
         db.initSpatialMetadata("'WGS84'");
 
+        checkHex(db);
+
         createGeomTablesAndPopulate(db, true);
 
         tablesCount = 6;
@@ -329,35 +331,6 @@ public class TestSpatialDbsMain {
                 + " MULTIPOINT ((6.8 42.5), (6.8 41.4), (6.6 40.2)))";
         geom = new WKTReader().read(gCollWKT);
         checkReadWrite(geom);
-
-        // TODO check issue in spatialite writer
-        // // now check with hex from db
-        // String hexString = db.execOnConnection(connection -> {
-        //     String sql = "select Hex(ST_GeomFromText('POINT(1 2)'))";
-        //     try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-        //         if (rs.next()) {
-        //             String hex = rs.getString(1);
-        //             return hex;
-        //         }
-        //         return "";
-        //     }
-        // });
-        // System.out.println(hexString);
-        // Object sqlGeom = TestUtilities.sqlObjectFromWkt("POINT(1 2)", db);
-        // String hexString2 = db.execOnConnection(connection -> {
-        //     String sql = "select Hex(?)";
-        //     try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
-        //         byte[] bytes = (byte[]) sqlGeom;
-        //         pstmt.setBytes(1, bytes);
-        //         IHMResultSet rs = pstmt.executeQuery();
-        //         if (rs.next()) {
-        //             String hex = rs.getString(1);
-        //             return hex;
-        //         }
-        //         return "";
-        //     }
-        // });
-        // System.out.println(hexString2);
     }
 
     private void checkReadWrite( Geometry geom ) throws ParseException {
@@ -369,4 +342,34 @@ public class TestSpatialDbsMain {
         assertTrue(readGeom.equalsExact(geom));
     }
 
+    private static void checkHex( ASpatialDb db ) throws Exception {
+        // TODO check issue in spatialite writer
+        // now check with hex from db
+        String hexString = db.execOnConnection(connection -> {
+            String sql = "select Hex(ST_GeomFromText('POINT(1 2)', 4326))";
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    String hex = rs.getString(1);
+                    return hex;
+                }
+                return "";
+            }
+        });
+        System.out.println(hexString);
+        Object sqlGeom = TestUtilities.sqlObjectFromWkt("POINT(1 2)", db);
+        String hexString2 = db.execOnConnection(connection -> {
+            String sql = "select Hex(?)";
+            try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
+                byte[] bytes = (byte[]) sqlGeom;
+                pstmt.setBytes(1, bytes);
+                IHMResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    String hex = rs.getString(1);
+                    return hex;
+                }
+                return "";
+            }
+        });
+        System.out.println(hexString2);
+    }
 }
