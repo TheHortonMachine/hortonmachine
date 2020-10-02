@@ -43,6 +43,7 @@ import javax.swing.tree.TreePath;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;
@@ -79,7 +80,6 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.features.FilterUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
-import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.hortonmachine.gears.utils.style.FeatureTypeStyleWrapper;
 import org.hortonmachine.gears.utils.style.LineSymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.PointSymbolizerWrapper;
@@ -100,7 +100,6 @@ import org.hortonmachine.style.objects.FileWithStyle;
 import org.hortonmachine.style.objects.GpkgWithStyle;
 import org.hortonmachine.style.objects.IObjectWithStyle;
 import org.joda.time.DateTime;
-import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -1024,35 +1023,86 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     String fieldName = currentSelectedFeatureAttributeNode.getFieldName();
-                    TreeMap<String, Integer> map = new TreeMap<>();
-                    for( SimpleFeature simpleFeature : currentFeaturesList ) {
-                        Object attribute = simpleFeature.getAttribute(fieldName);
-                        if (attribute != null) {
-                            String attrStr = attribute.toString();
-                            Integer count = map.get(attrStr);
-                            if (count == null) {
-                                count = 1;
-                            } else {
-                                count = count + 1;
-                            }
-                            map.put(attrStr, count);
-                        }
-                    }
-                    String[][] dataMatrix = new String[map.size()][2];
-                    int row = 0;
-                    for( Entry<String, Integer> entry : map.entrySet() ) {
-                        String name = entry.getKey();
-                        String count = String.valueOf(entry.getValue());
-                        dataMatrix[row][0] = name;
-                        dataMatrix[row][1] = count;
-                        row++;
-                    }
-                    Dimension dimension = new Dimension(400, 600);
-                    boolean modal = true;
-                    String title = "Field stats";
-                    String[] columnNames = new String[]{"value", "count"};
+                    String geomName = geometryDescriptor.getLocalName();
+                    String[][] dataMatrix = null;
 
-                    GuiUtilities.openDialogWithTable(title, dataMatrix, columnNames, dimension, modal);
+                    if (geomName.equals(fieldName)) {
+
+                        int count = 0;
+                        double length = 0;
+                        double area = 0;
+                        for( SimpleFeature simpleFeature : currentFeaturesList ) {
+                            Geometry geom = (Geometry) simpleFeature.getDefaultGeometry();
+                            length += geom.getLength();
+                            area += geom.getArea();
+                            count++;
+                        }
+
+                        SimpleFeatureCollection fl3857FC = new ReprojectingFeatureCollection(currentFeatureCollection,
+                                CrsUtilities.getCrsFromSrid(3857));
+                        List<SimpleFeature> fl3857List = FeatureUtilities.featureCollectionToList(fl3857FC);
+
+                        double length3857 = 0;
+                        double area3857 = 0;
+                        for( SimpleFeature simpleFeature : fl3857List ) {
+                            Geometry geom = (Geometry) simpleFeature.getDefaultGeometry();
+                            length3857 += geom.getLength();
+                            area3857 += geom.getArea();
+                        }
+
+                        DecimalFormat f = new DecimalFormat("0.0");
+                        DecimalFormat fd = new DecimalFormat("0.000000");
+                        dataMatrix = new String[5][2];
+                        dataMatrix[0][0] = "Features count";
+                        dataMatrix[0][1] = "" + count;
+                        dataMatrix[1][0] = "Length (data CRS/units)";
+                        dataMatrix[1][1] = fd.format(length);
+                        dataMatrix[2][0] = "Area (data CRS/units)";
+                        dataMatrix[2][1] = fd.format(area);
+                        dataMatrix[3][0] = "Length (3857 CRS)";
+                        dataMatrix[3][1] = f.format(length3857) + "m";
+                        dataMatrix[4][0] = "Area (3857)";
+                        dataMatrix[4][1] = f.format(area3857) + "m";
+
+                        Dimension dimension = new Dimension(400, 200);
+                        boolean modal = true;
+                        String title = "Geometry stats";
+                        String[] columnNames = new String[]{"", ""};
+
+                        GuiUtilities.openDialogWithTable(title, dataMatrix, columnNames, dimension, modal);
+
+                    } else {
+                        TreeMap<String, Integer> map = new TreeMap<>();
+                        for( SimpleFeature simpleFeature : currentFeaturesList ) {
+                            Object attribute = simpleFeature.getAttribute(fieldName);
+                            if (attribute != null) {
+                                String attrStr = attribute.toString();
+                                Integer count = map.get(attrStr);
+                                if (count == null) {
+                                    count = 1;
+                                } else {
+                                    count = count + 1;
+                                }
+                                map.put(attrStr, count);
+                            }
+                        }
+                        int row = 0;
+                        dataMatrix = new String[map.size()][2];
+                        for( Entry<String, Integer> entry : map.entrySet() ) {
+                            String name = entry.getKey();
+                            String count = String.valueOf(entry.getValue());
+                            dataMatrix[row][0] = name;
+                            dataMatrix[row][1] = count;
+                            row++;
+                        }
+                        Dimension dimension = new Dimension(400, 600);
+                        boolean modal = true;
+                        String title = "Field stats";
+                        String[] columnNames = new String[]{"value", "count"};
+
+                        GuiUtilities.openDialogWithTable(title, dataMatrix, columnNames, dimension, modal);
+                    }
+
                 }
 
             };
