@@ -66,7 +66,7 @@ public class TestSpatialDbsMain {
         db.open(dbPath);
         db.initSpatialMetadata("'WGS84'");
 
-        checkHex(db);
+//        checkHex(db);
 
         createGeomTablesAndPopulate(db, true);
 
