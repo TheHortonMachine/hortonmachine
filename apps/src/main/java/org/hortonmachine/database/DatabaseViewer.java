@@ -351,7 +351,12 @@ public class DatabaseViewer extends DatabaseController {
         addIfNotNull(actions, sqlTemplatesAndActions.getReprojectTableAction(selectedTable, this));
         actions.add(null);
         if (selectedTable.isGeo) {
-            addIfNotNull(actions, sqlTemplatesAndActions.getImportShapefileDataAction(guiBridge, selectedTable, this));
+            EDb type = currentConnectedDatabase.getType();
+            boolean useToWktBridge = true;
+            if (type == EDb.GEOPACKAGE) {
+                useToWktBridge = false;
+            }
+            addIfNotNull(actions, sqlTemplatesAndActions.getImportShapefileDataAction(guiBridge, selectedTable, this, useToWktBridge));
             addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewTableAction(selectedTable, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewTableGeometriesAction(selectedTable, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getOpenInSldEditorAction(selectedTable, this));
@@ -361,12 +366,6 @@ public class DatabaseViewer extends DatabaseController {
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     try {
-//                        public static final String ID_NAME = "id";
-//                        public static final String TimeStamp_NAME = "ts";
-//                        public static final String type_NAME = "type";
-//                        public static final String tag_NAME = "tag";
-//                        public static final String message_NAME = "msg";
-
                         String sql = "select  " + LogDb.type_NAME + ", " + LogDb.TimeStamp_NAME + ", " + LogDb.tag_NAME + ","
                                 + LogDb.message_NAME + " from " + LogDb.TABLE_MESSAGES + " order by " + LogDb.TimeStamp_NAME
                                 + " desc";

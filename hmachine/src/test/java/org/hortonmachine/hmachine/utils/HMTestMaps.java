@@ -18,6 +18,16 @@
  */
 package org.hortonmachine.hmachine.utils;
 
+import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
+
+import java.awt.image.WritableRaster;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -83,7 +93,7 @@ public class HMTestMaps {
      * N.B. in the first test it's read from the DataBase inside this plug-in.
      */
     public static double[][] mapData = new double[][]{//
-    /*    */{800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
+            /*    */{800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
             {600, N, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
             {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
             {400, 410, 650, 700, 750, 800, 850, 490, 450, 1500}, //
@@ -97,7 +107,7 @@ public class HMTestMaps {
      * Input data for the {@link OmsPitfiller} module.
      */
     public static double[][] pitData = new double[][]{ //
-    /*    */{800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
+            /*    */{800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
             {600, N, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
             {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
             {400, 410, 650, 700, 750, 800, 850, 800, 800, 1500}, //
@@ -111,7 +121,7 @@ public class HMTestMaps {
      * Output data of the {@link OmsPitfiller} module.
      */
     public static double[][] outPitData = new double[][]{ //
-    /*    */{800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
+            /*    */{800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
             {600, 500, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
             {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
             {400, 410, 650, 700, 750, 800, 850, 800, 800, 1500}, //
@@ -124,21 +134,21 @@ public class HMTestMaps {
      * Output data of the {@link OmsPitfiller} module.
      */
     public static double[][] outNewPitData = new double[][]{ //
-        /*    */{800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
-        {600, N, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
-        {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
-        {400, 410, 650, 700, 750, 800, 850, 800.000002, 800.000004, 1500}, //
-        {450, 550, 430, 500, 600, 700, 800, 800.000002, 800.000004, 1500}, //
-        {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
-        {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
-        {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500} //
+            /*    */{800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
+            {600, N, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
+            {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
+            {400, 410, 650, 700, 750, 800, 850, 800.000002, 800.000004, 1500}, //
+            {450, 550, 430, 500, 600, 700, 800, 800.000002, 800.000004, 1500}, //
+            {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
+            {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
+            {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500} //
     };
 
     /**
      * Output data of the {@link OmsFlowDirections} module.
      */
     public static double[][] flowData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 6, 6, 6, 6, 6, 6, 6, N}, //
             {N, 7, 6, 6, 6, 6, 6, 7, 7, N}, //
             {N, 5, 5, 7, 6, 6, 6, 6, 5, N}, //
@@ -153,7 +163,7 @@ public class HMTestMaps {
      * it has changed to also eat a border of data around the basin.
      */
     public static double[][] newFlowData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 6, 6, 6, 6, 6, 6, N}, //
             {N, N, N, 6, 6, 6, 6, 7, 7, N}, //
             {N, 5, 5, 7, 6, 6, 6, 6, 5, N}, //
@@ -164,21 +174,21 @@ public class HMTestMaps {
     };
 
     public static int[][] newIntFlowData = new int[][]{ //
-        /*    */{NI, NI, NI, NI, NI, NI, NI, NI, NI, NI}, //
-        {NI, NI, NI, 6, 6, 6, 6, 6, 6, NI}, //
-        {NI, NI, NI, 6, 6, 6, 6, 7, 7, NI}, //
-        {NI, 10, 5, 7, 6, 6, 6, 6, 5, NI}, //
-        {NI, 3, 4, 5, 5, 5, 5, 5, 5, NI}, //
-        {NI, 2, 3, 3, 4, 4, 4, 3, 3, NI}, //
-        {NI, 10, 4, 4, 4, 4, 5, 4, 4, NI}, //
-        {NI, NI, NI, NI, NI, NI, NI, NI, NI, NI} //
+            /*    */{NI, NI, NI, NI, NI, NI, NI, NI, NI, NI}, //
+            {NI, NI, NI, 6, 6, 6, 6, 6, 6, NI}, //
+            {NI, NI, NI, 6, 6, 6, 6, 7, 7, NI}, //
+            {NI, 10, 5, 7, 6, 6, 6, 6, 5, NI}, //
+            {NI, 3, 4, 5, 5, 5, 5, 5, 5, NI}, //
+            {NI, 2, 3, 3, 4, 4, 4, 3, 3, NI}, //
+            {NI, 10, 4, 4, 4, 4, 5, 4, 4, NI}, //
+            {NI, NI, NI, NI, NI, NI, NI, NI, NI, NI} //
     };
 
     /**
      * Output data for the {@link OmsDrainDir} module run in LTD mode.
      */
     public static double[][] drainData0 = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 6, 5, 6, 6, 6, 5, 6, N}, //
             {N, 7, 6, 6, 6, 6, 6, 7, 7, N}, //
             {N, 10, 5, 7, 6, 6, 6, 6, 5, N}, //
@@ -192,7 +202,7 @@ public class HMTestMaps {
      * Output data for the {@link OmsDrainDir} module run in LAD mode.
      */
     public static double[][] drainData1 = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 6, 6, 6, 6, 6, 6, 6, N}, //
             {N, 7, 6, 6, 6, 6, 6, 7, 7, N}, //
             {N, 10, 5, 7, 6, 6, 6, 6, 5, N}, //
@@ -203,7 +213,7 @@ public class HMTestMaps {
     };
 
     public static double[][] mflowData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 6, 6, 6, 6, 6, 6, 6, N}, //
             {N, 7, 6, 6, 6, 6, 6, 7, 7, N}, //
             {N, 10, 5, 7, 6, 6, 6, 6, 5, N}, //
@@ -214,7 +224,7 @@ public class HMTestMaps {
     };
 
     public static double[][] mflowDataBorder = new double[][]{ //
-    /*    */{5, 6, 8, 8, 9, 6, 5, 8, 5, 5}, //
+            /*    */{5, 6, 8, 8, 9, 6, 5, 8, 5, 5}, //
             {3, N, 6, 6, 6, 6, 6, 6, 6, 3}, //
             {3, 7, 6, 6, 6, 6, 6, 7, 7, 3}, //
             {4, 10, 5, 7, 6, 6, 6, 6, 5, 2}, //
@@ -225,7 +235,7 @@ public class HMTestMaps {
     };
 
     public static double[][] slopeData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 4.71, 3.54, 2.59, 2.36, 3.54, 7.07, 5.89, N}, //
             {N, 4.67, 6.84, 2.36, 2.36, 2.36, 2.36, 6.67, 10, N}, //
             {N, 0.33, 8, 6.67, 5.89, 4.71, 3.54, 0, 0, N}, //
@@ -236,7 +246,7 @@ public class HMTestMaps {
     };
 
     public static double[][] tcaData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 1, 1, 1, 1, 1, 1, 1, N}, //
             {N, 2, 2, 2, 2, 2, 2, 2, 1, N}, //
             {N, 46, 3, 3, 3, 3, 1, 5, 2, N}, //
@@ -250,7 +260,7 @@ public class HMTestMaps {
      * Output tca for {@link OmsDrainDir} in LTD mode.
      */
     public static double[][] mtcaData0 = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 2, 1, 1, 1, 2, 1, 1, N}, //
             {N, 3, 1, 2, 2, 3, 1, 2, 1, N}, //
             {N, 47, 3, 3, 4, 2, 1, 5, 2, N}, //
@@ -264,7 +274,7 @@ public class HMTestMaps {
      * Output tca for {@link OmsDrainDir} in LAD mode.
      */
     public static double[][] mtcaData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 1, 1, 1, 1, 1, 1, 1, N}, //
             {N, 2, 2, 2, 2, 2, 2, 2, 1, N}, //
             {N, 47, 3, 3, 3, 3, 1, 5, 2, N}, //
@@ -275,7 +285,7 @@ public class HMTestMaps {
     };
 
     public static double[][] tca3DData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 5438.94, 5370.95, 5963.77, 6552.17, 7082.91, 6568.44, 7191.73, N}, //
             {N, 10320.83, 9568.38, 8653.17, 8973.7, 9682.18, 10800.86, 13431.92, 10391.83, N}, //
             {N, 257338.23, 14529.45, 13231.44, 13420.35, 13928.84, 3096.91, 39495.19, 22327, N}, //
@@ -286,7 +296,7 @@ public class HMTestMaps {
     };
 
     public static double[][] gradientData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 4.55, 6.72, 7.06, 8.33, 7.17, 7.68, N}, //
             {N, N, 3.73, 3, 2.48, 2.36, 3.54, 7.45, 11.21, N}, //
             {N, 4.17, 6.6, 4.49, 3.73, 3, 1.67, 3.44, 12.69, N}, //
@@ -297,7 +307,7 @@ public class HMTestMaps {
     };
 
     public static double[][] gradientHornData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 5.45, 6.33, 6.96, 7.37, 7.00, 6.80, N}, //
             {N, N, N, 2.73, 2.44, 2.65, 4.17, 6.35, 9.94, N}, //
             {N, 3.13, 4.48, 4.49, 3.93, 3.25, 2.52, 3.36, 11.33, N}, //
@@ -308,7 +318,7 @@ public class HMTestMaps {
     };
 
     public static double[][] gradientEvansData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 5.75, 6.24, 6.93, 7.08, 6.96, 6.56, N}, //
             {N, N, N, 2.64, 2.43, 2.75, 4.39, 5.98, 9.58, N}, //
             {N, 2.98, 3.78, 4.50, 4.01, 3.34, 2.86, 3.44, 10.91, N}, //
@@ -319,7 +329,7 @@ public class HMTestMaps {
     };
 
     public static double[][] aspectDataDegrees = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 254.0, 242.0, 220.0, 247.0, 259.0, 257.0, 259.0, N}, //
             {N, 254.0, 256.0, 241.0, 242.0, 243.0, 250.0, 253.0, 263.0, N}, //
             {N, 270.0, 259.0, 240.0, 240.0, 241.0, 180.0, 139.0, 265.0, N}, //
@@ -332,12 +342,12 @@ public class HMTestMaps {
     public static double[][] aspectDataRadiants = new double[][]{ //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 4.433, 4.224, 3.84, 4.311, 4.52, 4.486, 4.52, N}, //
-            {N, 4.433136300065597, 4.468042885105484, 4.2062434973063345, 4.223696789826278, 4.241150082346221,
-                    4.363323129985824, 4.4156830075456535, 4.590215932745086, N}, //
+            {N, 4.433136300065597, 4.468042885105484, 4.2062434973063345, 4.223696789826278, 4.241150082346221, 4.363323129985824,
+                    4.4156830075456535, 4.590215932745086, N}, //
             {N, 4.71238898038469, 4.520402762665314, 4.1887902047863905, 4.1887902047863905, 4.2062434973063345,
                     3.141592653589793, 2.426007660272118, 4.625122517784973, N}, //
-            {N, 0.33161255787892263, 0.9075712110370513, 4.939281783143953, 4.76474885794452, 4.572762640225143,
-                    4.71238898038469, 6.283185307179586, 4.799655442984406, N}, //
+            {N, 0.33161255787892263, 0.9075712110370513, 4.939281783143953, 4.76474885794452, 4.572762640225143, 4.71238898038469,
+                    6.283185307179586, 4.799655442984406, N}, //
             {N, 4.991641660703783, 5.078908123303499, 5.480333851262195, 5.951572749300664, 5.218534463463045, 4.956735075663896,
                     4.9043751981040655, 4.834562028024293, N}, //
             {N, 5.078908123303499, 5.235987755982989, 5.811946409141117, 0.17453292519943295, 4.974188368183839,
@@ -346,7 +356,7 @@ public class HMTestMaps {
     };
 
     public static double[][] tanData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, -0.0204365, 0.0040265, 0.0134249, 0.0195928, -0.0160252, 0.0319721, N}, //
             {N, N, N, 0.0045884, 0.0070564, -0.0043396, -0.0075602, -0.0088648, 0.0148889, N}, //
             {N, 0.0726049, -0.0401959, -0.0020833, 0.0000000, 0.0026991, -0.0571662, 0.0255704, 0.0347564, N}, //
@@ -357,7 +367,7 @@ public class HMTestMaps {
     };
 
     public static double[][] planData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, -0.0209238, 0.0040709, 0.0135588, 0.0197333, -0.0161804, 0.0322418, N}, //
             {N, N, N, 0.0048358, 0.0076094, -0.0047140, -0.0078567, -0.0089443, 0.0149480, N}, //
             {N, 0.0746667, -0.0406542, -0.0021344, 0.0000000, 0.0028446, -0.0666667, 0.0266314, 0.0348641, N}, //
@@ -368,7 +378,7 @@ public class HMTestMaps {
     };
 
     public static double[][] profData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 0.0005018, 0.0010118, 0.0008380, 0.0002856, -0.0002802, 0.0000646, N}, //
             {N, N, N, 0.0012920, -0.0004059, 0.0006620, 0.0028001, 0.0001567, -0.0000006, N}, //
             {N, 0.0032482, -0.0004414, -0.0016163, -0.0019340, -0.0020187, 0.0000000, 0.0040650, 0.0003239, N}, //
@@ -379,7 +389,7 @@ public class HMTestMaps {
     };
 
     public static double[][] nablaData1 = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 0.055, 0.083, 0.114, 0.16, 0.125, -0.015, 0.09, N}, //
             {N, 0.055, -0.23, 0.003, 0.014, 0.017, 0.028, -0.028, 0.16, N}, //
             {N, 0.12, -0.069, -0.075, -0.0555, -0.027, -0.014, 0.111, 0.444, N}, //
@@ -390,7 +400,7 @@ public class HMTestMaps {
     };
 
     public static double[][] nablaData0 = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, N}, //
             {N, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, N}, //
             {N, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, N}, //
@@ -401,7 +411,7 @@ public class HMTestMaps {
     };
 
     public static double[][] cp9Data = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 40, 10, 10, 10, 10, 70, N}, //
             {N, N, N, 10, 10, 10, 30, 10, 10, N}, //
             {N, 90, 40, 10, 20, 20, 40, 90, 70, N}, //
@@ -412,7 +422,7 @@ public class HMTestMaps {
     };
 
     public static double[][] cp3Data = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 35, 25, 25, 25, 25, 15, N}, //
             {N, N, N, 25, 25, 25, 15, 25, 25, N}, //
             {N, 15, 35, 25, 35, 35, 35, 15, 15, N}, //
@@ -423,7 +433,7 @@ public class HMTestMaps {
     };
 
     public static double[][] multiTcaData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, N}, //
             {N, N, N, 2.25, 2.125, 2.0, 2.0, 2.0, 1.0, N}, //
             {N, 33.87, 3.25, 3.47, 3.45, 3.14, 1.0, 5.14, 2.0, N}, //
@@ -434,7 +444,7 @@ public class HMTestMaps {
     };
 
     public static double[][] abData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 18.11, 34.15, 50.22, 72.43, 19.99, 300.0, N}, //
             {N, N, N, 70.12, 77.578, 52.52, 48.44, 47.16, 53.93, N}, //
             {N, 13800.0, 47.37, 84.56, 90.0, 98.36, 15.78, 725.23, 600.0, N}, //
@@ -445,7 +455,7 @@ public class HMTestMaps {
     };
 
     public static double[][] bData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 49.67, 26.35, 17.92, 12.43, 45.01, 3.0, N}, //
             {N, N, N, 25.67, 23.2, 34.27, 37.16, 38.16, 16.69, N}, //
             {N, 3, 57, 31.93, 30.0, 27.45, 57, 6.2, 3, N}, //
@@ -456,7 +466,7 @@ public class HMTestMaps {
     };
 
     public static double[][] diametersData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 0, 0, 0, 0, 0, 0, 0, N}, //
             {N, 42.43, 42.43, 42.43, 42.43, 42.43, 42.43, 42.43, 0, N}, //
             {N, 228.47, 84.85, 84.85, 84.85, 84.85, 0, 67.08, 30, N}, //
@@ -467,7 +477,7 @@ public class HMTestMaps {
 
     };
     public static double[][] distEuclideaData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 152.97, 161.55, 174.93, 192.09, 212.13, 234.31, 258.07, N}, //
             {N, 120, 123.69, 134.16, 150, 169.71, 192.09, 216.33, 241.87, N}, //
             {N, 90, 94.87, 108.17, 127.28, 150, 174.93, 201.25, 228.47, N}, //
@@ -478,7 +488,7 @@ public class HMTestMaps {
     };
 
     public static double[][] meandropData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 0, 0, 0, 0, 0, 0, 0, N}, //
             {N, 100, 75, 55, 50, 75, 150, 125, 0, N}, //
             {N, 404.13, 103.33, 100, 116.67, 166.67, 0, 190, 150, N}, //
@@ -492,7 +502,7 @@ public class HMTestMaps {
      * {@link OmsExtractNetwork} output with mode 0.
      */
     public static double[][] extractNet0Data = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, 2, N, N, N, N, N, 2, N, N}, //
@@ -505,7 +515,7 @@ public class HMTestMaps {
      * {@link OmsExtractNetwork} output with mode 1.
      */
     public static double[][] extractNet1Data = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 2, N, N, N, N, 2, 2, N}, //
             {N, 2, 2, 2, 2, 2, N, 2, 2, N}, //
@@ -516,7 +526,7 @@ public class HMTestMaps {
     };
 
     public static double[][] d2oPixelData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 2, 2, 3, 5, 5, 6, 8, N}, //
             {N, 1, 1, 2, 4, 4, 5, 7, 8, N}, //
             {N, 0, 1, 3, 3, 4, 5, 6, 7, N}, //
@@ -527,7 +537,7 @@ public class HMTestMaps {
     };
 
     public static double[][] hacklengthData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 0, 0, 0, 0, 0, 0, 0, N}, //
             {N, 42.43, 42.43, 42.43, 42.43, 42.43, 42.43, 42.43, 0, N}, //
             {N, 264.85, 84.85, 84.85, 84.85, 84.85, 0, 72.43, 30, N}, //
@@ -538,7 +548,7 @@ public class HMTestMaps {
     };
 
     public static double[][] hacklength3DData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 0, 0, 0, 0, 0, 0, 0, N}, //
             {N, 204.45, 155.88, 117.9, 108.63, 155.88, 302.99, 253.57, 0, N}, //
             {N, 848.83, 226.53, 217.26, 264.51, 411.61, 0, 332.99, 302.99, N}, //
@@ -549,7 +559,7 @@ public class HMTestMaps {
     };
 
     public static double[][] hackstream = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 2, N, N, N, N, 2, 3, N}, //
             {N, 1, 2, 2, 2, 2, N, 2, 3, N}, //
@@ -559,7 +569,7 @@ public class HMTestMaps {
             {N, N, N, N, N, N, N, N, N, N} //
     };
     public static double[][] magnitudoData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 1, 1, 1, 1, 1, 1, 1, N}, //
             {N, 1, 1, 1, 1, 1, 1, 1, 1, N}, //
             {N, 18, 1, 1, 1, 1, 1, 2, 1, N}, //
@@ -569,7 +579,7 @@ public class HMTestMaps {
             {N, N, N, N, N, N, N, N, N, N},};
 
     public static double[][] netNumberingChannelDataJG = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, 2.0, 1.0, 3.0, 5.0, 6.0, N, 8.0, N, N}, //
@@ -579,7 +589,7 @@ public class HMTestMaps {
             {N, N, N, N, N, N, N, N, N, N},};
 
     public static double[][] splitSubBasinData_withHackOrder3 = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 2.0, 1.0, 10.0, 11.0, 12.0, 13.0, 3.0, N}, //
             {N, 2.0, 1.0, 10.0, 11.0, 12.0, 13.0, 3.0, 9.0, N}, //
             {N, 2.0, 10.0, 11.0, 12.0, 13.0, 5.0, 4.0, 9.0, N}, //
@@ -593,7 +603,7 @@ public class HMTestMaps {
      * This isn't used. It maintain it only for future test.
      */
     public static double[][] splitSubBasinData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 2, 2, 3, 4, 7, 7, N}, //
             {N, 1, 2, 2, 3, 4, 5, 7, 7, N}, //
             {N, 1, 2, 3, 4, 5, 1, 6, 7, N}, //
@@ -604,7 +614,7 @@ public class HMTestMaps {
     };
 
     public static double[][] strahlerData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 1, N, N, N, N, 1, 1, N}, //
             {N, 3, 1, 1, 1, 1, N, 2, 1, N}, //
@@ -618,7 +628,7 @@ public class HMTestMaps {
      * It was obtained with the tcaData and strahlerData, it is to test the h.seol command.
      */
     public static double[][] soelData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 2, N, N, N, N, 2, N, N}, //
             {N, 46, 3, 3, 3, 3, N, 5, 2, N}, //
@@ -629,7 +639,7 @@ public class HMTestMaps {
     };
 
     public static double[][] cp3GCData = new double[][]{//
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 45.0, 25.0, 25.0, 25.0, 55.0, 15.0, N}, //
             {N, N, 35.0, 25.0, 25.0, 25.0, 15.0, 35.0, 55.0, N}, //
             {N, 35.0, 55.0, 35.0, 35.0, 35.0, 45.0, 35.0, 35.0, N}, //
@@ -640,7 +650,7 @@ public class HMTestMaps {
     };
 
     public static double[][] cp9GCData = new double[][]{//
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 40.0, 10.0, 10.0, 10.0, 110.0, 70.0, N}, //
             {N, N, 100.0, 10.0, 10.0, 10.0, 30.0, 100.0, 110.0, N}, //
             {N, 100.0, 110.0, 100.0, 100.0, 100.0, 40.0, 100.0, 100.0, N}, //
@@ -651,7 +661,7 @@ public class HMTestMaps {
     };
 
     public static double[][] topIndexData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, -1.55, -1.26, -0.95, -0.86, -1.26, -1.96, -1.77, N}, //
             {N, -0.85, -1.23, -0.17, -0.17, -0.17, -0.17, -1.2, -2.3, N}, //
             {N, 4.94, -0.98, -0.8, -0.67, -0.45, -1.26, N, N, N}, //
@@ -677,7 +687,7 @@ public class HMTestMaps {
     };
 
     public static double[][] h2cdTopoData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 72.43, 42.43, 84.85, 84.85, 84.85, 84.85, 42.43, N}, //
             {N, 30, 0, 42.43, 42.43, 42.43, 42.43, 0, 0, N}, //
             {N, 0, 0, 0, 0, 0, 42.43, 0, 0, N}, //
@@ -688,7 +698,7 @@ public class HMTestMaps {
     };
 
     public static double[][] h2cdData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 2, 1, 2, 2, 2, 2, 1, N}, //
             {N, 1, 0, 1, 1, 1, 1, 0, 0, N}, //
             {N, 0, 0, 0, 0, 0, 1, 0, 0, N}, //
@@ -699,7 +709,7 @@ public class HMTestMaps {
     };
 
     public static double[][] h2cd3dData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 347.63, 155.88, 226.53, 217.26, 264.51, 411.61, 253.57, N}, //
             {N, 143.18, 0, 108.63, 108.63, 108.63, 108.63, 0, 0, N}, //
             {N, 0, 0, 0, 0, 0, 155.88, 0, 0, N}, //
@@ -757,7 +767,7 @@ public class HMTestMaps {
     };
 
     public static double[][] h2caForGradient = { //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 4.17, 4.17, 4.17, 2.95, 2.95, 3.34, 3.44, N}, //
             {N, 4.17, 4.17, 4.17, 2.95, 2.95, 3.34, 3.44, 3.44, N}, //
             {N, 4.17, 4.17, 2.95, 2.95, 3.34, 3.37, 3.44, 3.44, N}, //
@@ -771,8 +781,8 @@ public class HMTestMaps {
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 347.62869363537226, 448.97159047625587, 468.39379858647465, 542.5549826424445, 641.1487129121938,
                     843.5283898114521, 934.5094216190689, N}, //
-            {N, 143.17821063276352, 293.0870177950569, 350.4955373609587, 433.9271777304424, 485.2641402309948,
-                    540.5432416605897, 680.9349749569496, 810.1937594290096, N}, //
+            {N, 143.17821063276352, 293.0870177950569, 350.4955373609587, 433.9271777304424, 485.2641402309948, 540.5432416605897,
+                    680.9349749569496, 810.1937594290096, N}, //
             {N, 0.0, 241.86773244895653, 325.29937281844025, 376.6363353189927, 431.9154367485876, 487.7525915162834,
                     478.6974907953828, 508.69749079538286, N}, //
             {N, 143.17821063276352, 46.90415759823432, 123.0618886568734, 227.46495374597885, 331.86801883508446,
@@ -795,7 +805,7 @@ public class HMTestMaps {
     };
 
     public static double[][] trimWateroutletData = { //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, 900.0, 1000.0, 1200.0, 1250.0, N}, //
             {N, N, N, N, 800.0, 850.0, 900.0, 1000.0, 1100.0, N}, //
             {N, N, N, 700.0, 750.0, 800.0, 850.0, 800.0, 800.0, N}, //
@@ -806,7 +816,7 @@ public class HMTestMaps {
     };
 
     public static double[][] qcritmapData = { //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 5.0, 5.0, 5.0, 5.0, 5.0, 8888.0, 8888.0, N}, //
             {N, 5.0, 8888.0, 5.0, 5.0, 5.0, 5.0, 8888.0, 8888.0, N}, //
             {N, 1.0, 8888.0, 8888.0, 8888.0, 5.0, 5.0, 0.0, 0.0, N}, //
@@ -817,7 +827,7 @@ public class HMTestMaps {
     };
 
     public static double[][] classimapData = { //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, 1.0, 1.0, 1.0, 1.0, 8888.0, 8888.0, N}, //
             {N, N, N, 1.0, 1.0, 1.0, 1.0, 8888.0, 8888.0, N}, //
             {N, 4.0, 8888.0, 8888.0, 8888.0, 1.0, 1.0, 2.0, 2.0, N}, //
@@ -859,7 +869,7 @@ public class HMTestMaps {
      * Netnum result.
      */
     public static double[][] netNumberingChannelDataNN0 = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 1.0, N, N, N, N, 2.0, 3.0, N}, //
             {N, 4.0, 5.0, 6.0, 7.0, 8.0, N, 9.0, 3.0, N}, //
@@ -873,7 +883,7 @@ public class HMTestMaps {
      * Netnum result with points.
      */
     public static double[][] netNumberingChannelDataNN2 = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 3.0, N, N, N, N, 4.0, 5.0, N}, //
             {N, 6.0, 7.0, 8.0, 9.0, 10.0, N, 11.0, 5.0, N}, //
@@ -887,7 +897,7 @@ public class HMTestMaps {
      * Netnum result with tca.
      */
     public static final double[][] netNumberingChannelDataNN1 = { //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 1.0, N, N, N, N, 2.0, 3.0, N}, //
             {N, 5.0, 6.0, 8.0, 10.0, 12.0, N, 14.0, 3.0, N}, //
@@ -901,7 +911,7 @@ public class HMTestMaps {
      * Netnum result with tca and points.
      */
     public static final double[][] netNumberingChannelDataNN3 = { //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 3.0, N, N, N, N, 4.0, 5.0, N}, //
             {N, 7.0, 8.0, 10.0, 12.0, 14.0, N, 16.0, 5.0, N}, //
@@ -912,7 +922,7 @@ public class HMTestMaps {
     };
 
     public static double[][] basinDataNN0 = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 4.0, 1.0, 5.0, 6.0, 7.0, 8.0, 2.0, N}, //
             {N, 4.0, 1.0, 5.0, 6.0, 7.0, 8.0, 2.0, 3.0, N}, //
             {N, 4.0, 5.0, 6.0, 7.0, 8.0, 13.0, 9.0, 3.0, N}, //
@@ -923,7 +933,7 @@ public class HMTestMaps {
     };
 
     public static final double[][] basinDataNN1 = { //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 5.0, 1.0, 6.0, 8.0, 10.0, 12.0, 2.0, N}, //
             {N, 5.0, 1.0, 6.0, 8.0, 10.0, 12.0, 2.0, 3.0, N}, //
             {N, 5.0, 6.0, 8.0, 10.0, 12.0, 18.0, 14.0, 3.0, N}, //
@@ -934,7 +944,7 @@ public class HMTestMaps {
     };
 
     public static double[][] basinDataNN2 = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 6.0, 3.0, 7.0, 8.0, 9.0, 10.0, 4.0, N}, //
             {N, 6.0, 3.0, 7.0, 8.0, 9.0, 10.0, 4.0, 5.0, N}, //
             {N, 6.0, 7.0, 8.0, 9.0, 10.0, 2.0, 11.0, 5.0, N}, //
@@ -945,7 +955,7 @@ public class HMTestMaps {
     };
 
     public static final double[][] basinDataNN3 = { //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 7.0, 3.0, 8.0, 10.0, 12.0, 14.0, 4.0, N}, //
             {N, 7.0, 3.0, 8.0, 10.0, 12.0, 14.0, 4.0, 5.0, N}, //
             {N, 7.0, 8.0, 10.0, 12.0, 14.0, 2.0, 16.0, 5.0, N}, //
@@ -956,7 +966,7 @@ public class HMTestMaps {
     };
 
     public static double[][] netNumberingChannelData = new double[][]{ //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 2, N, N, N, N, 7, 7, N}, //
             {N, 1, 2, 3, 4, 5, N, 6, 7, N}, //
@@ -977,7 +987,7 @@ public class HMTestMaps {
     };
 
     public static double[][] outValidation = { //
-    /*    */{113, 3.873, N}, //
+            /*    */{113, 3.873, N}, //
             {1008, 0.775, 0.6}, //
             {1010, 1.425, 0.4}, //
             {1019, 0.400, N}, //
@@ -1005,7 +1015,7 @@ public class HMTestMaps {
     };
 
     public static double[][] outKriging4 = { //
-    /*    */{1221, 0.628}, //
+            /*    */{1221, 0.628}, //
             {1097, 0.658}, //
             {944, 0.76}, //
             {945, 0.769}, //
@@ -1063,7 +1073,7 @@ public class HMTestMaps {
     };
 
     public static double[][] outKriging3 = { //
-    /*    */{1221, 0.6442378}, //
+            /*    */{1221, 0.6442378}, //
             {1097, 0.6638148}, //
             {944, 0.7238208}, //
             {945, 0.727541}, //
@@ -1134,7 +1144,7 @@ public class HMTestMaps {
             {0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.0000000},};
 
     public static final double[][] outHillshade = {//
-    /*    */{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //
+            /*    */{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //
@@ -1145,7 +1155,7 @@ public class HMTestMaps {
     };
 
     public static final double[][] outSkyview = { //
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, 0.45, 0.60, 0.61, 0.60, 0.55, 0.54, N, N}, //
             {N, N, 0.60, 0.56, 0.59, 0.58, 0.55, 0.48, N, N}, //
@@ -1156,19 +1166,19 @@ public class HMTestMaps {
     };
 
     public static final double[][] d2oMeterData = {//
-    /*    */{N, N, N, N, N, N, N, N, N, N},//
-            {N, N, 72.43, 84.85, 114.85, 187.28, 199.71, 229.71, 277.28, N},//
-            {N, 30, 42.43, 72.43, 144.85, 157.28, 187.28, 234.85, 264.85, N},//
-            {N, 0, 30, 102.43, 114.85, 144.85, 174.85, 204.85, 234.85, N},//
-            {N, 30, 42.43, 72.43, 102.43, 132.43, 162.43, 192.43, 222.43, N},//
-            {N, 84.86, 72.43, 102.43, 114.85, 144.85, 174.85, 222.43, 252.43, N},//
-            {N, 0, 127.28, 114.85, 144.85, 157.28, 187.28, 217.28, 264.85, N},//
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            {N, N, 72.43, 84.85, 114.85, 187.28, 199.71, 229.71, 277.28, N}, //
+            {N, 30, 42.43, 72.43, 144.85, 157.28, 187.28, 234.85, 264.85, N}, //
+            {N, 0, 30, 102.43, 114.85, 144.85, 174.85, 204.85, 234.85, N}, //
+            {N, 30, 42.43, 72.43, 102.43, 132.43, 162.43, 192.43, 222.43, N}, //
+            {N, 84.86, 72.43, 102.43, 114.85, 144.85, 174.85, 222.43, 252.43, N}, //
+            {N, 0, 127.28, 114.85, 144.85, 157.28, 187.28, 217.28, 264.85, N}, //
             {N, N, N, N, N, N, N, N, N, N}//
 
     };
 
     public static double[][] netFlowData = new double[][]{//
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, 8, N, N, N, N, N, 10, N, N}, //
@@ -1179,7 +1189,7 @@ public class HMTestMaps {
     };
 
     public static double[][] netOneData = new double[][]{//
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, 1, N, N, N, N, N, 1, N, N}, //
@@ -1190,7 +1200,7 @@ public class HMTestMaps {
     };
 
     public static double[][] sumDownstreamData = new double[][]{//
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, 1, N, N, N, N, N, 10, N, N}, //
@@ -1201,7 +1211,7 @@ public class HMTestMaps {
     };
 
     public static double[][] netOneThresData = new double[][]{//
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, 1, N, N, N, N, N, 1, N, N}, //
@@ -1212,7 +1222,7 @@ public class HMTestMaps {
     };
 
     public static double[][] sumDownstreamThresData = new double[][]{//
-    /*    */{N, N, N, N, N, N, N, N, N, N}, //
+            /*    */{N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
             {N, 1, N, N, N, N, N, 3, N, N}, //
@@ -1221,5 +1231,33 @@ public class HMTestMaps {
             {N, 1, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N} //
     };
+
+    public static void main( String[] args ) throws Exception {
+        // Dump test maps to file       
+        String dumpFolder = "/Users/hydrologis/development/SMASH/hortonmachine/hortonmachine/test/files/";
+        OmsRasterWriter.writeRaster(dumpFolder + "dtm64float.tiff", createGC(mapData, Double.class));
+        OmsRasterWriter.writeRaster(dumpFolder + "dtm32float.tiff", createGC(mapData, Float.class));
+        OmsRasterWriter.writeRaster(dumpFolder + "flow16int.tiff", createGC(flowData, Short.class));
+        OmsRasterWriter.writeRaster(dumpFolder + "tca32int.tiff", createGC(tcaData, Integer.class));
+        OmsRasterWriter.writeRaster(dumpFolder + "aspect32float.tiff", createGC(aspectDataDegrees, Float.class));
+        
+
+    }
+
+    private static GridCoverage2D createGC( double[][] data, Class< ? > dataClass ) {
+        RegionMap rm = getEnvelopeparams();
+        int nRows = rm.getRows();
+        int nCols = rm.getCols();
+        WritableRaster pitRaster = CoverageUtilities.createWritableRaster(nCols, nRows, dataClass, null, null);
+        WritableRandomIter iter = CoverageUtilities.getWritableRandomIterator(pitRaster);
+        for( int r = 0; r < nRows; r++ ) {
+            for( int c = 0; c < nCols; c++ ) {
+                double value = data[r][c];
+                iter.setSample(c, r, 0, value);
+            }
+        }
+        iter.done();
+        return CoverageUtilities.buildCoverage("gc", pitRaster, rm, crs);
+    }
 
 }

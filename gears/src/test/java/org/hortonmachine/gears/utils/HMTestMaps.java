@@ -18,6 +18,9 @@
  */
 package org.hortonmachine.gears.utils;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -1044,6 +1047,9 @@ public class HMTestMaps {
             {NaN, 4.0, 4.0, 4.0, 1.0, 4.0, 4.0, 4.0, 4.0, NaN}, //
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
     };
+    
+    
+
 
     // public static SimpleFeatureCollection createFcFromPoint( Coordinate point,
     // CoordinateReferenceSystem crs ) {

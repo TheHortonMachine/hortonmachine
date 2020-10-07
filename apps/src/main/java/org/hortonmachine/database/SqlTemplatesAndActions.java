@@ -500,7 +500,8 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public Action getImportShapefileDataAction( GuiBridgeHandler guiBridge, TableLevel table, DatabaseViewer spatialiteViewer ) {
+    public Action getImportShapefileDataAction( GuiBridgeHandler guiBridge, TableLevel table, DatabaseViewer spatialiteViewer,
+            boolean useFromTextForGeom ) {
         return new AbstractAction("Import data from shapefile"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -524,7 +525,8 @@ public class SqlTemplatesAndActions {
                     logConsole.beginProcess("Importing data...");
                     try {
                         hasErrors = !SpatialDbsImportUtils.importShapefile(spatialiteViewer.currentConnectedDatabase,
-                                openFiles[0], spatialiteViewer.currentSelectedTable.tableName, -1, true, spatialiteViewer.pm);
+                                openFiles[0], spatialiteViewer.currentSelectedTable.tableName, -1, useFromTextForGeom,
+                                spatialiteViewer.pm);
                     } catch (Exception ex) {
                         logger.insertError("SqlTemplatesAndActions", "Error importing data from shapefile", ex);
                         hasErrors = true;
