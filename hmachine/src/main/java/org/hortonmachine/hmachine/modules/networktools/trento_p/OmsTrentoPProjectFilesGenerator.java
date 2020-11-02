@@ -120,7 +120,7 @@ public class OmsTrentoPProjectFilesGenerator extends HMModel {
         OmsShapefileFeatureWriter.writeEmptyShapefile(areasPath, getAreasFeatureType(crs), pm);
         pm.worked(1);
 
-        String pozzettiPath = new File(inFolder, Constants.WELLS_NAME_SHP).getAbsolutePath();
+        String pozzettiPath = new File(inFolder, Constants.JUNCTIONS_NAME_SHP).getAbsolutePath();
         OmsShapefileFeatureWriter.writeEmptyShapefile(pozzettiPath, getWellsFeatureType(crs), pm);
         pm.worked(1);
 

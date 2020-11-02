@@ -240,7 +240,7 @@ public class Constants {
     /**
      * The name of the shp with the wells.
      */
-    public static final String WELLS_NAME_SHP = "wells.shp"; //$NON-NLS-1$
+    public static final String JUNCTIONS_NAME_SHP = "junctions.shp"; //$NON-NLS-1$
     public static final String PARAMETERS_CSV = "parameters.csv"; //$NON-NLS-1$
     public static final String DIAMETERS_CSV = "diameters.csv"; //$NON-NLS-1$
     /**
