@@ -854,23 +854,6 @@ public class HortonMessages {
     public static final String OMSENERGYBALANCE_outNetradiation_DESCRIPTION = "Net radiation for each basin.";
     public static final String OMSENERGYBALANCE_outNetshortradiation_DESCRIPTION = "Net shortwave radiation for each basin.";
 
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_DESCRIPTION = "Generates the input shapefiles for a OmsTrentoP simulation.";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_DOCUMENTATION = "OmsTrentoPProjectFilesGenerator.html";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_KEYWORDS = "OmsTrentoP";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_LABEL = OTHER;
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_NAME = "";
-    public static final int OMSTRENTOPPROJECTFILESGENERATOR_STATUS = 10;
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_AUTHORNAMES = "Daniele Andreis";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_AUTHORCONTACTS = "";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_inFolder_DESCRIPTION = "The folder into which to create the base files.";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_pMode_DESCRIPTION = "If it is 0 then create a project file (default mode), if 1 create the calibration shp.";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_doFromold_DESCRIPTION = "If it is true then generate it from an old output file.";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_pCode_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_pNetname_DESCRIPTION = "The optional name of the shapefile.";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_pOldVector_DESCRIPTION = "The output vector of OmsTrentoP. It's a geosewer network.";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_pShapeAreeName_DESCRIPTION = "The optional name of the shapefile. By default it is aree.shp";
-
     public static final String OMSPENMANETP_DESCRIPTION = "Calculates the daily evapotranspiration using the combination equation.";
     public static final String OMSPENMANETP_DOCUMENTATION = "";
     public static final String OMSPENMANETP_KEYWORDS = "Evapotranspiration, Penman, Hydrologic";

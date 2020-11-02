@@ -1,6 +1,6 @@
-package org.hortonmachine.hmachine.modules.networktools.trento_p.utils;
+package org.hortonmachine.hmachine.modules.networktools.trento_p.parameters;
 
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility.*;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants;
 
 /**
  * Time parameters used to OmsTrentoP in project mode.
@@ -8,15 +8,14 @@ import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Uti
  * It specify a key and a description, that can be used to build a GUI, and the default value,if it exist, and the range.
  * </p>
  * 
- * @author Daniele Andreis
+ * @author Daniele Andreis (www.hydrologis.com)
+ * @author Andrea Antonello (www.hydrologis.com)
  *
  */
 public enum ProjectTimeParameterCodes implements IParametersCode {
-    STEP(0, "Time step", "Simulation duration", F.format(Constants.DEFAULT_TDTP), 0.015, null), //
-    MINIMUM_TIME(1, "Minimum amount Rain Time step", "Hydraulic time step [min]", F.format(Constants.DEFAULT_TPMIN), 5.0,
-            null), //
-    MAXIMUM_TIME(2, "Maximum amount Rain Time step", "Hydraulic time step [min]", F.format(Constants.DEFAULT_TPMAX), 30.0,
-            null); //
+    STEP(0, "Time step for simulation", "min", Constants.DEFAULT_TDTP, 0.015, null), //
+    MINIMUM_TIME(1, "Minimum Rain Time step", "min", Constants.DEFAULT_TPMIN, 5.0, null), //
+    MAXIMUM_TIME(2, "Maximum Rain Time step", "min", Constants.DEFAULT_TPMAX, 30.0, null); //
     /**
      * The name of the WizardPage.
      */
@@ -30,26 +29,26 @@ public enum ProjectTimeParameterCodes implements IParametersCode {
      */
     private String key;
     /**
-     * The description of the parameter (used as a tip in a gui)
+     * The unit of the parameter 
      */
-    private String description;
+    private String unit;
     /**
      * The default value of this parameter.
      */
-    private final String defaultValue;
+    private final Number defaultValue;
     /**
      * Minimum value that the parameter can be.
      */
-    private final Double minRange;
+    private final Number minRange;
     /**
      * Maximum value that the parameter can be.
      */
-    private final Double maxRange;
-    
-    ProjectTimeParameterCodes( int code, String key, String description, String defaultValue, Double minRange, Double maxRange ) {
+    private final Number maxRange;
+
+    ProjectTimeParameterCodes( int code, String key, String unit, Number defaultValue, Number minRange, Number maxRange ) {
         this.code = code;
         this.key = key;
-        this.description = description;
+        this.unit = unit;
         this.defaultValue = defaultValue;
         this.minRange = minRange;
         this.maxRange = maxRange;
@@ -63,12 +62,22 @@ public enum ProjectTimeParameterCodes implements IParametersCode {
         return key;
     }
 
-    public String getDescription() {
-        return description;
+    public String getUnit() {
+        return unit;
     }
 
-    public String getDefaultValue() {
+    public Number getDefaultValue() {
         return defaultValue;
+    }
+    
+    public boolean isInRange( Number value ) {
+        if (minRange != null && value.doubleValue() < minRange.doubleValue()) {
+            return false;
+        } else if (maxRange != null && value.doubleValue() > maxRange.doubleValue()) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public static ProjectTimeParameterCodes forCode( int i ) {
@@ -92,23 +101,18 @@ public enum ProjectTimeParameterCodes implements IParametersCode {
     }
 
     @Override
-    public Double getMinRange() {
-        // TODO Auto-generated method stub
+    public Number getMinRange() {
         return minRange;
     }
 
     @Override
-    public Double getMaxRange() {
-        // TODO Auto-generated method stub
+    public Number getMaxRange() {
         return maxRange;
     }
 
     @Override
     public String getPageName() {
-        // TODO Auto-generated method stub
         return PROJECT_TIME_PAGE_NAME;
     }
-
-
 
 }

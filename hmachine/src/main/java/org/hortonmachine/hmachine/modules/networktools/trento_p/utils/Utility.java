@@ -27,7 +27,6 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureWriter;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.hortonmachine.gears.utils.math.functions.MinimumFillDegreeFunction;
@@ -37,10 +36,8 @@ import org.hortonmachine.hmachine.modules.networktools.trento_p.net.Pipe;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * It's a collection of method used only for the OmsTrentoP project.
@@ -120,7 +117,7 @@ public class Utility {
 
             lowerLimit = gsmFunction.getValue(thetai);
 
-            /* Ho trovato due punti in cui la funzione assume segno opposto */{
+            /* Ho trovato due punti in cui la funzione assume segno opposto */ {
                 if (upperLimit * lowerLimit < 0)
                     break;
             }
@@ -202,8 +199,8 @@ public class Utility {
                     builderFeature.add(networkPipes[t].getPipeSectionType());
                     builderFeature.add(networkPipes[t].getAverageSlope());
                     if (attributeName != null) {
-                        builderFeature.add(((Number) feature.getAttribute(TrentoPFeatureType.PERCENTAGE_OF_DRY_AREA))
-                                .doubleValue());
+                        builderFeature
+                                .add(((Number) feature.getAttribute(TrentoPFeatureType.PERCENTAGE_OF_DRY_AREA)).doubleValue());
                     } else {
                         builderFeature.add(1.0);
                     }
@@ -291,19 +288,6 @@ public class Utility {
 
     }
 
-    public static void makePolygonShp( ITrentoPType[] values, String path, CoordinateReferenceSystem crs,
-            String pAreaShapeFileName, IHMProgressMonitor pm ) throws IOException {
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        String typeName = values[0].getName();
-        b.setName(typeName);
-        b.setCRS(crs);
-        b.add("the_geom", Polygon.class);
-        b.add(PipesTrentoP.ID.getAttributeName(), PipesTrentoP.ID.getClazz());
-        SimpleFeatureType areaType = b.buildFeatureType();
-        OmsShapefileFeatureWriter.writeEmptyShapefile(path, areaType, pm);
-
-    }
-
     /**
      * Verify the schema.
      * 
@@ -316,12 +300,6 @@ public class Utility {
      */
     public static boolean verifyCalibrationType( SimpleFeatureType schema, IHMProgressMonitor pm ) {
         String searchedField = PipesTrentoP.ID.getAttributeName();
-        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
-        searchedField = PipesTrentoP.DRAIN_AREA.getAttributeName();
-        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
-        searchedField = PipesTrentoP.INITIAL_ELEVATION.getAttributeName();
-        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
-        searchedField = PipesTrentoP.FINAL_ELEVATION.getAttributeName();
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
         searchedField = PipesTrentoP.RUNOFF_COEFFICIENT.getAttributeName();
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
@@ -354,12 +332,6 @@ public class Utility {
      */
     public static boolean verifyProjectType( SimpleFeatureType schema, IHMProgressMonitor pm ) {
         String searchedField = PipesTrentoP.ID.getAttributeName();
-        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
-        searchedField = PipesTrentoP.DRAIN_AREA.getAttributeName();
-        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
-        searchedField = PipesTrentoP.INITIAL_ELEVATION.getAttributeName();
-        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
-        searchedField = PipesTrentoP.FINAL_ELEVATION.getAttributeName();
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
         searchedField = PipesTrentoP.RUNOFF_COEFFICIENT.getAttributeName();
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);

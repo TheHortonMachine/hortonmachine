@@ -19,42 +19,32 @@ package org.hortonmachine.hmachine.modules.networktools.trento_p;
 
 import static java.lang.Math.pow;
 import static org.hortonmachine.gears.libs.modules.HMConstants.OTHER;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_ACCURACY;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_CELERITY_FACTOR;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_EPSILON;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_ESP1;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_EXPONENT;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_FRANCO;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_GAMMA;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_J_MAX;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_MAX_JUNCTION;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_MAX_THETA;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_MING;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_MINIMUM_DEPTH;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_MIN_DISCHARGE;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TDTP;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TMAX;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TOLERANCE;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TPMIN;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_AUTHORCONTACTS;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_AUTHORNAMES;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_KEYWORDS;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_LABEL;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_LICENSE;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_NAME;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_STATUS;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.sorting.QuickSortAlgorithm;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
-import org.hortonmachine.hmachine.modules.networktools.trento_p.net.Network;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.net.NetworkBuilder;
-import org.hortonmachine.hmachine.modules.networktools.trento_p.net.NetworkCalibration;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.net.Pipe;
-import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.IParametersCode;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectNeededParameterCodes;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectOptionalParameterCodes;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectTimeParameterCodes;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility;
 import org.joda.time.DateTime;
@@ -71,11 +61,9 @@ import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Range;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoP.*;
 
 @Description(OMSTRENTOP_DESCRIPTION)
 @Author(name = OMSTRENTOP_AUTHORNAMES, contact = OMSTRENTOP_AUTHORCONTACTS)
@@ -84,7 +72,7 @@ import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrento
 @Name(OMSTRENTOP_NAME)
 @Status(OMSTRENTOP_STATUS)
 @License(OMSTRENTOP_LICENSE)
-public class OmsTrentoP extends HMModel {
+public class OmsTrentoPProject extends HMModel {
 
     public static final String OMSTRENTOP_DESCRIPTION = "Calculates the diameters of a sewer net or verify the discharge for each pipe.";
     public static final String OMSTRENTOP_DOCUMENTATION = "OmsTrentoP.html";
@@ -93,53 +81,35 @@ public class OmsTrentoP extends HMModel {
     public static final String OMSTRENTOP_NAME = "";
     public static final int OMSTRENTOP_STATUS = 10;
     public static final String OMSTRENTOP_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSTRENTOP_AUTHORNAMES = "Daniele Andreis,Rigon Riccardo,David tamanini";
+    public static final String OMSTRENTOP_AUTHORNAMES = "Daniele Andreis,Rigon Riccardo,David tamanini, Andrea Antonello, Silvia Franceschi";
     public static final String OMSTRENTOP_AUTHORCONTACTS = "";
-    public static final String OMSTRENTOP_pMode_DESCRIPTION = "Processing mode, 0=project, 1=verification.";
-    public static final String OMSTRENTOP_pMinimumDepth_DESCRIPTION = "Minimum excavation depth";
-    public static final String OMSTRENTOP_pMaxJunction_DESCRIPTION = "Max number of pipes that can converge in a junction.";
-    public static final String OMSTRENTOP_pJMax_DESCRIPTION = "Max number of bisection to do (default is 40)to search a solution of a transcendently equation.";
-    public static final String OMSTRENTOP_pAccuracy_DESCRIPTION = "Accuracy to use to calculate a solution with bisection method.";
-    public static final String OMSTRENTOP_pEpsilon_DESCRIPTION = "Accuracy to use to calculate the discharge.";
-    public static final String OMSTRENTOP_pMinG_DESCRIPTION = "Minimum Fill degree";
-    public static final String OMSTRENTOP_pMinDischarge_DESCRIPTION = "Minimum discharge in a pipe";
-    public static final String OMSTRENTOP_pMaxTheta_DESCRIPTION = "Maximum Fill degree";
-    public static final String OMSTRENTOP_pCelerityFactor_DESCRIPTION = "Celerity factor, value used to obtain the celerity of the discharge wave.";
-    public static final String OMSTRENTOP_pExponent_DESCRIPTION = "Exponent of the basin extension. Used to calculate the average acces time to the network.";
-    public static final String OMSTRENTOP_pTolerance_DESCRIPTION = "tollerance, used to obtain the radius";
-    public static final String OMSTRENTOP_pC_DESCRIPTION = "Division base to height in the rectangular or trapezium section.";
-    public static final String OMSTRENTOP_pGamma_DESCRIPTION = "Exponent of the average ponderal slope of a basin to calculate the average access time to the network  for area units.";
-    public static final String OMSTRENTOP_pEspInflux_DESCRIPTION = "Exponent of the influx coefficent to calculate the average residence time in the network .";
-    public static final String OMSTRENTOP_pFranco_DESCRIPTION = "Minimum dig depth, for rectangular or trapezium pipe.";
-    public static final String OMSTRENTOP_pA_DESCRIPTION = " Coefficient of the pluviometric curve of possibility.";
-    public static final String OMSTRENTOP_pN_DESCRIPTION = "Exponent of the pluviometric curve of possibility. ";
-    public static final String OMSTRENTOP_pTau_DESCRIPTION = "Tangential bottom stress, which ensure the self-cleaning of the network.";
-    public static final String OMSTRENTOP_pG_DESCRIPTION = "Fill degree to use during the project.";
-    public static final String OMSTRENTOP_pAlign_DESCRIPTION = "Align mode, it can be 0 (so the free surface is aligned through a change in the depth of the pipes) or 1 (aligned with bottom step).";
     public static final String OMSTRENTOP_inDiameters_DESCRIPTION = "Matrix which contains the commercial diameters of the pipes.";
     public static final String OMSTRENTOP_pOutPipe_DESCRIPTION = "The outlet, the last pipe of the network,.";
-    public static final String OMSTRENTOP_tDTp_DESCRIPTION = "Time step to calculate the discharge in project mode.";
-    public static final String OMSTRENTOP_tpMin_DESCRIPTION = "Minimum Rain Time step to calculate the discharge.";
-    public static final String OMSTRENTOP_tpMax_DESCRIPTION = "Maximum Rain Time step to calculate the discharge.";
-    public static final String OMSTRENTOP_tMax_DESCRIPTION = "Max number of time step.";
-    public static final String OMSTRENTOP_tpMaxCalibration_DESCRIPTION = "Maximum Rain Time step to evaluate the Rain in calibration mode.";
-    public static final String OMSTRENTOP_dt_DESCRIPTION = "Time step, if pMode=1, in minutes. Is the step used to calculate the discharge. If it's not setted then it's equal to the rain time step.";
     public static final String OMSTRENTOP_inRain_DESCRIPTION = "rain data.";
-    public static final String OMSTRENTOP_inPipes_DESCRIPTION = "The read feature collection.";
+    public static final String OMSTRENTOP_inParameters_DESCRIPTION = "Execution parameters.";
+    public static final String OMSTRENTOP_inPipes_DESCRIPTION = "The input pipes network geomtries.";
+    public static final String OMSTRENTOP_inWells_DESCRIPTION = "The input wells geomtries.";
+    public static final String OMSTRENTOP_inAreas_DESCRIPTION = "The input areas geomtries.";
+
     public static final String OMSTRENTOP_outPipes_DESCRIPTION = "The output feature collection which contains the net with all hydraulics value.";
     public static final String OMSTRENTOP_outDischarge_DESCRIPTION = "The output if pTest=1, contains the discharge for each pipes at several time.";
     public static final String OMSTRENTOP_outFillDegree_DESCRIPTION = "The output if pTest=1, contains the fill degree for each pipes at several time.";
     public static final String OMSTRENTOP_outTpMax_DESCRIPTION = "The time which give the maximum discharge.";
 
-    @Description(OMSTRENTOP_pMode_DESCRIPTION)
+    @Description(OMSTRENTOP_pOutPipe_DESCRIPTION)
+    @Unit("-")
     @In
-    public int pMode;
+    public Integer pOutPipe = null;
+
+    @Description(OMSTRENTOP_inParameters_DESCRIPTION)
+    @UI("infile")
+    @In
+    public HashMap<String, Number> inParameters = null;
 
     @Description(OMSTRENTOP_inRain_DESCRIPTION)
     @UI("infile")
     @In
     public HashMap<DateTime, double[]> inRain = null;
-    
 
     @Description(OMSTRENTOP_inDiameters_DESCRIPTION)
     @UI("infile")
@@ -149,6 +119,14 @@ public class OmsTrentoP extends HMModel {
     @Description(OMSTRENTOP_inPipes_DESCRIPTION)
     @In
     public SimpleFeatureCollection inPipes = null;
+
+    @Description(OMSTRENTOP_inWells_DESCRIPTION)
+    @In
+    public SimpleFeatureCollection inWells = null;
+
+    @Description(OMSTRENTOP_inAreas_DESCRIPTION)
+    @In
+    public SimpleFeatureCollection inAreas = null;
 
     @Description(OMSTRENTOP_outPipes_DESCRIPTION)
     @Out
@@ -186,10 +164,28 @@ public class OmsTrentoP extends HMModel {
     private String warnings = "warnings";
 
     public StringBuilder warningBuilder = new StringBuilder(warnings);
-    /**
-     * Used in calibration mode if use the generation of the rain.
-     */
-    private boolean foundTp = false;
+    private double pAccuracy;
+    private double pMinimumDepth;
+    private double pMinG;
+    private double pJMax;
+    private double pMaxJunction;
+    private double pC;
+    private double pMinDischarge;
+    private double pCelerityFactor;
+    private double pEpsilon;
+    private double pEspInflux;
+    private double pExponent;
+    private double pGamma;
+    private double pAlign;
+    private double pG;
+    private double pTau;
+    private double pA;
+    private double pN;
+    private double tDTp;
+    private double tpMax;
+    private double tpMin;
+    private double pTolerance;
+    private double pMaxTheta;
     /**
      * 
      * Elaboration on the net.
@@ -213,6 +209,7 @@ public class OmsTrentoP extends HMModel {
      */
     @Execute
     public void process() throws Exception {
+        checkNull(inPipes, inWells, inAreas, inParameters, inDiameters);
         /*
          * verify the parameter in input (these method, when the OMS annotation
          * work well, can be deleted).
@@ -224,67 +221,56 @@ public class OmsTrentoP extends HMModel {
          * work well, can be deleted) andcreate the net as an array of pipes. .
          */
         setNetworkPipes(verifyParameter());
-        /*
-         * create a network object. It can be a NetworkCalibration if the mode
-         * (pTest==1) verify otherwise is a NetworkBuilder.
-         */
-        Network network = null;
-        if (pMode == 1) {
-            // set other common parameters for the verification.
-            if (inPipes != null) {
-                for( int t = 0; t < networkPipes.length; t++ ) {
+        // set other common parameters for the project.
 
-                    networkPipes[t].setAccuracy(pAccuracy);
-                    networkPipes[t].setJMax(pJMax);
-                    networkPipes[t].setMaxTheta(pMaxTheta);
-                    networkPipes[t].setTolerance(pTolerance);
-                    networkPipes[t].setK(pEspInflux, pExponent, pGamma);
+        pAccuracy = getParameterDouble(ProjectOptionalParameterCodes.ACCURACY);
+        pMinimumDepth = getParameterDouble(ProjectOptionalParameterCodes.MIN_DEPTH);
+        pMinG = getParameterDouble(ProjectOptionalParameterCodes.MIN_FILL_DEGREE);
+        pJMax = getParameterDouble(ProjectOptionalParameterCodes.JMAX);
+        pMaxJunction = getParameterDouble(ProjectOptionalParameterCodes.MAX_JUNCTION);
+        pC = getParameterDouble(ProjectOptionalParameterCodes.C);
+        pMinDischarge = getParameterDouble(ProjectOptionalParameterCodes.MIN_DISCHARGE);
+        pCelerityFactor = getParameterDouble(ProjectOptionalParameterCodes.CELERITY_FACTOR);
+        pEpsilon = getParameterDouble(ProjectOptionalParameterCodes.EPS);
+        pEspInflux = getParameterDouble(ProjectOptionalParameterCodes.INFLUX_EXP);
+        pExponent = getParameterDouble(ProjectOptionalParameterCodes.EXPONENT);
+        pGamma = getParameterDouble(ProjectOptionalParameterCodes.GAMMA);
+        pTolerance = getParameterDouble(ProjectOptionalParameterCodes.TOLERANCE);
+        pMaxTheta = getParameterDouble(ProjectOptionalParameterCodes.MAX_FILL_DEGREE);
 
-                }
+        pAlign = getParameterDouble(ProjectNeededParameterCodes.ALIGN);
+        pG = getParameterDouble(ProjectNeededParameterCodes.G);
+        pTau = getParameterDouble(ProjectNeededParameterCodes.TAU);
+        pA = getParameterDouble(ProjectNeededParameterCodes.A);
+        pN = getParameterDouble(ProjectNeededParameterCodes.N);
 
-            }
+        tDTp = getParameterDouble(ProjectTimeParameterCodes.STEP);
+        tpMax = getParameterDouble(ProjectTimeParameterCodes.MAXIMUM_TIME);
+        tpMin = getParameterDouble(ProjectTimeParameterCodes.MINIMUM_TIME);
 
-            outDischarge = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
-            outFillDegree = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
-            // initialize the NetworkCalibration.
-            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, warningBuilder,
-                    tpMaxCalibration, foundTp).celerityFactor(pCelerityFactor).tMax(tMax).build();
-            network.geoSewer();
-            outTpMax = ((NetworkCalibration) network).getTpMax();
-
-        } else {
-            // set other common parameters for the project.
-
-            if (inPipes != null) {
-                for( int t = 0; t < networkPipes.length; t++ ) {
-                    networkPipes[t].setAccuracy(pAccuracy);
-                    networkPipes[t].setMinimumDepth(pMinimumDepth);
-                    networkPipes[t].setMinG(pMinG);
-                    networkPipes[t].setJMax(pJMax);
-                    networkPipes[t].setMaxJunction(pMaxJunction);
-                    networkPipes[t].setAlign(pAlign);
-                    networkPipes[t].setC(pC);
-                    networkPipes[t].setG(pG);
-                    networkPipes[t].setTau(pTau);
-                    networkPipes[t].setMinDischarge(pMinDischarge);
-
-                }
-
-            }
-
-            pA = pA / pow(60, pN); /* [mm/hour^n] -> [mm/min^n] */
-            // initialize the NetworkCalibration.
-
-            NetworkBuilder.Builder builder = new NetworkBuilder.Builder(pm, networkPipes, pN, pA, inDiameters, inPipes,
-                    warningBuilder);
-            network = builder.celerityFactor(pCelerityFactor).pEpsilon(pEpsilon).pEsp1(pEspInflux).pExponent(pExponent)
-                    .pGamma(pGamma).tDTp(tDTp).tpMax(tpMax).tpMin(tpMin).build();
-            network.geoSewer();
-            outPipes = Utility.createFeatureCollections(inPipes, networkPipes);
+        for( int t = 0; t < networkPipes.length; t++ ) {
+            networkPipes[t].setAccuracy(pAccuracy);
+            networkPipes[t].setMinimumDepth(pMinimumDepth);
+            networkPipes[t].setMinG(pMinG);
+            networkPipes[t].setJMax((int) pJMax);
+            networkPipes[t].setMaxJunction((int) pMaxJunction);
+            networkPipes[t].setAlign((int) pAlign);
+            networkPipes[t].setC(pC);
+            networkPipes[t].setG(pG);
+            networkPipes[t].setTau(pTau);
+            networkPipes[t].setMinDischarge(pMinDischarge);
 
         }
 
-        // elaborate.
+        pA = pA / pow(60, pN); /* [mm/hour^n] -> [mm/min^n] */
+        // initialize the NetworkCalibration.
+
+        NetworkBuilder.Builder builder = new NetworkBuilder.Builder(pm, networkPipes, pN, pA, inDiameters, inPipes,
+                warningBuilder);
+        NetworkBuilder network = builder.celerityFactor(pCelerityFactor).pEpsilon(pEpsilon).pEsp1(pEspInflux).pExponent(pExponent)
+                .pGamma(pGamma).tDTp(tDTp).tpMax(tpMax).tpMin(tpMin).build();
+        network.geoSewer();
+        outPipes = Utility.createFeatureCollections(inPipes, networkPipes);
 
         String w = warningBuilder.toString();
         if (!w.equals(warnings)) {
@@ -293,6 +279,10 @@ public class OmsTrentoP extends HMModel {
 
         pm.message(msg.message("trentoP.end"));
 
+    }
+
+    private double getParameterDouble( IParametersCode codes ) {
+        return inParameters.getOrDefault(codes.getKey(), codes.getDefaultValue()).doubleValue();
     }
 
     /*
@@ -305,14 +295,7 @@ public class OmsTrentoP extends HMModel {
      * @return true if there is the percentage area.
      */
     private boolean verifyParameter() {
-        // checkNull(inPipes,pAccuracy);
         boolean isAreaAllDry;
-
-        if (pMode < 0 || pMode > 1) {
-            pm.errorMessage(msg.message("trentoP.error.mode"));
-            throw new IllegalArgumentException(msg.message("trentoP.error.mode"));
-
-        }
 
         if (inPipes == null) {
             pm.errorMessage(msg.message("trentoP.error.inputMatrix") + " geometry file");
@@ -320,7 +303,7 @@ public class OmsTrentoP extends HMModel {
         }
 
         /* Il numero di giunzioni in un nodo non puo' superiore a 7 */
-        if (pMaxJunction <= 0 || pMaxJunction > 6) {
+        if (ProjectOptionalParameterCodes.MAX_JUNCTION.isInRange(pMaxJunction)) {
             pm.errorMessage(msg.message("trentoP.error.maxJunction"));
             throw new IllegalArgumentException();
         }
@@ -329,7 +312,7 @@ public class OmsTrentoP extends HMModel {
          * Il numero di iterazioni ammesso non puo' essere troppo piccolo ne'
          * eccessivamente grande
          */
-        if (pJMax < 3 || pJMax > 1000) {
+        if (ProjectOptionalParameterCodes.JMAX.isInRange(pJMax)) {
             pm.errorMessage(msg.message("trentoP.error.jMax"));
             throw new IllegalArgumentException(msg.message("trentoP.error.jMax"));
         }
@@ -338,187 +321,130 @@ public class OmsTrentoP extends HMModel {
          * La precisione con cui si cercano alcune soluzioni non puo' essere
          * negativa
          */
-        if (pAccuracy == null || pAccuracy <= 0) {
+        if (ProjectOptionalParameterCodes.ACCURACY.isInRange(pAccuracy)) {
             pm.errorMessage(msg.message("trentoP.error.accuracy"));
             throw new IllegalArgumentException();
         }
         /* Intervallo in cui puo variare il riempimento minimo */
-        if (pMinG <= 0 || pMinG > 0.1) {
+        if (ProjectOptionalParameterCodes.MIN_FILL_DEGREE.isInRange(pMinG)) {
             pm.errorMessage(msg.message("trentoP.error.minG"));
             throw new IllegalArgumentException();
         }
         /* Non sono ammesse portate minime negative nei tubi */
-        if (pMinDischarge <= 0) {
+        if (ProjectOptionalParameterCodes.MIN_DISCHARGE.isInRange(pMinDischarge)) {
             pm.errorMessage(msg.message("trentoP.error.minDischarge"));
             throw new IllegalArgumentException();
         }
 
         /* Il fattore di celerita' deve essere compreso tra 1 e 1.6 */
-        if (pCelerityFactor < 1 || pCelerityFactor > 1.6) {
+        if (ProjectOptionalParameterCodes.CELERITY_FACTOR.isInRange(pCelerityFactor)) {
             pm.errorMessage(msg.message("trentoP.error.celerity"));
             throw new IllegalArgumentException();
         }
 
         /* EXPONENT non puo' essere negativo */
-        if (pExponent <= 0) {
+        if (ProjectOptionalParameterCodes.EXPONENT.isInRange(pExponent)) {
             pm.errorMessage(msg.message("trentoP.error.exponent"));
             throw new IllegalArgumentException();
         }
 
         /* La tolleranza non puo' essere nulla tantomeno negativa */
-        if (pTolerance <= 0) {
+        if (ProjectOptionalParameterCodes.TOLERANCE.isInRange(pTolerance)) {
             pm.errorMessage(msg.message("trentoP.error.tolerance"));
             throw new IllegalArgumentException();
         }
 
-        if (pGamma <= 0) {
+        if (ProjectOptionalParameterCodes.GAMMA.isInRange(pGamma)) {
             pm.errorMessage(msg.message("trentoP.error.gamma"));
             throw new IllegalArgumentException();
         }
 
-        if (pEspInflux <= 0) {
+        if (ProjectOptionalParameterCodes.INFLUX_EXP.isInRange(pEspInflux)) {
             pm.errorMessage(msg.message("trentoP.error.eps1"));
             throw new IllegalArgumentException();
         }
 
         SimpleFeatureType schema = inPipes.getSchema();
 
-        if (pMode == 0) {
-            // checkNull(pA,pN,pTau,inDiameters);
+        // checkNull(pA,pN,pTau,inDiameters);
 
-            isAreaAllDry = Utility.verifyProjectType(schema, pm);
+        isAreaAllDry = Utility.verifyProjectType(schema, pm);
 
-            if (pA == null || pA <= 0) {
-                pm.errorMessage(msg.message("trentoP.error.a"));
-                throw new IllegalArgumentException(msg.message("trentoP.error.a"));
-            }
-            if (pN == null || pN < 0.05 || pN > 0.95) {
-                pm.errorMessage(msg.message("trentoP.error.n"));
-                throw new IllegalArgumentException(msg.message("trentoP.error.n"));
-            }
-            if (pTau == null || pTau <= 0) {
-                pm.errorMessage(msg.message("trentoP.error.tau"));
-                throw new IllegalArgumentException(msg.message("trentoP.error.tau"));
-            }
+        if (ProjectNeededParameterCodes.A.isInRange(pA)) {
+            pm.errorMessage(msg.message("trentoP.error.a"));
+            throw new IllegalArgumentException(msg.message("trentoP.error.a"));
+        }
+        if (ProjectNeededParameterCodes.N.isInRange(pN)) {
+            pm.errorMessage(msg.message("trentoP.error.n"));
+            throw new IllegalArgumentException(msg.message("trentoP.error.n"));
+        }
+        if (ProjectNeededParameterCodes.TAU.isInRange(pTau)) {
+            pm.errorMessage(msg.message("trentoP.error.tau"));
+            throw new IllegalArgumentException(msg.message("trentoP.error.tau"));
+        }
 
-            if (pG == null || pG <= 0 || pG > 0.99) {
-                pm.errorMessage(msg.message("trentoP.error.g"));
+        if (ProjectNeededParameterCodes.G.isInRange(pG)) {
+            pm.errorMessage(msg.message("trentoP.error.g"));
 
-                throw new IllegalArgumentException(msg.message("trentoP.error.g"));
-            }
-            if (pAlign != 0 && pAlign != 1) {
-                pm.errorMessage(msg.message("trentoP.error.align"));
-                throw new IllegalArgumentException(msg.message("trentoP.error.align"));
-            }
-            /* Lo scavo minimo non puo' essere uguale o inferiore a 0 */
-            if (pMinimumDepth <= 0) {
-                pm.errorMessage(msg.message("trentoP.error.scavomin"));
-                throw new IllegalArgumentException();
+            throw new IllegalArgumentException(msg.message("trentoP.error.g"));
+        }
+        if (ProjectNeededParameterCodes.ALIGN.isInRange(pAlign)) {
+            pm.errorMessage(msg.message("trentoP.error.align"));
+            throw new IllegalArgumentException(msg.message("trentoP.error.align"));
+        }
+        /* Lo scavo minimo non puo' essere uguale o inferiore a 0 */
+        if (ProjectOptionalParameterCodes.MIN_DEPTH.isInRange(pMinimumDepth)) {
+            pm.errorMessage(msg.message("trentoP.error.scavomin"));
+            throw new IllegalArgumentException();
 
-            }
-            /* Pecisione con cui si ricerca la portata nelle aree non di testa. */
-            if (pEpsilon <= 0 || pEpsilon > 1) {
-                pm.errorMessage(msg.message("trentoP.error.epsilon"));
-                throw new IllegalArgumentException();
-            }
-            /*
-             * L'angolo di riempimento minimo non puo' essere inferiore a 3.14
-             * [rad]
-             */
-            if (pMaxTheta < 3.14) {
-                pm.errorMessage(msg.message("trentoP.error.maxtheta"));
-                throw new IllegalArgumentException();
-            }
-            if (pC <= 0) {
-                pm.errorMessage(msg.message("trentoP.error.c"));
-                throw new IllegalArgumentException();
-            }
-            if (inDiameters == null) {
+        }
+        /* Pecisione con cui si ricerca la portata nelle aree non di testa. */
+        if (ProjectOptionalParameterCodes.EPS.isInRange(pEpsilon)) {
+            pm.errorMessage(msg.message("trentoP.error.epsilon"));
+            throw new IllegalArgumentException();
+        }
+        /*
+         * L'angolo di riempimento minimo non puo' essere inferiore a 3.14
+         * [rad]
+         */
+        if (ProjectOptionalParameterCodes.MAX_FILL_DEGREE.isInRange(pMaxTheta)) {
+            pm.errorMessage(msg.message("trentoP.error.maxtheta"));
+            throw new IllegalArgumentException();
+        }
+        if (ProjectOptionalParameterCodes.C.isInRange(pC)) {
+            pm.errorMessage(msg.message("trentoP.error.c"));
+            throw new IllegalArgumentException();
+        }
+        if (inDiameters == null) {
 
-                throw new IllegalArgumentException();
-            }
+            throw new IllegalArgumentException();
+        }
 
-            /*
-             * Il passo temporale con cui valutare le portate non puo' essere
-             * inferiore a 0.015 [min]
-             */
-            if (tDTp < 0.015) {
-                pm.errorMessage(msg.message("trentoP.error.dtp"));
-                throw new IllegalArgumentException();
-            }
+        /*
+         * Il passo temporale con cui valutare le portate non puo' essere
+         * inferiore a 0.015 [min]
+         */
+        if (ProjectTimeParameterCodes.STEP.isInRange(tDTp)) {
+            pm.errorMessage(msg.message("trentoP.error.dtp"));
+            throw new IllegalArgumentException();
+        }
 
-            /*
-             * Tempo di pioggia minimo da considerare nella massimizzazione
-             * delle portate non puo' essere superiore a 5 [min]
-             */
-            if (tpMin > 5) {
-                pm.errorMessage(msg.message("trentoP.error.tpmin"));
-                throw new IllegalArgumentException();
-            }
+        /*
+         * Tempo di pioggia minimo da considerare nella massimizzazione
+         * delle portate non puo' essere superiore a 5 [min]
+         */
+        if (ProjectTimeParameterCodes.MINIMUM_TIME.isInRange(tpMin)) {
+            pm.errorMessage(msg.message("trentoP.error.tpmin"));
+            throw new IllegalArgumentException();
+        }
 
-            /*
-             * Tempo di pioggia massimo da adottare nella ricerca della portata
-             * massima non puo' essere inferiore a 5 [min]
-             */
-            if (tpMax < 30) {
-                pm.errorMessage(msg.message("trentoP.error.tpmax"));
-                throw new IllegalArgumentException();
-            }
-        } else {
-            // checkNull(inRain);
-            isAreaAllDry = Utility.verifyCalibrationType(schema, pm);
-
-            /*
-             * If the inRain is null and the users set the a and n parameters then create the rain data.
-             */
-            if (pA != null && pN != null) {
-                // set it to true in order to search the time at max discharge.
-                if (tpMaxCalibration != null) {
-                    foundTp = true;
-                } else {
-                    tpMaxCalibration = tMax;
-                }
-                if (dt == null) {
-                    pm.errorMessage(msg.message("trentoP.error.dtp"));
-                    throw new IllegalArgumentException();
-                }
-                if (tMax < tpMaxCalibration) {
-                    tpMaxCalibration = tMax;
-                }
-
-                double tMaxApproximate = ModelsEngine.approximate2Multiple(tMax, dt);
-                // initialize the output.
-                int iMax = (int) (tMaxApproximate / dt);
-                int iRainMax = (int) (Math.floor((double) tpMaxCalibration / (double) dt));
-                DateTime startTime = new DateTime(System.currentTimeMillis());
-                inRain = new LinkedHashMap<DateTime, double[]>();
-                double tp = ((double) dt) / 2;
-                DateTime newDate = startTime;
-                for( int i = 0; i <= iMax; i++ ) {
-                    newDate = newDate.plusMinutes(dt);
-                    double hourTime = tp / Constants.HOUR2MIN;
-                    double value;
-                    if (i < iRainMax) {
-                        value = pA * pow(hourTime, pN - 1) / Constants.HOUR2MIN;
-                    } else {
-                        value = 0.0;
-                    }
-                    inRain.put(newDate, new double[]{value});
-                    tp = tp + dt;
-                }
-
-            } else {
-                // force the time steep to null in order to read it to the file.
-                dt = null;
-            }
-            if (inRain == null) {
-
-                pm.errorMessage(msg.message("trentoP.error.inputRainMatrix") + " rain file");
-                throw new IllegalArgumentException(msg.message("trentoP.error.inputRainMatrix") + " rain file");
-            }
-
-            // verificy if the field exist.
-
+        /*
+         * Tempo di pioggia massimo da adottare nella ricerca della portata
+         * massima non puo' essere inferiore a 5 [min]
+         */
+        if (ProjectTimeParameterCodes.MAXIMUM_TIME.isInRange(tpMax)) {
+            pm.errorMessage(msg.message("trentoP.error.tpmax"));
+            throw new IllegalArgumentException();
         }
         return isAreaAllDry;
     }
@@ -530,7 +456,7 @@ public class OmsTrentoP extends HMModel {
      * it. The Array is order following the ID.
      * </p>
      * oss: if the FeatureCillection is null a IllegalArgumentException is throw
-     * in {@link OmsTrentoP#verifyParameter()}.
+     * in {@link OmsTrentoPProject#verifyParameter()}.
      * 
      * @param isAreaNotAllDry it is true if there is only a percentage of the input area dry.
      * @throws IllegalArgumentException
@@ -540,20 +466,20 @@ public class OmsTrentoP extends HMModel {
 
         int length = inPipes.size();
         networkPipes = new Pipe[length];
-        SimpleFeatureIterator stationsIter = inPipes.features();
+        SimpleFeatureIterator pipesIter = inPipes.features();
         boolean existOut = false;
         int tmpOutIndex = 0;
         try {
             int t = 0;
-            while( stationsIter.hasNext() ) {
-                SimpleFeature feature = stationsIter.next();
+            while( pipesIter.hasNext() ) {
+                SimpleFeature pipeFeature = pipesIter.next();
                 try {
                     /*
                      * extract the value of the ID which is the position (minus
                      * 1) in the array.
                      */
 
-                    Number field = ((Number) feature.getAttribute(TrentoPFeatureType.ID_STR));
+                    Number field = ((Number) pipeFeature.getAttribute(TrentoPFeatureType.ID_STR));
                     if (field == null) {
                         pm.errorMessage(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
                         throw new IllegalArgumentException(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
@@ -562,7 +488,7 @@ public class OmsTrentoP extends HMModel {
                         tmpOutIndex = t;
                         existOut = true;
                     }
-                    networkPipes[t] = new Pipe(feature, pMode, isAreaNotAllDry, pm);
+                    networkPipes[t] = new Pipe(pipeFeature, true, isAreaNotAllDry, pm);
                     t++;
 
                 } catch (NullPointerException e) {
@@ -573,7 +499,7 @@ public class OmsTrentoP extends HMModel {
             }
 
         } finally {
-            stationsIter.close();
+            pipesIter.close();
         }
         if (!existOut) {
 

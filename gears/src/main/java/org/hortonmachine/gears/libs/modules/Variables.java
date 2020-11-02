@@ -59,6 +59,9 @@ public interface Variables {
     public String JOIN_ROUND = "round";
     public String JOIN_MITRE = "mitre";
     public String JOIN_BEVEL = "bevel";
+    
+    public String PROJECT = "Project";
+    public String CALIBRATION = "Calibration";
 
     public String DILATE = "dilate";
     public String ERODE = "erode";

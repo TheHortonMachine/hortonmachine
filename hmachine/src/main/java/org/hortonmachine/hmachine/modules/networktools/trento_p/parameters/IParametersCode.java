@@ -1,4 +1,4 @@
-package org.hortonmachine.hmachine.modules.networktools.trento_p.utils;
+package org.hortonmachine.hmachine.modules.networktools.trento_p.parameters;
 /**
  * Implements this interface to store parameters value.
  * 
@@ -14,17 +14,17 @@ public interface IParametersCode {
      */
     public String getKey();
     /**
-     * Get the description value.
+     * Get the unit.
      * 
-     * @return a string which can used as a tip in a gui.
+     * @return the unit of measure.
      */
-    public String getDescription();
+    public String getUnit();
     /**
      * Get the default value.
      * 
      * @return a default value of current parameter.
      */
-    public String getDefaultValue();
+    public Number getDefaultValue();
     /**
      * Get minimum value.
      * 
@@ -37,6 +37,8 @@ public interface IParametersCode {
      * @return maximum value.
      */
     public Number getMaxRange();
+
+    public boolean isInRange( Number value );
     /**
      * Get the name of this groups of parameters.
      * 

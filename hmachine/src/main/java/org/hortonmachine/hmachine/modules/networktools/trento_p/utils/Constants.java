@@ -212,31 +212,37 @@ public class Constants {
 
     public final static double DEFAULT_DT = 15;
 
-    public final static Double[] CELERITY_RANGE = {new Double(1), new Double(1.6)};
-    public final static Integer[] JMAX_RANGE = {new Integer(3), new Integer(1000)};
-    public final static Double[] INFLUX_EXPONENT_RANGE = {new Double(0), null};
-    public final static Double[] GAMMA_RANGE = {new Double(0), null};
-    public final static Double[] TOLERANCE_RANGE = {new Double(0), null};
-    public final static Double[] THETA_RANGE = {new Double(Math.PI), null};
-    public final static Double[] EPS_RANGE = {new Double(0), new Double(1)};
-    public final static Double[] C_RANGE = {new Double(0), null};
-    public final static Double[] EXPONENT_RANGE = {new Double(0), null};
+    public final static Double[] CELERITY_RANGE = {1.0, 1.6};
+    public final static Integer[] JMAX_RANGE = {3, 1000};
+    public final static Double[] INFLUX_EXPONENT_RANGE = {0.0, null};
+    public final static Double[] GAMMA_RANGE = {0.0, null};
+    public final static Double[] TOLERANCE_RANGE = {0.0, null};
+    public final static Double[] THETA_RANGE = {Math.PI, null};
+    public final static Double[] EPS_RANGE = {0.0, 1.0};
+    public final static Double[] C_RANGE = {0.0, null};
+    public final static Double[] EXPONENT_RANGE = {0.0, null};
     public final static Double[] MIN_DEPTH_RANGE = {null, null};
-    public final static Integer[] MAX_JUNCTIONS_RANGE = {new Integer(0), new Integer(6)};
-    public final static Double[] MIN_FILL_DEGREE_RANGE = {new Double(0), new Double(0.1)};
-    public final static Double[] MIN_DISCHARGE_RANGE = {new Double(0), null};
+    public final static Integer[] MAX_JUNCTIONS_RANGE = {0, 6};
+    public final static Double[] MIN_FILL_DEGREE_RANGE = {0.0, 0.1};
+    public final static Double[] MIN_DISCHARGE_RANGE = {0.0, null};
     /**
      * The name of the shp with the network data.
      */
-    public static final String NETWORK_PROJECT_NAME_SHP = "networkProject.shp";
+    public static final String NETWORK_PROJECT_NAME_SHP = "network_project.shp";
     /**
      * The name of the shp with the network data.
      */
-    public static final String NETWORK_CALIBRATION_NAME_SHP = "networkCalibration.shp"; //$NON-NLS-1$
+    public static final String NETWORK_CALIBRATION_NAME_SHP = "network_calibration.shp"; //$NON-NLS-1$
     /**
      * The name of the shp with the aree.
      */
-    public static final String AREA_NAME_SHP = "area.shp"; //$NON-NLS-1$
+    public static final String AREA_NAME_SHP = "areas.shp"; //$NON-NLS-1$
+    /**
+     * The name of the shp with the wells.
+     */
+    public static final String WELLS_NAME_SHP = "wells.shp"; //$NON-NLS-1$
+    public static final String PARAMETERS_CSV = "parameters.csv"; //$NON-NLS-1$
+    public static final String DIAMETERS_CSV = "diameters.csv"; //$NON-NLS-1$
     /**
      * The ID of the pipe where drain the last pipe of the net.(It doesn't exist).
      */

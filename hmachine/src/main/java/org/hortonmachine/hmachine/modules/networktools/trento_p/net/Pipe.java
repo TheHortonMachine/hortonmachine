@@ -300,9 +300,9 @@ public class Pipe {
     public double varianceLengthSubNet;
     private static HortonMessageHandler msg = HortonMessageHandler.getInstance();
     private IHMProgressMonitor pm;
-    public Pipe( SimpleFeature feature, int verify, boolean isAreaNotAllDry, IHMProgressMonitor pm ) throws Exception {
+    public Pipe( SimpleFeature pipeFeature, boolean isProject, boolean isAreaNotAllDry, IHMProgressMonitor pm ) throws Exception {
         this.pm = pm;
-        setKnowNetworkValue(feature, verify, isAreaNotAllDry);
+        setKnowNetworkValue(pipeFeature, isProject, isAreaNotAllDry);
     }
 
     public void setK( double defaultEsp1, double defaultExponent, double defaultGamma ) {
@@ -474,7 +474,7 @@ public class Pipe {
      * @throws Exception
      *             if the featureCollection doesn't contains the field
      */
-    private void setKnowNetworkValue( SimpleFeature pipeFeature, int verify, boolean isAreaNotAllDry ) throws Exception {
+    private void setKnowNetworkValue( SimpleFeature pipeFeature, boolean isProject, boolean isAreaNotAllDry ) throws Exception {
 
         try {
 
@@ -504,7 +504,7 @@ public class Pipe {
             this.lenght = ((Geometry) pipeFeature.getDefaultGeometry()).getLength();
             this.point = ((Geometry) pipeFeature.getDefaultGeometry()).getCoordinates();
 
-            this.initialElevation = setFeatureField(pipeFeature, PipesTrentoP.INITIAL_ELEVATION.getAttributeName()).doubleValue();;
+            this.initialElevation = setFeatureField(pipeFeature, PipesTrentoP.INITIAL_ELEVATION.getAttributeName()).doubleValue();
 
             this.finalElevation = setFeatureField(pipeFeature, PipesTrentoP.FINAL_ELEVATION.getAttributeName()).doubleValue();
 
@@ -534,7 +534,7 @@ public class Pipe {
                 pm.errorMessage(msg.message("trentoP.error.averageTime") + this.id);
                 throw new IllegalArgumentException(msg.message("trentoP.error.averageTime" + this.id));
             }
-            if (verify == 1) {
+            if (!isProject) {
                 /* Pipe diameter [cm] */
 
                 this.diameterToVerify = setFeatureField(pipeFeature, PipesTrentoP.DIAMETER.getAttributeName()).doubleValue();
@@ -542,7 +542,7 @@ public class Pipe {
 
                 this.verifyPipeSlope = 100.0 * Math.abs(this.initialElevation - this.finalElevation) / this.lenght;
 
-            } else if (verify == 0) {
+            } else {
                 this.minimumPipeSlope = setFeatureField(pipeFeature, PipesTrentoP.MINIMUM_PIPE_SLOPE.getAttributeName())
                         .doubleValue();
 
@@ -767,7 +767,8 @@ public class Pipe {
      *            a string which collect all the warning messages.
      */
 
-    private double getDiameter( double[][] diameters, double tau, double g, double[] dD, double maxd, StringBuilder strWarnings ) {
+    private double getDiameter( double[][] diameters, double tau, double g, double[] dD, double maxd,
+            StringBuilder strWarnings ) {
         /* Pari a A * ( Rh ^1/6 ) */
         double B;
         /* Anglo formato dalla sezione bagnata */
@@ -884,7 +885,8 @@ public class Pipe {
      * @param strWarnings
      *            a string which collect all the warning messages.
      */
-    private double getDiameterI( double[][] diameters, double slope, double g, double[] dD, double maxd, StringBuilder strWarnings ) {
+    private double getDiameterI( double[][] diameters, double slope, double g, double[] dD, double maxd,
+            StringBuilder strWarnings ) {
         int j; /* \param */
         /* Pari a A * ( Rh ^1/6 ) */
         double B;
@@ -1360,7 +1362,7 @@ public class Pipe {
         /* [cm] altezza sezione trapezia */
         oldD = METER2CM * pow(B, SIXOVERTHIRTEEN) * pow((c + 2 * sqrt(2) * g), ONEOVERTHIRTEEN)
 
-        / pow((g * (g + c)), SEVENOVERTHIRTEEN);
+                / pow((g * (g + c)), SEVENOVERTHIRTEEN);
 
         /* [cm] base */
         oldb = c * oldD;
