@@ -53,7 +53,6 @@ import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Con
 
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
-import org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoP;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
 import org.opengis.feature.simple.SimpleFeature;

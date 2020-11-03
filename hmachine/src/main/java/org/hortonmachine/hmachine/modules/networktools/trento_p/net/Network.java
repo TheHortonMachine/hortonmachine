@@ -18,7 +18,6 @@
  */
 package org.hortonmachine.hmachine.modules.networktools.trento_p.net;
 
-import org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoP;
 
 /**
  * This is a simple interface for the program OmsTrentoP.
@@ -35,7 +34,7 @@ import org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoP;
  */
 public interface Network {
     /**
-     * Run the model OmsTrentoP.
+     * Run the model.
      * 
      * @throws Exception
      */

@@ -35,7 +35,6 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.hortonmachine.gears.utils.sorting.QuickSortAlgorithm;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
-import org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoP;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility;
 import org.joda.time.DateTime;
 /**
