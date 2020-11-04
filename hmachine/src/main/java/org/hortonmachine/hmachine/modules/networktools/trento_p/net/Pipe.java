@@ -54,6 +54,7 @@ import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Con
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.PipeCombo;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -299,9 +300,9 @@ public class Pipe {
     public double varianceLengthSubNet;
     private static HortonMessageHandler msg = HortonMessageHandler.getInstance();
     private IHMProgressMonitor pm;
-    public Pipe( SimpleFeature pipeFeature, boolean isProject, boolean isAreaNotAllDry, IHMProgressMonitor pm ) throws Exception {
+    public Pipe( PipeCombo pipeCombo, boolean isProject, boolean isAreaNotAllDry, IHMProgressMonitor pm ) throws Exception {
         this.pm = pm;
-        setKnowNetworkValue(pipeFeature, isProject, isAreaNotAllDry);
+        setKnowNetworkValue(pipeCombo, isProject, isAreaNotAllDry);
     }
 
     public void setK( double defaultEsp1, double defaultExponent, double defaultGamma ) {
@@ -473,21 +474,23 @@ public class Pipe {
      * @throws Exception
      *             if the featureCollection doesn't contains the field
      */
-    private void setKnowNetworkValue( SimpleFeature pipeFeature, boolean isProject, boolean isAreaNotAllDry ) throws Exception {
+    private void setKnowNetworkValue( PipeCombo pipeCombo, boolean isProject, boolean isAreaNotAllDry ) throws Exception {
 
         try {
+            
+            SimpleFeature pipeFeature = pipeCombo.getPipeFeature();
 
             /*
              * Verifiche su ID e idPipeWhereDrain sono fatte durante la verifica
              * di consistenza della rete.
              */
-            this.id = setFeatureField(pipeFeature, PipesTrentoP.ID.getAttributeName()).intValue();
-            double tmp = setFeatureField(pipeFeature, PipesTrentoP.DRAIN_AREA.getAttributeName()).doubleValue();
+            this.id = getAttribute(pipeFeature, PipesTrentoP.ID.getAttributeName()).intValue();
+            double tmp = pipeCombo.getArea();
             if (tmp >= 0.0) {
                 if (!isAreaNotAllDry) {
                     this.drainArea = tmp;
                 } else {
-                    double tmpPerc = setFeatureField(pipeFeature, PipesTrentoP.PER_AREA.getAttributeName()).doubleValue();
+                    double tmpPerc = getAttribute(pipeFeature, PipesTrentoP.PER_AREA.getAttributeName()).doubleValue();
                     if (tmpPerc >= 0 && tmpPerc <= 1) {
                         this.drainArea = tmp * tmpPerc;
                     } else {
@@ -503,11 +506,12 @@ public class Pipe {
             this.lenght = ((Geometry) pipeFeature.getDefaultGeometry()).getLength();
             this.point = ((Geometry) pipeFeature.getDefaultGeometry()).getCoordinates();
 
-            this.initialElevation = setFeatureField(pipeFeature, PipesTrentoP.INITIAL_ELEVATION.getAttributeName()).doubleValue();
+            this.initialElevation = pipeCombo.getInitialJunctionElev(); // TODO also add depth?
 
-            this.finalElevation = setFeatureField(pipeFeature, PipesTrentoP.FINAL_ELEVATION.getAttributeName()).doubleValue();
+            this.finalElevation = pipeCombo.getFinalJunctionElev(); // TODO also add depth?
+            
 
-            tmp = setFeatureField(pipeFeature, PipesTrentoP.RUNOFF_COEFFICIENT.getAttributeName()).doubleValue();
+            tmp = getAttribute(pipeFeature, PipesTrentoP.RUNOFF_COEFFICIENT.getAttributeName()).doubleValue();
             if (tmp >= 0) {
                 this.runoffCoefficient = tmp;
             } else {
@@ -515,7 +519,7 @@ public class Pipe {
                 throw new IllegalArgumentException(msg.message("trentoP.error.runO" + this.id));
             }
 
-            tmp = setFeatureField(pipeFeature, PipesTrentoP.KS.getAttributeName()).doubleValue();
+            tmp = getAttribute(pipeFeature, PipesTrentoP.KS.getAttributeName()).doubleValue();
             if (tmp >= 0) {
                 this.ks = tmp;
             } else {
@@ -523,9 +527,9 @@ public class Pipe {
                 throw new IllegalArgumentException(msg.message("trentoP.error.ks" + this.id));
 
             }
-            this.averageSlope = setFeatureField(pipeFeature, PipesTrentoP.AVERAGE_SLOPE.getAttributeName()).intValue();;
+            this.averageSlope = getAttribute(pipeFeature, PipesTrentoP.AVERAGE_SLOPE.getAttributeName()).intValue();;
 
-            tmp = setFeatureField(pipeFeature, PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName()).doubleValue();;
+            tmp = getAttribute(pipeFeature, PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName()).doubleValue();;
 
             if (tmp >= 0) {
                 this.averageResidenceTime = tmp;
@@ -536,16 +540,16 @@ public class Pipe {
             if (!isProject) {
                 /* Pipe diameter [cm] */
 
-                this.diameterToVerify = setFeatureField(pipeFeature, PipesTrentoP.DIAMETER.getAttributeName()).doubleValue();
+                this.diameterToVerify = getAttribute(pipeFeature, PipesTrentoP.DIAMETER.getAttributeName()).doubleValue();
                 /* Pipe slope [%] */
 
                 this.verifyPipeSlope = 100.0 * Math.abs(this.initialElevation - this.finalElevation) / this.lenght;
 
             } else {
-                this.minimumPipeSlope = setFeatureField(pipeFeature, PipesTrentoP.MINIMUM_PIPE_SLOPE.getAttributeName())
+                this.minimumPipeSlope = getAttribute(pipeFeature, PipesTrentoP.MINIMUM_PIPE_SLOPE.getAttributeName())
                         .doubleValue();
 
-                int sectionTmp = setFeatureField(pipeFeature, PipesTrentoP.PIPE_SECTION_TYPE.getAttributeName()).intValue();
+                int sectionTmp = getAttribute(pipeFeature, PipesTrentoP.PIPE_SECTION_TYPE.getAttributeName()).intValue();
                 if (sectionTmp > 0 && sectionTmp < 4) {
                     this.pipeSectionType = sectionTmp;
                 } else {
@@ -572,7 +576,7 @@ public class Pipe {
      *            the key string of the field.
      * @return the Number associated at this key.
      */
-    private Number setFeatureField( SimpleFeature pipe, String key ) {
+    private Number getAttribute( SimpleFeature pipe, String key ) {
         Number field = ((Number) pipe.getAttribute(key));
         if (field == null) {
             pm.errorMessage(msg.message("trentoP.error.number") + key);

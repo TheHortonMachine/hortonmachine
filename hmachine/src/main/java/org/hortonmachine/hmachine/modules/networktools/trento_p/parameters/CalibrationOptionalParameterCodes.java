@@ -31,7 +31,9 @@ public enum CalibrationOptionalParameterCodes implements IParametersCode {
     INFLUX_EXP(6, "Exponent of the influx coefficent", "-", Constants.DEFAULT_ESP1, INFLUX_EXPONENT_RANGE[0],
             INFLUX_EXPONENT_RANGE[1]), //
     EXPONENT(7, "Exponent of the basin extension", "-", Constants.DEFAULT_EXPONENT, EXPONENT_RANGE[0], EXPONENT_RANGE[1]), //
-    ACCURACY(8, "Accuracy (bisection mode)", "-", Constants.DEFAULT_ACCURACY, 0.0, null); //
+    ACCURACY(8, "Accuracy (bisection mode)", "-", Constants.DEFAULT_ACCURACY, 0.0, null), //
+    A(9, "Coefficient of the pluviometric curve", "-", null, 0.0, null), //
+    N(10, "Exponent of the pluviometric curve", "-", null, 0.05, 0.95); //
 
     /**
      * The name of the WizardPage.

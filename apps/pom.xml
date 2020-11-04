@@ -34,7 +34,6 @@
 			<artifactId>mapsforge-themes</artifactId>
 			<version>${mapsforge.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>com.github.pcmehlitz</groupId>
 			<artifactId>worldwind-pcm</artifactId>

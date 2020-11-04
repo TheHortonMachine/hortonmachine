@@ -17,19 +17,7 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_F_NEW_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_IN_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_OUT_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_P_POS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_STATUS;
+import static org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute.*;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;

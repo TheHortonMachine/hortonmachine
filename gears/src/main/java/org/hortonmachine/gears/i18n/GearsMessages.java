@@ -789,21 +789,6 @@ public class GearsMessages {
     public static final String OMSRASTER2XYZ_IN_FILE_DESCRIPTION = "The file into which to save the result.";
     public static final String OMSRASTER2XYZ_DO_REMOVE_NV_DESCRIPTION = "Flag to remove novalues.";
 
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION = "Module that extracts raster categories and adds them to a feature collection.";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION = "OmsRasterCatToFeatureAttribute.html";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_KEYWORDS = "Raster, Vector";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_LABEL = VECTORPROCESSING;
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_NAME = "rat2featureattr";
-    public static final int OMSRASTERCATTOFEATUREATTRIBUTE_STATUS = 40;
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_IN_RASTER_DESCRIPTION = "The raster on which to map the vector features.";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_IN_VECTOR_DESCRIPTION = "The vector to use for the geometric mapping.";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_F_NEW_DESCRIPTION = "The name for the new field to create.";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_P_POS_DESCRIPTION = "The position of the coordinate to take in the case of multi geometries.";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_OUT_VECTOR_DESCRIPTION = "The extended vector.";
-
     public static final String OMSPLAINID2VALUEREADER_DESCRIPTION = "Utility class for reading data from csv file that have the form: id1 value1 id2 value2 ... idn valuen.";
     public static final String OMSPLAINID2VALUEREADER_DOCUMENTATION = "";
     public static final String OMSPLAINID2VALUEREADER_KEYWORDS = "IO, Reading";

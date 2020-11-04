@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.sorting.QuickSortAlgorithm;
@@ -45,11 +45,10 @@ import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.IPara
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectNeededParameterCodes;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectOptionalParameterCodes;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectTimeParameterCodes;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.PipeCombo;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility;
-import org.joda.time.DateTime;
 import org.locationtech.jts.geom.Coordinate;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import oms3.annotations.Author;
@@ -83,7 +82,7 @@ public class OmsTrentoPProject extends HMModel {
     public static final String OMSTRENTOP_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSTRENTOP_AUTHORNAMES = "Daniele Andreis, Rigon Riccardo, David tamanini, Andrea Antonello, Silvia Franceschi";
     public static final String OMSTRENTOP_AUTHORCONTACTS = "";
-    public static final String OMSTRENTOP_inDiameters_DESCRIPTION = "Matrix which contains the commercial diameters of the pipes.";
+    public static final String OMSTRENTOP_inDiameters_DESCRIPTION = "Matrix which contains the commercial diameters [cm] of the pipes.";
     public static final String OMSTRENTOP_pOutPipe_DESCRIPTION = "The outlet, the last pipe of the network.";
     public static final String OMSTRENTOP_inRain_DESCRIPTION = "rain data.";
     public static final String OMSTRENTOP_inParameters_DESCRIPTION = "Execution parameters.";
@@ -102,11 +101,6 @@ public class OmsTrentoPProject extends HMModel {
     @UI("infile")
     @In
     public HashMap<String, Number> inParameters = null;
-
-    @Description(OMSTRENTOP_inRain_DESCRIPTION)
-    @UI("infile")
-    @In
-    public HashMap<DateTime, double[]> inRain = null;
 
     @Description(OMSTRENTOP_inDiameters_DESCRIPTION)
     @UI("infile")
@@ -449,46 +443,41 @@ public class OmsTrentoPProject extends HMModel {
      *             if the FeatureCollection hasn't the correct parameters.
      */
     private void setNetworkPipes( boolean isAreaNotAllDry ) throws Exception {
+        List<PipeCombo> pipeCombos = PipeCombo.joinPipeCombos(inPipes, inAreas, inJunctions);
 
         int length = inPipes.size();
         networkPipes = new Pipe[length];
-        SimpleFeatureIterator pipesIter = inPipes.features();
         boolean existOut = false;
         int tmpOutIndex = 0;
-        try {
-            int t = 0;
-            while( pipesIter.hasNext() ) {
-                SimpleFeature pipeFeature = pipesIter.next();
-                try {
-                    /*
-                     * extract the value of the ID which is the position (minus
-                     * 1) in the array.
-                     */
+        int t = 0;
+        for( PipeCombo pipeCombo : pipeCombos ) {
+            try {
+                /*
+                 * extract the value of the ID which is the position (minus
+                 * 1) in the array.
+                 */
 
-                    Number field = ((Number) pipeFeature.getAttribute(TrentoPFeatureType.ID_STR));
-                    if (field == null) {
-                        pm.errorMessage(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
-                        throw new IllegalArgumentException(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
-                    }
-                    if (field.equals(pOutPipe)) {
-                        tmpOutIndex = t;
-                        existOut = true;
-                    }
-                    networkPipes[t] = new Pipe(pipeFeature, true, isAreaNotAllDry, pm);
-                    t++;
-
-                } catch (NullPointerException e) {
-                    pm.errorMessage(msg.message("trentop.illegalNet"));
-                    throw new IllegalArgumentException(msg.message("trentop.illegalNet"));
-
+                Number field = ((Number) pipeCombo.getPipeFeature().getAttribute(TrentoPFeatureType.ID_STR));
+                if (field == null) {
+                    pm.errorMessage(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
+                    throw new IllegalArgumentException(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
                 }
+                if (field.equals(pOutPipe)) {
+                    tmpOutIndex = t;
+                    existOut = true;
+                }
+                networkPipes[t] = new Pipe(pipeCombo, true, isAreaNotAllDry, pm);
+                t++;
+
+            } catch (NullPointerException e) {
+                pm.errorMessage(msg.message("trentop.illegalNet"));
+                throw new IllegalArgumentException(msg.message("trentop.illegalNet"));
+
             }
-
-        } finally {
-            pipesIter.close();
         }
-        if (!existOut) {
 
+        if (!existOut) {
+            throw new ModelsIllegalargumentException("Unable to identify output pipe, check your data.", this);
         }
         // set the id where drain of the outlet.
         networkPipes[tmpOutIndex].setIdPipeWhereDrain(0);

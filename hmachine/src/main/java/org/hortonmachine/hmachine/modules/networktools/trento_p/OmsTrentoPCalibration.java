@@ -36,7 +36,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -50,11 +50,11 @@ import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.IPara
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectNeededParameterCodes;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectOptionalParameterCodes;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.PipeCombo;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility;
 import org.joda.time.DateTime;
 import org.locationtech.jts.geom.Coordinate;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import oms3.annotations.Author;
@@ -94,7 +94,6 @@ public class OmsTrentoPCalibration extends HMModel {
     public static final String OMSTRENTOP_dt_DESCRIPTION = "Time step used to calculate the discharge. If not set the rain time step is used.";
 
     public static final String OMSTRENTOP_pOutPipe_DESCRIPTION = "The outlet, the last pipe of the network.";
-    public static final String OMSTRENTOP_inDiameters_DESCRIPTION = "Matrix which contains the commercial diameters of the pipes.";
     public static final String OMSTRENTOP_inParameters_DESCRIPTION = "Execution parameters.";
     public static final String OMSTRENTOP_inPipes_DESCRIPTION = "The input pipes network geomtries.";
     public static final String OMSTRENTOP_inJunctions_DESCRIPTION = "The input junctions geomtries.";
@@ -109,7 +108,7 @@ public class OmsTrentoPCalibration extends HMModel {
     @Unit("-")
     @In
     public Integer pOutPipe = null;
-    
+
     @Description(OMSTRENTOP_dt_DESCRIPTION)
     @Unit("minutes")
     @In
@@ -135,11 +134,6 @@ public class OmsTrentoPCalibration extends HMModel {
     @In
     public HashMap<DateTime, double[]> inRain = null;
 
-    @Description(OMSTRENTOP_inDiameters_DESCRIPTION)
-    @UI("infile")
-    @In
-    public List<double[]> inDiameters;
-
     @Description(OMSTRENTOP_inPipes_DESCRIPTION)
     @In
     public SimpleFeatureCollection inPipes = null;
@@ -151,10 +145,6 @@ public class OmsTrentoPCalibration extends HMModel {
     @Description(OMSTRENTOP_inAreas_DESCRIPTION)
     @In
     public SimpleFeatureCollection inAreas = null;
-
-    @Description(OMSTRENTOP_outPipes_DESCRIPTION)
-    @Out
-    public SimpleFeatureCollection outPipes = null;
 
     @Description(OMSTRENTOP_outDischarge_DESCRIPTION)
     @UI("outfile")
@@ -230,7 +220,8 @@ public class OmsTrentoPCalibration extends HMModel {
      */
     @Execute
     public void process() throws Exception {
-        checkNull(inPipes, inJunctions, inAreas, inParameters, inDiameters);
+        checkNull(inPipes, inJunctions, inAreas, inParameters);
+
         /*
          * verify the parameter in input (these method, when the OMS annotation
          * work well, can be deleted).
@@ -266,15 +257,12 @@ public class OmsTrentoPCalibration extends HMModel {
         // set other common parameters for the verification.
         if (inPipes != null) {
             for( int t = 0; t < networkPipes.length; t++ ) {
-
                 networkPipes[t].setAccuracy(pAccuracy);
                 networkPipes[t].setJMax((int) pJMax);
                 networkPipes[t].setMaxTheta(pMaxTheta);
                 networkPipes[t].setTolerance(pTolerance);
                 networkPipes[t].setK(pEspInflux, pExponent, pGamma);
-
             }
-
         }
 
         outDischarge = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
@@ -320,7 +308,7 @@ public class OmsTrentoPCalibration extends HMModel {
         }
 
         /* Il numero di giunzioni in un nodo non puo' superiore a 7 */
-        if (ProjectOptionalParameterCodes.MAX_JUNCTION.isInRange(pMaxJunction)) {
+        if (!ProjectOptionalParameterCodes.MAX_JUNCTION.isInRange(pMaxJunction)) {
             pm.errorMessage(msg.message("trentoP.error.maxJunction"));
             throw new IllegalArgumentException();
         }
@@ -329,7 +317,7 @@ public class OmsTrentoPCalibration extends HMModel {
          * Il numero di iterazioni ammesso non puo' essere troppo piccolo ne'
          * eccessivamente grande
          */
-        if (ProjectOptionalParameterCodes.JMAX.isInRange(pJMax)) {
+        if (!ProjectOptionalParameterCodes.JMAX.isInRange(pJMax)) {
             pm.errorMessage(msg.message("trentoP.error.jMax"));
             throw new IllegalArgumentException(msg.message("trentoP.error.jMax"));
         }
@@ -338,45 +326,45 @@ public class OmsTrentoPCalibration extends HMModel {
          * La precisione con cui si cercano alcune soluzioni non puo' essere
          * negativa
          */
-        if (ProjectOptionalParameterCodes.ACCURACY.isInRange(pAccuracy)) {
+        if (!ProjectOptionalParameterCodes.ACCURACY.isInRange(pAccuracy)) {
             pm.errorMessage(msg.message("trentoP.error.accuracy"));
             throw new IllegalArgumentException();
         }
         /* Intervallo in cui puo variare il riempimento minimo */
-        if (ProjectOptionalParameterCodes.MIN_FILL_DEGREE.isInRange(pMinG)) {
+        if (!ProjectOptionalParameterCodes.MIN_FILL_DEGREE.isInRange(pMinG)) {
             pm.errorMessage(msg.message("trentoP.error.minG"));
             throw new IllegalArgumentException();
         }
         /* Non sono ammesse portate minime negative nei tubi */
-        if (ProjectOptionalParameterCodes.MIN_DISCHARGE.isInRange(pMinDischarge)) {
+        if (!ProjectOptionalParameterCodes.MIN_DISCHARGE.isInRange(pMinDischarge)) {
             pm.errorMessage(msg.message("trentoP.error.minDischarge"));
             throw new IllegalArgumentException();
         }
 
         /* Il fattore di celerita' deve essere compreso tra 1 e 1.6 */
-        if (ProjectOptionalParameterCodes.CELERITY_FACTOR.isInRange(pCelerityFactor)) {
+        if (!ProjectOptionalParameterCodes.CELERITY_FACTOR.isInRange(pCelerityFactor)) {
             pm.errorMessage(msg.message("trentoP.error.celerity"));
             throw new IllegalArgumentException();
         }
 
         /* EXPONENT non puo' essere negativo */
-        if (ProjectOptionalParameterCodes.EXPONENT.isInRange(pExponent)) {
+        if (!ProjectOptionalParameterCodes.EXPONENT.isInRange(pExponent)) {
             pm.errorMessage(msg.message("trentoP.error.exponent"));
             throw new IllegalArgumentException();
         }
 
         /* La tolleranza non puo' essere nulla tantomeno negativa */
-        if (ProjectOptionalParameterCodes.TOLERANCE.isInRange(pTolerance)) {
+        if (!ProjectOptionalParameterCodes.TOLERANCE.isInRange(pTolerance)) {
             pm.errorMessage(msg.message("trentoP.error.tolerance"));
             throw new IllegalArgumentException();
         }
 
-        if (ProjectOptionalParameterCodes.GAMMA.isInRange(pGamma)) {
+        if (!ProjectOptionalParameterCodes.GAMMA.isInRange(pGamma)) {
             pm.errorMessage(msg.message("trentoP.error.gamma"));
             throw new IllegalArgumentException();
         }
 
-        if (ProjectOptionalParameterCodes.INFLUX_EXP.isInRange(pEspInflux)) {
+        if (!ProjectOptionalParameterCodes.INFLUX_EXP.isInRange(pEspInflux)) {
             pm.errorMessage(msg.message("trentoP.error.eps1"));
             throw new IllegalArgumentException();
         }
@@ -454,46 +442,43 @@ public class OmsTrentoPCalibration extends HMModel {
      */
     private void setNetworkPipes( boolean isAreaNotAllDry ) throws Exception {
 
+        List<PipeCombo> pipeCombos = PipeCombo.joinPipeCombos(inPipes, inAreas, inJunctions);
+
         int length = inPipes.size();
         networkPipes = new Pipe[length];
-        SimpleFeatureIterator stationsIter = inPipes.features();
         boolean existOut = false;
         int tmpOutIndex = 0;
-        try {
-            int t = 0;
-            while( stationsIter.hasNext() ) {
-                SimpleFeature feature = stationsIter.next();
-                try {
-                    /*
-                     * extract the value of the ID which is the position (minus
-                     * 1) in the array.
-                     */
+        int t = 0;
+        for( PipeCombo pipeCombo : pipeCombos ) {
+            try {
+                /*
+                 * extract the value of the ID which is the position (minus
+                 * 1) in the array.
+                 */
 
-                    Number field = ((Number) feature.getAttribute(TrentoPFeatureType.ID_STR));
-                    if (field == null) {
-                        pm.errorMessage(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
-                        throw new IllegalArgumentException(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
-                    }
-                    if (field.equals(pOutPipe)) {
-                        tmpOutIndex = t;
-                        existOut = true;
-                    }
-                    networkPipes[t] = new Pipe(feature, false, isAreaNotAllDry, pm);
-                    t++;
-
-                } catch (NullPointerException e) {
-                    pm.errorMessage(msg.message("trentop.illegalNet"));
-                    throw new IllegalArgumentException(msg.message("trentop.illegalNet"));
-
+                Number field = ((Number) pipeCombo.getPipeFeature().getAttribute(TrentoPFeatureType.ID_STR));
+                if (field == null) {
+                    pm.errorMessage(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
+                    throw new IllegalArgumentException(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
                 }
+                if (field.equals(pOutPipe)) {
+                    tmpOutIndex = t;
+                    existOut = true;
+                }
+                networkPipes[t] = new Pipe(pipeCombo, false, isAreaNotAllDry, pm);
+                t++;
+
+            } catch (NullPointerException e) {
+                pm.errorMessage(msg.message("trentop.illegalNet"));
+                throw new IllegalArgumentException(msg.message("trentop.illegalNet"));
+
             }
-
-        } finally {
-            stationsIter.close();
         }
+
         if (!existOut) {
-
+            throw new ModelsIllegalargumentException("Unable to identify output pipe, check your data.", this);
         }
+
         // set the id where drain of the outlet.
         networkPipes[tmpOutIndex].setIdPipeWhereDrain(0);
         networkPipes[tmpOutIndex].setIndexPipeWhereDrain(-1);

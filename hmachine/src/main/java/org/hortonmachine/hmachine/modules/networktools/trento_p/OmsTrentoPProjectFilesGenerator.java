@@ -121,7 +121,7 @@ public class OmsTrentoPProjectFilesGenerator extends HMModel {
         pm.worked(1);
 
         String pozzettiPath = new File(inFolder, Constants.JUNCTIONS_NAME_SHP).getAbsolutePath();
-        OmsShapefileFeatureWriter.writeEmptyShapefile(pozzettiPath, getWellsFeatureType(crs), pm);
+        OmsShapefileFeatureWriter.writeEmptyShapefile(pozzettiPath, getJunctionsFeatureType(crs), pm);
         pm.worked(1);
 
         StringBuilder parametersSb = new StringBuilder();
@@ -255,7 +255,8 @@ public class OmsTrentoPProjectFilesGenerator extends HMModel {
         b.setName("areas");
         b.setCRS(crs);
         b.add("the_geom", Polygon.class);
-        b.add(TrentoPFeatureType.PipesTrentoP.ID.getAttributeName(), TrentoPFeatureType.PipesTrentoP.ID.getClazz());
+        b.add(TrentoPFeatureType.AreasTrentoP.ID.getAttributeName(), TrentoPFeatureType.AreasTrentoP.ID.getClazz());
+        b.add(TrentoPFeatureType.AreasTrentoP.FORCEAREA.getAttributeName(), TrentoPFeatureType.AreasTrentoP.FORCEAREA.getClazz());
 
         return b.buildFeatureType();
     }
@@ -266,21 +267,23 @@ public class OmsTrentoPProjectFilesGenerator extends HMModel {
      * @param crs
      * @return the type for the wells shp.
      */
-    private SimpleFeatureType getWellsFeatureType( CoordinateReferenceSystem crs ) {
+    private SimpleFeatureType getJunctionsFeatureType( CoordinateReferenceSystem crs ) {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("wells");
+        b.setName("junctions");
         b.setCRS(crs);
         b.add("the_geom", Point.class);
-        b.add(TrentoPFeatureType.WellsTrentoP.ID.getAttributeName(), TrentoPFeatureType.WellsTrentoP.ID.getClazz());
-        b.add(TrentoPFeatureType.WellsTrentoP.ELEVATION.getAttributeName(), TrentoPFeatureType.WellsTrentoP.ELEVATION.getClazz());
-        b.add(TrentoPFeatureType.WellsTrentoP.DEPTH.getAttributeName(), TrentoPFeatureType.WellsTrentoP.DEPTH.getClazz());
+        b.add(TrentoPFeatureType.JunctionsTrentoP.ID.getAttributeName(), TrentoPFeatureType.JunctionsTrentoP.ID.getClazz());
+        b.add(TrentoPFeatureType.JunctionsTrentoP.ELEVATION.getAttributeName(), TrentoPFeatureType.JunctionsTrentoP.ELEVATION.getClazz());
+        b.add(TrentoPFeatureType.JunctionsTrentoP.DEPTH.getAttributeName(), TrentoPFeatureType.JunctionsTrentoP.DEPTH.getClazz());
 
         return b.buildFeatureType();
     }
 
     public static void main( String[] args ) throws Exception {
         OmsTrentoPProjectFilesGenerator gen = new OmsTrentoPProjectFilesGenerator();
-        gen.inFolder = "/Users/hydrologis/TMP/TRENTOP/calibration";
+//        gen.inFolder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_10_trentop/file_vuoti_check/project";
+//        gen.pMode = Variables.PROJECT;
+        gen.inFolder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_10_trentop/file_vuoti_check/calibration";
         gen.pMode = Variables.CALIBRATION;
         gen.pCode = "EPSG:32632";
         gen.process();
