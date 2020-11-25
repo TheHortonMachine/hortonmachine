@@ -28,8 +28,9 @@ public class PipeCombo {
             SimpleFeature junction2Feature ) {
         this.pipeFeature = pipeFeature;
 
+        //TODO: check if this is the correct place where to transform the area
         Geometry areaGeom = (Geometry) areaFeature.getDefaultGeometry();
-        area = areaGeom.getArea();
+        area = areaGeom.getArea() / 10000.0;
 
         double junction1Elev = ((Number) junction1Feature
                 .getAttribute(TrentoPFeatureType.JunctionsTrentoP.ELEVATION.getAttributeName())).doubleValue();

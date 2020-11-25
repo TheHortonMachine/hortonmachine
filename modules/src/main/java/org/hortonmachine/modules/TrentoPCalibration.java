@@ -251,12 +251,13 @@ public class TrentoPCalibration extends HMModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        String outFolder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_10_trentop/test_soraga/new/";
+        String outFolder = "D:\\Dropbox\\hydrologis\\lavori\\2020_10_trentop\\test_soraga\\new\\";
+//        String outFolder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_10_trentop/test_soraga/new/";
         TrentoPCalibration c = new TrentoPCalibration();
         c.pOutPipe = 10;
         c.dt = 5;
-        c.tMax = 60;
-        c.tpMaxCalibration = 90;
+        c.tMax = 90;
+        c.tpMaxCalibration = 60;
         c.inFolder = outFolder;
         c.outDischarge = outFolder + "outdischarge.csv";
         c.outFillDegree = outFolder + "outfilldegree.csv";
