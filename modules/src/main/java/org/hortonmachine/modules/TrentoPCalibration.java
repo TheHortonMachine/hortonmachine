@@ -85,11 +85,13 @@ public class TrentoPCalibration extends HMModel {
     @Description(OMSTRENTOP_tMax_DESCRIPTION)
     @Unit("-")
     @In
+    //maximum duration of the current calibration simulation
     public int tMax = (int) DEFAULT_TMAX;
 
     @Description(OMSTRENTOP_tpMaxCalibration_DESCRIPTION)
     @Unit("minutes")
     @In
+    //overall duration of the rainfall used for the calibration if statistical model is used 
     public Integer tpMaxCalibration = null;
 
     @Description(OMSTRENTOP_inRain_DESCRIPTION)
@@ -176,9 +178,9 @@ public class TrentoPCalibration extends HMModel {
             FileUtilities.writeFile(sb.toString(), new File(outDischarge));
         }
         if (outFillDegree != null && trento_P.outFillDegree != null) {
-            double[][] outDisch = hashToMatrix(trento_P.outFillDegree, results.length);
-            StringBuilder sb = printMatrixData(outDisch);
-            FileUtilities.writeFile(sb.toString(), new File(outDischarge));
+            double[][] outFill = hashToMatrix(trento_P.outFillDegree, results.length);
+            StringBuilder sb = printMatrixData(outFill);
+            FileUtilities.writeFile(sb.toString(), new File(outFillDegree));
         }
 
     }
@@ -251,7 +253,7 @@ public class TrentoPCalibration extends HMModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        String outFolder = "D:\\Dropbox\\hydrologis\\lavori\\2020_10_trentop\\test_soraga\\new\\";
+        String outFolder = "D:\\Dropbox\\hydrologis\\lavori\\2020_10_trentop\\test_soraga\\new2\\";
 //        String outFolder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_10_trentop/test_soraga/new/";
         TrentoPCalibration c = new TrentoPCalibration();
         c.pOutPipe = 10;
