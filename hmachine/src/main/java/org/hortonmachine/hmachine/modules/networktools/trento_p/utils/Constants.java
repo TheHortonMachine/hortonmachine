@@ -229,6 +229,7 @@ public class Constants {
      * The name of the shp with the network data.
      */
     public static final String NETWORK_PROJECT_NAME_SHP = "network_project.shp";
+    public static final String NETWORK_PROJECT_OUTPUT_NAME_SHP = "network_project_output.shp";
     /**
      * The name of the shp with the network data.
      */

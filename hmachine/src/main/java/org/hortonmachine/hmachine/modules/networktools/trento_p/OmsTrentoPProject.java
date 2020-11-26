@@ -98,12 +98,10 @@ public class OmsTrentoPProject extends HMModel {
     public Integer pOutPipe = null;
 
     @Description(OMSTRENTOP_inParameters_DESCRIPTION)
-    @UI("infile")
     @In
     public HashMap<String, Number> inParameters = null;
 
     @Description(OMSTRENTOP_inDiameters_DESCRIPTION)
-    @UI("infile")
     @In
     public List<double[]> inDiameters;
 

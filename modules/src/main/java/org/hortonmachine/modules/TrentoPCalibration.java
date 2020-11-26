@@ -100,6 +100,7 @@ public class TrentoPCalibration extends HMModel {
     public String inRain = null;
 
     @Description("The TrentoP project data folder.")
+    @UI(HMConstants.FOLDERIN_UI_HINT)
     @In
     public String inFolder = null;
 
