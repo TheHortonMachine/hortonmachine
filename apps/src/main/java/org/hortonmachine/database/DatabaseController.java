@@ -266,6 +266,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             if (i == 0) {
                 currentSqlEditorArea = sqlEditorArea;
             }
+            addSqlAreaContextMenu(sqlEditorArea);
             editorPanesArray[i] = sqlEditorArea;
         }
 
@@ -668,7 +669,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             currentSqlEditorArea.setText("");
         });
 
-        addSqlAreaContextMenu();
+        
     }
 
     protected abstract void setViewQueryButton( JButton _viewQueryButton, Dimension preferredButtonSize,
@@ -695,7 +696,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     }
 
     @SuppressWarnings({"serial", "unchecked"})
-    private void addSqlAreaContextMenu() {
+    private void addSqlAreaContextMenu(JTextPane sqlEditorArea) {
         JPopupMenu popupMenu = new JPopupMenu();
         popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
         popupMenu.addPopupMenuListener(new PopupMenuListener(){
@@ -909,7 +910,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
         });
 
-        currentSqlEditorArea.addMouseListener(new MouseAdapter(){
+        sqlEditorArea.addMouseListener(new MouseAdapter(){
             @Override
             public void mouseClicked( MouseEvent e ) {
                 if (SwingUtilities.isRightMouseButton(e)) {
