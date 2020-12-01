@@ -1244,10 +1244,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     }
 
                     String valueAt = valueObj.toString();
-                    String[] split = valueAt.split("\\s+");
-                    if (split.length > 0 && ESpatialiteGeometryType.isGeometryName(split[0])) {
+                    String checkString = valueAt.split("\\(")[0].trim();
+                    checkString = removeSrid(checkString);
+                    if (ESpatialiteGeometryType.isGeometryName(checkString)) {
                         isGeom = true;
-                        geomType = ESpatialiteGeometryType.forName(split[0]);
+                        geomType = ESpatialiteGeometryType.forName(checkString);
                     }
                 }
                 if (selectedCols.length > 1 && selectedRows.length > 1) {
@@ -1408,6 +1409,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             for( int r : selectedRows ) {
                                 try {
                                     String valueAt = table.getValueAt(r, selectedCols[0]).toString();
+                                    valueAt = removeSrid(valueAt);
                                     Geometry geometry = wktReader.read(valueAt);
                                     if (geometry instanceof GeometryCollection) {
                                         int numGeometries = geometry.getNumGeometries();
@@ -1445,6 +1447,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 for( int r : selectedRows ) {
                                     try {
                                         String valueAt = table.getValueAt(r, selectedCols[0]).toString();
+                                        valueAt = removeSrid(valueAt);
                                         Geometry geometry = wktReader.read(valueAt);
                                         if (geometry instanceof GeometryCollection) {
                                             int numGeometries = geometry.getNumGeometries();
@@ -1480,6 +1483,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         popupMenu.add(item2);
                     }
                 }
+            }
+
+            private String removeSrid( String valueAt ) {
+                if (valueAt.startsWith("SRID=")) {
+                    valueAt = valueAt.split(";")[1];
+                }
+                return valueAt;
             }
 
             @Override
