@@ -1,34 +1,35 @@
 package org.hortonmachine.database;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
 
 import javax.swing.Box;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
+import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 
-public class DatabaseView extends JPanel
+public class DataTableView extends JPanel
 {
-   JSplitPane _mainSplitPane = new JSplitPane();
-   JButton _newDbButton = new JButton();
-   JButton _connectDbButton = new JButton();
-   JButton _disconnectDbButton = new JButton();
-   JButton _historyButton = new JButton();
-   JButton _templatesButton = new JButton();
-   JButton _connectRemoteDbButton = new JButton();
+   JPanel _dataViewerPanel = new JPanel();
+   JLabel _recordCountLabel = new JLabel();
+   JTextField _recordCountTextfield = new JTextField();
+   JCheckBox _formatDatesCheckbox = new JCheckBox();
+   JTextField _formatDatesPatternTextField = new JTextField();
 
    /**
     * Default constructor
     */
-   public DatabaseView()
+   public DataTableView()
    {
       initializePanel();
    }
@@ -115,58 +116,73 @@ public class DatabaseView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:250PX:GROW(0.3),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:2DLU:GROW(1.0),FILL:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(0.7)","FILL:DEFAULT:GROW(1.0),CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      _mainSplitPane.setDividerLocation(113);
-      _mainSplitPane.setLastDividerLocation(-1);
-      _mainSplitPane.setName("mainSplitPane");
-      jpanel1.add(_mainSplitPane,cc.xy(2,3));
-
-      jpanel1.add(createPanel1(),cc.xy(2,2));
-      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3,4 });
+      jpanel1.add(createPanel1(),cc.xy(1,1));
+      jpanel1.add(createPanel2(),cc.xy(1,5));
+      jpanel1.add(createPanel3(),cc.xy(1,3));
+      addFillComponents(jpanel1,new int[]{ 1 },new int[]{ 1,2,3,4,5 });
       return jpanel1;
    }
 
    public JPanel createPanel1()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
+      TitledBorder titledborder1 = new TitledBorder(null,"Data Viewer",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(0,0,0));
+      jpanel1.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      _newDbButton.setActionCommand("New");
-      _newDbButton.setName("newDbButton");
-      _newDbButton.setText("New");
-      jpanel1.add(_newDbButton,cc.xy(1,1));
+      _dataViewerPanel.setName("dataViewerPanel");
+      jpanel1.add(_dataViewerPanel,cc.xy(1,1));
 
-      _connectDbButton.setActionCommand("Connect");
-      _connectDbButton.setName("connectDbButton");
-      _connectDbButton.setText("Connect");
-      jpanel1.add(_connectDbButton,cc.xy(3,1));
+      addFillComponents(jpanel1,new int[0],new int[0]);
+      return jpanel1;
+   }
 
-      _disconnectDbButton.setActionCommand("Disconnect");
-      _disconnectDbButton.setName("disconnectDbButton");
-      _disconnectDbButton.setText("Disconnect");
-      jpanel1.add(_disconnectDbButton,cc.xy(7,1));
+   public JPanel createPanel2()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.4),FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.5)","CENTER:2DLU:NONE,CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
 
-      _historyButton.setActionCommand("History");
-      _historyButton.setName("historyButton");
-      _historyButton.setText("History");
-      jpanel1.add(_historyButton,cc.xy(9,1));
+      _recordCountLabel.setName("recordCountLabel");
+      _recordCountLabel.setText("Resulting records");
+      jpanel1.add(_recordCountLabel,cc.xy(1,2));
 
-      _templatesButton.setActionCommand("Templates");
-      _templatesButton.setName("templatesButton");
-      _templatesButton.setText("Templates");
-      jpanel1.add(_templatesButton,cc.xy(11,1));
+      _recordCountTextfield.setName("recordCountTextfield");
+      jpanel1.add(_recordCountTextfield,cc.xy(3,2));
 
-      _connectRemoteDbButton.setActionCommand("Connect");
-      _connectRemoteDbButton.setName("connectRemoteDbButton");
-      _connectRemoteDbButton.setText("Connect Remote");
-      jpanel1.add(_connectRemoteDbButton,cc.xy(5,1));
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1 });
+      return jpanel1;
+   }
 
-      addFillComponents(jpanel1,new int[]{ 2,4,6,8,10,12,13,14,15 },new int[0]);
+   public JPanel createPanel3()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:8DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      JLabel jlabel1 = new JLabel();
+      jlabel1.setText("Format dates");
+      jpanel1.add(jlabel1,cc.xy(1,1));
+
+      _formatDatesCheckbox.setName("formatDatesCheckbox");
+      jpanel1.add(_formatDatesCheckbox,cc.xy(3,1));
+
+      JLabel jlabel2 = new JLabel();
+      jlabel2.setText("patterns");
+      jpanel1.add(jlabel2,cc.xy(5,1));
+
+      _formatDatesPatternTextField.setName("formatDatesPatternTextField");
+      jpanel1.add(_formatDatesPatternTextField,cc.xy(7,1));
+
+      addFillComponents(jpanel1,new int[]{ 2,4,6 },new int[0]);
       return jpanel1;
    }
 

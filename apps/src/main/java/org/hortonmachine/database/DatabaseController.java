@@ -59,6 +59,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -191,6 +192,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private JTextPane[] editorPanesArray;
     private JTable[] dataTablesArray;
     private JTable currentDataTable;
+    private DatabaseTreeView databaseTreeView;
+    private SqlEditorView sqlEditorView;
+    private DataTableView dataTableView;
 
     public DatabaseController( GuiBridgeHandler guiBridge ) {
         this.guiBridge = guiBridge;
@@ -199,18 +203,31 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     }
 
     private void init() {
+        databaseTreeView = new DatabaseTreeView();
+        _mainSplitPane.setLeftComponent(databaseTreeView);
+
+        sqlEditorView = new SqlEditorView();
+        dataTableView = new DataTableView();
+        JSplitPane rightSplitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sqlEditorView, dataTableView);
+        rightSplitPanel.setDividerLocation(0.3);
+
+        _mainSplitPane.setRightComponent(rightSplitPanel);
+        _mainSplitPane.setDividerLocation(0.3);
 
         String[] oldSqlCommandsArray = PreferencesHandler.getPreference("HM_OLD_SQL_COMMANDS", new String[0]);
         for( String oldSql : oldSqlCommandsArray ) {
             oldSqlCommands.add(oldSql);
         }
 
-        _limitCountTextfield.setText("1000");
-        _limitCountTextfield.setToolTipText("1000 is default and used when no valid number is supplied. -1 means no limit.");
+        sqlEditorView._limitCountTextfield.setText("1000");
+        sqlEditorView._limitCountTextfield
+                .setToolTipText("1000 is default and used when no valid number is supplied. -1 means no limit.");
 
-        _recordCountTextfield.setEditable(false);
+        dataTableView._recordCountTextfield.setEditable(false);
 
-        _sqlEditorAreaPanel.setLayout(new BorderLayout());
+        sqlEditorView._sqlEditorAreaPanel.setLayout(new BorderLayout());
+
+        dataTableView._formatDatesPatternTextField.setText("date, ts, timestamp");
 
         JTabbedPane tabbedDataViewerPane = new JTabbedPane();
         JTabbedPane tabbedEditorPane = new JTabbedPane();
@@ -270,9 +287,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             editorPanesArray[i] = sqlEditorArea;
         }
 
-        _sqlEditorAreaPanel.add(tabbedEditorPane, BorderLayout.CENTER);
-        _dataViewerPanel.setLayout(new BorderLayout());
-        _dataViewerPanel.add(tabbedDataViewerPane, BorderLayout.CENTER);
+        sqlEditorView._sqlEditorAreaPanel.add(tabbedEditorPane, BorderLayout.CENTER);
+        dataTableView._dataViewerPanel.setLayout(new BorderLayout());
+        dataTableView._dataViewerPanel.add(tabbedDataViewerPane, BorderLayout.CENTER);
 
         _newDbButton.setVerticalTextPosition(SwingConstants.BOTTOM);
         _newDbButton.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -457,16 +474,16 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         });
 
         try {
-            _databaseTreeView.setMinimumSize(new Dimension(300, 200));
+            databaseTreeView._databaseTreeView.setMinimumSize(new Dimension(300, 200));
 
             addJtreeDragNDrop();
 
             addJtreeContextMenu();
 
             databaseTreeCellRenderer = new DatabaseTreeCellRenderer(currentConnectedDatabase);
-            _databaseTree.setCellRenderer(databaseTreeCellRenderer);
+            databaseTreeView._databaseTree.setCellRenderer(databaseTreeCellRenderer);
 
-            _databaseTree.addTreeSelectionListener(new TreeSelectionListener(){
+            databaseTreeView._databaseTree.addTreeSelectionListener(new TreeSelectionListener(){
                 public void valueChanged( TreeSelectionEvent evt ) {
                     TreePath[] paths = evt.getPaths();
                     currentSelectedDb = null;
@@ -483,7 +500,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
                             try {
                                 QueryResult queryResult = currentConnectedDatabase
-                                        .getTableRecordsMapIn(currentSelectedTable.tableName, null, 20, -1, null);
+                                        .getTableRecordsMapIn(currentSelectedTable.tableName, null, 100, -1, null);
                                 loadDataViewer(queryResult);
                             } catch (Exception e) {
                                 Logger.INSTANCE.insertError("", "ERROR", e);
@@ -497,18 +514,18 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 }
             });
 
-            _databaseTree.setVisible(false);
+            databaseTreeView._databaseTree.setVisible(false);
         } catch (Exception e1) {
             Logger.INSTANCE.insertError("", "Error", e1);
         }
 
         layoutTree(null, false);
 
-        _runQueryButton.setIcon(ImageCache.getInstance().getImage(ImageCache.RUN));
-        _runQueryButton.setToolTipText(RUN_QUERY_TOOLTIP);
-        _runQueryButton.setText("");
-        _runQueryButton.setPreferredSize(preferredSqleditorButtonSize);
-        _runQueryButton.addActionListener(e -> {
+        sqlEditorView._runQueryButton.setIcon(ImageCache.getInstance().getImage(ImageCache.RUN));
+        sqlEditorView._runQueryButton.setToolTipText(RUN_QUERY_TOOLTIP);
+        sqlEditorView._runQueryButton.setText("");
+        sqlEditorView._runQueryButton.setPreferredSize(preferredSqleditorButtonSize);
+        sqlEditorView._runQueryButton.addActionListener(e -> {
 
             String sqlText = currentSqlEditorArea.getText().trim();
             if (sqlText.length() == 0) {
@@ -541,11 +558,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }, "DatabaseController->run query").start();
         });
 
-        _runQueryAndStoreButton.setIcon(ImageCache.getInstance().getImage(ImageCache.RUN_TO_FILE));
-        _runQueryAndStoreButton.setToolTipText(RUN_QUERY_TO_FILE_TOOLTIP);
-        _runQueryAndStoreButton.setText("");
-        _runQueryAndStoreButton.setPreferredSize(preferredSqleditorButtonSize);
-        _runQueryAndStoreButton.addActionListener(e -> {
+        sqlEditorView._runQueryAndStoreButton.setIcon(ImageCache.getInstance().getImage(ImageCache.RUN_TO_FILE));
+        sqlEditorView._runQueryAndStoreButton.setToolTipText(RUN_QUERY_TO_FILE_TOOLTIP);
+        sqlEditorView._runQueryAndStoreButton.setText("");
+        sqlEditorView._runQueryAndStoreButton.setPreferredSize(preferredSqleditorButtonSize);
+        sqlEditorView._runQueryAndStoreButton.addActionListener(e -> {
 
             File selectedFile = null;
             String sqlText = currentSqlEditorArea.getText().trim();
@@ -600,11 +617,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }, "DatabaseController->run query to file").start();
         });
 
-        _runQueryAndStoreShapefileButton.setIcon(ImageCache.getInstance().getImage(ImageCache.RUN_TO_SHAPEFILE));
-        _runQueryAndStoreShapefileButton.setToolTipText(RUN_QUERY_TO_SHAPEFILE_TOOLTIP);
-        _runQueryAndStoreShapefileButton.setText("");
-        _runQueryAndStoreShapefileButton.setPreferredSize(preferredSqleditorButtonSize);
-        _runQueryAndStoreShapefileButton.addActionListener(e -> {
+        sqlEditorView._runQueryAndStoreShapefileButton.setIcon(ImageCache.getInstance().getImage(ImageCache.RUN_TO_SHAPEFILE));
+        sqlEditorView._runQueryAndStoreShapefileButton.setToolTipText(RUN_QUERY_TO_SHAPEFILE_TOOLTIP);
+        sqlEditorView._runQueryAndStoreShapefileButton.setText("");
+        sqlEditorView._runQueryAndStoreShapefileButton.setPreferredSize(preferredSqleditorButtonSize);
+        sqlEditorView._runQueryAndStoreShapefileButton.addActionListener(e -> {
 
             File selectedFile = null;
             String sqlText = currentSqlEditorArea.getText().trim();
@@ -659,17 +676,16 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }, "DatabaseController->run query to shapefile").start();
         });
 
-        setViewQueryButton(_viewQueryButton, preferredSqleditorButtonSize, currentSqlEditorArea);
+        setViewQueryButton(sqlEditorView._viewQueryButton, preferredSqleditorButtonSize, currentSqlEditorArea);
 
-        _clearSqlEditorbutton.setIcon(ImageCache.getInstance().getImage(ImageCache.TRASH));
-        _clearSqlEditorbutton.setToolTipText(CLEAR_SQL_EDITOR);
-        _clearSqlEditorbutton.setText("");
-        _clearSqlEditorbutton.setPreferredSize(preferredSqleditorButtonSize);
-        _clearSqlEditorbutton.addActionListener(e -> {
+        sqlEditorView._clearSqlEditorbutton.setIcon(ImageCache.getInstance().getImage(ImageCache.TRASH));
+        sqlEditorView._clearSqlEditorbutton.setToolTipText(CLEAR_SQL_EDITOR);
+        sqlEditorView._clearSqlEditorbutton.setText("");
+        sqlEditorView._clearSqlEditorbutton.setPreferredSize(preferredSqleditorButtonSize);
+        sqlEditorView._clearSqlEditorbutton.addActionListener(e -> {
             currentSqlEditorArea.setText("");
         });
 
-        
     }
 
     protected abstract void setViewQueryButton( JButton _viewQueryButton, Dimension preferredButtonSize,
@@ -677,8 +693,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     @SuppressWarnings("serial")
     private void addJtreeDragNDrop() {
-        _databaseTree.setDragEnabled(true);
-        _databaseTree.setTransferHandler(new TransferHandler(null){
+        databaseTreeView._databaseTree.setDragEnabled(true);
+        databaseTreeView._databaseTree.setTransferHandler(new TransferHandler(null){
             public int getSourceActions( JComponent c ) {
                 return COPY;
             }
@@ -696,7 +712,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     }
 
     @SuppressWarnings({"serial", "unchecked"})
-    private void addSqlAreaContextMenu(JTextPane sqlEditorArea) {
+    private void addSqlAreaContextMenu( JTextPane sqlEditorArea ) {
         JPopupMenu popupMenu = new JPopupMenu();
         popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
         popupMenu.addPopupMenuListener(new PopupMenuListener(){
@@ -914,8 +930,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             @Override
             public void mouseClicked( MouseEvent e ) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    int row = _databaseTree.getClosestRowForLocation(e.getX(), e.getY());
-                    _databaseTree.setSelectionRow(row);
+                    int row = databaseTreeView._databaseTree.getClosestRowForLocation(e.getX(), e.getY());
+                    databaseTreeView._databaseTree.setSelectionRow(row);
                     popupMenu.show(e.getComponent(), e.getX(), e.getY());
                 }
 
@@ -978,12 +994,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
         });
 
-        _databaseTree.addMouseListener(new MouseAdapter(){
+        databaseTreeView._databaseTree.addMouseListener(new MouseAdapter(){
             @Override
             public void mouseClicked( MouseEvent e ) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    int row = _databaseTree.getClosestRowForLocation(e.getX(), e.getY());
-                    _databaseTree.setSelectionRow(row);
+                    int row = databaseTreeView._databaseTree.getClosestRowForLocation(e.getX(), e.getY());
+                    databaseTreeView._databaseTree.setSelectionRow(row);
                     popupMenu.show(e.getComponent(), e.getX(), e.getY());
                 }
 
@@ -1198,8 +1214,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             @Override
             public void mouseClicked( MouseEvent e ) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    int row = _databaseTree.getClosestRowForLocation(e.getX(), e.getY());
-                    _databaseTree.setSelectionRow(row);
+                    int row = databaseTreeView._databaseTree.getClosestRowForLocation(e.getX(), e.getY());
+                    databaseTreeView._databaseTree.setSelectionRow(row);
                     popupMenuConnectButton.show(e.getComponent(), e.getX(), e.getY());
                 }
 
@@ -1493,17 +1509,41 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             currentDataTable.setModel(new DefaultTableModel());
             return;
         }
-        Object[] names = queryResult.names.toArray(new String[0]);
+
+        boolean doDates = dataTableView._formatDatesCheckbox.isSelected();
+        String[] patternSplit = dataTableView._formatDatesPatternTextField.getText().split(",");
+        List<String> patternsList = new ArrayList<String>();
+        for( String pattern : patternSplit ) {
+            pattern = pattern.trim();
+            if (pattern.length() > 0) {
+                patternsList.add(pattern.toLowerCase());
+            }
+        }
+
+        String[] names = queryResult.names.toArray(new String[0]);
         List<Object[]> data = queryResult.data;
         Object[][] values = new Object[queryResult.data.size()][];
         int index = 0;
         for( Object[] objects : data ) {
             values[index++] = objects;
             for( int i = 0; i < objects.length; i++ ) {
+                String fieldName = names[i];
                 if (objects[i] instanceof Date) {
                     Date date = (Date) objects[i];
                     String formatted = DbsUtilities.dbDateFormatter.format(date);
                     objects[i] = formatted;
+                } else if (doDates && patternsList.contains(fieldName.toLowerCase())) {
+                    if (objects[i] instanceof Number) {
+                        Number num = (Number) objects[i];
+                        long longValue = num.longValue();
+                        if (longValue == 0) {
+                            objects[i] = "";
+                        } else {
+                            Date newDate = new Date(longValue);
+                            String formatted = DbsUtilities.dbDateFormatter.format(newDate);
+                            objects[i] = formatted;
+                        }
+                    }
                 }
             }
         }
@@ -1536,7 +1576,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             tableColumn.setPreferredWidth(preferredWidth);
         }
 
-        _recordCountTextfield.setText(values.length + " in " + millisToTimeString(queryResult.queryTimeMillis));
+        dataTableView._recordCountTextfield.setText(values.length + " in " + millisToTimeString(queryResult.queryTimeMillis));
     }
 
     private void layoutTree( DbLevel dbLevel, boolean expandNodes ) {
@@ -1544,39 +1584,39 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
         String title;
         if (dbLevel != null) {
-            _databaseTree.setVisible(true);
+            databaseTreeView._databaseTree.setVisible(true);
             // title = dbLevel.dbName;
 
             title = currentConnectedDatabase.getDatabasePath();
         } else {
             dbLevel = new DbLevel();
-            _databaseTree.setVisible(false);
+            databaseTreeView._databaseTree.setVisible(false);
             title = DATABASE_CONNECTIONS;
         }
         setDbTreeTitle(title);
 
         DatabaseTreeModel model = new DatabaseTreeModel();
         model.setRoot(dbLevel);
-        _databaseTree.setModel(model);
+        databaseTreeView._databaseTree.setModel(model);
 
         if (expandNodes) {
-            _databaseTree.expandRow(0);
-            _databaseTree.expandRow(1);
+            databaseTreeView._databaseTree.expandRow(0);
+            databaseTreeView._databaseTree.expandRow(1);
         }
         // expandAllNodes(_databaseTree, 0, 2);
 
     }
 
     private void toggleButtonsEnabling( boolean enable ) {
-        _runQueryButton.setEnabled(enable);
-        _runQueryAndStoreButton.setEnabled(enable);
-        _runQueryAndStoreShapefileButton.setEnabled(enable);
+        sqlEditorView._runQueryButton.setEnabled(enable);
+        sqlEditorView._runQueryAndStoreButton.setEnabled(enable);
+        sqlEditorView._runQueryAndStoreShapefileButton.setEnabled(enable);
         _templatesButton.setEnabled(enable);
         _historyButton.setEnabled(enable);
-        _clearSqlEditorbutton.setEnabled(enable);
-        _viewQueryButton.setEnabled(enable);
+        sqlEditorView._clearSqlEditorbutton.setEnabled(enable);
+        sqlEditorView._viewQueryButton.setEnabled(enable);
 
-        _recordCountTextfield.setText("");
+        dataTableView._recordCountTextfield.setText("");
 
         currentSqlEditorArea.setText("");
         currentSqlEditorArea.setEditable(enable);
@@ -1659,12 +1699,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     }
 
     protected void setDbTreeTitle( String title ) {
-        Border databaseTreeViewBorder = _databaseTreeView.getBorder();
+        Border databaseTreeViewBorder = databaseTreeView._databaseTreeView.getBorder();
         if (databaseTreeViewBorder instanceof TitledBorder) {
             TitledBorder tBorder = (TitledBorder) databaseTreeViewBorder;
             tBorder.setTitle(title);
-            _databaseTreeView.repaint();
-            _databaseTreeView.invalidate();
+            databaseTreeView._databaseTreeView.repaint();
+            databaseTreeView._databaseTreeView.invalidate();
         }
     }
 
@@ -1935,7 +1975,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             loadDataViewer(null);
             currentConnectedDatabase.close();
             currentConnectedDatabase = null;
-            _recordCountTextfield.setText("");
+            dataTableView._recordCountTextfield.setText("");
 
             if (manually)
                 PreferencesHandler.setPreference(DatabaseGuiUtils.HM_SPATIALITE_LAST_FILE, (String) null);
@@ -2009,7 +2049,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             }
                             // addQueryToHistoryCombo(sql);
                         }
-                        if (!hasError && _refreshTreeAfterQueryCheckbox.isSelected()) {
+                        if (!hasError && sqlEditorView._refreshTreeAfterQueryCheckbox.isSelected()) {
                             try {
                                 refreshDatabaseTree();
                             } catch (SQLException e) {
@@ -2048,7 +2088,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
         }
 
-        if (!hasError && _refreshTreeAfterQueryCheckbox.isSelected()) {
+        if (!hasError && sqlEditorView._refreshTreeAfterQueryCheckbox.isSelected()) {
             try {
                 refreshDatabaseTree();
             } catch (Exception e) {
@@ -2074,11 +2114,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         int limit;
         limit = 1000;
         try {
-            String limitText = _limitCountTextfield.getText();
+            String limitText = sqlEditorView._limitCountTextfield.getText();
             limit = Integer.parseInt(limitText);
         } catch (Exception e) {
             // reset
-            _limitCountTextfield.setText("1000");
+            sqlEditorView._limitCountTextfield.setText("1000");
         }
         return limit;
     }

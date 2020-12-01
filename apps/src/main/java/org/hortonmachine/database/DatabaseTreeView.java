@@ -1,34 +1,31 @@
 package org.hortonmachine.database;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
 
 import javax.swing.Box;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.border.TitledBorder;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 
-public class DatabaseView extends JPanel
+public class DatabaseTreeView extends JPanel
 {
-   JSplitPane _mainSplitPane = new JSplitPane();
-   JButton _newDbButton = new JButton();
-   JButton _connectDbButton = new JButton();
-   JButton _disconnectDbButton = new JButton();
-   JButton _historyButton = new JButton();
-   JButton _templatesButton = new JButton();
-   JButton _connectRemoteDbButton = new JButton();
+   JPanel _databaseTreeView = new JPanel();
+   JTree _databaseTree = new JTree();
 
    /**
     * Default constructor
     */
-   public DatabaseView()
+   public DatabaseTreeView()
    {
       initializePanel();
    }
@@ -115,59 +112,33 @@ public class DatabaseView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:250PX:GROW(0.3),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:2DLU:GROW(1.0),FILL:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:250PX:GROW(0.3)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
-      _mainSplitPane.setDividerLocation(113);
-      _mainSplitPane.setLastDividerLocation(-1);
-      _mainSplitPane.setName("mainSplitPane");
-      jpanel1.add(_mainSplitPane,cc.xy(2,3));
-
-      jpanel1.add(createPanel1(),cc.xy(2,2));
-      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3,4 });
+      jpanel1.add(createdatabaseTreeView(),new CellConstraints(1,1,1,1,CellConstraints.FILL,CellConstraints.FILL));
+      addFillComponents(jpanel1,new int[]{ 1 },new int[]{ 1 });
       return jpanel1;
    }
 
-   public JPanel createPanel1()
+   public JPanel createdatabaseTreeView()
    {
-      JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
+      _databaseTreeView.setName("databaseTreeView");
+      TitledBorder titledborder1 = new TitledBorder(null,"Database Connection",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,new Color(0,0,0));
+      _databaseTreeView.setBorder(titledborder1);
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
+      _databaseTreeView.setLayout(formlayout1);
 
-      _newDbButton.setActionCommand("New");
-      _newDbButton.setName("newDbButton");
-      _newDbButton.setText("New");
-      jpanel1.add(_newDbButton,cc.xy(1,1));
+      _databaseTree.setName("databaseTree");
+      JScrollPane jscrollpane1 = new JScrollPane();
+      jscrollpane1.setViewportView(_databaseTree);
+      jscrollpane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+      jscrollpane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+      _databaseTreeView.add(jscrollpane1,new CellConstraints(1,1,1,1,CellConstraints.FILL,CellConstraints.FILL));
 
-      _connectDbButton.setActionCommand("Connect");
-      _connectDbButton.setName("connectDbButton");
-      _connectDbButton.setText("Connect");
-      jpanel1.add(_connectDbButton,cc.xy(3,1));
-
-      _disconnectDbButton.setActionCommand("Disconnect");
-      _disconnectDbButton.setName("disconnectDbButton");
-      _disconnectDbButton.setText("Disconnect");
-      jpanel1.add(_disconnectDbButton,cc.xy(7,1));
-
-      _historyButton.setActionCommand("History");
-      _historyButton.setName("historyButton");
-      _historyButton.setText("History");
-      jpanel1.add(_historyButton,cc.xy(9,1));
-
-      _templatesButton.setActionCommand("Templates");
-      _templatesButton.setName("templatesButton");
-      _templatesButton.setText("Templates");
-      jpanel1.add(_templatesButton,cc.xy(11,1));
-
-      _connectRemoteDbButton.setActionCommand("Connect");
-      _connectRemoteDbButton.setName("connectRemoteDbButton");
-      _connectRemoteDbButton.setText("Connect Remote");
-      jpanel1.add(_connectRemoteDbButton,cc.xy(5,1));
-
-      addFillComponents(jpanel1,new int[]{ 2,4,6,8,10,12,13,14,15 },new int[0]);
-      return jpanel1;
+      addFillComponents(_databaseTreeView,new int[0],new int[0]);
+      return _databaseTreeView;
    }
 
    /**
