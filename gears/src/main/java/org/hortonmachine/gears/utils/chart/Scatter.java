@@ -164,7 +164,7 @@ public class Scatter implements IChart {
             }
 
             if (colors == null) {
-                colors = ColorBrewer.getPairedColors(dataset.getSeriesCount());
+                colors = ColorBrewer.getMainColors(dataset.getSeriesCount());
             }
             for( int i = 0; i < colors.length; i++ ) {
                 plot.getRenderer().setSeriesPaint(i, colors[i]);

@@ -30,22 +30,41 @@ public class ColorBrewer {
             "#ccebc5", //
             "#ffed6f" //
     };
+    public static final String[] mainColors = {"#FF0000", //
+            "#00FF00", //
+            "#0000FF", //
+            "#FFFF00", //
+            "#00FFFF", //
+            "#FF00FF" //
+    };
 
     public static Color[] getPairedColors( int num ) {
-        if (num <= twelveClassPaired.length) {
+        return getColors(num, twelveClassPaired);
+    }
+
+    public static Color[] getSet3Colors( int num ) {
+        return getColors(num, twelveClassSet3);
+    }
+
+    public static Color[] getMainColors( int num ) {
+        return getColors(num, mainColors);
+    }
+
+    private static Color[] getColors( int num, String[] colorHexes ) {
+        if (num <= colorHexes.length) {
             Color[] colors = new Color[num];
             for( int i = 0; i < num; i++ ) {
-                colors[i] = ColorUtilities.fromHex(twelveClassPaired[i]);
+                colors[i] = ColorUtilities.fromHex(colorHexes[i]);
             }
             return colors;
         } else {
-            Color[] allColors = new Color[twelveClassPaired.length];
-            for( int i = 0; i < twelveClassPaired.length; i++ ) {
-                allColors[i] = ColorUtilities.fromHex(twelveClassPaired[i]);
+            Color[] allColors = new Color[colorHexes.length];
+            for( int i = 0; i < colorHexes.length; i++ ) {
+                allColors[i] = ColorUtilities.fromHex(colorHexes[i]);
             }
-            double[] values = new double[twelveClassPaired.length];
-            double delta = num / (double) twelveClassPaired.length;
-            for( int i = 0; i < twelveClassPaired.length; i++ ) {
+            double[] values = new double[colorHexes.length];
+            double delta = num / (double) colorHexes.length;
+            for( int i = 0; i < colorHexes.length; i++ ) {
                 values[i] = i * delta;
             }
 

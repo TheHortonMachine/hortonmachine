@@ -785,9 +785,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             PreferencesHandler.setPreference(HM_SAVED_QUERIES, bytesToSave);
 
                         } catch (Exception e1) {
-                            e1.printStackTrace();
-                            // GuiUtilities.showErrorMessage(DatabaseController.this,
-                            // e1.getMessage());
+                            Logger.INSTANCE.insertError("", "ERROR", e1);
                         }
                     }
 
@@ -1129,7 +1127,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             }
                         } catch (Exception e1) {
                             GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
-                            e1.printStackTrace();
+                            Logger.INSTANCE.insertError("", "ERROR", e1);
                         }
                     }
                 };
@@ -1326,70 +1324,81 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         private static final long serialVersionUID = 1L;
                         @Override
                         public void actionPerformed( ActionEvent e ) {
-                            int chartsCount = selectedCols.length - 1;
+                            try {
+                                int chartsCount = selectedCols.length - 1;
 
-                            Scatter scatterChart = null;
-                            CategoryHistogram categoryHistogram = null;
+                                String xLabel = table.getColumnName(selectedCols[0]);
 
-                            for( int i = 0; i < chartsCount; i++ ) {
-                                Object tmpX = table.getValueAt(0, selectedCols[0]);
-                                boolean doCat = true;
-                                if (tmpX instanceof Number) {
-                                    doCat = false;
-                                }
-                                Object tmpY = table.getValueAt(0, selectedCols[i + 1]);
-                                if (!(tmpY instanceof Number)) {
-                                    break;
-                                }
+                                Scatter scatterChart = null;
+                                CategoryHistogram categoryHistogram = null;
 
-                                if (doCat) {
-                                    if (categoryHistogram == null) {
-                                        String[] xStr = new String[selectedRows.length];
+                                for( int i = 0; i < chartsCount; i++ ) {
+                                    Object tmpX = table.getValueAt(0, selectedCols[0]);
+                                    boolean doCat = true;
+                                    if (tmpX instanceof Number) {
+                                        doCat = false;
+                                    }
+                                    Object tmpY = table.getValueAt(0, selectedCols[i + 1]);
+                                    if (!(tmpY instanceof Number)) {
+                                        break;
+                                    }
+
+                                    if (doCat) {
+                                        if (categoryHistogram == null) {
+                                            String[] xStr = new String[selectedRows.length];
+                                            double[] y = new double[selectedRows.length];
+                                            for( int r : selectedRows ) {
+                                                Object xObj = table.getValueAt(r, selectedCols[0]);
+                                                Object yObj = table.getValueAt(r, selectedCols[i + 1]);
+                                                xStr[r] = xObj.toString();
+                                                y[r] = ((Number) yObj).doubleValue();
+                                            }
+                                            categoryHistogram = new CategoryHistogram("", xStr, y);
+                                        }
+                                    } else {
+                                        if (scatterChart == null) {
+                                            scatterChart = new Scatter("");
+                                            List<Boolean> showLines = new ArrayList<Boolean>();
+                                            for( int j = 0; j < chartsCount; j++ ) {
+                                                showLines.add(true);
+                                            }
+                                            scatterChart.setShowLines(showLines);
+                                            scatterChart.setXLabel(xLabel);
+                                            scatterChart.setYLabel("");
+                                        }
+                                        double[] x = new double[selectedRows.length];
                                         double[] y = new double[selectedRows.length];
+                                        String seriesName = table.getColumnName(selectedCols[i + 1]);
                                         for( int r : selectedRows ) {
                                             Object xObj = table.getValueAt(r, selectedCols[0]);
                                             Object yObj = table.getValueAt(r, selectedCols[i + 1]);
-                                            xStr[r] = xObj.toString();
+                                            x[r] = ((Number) xObj).doubleValue();
                                             y[r] = ((Number) yObj).doubleValue();
                                         }
-                                        categoryHistogram = new CategoryHistogram("", xStr, y);
+                                        scatterChart.addSeries(seriesName, x, y);
                                     }
-                                } else {
-                                    if (scatterChart == null) {
-                                        scatterChart = new Scatter("");
-                                        scatterChart.setShowLines(Arrays.asList(true));
-                                        scatterChart.setXLabel("");
-                                        scatterChart.setYLabel("");
-                                    }
-                                    double[] x = new double[selectedRows.length];
-                                    double[] y = new double[selectedRows.length];
-                                    for( int r : selectedRows ) {
-                                        Object xObj = table.getValueAt(r, selectedCols[0]);
-                                        Object yObj = table.getValueAt(r, selectedCols[i + 1]);
-                                        x[r] = ((Number) xObj).doubleValue();
-                                        y[r] = ((Number) yObj).doubleValue();
-                                    }
-                                    scatterChart.addSeries("col " + (i + 1), x, y);
                                 }
-                            }
 
-                            Dimension dimension = new Dimension(800, 600);
-                            if (scatterChart != null) {
-                                JFreeChart chart = scatterChart.getChart();
-                                ChartPanel chartPanel = new ChartPanel(chart, true);
-                                chartPanel.setPreferredSize(dimension);
-                                JPanel p = new JPanel(new BorderLayout());
-                                p.add(chartPanel, BorderLayout.CENTER);
-                                GuiUtilities.openDialogWithPanel(p, "Chart from cells", dimension, false);
-                            } else if (categoryHistogram != null) {
-                                JFreeChart chart = categoryHistogram.getChart();
-                                ChartPanel chartPanel = new ChartPanel(chart, true);
-                                chartPanel.setPreferredSize(dimension);
-                                JPanel p = new JPanel(new BorderLayout());
-                                p.add(chartPanel, BorderLayout.CENTER);
-                                GuiUtilities.openDialogWithPanel(p, "Chart from cells", dimension, false);
-                            } else {
-                                GuiUtilities.showWarningMessage(popupMenu, "Charting of selected data not possible.");
+                                Dimension dimension = new Dimension(800, 600);
+                                if (scatterChart != null) {
+                                    JFreeChart chart = scatterChart.getChart();
+                                    ChartPanel chartPanel = new ChartPanel(chart, true);
+                                    chartPanel.setPreferredSize(dimension);
+                                    JPanel p = new JPanel(new BorderLayout());
+                                    p.add(chartPanel, BorderLayout.CENTER);
+                                    GuiUtilities.openDialogWithPanel(p, "Chart from cells", dimension, false);
+                                } else if (categoryHistogram != null) {
+                                    JFreeChart chart = categoryHistogram.getChart();
+                                    ChartPanel chartPanel = new ChartPanel(chart, true);
+                                    chartPanel.setPreferredSize(dimension);
+                                    JPanel p = new JPanel(new BorderLayout());
+                                    p.add(chartPanel, BorderLayout.CENTER);
+                                    GuiUtilities.openDialogWithPanel(p, "Chart from cells", dimension, false);
+                                } else {
+                                    GuiUtilities.showWarningMessage(popupMenu, "Charting of selected data not possible.");
+                                }
+                            } catch (Exception ex) {
+                                Logger.INSTANCE.insertError("", "ERROR", ex);
                             }
                         }
 
@@ -1421,7 +1430,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                         geomsList.add(geometry);
                                     }
                                 } catch (ParseException e1) {
-                                    e1.printStackTrace();
+                                    Logger.INSTANCE.insertError("", "ERROR", e1);
                                 }
                             }
 
@@ -1466,7 +1475,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                         }
 
                                     } catch (ParseException e1) {
-                                        e1.printStackTrace();
+                                        Logger.INSTANCE.insertError("", "ERROR", e1);
                                     }
                                 }
 
