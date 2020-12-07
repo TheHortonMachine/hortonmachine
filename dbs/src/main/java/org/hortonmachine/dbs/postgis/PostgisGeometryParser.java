@@ -21,6 +21,7 @@ import java.sql.SQLException;
 
 import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMResultSet;
+import org.postgis.GeometryBuilder;
 import org.postgis.PGgeometry;
 
 import org.locationtech.jts.geom.Geometry;
@@ -43,7 +44,7 @@ public class PostgisGeometryParser implements IGeometryParser {
 
     private synchronized Geometry getGeom( PGgeometry pgGeometry ) throws SQLException, ParseException {
         String wkt = pgGeometry.toString();
-        String[] splitSRID = PGgeometry.splitSRID(wkt);
+        String[] splitSRID = GeometryBuilder.splitSRID(wkt);
         Geometry geometry = wktReader.read(splitSRID[1]);
         try {
             int srid = Integer.parseInt(splitSRID[0].substring(5));
@@ -66,7 +67,7 @@ public class PostgisGeometryParser implements IGeometryParser {
 
     @Override
     public Object toSqlObject( Geometry geometry ) throws Exception {
-        org.postgis.Geometry pgGeometry = PGgeometry.geomFromString(geometry.toText());
+        org.postgis.Geometry pgGeometry = GeometryBuilder.geomFromString(geometry.toText());
         pgGeometry.srid = geometry.getSRID();
         return pgGeometry;
     }

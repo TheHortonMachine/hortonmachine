@@ -45,8 +45,8 @@
 		<javac.maxHeapSize>256M</javac.maxHeapSize>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<postgis.version>2.3.0</postgis.version>
-		<postgresql.jdbc.version>42.2.5</postgresql.jdbc.version>
+		<postgis.version>2.5.0</postgis.version>
+		<postgresql.jdbc.version>42.2.11</postgresql.jdbc.version>
 
 		<performRelease>false</performRelease>
 
