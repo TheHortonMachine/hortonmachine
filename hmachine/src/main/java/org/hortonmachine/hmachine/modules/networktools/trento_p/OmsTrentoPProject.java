@@ -281,7 +281,7 @@ public class OmsTrentoPProject extends HMModel {
         }
 
         /* Il numero di giunzioni in un nodo non puo' superiore a 7 */
-        if (ProjectOptionalParameterCodes.MAX_JUNCTION.isInRange(pMaxJunction)) {
+        if (!ProjectOptionalParameterCodes.MAX_JUNCTION.isInRange(pMaxJunction)) {
             pm.errorMessage(msg.message("trentoP.error.maxJunction"));
             throw new IllegalArgumentException();
         }
@@ -290,7 +290,7 @@ public class OmsTrentoPProject extends HMModel {
          * Il numero di iterazioni ammesso non puo' essere troppo piccolo ne'
          * eccessivamente grande
          */
-        if (ProjectOptionalParameterCodes.JMAX.isInRange(pJMax)) {
+        if (!ProjectOptionalParameterCodes.JMAX.isInRange(pJMax)) {
             pm.errorMessage(msg.message("trentoP.error.jMax"));
             throw new IllegalArgumentException(msg.message("trentoP.error.jMax"));
         }
@@ -299,45 +299,45 @@ public class OmsTrentoPProject extends HMModel {
          * La precisione con cui si cercano alcune soluzioni non puo' essere
          * negativa
          */
-        if (ProjectOptionalParameterCodes.ACCURACY.isInRange(pAccuracy)) {
+        if (!ProjectOptionalParameterCodes.ACCURACY.isInRange(pAccuracy)) {
             pm.errorMessage(msg.message("trentoP.error.accuracy"));
             throw new IllegalArgumentException();
         }
         /* Intervallo in cui puo variare il riempimento minimo */
-        if (ProjectOptionalParameterCodes.MIN_FILL_DEGREE.isInRange(pMinG)) {
+        if (!ProjectOptionalParameterCodes.MIN_FILL_DEGREE.isInRange(pMinG)) {
             pm.errorMessage(msg.message("trentoP.error.minG"));
             throw new IllegalArgumentException();
         }
         /* Non sono ammesse portate minime negative nei tubi */
-        if (ProjectOptionalParameterCodes.MIN_DISCHARGE.isInRange(pMinDischarge)) {
+        if (!ProjectOptionalParameterCodes.MIN_DISCHARGE.isInRange(pMinDischarge)) {
             pm.errorMessage(msg.message("trentoP.error.minDischarge"));
             throw new IllegalArgumentException();
         }
 
         /* Il fattore di celerita' deve essere compreso tra 1 e 1.6 */
-        if (ProjectOptionalParameterCodes.CELERITY_FACTOR.isInRange(pCelerityFactor)) {
+        if (!ProjectOptionalParameterCodes.CELERITY_FACTOR.isInRange(pCelerityFactor)) {
             pm.errorMessage(msg.message("trentoP.error.celerity"));
             throw new IllegalArgumentException();
         }
 
         /* EXPONENT non puo' essere negativo */
-        if (ProjectOptionalParameterCodes.EXPONENT.isInRange(pExponent)) {
+        if (!ProjectOptionalParameterCodes.EXPONENT.isInRange(pExponent)) {
             pm.errorMessage(msg.message("trentoP.error.exponent"));
             throw new IllegalArgumentException();
         }
 
         /* La tolleranza non puo' essere nulla tantomeno negativa */
-        if (ProjectOptionalParameterCodes.TOLERANCE.isInRange(pTolerance)) {
+        if (!ProjectOptionalParameterCodes.TOLERANCE.isInRange(pTolerance)) {
             pm.errorMessage(msg.message("trentoP.error.tolerance"));
             throw new IllegalArgumentException();
         }
 
-        if (ProjectOptionalParameterCodes.GAMMA.isInRange(pGamma)) {
+        if (!ProjectOptionalParameterCodes.GAMMA.isInRange(pGamma)) {
             pm.errorMessage(msg.message("trentoP.error.gamma"));
             throw new IllegalArgumentException();
         }
 
-        if (ProjectOptionalParameterCodes.INFLUX_EXP.isInRange(pEspInflux)) {
+        if (!ProjectOptionalParameterCodes.INFLUX_EXP.isInRange(pEspInflux)) {
             pm.errorMessage(msg.message("trentoP.error.eps1"));
             throw new IllegalArgumentException();
         }
@@ -348,36 +348,36 @@ public class OmsTrentoPProject extends HMModel {
 
         isAreaAllDry = Utility.verifyProjectType(schema, pm);
 
-        if (ProjectNeededParameterCodes.A.isInRange(pA)) {
+        if (!ProjectNeededParameterCodes.A.isInRange(pA)) {
             pm.errorMessage(msg.message("trentoP.error.a"));
             throw new IllegalArgumentException(msg.message("trentoP.error.a"));
         }
-        if (ProjectNeededParameterCodes.N.isInRange(pN)) {
+        if (!ProjectNeededParameterCodes.N.isInRange(pN)) {
             pm.errorMessage(msg.message("trentoP.error.n"));
             throw new IllegalArgumentException(msg.message("trentoP.error.n"));
         }
-        if (ProjectNeededParameterCodes.TAU.isInRange(pTau)) {
+        if (!ProjectNeededParameterCodes.TAU.isInRange(pTau)) {
             pm.errorMessage(msg.message("trentoP.error.tau"));
             throw new IllegalArgumentException(msg.message("trentoP.error.tau"));
         }
 
-        if (ProjectNeededParameterCodes.G.isInRange(pG)) {
+        if (!ProjectNeededParameterCodes.G.isInRange(pG)) {
             pm.errorMessage(msg.message("trentoP.error.g"));
 
             throw new IllegalArgumentException(msg.message("trentoP.error.g"));
         }
-        if (ProjectNeededParameterCodes.ALIGN.isInRange(pAlign)) {
+        if (!ProjectNeededParameterCodes.ALIGN.isInRange(pAlign)) {
             pm.errorMessage(msg.message("trentoP.error.align"));
             throw new IllegalArgumentException(msg.message("trentoP.error.align"));
         }
         /* Lo scavo minimo non puo' essere uguale o inferiore a 0 */
-        if (ProjectOptionalParameterCodes.MIN_DEPTH.isInRange(pMinimumDepth)) {
+        if (!ProjectOptionalParameterCodes.MIN_DEPTH.isInRange(pMinimumDepth)) {
             pm.errorMessage(msg.message("trentoP.error.scavomin"));
             throw new IllegalArgumentException();
 
         }
         /* Pecisione con cui si ricerca la portata nelle aree non di testa. */
-        if (ProjectOptionalParameterCodes.EPS.isInRange(pEpsilon)) {
+        if (!ProjectOptionalParameterCodes.EPS.isInRange(pEpsilon)) {
             pm.errorMessage(msg.message("trentoP.error.epsilon"));
             throw new IllegalArgumentException();
         }
@@ -385,11 +385,11 @@ public class OmsTrentoPProject extends HMModel {
          * L'angolo di riempimento minimo non puo' essere inferiore a 3.14
          * [rad]
          */
-        if (ProjectOptionalParameterCodes.MAX_FILL_DEGREE.isInRange(pMaxTheta)) {
+        if (!ProjectOptionalParameterCodes.MAX_FILL_DEGREE.isInRange(pMaxTheta)) {
             pm.errorMessage(msg.message("trentoP.error.maxtheta"));
             throw new IllegalArgumentException();
         }
-        if (ProjectOptionalParameterCodes.C.isInRange(pC)) {
+        if (!ProjectOptionalParameterCodes.C.isInRange(pC)) {
             pm.errorMessage(msg.message("trentoP.error.c"));
             throw new IllegalArgumentException();
         }
@@ -402,7 +402,7 @@ public class OmsTrentoPProject extends HMModel {
          * Il passo temporale con cui valutare le portate non puo' essere
          * inferiore a 0.015 [min]
          */
-        if (ProjectTimeParameterCodes.STEP.isInRange(tDTp)) {
+        if (!ProjectTimeParameterCodes.STEP.isInRange(tDTp)) {
             pm.errorMessage(msg.message("trentoP.error.dtp"));
             throw new IllegalArgumentException();
         }
@@ -411,7 +411,7 @@ public class OmsTrentoPProject extends HMModel {
          * Tempo di pioggia minimo da considerare nella massimizzazione
          * delle portate non puo' essere superiore a 5 [min]
          */
-        if (ProjectTimeParameterCodes.MINIMUM_TIME.isInRange(tpMin)) {
+        if (!ProjectTimeParameterCodes.MINIMUM_TIME.isInRange(tpMin)) {
             pm.errorMessage(msg.message("trentoP.error.tpmin"));
             throw new IllegalArgumentException();
         }
@@ -420,7 +420,7 @@ public class OmsTrentoPProject extends HMModel {
          * Tempo di pioggia massimo da adottare nella ricerca della portata
          * massima non puo' essere inferiore a 5 [min]
          */
-        if (ProjectTimeParameterCodes.MAXIMUM_TIME.isInRange(tpMax)) {
+        if (!ProjectTimeParameterCodes.MAXIMUM_TIME.isInRange(tpMax)) {
             pm.errorMessage(msg.message("trentoP.error.tpmax"));
             throw new IllegalArgumentException();
         }

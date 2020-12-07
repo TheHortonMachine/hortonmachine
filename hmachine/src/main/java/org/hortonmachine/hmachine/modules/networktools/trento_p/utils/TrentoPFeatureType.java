@@ -37,11 +37,11 @@ public class TrentoPFeatureType {
      * featureCollections.
      */
     public final static String ID_PIPE_WHERE_DRAIN_STR = "IDdrain";
+ 
     /**
      * The field of the Area which drains in this pipe, in the inPipes
      * featureCollections.
      */
-
     public final static String DRAIN_AREA_STR = "Area";
     
     /**

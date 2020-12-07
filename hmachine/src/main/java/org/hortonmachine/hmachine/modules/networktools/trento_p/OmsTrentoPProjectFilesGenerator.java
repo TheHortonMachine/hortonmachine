@@ -281,10 +281,10 @@ public class OmsTrentoPProjectFilesGenerator extends HMModel {
 
     public static void main( String[] args ) throws Exception {
         OmsTrentoPProjectFilesGenerator gen = new OmsTrentoPProjectFilesGenerator();
-//        gen.inFolder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_10_trentop/file_vuoti_check/project";
-//        gen.pMode = Variables.PROJECT;
-        gen.inFolder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_10_trentop/file_vuoti_check/calibration";
-        gen.pMode = Variables.CALIBRATION;
+        gen.inFolder = "D:\\Dropbox\\hydrologis\\lavori\\2020_10_trentop\\file_vuoti_check\\project";
+        gen.pMode = Variables.PROJECT;
+//        gen.inFolder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_10_trentop/file_vuoti_check/calibration";
+//        gen.pMode = Variables.CALIBRATION;
         gen.pCode = "EPSG:32632";
         gen.process();
     }

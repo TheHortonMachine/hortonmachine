@@ -615,7 +615,7 @@ public class NetworkBuilder implements Network {
         // tratto che si sta analizzando o progettando
         l = (int) one[k];
         pm.beginTask(msg.message("trentoP.begin"), networkPipes.length - 1);
-        int jMax = networkPipes[0].getjMax();
+		int jMax = networkPipes[0].getjMax();
         double c = networkPipes[0].getC();
         double g = networkPipes[0].getG();
         double tau = networkPipes[0].getTau();
@@ -631,8 +631,11 @@ public class NetworkBuilder implements Network {
                  * La formula 1.7 ( k = alfa * S ^ beta / ( ksi ^ b * s ^ GAMMA
                  * ) k tempo di residenza [ min ]
                  */
+            	//TODO: check formulas!!
                 networkPipes[l].residenceTime = ((HOUR2MIN * networkPipes[l].getAverageResidenceTime() * pow(
                         networkPipes[l].getDrainArea() / METER2CM, exponent))
+//                		networkPipes[l].residenceTime = ((HOUR2MIN * networkPipes[l].getAverageResidenceTime() * pow(
+//                				networkPipes[l].getDrainArea(), exponent))
 
                 / (pow(networkPipes[l].getRunoffCoefficient(), esp) * pow(networkPipes[l].getAverageSlope(), gamma)));
             } else {
@@ -640,7 +643,7 @@ public class NetworkBuilder implements Network {
                  * Considero solo l 'acqua che drena dalla strada k = alfa * S /
                  * L * i ^ GAMMA [ min ]
                  */
-                networkPipes[l].residenceTime = (-networkPipes[l].getDrainArea() * networkPipes[l].getAverageResidenceTime() / networkPipes[l]
+                networkPipes[l].residenceTime = (-networkPipes[l].getDrainArea() * HOUR2MIN * networkPipes[l].getAverageResidenceTime() / networkPipes[l]
                         .getLenght());
             }
 
@@ -692,6 +695,12 @@ public class NetworkBuilder implements Network {
                         * pow(networkPipes[l].tP, n - 1)
                         * (1 + MINUTE2SEC * celerityfactor * networkPipes[l].meanSpeed * networkPipes[l].tP
                                 / networkPipes[l].getLenght() - 1 / No * log(exp(No) + exp(r) - 1)) * 166.6666667);
+                
+//                networkPipes[l].coeffUdometrico = (networkPipes[l].getRunoffCoefficient()
+//                		* a
+//                		* pow(networkPipes[l].tP, n - 1)
+//                		* (1 + MINUTE2SEC * celerityfactor * networkPipes[l].meanSpeed * networkPipes[l].tP
+//                				/ networkPipes[l].getLenght() - 1 / No * log(exp(No) + exp(r) - 1)) * 166.6666667);
                 /*
                  * Portata Q [ l / s ]
                  */

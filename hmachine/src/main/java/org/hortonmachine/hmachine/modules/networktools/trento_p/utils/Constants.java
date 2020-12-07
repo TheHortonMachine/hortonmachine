@@ -39,6 +39,10 @@ public class Constants {
      */
     public static final double METER2CM = 100.0;
     /**
+     * Conversion coefficient from hm to cm.
+     */
+    public static final double HM2CM = 10000.0;
+    /**
      * Conversion coefficient from minute to seconds.
      */
     public static final double MINUTE2SEC = 60.0;

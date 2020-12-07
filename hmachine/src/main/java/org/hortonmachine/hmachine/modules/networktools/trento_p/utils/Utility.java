@@ -189,9 +189,9 @@ public class Utility {
                     builderFeature.add(line);
                     builderFeature.add(networkPipes[t].getId());
                     builderFeature.add(networkPipes[t].getIdPipeWhereDrain());
-                    builderFeature.add(((Number) feature.getAttribute(TrentoPFeatureType.DRAIN_AREA_STR)).doubleValue());
-                    builderFeature.add(networkPipes[t].getInitialElevation());
-                    builderFeature.add(networkPipes[t].getFinalElevation());
+//                    builderFeature.add(networkPipes[t].getDrainArea()); //getAttribute(TrentoPFeatureType.DRAIN_AREA_STR)).doubleValue());
+//                    builderFeature.add(networkPipes[t].getInitialElevation());
+//                    builderFeature.add(networkPipes[t].getFinalElevation());
                     builderFeature.add(networkPipes[t].getRunoffCoefficient());
                     builderFeature.add(networkPipes[t].getAverageResidenceTime());
                     builderFeature.add(networkPipes[t].getKs());
@@ -208,7 +208,7 @@ public class Utility {
                     builderFeature.add(networkPipes[t].coeffUdometrico);
                     builderFeature.add(networkPipes[t].residenceTime);
                     builderFeature.add(networkPipes[t].tP);
-                    builderFeature.add(networkPipes[t].residenceTime);
+                    builderFeature.add(networkPipes[t].tQmax);
                     builderFeature.add(networkPipes[t].meanSpeed);
                     builderFeature.add(networkPipes[t].pipeSlope);
                     builderFeature.add(networkPipes[t].diameter);
@@ -226,7 +226,8 @@ public class Utility {
                     outPipesFC.add(featureOut);
                     t++;
                 } catch (NullPointerException e) {
-                    throw new IllegalArgumentException(msg.message("trentop.illegalNet" + "in output"));
+                	e.printStackTrace();
+                	throw new IllegalArgumentException(msg.message("Illegal content of the input network."));
 
                 }
             }

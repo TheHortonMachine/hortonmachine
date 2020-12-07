@@ -128,14 +128,14 @@ public class TrentoPProject extends HMModel {
                 continue;
             }
             String[] split = line.split(";");
-            if (split.length != 2) {
+            if (split.length != 3) {
                 throw new ModelsIllegalargumentException(
-                        "The diameters file has to contain lines with a diameter and a thickness per line, separated by semicolon.",
+                        "The diameters file has to contain lines with an ID, a diameter and a thickness per line, separated by semicolon.",
                         this);
             }
-
-            double diameter = Double.parseDouble(split[0]);
-            double thickness = Double.parseDouble(split[1]);
+            double diameterId = Double.parseDouble(split[0]);
+            double diameter = Double.parseDouble(split[1]);
+            double thickness = Double.parseDouble(split[2]);
 
             diametersAndThicknessList.add(new double[]{diameter, thickness});
         }
@@ -148,7 +148,7 @@ public class TrentoPProject extends HMModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        String outFolder = "D:\\Dropbox\\hydrologis\\lavori\\2020_10_trentop\\test_soraga\\new2\\";
+        String outFolder = "D:\\lavori_tmp\\2020_trentoP\\project_02";
 //        String outFolder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_10_trentop/test_soraga/new/";
         TrentoPProject c = new TrentoPProject();
         c.pOutPipe = 10;
