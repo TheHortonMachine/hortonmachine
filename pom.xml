@@ -23,7 +23,7 @@
 
 	<properties>
 		<gt.version>23.0</gt.version>
-		<groovy.version>3.0.3</groovy.version>
+		<groovy.version>3.0.7</groovy.version>
 		<geoscript.version>1.15.0</geoscript.version>
 
 		<c3p0.version>0.9.5.5</c3p0.version>
