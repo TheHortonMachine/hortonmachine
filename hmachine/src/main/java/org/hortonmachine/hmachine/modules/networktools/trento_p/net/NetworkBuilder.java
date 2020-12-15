@@ -690,22 +690,22 @@ public class NetworkBuilder implements Network {
                  * coefficiente udometrico calcolato con la formula 2.17 u [ l /
                  * s * ha ] o l/min/ha???
                  */
-                networkPipes[l].coeffUdometrico = (networkPipes[l].getRunoffCoefficient()
-                        * a
-                        * pow(networkPipes[l].tP, n - 1)
-                        * (1 + MINUTE2SEC * celerityfactor * networkPipes[l].meanSpeed * networkPipes[l].tP
-                                / networkPipes[l].getLenght() - 1 / No * log(exp(No) + exp(r) - 1)) * 166.6666667);
-                
 //                networkPipes[l].coeffUdometrico = (networkPipes[l].getRunoffCoefficient()
-//                		* a
-//                		* pow(networkPipes[l].tP, n - 1)
-//                		* (1 + MINUTE2SEC * celerityfactor * networkPipes[l].meanSpeed * networkPipes[l].tP
-//                				/ networkPipes[l].getLenght() - 1 / No * log(exp(No) + exp(r) - 1)) * 166.6666667);
+//                        * a
+//                        * pow(networkPipes[l].tP, n - 1)
+//                        * (1 + MINUTE2SEC * celerityfactor * networkPipes[l].meanSpeed * networkPipes[l].tP
+//                                / networkPipes[l].getLenght() - 1 / No * log(exp(No) + exp(r) - 1)) * 166.6666667);
+                
+                networkPipes[l].coeffUdometrico = (networkPipes[l].getRunoffCoefficient()
+                		* a
+                		* pow(networkPipes[l].tP, n - 1)
+                		* (1 + MINUTE2SEC * celerityfactor * networkPipes[l].meanSpeed * networkPipes[l].tP
+                				/ networkPipes[l].getLenght() - 1 / No * log(exp(No) + exp(r) - 1)) * 166.6666667);
                 /*
                  * Portata Q [ l / s ]
                  */
                 //TODO: changed here!!                
-                networkPipes[l].discharge = (networkPipes[l].coeffUdometrico * MINUTE2SEC * networkPipes[l].getDrainArea());
+                networkPipes[l].discharge = (networkPipes[l].coeffUdometrico * networkPipes[l].getDrainArea());
 
                 networkPipes[l].designPipe(diameters, tau, g, maxd, c, strBuilder);
 
