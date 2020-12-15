@@ -775,7 +775,7 @@ public class Pipe {
         /* Pari a A * ( Rh ^1/6 ) */
         double B;
         /* Anglo formato dalla sezione bagnata */
-        double theta;
+        double thta;
         /* Diametro calcolato imponendo il criterio di autopulizia della rete */
         double oldD;
         /* [cm]Diametro commerciale */
@@ -795,10 +795,10 @@ public class Pipe {
         /* B=A(Rh^1/6) [m^13/6] */
         B = (discharge * sqrt(WSPECIFICWEIGHT / tau)) / (CUBICMETER2LITER * getKs());
         /* Angolo formato dalla sezione bagnata [rad] */
-        theta = 2 * acos(1 - 2 * g);
+        thta = 2 * acos(1 - 2 * g);
         /* Diametro tubo [cm] */
         oldD = TWO_TWENTYOVERTHIRTEEN * pow(B, SIXOVERTHIRTEEN)
-                / (pow((1 - sin(theta) / theta), ONEOVERTHIRTEEN) * pow(theta - sin(theta), SIXOVERTHIRTEEN));
+                / (pow((1 - sin(thta) / thta), ONEOVERTHIRTEEN) * pow(thta - sin(thta), SIXOVERTHIRTEEN));
         /*
          * Se il diametro ottenuto e piu piccolo del diametro commerciale piu
          * grande, allora lo approssimo per eccesso col diametro commerciale piu
@@ -831,13 +831,13 @@ public class Pipe {
              * Angolo formato dalla sezione bagnata considerando un diametro
              * commerciale [rad]
              */
-            newtheta = Utility.thisBisection(theta, known, ONEOVERSIX, minG, accuracy, jMax, pm, strWarnings);
+            newtheta = Utility.thisBisection(thta, known, ONEOVERSIX, minG, accuracy, jMax, pm, strWarnings);
             /*
              * E ovvio che adottando un diametro commerciale piu grande di
              * quello che sarebbe strettamente neccessario, il grado di
              * riempimento non puo aumentare
              */
-            if (newtheta > theta) {
+            if (newtheta > thta) {
                 strWarnings.append(msg.message("trentoP.warning.bisection") + id);
             }
 
@@ -851,7 +851,7 @@ public class Pipe {
 
             D = oldD;
             diameter = D; /* COSA SUCCEDE ALLO SPESSORE ??!! */
-            newtheta = theta;
+            newtheta = thta;
         }
         /* Grado di riempimento del tubo */
         emptyDegree = 0.5 * (1 - cos(newtheta / 2));

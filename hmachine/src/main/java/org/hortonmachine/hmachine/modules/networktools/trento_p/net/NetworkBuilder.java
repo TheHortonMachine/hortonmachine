@@ -688,7 +688,7 @@ public class NetworkBuilder implements Network {
                 networkPipes[l].tP = (r * networkPipes[l].residenceTime);
                 /*
                  * coefficiente udometrico calcolato con la formula 2.17 u [ l /
-                 * s * ha ]
+                 * s * ha ] o l/min/ha???
                  */
                 networkPipes[l].coeffUdometrico = (networkPipes[l].getRunoffCoefficient()
                         * a
@@ -704,7 +704,8 @@ public class NetworkBuilder implements Network {
                 /*
                  * Portata Q [ l / s ]
                  */
-                networkPipes[l].discharge = (networkPipes[l].coeffUdometrico * networkPipes[l].getDrainArea());
+                //TODO: changed here!!                
+                networkPipes[l].discharge = (networkPipes[l].coeffUdometrico * MINUTE2SEC * networkPipes[l].getDrainArea());
 
                 networkPipes[l].designPipe(diameters, tau, g, maxd, c, strBuilder);
 
@@ -1120,7 +1121,7 @@ public class NetworkBuilder implements Network {
             return minDischarge;
         }
 
-        double d = 166.666667;
+        double d = 166.666667; //10000/60
         if (t > delay && t <= delay + ext1) {
             // Q1 [ l / s ]
             return networkPipes[indx].getDrainArea()

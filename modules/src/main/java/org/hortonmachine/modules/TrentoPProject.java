@@ -148,7 +148,7 @@ public class TrentoPProject extends HMModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        String outFolder = "D:\\lavori_tmp\\2020_trentoP\\project_02";
+        String outFolder = "D:\\lavori_tmp\\2020_trentoP\\project_03";
 //        String outFolder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_10_trentop/test_soraga/new/";
         TrentoPProject c = new TrentoPProject();
         c.pOutPipe = 10;
