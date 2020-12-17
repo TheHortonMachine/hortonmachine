@@ -634,9 +634,6 @@ public class NetworkBuilder implements Network {
             	//TODO: check formulas!!
                 networkPipes[l].residenceTime = ((HOUR2MIN * networkPipes[l].getAverageResidenceTime() * pow(
                         networkPipes[l].getDrainArea() / METER2CM, exponent))
-//                		networkPipes[l].residenceTime = ((HOUR2MIN * networkPipes[l].getAverageResidenceTime() * pow(
-//                				networkPipes[l].getDrainArea(), exponent))
-
                 / (pow(networkPipes[l].getRunoffCoefficient(), esp) * pow(networkPipes[l].getAverageSlope(), gamma)));
             } else {
                 /*
@@ -689,13 +686,7 @@ public class NetworkBuilder implements Network {
                 /*
                  * coefficiente udometrico calcolato con la formula 2.17 u [ l /
                  * s * ha ] o l/min/ha???
-                 */
-//                networkPipes[l].coeffUdometrico = (networkPipes[l].getRunoffCoefficient()
-//                        * a
-//                        * pow(networkPipes[l].tP, n - 1)
-//                        * (1 + MINUTE2SEC * celerityfactor * networkPipes[l].meanSpeed * networkPipes[l].tP
-//                                / networkPipes[l].getLenght() - 1 / No * log(exp(No) + exp(r) - 1)) * 166.6666667);
-                
+                 */        
                 networkPipes[l].coeffUdometrico = (networkPipes[l].getRunoffCoefficient()
                 		* a
                 		* pow(networkPipes[l].tP, n - 1)

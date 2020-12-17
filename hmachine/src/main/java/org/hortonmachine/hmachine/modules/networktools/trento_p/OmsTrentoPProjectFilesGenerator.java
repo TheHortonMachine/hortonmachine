@@ -95,7 +95,7 @@ public class OmsTrentoPProjectFilesGenerator extends HMModel {
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_AUTHORNAMES = "Antonello Andrea, Silvia Franceschi, Daniele Andreis";
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_AUTHORCONTACTS = "";
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_inFolder_DESCRIPTION = "The folder into which to create the base files.";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_pMode_DESCRIPTION = "Select teh file type: project (default mode) or calibration.";
+    public static final String OMSTRENTOPPROJECTFILESGENERATOR_pMode_DESCRIPTION = "Select the file type: project (default mode) or calibration.";
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_pCode_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).";
 
     @Execute
@@ -178,7 +178,7 @@ public class OmsTrentoPProjectFilesGenerator extends HMModel {
         FileUtilities.writeFile(parametersSb.toString(), paramsFile);
 
         StringBuilder diametersSb = new StringBuilder();
-        diametersSb.append("id;ext diameter [mm];thickness [mm]\n");
+        diametersSb.append("id;ext diameter [cm];thickness [cm]\n");
         File diametersFile = new File(inFolder, Constants.DIAMETERS_CSV);
         FileUtilities.writeFile(diametersSb.toString(), diametersFile);
 
