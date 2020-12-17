@@ -21,10 +21,13 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JToolBar;
 
@@ -60,6 +63,8 @@ public class HMMapframe extends JMapFrame {
 
     private MapContent content;
 
+    private RasterInfoLayer rasterInfoLayer = new RasterInfoLayer();
+
     public HMMapframe( String title ) {
         super();
         content = new MapContent();
@@ -91,6 +96,10 @@ public class HMMapframe extends JMapFrame {
         content.addLayer(layer);
     }
 
+    public void removeLayer( Layer layer ) {
+        content.removeLayer(layer);
+    }
+
     public void addLayerBottom( Layer layer ) {
         content.addLayer(layer);
         int index = content.layers().indexOf(layer);
@@ -105,6 +114,10 @@ public class HMMapframe extends JMapFrame {
             content.removeLayer(l);
         }
         content.addLayer(layer);
+    }
+
+    public List<Layer> getLayers() {
+        return content.layers();
     }
 
     private FeatureLayer makeFeatureLayer( SimpleFeatureCollection featureCollection ) {
@@ -143,7 +156,7 @@ public class HMMapframe extends JMapFrame {
                     } else {
                         style = SldUtilities.getStyleFromRasterFile(rasterFile);
                     }
-                    GridCoverageLayer layer = new GridCoverageLayer(raster, style);
+                    GridCoverageLayer layer = new GridCoverageLayer(raster, style, rasterFile.getName());
                     mapFrame.addLayer(layer);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -161,13 +174,40 @@ public class HMMapframe extends JMapFrame {
                     } else {
                         style = SLD.createSimpleStyle(fc.getSchema());
                     }
-                    FeatureLayer layer = new FeatureLayer(fc, style);
+                    FeatureLayer layer = new FeatureLayer(fc, style, vectorFile.getName());
                     mapFrame.addLayer(layer);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
+
+        final DefaultComboBoxModel<String> layersComboModel = new DefaultComboBoxModel<String>();
+        layersComboModel.addElement("");
+        HashMap<String, GridCoverageLayer> name2Layermap = new HashMap<>();
+        List<Layer> layers = mapFrame.getLayers();
+        for( Layer layer : layers ) {
+            if (layer instanceof GridCoverageLayer) {
+                layersComboModel.addElement(layer.getTitle());
+                name2Layermap.put(layer.getTitle(), (GridCoverageLayer) layer);
+            }
+        }
+        final JComboBox<String> layersCombo = new JComboBox<String>(layersComboModel);
+        layersCombo.setSelectedIndex(0);
+        layersCombo.addActionListener(( e ) -> {
+            GridCoverageLayer layer = mapFrame.rasterInfoLayer.getRasterLayer();
+            mapFrame.removeLayer(layer);
+
+            String layerName = (String) layersCombo.getSelectedItem();
+            if (layerName.length() == 0) {
+                mapFrame.rasterInfoLayer.setRasterLayer(null);
+            } else {
+                GridCoverageLayer gridCoverageLayer = name2Layermap.get(layerName);
+                mapFrame.rasterInfoLayer.setRasterLayer(gridCoverageLayer);
+                mapFrame.addLayer(mapFrame.rasterInfoLayer);
+            }
+        });
+        mapFrame.getToolBar().add(layersCombo);
 
         return mapFrame;
     }
@@ -199,6 +239,7 @@ public class HMMapframe extends JMapFrame {
                 mapFrame.addLayerBottom(layer);
             }
         });
+
         return mapFrame;
     }
 

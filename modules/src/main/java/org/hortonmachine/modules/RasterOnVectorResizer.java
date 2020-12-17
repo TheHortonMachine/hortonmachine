@@ -86,9 +86,9 @@ public class RasterOnVectorResizer extends HMModel {
     
     public static void main( String[] args ) throws Exception {
         RasterOnVectorResizer r = new RasterOnVectorResizer();
-        r.inRaster = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_small_01/brenta_tca.asc";
-        r.inVector = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_small_01/basin_brenta_small_01.shp";
-        r.outRaster = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_small_01_res/brenta_tca.asc";
+        r.inRaster = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_tca.asc";
+        r.inVector = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/basin_brenta.shp";
+        r.outRaster = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_medium/brenta_tca.asc";
         r.process();
     }
 }

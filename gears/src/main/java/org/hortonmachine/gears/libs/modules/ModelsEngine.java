@@ -701,7 +701,7 @@ public class ModelsEngine {
      * @throws Exception
      */
     public static WritableRaster netNumbering( GridCoverage2D flowGC, GridCoverage2D netGC, GridCoverage2D tcaGC,
-            SimpleFeatureCollection pointsFC, TreeMap<String, NetNumNode> nodesMap, IHMProgressMonitor pm ) throws Exception {
+            SimpleFeatureCollection pointsFC, List<NetLink> netLinksList, IHMProgressMonitor pm ) throws Exception {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(flowGC);
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
@@ -791,53 +791,57 @@ public class ModelsEngine {
                 FlowNode splitNode = splitNodes.get(i);
                 boolean isNetStart = splitNodesIsNetStart.get(i);
 
-                // we simply go down to the next split with one number
                 splitNode.setIntValueInMap(netnumIter, channel);
-
-//                // if it is a net start, check the tca if it exists
-//                if (isNetStart) {
-//                    int netStartTca = splitNode.getIntValueFromMap(tcaIter);
-//                    if (!isNovalue(netStartTca)) {
-//                        channel++;
-//                    }
-//                }
 
                 FlowNode nextNode = splitNode.goDownstream();
                 FlowNode lastNode = null;
                 int startTca = intNovalue;
                 int endTca = intNovalue;
-                if (nextNode != null)
+                if (nextNode != null) {
                     startTca = nextNode.getIntValueFromMap(tcaIter);
-                while( nextNode != null && !splitNodes.contains(nextNode) ) {
-                    nextNode.setIntValueInMap(netnumIter, channel);
-                    FlowNode tmpNextNode = nextNode.goDownstream();
-                    if (tmpNextNode != null) {
-                        endTca = tmpNextNode.getIntValueFromMap(tcaIter);
-                        lastNode = tmpNextNode;
-                    } else {
+                    do {
                         lastNode = nextNode;
-                    }
-                    nextNode = tmpNextNode;
+                        endTca = nextNode.getIntValueFromMap(tcaIter);
+                        nextNode.setIntValueInMap(netnumIter, channel);
+                        nextNode = nextNode.goDownstream();
+                    } while( nextNode != null && !splitNodes.contains(nextNode) );
                 }
+                
+                
+                int upCol = splitNode.col;
+                int upRow= splitNode.row;
+                int downCol = lastNode.col;
+                int downRow= lastNode.row;
+                int downLinkCol = -1;
+                int downLinkRow = -1;
+                if(nextNode!=null) {
+                     downLinkCol = nextNode.col;
+                     downLinkRow = nextNode.row;    
+                }
+                
+                NetLink link = new NetLink(channel, upCol, upRow, downCol, downRow, downLinkCol, downLinkRow);
+                link.downTca = endTca;
+                link.upTca = startTca;
+                netLinksList.add(link);
 
-                NetNumNode nnn = nodesMap.get(lastNode.col + "_" + lastNode.row);
-                if (nnn == null) {
-                    nnn = new NetNumNode(channel, lastNode.col, lastNode.row);
-                    nodesMap.put(nnn.col + "_" + nnn.row, nnn);
-                    nnn.nodeTca = endTca;
-                }
-                if (!isNetStart) {
-                    NetNumNode startNode = nodesMap.get(splitNode.col + "_" + splitNode.row);
-                    if (startNode == null) {
-                        startNode = new NetNumNode(channel, splitNode.col, splitNode.row);
-                        startNode.nodeTca = startTca;
-                        nodesMap.put(startNode.col + "_" + startNode.row, startNode);
-                    }
-                    if (!nnn.upStreamNodes.contains(startNode)) {
-                        nnn.upStreamNodes.add(startNode);
-                    }
-                    startNode.downStreamNode = nnn;
-                }
+//                NetNumNode nnn = nodesMap.get(lastNode.col + "_" + lastNode.row);
+//                if (nnn == null) {
+//                    nnn = new NetNumNode(channel, lastNode.col, lastNode.row);
+//                    nodesMap.put(nnn.col + "_" + nnn.row, nnn);
+//                    nnn.nodeTca = endTca;
+//                }
+//                if (!isNetStart) {
+//                    NetNumNode startNode = nodesMap.get(splitNode.col + "_" + splitNode.row);
+//                    if (startNode == null) {
+//                        startNode = new NetNumNode(channel, splitNode.col, splitNode.row);
+//                        startNode.nodeTca = startTca;
+//                        nodesMap.put(startNode.col + "_" + startNode.row, startNode);
+//                    }
+//                    if (!nnn.upStreamNodes.contains(startNode)) {
+//                        nnn.upStreamNodes.add(startNode);
+//                    }
+//                    startNode.downStreamNode = nnn;
+//                }
 
                 channel++;
                 pm.worked(1);

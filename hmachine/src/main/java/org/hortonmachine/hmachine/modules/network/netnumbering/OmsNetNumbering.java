@@ -18,18 +18,38 @@
 package org.hortonmachine.hmachine.modules.network.netnumbering;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.NETWORK;
-import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.*;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_AUTHORCONTACTS;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_AUTHORNAMES;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_KEYWORDS;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_LABEL;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_LICENSE;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_NAME;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_STATUS;
+
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
+import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
+import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.ModelsEngine;
+import org.hortonmachine.gears.libs.modules.NetLink;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -41,19 +61,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
-import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
-import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
-import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.modules.ModelsEngine;
-import org.hortonmachine.gears.libs.modules.NetNumNode;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.files.FileUtilities;
 
 @Description(OMSNETNUMBERING_DESCRIPTION)
 @Author(name = OMSNETNUMBERING_AUTHORNAMES, contact = OMSNETNUMBERING_AUTHORCONTACTS)
@@ -127,19 +134,28 @@ public class OmsNetNumbering extends HMModel {
 
         WritableRandomIter netNumIter = null;
         try {
-            TreeMap<String, NetNumNode> nodesMap = new TreeMap<>();
-            WritableRaster netNumWR = ModelsEngine.netNumbering(inFlow, inNet, inTca, inPoints, nodesMap, pm);
+            List<NetLink> nodesList = new ArrayList<NetLink>();
+            WritableRaster netNumWR = ModelsEngine.netNumbering(inFlow, inNet, inTca, inPoints, nodesList, pm);
 
-            List<NetNumNode> rootNetNum = nodesMap.values().stream().filter(n -> n.downStreamNode == null)
-                    .collect(Collectors.toList());
-            if (rootNetNum.size() > 1) {
-                throw new ModelsRuntimeException("More than one node found to be root node. Check the dataset.", this);
+            for( NetLink nl1 : nodesList ) {
+                for( NetLink nl2 : nodesList ) {
+                    if (!nl1.equals(nl2)) {
+                        nl1.connect(nl2);
+                    }
+                }
             }
-            NetNumNode rootNode = rootNetNum.get(0);
+            
+
+            List<NetLink> rootNetLink = nodesList.stream().filter(n -> n.downStreamLink == null)
+                    .collect(Collectors.toList());
+            if (rootNetLink.size() > 1) {
+                throw new ModelsRuntimeException("More than one link found to be root link. Check the dataset.", this);
+            }
+            NetLink rootLink = rootNetLink.get(0);
             StringBuilder sb = new StringBuilder();
             sb.append("@startmindmap\n");
             String level = "";
-            printNode(rootNode, level, sb);
+            printLink(rootLink, level, sb);
             sb.append("@endmindmap\n");
 
             outMindmap = sb.toString();
@@ -157,16 +173,16 @@ public class OmsNetNumbering extends HMModel {
         }
     }
 
-    private void printNode( NetNumNode node, String previousLevel, StringBuilder sb ) {
+    private void printLink( NetLink node, String previousLevel, StringBuilder sb ) {
         String level = previousLevel + "*";
         sb.append(level).append(" ").append(node.toString()).append("\n");
-        for( NetNumNode upNode : node.upStreamNodes ) {
-            printNode(upNode, level, sb);
+        for( NetLink upNode : node.upStreamLinks ) {
+            printLink(upNode, level, sb);
         }
     }
 
     public static void main( String[] args ) throws Exception {
-        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_small_01_res/";
+        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_medium/";
         String inFlow = folder + "brenta_drain.asc";
         String inTca = folder + "brenta_tca.asc";
         String inNet = folder + "brenta_net_10000.asc";
@@ -184,11 +200,9 @@ public class OmsNetNumbering extends HMModel {
         omsnetnumbering.process();
 
         FileUtilities.writeFile(omsnetnumbering.outMindmap, new File(outMM));
-        
+
         OmsRasterWriter.writeRaster(outNetnum, omsnetnumbering.outNetnum);
         OmsRasterWriter.writeRaster(outBasins, omsnetnumbering.outBasins);
-        
-        
 
 //        @startmindmap
 //        * <b>basin1</b>\n<i>coordinate:1,2</i>
