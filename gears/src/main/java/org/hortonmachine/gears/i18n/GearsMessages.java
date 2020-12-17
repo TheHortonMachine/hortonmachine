@@ -192,20 +192,6 @@ public class GearsMessages {
     public static final String OMSMATRIXCHARTER_P_HEIGHT_DESCRIPTION = "Chart image height (in case of doDump=true, defaults to 600 px).";
     public static final String OMSMATRIXCHARTER_IN_CHARTPATH_DESCRIPTION = "Chart dump path (in case of doDump=true).";
 
-    public static final String OMSRASTERVECTORINTERSECTOR_DESCRIPTION = "Module for raster with polygon vector intersection.";
-    public static final String OMSRASTERVECTORINTERSECTOR_DOCUMENTATION = "";
-    public static final String OMSRASTERVECTORINTERSECTOR_KEYWORDS = "Raster, Vector, Intersect";
-    public static final String OMSRASTERVECTORINTERSECTOR_LABEL = RASTERPROCESSING;
-    public static final String OMSRASTERVECTORINTERSECTOR_NAME = "rvintersector";
-    public static final int OMSRASTERVECTORINTERSECTOR_STATUS = 5;
-    public static final String OMSRASTERVECTORINTERSECTOR_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERVECTORINTERSECTOR_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERVECTORINTERSECTOR_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERVECTORINTERSECTOR_IN_VECTOR_DESCRIPTION = "The polygon vector to use for the intersection.";
-    public static final String OMSRASTERVECTORINTERSECTOR_IN_RASTER_DESCRIPTION = "The raster to use for the intersection.";
-    public static final String OMSRASTERVECTORINTERSECTOR_DO_INVERSE_DESCRIPTION = "Flag to use to invert the result (default is false = keep data inside vector)";
-    public static final String OMSRASTERVECTORINTERSECTOR_OUT_RASTER_DESCRIPTION = "The output raster.";
-
     public static final String OMSPOINTSVECTORIZER_DESCRIPTION = "Module that creates a points vector layer from raster values.";
     public static final String OMSPOINTSVECTORIZER_DOCUMENTATION = "";
     public static final String OMSPOINTSVECTORIZER_KEYWORDS = "Raster, Vector";

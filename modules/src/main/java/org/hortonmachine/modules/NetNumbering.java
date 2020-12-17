@@ -17,22 +17,7 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_AUTHORCONTACTS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_AUTHORNAMES;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_KEYWORDS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_LABEL;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_LICENSE;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_NAME;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_STATUS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_fPointId_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_inFlow_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_inNet_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_inPoints_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_inTca_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_outBasins_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_outNetnum_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETNUMBERING_pThres_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.*;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -78,10 +63,6 @@ public class NetNumbering extends HMModel {
     @In
     public String inPoints = null;
 
-    @Description(OMSNETNUMBERING_pThres_DESCRIPTION)
-    @In
-    public int pThres = 0;
-
     @Description(OMSNETNUMBERING_fPointId_DESCRIPTION)
     @In
     public String fPointId = null;
@@ -103,7 +84,6 @@ public class NetNumbering extends HMModel {
         omsnetnumbering.inTca = getRaster(inTca);
         omsnetnumbering.inNet = getRaster(inNet);
         omsnetnumbering.inPoints = getVector(inPoints);
-        omsnetnumbering.pThres = pThres;
         omsnetnumbering.pm = pm;
         omsnetnumbering.doProcess = doProcess;
         omsnetnumbering.doReset = doReset;

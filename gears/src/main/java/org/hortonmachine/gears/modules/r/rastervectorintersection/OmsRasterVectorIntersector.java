@@ -17,19 +17,9 @@
  */
 package org.hortonmachine.gears.modules.r.rastervectorintersection;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_DO_INVERSE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_IN_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_STATUS;
+import static org.hortonmachine.gears.modules.r.rastervectorintersection.OmsRasterVectorIntersector.*;
+
+import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -79,6 +69,21 @@ public class OmsRasterVectorIntersector extends HMModel {
     @Description(OMSRASTERVECTORINTERSECTOR_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
+    
+    public static final String OMSRASTERVECTORINTERSECTOR_DESCRIPTION = "Module for raster with polygon vector intersection.";
+    public static final String OMSRASTERVECTORINTERSECTOR_DOCUMENTATION = "";
+    public static final String OMSRASTERVECTORINTERSECTOR_KEYWORDS = "Raster, Vector, Intersect";
+    public static final String OMSRASTERVECTORINTERSECTOR_LABEL = RASTERPROCESSING;
+    public static final String OMSRASTERVECTORINTERSECTOR_NAME = "rvintersector";
+    public static final int OMSRASTERVECTORINTERSECTOR_STATUS = 5;
+    public static final String OMSRASTERVECTORINTERSECTOR_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSRASTERVECTORINTERSECTOR_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSRASTERVECTORINTERSECTOR_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSRASTERVECTORINTERSECTOR_IN_VECTOR_DESCRIPTION = "The polygon vector to use for the intersection.";
+    public static final String OMSRASTERVECTORINTERSECTOR_IN_RASTER_DESCRIPTION = "The raster to use for the intersection.";
+    public static final String OMSRASTERVECTORINTERSECTOR_DO_INVERSE_DESCRIPTION = "Flag to use to invert the result (default is false = keep data inside vector)";
+    public static final String OMSRASTERVECTORINTERSECTOR_OUT_RASTER_DESCRIPTION = "The output raster.";
+
 
     @Execute
     public void process() throws Exception {

@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -700,7 +701,7 @@ public class ModelsEngine {
      * @throws Exception
      */
     public static WritableRaster netNumbering( GridCoverage2D flowGC, GridCoverage2D netGC, GridCoverage2D tcaGC,
-            int tcaThreshold, SimpleFeatureCollection pointsFC, IHMProgressMonitor pm ) throws Exception {
+            SimpleFeatureCollection pointsFC, TreeMap<String, NetNumNode> nodesMap, IHMProgressMonitor pm ) throws Exception {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(flowGC);
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
@@ -712,117 +713,144 @@ public class ModelsEngine {
         RandomIter tcaIter = null;
         if (tcaGC != null)
             tcaIter = CoverageUtilities.getRandomIterator(tcaGC);
+        try {
+            /*
+             * split nodes are points that create new numbering:
+             * - first points upstream on net
+             * - confluences
+             * - supplied points
+             */
+            List<FlowNode> splitNodes = new ArrayList<FlowNode>();
+            List<Boolean> splitNodesIsNetStart = new ArrayList<Boolean>();
+            // SUPPLIED POINTS
+            if (pointsFC != null) {
+                Envelope envelope = regionMap.toEnvelope();
+                GridGeometry2D gridGeometry = flowGC.getGridGeometry();
+                SimpleFeatureIterator pointsIter = pointsFC.features();
+                // snap points on net if necessary
+                while( pointsIter.hasNext() ) {
+                    SimpleFeature pointFeature = pointsIter.next();
+                    Coordinate pointCoordinate = ((Geometry) pointFeature.getDefaultGeometry()).getCoordinate();
+                    if (envelope.contains(pointCoordinate)) {
 
-        /*
-         * split nodes are points that create new numbering:
-         * - first points upstream on net
-         * - confluences
-         * - supplied points
-         */
-        List<FlowNode> splitNodes = new ArrayList<FlowNode>();
-        List<Boolean> splitNodesIsNetStart = new ArrayList<Boolean>();
-        // SUPPLIED POINTS
-        if (pointsFC != null) {
-            Envelope envelope = regionMap.toEnvelope();
-            GridGeometry2D gridGeometry = flowGC.getGridGeometry();
-            SimpleFeatureIterator pointsIter = pointsFC.features();
-            // snap points on net if necessary
-            while( pointsIter.hasNext() ) {
-                SimpleFeature pointFeature = pointsIter.next();
-                Coordinate pointCoordinate = ((Geometry) pointFeature.getDefaultGeometry()).getCoordinate();
-                if (envelope.contains(pointCoordinate)) {
+                        GridCoordinates2D gridCoordinate = gridGeometry
+                                .worldToGrid(new DirectPosition2D(pointCoordinate.x, pointCoordinate.y));
 
-                    GridCoordinates2D gridCoordinate = gridGeometry
-                            .worldToGrid(new DirectPosition2D(pointCoordinate.x, pointCoordinate.y));
-
-                    GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, gridCoordinate.x, gridCoordinate.y);
-                    FlowNode flowNode = new FlowNode(flowIter, cols, rows, gridCoordinate.x, gridCoordinate.y);
-                    while( !netNode.isValid() ) {
-                        flowNode = flowNode.goDownstream();
-                        if (flowNode == null)
-                            break;
-                        netNode = new GridNode(netIter, cols, rows, -1, -1, flowNode.col, flowNode.row);
-                    }
-                    if (flowNode != null) {
-                        splitNodes.add(flowNode);
-                        splitNodesIsNetStart.add(false);
-                    }
-                }
-            }
-            pointsIter.close();
-        }
-
-        // FIND CONFLUENCES AND NETWORK STARTING POINTS (MOST UPSTREAM)
-        pm.beginTask("Find confluences...", rows);
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, c, r);
-                if (netNode.isValid()) {
-                    List<GridNode> validSurroundingNodes = netNode.getValidSurroundingNodes();
-                    FlowNode currentflowNode = new FlowNode(flowIter, cols, rows, c, r);
-                    int enteringCount = 0;
-                    for( GridNode gridNode : validSurroundingNodes ) {
-                        FlowNode tmpNode = new FlowNode(flowIter, cols, rows, gridNode.col, gridNode.row);
-                        List<FlowNode> enteringNodes = currentflowNode.getEnteringNodes();
-                        if (enteringNodes.contains(tmpNode)) {
-                            enteringCount++;
+                        GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, gridCoordinate.x, gridCoordinate.y);
+                        FlowNode flowNode = new FlowNode(flowIter, cols, rows, gridCoordinate.x, gridCoordinate.y);
+                        while( !netNode.isValid() ) {
+                            flowNode = flowNode.goDownstream();
+                            if (flowNode == null)
+                                break;
+                            netNode = new GridNode(netIter, cols, rows, -1, -1, flowNode.col, flowNode.row);
                         }
-                    }
-                    if (enteringCount != 1) {
-                        // starting (==0) + confluences (>1)
-                        splitNodes.add(currentflowNode);
-                        if (enteringCount == 0) {
-                            splitNodesIsNetStart.add(true);
-                        } else {
+                        if (flowNode != null) {
+                            splitNodes.add(flowNode);
                             splitNodesIsNetStart.add(false);
                         }
                     }
                 }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-        pm.message("Found split points: " + splitNodes.size());
-
-        int channel = 1;
-        pm.beginTask("Numbering network...", splitNodes.size());
-        for( int i = 0; i < splitNodes.size(); i++ ) {
-            FlowNode splitNode = splitNodes.get(i);
-            boolean isNetStart = splitNodesIsNetStart.get(i);
-
-            // we simply go down to the next split with one number
-            splitNode.setIntValueInMap(netnumIter, channel);
-
-            // if it is a net start, check the tca if it exists
-            if (isNetStart) {
-                int netStartTca = splitNode.getIntValueFromMap(tcaIter);
-                if (!isNovalue(netStartTca) && netStartTca > tcaThreshold) {
-                    channel++;
-                }
+                pointsIter.close();
             }
 
-            FlowNode nextNode = splitNode.goDownstream();
-            int startTca = intNovalue;
-            if (nextNode != null)
-                startTca = nextNode.getIntValueFromMap(tcaIter);
-            while( nextNode != null && !splitNodes.contains(nextNode) ) {
-                nextNode.setIntValueInMap(netnumIter, channel);
-                nextNode = nextNode.goDownstream();
-                int endTca = intNovalue;
-                if (nextNode != null)
-                    endTca = nextNode.getIntValueFromMap(tcaIter);
-                if (!isNovalue(startTca) && !isNovalue(endTca)) {
-                    int diffTca = endTca - startTca;
-                    if (diffTca > tcaThreshold) {
-                        startTca = endTca;
-                        channel++;
+            // FIND CONFLUENCES AND NETWORK STARTING POINTS (MOST UPSTREAM)
+            pm.beginTask("Find confluences...", rows);
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
+                    GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, c, r);
+                    if (netNode.isValid()) {
+                        List<GridNode> validSurroundingNodes = netNode.getValidSurroundingNodes();
+                        FlowNode currentflowNode = new FlowNode(flowIter, cols, rows, c, r);
+                        int enteringCount = 0;
+                        for( GridNode gridNode : validSurroundingNodes ) {
+                            FlowNode tmpNode = new FlowNode(flowIter, cols, rows, gridNode.col, gridNode.row);
+                            List<FlowNode> enteringNodes = currentflowNode.getEnteringNodes();
+                            if (enteringNodes.contains(tmpNode)) {
+                                enteringCount++;
+                            }
+                        }
+                        if (enteringCount != 1) {
+                            // starting (==0) + confluences (>1)
+                            splitNodes.add(currentflowNode);
+                            if (enteringCount == 0) {
+                                splitNodesIsNetStart.add(true);
+                            } else {
+                                splitNodesIsNetStart.add(false);
+                            }
+                        }
                     }
                 }
+                pm.worked(1);
             }
-            channel++;
-            pm.worked(1);
+            pm.done();
+            pm.message("Found split points: " + splitNodes.size());
+
+            int channel = 1;
+            pm.beginTask("Numbering network...", splitNodes.size());
+            for( int i = 0; i < splitNodes.size(); i++ ) {
+                FlowNode splitNode = splitNodes.get(i);
+                boolean isNetStart = splitNodesIsNetStart.get(i);
+
+                // we simply go down to the next split with one number
+                splitNode.setIntValueInMap(netnumIter, channel);
+
+//                // if it is a net start, check the tca if it exists
+//                if (isNetStart) {
+//                    int netStartTca = splitNode.getIntValueFromMap(tcaIter);
+//                    if (!isNovalue(netStartTca)) {
+//                        channel++;
+//                    }
+//                }
+
+                FlowNode nextNode = splitNode.goDownstream();
+                FlowNode lastNode = null;
+                int startTca = intNovalue;
+                int endTca = intNovalue;
+                if (nextNode != null)
+                    startTca = nextNode.getIntValueFromMap(tcaIter);
+                while( nextNode != null && !splitNodes.contains(nextNode) ) {
+                    nextNode.setIntValueInMap(netnumIter, channel);
+                    FlowNode tmpNextNode = nextNode.goDownstream();
+                    if (tmpNextNode != null) {
+                        endTca = tmpNextNode.getIntValueFromMap(tcaIter);
+                        lastNode = tmpNextNode;
+                    } else {
+                        lastNode = nextNode;
+                    }
+                    nextNode = tmpNextNode;
+                }
+
+                NetNumNode nnn = nodesMap.get(lastNode.col + "_" + lastNode.row);
+                if (nnn == null) {
+                    nnn = new NetNumNode(channel, lastNode.col, lastNode.row);
+                    nodesMap.put(nnn.col + "_" + nnn.row, nnn);
+                    nnn.nodeTca = endTca;
+                }
+                if (!isNetStart) {
+                    NetNumNode startNode = nodesMap.get(splitNode.col + "_" + splitNode.row);
+                    if (startNode == null) {
+                        startNode = new NetNumNode(channel, splitNode.col, splitNode.row);
+                        startNode.nodeTca = startTca;
+                        nodesMap.put(startNode.col + "_" + startNode.row, startNode);
+                    }
+                    if (!nnn.upStreamNodes.contains(startNode)) {
+                        nnn.upStreamNodes.add(startNode);
+                    }
+                    startNode.downStreamNode = nnn;
+                }
+
+                channel++;
+                pm.worked(1);
+            }
+            pm.done();
+        } finally {
+            netnumIter.done();
+            flowIter.done();
+            netIter.done();
+            if (tcaIter != null) {
+                tcaIter.done();
+            }
         }
-        pm.done();
         return netnumWR;
     }
 

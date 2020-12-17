@@ -129,24 +129,6 @@ public class HortonMessages {
     public static final String OMSKRIGING_outGrid_DESCRIPTION = "The interpolated gridded data (for mode 2 and 3.";
     public static final String OMSKRIGING_outData_DESCRIPTION = "The interpolated data (for mode 0 and 1).";
 
-    public static final String OMSNETNUMBERING_DESCRIPTION = "Assigns the numbers to the network's links.";
-    public static final String OMSNETNUMBERING_DOCUMENTATION = "OmsNetNumbering.html";
-    public static final String OMSNETNUMBERING_KEYWORDS = "Network, SplitSubbasins";
-    public static final String OMSNETNUMBERING_LABEL = NETWORK;
-    public static final String OMSNETNUMBERING_NAME = "netnum";
-    public static final int OMSNETNUMBERING_STATUS = 40;
-    public static final String OMSNETNUMBERING_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSNETNUMBERING_AUTHORNAMES = "Antonello Andrea, Franceschi Silvia, Rigon Riccardo";
-    public static final String OMSNETNUMBERING_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSNETNUMBERING_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSNETNUMBERING_inTca_DESCRIPTION = "The map of total contributing area.";
-    public static final String OMSNETNUMBERING_inNet_DESCRIPTION = "The map of the network.";
-    public static final String OMSNETNUMBERING_inPoints_DESCRIPTION = "The monitoringpoints vector map.";
-    public static final String OMSNETNUMBERING_pThres_DESCRIPTION = "Threshold value on tca map.";
-    public static final String OMSNETNUMBERING_fPointId_DESCRIPTION = "The name of the node id field in mode 2.";
-    public static final String OMSNETNUMBERING_outNetnum_DESCRIPTION = "The map of netnumbering";
-    public static final String OMSNETNUMBERING_outBasins_DESCRIPTION = "The map of subbasins";
-
     public static final String OMSTC_DESCRIPTION = "Subdivides the sites of a basin in the 9 topographic classes identified by the longitudinal and transversal curvatures. ";
     public static final String OMSTC_DOCUMENTATION = "OmsTc.html";
     public static final String OMSTC_KEYWORDS = "Hillslope, OmsCurvatures";

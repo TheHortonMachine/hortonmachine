@@ -17,18 +17,7 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_DO_INVERSE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_IN_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_STATUS;
+import static org.hortonmachine.gears.modules.r.rastervectorintersection.OmsRasterVectorIntersector.*;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
