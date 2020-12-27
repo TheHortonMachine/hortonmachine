@@ -721,7 +721,6 @@ public class ModelsEngine {
              * - supplied points
              */
             List<FlowNode> splitNodes = new ArrayList<FlowNode>();
-            List<Boolean> splitNodesIsNetStart = new ArrayList<Boolean>();
             // SUPPLIED POINTS
             if (pointsFC != null) {
                 Envelope envelope = regionMap.toEnvelope();
@@ -746,7 +745,6 @@ public class ModelsEngine {
                         }
                         if (flowNode != null) {
                             splitNodes.add(flowNode);
-                            splitNodesIsNetStart.add(false);
                         }
                     }
                 }
@@ -770,13 +768,7 @@ public class ModelsEngine {
                             }
                         }
                         if (enteringCount != 1) {
-                            // starting (==0) + confluences (>1)
                             splitNodes.add(currentflowNode);
-                            if (enteringCount == 0) {
-                                splitNodesIsNetStart.add(true);
-                            } else {
-                                splitNodesIsNetStart.add(false);
-                            }
                         }
                     }
                 }
@@ -789,16 +781,14 @@ public class ModelsEngine {
             pm.beginTask("Numbering network...", splitNodes.size());
             for( int i = 0; i < splitNodes.size(); i++ ) {
                 FlowNode splitNode = splitNodes.get(i);
-                boolean isNetStart = splitNodesIsNetStart.get(i);
 
                 splitNode.setIntValueInMap(netnumIter, channel);
 
                 FlowNode nextNode = splitNode.goDownstream();
                 FlowNode lastNode = null;
-                int startTca = intNovalue;
+                int startTca = splitNode.getIntValueFromMap(tcaIter);
                 int endTca = intNovalue;
                 if (nextNode != null) {
-                    startTca = nextNode.getIntValueFromMap(tcaIter);
                     do {
                         lastNode = nextNode;
                         endTca = nextNode.getIntValueFromMap(tcaIter);
@@ -806,42 +796,21 @@ public class ModelsEngine {
                         nextNode = nextNode.goDownstream();
                     } while( nextNode != null && !splitNodes.contains(nextNode) );
                 }
-                
-                
+
                 int upCol = splitNode.col;
-                int upRow= splitNode.row;
+                int upRow = splitNode.row;
                 int downCol = lastNode.col;
-                int downRow= lastNode.row;
+                int downRow = lastNode.row;
                 int downLinkCol = -1;
                 int downLinkRow = -1;
-                if(nextNode!=null) {
-                     downLinkCol = nextNode.col;
-                     downLinkRow = nextNode.row;    
+                if (nextNode != null) {
+                    downLinkCol = nextNode.col;
+                    downLinkRow = nextNode.row;
                 }
-                
-                NetLink link = new NetLink(channel, upCol, upRow, downCol, downRow, downLinkCol, downLinkRow);
-                link.downTca = endTca;
-                link.upTca = startTca;
-                netLinksList.add(link);
 
-//                NetNumNode nnn = nodesMap.get(lastNode.col + "_" + lastNode.row);
-//                if (nnn == null) {
-//                    nnn = new NetNumNode(channel, lastNode.col, lastNode.row);
-//                    nodesMap.put(nnn.col + "_" + nnn.row, nnn);
-//                    nnn.nodeTca = endTca;
-//                }
-//                if (!isNetStart) {
-//                    NetNumNode startNode = nodesMap.get(splitNode.col + "_" + splitNode.row);
-//                    if (startNode == null) {
-//                        startNode = new NetNumNode(channel, splitNode.col, splitNode.row);
-//                        startNode.nodeTca = startTca;
-//                        nodesMap.put(startNode.col + "_" + startNode.row, startNode);
-//                    }
-//                    if (!nnn.upStreamNodes.contains(startNode)) {
-//                        nnn.upStreamNodes.add(startNode);
-//                    }
-//                    startNode.downStreamNode = nnn;
-//                }
+                NetLink link = new NetLink(channel, upCol, upRow, downCol, downRow, downLinkCol, downLinkRow);
+                link.setDownTca(endTca);
+                netLinksList.add(link);
 
                 channel++;
                 pm.worked(1);

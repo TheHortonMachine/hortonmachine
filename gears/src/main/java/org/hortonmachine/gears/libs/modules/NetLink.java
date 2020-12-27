@@ -3,23 +3,45 @@ package org.hortonmachine.gears.libs.modules;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A net channel helper class to order netnumbering in a hierarchy. 
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ */
 public class NetLink {
 
     public int num;
 
+    /**
+     * The row  of the last upstream node. 
+     */
     public int upRow;
+    /**
+     * The col  of the last upstream node. 
+     */
     public int upCol;
+    /**
+     * The row  of the last downstream node that is part of the link's basin. 
+     */
     public int downRow;
+    /**
+     * The col  of the last downstream node that is part of the link's basin. 
+     */
     public int downCol;
+    /**
+     * The row  of the first node of the next downstream link. 
+     */
     public int downLinkRow;
+    /**
+     * The col  of the first node of the next downstream link. 
+     */
     public int downLinkCol;
 
-    public int upTca;
-    public int downTca;
+    private int downTca = 0;
 
-    public NetLink downStreamLink;
+    private NetLink downStreamLink;
 
-    public List<NetLink> upStreamLinks = new ArrayList<NetLink>();
+    private List<NetLink> upStreamLinks = new ArrayList<NetLink>();
 
     public NetLink( int num, int upCol, int upRow, int downCol, int downRow, int downLinkCol, int downLinkRow ) {
         this.num = num;
@@ -31,6 +53,18 @@ public class NetLink {
         this.downLinkRow = downLinkRow;
     }
 
+    public void setDownTca( int downTca ) {
+        this.downTca = downTca;
+    }
+
+    public NetLink getDownStreamLink() {
+        return downStreamLink;
+    }
+
+    public List<NetLink> getUpStreamLinks() {
+        return upStreamLinks;
+    }
+
     public void connect( NetLink other ) {
         // other is downstream link
         if (downLinkCol == other.upCol && downLinkRow == other.upRow && downStreamLink == null) {
@@ -39,7 +73,7 @@ public class NetLink {
                 other.upStreamLinks.add(this);
             }
         } else
-        // thisÏ is downstream link
+        // this is downstream link
         if (other.downLinkCol == upCol && other.downLinkRow == upRow && other.downStreamLink == null) {
             other.downStreamLink = this;
             if (!upStreamLinks.contains(other)) {
@@ -51,15 +85,48 @@ public class NetLink {
 
     @Override
     public String toString() {
-//        return "num=" + num + "\nrow=" + row + "\ncol=" + col + "\nhasdown=" + (downStreamNode != null) + "\nupcount="
-//                + upStreamNodes.size();
+        String s = "\n___________________\n";
+        s += "| num=" + num + "\n";
+        s += "| downTca=" + downTca + "\n";
+        s += "|___________________|\n";
+        s += "|        " + upCol + "/" + upRow + "\n";
+        s += "|                || \n";
+        s += "|                ||\n";
+        s += "|                ||\n";
+        s += "|                \\/\n";
+        s += "|        " + downCol + "/" + downRow + "\n";
+        s += "|___________________|\n";
+        s += "|        " + downLinkCol + "/" + downLinkRow + "\n";
+        s += "|___________________|\n";
+        return s;
+    }
 
-        int deltaTca = downTca - upTca;
-
-        String cells = "cells=" + deltaTca;
+    public String toMindMapString() {
         String down = "down=" + downCol + "/" + downRow;
         String up = "up=" + upCol + "/" + upRow;
-        return "<b>basin" + num + "</b>\\n  " + cells + "\\n  " + down + "\\n  " + up;
+
+        int upLinksTca = 0;
+        for( NetLink netLink : upStreamLinks ) {
+            upLinksTca += netLink.downTca;
+        }
+
+        int cells = downTca - upLinksTca;
+        String cellsDeltaStr = "tca=" + cells;
+        String cellsStr = "outlet tca=" + downTca;
+        return "<b>basin" + num + "</b>\\n  " + "\\n  " + down + "\\n  " + up + "\\n  " + cellsDeltaStr + "\\n  " + cellsStr;
+    }
+
+    public String toJsonString() {
+        String str = "  {\n";
+        str += "    \"num\":" + num + ",\n";
+        str += "    \"downCol\":" + downCol + ",\n";
+        str += "    \"downRow\":" + downRow + ",\n";
+        str += "    \"upCol\":" + upCol + ",\n";
+        str += "    \"upRow\":" + upRow + ",\n";
+        str += "    \"downLinkCol\":" + downLinkCol + ",\n";
+        str += "    \"downLinkRow\":" + downLinkRow + "\n";
+        str += "  }";
+        return str;
     }
 
     @Override

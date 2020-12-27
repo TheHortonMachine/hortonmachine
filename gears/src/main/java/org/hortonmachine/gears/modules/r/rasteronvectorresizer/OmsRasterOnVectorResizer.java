@@ -96,6 +96,10 @@ public class OmsRasterOnVectorResizer extends HMModel {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
 
         ReferencedEnvelope bounds = inVector.getBounds();
+        // add a one cell buffer around the vector
+        double xres = regionMap.getXres();
+        double yres = regionMap.getYres();
+        bounds.expandBy(2 * xres, 2 * yres);
 
         RegionMap subRegion = regionMap.toSubRegion(bounds);
 

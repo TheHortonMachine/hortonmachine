@@ -227,12 +227,16 @@ public class RegionMap extends HashMap<String, Double> {
 
         double newWidth = e - w;
         double deltaW = newWidth % originalXres;
-        newWidth = newWidth - deltaW + originalXres;
+        if (deltaW > 0) {
+            newWidth = newWidth - deltaW + originalXres;
+        }
 
         double newHeight = n - s;
         double deltaH = newHeight % originalYres;
-        newHeight = newHeight - deltaH + originalYres;
-
+        if (deltaH > 0) {
+            newHeight = newHeight - deltaH + originalYres;
+        }
+        
         double newNorth = newSouth + newHeight;
         double newEast = newWest + newWidth;
 

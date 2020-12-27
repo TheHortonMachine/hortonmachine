@@ -17,10 +17,30 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.*;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_AUTHORCONTACTS;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_AUTHORNAMES;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_KEYWORDS;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_LABEL;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_LICENSE;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_NAME;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_STATUS;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_desiredArea_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_inFlow_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_inNet_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_inPoints_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_inTca_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outBasins_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outJsonHierarchy_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outMindmap_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outNetnum_DESCRIPTION;
+
+import java.io.File;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering;
 
 import oms3.annotations.Author;
@@ -33,6 +53,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSNETNUMBERING_DESCRIPTION)
 @Author(name = OMSNETNUMBERING_AUTHORNAMES, contact = OMSNETNUMBERING_AUTHORCONTACTS)
@@ -63,9 +84,15 @@ public class NetNumbering extends HMModel {
     @In
     public String inPoints = null;
 
-    @Description(OMSNETNUMBERING_fPointId_DESCRIPTION)
+    @Description(OMSNETNUMBERING_desiredArea_DESCRIPTION)
+    @Unit("m2")
     @In
-    public String fPointId = null;
+    public Double pDesiredArea = null;
+
+    @Description(OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION)
+    @Unit("%")
+    @In
+    public Double pDesiredAreaDelta = null;
 
     @Description(OMSNETNUMBERING_outNetnum_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -77,6 +104,16 @@ public class NetNumbering extends HMModel {
     @In
     public String outBasins = null;
 
+    @Description(OMSNETNUMBERING_outMindmap_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outMindmap = null;
+
+    @Description(OMSNETNUMBERING_outJsonHierarchy_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outJson = null;
+
     @Execute
     public void process() throws Exception {
         OmsNetNumbering omsnetnumbering = new OmsNetNumbering();
@@ -84,11 +121,46 @@ public class NetNumbering extends HMModel {
         omsnetnumbering.inTca = getRaster(inTca);
         omsnetnumbering.inNet = getRaster(inNet);
         omsnetnumbering.inPoints = getVector(inPoints);
-        omsnetnumbering.pm = pm;
+        omsnetnumbering.pDesiredArea = pDesiredArea;
+        omsnetnumbering.pDesiredAreaDelta = pDesiredAreaDelta;
+        omsnetnumbering.outMindmap = outMindmap;
+        omsnetnumbering.outJson = outJson;
         omsnetnumbering.doProcess = doProcess;
         omsnetnumbering.doReset = doReset;
         omsnetnumbering.process();
         dumpRaster(omsnetnumbering.outNetnum, outNetnum);
         dumpRaster(omsnetnumbering.outBasins, outBasins);
+
+        if (outMindmap != null && outMindmap.trim().length() > 0) {
+            FileUtilities.writeFile(omsnetnumbering.outMindmap, new File(outMindmap));
+        }
+        if (outJson != null && outJson.trim().length() > 0) {
+            FileUtilities.writeFile(omsnetnumbering.outJson, new File(outJson));
+        }
+    }
+
+    public static void main( String[] args ) throws Exception {
+        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_small/";
+        String inFlow = folder + "brenta_drain.asc";
+        String inTca = folder + "brenta_tca.asc";
+        String inNet = folder + "brenta_net_10000.asc";
+        String inPoints = null;// folder + "";
+        String outNetnum = folder + "mytest_netnum.asc";
+        String outBasins = folder + "mytest_basins.asc";
+        String outMM = folder + "mytest_mindmap.txt";
+        String outJson = folder + "mytest_json.json";
+        NetNumbering omsnetnumbering = new NetNumbering();
+        omsnetnumbering.inFlow = inFlow;
+        omsnetnumbering.inTca = inTca;
+        omsnetnumbering.inNet = inNet;
+        if (inPoints != null) {
+            omsnetnumbering.inPoints = inPoints;
+        }
+        omsnetnumbering.outMindmap = outMM;
+        omsnetnumbering.outJson = outJson;
+        omsnetnumbering.outBasins = outBasins;
+        omsnetnumbering.outNetnum = outNetnum;
+        omsnetnumbering.process();
+
     }
 }

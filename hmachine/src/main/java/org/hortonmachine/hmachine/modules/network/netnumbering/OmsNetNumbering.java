@@ -18,6 +18,7 @@
 package org.hortonmachine.hmachine.modules.network.netnumbering;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.NETWORK;
+import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_AUTHORNAMES;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_DESCRIPTION;
@@ -32,6 +33,8 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.media.jai.iterator.RandomIter;
@@ -44,12 +47,19 @@ import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
+import org.hortonmachine.gears.libs.modules.FlowNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.libs.modules.NetLink;
+import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.math.NumericsUtilities;
+import org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin;
+import org.json.JSONObject;
+import org.locationtech.jts.geom.Coordinate;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -61,6 +71,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OMSNETNUMBERING_DESCRIPTION)
 @Author(name = OMSNETNUMBERING_AUTHORNAMES, contact = OMSNETNUMBERING_AUTHORCONTACTS)
@@ -87,6 +98,16 @@ public class OmsNetNumbering extends HMModel {
     @In
     public SimpleFeatureCollection inPoints = null;
 
+    @Description(OMSNETNUMBERING_desiredArea_DESCRIPTION)
+    @Unit("m2")
+    @In
+    public Double pDesiredArea = null;
+
+    @Description(OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION)
+    @Unit("%")
+    @In
+    public Double pDesiredAreaDelta = null;
+
     @Description(OMSNETNUMBERING_outNetnum_DESCRIPTION)
     @Out
     public GridCoverage2D outNetnum = null;
@@ -95,9 +116,17 @@ public class OmsNetNumbering extends HMModel {
     @Out
     public GridCoverage2D outBasins = null;
 
+    @Description(OMSNETNUMBERING_outDesiredBasins_DESCRIPTION)
+    @Out
+    public GridCoverage2D outDesiredBasins = null;
+
     @Description(OMSNETNUMBERING_outMindmap_DESCRIPTION)
     @Out
     public String outMindmap = null;
+
+    @Description(OMSNETNUMBERING_outJsonHierarchy_DESCRIPTION)
+    @Out
+    public String outJson = null;
 
     public static final String OMSNETNUMBERING_DESCRIPTION = "Assigns the numbers to the network's links.";
     public static final String OMSNETNUMBERING_DOCUMENTATION = "OmsNetNumbering.html";
@@ -115,7 +144,15 @@ public class OmsNetNumbering extends HMModel {
     public static final String OMSNETNUMBERING_fPointId_DESCRIPTION = "The name of the node id field in mode 2.";
     public static final String OMSNETNUMBERING_outNetnum_DESCRIPTION = "The map of netnumbering";
     public static final String OMSNETNUMBERING_outBasins_DESCRIPTION = "The map of subbasins";
+    public static final String OMSNETNUMBERING_outDesiredBasins_DESCRIPTION = "The map of desired size subbasins";
     public static final String OMSNETNUMBERING_outMindmap_DESCRIPTION = "Output mindmap (plantuml).";
+    public static final String OMSNETNUMBERING_outJsonHierarchy_DESCRIPTION = "Output json hierarchy.";
+    public static final String OMSNETNUMBERING_desiredArea_DESCRIPTION = "The desired basins area size.";
+    public static final String OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION = "The allowed variance for the desired area.";
+
+    private int nCols;
+
+    private int nRows;
 
     @Execute
     public void process() throws Exception {
@@ -124,8 +161,10 @@ public class OmsNetNumbering extends HMModel {
         }
         checkNull(inFlow, inNet);
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        int nCols = regionMap.getCols();
-        int nRows = regionMap.getRows();
+        nCols = regionMap.getCols();
+        nRows = regionMap.getRows();
+        double xres = regionMap.getXres();
+        double yres = regionMap.getYres();
 
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2IntWritableRaster(flowRI, true);
@@ -136,35 +175,64 @@ public class OmsNetNumbering extends HMModel {
         try {
             List<NetLink> nodesList = new ArrayList<NetLink>();
             WritableRaster netNumWR = ModelsEngine.netNumbering(inFlow, inNet, inTca, inPoints, nodesList, pm);
-
-            for( NetLink nl1 : nodesList ) {
-                for( NetLink nl2 : nodesList ) {
-                    if (!nl1.equals(nl2)) {
-                        nl1.connect(nl2);
-                    }
-                }
-            }
-            
-
-            List<NetLink> rootNetLink = nodesList.stream().filter(n -> n.downStreamLink == null)
-                    .collect(Collectors.toList());
-            if (rootNetLink.size() > 1) {
-                throw new ModelsRuntimeException("More than one link found to be root link. Check the dataset.", this);
-            }
-            NetLink rootLink = rootNetLink.get(0);
-            StringBuilder sb = new StringBuilder();
-            sb.append("@startmindmap\n");
-            String level = "";
-            printLink(rootLink, level, sb);
-            sb.append("@endmindmap\n");
-
-            outMindmap = sb.toString();
+            outNetnum = CoverageUtilities.buildCoverage("netnum", netNumWR, regionMap, inFlow.getCoordinateReferenceSystem());
 
             netNumIter = RandomIterFactory.createWritable(netNumWR, null);
             WritableRaster basinWR = ModelsEngine.extractSubbasins(flowIter, netIter, netNumIter, nRows, nCols, pm);
-
-            outNetnum = CoverageUtilities.buildCoverage("netnum", netNumWR, regionMap, inFlow.getCoordinateReferenceSystem());
             outBasins = CoverageUtilities.buildCoverage("subbasins", basinWR, regionMap, inFlow.getCoordinateReferenceSystem());
+
+            RandomIter subbasinIter = CoverageUtilities.getRandomIterator(outBasins);
+            int validCount = 0;
+            int invalidCount = 0;
+            try {
+                for( int r = 0; r < nRows; r++ ) {
+                    for( int c = 0; c < nCols; c++ ) {
+                        double value = subbasinIter.getSampleDouble(c, r, 0);
+                        if (!isNovalue(value)) {
+                            validCount++;
+                        } else {
+                            invalidCount++;
+                        }
+                    }
+                }
+
+                // now handle basin hierarchy
+                for( NetLink nl1 : nodesList ) {
+                    for( NetLink nl2 : nodesList ) {
+                        if (!nl1.equals(nl2)) {
+                            nl1.connect(nl2);
+                        }
+                    }
+                }
+
+                List<NetLink> rootNetLink = nodesList.stream().filter(n -> n.getDownStreamLink() == null)
+                        .collect(Collectors.toList());
+                if (rootNetLink.size() > 1) {
+                    throw new ModelsRuntimeException("More than one link found to be root link. Check the dataset.", this);
+                }
+
+                // create mindmap
+                NetLink rootLink = rootNetLink.get(0);
+                StringBuilder sb = new StringBuilder();
+                sb.append("@startmindmap\n");
+                sb.append("* <b>basin stats</b>\\nvalid basin cells: " + validCount + "\\ntotal cells: "
+                        + (invalidCount + validCount) + "\\ntotal basin area: " + (validCount * xres * yres) + "\\nx res: " + xres
+                        + "\\ny res: " + yres + "\n");
+                String level = "*";
+                printLinkAsMindMap(rootLink, level, sb);
+                sb.append("@endmindmap\n");
+                outMindmap = sb.toString();
+
+                // create json
+                outJson = "[\n" + nodesList.stream().map(( nl ) -> nl.toJsonString()).collect(Collectors.joining(",")) + "]\n";
+
+//                Set<Integer> usedBasinsSet = new TreeSet<>();
+//                extractDesiredBasin(rootNetLink.get(0), usedBasinsSet, subbasinIter);
+
+            } finally {
+                subbasinIter.done();
+            }
+
         } finally {
             flowIter.done();
             netIter.done();
@@ -173,51 +241,43 @@ public class OmsNetNumbering extends HMModel {
         }
     }
 
-    private void printLink( NetLink node, String previousLevel, StringBuilder sb ) {
-        String level = previousLevel + "*";
-        sb.append(level).append(" ").append(node.toString()).append("\n");
-        for( NetLink upNode : node.upStreamLinks ) {
-            printLink(upNode, level, sb);
+    private void extractDesiredBasin( NetLink netLink, Set<Integer> usedBasinsSet, RandomIter subbasinIter ) throws Exception {
+        if (!usedBasinsSet.contains(netLink.num)) {
+            usedBasinsSet.add(netLink.num);
+            // extract it
+
+            int downCol = netLink.downCol;
+            int downRow = netLink.downRow;
+            if (netLink.getDownStreamLink() == null) {
+                // is root, start from
+            }
+            Coordinate outletCoord = CoverageUtilities.coordinateFromColRow(downCol, downRow, inFlow.getGridGeometry());
+
+            OmsExtractBasin exBasin = new OmsExtractBasin();
+            exBasin.inFlow = inFlow;
+            exBasin.pm = pm;
+            exBasin.pEast = outletCoord.x;
+            exBasin.pNorth = outletCoord.y;
+            exBasin.process();
+            GridCoverage2D basin = exBasin.outBasin;
+
+            OmsRasterWriter
+                    .writeRaster("/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_small/b"
+                            + netLink.num + ".asc", basin);
+
+        }
+        List<NetLink> upStreamLinks = netLink.getUpStreamLinks();
+        for( NetLink upLink : upStreamLinks ) {
+            extractDesiredBasin(upLink, usedBasinsSet, subbasinIter);
         }
     }
 
-    public static void main( String[] args ) throws Exception {
-        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_medium/";
-        String inFlow = folder + "brenta_drain.asc";
-        String inTca = folder + "brenta_tca.asc";
-        String inNet = folder + "brenta_net_10000.asc";
-        String inPoints = null;// folder + "";
-        String outNetnum = folder + "mytest_netnum.asc";
-        String outBasins = folder + "mytest_basins.asc";
-        String outMM = folder + "mytest_mindmap.txt";
-        OmsNetNumbering omsnetnumbering = new OmsNetNumbering();
-        omsnetnumbering.inFlow = OmsRasterReader.readRaster(inFlow);
-        omsnetnumbering.inTca = OmsRasterReader.readRaster(inTca);
-        omsnetnumbering.inNet = OmsRasterReader.readRaster(inNet);
-        if (inPoints != null) {
-            omsnetnumbering.inPoints = OmsVectorReader.readVector(inPoints);
+    private void printLinkAsMindMap( NetLink node, String previousLevel, StringBuilder sb ) {
+        String level = previousLevel + "*";
+        sb.append(level).append(" ").append(node.toMindMapString()).append("\n");
+        for( NetLink upNode : node.getUpStreamLinks() ) {
+            printLinkAsMindMap(upNode, level, sb);
         }
-        omsnetnumbering.process();
-
-        FileUtilities.writeFile(omsnetnumbering.outMindmap, new File(outMM));
-
-        OmsRasterWriter.writeRaster(outNetnum, omsnetnumbering.outNetnum);
-        OmsRasterWriter.writeRaster(outBasins, omsnetnumbering.outBasins);
-
-//        @startmindmap
-//        * <b>basin1</b>\n<i>coordinate:1,2</i>
-//        ** Ubuntu
-//        *** Linux Mint
-//        *** Kubuntu
-//        *** Lubuntu
-//        *** KDE Neon
-//        ** LMDE
-//        ** SolydXK
-//        ** SteamOS
-//        ** Raspbian with a very long name
-//        *** <s>Raspmbc</s> => OSMC
-//        *** <s>Raspyfi</s> => Volumio
-//        @endmindmap
     }
 
 }
