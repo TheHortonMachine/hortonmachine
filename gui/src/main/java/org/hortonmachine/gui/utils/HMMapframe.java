@@ -30,6 +30,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -97,7 +98,10 @@ public class HMMapframe extends JMapFrame {
     }
 
     public void removeLayer( Layer layer ) {
-        content.removeLayer(layer);
+        if (layer != null) {
+            content.layers().removeIf(( l ) -> l.getTitle().equals(layer.getTitle()));
+            getMapPane().layerRemoved(new MapLayerListEvent(content, layer, 0));
+        }
     }
 
     public void addLayerBottom( Layer layer ) {
@@ -130,84 +134,87 @@ public class HMMapframe extends JMapFrame {
         String title = "HM Viewer of folder: " + folder.getAbsolutePath();
         HMMapframe mapFrame = getBaseFrame(title, false);
 
-        File[] rasterFiles = folder.listFiles(new FilenameFilter(){
-            @Override
-            public boolean accept( File dir, String name ) {
-                return HMConstants.isRaster(new File(dir, name));
-            }
-        });
-        Arrays.sort(rasterFiles);
-        File[] vectorFiles = folder.listFiles(new FilenameFilter(){
-            @Override
-            public boolean accept( File dir, String name ) {
-                return HMConstants.isVector(new File(dir, name));
-            }
-        });
-        Arrays.sort(vectorFiles);
+        SwingUtilities.invokeLater(() -> {
 
-        if (rasterFiles != null && rasterFiles.length > 0) {
-            for( File rasterFile : rasterFiles ) {
-                try {
-                    GridCoverage2D raster = OmsRasterReader.readRaster(rasterFile.getAbsolutePath());
-                    File styleFile = FileUtilities.substituteExtention(rasterFile, "sld");
-                    Style style;
-                    if (styleFile.exists()) {
-                        style = SldUtilities.getStyleFromFile(styleFile);
-                    } else {
-                        style = SldUtilities.getStyleFromRasterFile(rasterFile);
+            File[] rasterFiles = folder.listFiles(new FilenameFilter(){
+                @Override
+                public boolean accept( File dir, String name ) {
+                    return HMConstants.isRaster(new File(dir, name));
+                }
+            });
+            Arrays.sort(rasterFiles);
+            File[] vectorFiles = folder.listFiles(new FilenameFilter(){
+                @Override
+                public boolean accept( File dir, String name ) {
+                    return HMConstants.isVector(new File(dir, name));
+                }
+            });
+            Arrays.sort(vectorFiles);
+
+            if (rasterFiles != null && rasterFiles.length > 0) {
+                for( File rasterFile : rasterFiles ) {
+                    try {
+                        GridCoverage2D raster = OmsRasterReader.readRaster(rasterFile.getAbsolutePath());
+                        File styleFile = FileUtilities.substituteExtention(rasterFile, "sld");
+                        Style style;
+                        if (styleFile.exists()) {
+                            style = SldUtilities.getStyleFromFile(styleFile);
+                        } else {
+                            style = SldUtilities.getStyleFromRasterFile(rasterFile);
+                        }
+                        GridCoverageLayer layer = new GridCoverageLayer(raster, style, rasterFile.getName());
+                        mapFrame.addLayer(layer);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    GridCoverageLayer layer = new GridCoverageLayer(raster, style, rasterFile.getName());
-                    mapFrame.addLayer(layer);
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
             }
-        }
-        if (vectorFiles != null && vectorFiles.length > 0) {
-            for( File vectorFile : vectorFiles ) {
-                try {
-                    SimpleFeatureCollection fc = OmsVectorReader.readVector(vectorFile.getAbsolutePath());
-                    File styleFile = FileUtilities.substituteExtention(vectorFile, "sld");
-                    Style style;
-                    if (styleFile.exists()) {
-                        style = SldUtilities.getStyleFromFile(styleFile);
-                    } else {
-                        style = SLD.createSimpleStyle(fc.getSchema());
+            if (vectorFiles != null && vectorFiles.length > 0) {
+                for( File vectorFile : vectorFiles ) {
+                    try {
+                        SimpleFeatureCollection fc = OmsVectorReader.readVector(vectorFile.getAbsolutePath());
+                        File styleFile = FileUtilities.substituteExtention(vectorFile, "sld");
+                        Style style;
+                        if (styleFile.exists()) {
+                            style = SldUtilities.getStyleFromFile(styleFile);
+                        } else {
+                            style = SLD.createSimpleStyle(fc.getSchema());
+                        }
+                        FeatureLayer layer = new FeatureLayer(fc, style, vectorFile.getName());
+                        mapFrame.addLayer(layer);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    FeatureLayer layer = new FeatureLayer(fc, style, vectorFile.getName());
-                    mapFrame.addLayer(layer);
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
             }
-        }
 
-        final DefaultComboBoxModel<String> layersComboModel = new DefaultComboBoxModel<String>();
-        layersComboModel.addElement("");
-        HashMap<String, GridCoverageLayer> name2Layermap = new HashMap<>();
-        List<Layer> layers = mapFrame.getLayers();
-        for( Layer layer : layers ) {
-            if (layer instanceof GridCoverageLayer) {
-                layersComboModel.addElement(layer.getTitle());
-                name2Layermap.put(layer.getTitle(), (GridCoverageLayer) layer);
+            final DefaultComboBoxModel<String> layersComboModel = new DefaultComboBoxModel<String>();
+            layersComboModel.addElement("");
+            HashMap<String, GridCoverageLayer> name2Layermap = new HashMap<>();
+            List<Layer> layers = mapFrame.getLayers();
+            for( Layer layer : layers ) {
+                if (layer instanceof GridCoverageLayer) {
+                    layersComboModel.addElement(layer.getTitle());
+                    name2Layermap.put(layer.getTitle(), (GridCoverageLayer) layer);
+                }
             }
-        }
-        final JComboBox<String> layersCombo = new JComboBox<String>(layersComboModel);
-        layersCombo.setSelectedIndex(0);
-        layersCombo.addActionListener(( e ) -> {
-            GridCoverageLayer layer = mapFrame.rasterInfoLayer.getRasterLayer();
-            mapFrame.removeLayer(layer);
+            final JComboBox<String> layersCombo = new JComboBox<String>(layersComboModel);
+            layersCombo.setSelectedIndex(0);
+            layersCombo.addActionListener(( e ) -> {
+                GridCoverageLayer layer = mapFrame.rasterInfoLayer.getRasterLayer();
+                mapFrame.removeLayer(layer);
 
-            String layerName = (String) layersCombo.getSelectedItem();
-            if (layerName.length() == 0) {
-                mapFrame.rasterInfoLayer.setRasterLayer(null);
-            } else {
-                GridCoverageLayer gridCoverageLayer = name2Layermap.get(layerName);
-                mapFrame.rasterInfoLayer.setRasterLayer(gridCoverageLayer);
-                mapFrame.addLayer(mapFrame.rasterInfoLayer);
-            }
+                String layerName = (String) layersCombo.getSelectedItem();
+                if (layerName.length() == 0) {
+                    mapFrame.rasterInfoLayer.setRasterLayer(null);
+                } else {
+                    GridCoverageLayer gridCoverageLayer = name2Layermap.get(layerName);
+                    mapFrame.rasterInfoLayer.setRasterLayer(gridCoverageLayer);
+                    mapFrame.addLayer(mapFrame.rasterInfoLayer);
+                }
+            });
+            mapFrame.getToolBar().add(layersCombo);
         });
-        mapFrame.getToolBar().add(layersCombo);
 
         return mapFrame;
     }

@@ -111,7 +111,7 @@ public class RasterStyleController extends RasterStyleView {
             _shadedReliefCheck.setSelected(true);
         } else {
             _reliefFactorField.setText("1");
-            _shadedReliefCheck.setSelected(true);
+            _shadedReliefCheck.setSelected(false);
         }
 
     }
