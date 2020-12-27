@@ -2,6 +2,7 @@ package org.hortonmachine.gears.libs.modules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * A net channel helper class to order netnumbering in a hierarchy. 
@@ -37,11 +38,21 @@ public class NetLink {
      */
     public int downLinkCol;
 
-    private int downTca = 0;
+    /**
+     * A possible parent in the chain of desired basin aggregations.
+     * 
+     * If this is not null, then this basin belongs to the one with this id.
+     */
+    public Integer desiredChainNetLink;
+
+    /**
+     * The tca of the basin closed at the lowest point of this link.
+     */ 
+    private int tca = 0;
 
     private NetLink downStreamLink;
 
-    private List<NetLink> upStreamLinks = new ArrayList<NetLink>();
+    private List<NetLink> upStreamLinks = new CopyOnWriteArrayList<NetLink>();
 
     public NetLink( int num, int upCol, int upRow, int downCol, int downRow, int downLinkCol, int downLinkRow ) {
         this.num = num;
@@ -53,8 +64,12 @@ public class NetLink {
         this.downLinkRow = downLinkRow;
     }
 
-    public void setDownTca( int downTca ) {
-        this.downTca = downTca;
+    public void setTca( int tca ) {
+        this.tca = tca;
+    }
+
+    public int getTca() {
+        return tca;
     }
 
     public NetLink getDownStreamLink() {
@@ -87,7 +102,7 @@ public class NetLink {
     public String toString() {
         String s = "\n___________________\n";
         s += "| num=" + num + "\n";
-        s += "| downTca=" + downTca + "\n";
+        s += "| downTca=" + tca + "\n";
         s += "|___________________|\n";
         s += "|        " + upCol + "/" + upRow + "\n";
         s += "|                || \n";
@@ -107,12 +122,12 @@ public class NetLink {
 
         int upLinksTca = 0;
         for( NetLink netLink : upStreamLinks ) {
-            upLinksTca += netLink.downTca;
+            upLinksTca += netLink.tca;
         }
 
-        int cells = downTca - upLinksTca;
+        int cells = tca - upLinksTca;
         String cellsDeltaStr = "tca=" + cells;
-        String cellsStr = "outlet tca=" + downTca;
+        String cellsStr = "outlet tca=" + tca;
         return "<b>basin" + num + "</b>\\n  " + "\\n  " + down + "\\n  " + up + "\\n  " + cellsDeltaStr + "\\n  " + cellsStr;
     }
 

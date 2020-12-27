@@ -25,14 +25,13 @@ import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumb
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_LICENSE;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_NAME;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_STATUS;
-import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.*;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_desiredArea_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_inFlow_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_inNet_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_inPoints_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_inTca_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outBasins_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outJsonHierarchy_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outMindmap_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outNetnum_DESCRIPTION;
 
@@ -103,16 +102,21 @@ public class NetNumbering extends HMModel {
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outBasins = null;
+    
+    @Description(OMSNETNUMBERING_outDesiredBasins_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outDesiredBasins = null;
 
     @Description(OMSNETNUMBERING_outMindmap_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outMindmap = null;
 
-    @Description(OMSNETNUMBERING_outJsonHierarchy_DESCRIPTION)
+    @Description(OMSNETNUMBERING_outMindmapDesired_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
-    public String outJson = null;
+    public String outDesiredMindmap = null;
 
     @Execute
     public void process() throws Exception {
@@ -124,41 +128,46 @@ public class NetNumbering extends HMModel {
         omsnetnumbering.pDesiredArea = pDesiredArea;
         omsnetnumbering.pDesiredAreaDelta = pDesiredAreaDelta;
         omsnetnumbering.outMindmap = outMindmap;
-        omsnetnumbering.outJson = outJson;
         omsnetnumbering.doProcess = doProcess;
         omsnetnumbering.doReset = doReset;
         omsnetnumbering.process();
         dumpRaster(omsnetnumbering.outNetnum, outNetnum);
         dumpRaster(omsnetnumbering.outBasins, outBasins);
+        dumpRaster(omsnetnumbering.outDesiredBasins, outDesiredBasins);
 
         if (outMindmap != null && outMindmap.trim().length() > 0) {
             FileUtilities.writeFile(omsnetnumbering.outMindmap, new File(outMindmap));
         }
-        if (outJson != null && outJson.trim().length() > 0) {
-            FileUtilities.writeFile(omsnetnumbering.outJson, new File(outJson));
+        if (pDesiredArea!=null && outDesiredMindmap != null && outDesiredMindmap.trim().length() > 0) {
+            FileUtilities.writeFile(omsnetnumbering.outDesiredMindmap, new File(outDesiredMindmap));
         }
     }
 
     public static void main( String[] args ) throws Exception {
-        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_small/";
+        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_medium/";
         String inFlow = folder + "brenta_drain.asc";
         String inTca = folder + "brenta_tca.asc";
         String inNet = folder + "brenta_net_10000.asc";
         String inPoints = null;// folder + "";
         String outNetnum = folder + "mytest_netnum.asc";
         String outBasins = folder + "mytest_basins.asc";
+        String outDesireredBasins = folder + "mytest_desiredbasins.asc";
         String outMM = folder + "mytest_mindmap.txt";
-        String outJson = folder + "mytest_json.json";
+        String outDesMM = folder + "mytest_mindmap_des.txt";
         NetNumbering omsnetnumbering = new NetNumbering();
         omsnetnumbering.inFlow = inFlow;
         omsnetnumbering.inTca = inTca;
         omsnetnumbering.inNet = inNet;
+        omsnetnumbering.pDesiredArea = 40000_00.0;
+        omsnetnumbering.pDesiredAreaDelta = 20.0;
+
         if (inPoints != null) {
             omsnetnumbering.inPoints = inPoints;
         }
         omsnetnumbering.outMindmap = outMM;
-        omsnetnumbering.outJson = outJson;
+        omsnetnumbering.outDesiredMindmap = outDesMM;
         omsnetnumbering.outBasins = outBasins;
+        omsnetnumbering.outDesiredBasins = outDesireredBasins;
         omsnetnumbering.outNetnum = outNetnum;
         omsnetnumbering.process();
 

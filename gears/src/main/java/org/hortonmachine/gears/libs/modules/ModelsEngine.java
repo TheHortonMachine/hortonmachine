@@ -809,7 +809,7 @@ public class ModelsEngine {
                 }
 
                 NetLink link = new NetLink(channel, upCol, upRow, downCol, downRow, downLinkCol, downLinkRow);
-                link.setDownTca(endTca);
+                link.setTca(endTca);
                 netLinksList.add(link);
 
                 channel++;
