@@ -3,6 +3,7 @@ package org.hortonmachine.gears.libs.modules;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 /**
  * A net channel helper class to order netnumbering in a hierarchy. 
@@ -47,7 +48,7 @@ public class NetLink {
 
     /**
      * The tca of the basin closed at the lowest point of this link.
-     */ 
+     */
     private int tca = 0;
 
     private NetLink downStreamLink;
@@ -76,6 +77,10 @@ public class NetLink {
         return downStreamLink;
     }
 
+    public void setDownStreamLink( NetLink downStreamLink ) {
+        this.downStreamLink = downStreamLink;
+    }
+
     public List<NetLink> getUpStreamLinks() {
         return upStreamLinks;
     }
@@ -100,9 +105,12 @@ public class NetLink {
 
     @Override
     public String toString() {
+        String ups = upStreamLinks.stream().map(nl -> nl.num + "").collect(Collectors.joining(", "));
+
         String s = "\n___________________\n";
         s += "| num=" + num + "\n";
-        s += "| downTca=" + tca + "\n";
+        s += "| tca=" + tca + "\n";
+        s += "| ups=[" + ups + "]\n";
         s += "|___________________|\n";
         s += "|        " + upCol + "/" + upRow + "\n";
         s += "|                || \n";
@@ -112,6 +120,9 @@ public class NetLink {
         s += "|        " + downCol + "/" + downRow + "\n";
         s += "|___________________|\n";
         s += "|        " + downLinkCol + "/" + downLinkRow + "\n";
+        if (downStreamLink != null) {
+            s += "| down=[" + downStreamLink.num + "]\n";
+        }
         s += "|___________________|\n";
         return s;
     }

@@ -144,7 +144,7 @@ public class NetNumbering extends HMModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_medium/";
+        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_016basins/";
         String inFlow = folder + "brenta_drain.asc";
         String inTca = folder + "brenta_tca.asc";
         String inNet = folder + "brenta_net_10000.asc";

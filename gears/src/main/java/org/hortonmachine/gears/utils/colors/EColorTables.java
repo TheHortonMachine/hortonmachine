@@ -36,5 +36,6 @@ public enum EColorTables {
     tc9, //
     sea, //
     slope, //
-    reds; //
+    reds, //
+    contrasting; //
 }
