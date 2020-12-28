@@ -26,12 +26,14 @@ public class DefaultTables {
         private static HashMap<String, String> map = new HashMap<String, String>();
 
         public DefaultTables() {
-                String rainbow = "255 255 0\n" + //
-                                "0 255 0\n" + //
-                                "0 255 255\n" + //
-                                "0 0 255\n" + //
-                                "255 0 255\n" + //
-                                "255 0 0\n";
+                String rainbow = hexToColortable( //
+                                "#FFFF00", //
+                                "#00FF00", //
+                                "#00FFFF", //
+                                "#0000FF", //
+                                "#FF00FF", //
+                                "#FF0000"//
+                );
 
                 map.put(EColorTables.rainbow.name(), rainbow);
 
@@ -49,9 +51,11 @@ public class DefaultTables {
 
                 map.put(EColorTables.extrainbow.name(), extRainbow);
 
-                String aspect = "255 255 255\n" + //
-                                "0 0 0\n" + //
-                                "255 255 255";
+                String aspect = hexToColortable(//
+                                "#FFFFFF", //
+                                "#000000", //
+                                "#FFFFFF")//
+                ;
                 map.put(EColorTables.aspect.name(), aspect);
 
                 String bath = "-30000    0   0   0    -20000    0   0   0  \n" + //
@@ -255,7 +259,7 @@ public class DefaultTables {
                                 "#E3E3E3", //
                                 "#F8F1FF", //
                                 "#F2FDFF" //
-                                );
+                );
 
                 map.put(EColorTables.contrasting.name(), contrasting);
         }
