@@ -20,6 +20,7 @@ package org.hortonmachine.gui.utils;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -130,28 +131,25 @@ public class HMMapframe extends JMapFrame {
         return fl;
     }
 
-    public static HMMapframe openFolder( File folder ) {
-        String title = "HM Viewer of folder: " + folder.getAbsolutePath();
+    public static HMMapframe openFiles( File[] files ) {
+        String title = "HM Viewer ";
         HMMapframe mapFrame = getBaseFrame(title, false);
+
+        List<File> rasterFiles = new ArrayList<>();
+        List<File> vectorFiles = new ArrayList<>();
+
+        getFiles(files, rasterFiles, vectorFiles);
+        if (rasterFiles.isEmpty() && vectorFiles.isEmpty()) {
+            File[] openFolder = GuiUtilities.showOpenFolderDialog(null, "Select folder to show", false,
+                    PreferencesHandler.getLastFile());
+            if (openFolder != null && openFolder.length > 0) {
+                getFiles(openFolder, rasterFiles, vectorFiles);
+            }
+        }
 
         SwingUtilities.invokeLater(() -> {
 
-            File[] rasterFiles = folder.listFiles(new FilenameFilter(){
-                @Override
-                public boolean accept( File dir, String name ) {
-                    return HMConstants.isRaster(new File(dir, name));
-                }
-            });
-            Arrays.sort(rasterFiles);
-            File[] vectorFiles = folder.listFiles(new FilenameFilter(){
-                @Override
-                public boolean accept( File dir, String name ) {
-                    return HMConstants.isVector(new File(dir, name));
-                }
-            });
-            Arrays.sort(vectorFiles);
-
-            if (rasterFiles != null && rasterFiles.length > 0) {
+            if (!rasterFiles.isEmpty()) {
                 for( File rasterFile : rasterFiles ) {
                     try {
                         GridCoverage2D raster = OmsRasterReader.readRaster(rasterFile.getAbsolutePath());
@@ -169,7 +167,7 @@ public class HMMapframe extends JMapFrame {
                     }
                 }
             }
-            if (vectorFiles != null && vectorFiles.length > 0) {
+            if (!vectorFiles.isEmpty()) {
                 for( File vectorFile : vectorFiles ) {
                     try {
                         SimpleFeatureCollection fc = OmsVectorReader.readVector(vectorFile.getAbsolutePath());
@@ -219,6 +217,72 @@ public class HMMapframe extends JMapFrame {
         return mapFrame;
     }
 
+    private static void getFiles( File[] inputFiles, List<File> rasterFiles, List<File> vectorFiles ) {
+        if (inputFiles == null) {
+            return;
+        }
+        for( File inputFile : inputFiles ) {
+            if (inputFile.exists()) {
+                // file is existing folder
+                if (inputFile.isDirectory()) {
+                    File[] rasterFilesTmp = inputFile.listFiles(new FilenameFilter(){
+                        @Override
+                        public boolean accept( File dir, String name ) {
+                            return HMConstants.isRaster(new File(dir, name));
+                        }
+                    });
+                    Arrays.sort(rasterFilesTmp);
+                    rasterFiles.addAll(Arrays.asList(rasterFilesTmp));
+
+                    File[] vectorFilesTmp = inputFile.listFiles(new FilenameFilter(){
+                        @Override
+                        public boolean accept( File dir, String name ) {
+                            return HMConstants.isVector(new File(dir, name));
+                        }
+                    });
+                    Arrays.sort(vectorFilesTmp);
+                    vectorFiles.addAll(Arrays.asList(vectorFilesTmp));
+
+                } else
+                // file is existing single file
+                {
+                    // load file
+                    if (HMConstants.isRaster(inputFile)) {
+                        rasterFiles.add(inputFile);
+                    } else if (HMConstants.isVector(inputFile)) {
+                        vectorFiles.add(inputFile);
+                    }
+                }
+            } else {
+                // file could be a relative path
+                if (inputFile.getParentFile().exists()) {
+                    // could be a wildcard
+                    String fileName = inputFile.getName();
+                    inputFile.getParentFile().listFiles(( File dir, String name ) -> {
+                        if (name.matches(fileName)) {
+                            return true;
+                        }
+                        return false;
+                    });
+
+                } else {
+                    // last try, a local relative name
+                    String name = inputFile.getName();
+                    File file = new File(".");
+                    File dataFile = new File(file, name);
+                    if (dataFile.exists()) {
+                        // load file
+                        if (HMConstants.isRaster(inputFile)) {
+                            rasterFiles.add(inputFile);
+                        } else if (HMConstants.isVector(inputFile)) {
+                            vectorFiles.add(inputFile);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private static HMMapframe getBaseFrame( String title, boolean exitOnClose ) {
         ImageIcon icon = new ImageIcon(ImageCache.getInstance().getBufferedImage(ImageCache.HORTONMACHINE_FRAME_ICON));
         HMMapframe mapFrame = new HMMapframe(title);
@@ -262,22 +326,15 @@ public class HMMapframe extends JMapFrame {
 
     public static void main( String[] args ) {
         GuiUtilities.setDefaultLookAndFeel();
-        File openFile = null;
-        if (args.length > 0 && new File(args[0]).exists()) {
-            openFile = new File(args[0]);
-            if (!openFile.isDirectory()) {
-                openFile = openFile.getParentFile();
-            }
-        } else {
-            File[] openFolder = GuiUtilities.showOpenFolderDialog(null, "Select folder to show", false,
-                    PreferencesHandler.getLastFile());
-            if (openFolder != null && openFolder.length > 0) {
-                openFile = openFolder[0];
-            }
+        List<File> files = new ArrayList<>();
+        for( String filePath : args ) {
+            System.out.println("Input: " + filePath);
+            File openFile = new File(filePath);
+            files.add(openFile);
         }
 
-        if (openFile != null) {
-            HMMapframe mf = openFolder(openFile);
+        if (!files.isEmpty()) {
+            HMMapframe mf = openFiles(files.toArray(new File[0]));
             SettingsController.applySettings(mf);
             mf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         } else {

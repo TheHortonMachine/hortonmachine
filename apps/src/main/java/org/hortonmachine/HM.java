@@ -229,7 +229,7 @@ public class HM {
     }
 
     public static void showFolder( String folderPath ) {
-        HMMapframe.openFolder(new File(folderPath));
+        HMMapframe.openFiles(new File[]{new File(folderPath)});
     }
 
     public static Script load( String scriptPath ) throws Exception {

@@ -262,12 +262,157 @@ public class DefaultTables {
                 );
 
                 map.put(EColorTables.contrasting.name(), contrasting);
+
+                String contrasting130Num = hexToColortable(//
+                                "0 #2E2532", //
+                                "1 #210203", //
+                                "2 #432818", //
+                                "3 #343A1A", //
+                                "4 #99582A", //
+                                "5 #BB9457", //
+                                "6 #BFAE48", //
+                                "7 #C9ADA1", //
+                                "8 #AB87FF", //
+                                "9 #DECDF5", //
+                                "10 #084887", //
+                                "11 #4D6A6D", //
+                                "12 #33658A", //
+                                "13 #4D9078", //
+                                "14 #28AFB0", //
+                                "15 #08BDBD", //
+                                "16 #92AFD7", //
+                                "17 #B4E1FF", //
+                                "18 #B7FDFE", //
+                                "19 #5FAD56", //
+                                "20 #29BF12", //
+                                "21 #ABFF4F", //
+                                "22 #B4436C", //
+                                "23 #BF3100", //
+                                "24 #D33F49", //
+                                "25 #F21B3F", //
+                                "26 #FF5964", //
+                                "27 #F58A07", //
+                                "28 #F6AE2D", //
+                                "29 #F4D35E", //
+                                "30 #FFE74C", //
+                                "31 #FFFD98", //
+                                "32 #F5FFC6", //
+                                "33 #798478", //
+                                "34 #898989", //
+                                "35 #A0A083", //
+                                "36 #E3E3E3", //
+                                "37 #F8F1FF", //
+                                "38 #F2FDFF", //
+                                "39 #93a3b1", //
+                                "40 #7c898b", //
+                                "41 #636564", //
+                                "42 #4c443c", //
+                                "43 #322214", //
+                                "44 #bcf4f5", //
+                                "45 #b4ebca", //
+                                "46 #d9f2b4", //
+                                "47 #d3fac7", //
+                                "48 #ffb7c3", //
+                                "49 #a7a5c6", //
+                                "50 #8797b2", //
+                                "51 #6d8a96", //
+                                "52 #5d707f", //
+                                "53 #66ced6", //
+                                "54 #eef4d4", //
+                                "55 #daefb3", //
+                                "56 #ea9e8d", //
+                                "57 #d64550", //
+                                "58 #1c2826", //
+                                "59 #5d2a42", //
+                                "60 #fb6376", //
+                                "61 #fcb1a6", //
+                                "62 #ffdccc", //
+                                "63 #fff9ec", //
+                                "64 #c2efb3", //
+                                "65 #97abb1", //
+                                "66 #746f72", //
+                                "67 #735f3d", //
+                                "68 #594a26", //
+                                "69 #544b3d", //
+                                "70 #4e6e58", //
+                                "71 #4c8577", //
+                                "72 #a6ece0", //
+                                "73 #7adfbb", //
+                                "74 #8d3b72", //
+                                "75 #8a7090", //
+                                "76 #89a7a7", //
+                                "77 #72e1d1", //
+                                "78 #b5d8cc", //
+                                "79 #2d82b7", //
+                                "80 #42e2b8", //
+                                "81 #f3dfbf", //
+                                "82 #eb8a90", //
+                                "83 #d7fdf0", //
+                                "84 #b2ffd6", //
+                                "85 #b4d6d3", //
+                                "86 #b8bac8", //
+                                "87 #aa78a6", //
+                                "88 #944bbb", //
+                                "89 #aa7bc3", //
+                                "90 #cc92c2", //
+                                "91 #dba8ac", //
+                                "92 #424b54", //
+                                "93 #b38d97", //
+                                "94 #d5aca9", //
+                                "95 #ebcfb2", //
+                                "96 #c5baaf", //
+                                "97 #8ed081", //
+                                "98 #b4d2ba", //
+                                "99 #dce2aa", //
+                                "100 #b57f50", //
+                                "101 #4b543b", //
+                                "102 #bcd4de", //
+                                "103 #a5ccd1", //
+                                "104 #a0b9bf", //
+                                "105 #9dacb2", //
+                                "106 #949ba0", //
+                                "107 #507dbc", //
+                                "108 #a1c6ea", //
+                                "109 #bbd1ea", //
+                                "110 #dae3e5", //
+                                "111 #292f36", //
+                                "112 #4ecdc4", //
+                                "113 #f7fff7", //
+                                "114 #ff6b6b", //
+                                "115 #ffe66d", //
+                                "116 #8b9474", //
+                                "117 #6cae75", //
+                                "118 #8bbd8b", //
+                                "119 #c1cc99", //
+                                "120 #f5a65b", //
+                                "121 #d3bdb0", //
+                                "122 #c1ae9f", //
+                                "123 #89937c", //
+                                "124 #715b64", //
+                                "125 #69385c", //
+                                "126 #e0f2e9", //
+                                "127 #ceb5a7", //
+                                "128 #a17c6b", //
+                                "129 #5b7b7a", //
+                                "130 #3c887e" //
+
+                );
+
+                map.put(EColorTables.contrasting130.name(), contrasting130Num);
         }
 
         private String hexToColortable( String... hexes ) {
                 return Arrays.asList(hexes).stream().map(hex -> {
-                        Color c = ColorUtilities.fromHex(hex);
-                        return c.getRed() + " " + c.getGreen() + " " + c.getBlue();
+                        String[] split = hex.split("\\s+");
+                        if (split.length == 1) {
+                                Color c = ColorUtilities.fromHex(hex);
+                                return c.getRed() + " " + c.getGreen() + " " + c.getBlue();
+                        } else if (split.length == 2) {
+                                Color c = ColorUtilities.fromHex(split[1]);
+                                return split[0] + " " + c.getRed() + " " + c.getGreen() + " " + c.getBlue();
+                        } else {
+                                return hex;
+                        }
                 }).collect(Collectors.joining("\n"));
         }
 
