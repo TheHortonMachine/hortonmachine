@@ -55,7 +55,14 @@ public class NetLink {
 
     private List<NetLink> upStreamLinks = new CopyOnWriteArrayList<NetLink>();
 
-    public NetLink( int num, int upCol, int upRow, int downCol, int downRow, int downLinkCol, int downLinkRow ) {
+    /**
+     * Defines if the link can be merged with others or if it is required to be fixed.
+     * 
+     * If fixed is set to true, the node can't be removed as middle man.
+     */
+    private boolean isFixed;
+
+    public NetLink( int num, int upCol, int upRow, int downCol, int downRow, int downLinkCol, int downLinkRow, boolean isFixed ) {
         this.num = num;
         this.upCol = upCol;
         this.upRow = upRow;
@@ -63,6 +70,11 @@ public class NetLink {
         this.downRow = downRow;
         this.downLinkCol = downLinkCol;
         this.downLinkRow = downLinkRow;
+        this.isFixed = isFixed;
+    }
+
+    public boolean isFixed() {
+        return isFixed;
     }
 
     public void setTca( int tca ) {
@@ -139,7 +151,12 @@ public class NetLink {
         int cells = tca - upLinksTca;
         String cellsDeltaStr = "tca=" + cells;
         String cellsStr = "outlet tca=" + tca;
-        return "<b>basin" + num + "</b>\\n  " + "\\n  " + down + "\\n  " + up + "\\n  " + cellsDeltaStr + "\\n  " + cellsStr;
+        String fixed = "";
+        if (isFixed) {
+            fixed = "\\n  <b>FIXED</b>";
+        }
+        return "<b>basin" + num + "</b>\\n  " + "\\n  " + down + "\\n  " + up + "\\n  " + cellsDeltaStr + "\\n  " + cellsStr
+                + fixed;
     }
 
     public String toJsonString() {

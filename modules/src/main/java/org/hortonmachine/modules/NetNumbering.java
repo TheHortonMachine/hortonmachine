@@ -146,7 +146,7 @@ public class NetNumbering extends HMModel {
     public static void main( String[] args ) throws Exception {
         // String folder =
         // "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_all/";
-        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_063basins/";
+        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_016basins/";
         String inPoints = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/monitoring_points/idroStation.shp";
 
         int desiredArea = 20000_00;

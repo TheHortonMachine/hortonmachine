@@ -720,7 +720,8 @@ public class ModelsEngine {
              * - confluences
              * - supplied points
              */
-            List<FlowNode> splitNodes = new ArrayList<FlowNode>();
+            List<FlowNode> splitNodes = new ArrayList<>();
+            List<String> fixedNodesColRows = new ArrayList<>();
             // SUPPLIED POINTS
             if (pointsFC != null) {
                 Envelope envelope = regionMap.toEnvelope();
@@ -744,7 +745,22 @@ public class ModelsEngine {
                             netNode = new GridNode(netIter, cols, rows, -1, -1, flowNode.col, flowNode.row);
                         }
                         if (flowNode != null) {
-                            splitNodes.add(flowNode);
+                            /*
+                             * now we need to go one more down. This is necessary, since 
+                             * in the later processing the netnumber channel is extracted 
+                             * going downstream from the splitnodes, so the supplied point 
+                             * would end up being the most upstream point of the basin.
+                             * Therefore we move one down, one downstream of teh point 
+                             * we want to be the basin outlet.
+                             */
+                            FlowNode flowNodeTmp = flowNode.goDownstream();
+                            if (flowNodeTmp != null) {
+                                netNode = new GridNode(netIter, cols, rows, -1, -1, flowNodeTmp.col, flowNodeTmp.row);
+                                if (netNode.isValid) {
+                                    splitNodes.add(flowNodeTmp);
+                                    fixedNodesColRows.add(flowNode.col + "_" + flowNode.row);
+                                }
+                            }
                         }
                     }
                 }
@@ -807,8 +823,13 @@ public class ModelsEngine {
                     downLinkCol = nextNode.col;
                     downLinkRow = nextNode.row;
                 }
+                boolean isFixedNode = false;
+                if (fixedNodesColRows.contains(lastNode.col + "_" + lastNode.row)) {
+                    isFixedNode = true;
+                    System.out.println("Found fixed: " + lastNode);
+                }
 
-                NetLink link = new NetLink(channel, upCol, upRow, downCol, downRow, downLinkCol, downLinkRow);
+                NetLink link = new NetLink(channel, upCol, upRow, downCol, downRow, downLinkCol, downLinkRow, isFixedNode);
                 link.setTca(endTca);
                 netLinksList.add(link);
 

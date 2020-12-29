@@ -222,9 +222,10 @@ public class OmsNetNumbering extends HMModel {
                     double desArea = pDesiredArea;
                     double minArea = desArea - desArea * pDesiredAreaDelta / 100.0;
 
-                    // first handle the most upstream ones and aggregate them with their parents
                     for( NetLink netLink : nodesList ) {
-                        if (netLink.getUpStreamLinks().isEmpty()) {
+                        // first handle the most upstream ones and aggregate them with their parents
+                        List<NetLink> upStreamLinks = netLink.getUpStreamLinks();
+                        if (!netLink.isFixed() && upStreamLinks.isEmpty()) {
                             double area = getLinkOnlyArea(netLink);
                             if (area < minArea) {
                                 NetLink parentLink = netLink.getDownStreamLink();
@@ -232,6 +233,20 @@ public class OmsNetNumbering extends HMModel {
                                     netLink.desiredChainNetLink = parentLink.num;
                                     conversionMap.put(netLink.num, parentLink.num);
                                     parentLink.getUpStreamLinks().remove(netLink);
+                                }
+                            }
+                        }
+                        // also consider basins that have 1 fixed upstream basin (case of monitoring point)
+                        if (upStreamLinks.size() == 1 && upStreamLinks.get(0).isFixed()) {
+                            NetLink fixed = upStreamLinks.get(0);
+                            double area = getLinkOnlyArea(netLink);
+                            if (area < minArea) {
+                                NetLink parentLink = netLink.getDownStreamLink();
+                                if (parentLink != null) {
+                                    netLink.desiredChainNetLink = parentLink.num;
+                                    conversionMap.put(netLink.num, parentLink.num);
+                                    parentLink.getUpStreamLinks().remove(netLink);
+                                    parentLink.getUpStreamLinks().add(fixed);
                                 }
                             }
                         }
@@ -317,6 +332,10 @@ public class OmsNetNumbering extends HMModel {
                         double minAddArea = 0;
                         boolean hadOne = false;
                         for( NetLink nl : ups ) {
+                            if (nl.isFixed()) {
+                                // fixed ones can't be joined to downstream
+                                continue;
+                            }
                             // check if it wasn't used already (i.e. it has no parent)
                             if (nl.desiredChainNetLink == null) {
                                 hadOne = true;
@@ -351,10 +370,12 @@ public class OmsNetNumbering extends HMModel {
                     }
                 } else {
                     // if the last basin is too small, let's aggregate it with the parent
-                    NetLink parentLink = netLink.getDownStreamLink();
-                    netLink.desiredChainNetLink = parentLink.num;
-                    conversionMap.put(netLink.num, parentLink.num);
-                    parentLink.getUpStreamLinks().remove(netLink);
+                    if (!netLink.isFixed()) {
+                        NetLink parentLink = netLink.getDownStreamLink();
+                        netLink.desiredChainNetLink = parentLink.num;
+                        conversionMap.put(netLink.num, parentLink.num);
+                        parentLink.getUpStreamLinks().remove(netLink);
+                    }
                 }
             } else {
                 // go up one level
