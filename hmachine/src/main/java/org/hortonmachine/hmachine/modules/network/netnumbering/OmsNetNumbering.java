@@ -265,6 +265,12 @@ public class OmsNetNumbering extends HMModel {
                             if (!isNovalue(value)) {
                                 Integer convertedBasinNum = conversionMap.get(value);
                                 if (convertedBasinNum != null) {
+                                    // check if the converted has been converted also in some different thread
+                                    Integer convertedBasinNumTmp = conversionMap.get(convertedBasinNum);
+                                    while( convertedBasinNumTmp != null ) {
+                                        convertedBasinNum = convertedBasinNumTmp;
+                                        convertedBasinNumTmp = conversionMap.get(convertedBasinNumTmp);
+                                    }
                                     desiredSubbasinsWIter.setSample(c, r, 0, convertedBasinNum);
                                 } else {
                                     desiredSubbasinsWIter.setSample(c, r, 0, value);
@@ -299,7 +305,6 @@ public class OmsNetNumbering extends HMModel {
         // double maxArea = desArea + desArea * pDesiredAreaDelta / 100.0;
 
         for( NetLink netLink : currentLevelLinks ) {
-            int num = netLink.num;
             List<NetLink> ups = netLink.getUpStreamLinks();
 
             double area = getLinkOnlyArea(netLink);

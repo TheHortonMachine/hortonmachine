@@ -328,7 +328,6 @@ public class HMMapframe extends JMapFrame {
         GuiUtilities.setDefaultLookAndFeel();
         List<File> files = new ArrayList<>();
         for( String filePath : args ) {
-            System.out.println("Input: " + filePath);
             File openFile = new File(filePath);
             files.add(openFile);
         }

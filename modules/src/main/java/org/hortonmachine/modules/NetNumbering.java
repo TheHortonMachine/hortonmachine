@@ -144,22 +144,25 @@ public class NetNumbering extends HMModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_all/";
+        // String folder =
+        // "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_all/";
+        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_063basins/";
+        String inPoints = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/monitoring_points/idroStation.shp";
 
-        int desiredArea = 100000_00;
+        int desiredArea = 20000_00;
         int desiredDelta = 20;
 
-        // String folder =
-        // "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_063basins/";
         String inFlow = folder + "brenta_drain.asc";
         String inTca = folder + "brenta_tca.asc";
         String inNet = folder + "brenta_net_10000.asc";
-        String inPoints = null;// folder + "";
-        String outNetnum = folder + "mytest_netnum.asc";
-        String outBasins = folder + "mytest_basins.asc";
-        String outDesireredBasins = folder + "mytest_desiredbasins_" + desiredArea + "_" + desiredDelta + ".asc";
-        String outMM = folder + "mytest_mindmap.txt";
-        String outDesMM = folder + "mytest_mindmap_desired_" + desiredArea + "_" + desiredDelta + ".txt";
+        String withPoints = inPoints == null ? "" : "_pts";
+
+        String outNetnum = folder + "mytest" + withPoints + "_netnum.asc";
+        String outBasins = folder + "mytest" + withPoints + "_basins.asc";
+        String outDesireredBasins = folder + "mytest" + withPoints + "_desiredbasins_" + desiredArea + "_" + desiredDelta
+                + ".asc";
+        String outMM = folder + "mytest" + withPoints + "_mindmap.txt";
+        String outDesMM = folder + "mytest" + withPoints + "_mindmap_desired_" + desiredArea + "_" + desiredDelta + ".txt";
         NetNumbering omsnetnumbering = new NetNumbering();
         omsnetnumbering.inFlow = inFlow;
         omsnetnumbering.inTca = inTca;
