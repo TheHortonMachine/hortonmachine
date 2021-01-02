@@ -31,6 +31,7 @@ org.hortonmachine.modules.GdalInfo
 org.hortonmachine.modules.GdalInstaller
 org.hortonmachine.modules.GdalRaster2TiffConverter
 org.hortonmachine.modules.GdalTilesGeopackageCreator
+org.hortonmachine.modules.GeoframeInputsBuilder
 org.hortonmachine.modules.Geomorphon
 org.hortonmachine.modules.GeomorphonMaximaFinder
 org.hortonmachine.modules.Geopaparazzi3Converter
@@ -111,6 +112,7 @@ org.hortonmachine.modules.RasterExtruder
 org.hortonmachine.modules.RasterGenerator
 org.hortonmachine.modules.RasterMaximaFinder
 org.hortonmachine.modules.RasterNull
+org.hortonmachine.modules.RasterOnVectorResizer
 org.hortonmachine.modules.RasterReader
 org.hortonmachine.modules.RasterReprojector
 org.hortonmachine.modules.RasterResolutionResampler
@@ -134,7 +136,8 @@ org.hortonmachine.modules.Tc
 org.hortonmachine.modules.Tca
 org.hortonmachine.modules.Tca3d
 org.hortonmachine.modules.TopIndex
-org.hortonmachine.modules.TrentoP
+org.hortonmachine.modules.TrentoPCalibration
+org.hortonmachine.modules.TrentoPProject
 org.hortonmachine.modules.Variogram
 org.hortonmachine.modules.VectorClipper
 org.hortonmachine.modules.VectorConverter
