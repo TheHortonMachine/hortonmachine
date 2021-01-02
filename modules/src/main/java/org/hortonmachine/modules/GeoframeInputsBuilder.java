@@ -18,6 +18,7 @@
 package org.hortonmachine.modules;
 import java.awt.image.WritableRaster;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 import javax.media.jai.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -35,14 +37,22 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.hmachine.modules.network.networkattributes.OmsNetworkAttributesBuilder;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -105,6 +115,7 @@ public class GeoframeInputsBuilder extends HMModel {
         checkNull(inPitfiller, inDrain, inNet, inSkyview, inBasins, outFolder);
 
         GridCoverage2D subBasins = getRaster(inBasins);
+        CoordinateReferenceSystem crs = subBasins.getCoordinateReferenceSystem();
         pm.beginTask("Vectorize raster map...", IHMProgressMonitor.UNKNOWN);
         List<Polygon> cells = CoverageUtilities.gridcoverageToCellPolygons(subBasins, null);
         pm.done();
@@ -114,18 +125,31 @@ public class GeoframeInputsBuilder extends HMModel {
         GridCoverage2D drain = getRaster(inDrain);
         GridCoverage2D net = getRaster(inNet);
 
+        OmsNetworkAttributesBuilder netAttributesBuilder = new OmsNetworkAttributesBuilder();
+        netAttributesBuilder.inDem = pit;
+        netAttributesBuilder.inFlow = drain;
+        netAttributesBuilder.inNet = net;
+        netAttributesBuilder.onlyDoSimpleGeoms = true;
+        netAttributesBuilder.process();
+        SimpleFeatureCollection outNet = netAttributesBuilder.outNet;
+
+        // dumpVector(outNet,
+        // "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_all/aaa.shp");
+
+        List<Geometry> netGeometries = FeatureUtilities.featureCollectionToGeometriesList(outNet, true, null);
+
         Map<Integer, List<Polygon>> collected = cells.parallelStream()
                 .filter(poly -> ((Number) poly.getUserData()).doubleValue() != HMConstants.doubleNovalue)
                 .collect(Collectors.groupingBy(poly -> ((Number) poly.getUserData()).intValue()));
 
-        SimpleFeatureBuilder builder = getBuilder(pit.getCoordinateReferenceSystem());
+        SimpleFeatureBuilder basinsBuilder = getBasinsBuilder(pit.getCoordinateReferenceSystem());
+        SimpleFeatureBuilder netBuilder = getNetBuilder(pit.getCoordinateReferenceSystem());
 
         DefaultFeatureCollection allBasins = new DefaultFeatureCollection();
-
-        HashMap<Integer, Envelope> id2BoundsMap = new HashMap<>();
+        DefaultFeatureCollection allNetworks = new DefaultFeatureCollection();
 
         StringBuilder csvText = new StringBuilder();
-        csvText.append("#basinid;x;y;centroid_elev;centroid_area;netlength;centroid_skyview\n");
+        csvText.append("#id;x;y;elev_m;avgelev_m;area_km2;netlength;centroid_skyview\n");
 
         pm.beginTask("Extract vector basins...", collected.size());
         for( Entry<Integer, List<Polygon>> entry : collected.entrySet() ) {
@@ -149,59 +173,37 @@ public class GeoframeInputsBuilder extends HMModel {
                 }
             }
 
-            id2BoundsMap.put(basinNum, maxPolygon.getEnvelopeInternal());
+            // get network pieces inside basin
+            Geometry basinBuffer = maxPolygon.buffer(1);
+            PreparedGeometry preparedBasin = PreparedGeometryFactory.prepare(basinBuffer);
+            List<LineString> netPieces = new ArrayList<>();
+            for( Geometry netGeom : netGeometries ) {
+                if (preparedBasin.intersects(netGeom)) {
+                    Geometry netIntersection = maxPolygon.intersection(netGeom);
+                    for( int i = 0; i < netIntersection.getNumGeometries(); i++ ) {
+                        Geometry geometryN = netIntersection.getGeometryN(i);
+                        if (geometryN instanceof LineString) {
+                            netPieces.add((LineString) geometryN);
+                        }
+                    }
+                }
+            }
+            MultiLineString netLines = GeometryUtilities.gf().createMultiLineString(netPieces.toArray(new LineString[0]));
+            double netLength = netLines.getLength();
+
+            Envelope basinEnvelope = maxPolygon.getEnvelopeInternal();
 
             Point centroid = maxPolygon.getCentroid();
-            double area = maxPolygon.getArea();
+            double areaM2 = maxPolygon.getArea();
+            double areaKm2 = areaM2 / 1000000.0;
 
             Coordinate point = centroid.getCoordinate();
             double elev = CoverageUtilities.getValue(pit, point);
             double skyview = CoverageUtilities.getValue(sky, point);
 
-            csvText.append(basinNum).append(";");
-            csvText.append(point.x).append(";");
-            csvText.append(point.y).append(";");
-            csvText.append(elev).append(";");
-            csvText.append(area).append(";");
-            csvText.append(-1).append(";");
-            csvText.append(skyview).append("\n");
-
-            Object[] values = new Object[]{maxPolygon, basinNum, point.x, point.y, elev, area, -1, skyview}; // TODO add lunghezza
-                                                                                                             // asta
-            builder.addAll(values);
-            SimpleFeature feature = builder.buildFeature(null);
-
-            DefaultFeatureCollection singleBasin = new DefaultFeatureCollection();
-            singleBasin.add(feature);
-            File basinFolder = makeBasinFolder(basinNum);
-            File basinShpFile = new File(basinFolder, "subbasins_complete_ID_" + basinNum + ".shp");
-            if (!basinShpFile.exists() || doOverWrite) {
-                dumpVector(singleBasin, basinShpFile.getAbsolutePath());
-            }
-
-            allBasins.add(feature);
-            pm.worked(1);
-        }
-        pm.done();
-
-        File folder = new File(outFolder);
-        File basinShpFile = new File(folder, "subbasins_complete.shp");
-        if (!basinShpFile.exists() || doOverWrite) {
-            dumpVector(allBasins, basinShpFile.getAbsolutePath());
-        }
-        File csvFile = new File(folder, "subbasins.csv");
-        if (!csvFile.exists() || doOverWrite) {
-            FileUtilities.writeFile(csvText.toString(), csvFile);
-        }
-
-        pm.beginTask("Extracting raster data for each basin...", id2BoundsMap.size());
-        CoordinateReferenceSystem crs = subBasins.getCoordinateReferenceSystem();
-        for( Entry<Integer, Envelope> entry : id2BoundsMap.entrySet() ) {
-            int basinNum = entry.getKey();
-            Envelope env = entry.getValue();
-            // create basins masking
-
-            GridCoverage2D clipped = CoverageUtilities.clipCoverage(subBasins, new ReferencedEnvelope(env, crs));
+            // Extracting raster data for each basin
+            ReferencedEnvelope basinRefEnvelope = new ReferencedEnvelope(basinEnvelope, crs);
+            GridCoverage2D clipped = CoverageUtilities.clipCoverage(subBasins, basinRefEnvelope);
             WritableRaster clippedWR = CoverageUtilities.renderedImage2IntWritableRaster(clipped.getRenderedImage(), false);
 
             RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(clipped);
@@ -215,41 +217,92 @@ public class GeoframeInputsBuilder extends HMModel {
                     }
                 }
             }
-            GridCoverage2D maskCoverage = CoverageUtilities.buildCoverage("basin" + basinNum, clippedWR, regionMap, crs);
 
             File basinFolder = makeBasinFolder(basinNum);
 
-            GridCoverage2D clippedPit = CoverageUtilities.clipCoverage(pit, new ReferencedEnvelope(env, crs));
+            GridCoverage2D maskCoverage = CoverageUtilities.buildCoverage("basin" + basinNum, clippedWR, regionMap, crs);
+
+            GridCoverage2D clippedPit = CoverageUtilities.clipCoverage(pit, basinRefEnvelope);
             GridCoverage2D cutPit = CoverageUtilities.coverageValuesMapper(clippedPit, maskCoverage);
             File pitFile = new File(basinFolder, "dtm_" + basinNum + ".asc");
             if (!pitFile.exists() || doOverWrite) {
                 dumpRaster(cutPit, pitFile.getAbsolutePath());
             }
 
-            GridCoverage2D clippedSky = CoverageUtilities.clipCoverage(sky, new ReferencedEnvelope(env, crs));
+            double[] minMaxAvgSum = OmsRasterSummary.getMinMaxAvgSum(cutPit);
+            double avgElev = minMaxAvgSum[2];
+
+            GridCoverage2D clippedSky = CoverageUtilities.clipCoverage(sky, basinRefEnvelope);
             GridCoverage2D cutSky = CoverageUtilities.coverageValuesMapper(clippedSky, maskCoverage);
             File skyFile = new File(basinFolder, "sky_" + basinNum + ".asc");
             if (!skyFile.exists() || doOverWrite) {
                 dumpRaster(cutSky, skyFile.getAbsolutePath());
             }
 
-            GridCoverage2D clippedDrain = CoverageUtilities.clipCoverage(drain, new ReferencedEnvelope(env, crs));
+            GridCoverage2D clippedDrain = CoverageUtilities.clipCoverage(drain, basinRefEnvelope);
             GridCoverage2D cutDrain = CoverageUtilities.coverageValuesMapper(clippedDrain, maskCoverage);
             File drainFile = new File(basinFolder, "drain_" + basinNum + ".asc");
             if (!drainFile.exists() || doOverWrite) {
                 dumpRaster(cutDrain, drainFile.getAbsolutePath());
             }
 
-            GridCoverage2D clippedNet = CoverageUtilities.clipCoverage(net, new ReferencedEnvelope(env, crs));
+            GridCoverage2D clippedNet = CoverageUtilities.clipCoverage(net, basinRefEnvelope);
             GridCoverage2D cutNet = CoverageUtilities.coverageValuesMapper(clippedNet, maskCoverage);
             File netFile = new File(basinFolder, "net_" + basinNum + ".asc");
             if (!netFile.exists() || doOverWrite) {
                 dumpRaster(cutNet, netFile.getAbsolutePath());
             }
 
+            // finalize feature writing
+            Object[] basinValues = new Object[]{maxPolygon, basinNum, point.x, point.y, elev, avgElev, areaKm2, netLength,
+                    skyview};
+            basinsBuilder.addAll(basinValues);
+            SimpleFeature basinFeature = basinsBuilder.buildFeature(null);
+            allBasins.add(basinFeature);
+            DefaultFeatureCollection singleBasin = new DefaultFeatureCollection();
+            singleBasin.add(basinFeature);
+            File basinShpFile = new File(basinFolder, "subbasins_complete_ID_" + basinNum + ".shp");
+            if (!basinShpFile.exists() || doOverWrite) {
+                dumpVector(singleBasin, basinShpFile.getAbsolutePath());
+            }
+
+            Object[] netValues = new Object[]{netLines, basinNum, netLength};
+            netBuilder.addAll(netValues);
+            SimpleFeature netFeature = netBuilder.buildFeature(null);
+            allNetworks.add(netFeature);
+            DefaultFeatureCollection singleNet = new DefaultFeatureCollection();
+            singleNet.add(netFeature);
+            File netShpFile = new File(basinFolder, "network_complete_ID_" + basinNum + ".shp");
+            if (!netShpFile.exists() || doOverWrite) {
+                dumpVector(singleNet, netShpFile.getAbsolutePath());
+            }
+
+            csvText.append(basinNum).append(";");
+            csvText.append(point.x).append(";");
+            csvText.append(point.y).append(";");
+            csvText.append(elev).append(";");
+            csvText.append(avgElev).append(";");
+            csvText.append(areaKm2).append(";");
+            csvText.append(netLength).append(";");
+            csvText.append(skyview).append("\n");
+
             pm.worked(1);
         }
         pm.done();
+
+        File folder = new File(outFolder);
+        File basinShpFile = new File(folder, "subbasins_complete.shp");
+        if (!basinShpFile.exists() || doOverWrite) {
+            dumpVector(allBasins, basinShpFile.getAbsolutePath());
+        }
+        File netShpFile = new File(folder, "network_complete.shp");
+        if (!netShpFile.exists() || doOverWrite) {
+            dumpVector(allNetworks, netShpFile.getAbsolutePath());
+        }
+        File csvFile = new File(folder, "subbasins.csv");
+        if (!csvFile.exists() || doOverWrite) {
+            FileUtilities.writeFile(csvText.toString(), csvFile);
+        }
 
     }
 
@@ -260,7 +313,7 @@ public class GeoframeInputsBuilder extends HMModel {
         return basinFolder;
     }
 
-    private SimpleFeatureBuilder getBuilder( CoordinateReferenceSystem crs ) {
+    private SimpleFeatureBuilder getBasinsBuilder( CoordinateReferenceSystem crs ) {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("basin");
         b.setCRS(crs);
@@ -268,10 +321,23 @@ public class GeoframeInputsBuilder extends HMModel {
         b.add("basinid", Integer.class);
         b.add("centrx", Double.class);
         b.add("centry", Double.class);
-        b.add("centrz", Double.class);
-        b.add("area", Double.class);
-        b.add("length", Double.class);
+        b.add("elev_m", Double.class);
+        b.add("avgelev_m", Double.class);
+        b.add("area_km2", Double.class);
+        b.add("length_m", Double.class);
         b.add("skyview", Double.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        return builder;
+    }
+
+    private SimpleFeatureBuilder getNetBuilder( CoordinateReferenceSystem crs ) {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("net");
+        b.setCRS(crs);
+        b.add("the_geom", MultiLineString.class);
+        b.add("basinid", Integer.class);
+        b.add("length_m", Double.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         return builder;

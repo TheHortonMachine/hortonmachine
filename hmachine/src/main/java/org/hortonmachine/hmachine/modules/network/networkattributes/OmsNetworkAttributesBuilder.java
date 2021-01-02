@@ -133,9 +133,14 @@ public class OmsNetworkAttributesBuilder extends HMModel {
 
     private List<NetworkChannel> channels;
 
+    /**
+     * If true, all the exra attributes are not calculated.
+     */
+    public boolean onlyDoSimpleGeoms = false;
+
     @Execute
     public void process() throws Exception {
-        checkNull(inFlow, inNet, inTca);
+        checkNull(inFlow, inNet);
         if (!concatOr(outNet == null, doReset)) {
             return;
         }
@@ -145,7 +150,9 @@ public class OmsNetworkAttributesBuilder extends HMModel {
         gridGeometry = inFlow.getGridGeometry();
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlow);
-        tcaIter = CoverageUtilities.getRandomIterator(inTca);
+        if (inTca != null) {
+            tcaIter = CoverageUtilities.getRandomIterator(inTca);
+        }
         netIter = CoverageUtilities.getRandomIterator(inNet);
 
         WritableRaster hackWR = null;
@@ -154,99 +161,117 @@ public class OmsNetworkAttributesBuilder extends HMModel {
             hackWIter = CoverageUtilities.getWritableRandomIterator(hackWR);
         }
 
-        pm.beginTask("Find outlets...", rows); //$NON-NLS-1$
-        List<FlowNode> exitsList = new ArrayList<FlowNode>();
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                double netValue = netIter.getSampleDouble(c, r, 0);
-                if (isNovalue(netValue)) {
-                    // we make sure that we pick only outlets that are on the net
-                    continue;
-                }
-                FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
-                if (flowNode.isMarkedAsOutlet()) {
-                    exitsList.add(flowNode);
-                } else if (flowNode.touchesBound() && flowNode.isValid()) {
-                    // check if the flow exits
-                    Node goDownstream = flowNode.goDownstream();
-                    if (goDownstream == null) {
-                        // flowNode is exit
+        try {
+            pm.beginTask("Find outlets...", rows); //$NON-NLS-1$
+            List<FlowNode> exitsList = new ArrayList<FlowNode>();
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
+                    double netValue = netIter.getSampleDouble(c, r, 0);
+                    if (isNovalue(netValue)) {
+                        // we make sure that we pick only outlets that are on the net
+                        continue;
+                    }
+                    FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
+                    if (flowNode.isMarkedAsOutlet()) {
                         exitsList.add(flowNode);
+                    } else if (flowNode.touchesBound() && flowNode.isValid()) {
+                        // check if the flow exits
+                        Node goDownstream = flowNode.goDownstream();
+                        if (goDownstream == null) {
+                            // flowNode is exit
+                            exitsList.add(flowNode);
+                        }
                     }
                 }
+                pm.worked(1);
             }
-            pm.worked(1);
-        }
-        pm.done();
-        
-        if (exitsList.size()==0) {
-            throw new ModelsIllegalargumentException("No outlet has been found in the network. Check your data.", this, pm);
-        }
+            pm.done();
 
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("net");
-        b.setCRS(inFlow.getCoordinateReferenceSystem());
-        b.add("the_geom", LineString.class);
-        String hackName = NetworkChannel.HACKNAME;
-        b.add(hackName, Integer.class);
-        String strahlerName = NetworkChannel.STRAHLERNAME;
-        b.add(strahlerName, Integer.class);
-        b.add(NetworkChannel.PFAFNAME, String.class);
-        if (inDem != null) {
-            b.add(NetworkChannel.STARTELEVNAME, Double.class);
-            b.add(NetworkChannel.ENDELEVNAME, Double.class);
-        }
-        SimpleFeatureType type = b.buildFeatureType();
-        networkBuilder = new SimpleFeatureBuilder(type);
+            if (exitsList.size() == 0) {
+                throw new ModelsIllegalargumentException("No outlet has been found in the network. Check your data.", this, pm);
+            }
 
-        pm.beginTask("Extract vectors...", exitsList.size());
-        for( FlowNode exitNode : exitsList ) {
-            /*
-             * - first hack order is 1
-             */
-            handleTrail(exitNode, null, 1);
-            pm.worked(1);
-        }
-        pm.done();
+            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+            b.setName("net");
+            b.setCRS(inFlow.getCoordinateReferenceSystem());
+            b.add("the_geom", LineString.class);
+            String hackName = NetworkChannel.HACKNAME;
+            b.add(hackName, Integer.class);
+            String strahlerName = NetworkChannel.STRAHLERNAME;
+            b.add(strahlerName, Integer.class);
+            b.add(NetworkChannel.PFAFNAME, String.class);
+            if (inDem != null) {
+                b.add(NetworkChannel.STARTELEVNAME, Double.class);
+                b.add(NetworkChannel.ENDELEVNAME, Double.class);
+            }
+            SimpleFeatureType type = b.buildFeatureType();
+            networkBuilder = new SimpleFeatureBuilder(type);
 
-        outNet = new DefaultFeatureCollection();
-        ((DefaultFeatureCollection) outNet).addAll(networkList);
+            pm.beginTask("Extract vectors...", exitsList.size());
+            for( FlowNode exitNode : exitsList ) {
+                /*
+                 * - first hack order is 1
+                 */
+                handleTrail(exitNode, null, 1);
+                pm.worked(1);
+            }
+            pm.done();
 
-        /*
-         * connect channels
-         */
-        channels = new ArrayList<NetworkChannel>();
-        for( SimpleFeature network : networkList ) {
-            channels.add(new NetworkChannel(network));
-        }
-        pm.beginTask("Connect channels...", channels.size());
-        for( NetworkChannel channel : channels ) {
-            for( NetworkChannel checkChannel : channels ) {
-                if (channel.equals(checkChannel)) {
-                    continue;
+            outNet = new DefaultFeatureCollection();
+            ((DefaultFeatureCollection) outNet).addAll(networkList);
+
+            if (!onlyDoSimpleGeoms) {
+                /*
+                 * connect channels
+                 */
+                channels = new ArrayList<NetworkChannel>();
+                for( SimpleFeature network : networkList ) {
+                    channels.add(new NetworkChannel(network));
                 }
-                channel.checkAndAdd(checkChannel);
+                pm.beginTask("Connect channels...", channels.size());
+                for( NetworkChannel channel : channels ) {
+                    for( NetworkChannel checkChannel : channels ) {
+                        if (channel.equals(checkChannel)) {
+                            continue;
+                        }
+                        channel.checkAndAdd(checkChannel);
+                    }
+                    pm.worked(1);
+                }
+                pm.done();
+
+                /*
+                 * calculate strahler
+                 */
+                pm.beginTask("Calculate Strahler...", IHMProgressMonitor.UNKNOWN);
+                calculateStrahler();
+                pm.done();
+
+                /*
+                 * calculate pfaf
+                 */
+                pm.beginTask("Calculate Pfafstetter...", IHMProgressMonitor.UNKNOWN);
+                calculatePfafstetter();
+                pm.done();
+
+                if (hackWIter != null) {
+                    outHack = CoverageUtilities.buildCoverage("hack", hackWR, regionMap, inFlow.getCoordinateReferenceSystem());
+                }
             }
-            pm.worked(1);
-        }
-        pm.done();
 
-        /*
-         * calculate strahler
-         */
-        pm.beginTask("Calculate Strahler...", IHMProgressMonitor.UNKNOWN);
-        calculateStrahler();
-        pm.done();
-
-        /*
-         * calculate pfaf
-         */
-        pm.beginTask("Calculate Pfafstetter...", IHMProgressMonitor.UNKNOWN);
-        calculatePfafstetter();
-        pm.done();
-
-        if (hackWIter != null) {
-            outHack = CoverageUtilities.buildCoverage("hack", hackWR, regionMap, inFlow.getCoordinateReferenceSystem());
+        } finally {
+            if (flowIter != null) {
+                flowIter.done();
+            }
+            if (tcaIter != null) {
+                tcaIter.done();
+            }
+            if (netIter != null) {
+                netIter.done();
+            }
+            if (hackWIter != null) {
+                hackWIter.done();
+            }
         }
     }
 
