@@ -368,6 +368,11 @@ public class CoverageUtilities {
         return coverage2D;
     }
 
+    /**
+     * Clip a coverage to a given envelope.
+     * 
+     * The region is cut to keep the resolution consistent.
+     */
     public static GridCoverage2D clipCoverage( GridCoverage2D coverage, ReferencedEnvelope envelope ) throws Exception {
         RegionMap regionMap = getRegionParamsFromGridCoverage(coverage);
         double xRes = regionMap.getXres();

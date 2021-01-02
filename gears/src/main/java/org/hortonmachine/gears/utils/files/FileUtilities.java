@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 
 /**
@@ -462,6 +463,26 @@ public class FileUtilities {
             }
         });
         return files;
+    }
+
+    /**
+     * Checks a path to be a folder.
+     * 
+     * If it doesn't exist, it tries to create it. 
+     * 
+     * @throws ModelsIOException if the path is null or impossible to create.
+     */
+    public static void folderCheckMakeOrDie( String path ) throws ModelsIOException {
+        if (path != null) {
+            File file = new File(path);
+            if (!file.exists()) {
+                if (!file.mkdirs()) {
+                    throw new ModelsIOException("Unable to create folder: " + path, "FileUtilities");
+                }
+            }
+        } else {
+            throw new ModelsIOException("Cannot create folder on null path.", "FileUtilities");
+        }
     }
 
 }
