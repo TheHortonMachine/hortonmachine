@@ -112,6 +112,10 @@ public class OmsNetNumbering extends HMModel {
     @Description(OMSNETNUMBERING_outMindmap_DESCRIPTION)
     @Out
     public String outMindmap = null;
+    
+    @Description(OMSNETNUMBERING_outGeoframeTopology_DESCRIPTION)
+    @Out
+    public String outGeoframeTopology = null;
 
     @Description(OMSNETNUMBERING_outMindmapDesired_DESCRIPTION)
     @Out
@@ -138,6 +142,7 @@ public class OmsNetNumbering extends HMModel {
     public static final String OMSNETNUMBERING_outMindmapDesired_DESCRIPTION = "Output desired mindmap (plantuml).";
     public static final String OMSNETNUMBERING_desiredArea_DESCRIPTION = "The desired basins area size.";
     public static final String OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION = "The allowed variance for the desired area.";
+    public static final String OMSNETNUMBERING_outGeoframeTopology_DESCRIPTION = "The optional geoframe topology output file.";
 
     private int nCols;
 
@@ -166,8 +171,8 @@ public class OmsNetNumbering extends HMModel {
 
         WritableRandomIter netNumIter = null;
         try {
-            List<NetLink> nodesList = new ArrayList<NetLink>();
-            WritableRaster netNumWR = ModelsEngine.netNumbering(inFlow, inNet, inTca, inPoints, nodesList, pm);
+            List<NetLink> linksList = new ArrayList<NetLink>();
+            WritableRaster netNumWR = ModelsEngine.netNumbering(inFlow, inNet, inTca, inPoints, linksList, pm);
             outNetnum = CoverageUtilities.buildCoverage("netnum", netNumWR, regionMap, inFlow.getCoordinateReferenceSystem());
 
             netNumIter = RandomIterFactory.createWritable(netNumWR, null);
@@ -190,15 +195,15 @@ public class OmsNetNumbering extends HMModel {
                 }
 
                 // now handle basin hierarchy
-                for( NetLink nl1 : nodesList ) {
-                    for( NetLink nl2 : nodesList ) {
+                for( NetLink nl1 : linksList ) {
+                    for( NetLink nl2 : linksList ) {
                         if (!nl1.equals(nl2)) {
                             nl1.connect(nl2);
                         }
                     }
                 }
 
-                List<NetLink> rootNetLink = nodesList.stream().filter(n -> n.getDownStreamLink() == null)
+                List<NetLink> rootNetLink = linksList.stream().filter(n -> n.getDownStreamLink() == null)
                         .collect(Collectors.toList());
                 if (rootNetLink.size() > 1) {
                     throw new ModelsRuntimeException("More than one link found to be root link. Check the dataset.", this);
@@ -222,7 +227,7 @@ public class OmsNetNumbering extends HMModel {
                     double desArea = pDesiredArea;
                     double minArea = desArea - desArea * pDesiredAreaDelta / 100.0;
 
-                    for( NetLink netLink : nodesList ) {
+                    for( NetLink netLink : linksList ) {
                         // first handle the most upstream ones and aggregate them with their parents
                         List<NetLink> upStreamLinks = netLink.getUpStreamLinks();
                         if (!netLink.isFixed() && upStreamLinks.isEmpty()) {
@@ -257,7 +262,7 @@ public class OmsNetNumbering extends HMModel {
                     do {
                         convertedSize = conversionMap.size();
                         List<NetLink> links = Arrays.asList(rootLink);
-                        aggregateBasins(links, conversionMap, nodesList, minArea, desArea);
+                        aggregateBasins(links, conversionMap, linksList, minArea, desArea);
                         postConvertedSize = conversionMap.size();
                     } while( postConvertedSize - convertedSize > 0 );
 
@@ -270,6 +275,11 @@ public class OmsNetNumbering extends HMModel {
                     printLinkAsMindMap(rootLink, level, sb);
                     sb.append("@endmindmap\n");
                     outDesiredMindmap = sb.toString();
+
+                    // build geoframe topology input
+                    StringBuilder geoframeSb = new StringBuilder();
+                    printLinkAsGeoframe(rootLink, geoframeSb);
+                    outGeoframeTopology = geoframeSb.toString();
 
                     WritableRaster desiredSubbasinsWR = CoverageUtilities.createWritableRaster(nCols, nRows, Integer.class, null,
                             HMConstants.intNovalue);
@@ -406,6 +416,12 @@ public class OmsNetNumbering extends HMModel {
         sb.append(level).append(" ").append(node.toMindMapString()).append("\n");
         for( NetLink upNode : node.getUpStreamLinks() ) {
             printLinkAsMindMap(upNode, level, sb);
+        }
+    }
+    private void printLinkAsGeoframe( NetLink node, StringBuilder sb ) {
+        for( NetLink upNode : node.getUpStreamLinks() ) {
+            sb.append(upNode.num).append(" ").append(node.num).append("\n");
+            printLinkAsGeoframe(upNode, sb);
         }
     }
 

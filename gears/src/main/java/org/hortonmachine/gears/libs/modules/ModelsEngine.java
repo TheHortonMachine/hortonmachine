@@ -826,7 +826,7 @@ public class ModelsEngine {
                 boolean isFixedNode = false;
                 if (fixedNodesColRows.contains(lastNode.col + "_" + lastNode.row)) {
                     isFixedNode = true;
-                    System.out.println("Found fixed: " + lastNode);
+                    // System.out.println("Found fixed: " + lastNode);
                 }
 
                 NetLink link = new NetLink(channel, upCol, upRow, downCol, downRow, downLinkCol, downLinkRow, isFixedNode);

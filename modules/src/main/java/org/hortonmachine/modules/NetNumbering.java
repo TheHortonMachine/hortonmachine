@@ -118,6 +118,11 @@ public class NetNumbering extends HMModel {
     @In
     public String outDesiredMindmap = null;
 
+    @Description(OMSNETNUMBERING_outGeoframeTopology_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outGeoframeTopology = null;
+
     @Execute
     public void process() throws Exception {
         OmsNetNumbering omsnetnumbering = new OmsNetNumbering();
@@ -141,15 +146,18 @@ public class NetNumbering extends HMModel {
         if (pDesiredArea != null && outDesiredMindmap != null && outDesiredMindmap.trim().length() > 0) {
             FileUtilities.writeFile(omsnetnumbering.outDesiredMindmap, new File(outDesiredMindmap));
         }
+        if (outGeoframeTopology != null && outGeoframeTopology != null && outGeoframeTopology.trim().length() > 0) {
+            FileUtilities.writeFile(omsnetnumbering.outGeoframeTopology, new File(outGeoframeTopology));
+        }
     }
 
     public static void main( String[] args ) throws Exception {
+        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_all/";
         // String folder =
-        // "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_all/";
-        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_016basins/";
+        // "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_016basins/";
         String inPoints = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/monitoring_points/idroStation.shp";
 
-        int desiredArea = 20000_00;
+        int desiredArea = 100000_00;
         int desiredDelta = 20;
 
         String inFlow = folder + "brenta_drain.asc";
@@ -163,6 +171,7 @@ public class NetNumbering extends HMModel {
                 + ".asc";
         String outMM = folder + "mytest" + withPoints + "_mindmap.txt";
         String outDesMM = folder + "mytest" + withPoints + "_mindmap_desired_" + desiredArea + "_" + desiredDelta + ".txt";
+        String outGeoframe = folder + "mytest" + withPoints + "_geoframe.txt";
         NetNumbering omsnetnumbering = new NetNumbering();
         omsnetnumbering.inFlow = inFlow;
         omsnetnumbering.inTca = inTca;
@@ -175,6 +184,7 @@ public class NetNumbering extends HMModel {
         }
         omsnetnumbering.outMindmap = outMM;
         omsnetnumbering.outDesiredMindmap = outDesMM;
+        omsnetnumbering.outGeoframeTopology = outGeoframe;
         omsnetnumbering.outBasins = outBasins;
         omsnetnumbering.outDesiredBasins = outDesireredBasins;
         omsnetnumbering.outNetnum = outNetnum;
