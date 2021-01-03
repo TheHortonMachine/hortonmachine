@@ -107,6 +107,8 @@ public class OmsRasterSummary extends HMModel {
     @Out
     public double[][] outCb = null;
 
+    public boolean printToConsole = true;
+
     public static final String OMSRASTERSUMMARY_DESCRIPTION = "Calculate a summary of the map with base statistics.";
     public static final String OMSRASTERSUMMARY_DOCUMENTATION = "OmsRasterSummary.html";
     public static final String OMSRASTERSUMMARY_KEYWORDS = "Statistics, Raster, OmsMapcalc";
@@ -134,17 +136,18 @@ public class OmsRasterSummary extends HMModel {
         if (!concatOr(outMin == null, doReset)) {
             return;
         }
-        
+
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        pm.message("Bounds and resolution");
-        pm.message("---------------------");
-        pm.message(regionMap.toStringJGT());
-        pm.message("");
-        pm.message("Coordinate Reference System");
-        pm.message("---------------------------");
-        pm.message(inRaster.getCoordinateReferenceSystem().toWKT());
-        pm.message("");
-        
+        if (printToConsole) {
+            pm.message("Bounds and resolution");
+            pm.message("---------------------");
+            pm.message(regionMap.toStringJGT());
+            pm.message("");
+            pm.message("Coordinate Reference System");
+            pm.message("---------------------------");
+            pm.message(inRaster.getCoordinateReferenceSystem().toWKT());
+            pm.message("");
+        }
 
         // TODO use the geotools bridge instead of jaitools:
         // http://svn.osgeo.org/geotools/trunk/modules/library/coverage/src/test/java/org/geotools/coverage/processing/operation/ZonalStasTest.java
@@ -230,6 +233,7 @@ public class OmsRasterSummary extends HMModel {
         summary.inRaster = raster;
         summary.doHistogram = false;
         summary.stats = new String[]{Variables.MIN, Variables.MAX};
+        summary.printToConsole = false;
         summary.process();
 
         double min = summary.outMin;
@@ -242,6 +246,7 @@ public class OmsRasterSummary extends HMModel {
         summary.inRaster = raster;
         summary.doHistogram = false;
         summary.stats = new String[]{Variables.MIN, Variables.MAX, Variables.AVG, Variables.SUM};
+        summary.printToConsole = false;
         summary.process();
 
         double min = summary.outMin;

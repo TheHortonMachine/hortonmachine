@@ -102,11 +102,11 @@ public class OmsShapefileFeatureWriter extends HMModel {
             return;
         }
 
-        pm.beginTask("Writing features to shapefile...", -1);
-
+        
         if (!file.endsWith(".shp")) {
             file = file + ".shp";
         }
+        pm.beginTask("Writing shapefile: " + new File(file).getName(), -1);
         if (geodata != null && geodata.size() != 0) {
             pType = geodata.getSchema();
         }

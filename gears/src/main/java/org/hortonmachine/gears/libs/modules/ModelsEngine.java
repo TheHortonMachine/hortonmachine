@@ -797,26 +797,36 @@ public class ModelsEngine {
             pm.beginTask("Numbering network...", splitNodes.size());
             for( int i = 0; i < splitNodes.size(); i++ ) {
                 FlowNode splitNode = splitNodes.get(i);
-
-                splitNode.setIntValueInMap(netnumIter, channel);
-
-                FlowNode nextNode = splitNode.goDownstream();
-                FlowNode lastNode = null;
                 int startTca = splitNode.getIntValueFromMap(tcaIter);
-                int endTca = intNovalue;
-                if (nextNode != null) {
-                    do {
-                        lastNode = nextNode;
-                        endTca = nextNode.getIntValueFromMap(tcaIter);
-                        nextNode.setIntValueInMap(netnumIter, channel);
-                        nextNode = nextNode.goDownstream();
-                    } while( nextNode != null && !splitNodes.contains(nextNode) );
+
+                setNetNumWithCheck(netnumIter, channel, splitNode);
+
+                FlowNode lastNode = null;
+                FlowNode nextNode = splitNode.goDownstream();
+                int endTca;
+                if (splitNodes.contains(nextNode)) {
+                    // it is a one pixel basin
+                    endTca = startTca;
+                    lastNode = splitNode;
+
+                } else {
+                    endTca = intNovalue;
+                    if (nextNode != null) {
+                        do {
+                            lastNode = nextNode;
+                            endTca = nextNode.getIntValueFromMap(tcaIter);
+
+                            setNetNumWithCheck(netnumIter, channel, nextNode);
+                            nextNode = nextNode.goDownstream();
+                        } while( nextNode != null && !splitNodes.contains(nextNode) );
+                    }
                 }
 
                 int upCol = splitNode.col;
                 int upRow = splitNode.row;
                 int downCol = lastNode.col;
                 int downRow = lastNode.row;
+
                 int downLinkCol = -1;
                 int downLinkRow = -1;
                 if (nextNode != null) {
@@ -846,6 +856,15 @@ public class ModelsEngine {
             }
         }
         return netnumWR;
+    }
+
+    private static void setNetNumWithCheck( WritableRandomIter netnumIter, int channel, FlowNode node ) {
+        int sample = netnumIter.getSample(node.col, node.row, 0);
+        if (HMConstants.isNovalue(sample)) {
+            throw new ModelsIllegalargumentException("Can't over write existing netnum " + sample + " with " + channel,
+                    "ModelsEngine#setNetNumWithCheck");
+        }
+        node.setIntValueInMap(netnumIter, channel);
     }
 
     /**

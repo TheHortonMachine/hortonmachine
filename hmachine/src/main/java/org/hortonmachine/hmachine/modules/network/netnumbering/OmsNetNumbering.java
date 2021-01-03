@@ -112,7 +112,7 @@ public class OmsNetNumbering extends HMModel {
     @Description(OMSNETNUMBERING_outMindmap_DESCRIPTION)
     @Out
     public String outMindmap = null;
-    
+
     @Description(OMSNETNUMBERING_outGeoframeTopology_DESCRIPTION)
     @Out
     public String outGeoframeTopology = null;
@@ -262,7 +262,7 @@ public class OmsNetNumbering extends HMModel {
                     do {
                         convertedSize = conversionMap.size();
                         List<NetLink> links = Arrays.asList(rootLink);
-                        aggregateBasins(links, conversionMap, linksList, minArea, desArea);
+                        aggregateBasins(links, conversionMap, linksList, minArea, desArea, 0);
                         postConvertedSize = conversionMap.size();
                     } while( postConvertedSize - convertedSize > 0 );
 
@@ -270,7 +270,7 @@ public class OmsNetNumbering extends HMModel {
                     sb.append("@startmindmap\n");
                     sb.append("* <b>basin stats</b>\\nvalid basin cells: " + validCount + "\\ntotal cells: "
                             + (invalidCount + validCount) + "\\ntotal basin area: " + (validCount * xres * yres) + "\\nx res: "
-                            + xres + "\\ny res: " + yres + "\n");
+                            + xres + "\\ny res: " + yres + "\\ndesired cells: " + (desArea / xres / yres) + "\n");
                     level = "*";
                     printLinkAsMindMap(rootLink, level, sb);
                     sb.append("@endmindmap\n");
@@ -321,15 +321,20 @@ public class OmsNetNumbering extends HMModel {
     }
 
     private void aggregateBasins( List<NetLink> currentLevelLinks, HashMap<Integer, Integer> conversionMap,
-            List<NetLink> allLinksList, double minArea, double desArea ) throws Exception {
+            List<NetLink> allLinksList, double minArea, double desArea, int level ) throws Exception {
         // TODO COMMENTS
         // * same level aggregations are not supported (only into a parent), since one would have to
-        // move the outlet into a different basin (two outlets need to be joined into a dowstream single
+        // move the outlet into a different basin (two outlets need to be joined into a downstream single
         // outlet)
 
         // double maxArea = desArea + desArea * pDesiredAreaDelta / 100.0;
 
+        System.out.println("********** ENTER " + level + "*********");
         for( NetLink netLink : currentLevelLinks ) {
+            System.out.println(netLink.num);
+            if (netLink.num == 124) {
+                System.out.println();
+            }
             List<NetLink> ups = netLink.getUpStreamLinks();
 
             double area = getLinkOnlyArea(netLink);
@@ -341,9 +346,11 @@ public class OmsNetNumbering extends HMModel {
                         NetLink minDeltaLink = null;
                         double minAddArea = 0;
                         boolean hadOne = false;
+                        int fixedCounts = 0;
                         for( NetLink nl : ups ) {
                             if (nl.isFixed()) {
                                 // fixed ones can't be joined to downstream
+                                fixedCounts++;
                                 continue;
                             }
                             // check if it wasn't used already (i.e. it has no parent)
@@ -359,23 +366,56 @@ public class OmsNetNumbering extends HMModel {
                                 }
                             }
                         }
-                        if (!hadOne) {
-                            // seems like the basins are not enough
-                            break;
-                        }
-                        if (minDeltaLink != null) {
-                            minDeltaLink.desiredChainNetLink = netLink.num;
-                            area += minAddArea;
-
-                            // adjust the upstream channel end and area
-                            conversionMap.put(minDeltaLink.num, netLink.num);
-
-                            ups.remove(minDeltaLink);
-                            List<NetLink> minDeltaUpstreamLinks = minDeltaLink.getUpStreamLinks();
-                            for( NetLink nl : minDeltaUpstreamLinks ) {
-                                nl.setDownStreamLink(netLink);
+                        if (fixedCounts == ups.size()) {
+                            // all upstream are fixed and area is small, aggregate downstream
+                            // if the last basin is too small, let's aggregate it with the parent
+                            NetLink parentLink = netLink.getDownStreamLink();
+                            netLink.desiredChainNetLink = parentLink.num;
+                            conversionMap.put(netLink.num, parentLink.num);
+                            parentLink.getUpStreamLinks().remove(netLink);
+                            for( NetLink nl : ups ) {
+                                nl.setDownStreamLink(parentLink);
                             }
-                            ups.addAll(minDeltaUpstreamLinks);
+                            parentLink.getUpStreamLinks().addAll(ups);
+                            break;
+
+                            // // then need to jump over to next level, if there are upstream
+                            // boolean goUp = false;
+                            // for( NetLink up : ups ) {
+                            //     List<NetLink> upUps = up.getUpStreamLinks();
+                            //     if (!upUps.isEmpty()) {
+                            //         boolean oneNotFixed = upUps.stream().anyMatch(u -> !u.isFixed());
+                            //         goUp = oneNotFixed;
+                            //     }
+                            // }
+                            // if (goUp) {
+                            //     int pre = conversionMap.size();
+                            //     aggregateBasins(ups, conversionMap, allLinksList, minArea, desArea, level + 1);
+                            //     if (pre - conversionMap.size() == 0) {
+                            //         break;
+                            //     }
+                            // } else {
+                            //     break;
+                            // }
+                        } else {
+                            if (!hadOne) {
+                                // seems like the basins are not enough
+                                break;
+                            }
+                            if (minDeltaLink != null) {
+                                minDeltaLink.desiredChainNetLink = netLink.num;
+                                area += minAddArea;
+
+                                // adjust the upstream channel end and area
+                                conversionMap.put(minDeltaLink.num, netLink.num);
+
+                                ups.remove(minDeltaLink);
+                                List<NetLink> minDeltaUpstreamLinks = minDeltaLink.getUpStreamLinks();
+                                for( NetLink nl : minDeltaUpstreamLinks ) {
+                                    nl.setDownStreamLink(netLink);
+                                }
+                                ups.addAll(minDeltaUpstreamLinks);
+                            }
                         }
                     }
                 } else {
@@ -390,10 +430,11 @@ public class OmsNetNumbering extends HMModel {
             } else {
                 // go up one level
                 if (!ups.isEmpty()) {
-                    aggregateBasins(ups, conversionMap, allLinksList, minArea, desArea);
+                    aggregateBasins(ups, conversionMap, allLinksList, minArea, desArea, level + 1);
                 }
             }
         }
+        System.out.println("********** EXIT " + level + "*********");
     }
 
     private double getLinkOnlyArea( NetLink netLink ) {
