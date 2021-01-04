@@ -118,10 +118,15 @@ public class NetLink {
     @Override
     public String toString() {
         String ups = upStreamLinks.stream().map(nl -> nl.num + "").collect(Collectors.joining(", "));
+        int upLinksTca = 0;
+        for( NetLink netLink : upStreamLinks ) {
+            upLinksTca += netLink.tca;
+        }
+        int cells = tca - upLinksTca;
 
         String s = "\n___________________\n";
         s += "| num=" + num + "\n";
-        s += "| tca=" + tca + "\n";
+        s += "| tca=" + cells + "\n";
         s += "| ups=[" + ups + "]\n";
         s += "|___________________|\n";
         s += "|        " + upCol + "/" + upRow + "\n";

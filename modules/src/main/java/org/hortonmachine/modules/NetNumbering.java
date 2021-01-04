@@ -93,6 +93,10 @@ public class NetNumbering extends HMModel {
     @In
     public Double pDesiredAreaDelta = null;
 
+    // @Description(OMSNETNUMBERING_pMaxAllowedConfluences_DESCRIPTION)
+    // @In
+    // public int pMaxAllowedConfluences = -1;
+
     @Description(OMSNETNUMBERING_outNetnum_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
@@ -132,6 +136,7 @@ public class NetNumbering extends HMModel {
         omsnetnumbering.inPoints = getVector(inPoints);
         omsnetnumbering.pDesiredArea = pDesiredArea;
         omsnetnumbering.pDesiredAreaDelta = pDesiredAreaDelta;
+        // omsnetnumbering.pMaxAllowedConfluences = pMaxAllowedConfluences;
         omsnetnumbering.outMindmap = outMindmap;
         omsnetnumbering.doProcess = doProcess;
         omsnetnumbering.doReset = doReset;
@@ -152,13 +157,14 @@ public class NetNumbering extends HMModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_all/";
+        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_all2/";
         // String folder =
         // "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_016basins/";
-        String inPoints = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/monitoring_points/idroStation.shp";
+        String inPoints = folder + "idroStation.shp";
 
         int desiredArea = 100000_00;
         int desiredDelta = 20;
+        // int maxChannels = -1;
 
         String inFlow = folder + "brenta_drain.asc";
         String inTca = folder + "brenta_tca.asc";
@@ -178,6 +184,7 @@ public class NetNumbering extends HMModel {
         omsnetnumbering.inNet = inNet;
         omsnetnumbering.pDesiredArea = (double) desiredArea;
         omsnetnumbering.pDesiredAreaDelta = (double) desiredDelta;
+        // omsnetnumbering.pMaxAllowedConfluences = maxChannels;
 
         if (inPoints != null) {
             omsnetnumbering.inPoints = inPoints;
