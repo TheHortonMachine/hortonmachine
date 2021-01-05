@@ -36,6 +36,10 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestNetNumbering extends HMTestCase {
 
+    public static void main(String[] args) throws Exception {
+        new TestNetNumbering().testNetnumberingMode3();
+    }
+
     public void testNetnumberingMode0() throws Exception {
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();

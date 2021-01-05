@@ -294,6 +294,7 @@ public class OmsNetNumbering extends HMModel {
 
                     // build geoframe topology input
                     StringBuilder geoframeSb = new StringBuilder();
+                    geoframeSb.append(rootLink.num).append(" ").append(0).append("\n");
                     printLinkAsGeoframe(rootLink, geoframeSb);
                     outGeoframeTopology = geoframeSb.toString();
 

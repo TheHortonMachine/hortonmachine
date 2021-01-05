@@ -804,7 +804,7 @@ public class ModelsEngine {
                 FlowNode lastNode = null;
                 FlowNode nextNode = splitNode.goDownstream();
                 int endTca;
-                if (splitNodes.contains(nextNode)) {
+                if (nextNode == null || splitNodes.contains(nextNode)) {
                     // it is a one pixel basin
                     endTca = startTca;
                     lastNode = splitNode;
