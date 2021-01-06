@@ -344,7 +344,7 @@ public class GeoframeInputsBuilder extends HMModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        String path = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_all/";
+        String path = "yourbasefolder";
 
         String pit = path + "pitfiller.asc";
         String drain = path + "brenta_drain.asc";
