@@ -236,6 +236,7 @@ public class OmsNetNumbering extends HMModel {
                     for( NetLink netLink : linksList ) {
                         // first handle the most upstream ones and aggregate them with their parents
                         List<NetLink> upStreamLinks = netLink.getUpStreamLinks();
+
                         if (!netLink.isFixed() && upStreamLinks.isEmpty()) {
                             double area = getLinkOnlyArea(netLink);
                             if (area < minArea) {
@@ -251,7 +252,10 @@ public class OmsNetNumbering extends HMModel {
                         if (upStreamLinks.size() == 1 && upStreamLinks.get(0).isFixed()) {
                             NetLink fixed = upStreamLinks.get(0);
                             double area = getLinkOnlyArea(netLink);
-                            if (area < minArea) {
+                            if (area < minArea && !netLink.isFixed()) {
+                                // if the area is too small we need to merge it downstream,
+                                // but only if the basin itself is not fixed. In that case
+                                // it just can't be changed in size, period.
                                 NetLink parentLink = netLink.getDownStreamLink();
                                 if (parentLink != null) {
                                     netLink.desiredChainNetLink = parentLink.num;
@@ -273,13 +277,13 @@ public class OmsNetNumbering extends HMModel {
                     } while( postConvertedSize - convertedSize > 0 );
 
                     // if (pMaxAllowedConfluences > 0) {
-                    //     // review the tree and solve junctions with more than that number of upstreams
-                    //     do {
-                    //         convertedSize = conversionMap.size();
-                    //         List<NetLink> links = Arrays.asList(rootLink);
-                    //         fixManyChannels(links, conversionMap);
-                    //         postConvertedSize = conversionMap.size();
-                    //     } while( postConvertedSize - convertedSize > 0 );
+                    // // review the tree and solve junctions with more than that number of upstreams
+                    // do {
+                    // convertedSize = conversionMap.size();
+                    // List<NetLink> links = Arrays.asList(rootLink);
+                    // fixManyChannels(links, conversionMap);
+                    // postConvertedSize = conversionMap.size();
+                    // } while( postConvertedSize - convertedSize > 0 );
                     // }
 
                     sb = new StringBuilder();
@@ -373,17 +377,23 @@ public class OmsNetNumbering extends HMModel {
                             }
                         }
                         if (fixedCounts == ups.size() && fixedCounts != 0) {
-                            // all upstream are fixed and area is small, aggregate downstream
-                            // if the last basin is too small, let's aggregate it with the parent
-                            NetLink parentLink = netLink.getDownStreamLink();
-                            netLink.desiredChainNetLink = parentLink.num;
-                            conversionMap.put(netLink.num, parentLink.num);
-                            parentLink.getUpStreamLinks().remove(netLink);
-                            for( NetLink nl : ups ) {
-                                nl.setDownStreamLink(parentLink);
+                            if (!netLink.isFixed()) {
+                                // all upstream are fixed and area is small, aggregate downstream
+                                // if the last basin is too small, let's aggregate it with the parent
+                                NetLink parentLink = netLink.getDownStreamLink();
+                                netLink.desiredChainNetLink = parentLink.num;
+                                conversionMap.put(netLink.num, parentLink.num);
+                                parentLink.getUpStreamLinks().remove(netLink);
+                                for( NetLink nl : ups ) {
+                                    nl.setDownStreamLink(parentLink);
+                                }
+                                parentLink.getUpStreamLinks().addAll(ups);
+                                break;
+                            } else {
+                                // nothing to do here, go up one level and break out
+                                aggregateBasins(ups, conversionMap, minArea, desArea, level + 1);
+                                break;
                             }
-                            parentLink.getUpStreamLinks().addAll(ups);
-                            break;
                         } else {
                             if (!hadOne) {
                                 // seems like the basins are not enough
@@ -423,59 +433,61 @@ public class OmsNetNumbering extends HMModel {
         }
     }
 
-    // private void fixManyChannels( List<NetLink> currentLevelLinks, HashMap<Integer, Integer> conversionMap ) throws Exception {
+    // private void fixManyChannels( List<NetLink> currentLevelLinks, HashMap<Integer, Integer>
+    // conversionMap ) throws Exception {
 
-    //     for( NetLink netLink : currentLevelLinks ) {
-    //         List<NetLink> ups = netLink.getUpStreamLinks();
+    // for( NetLink netLink : currentLevelLinks ) {
+    // List<NetLink> ups = netLink.getUpStreamLinks();
 
-    //         int upsSize = ups.size();
-    //         if (upsSize > pMaxAllowedConfluences) {
-    //             // merge down the smalles up basins into the current
-    //             int toRemove = upsSize - pMaxAllowedConfluences;
+    // int upsSize = ups.size();
+    // if (upsSize > pMaxAllowedConfluences) {
+    // // merge down the smalles up basins into the current
+    // int toRemove = upsSize - pMaxAllowedConfluences;
 
-    //             List<NetLink> sortedUps = ups.stream().sorted(( nl1, nl2 ) -> {
-    //                 double a1 = getLinkOnlyArea(nl1);
-    //                 double a2 = getLinkOnlyArea(nl2);
-    //                 if (a1 > a2) {
-    //                     return 1;
-    //                 } else if (a2 > a1) {
-    //                     return -1;
-    //                 } else {
-    //                     return 0;
-    //                 }
-    //             }).collect(Collectors.toList());
+    // List<NetLink> sortedUps = ups.stream().sorted(( nl1, nl2 ) -> {
+    // double a1 = getLinkOnlyArea(nl1);
+    // double a2 = getLinkOnlyArea(nl2);
+    // if (a1 > a2) {
+    // return 1;
+    // } else if (a2 > a1) {
+    // return -1;
+    // } else {
+    // return 0;
+    // }
+    // }).collect(Collectors.toList());
 
-    //             int removedCount = 0;
-    //             int iter = 0;
-    //             while( removedCount < toRemove ) {
-    //                 NetLink upToRemove = sortedUps.get(iter);
-    //                 if (!upToRemove.isFixed()) {
-    //                     upToRemove.desiredChainNetLink = netLink.num;
-    //                     conversionMap.put(upToRemove.num, netLink.num);
-    //                     netLink.getUpStreamLinks().remove(upToRemove);
+    // int removedCount = 0;
+    // int iter = 0;
+    // while( removedCount < toRemove ) {
+    // NetLink upToRemove = sortedUps.get(iter);
+    // if (!upToRemove.isFixed()) {
+    // upToRemove.desiredChainNetLink = netLink.num;
+    // conversionMap.put(upToRemove.num, netLink.num);
+    // netLink.getUpStreamLinks().remove(upToRemove);
 
-    //                     List<NetLink> upUps = upToRemove.getUpStreamLinks();
-    //                     for( NetLink nl : upUps ) {
-    //                         nl.setDownStreamLink(netLink);
-    //                     }
-    //                     netLink.getUpStreamLinks().addAll(upUps);
-    //                     removedCount++;
-    //                 }
-    //                 iter++;
-    //                 if (iter == upsSize) {
-    //                     break;
-    //                 }
-    //             }
+    // List<NetLink> upUps = upToRemove.getUpStreamLinks();
+    // for( NetLink nl : upUps ) {
+    // nl.setDownStreamLink(netLink);
+    // }
+    // netLink.getUpStreamLinks().addAll(upUps);
+    // removedCount++;
+    // }
+    // iter++;
+    // if (iter == upsSize) {
+    // break;
+    // }
+    // }
 
-    //             if (removedCount < toRemove) {
-    //                 throw new ModelsIllegalargumentException(
-    //                         "Unable to remove converging channel to the desired parameter, due to presence of fixed channels. Check your input data.",
-    //                         this);
-    //             }
-    //         } else {
-    //             fixManyChannels(ups, conversionMap);
-    //         }
-    //     }
+    // if (removedCount < toRemove) {
+    // throw new ModelsIllegalargumentException(
+    // "Unable to remove converging channel to the desired parameter, due to presence of fixed channels.
+    // Check your input data.",
+    // this);
+    // }
+    // } else {
+    // fixManyChannels(ups, conversionMap);
+    // }
+    // }
     // }
 
     private double getLinkOnlyArea( NetLink netLink ) {
