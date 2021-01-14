@@ -22,6 +22,8 @@ import java.awt.Dimension;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,8 +33,10 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
 import org.hortonmachine.dbs.postgis.PostgisDb;
@@ -135,6 +139,10 @@ public class HM {
         sb.append("\tSqliteDb connectSqlite( String databasePath )").append("\n");
         sb.append("Connect to H2GIS:").append("\n");
         sb.append("\tASpatialDb connectH2GIS( String databasePath, String user, String pwd )").append("\n");
+        sb.append("Run query:").append("\n");
+        sb.append("\tList<HashMap<String, Object>> query( ADb db, String sql )").append("\n");
+        sb.append("Execute insert/update/delete:").append("\n");
+        sb.append("\tint execute( ADb db , String sql)").append("\n");
 
         sb.append("\n");
         sb.append("Rendering tools").append("\n");
@@ -204,13 +212,13 @@ public class HM {
         return OmsRasterReader.readRaster(source);
     }
 
-    public void dumpRaster( GridCoverage2D raster, String source ) throws Exception {
+    public static void dumpRaster( GridCoverage2D raster, String source ) throws Exception {
         if (raster == null || source == null)
             return;
         OmsRasterWriter.writeRaster(source, raster);
     }
 
-    public void dumpVector( SimpleFeatureCollection vector, String source ) throws Exception {
+    public static void dumpVector( SimpleFeatureCollection vector, String source ) throws Exception {
         if (vector == null || source == null)
             return;
         OmsVectorWriter.writeVector(source, vector);
@@ -733,6 +741,28 @@ public class HM {
             spatialDb.initSpatialMetadata(null);
         }
         return spatialDb;
+    }
+
+    public static List<HashMap<String, Object>> query( ADb db, String sql ) throws Exception {
+        QueryResult result = db.getTableRecordsMapFromRawSql(sql, -1);
+        List<String> names = result.names;
+        List<Object[]> data = result.data;
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+
+        for( Object[] objects : data ) {
+            HashMap<String, Object> map = new LinkedHashMap<String, Object>();
+            for( int i = 0; i < objects.length; i++ ) {
+                Object object = objects[i];
+                String name = names.get(i);
+                map.put(name, object);
+            }
+            list.add(map);
+        }
+        return list;
+    }
+
+    public static int execute( ADb db , String sql) throws Exception {
+        return db.executeInsertUpdateDeleteSql(sql);
     }
 
     public static String printColorTables() {

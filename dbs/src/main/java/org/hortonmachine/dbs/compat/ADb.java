@@ -30,6 +30,7 @@ import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.HMConnectionConsumer;
+import org.hortonmachine.dbs.utils.HMResultSetConsumer;
 
 /**
  * Abstract non spatial db class.
@@ -153,7 +154,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
     public abstract String[] getDbInfo();
 
     /**
-     * Execute an operation on a datrabase connection. This handles proper releasing of the connection.
+     * Execute an operation on a database connection. This handles proper releasing of the connection.
      * 
      * @param consumer the operation to perform.
      * @throws Exception
@@ -165,6 +166,26 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
         }
         try {
             return consumer.execOnConnection(connection);
+        } finally {
+            connection.release();
+        }
+    }
+
+    /**
+     * Execute an operation to get a resultset. This handles proper releasing of the resultset.
+     * 
+     * @param consumer the operation to perform.
+     * @throws Exception
+     */
+    public <T> T execOnResultSet( String sql, HMResultSetConsumer<IHMResultSet, Exception, T> consumer ) throws Exception {
+        IHMConnection connection = getConnectionInternal();
+        if (connection == null) {
+            return null;
+        }
+
+        try (IHMStatement statement = connection.createStatement()) {
+            IHMResultSet resultSet = statement.executeQuery(sql);
+            return consumer.execOnResultSet(resultSet);
         } finally {
             connection.release();
         }
