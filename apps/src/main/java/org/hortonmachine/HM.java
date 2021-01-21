@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -36,6 +37,8 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.IHMPreparedStatement;
+import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
@@ -143,6 +146,8 @@ public class HM {
         sb.append("\tList<HashMap<String, Object>> query( ADb db, String sql )").append("\n");
         sb.append("Execute insert/update/delete:").append("\n");
         sb.append("\tint execute( ADb db , String sql)").append("\n");
+        sb.append("Execute batched insert/update/delete:").append("\n");
+        sb.append("\texecuteBatched( ADb db, List<String> sqlList, Consumer<String> updateMessageConsumer )").append("\n");
 
         sb.append("\n");
         sb.append("Rendering tools").append("\n");
@@ -761,8 +766,34 @@ public class HM {
         return list;
     }
 
-    public static int execute( ADb db , String sql) throws Exception {
+    public static int execute( ADb db, String sql ) throws Exception {
         return db.executeInsertUpdateDeleteSql(sql);
+    }
+
+    public static void executeBatched( ADb db, List<String> sqlList, Consumer<String> updateMessageConsumer ) throws Exception {
+        db.execOnConnection(conn -> {
+            int count = 0;
+            int lastBatchCount = 0;
+            try (IHMStatement stmt = conn.createStatement()) {
+                for( String sql : sqlList ) {
+                    stmt.addBatch(sql);
+                    count++;
+                    if (count % 10000 == 0) {
+                        stmt.executeBatch();
+                        lastBatchCount = count;
+                        if (updateMessageConsumer != null) {
+                            updateMessageConsumer.accept("Updated pipes: " + count);
+                        }
+                    }
+                }
+                if (lastBatchCount != count) {
+                    stmt.executeBatch();
+                }
+            }
+
+            return null;
+        });
+
     }
 
     public static String printColorTables() {
