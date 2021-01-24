@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +87,8 @@ import org.geotools.swing.JMapFrame.Tool;
 import org.h2.jdbc.JdbcSQLException;
 import org.hortonmachine.database.tree.DatabaseTreeCellRenderer;
 import org.hortonmachine.database.tree.DatabaseTreeModel;
+import org.hortonmachine.database.tree.MultiLineTableCellRenderer;
+import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
@@ -97,6 +98,9 @@ import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.dbs.nosql.INosqlCollection;
+import org.hortonmachine.dbs.nosql.INosqlDb;
+import org.hortonmachine.dbs.nosql.INosqlDocument;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.utils.CommonQueries;
@@ -132,12 +136,16 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 /**
- * The spatialite/h2gis view controller.
+ * The database view controller.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
 public abstract class DatabaseController extends DatabaseView implements IOnCloseListener {
+    private static final int SQL_ONSELECT_LIMIT = 100;
+    private static final int NOSQL_ONSELECT_LIMIT = 10;
+    private static final String THIS_ACTION_IS_AVAILABLE_ONLY_FOR_SQL_DATABASES = "This action is available only for SQL databases.";
+    public static final String THIS_ACTION_IS_AVAILABLE_ONLY_FOR_SPATIAL_DATABASES = "This action is available only for spatial databases.";
     private static final String NO_SAVED_CONNECTIONS_AVAILABLE = "No saved connections available.";
     private static final String HM_SAVED_QUERIES = "HM_SAVED_QUERIES";
 
@@ -173,8 +181,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     protected GuiBridgeHandler guiBridge;
     protected IHMProgressMonitor pm = new LogProgressMonitor();
-    protected ASpatialDb currentConnectedDatabase;
-    private DbLevel currentDbLevel;
+    protected ADb currentConnectedSqlDatabase;
+    protected INosqlDb currentConnectedNosqlDatabase;
     protected DbLevel currentSelectedDb;
     protected TableLevel currentSelectedTable;
     protected ColumnLevel currentSelectedColumn;
@@ -202,6 +210,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         init();
     }
 
+    @SuppressWarnings("serial")
     private void init() {
         databaseTreeView = new DatabaseTreeView();
         _mainSplitPane.setLeftComponent(databaseTreeView);
@@ -258,7 +267,16 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             JPanel panel1 = new JPanel();
             panel1.setLayout(new BorderLayout());
             tabbedDataViewerPane.addTab("Viewer " + (i + 1), panel1);
-            JTable table = new JTable();
+            MultiLineTableCellRenderer wordWrapRenderer = new MultiLineTableCellRenderer();
+            JTable table = new JTable(){
+                public TableCellRenderer getCellRenderer( int row, int column ) {
+                    if (currentConnectedNosqlDatabase != null) {
+                        return wordWrapRenderer;
+                    } else {
+                        return super.getCellRenderer(row, column);
+                    }
+                }
+            };
             JScrollPane dataTablesScrollpane = new JScrollPane(table);
             panel1.add(dataTablesScrollpane, BorderLayout.CENTER);
             if (i == 0) {
@@ -266,7 +284,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
             dataTablesArray[i] = table;
 
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
             addDataTableContextMenu(table);
         }
 
@@ -445,7 +463,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _templatesButton.setIcon(ImageCache.getInstance().getImage(ImageCache.TEMPLATE));
         _templatesButton.addActionListener(e -> {
             try {
-                LinkedHashMap<String, String> templatesMap = CommonQueries.getTemplatesMap(currentConnectedDatabase.getType());
+                if (currentConnectedSqlDatabase == null) {
+                    GuiUtilities.showWarningMessage(this, THIS_ACTION_IS_AVAILABLE_ONLY_FOR_SQL_DATABASES);
+                    return;
+                }
+
+                LinkedHashMap<String, String> templatesMap = CommonQueries.getTemplatesMap(currentConnectedSqlDatabase.getType());
                 String[] sqlTemplates = templatesMap.keySet().toArray(new String[0]);
                 String selected = GuiUtilities.showComboDialog(this, "TEMPLATES", "", sqlTemplates, null);
                 if (selected != null) {
@@ -480,8 +503,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             addJtreeContextMenu();
 
-            databaseTreeCellRenderer = new DatabaseTreeCellRenderer(currentConnectedDatabase);
-            databaseTreeView._databaseTree.setCellRenderer(databaseTreeCellRenderer);
+            setRightTreeRenderer();
 
             databaseTreeView._databaseTree.addTreeSelectionListener(new TreeSelectionListener(){
                 public void valueChanged( TreeSelectionEvent evt ) {
@@ -499,8 +521,22 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             currentSelectedTable = (TableLevel) selectedItem;
 
                             try {
-                                QueryResult queryResult = currentConnectedDatabase
-                                        .getTableRecordsMapIn(currentSelectedTable.tableName, null, 100, -1, null);
+                                QueryResult queryResult = null;
+                                if (currentConnectedSqlDatabase != null) {
+                                    if (currentConnectedSqlDatabase instanceof ASpatialDb) {
+                                        queryResult = ((ASpatialDb) currentConnectedSqlDatabase).getTableRecordsMapIn(
+                                                currentSelectedTable.tableName, null, SQL_ONSELECT_LIMIT, -1, null);
+                                    } else {
+                                        queryResult = currentConnectedSqlDatabase.getTableRecordsMapFromRawSql(
+                                                "select * from " + currentSelectedTable.tableName, SQL_ONSELECT_LIMIT);
+                                    }
+                                } else if (currentConnectedNosqlDatabase != null) {
+                                    INosqlCollection collection = currentConnectedNosqlDatabase
+                                            .getCollection(currentSelectedTable.tableName);
+                                    List<INosqlDocument> result = collection.find(null, NOSQL_ONSELECT_LIMIT);
+                                    queryResult = nosqlToQueryResult(result);
+
+                                }
                                 loadDataViewer(queryResult);
                             } catch (Exception e) {
                                 Logger.INSTANCE.insertError("", "ERROR", e);
@@ -512,6 +548,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
                     }
                 }
+
             });
 
             databaseTreeView._databaseTree.setVisible(false);
@@ -622,6 +659,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         sqlEditorView._runQueryAndStoreShapefileButton.setText("");
         sqlEditorView._runQueryAndStoreShapefileButton.setPreferredSize(preferredSqleditorButtonSize);
         sqlEditorView._runQueryAndStoreShapefileButton.addActionListener(e -> {
+            if (!(currentConnectedSqlDatabase instanceof ASpatialDb)) {
+                GuiUtilities.showWarningMessage(this, THIS_ACTION_IS_AVAILABLE_ONLY_FOR_SPATIAL_DATABASES);
+                return;
+            }
 
             File selectedFile = null;
             String sqlText = currentSqlEditorArea.getText().trim();
@@ -1601,12 +1642,15 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private void layoutTree( DbLevel dbLevel, boolean expandNodes ) {
         toggleButtonsEnabling(dbLevel != null);
 
-        String title;
+        String title = "";
         if (dbLevel != null) {
             databaseTreeView._databaseTree.setVisible(true);
             // title = dbLevel.dbName;
-
-            title = currentConnectedDatabase.getDatabasePath();
+            if (currentConnectedSqlDatabase != null) {
+                title = currentConnectedSqlDatabase.getDatabasePath();
+            } else if (currentConnectedNosqlDatabase != null) {
+                title = currentConnectedNosqlDatabase.getDbUrl();
+            }
         } else {
             dbLevel = new DbLevel();
             databaseTreeView._databaseTree.setVisible(false);
@@ -1656,9 +1700,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     }
 
     public void onClose() {
-        if (currentConnectedDatabase != null) {
+        if (currentConnectedSqlDatabase != null) {
             PreferencesHandler.setPreference(DatabaseGuiUtils.HM_SPATIALITE_LAST_FILE,
-                    currentConnectedDatabase.getDatabasePath());
+                    currentConnectedSqlDatabase.getDatabasePath());
         }
         try {
             closeCurrentDb(false);
@@ -1685,23 +1729,23 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             boolean hadError = false;
             try {
                 if (dbType == EDb.SPATIALITE) {
-                    currentConnectedDatabase = new GTSpatialiteThreadsafeDb();
+                    currentConnectedSqlDatabase = new GTSpatialiteThreadsafeDb();
                 } else {
-                    currentConnectedDatabase = dbType.getSpatialDb();
+                    currentConnectedSqlDatabase = dbType.getSpatialDb();
                 }
-                currentConnectedDatabase.setCredentials(user, pwd);
-                currentConnectedDatabase.open(dbfilePath);
-                currentConnectedDatabase.initSpatialMetadata(null);
-                sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
+                currentConnectedSqlDatabase.setCredentials(user, pwd);
+                currentConnectedSqlDatabase.open(dbfilePath);
+                if (currentConnectedSqlDatabase instanceof ASpatialDb) {
+                    ((ASpatialDb) currentConnectedSqlDatabase).initSpatialMetadata(null);
+                }
+                sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
 
-                if (databaseTreeCellRenderer != null) {
-                    databaseTreeCellRenderer.setDb(currentConnectedDatabase);
-                }
-                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
+                setRightTreeRenderer();
+                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedSqlDatabase);
 
                 layoutTree(dbLevel, false);
             } catch (Exception e) {
-                currentConnectedDatabase = null;
+                currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
                 hadError = true;
             } finally {
@@ -1715,6 +1759,15 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
         }, "DatabaseController->create new database").start();
 
+    }
+
+    private void setRightTreeRenderer() {
+        if (currentConnectedSqlDatabase != null) {
+            databaseTreeCellRenderer = new DatabaseTreeCellRenderer(currentConnectedSqlDatabase);
+        } else if (currentConnectedNosqlDatabase != null) {
+            databaseTreeCellRenderer = new DatabaseTreeCellRenderer(currentConnectedNosqlDatabase);
+        }
+        databaseTreeView._databaseTree.setCellRenderer(databaseTreeCellRenderer);
     }
 
     protected void setDbTreeTitle( String title ) {
@@ -1748,48 +1801,55 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             boolean hadError = false;
             try {
-                if (dbType == EDb.SPATIALITE) {
-                    if (SpatialiteCommonMethods.isSqliteFile(new File(dbfilePath))) {
-                        currentConnectedDatabase = new GTSpatialiteThreadsafeDb();
+                DbLevel dbLevel = null;
+                String dbPath;
+                if (dbType.isNosql()) {
+                    if (dbType == EDb.SPATIALITE) {
+                        if (SpatialiteCommonMethods.isSqliteFile(new File(dbfilePath))) {
+                            currentConnectedSqlDatabase = new GTSpatialiteThreadsafeDb();
+                        } else {
+                            guiBridge.messageDialog("The selected file is not a Spatialite database.", "WARNING",
+                                    JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
                     } else {
-                        guiBridge.messageDialog("The selected file is not a Spatialite database.", "WARNING",
-                                JOptionPane.WARNING_MESSAGE);
-                        return;
+                        currentConnectedSqlDatabase = dbType.getSpatialDb();
                     }
+                    currentConnectedSqlDatabase.setCredentials(user, pwd);
+                    try {
+                        currentConnectedSqlDatabase.open(dbfilePath);
+                    } catch (JdbcSQLException e) {
+                        String message = e.getMessage();
+                        if (message.contains("Wrong user name or password")) {
+                            guiBridge.messageDialog("Wrong user name or password.", "ERROR", JOptionPane.ERROR_MESSAGE);
+                            currentConnectedSqlDatabase = null;
+                            return;
+                        }
+                        if (message.contains("Database may be already in use")) {
+                            guiBridge.messageDialog("Database may be already in use. Close all connections or use server mode.",
+                                    "ERROR", JOptionPane.ERROR_MESSAGE);
+                            currentConnectedSqlDatabase = null;
+                            return;
+                        }
+                    } catch (Exception e) {
+                        Logger.INSTANCE.insertError("", "ERROR", e);
+                        hadError = true;
+                    }
+                    sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
+                    dbLevel = gatherDatabaseLevels(currentConnectedSqlDatabase);
+                    dbPath = currentConnectedSqlDatabase.getDatabasePath();
                 } else {
-                    currentConnectedDatabase = dbType.getSpatialDb();
+                    currentConnectedNosqlDatabase = dbType.getNosqlDb();
+                    currentConnectedNosqlDatabase.setCredentials(user, pwd);
+                    currentConnectedNosqlDatabase.open(dbfilePath);
+                    dbPath = currentConnectedNosqlDatabase.getDbUrl();
                 }
-                currentConnectedDatabase.setCredentials(user, pwd);
-                try {
-                    currentConnectedDatabase.open(dbfilePath);
-                } catch (JdbcSQLException e) {
-                    String message = e.getMessage();
-                    if (message.contains("Wrong user name or password")) {
-                        guiBridge.messageDialog("Wrong user name or password.", "ERROR", JOptionPane.ERROR_MESSAGE);
-                        currentConnectedDatabase = null;
-                        return;
-                    }
-                    if (message.contains("Database may be already in use")) {
-                        guiBridge.messageDialog("Database may be already in use. Close all connections or use server mode.",
-                                "ERROR", JOptionPane.ERROR_MESSAGE);
-                        currentConnectedDatabase = null;
-                        return;
-                    }
-                } catch (Exception e) {
-                    Logger.INSTANCE.insertError("", "ERROR", e);
-                    hadError = true;
-                }
-                sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
-
-                if (databaseTreeCellRenderer != null) {
-                    databaseTreeCellRenderer.setDb(currentConnectedDatabase);
-                }
-                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-
+                setRightTreeRenderer();
                 layoutTree(dbLevel, true);
-                setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
+                setDbTreeTitle(dbPath);
             } catch (Exception e) {
-                currentConnectedDatabase = null;
+                currentConnectedSqlDatabase = null;
+                currentConnectedNosqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
                 hadError = true;
             } finally {
@@ -1816,18 +1876,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             type = EDb.H2GIS;
         } else if (urlString.trim().startsWith(EDb.POSTGIS.getJdbcPrefix())) {
             type = EDb.POSTGIS;
+        } else if (urlString.trim().startsWith(EDb.MONGODB.getJdbcPrefix())) {
+            type = EDb.MONGODB;
         }
-        // for( EDb edb : EDb.values() ) {
-        // if (urlString.trim().startsWith(edb.getJdbcPrefix())) {
-        // if (edb.isSpatial()) {
-        // type = edb;
-        // break;
-        // }
-        // }
-        // }
 
         if (type == null) {
-            guiBridge.messageDialog("Only H2GIS and Postgis databases are supported in remote connection.", "ERROR",
+            guiBridge.messageDialog("Only H2GIS, MongoDb and Postgis databases are supported in remote connection.", "ERROR",
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -1847,20 +1901,35 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             logConsole.beginProcess("Open database");
             boolean hadError = false;
             try {
-                currentConnectedDatabase = _type.getSpatialDb();
-                currentConnectedDatabase.setCredentials(user, pwd);
-                currentConnectedDatabase.open(_urlString);
-                sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
+                if (!_type.isNosql()) {
+                    if (_type.isSpatial()) {
+                        currentConnectedSqlDatabase = _type.getSpatialDb();
+                    } else {
+                        currentConnectedSqlDatabase = _type.getDb();
+                    }
+                    currentConnectedSqlDatabase.setCredentials(user, pwd);
+                    currentConnectedSqlDatabase.open(_urlString);
+                    sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
 
-                if (databaseTreeCellRenderer != null) {
-                    databaseTreeCellRenderer.setDb(currentConnectedDatabase);
+                    setRightTreeRenderer();
+                    DbLevel dbLevel = gatherDatabaseLevels(currentConnectedSqlDatabase);
+
+                    layoutTree(dbLevel, true);
+                    setDbTreeTitle(currentConnectedSqlDatabase.getDatabasePath());
+                } else {
+                    currentConnectedNosqlDatabase = _type.getNosqlDb();
+                    currentConnectedNosqlDatabase.setCredentials(user, pwd);
+                    currentConnectedNosqlDatabase.open(_urlString);
+                    sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedNosqlDatabase.getType());
+                    setRightTreeRenderer();
+                    DbLevel dbLevel = gatherDatabaseLevels(currentConnectedNosqlDatabase);
+
+                    layoutTree(dbLevel, true);
+                    setDbTreeTitle(currentConnectedNosqlDatabase.getDbUrl());
                 }
-                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-
-                layoutTree(dbLevel, true);
-                setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
             } catch (Exception e) {
-                currentConnectedDatabase = null;
+                currentConnectedSqlDatabase = null;
+                currentConnectedNosqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
                 hadError = true;
             } finally {
@@ -1982,23 +2051,33 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     }
 
-    protected DbLevel gatherDatabaseLevels( ASpatialDb db ) throws Exception {
-        currentDbLevel = DbLevel.getDbLevel(db, SpatialiteTableNames.ALL_TYPES_LIST.toArray(new String[0]));
+    protected DbLevel gatherDatabaseLevels( ADb db ) throws Exception {
+        DbLevel currentDbLevel = DbLevel.getDbLevel(db, SpatialiteTableNames.ALL_TYPES_LIST.toArray(new String[0]));
+        return currentDbLevel;
+    }
+
+    protected DbLevel gatherDatabaseLevels( INosqlDb db ) throws Exception {
+        DbLevel currentDbLevel = DbLevel.getDbLevel(db, SpatialiteTableNames.ALL_TYPES_LIST.toArray(new String[0]));
         return currentDbLevel;
     }
 
     protected void closeCurrentDb( boolean manually ) throws Exception {
-        if (currentConnectedDatabase != null) {
-            setDbTreeTitle(DB_TREE_TITLE);
-            layoutTree(null, false);
-            loadDataViewer(null);
-            currentConnectedDatabase.close();
-            currentConnectedDatabase = null;
+        setDbTreeTitle(DB_TREE_TITLE);
+        layoutTree(null, false);
+        loadDataViewer(null);
+        if (currentConnectedSqlDatabase != null) {
+            currentConnectedSqlDatabase.close();
+            currentConnectedSqlDatabase = null;
             dataTableView._recordCountTextfield.setText("");
 
-            if (manually)
-                PreferencesHandler.setPreference(DatabaseGuiUtils.HM_SPATIALITE_LAST_FILE, (String) null);
+        } else if (currentConnectedNosqlDatabase != null) {
+            currentConnectedNosqlDatabase.close();
+            currentConnectedNosqlDatabase = null;
         }
+        dataTableView._recordCountTextfield.setText("");
+
+        if (manually)
+            PreferencesHandler.setPreference(DatabaseGuiUtils.HM_SPATIALITE_LAST_FILE, (String) null);
     }
 
     protected boolean runQuery( String sqlText, IHMProgressMonitor pm ) {
@@ -2006,7 +2085,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             pm = this.pm;
         }
         boolean hasError = false;
-        if (currentConnectedDatabase != null && sqlText.length() > 0) {
+        int limit = getLimit();
+        if (currentConnectedSqlDatabase != null && sqlText.length() > 0) {
             try {
                 String[] split = sqlText.split("\n");
                 StringBuilder sb = new StringBuilder();
@@ -2027,8 +2107,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 }
                 pm.beginTask("Run query: " + queryForLog, IHMProgressMonitor.UNKNOWN);
 
-                int limit = getLimit();
-
                 if (sqlText.contains(";")) {
                     String trim = sqlText.replaceAll("\n", " ").trim();
                     String[] querySplit = trim.split(";");
@@ -2036,7 +2114,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         pm.message("Runnng in multi query mode, since a semicolon has been found.");
                         for( String sql : querySplit ) {
                             if (isSelectOrPragma(sql)) {
-                                QueryResult queryResult = currentConnectedDatabase.getTableRecordsMapFromRawSql(sql, limit);
+                                QueryResult queryResult = currentConnectedSqlDatabase.getTableRecordsMapFromRawSql(sql, limit);
                                 loadDataViewer(queryResult);
 //   TODO                         } else if (sql.toLowerCase().startsWith("copy ")) {
 //                                EDb type = currentConnectedDatabase.getType();
@@ -2058,7 +2136,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 //                                }
                             } else {
                                 long start = System.currentTimeMillis();
-                                int resultCode = currentConnectedDatabase.executeInsertUpdateDeleteSql(sql);
+                                int resultCode = currentConnectedSqlDatabase.executeInsertUpdateDeleteSql(sql);
                                 QueryResult dummyQueryResult = new QueryResult();
                                 long end = System.currentTimeMillis();
                                 dummyQueryResult.queryTimeMillis = end - start;
@@ -2080,7 +2158,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 }
 
                 if (isSelectOrPragma(sqlText)) {
-                    QueryResult queryResult = currentConnectedDatabase.getTableRecordsMapFromRawSql(sqlText, limit);
+                    QueryResult queryResult = currentConnectedSqlDatabase.getTableRecordsMapFromRawSql(sqlText, limit);
                     loadDataViewer(queryResult);
 
                     int size = queryResult.data.size();
@@ -2090,7 +2168,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     }
                     pm.message(msg);
                 } else {
-                    int resultCode = currentConnectedDatabase.executeInsertUpdateDeleteSql(sqlText);
+                    int resultCode = currentConnectedSqlDatabase.executeInsertUpdateDeleteSql(sqlText);
                     QueryResult dummyQueryResult = new QueryResult();
                     dummyQueryResult.names.add("Result = " + resultCode);
                     loadDataViewer(dummyQueryResult);
@@ -2104,6 +2182,15 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 pm.errorMessage("An error occurred: " + localizedMessage);
             } finally {
                 pm.done();
+            }
+        } else if (currentConnectedNosqlDatabase != null && sqlText.length() > 0) {
+            if (currentSelectedTable != null) {
+                INosqlCollection collection = currentConnectedNosqlDatabase.getCollection(currentSelectedTable.tableName);
+                if (collection != null) {
+                    List<INosqlDocument> docs = collection.find(sqlText, limit);
+                    QueryResult nosqlToQueryResult = nosqlToQueryResult(docs);
+                    loadDataViewer(nosqlToQueryResult);
+                }
             }
         }
 
@@ -2142,6 +2229,17 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         return limit;
     }
 
+    private QueryResult nosqlToQueryResult( List<INosqlDocument> result ) {
+        QueryResult queryResult;
+        queryResult = new QueryResult();
+        queryResult.names.add("Document");
+        for( INosqlDocument iNosqlDocument : result ) {
+            String json = iNosqlDocument.toJson();
+            queryResult.data.add(new Object[]{json});
+        }
+        return queryResult;
+    }
+
     protected boolean isSelectOrPragma( String sqlText ) {
         sqlText = sqlText.trim();
         return sqlText.toLowerCase().startsWith("select") || sqlText.toLowerCase().startsWith("pragma")
@@ -2150,10 +2248,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     protected boolean runQueryToFile( String sqlText, File selectedFile, IHMProgressMonitor pm ) {
         boolean hasError = false;
-        if (currentConnectedDatabase != null && sqlText.length() > 0) {
+        if (currentConnectedSqlDatabase != null && sqlText.length() > 0) {
             try {
                 pm.beginTask("Run query: " + sqlText + "\ninto file: " + selectedFile, IHMProgressMonitor.UNKNOWN);
-                currentConnectedDatabase.runRawSqlToCsv(sqlText, selectedFile, true, ";");
+                currentConnectedSqlDatabase.runRawSqlToCsv(sqlText, selectedFile, true, ";");
                 addQueryToHistoryCombo(sqlText);
             } catch (Exception e1) {
                 String localizedMessage = e1.getLocalizedMessage();
@@ -2173,7 +2271,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         }
         try {
             pm.beginTask("Run query: " + sqlText + "\ninto shapefile: " + selectedFile, IHMProgressMonitor.UNKNOWN);
-            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(null, currentConnectedDatabase, sqlText, null);
+            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(null, (ASpatialDb) currentConnectedSqlDatabase,
+                    sqlText, null);
             OmsVectorWriter.writeVector(selectedFile.getAbsolutePath(), fc);
             addQueryToHistoryCombo(sqlText);
         } catch (Exception e1) {
@@ -2214,9 +2313,15 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     protected abstract List<Action> makeTableAction( final TableLevel selectedTable );
 
     protected void refreshDatabaseTree() throws Exception {
-        DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-        setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
-        layoutTree(dbLevel, true);
+        if (currentConnectedSqlDatabase != null) {
+            DbLevel dbLevel = gatherDatabaseLevels(currentConnectedSqlDatabase);
+            setDbTreeTitle(currentConnectedSqlDatabase.getDatabasePath());
+            layoutTree(dbLevel, true);
+        } else if (currentConnectedNosqlDatabase != null) {
+            DbLevel dbLevel = gatherDatabaseLevels(currentConnectedNosqlDatabase);
+            setDbTreeTitle(currentConnectedNosqlDatabase.getDbUrl());
+            layoutTree(dbLevel, true);
+        }
     }
 
     protected void showInMapFrame( boolean withLayers, SimpleFeatureCollection[] fcs, Style[] styles ) {
@@ -2259,7 +2364,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     @Override
     public boolean canCloseWithoutPrompt() {
-        return currentConnectedDatabase == null;
+        return currentConnectedSqlDatabase == null && currentConnectedNosqlDatabase == null;
     }
 
 }

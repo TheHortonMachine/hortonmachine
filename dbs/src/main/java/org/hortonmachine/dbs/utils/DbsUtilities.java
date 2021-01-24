@@ -194,7 +194,7 @@ public class DbsUtilities {
      * @return the query.
      * @throws Exception
      */
-    public static String getSelectQuery( ASpatialDb db, final TableLevel selectedTable, boolean geomFirst ) throws Exception {
+    public static String getSelectQuery( ADb db, final TableLevel selectedTable, boolean geomFirst ) throws Exception {
         String tableName = selectedTable.tableName;
         String letter = "tbl";
         if (!Character.isDigit(tableName.charAt(0))) {
@@ -203,7 +203,9 @@ public class DbsUtilities {
         List<String[]> tableColumns = db.getTableColumns(tableName);
         GeometryColumn geometryColumns = null;
         try {
-            geometryColumns = db.getGeometryColumnsForTable(tableName);
+            if (db instanceof ASpatialDb) {
+                geometryColumns = ((ASpatialDb) db).getGeometryColumnsForTable(tableName);
+            }
         } catch (Exception e) {
             // ignore
         }

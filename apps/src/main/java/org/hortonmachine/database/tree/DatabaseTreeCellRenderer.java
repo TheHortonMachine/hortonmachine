@@ -20,13 +20,14 @@ package org.hortonmachine.database.tree;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
-import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.compat.objects.TypeLevel;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
+import org.hortonmachine.dbs.nosql.INosqlDb;
 import org.hortonmachine.gui.utils.ImageCache;
 
 /**
@@ -38,14 +39,15 @@ import org.hortonmachine.gui.utils.ImageCache;
 public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
     private static final long serialVersionUID = 1L;
 
-    private ASpatialDb db;
+    private ADb db;
+    private INosqlDb nosqlDb;
 
-    public DatabaseTreeCellRenderer( ASpatialDb db ) {
+    public DatabaseTreeCellRenderer( ADb db ) {
         this.db = db;
     }
 
-    public void setDb( ASpatialDb db ) {
-        this.db = db;
+    public DatabaseTreeCellRenderer( INosqlDb nosqlDb ) {
+        this.nosqlDb = nosqlDb;
     }
 
     @Override
@@ -76,25 +78,38 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
                     setIcon(ImageCache.getInstance().getImage(ImageCache.DATABASE));
                     break;
                 }
+            } else if (nosqlDb != null) {
+                switch( nosqlDb.getType() ) {
+                case MONGODB:
+                    setIcon(ImageCache.getInstance().getImage(ImageCache.MONGO32));
+                    break;
+                default:
+                    setIcon(ImageCache.getInstance().getImage(ImageCache.DATABASE));
+                    break;
+                }
             }
         } else if (value instanceof TypeLevel) {
             setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_FOLDER));
         } else if (value instanceof TableLevel) {
             TableLevel tableLevel = (TableLevel) value;
             try {
-                ETableType tableType = db.getTableType(tableLevel.tableName);
-                if (tableLevel.isGeo) {
-                    if (tableType == ETableType.EXTERNAL) {
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL_VIRTUAL));
+                if (db != null) {
+                    ETableType tableType = db.getTableType(tableLevel.tableName);
+                    if (tableLevel.isGeo) {
+                        if (tableType == ETableType.EXTERNAL) {
+                            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL_VIRTUAL));
+                        } else {
+                            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL));
+                        }
                     } else {
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL));
+                        if (tableType == ETableType.VIEW) {
+                            setIcon(ImageCache.getInstance().getImage(ImageCache.VIEW));
+                        } else {
+                            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE));
+                        }
                     }
                 } else {
-                    if (tableType == ETableType.VIEW) {
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.VIEW));
-                    } else {
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE));
-                    }
+                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE));
                 }
             } catch (Exception e) {
                 setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE));

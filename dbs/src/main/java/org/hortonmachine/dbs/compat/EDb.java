@@ -22,6 +22,7 @@ import java.io.File;
 import org.hortonmachine.dbs.geopackage.GeopackageGeometryParser;
 import org.hortonmachine.dbs.h2gis.H2GisGeometryParser;
 import org.hortonmachine.dbs.h2gis.H2SyntaxHelper;
+import org.hortonmachine.dbs.nosql.INosqlDb;
 import org.hortonmachine.dbs.postgis.PGSyntaxHelper;
 import org.hortonmachine.dbs.postgis.PostgisGeometryParser;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
@@ -36,23 +37,25 @@ import org.hortonmachine.dbs.spatialite.SqliteNonSpatialDataType;
  */
 public enum EDb {
     SQLITE(0, ".sqlite", "sqlite", "org.hortonmachine.dbs.spatialite.hm.SqliteDb", false,
-            "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, false, true), //
+            "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, false, true, false), //
     SPATIALITE(1, ".sqlite", "sqlite", "org.hortonmachine.dbs.spatialite.hm.SpatialiteThreadsafeDb", true,
-            "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, false, true), //
+            "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, false, true, false), //
     H2(2, "", "mv.db", "org.hortonmachine.dbs.h2gis.H2Db", false, "org.hortonmachine.dbs.h2gis.H2GisSqlTemplates", "jdbc:h2:",
-            true, true, false, true), //
+            true, true, false, true, false), //
     H2GIS(3, "", "mv.db", "org.hortonmachine.dbs.h2gis.H2GisDb", true, "org.hortonmachine.dbs.h2gis.H2GisSqlTemplates",
-            "jdbc:h2:", true, true, false, true), //
+            "jdbc:h2:", true, true, false, true, false), //
     SPATIALITE4ANDROID(4, ".sqlite", "sqlite", "org.hortonmachine.dbs.spatialite.android.GPSpatialiteDb", true,
-            "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "", false, false, true, false), //
+            "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "", false, false, true, false, false), //
     POSTGRES(5, "", "", "org.hortonmachine.dbs.postgis.PGDb", false, "org.hortonmachine.dbs.postgis.PGSqlTemplates",
-            "jdbc:postgresql://", true, true, false, false), //
+            "jdbc:postgresql://", true, true, false, false, false), //
     POSTGIS(6, "", "", "org.hortonmachine.dbs.postgis.PostgisDb", true, "org.hortonmachine.dbs.postgis.PostgisSqlTemplates",
-            "jdbc:postgresql://", true, true, false, false), //
+            "jdbc:postgresql://", true, true, false, false, false), //
     GEOPACKAGE(7, ".gpkg", "gpkg", "org.hortonmachine.dbs.geopackage.hm.GeopackageDb", true,
-            "org.hortonmachine.dbs.geopackage.GeopackageSqlTemplates", "jdbc:sqlite:", false, false, true, true), //
+            "org.hortonmachine.dbs.geopackage.GeopackageSqlTemplates", "jdbc:sqlite:", false, false, true, true, false), //
     GEOPACKAGE4ANDROID(8, ".gpkg", "gpkg", "org.hortonmachine.dbs.geopackage.android.GPGeopackageDb", true,
-            "org.hortonmachine.dbs.geopackage.GeopackageSqlTemplates", "", false, false, true, false), //
+            "org.hortonmachine.dbs.geopackage.GeopackageSqlTemplates", "", false, false, true, false, false), //
+    MONGODB(9, "", "", "org.hortonmachine.dbs.nosql.mongodb.MongoDb", false,
+            "org.hortonmachine.dbs.nosql.mongodb.MongoSqlTemplates", "", true, true, false, false, true), //
     ; //
 
     private int _code;
@@ -67,6 +70,7 @@ public enum EDb {
     private boolean _supportsMobile;
     private boolean _supportsDesktop;
     private ASqlTemplates sqlTemplates;
+    private boolean _isNosql;
 
     /**
      * @param code db code.
@@ -80,10 +84,11 @@ public enum EDb {
      * @param supportsServerMode if the db supports server mode.
      * @param supportsMobile if the db can be run on mobile devices.
      * @param supportsDesktop if the db supports file based desktop mode (i.e. without server).
+     * @param isNosql if it is a nosql db.
      */
     private EDb( int code, String extensionOnCreation, String extension, String dbClassName, boolean isSpatial,
             String sqlTemplatesClassName, String jdbcPrefix, boolean supportsPwd, boolean supportsServerMode,
-            boolean supportsMobile, boolean supportsDesktop ) {
+            boolean supportsMobile, boolean supportsDesktop, boolean isNosql ) {
         this._code = code;
         this._extensionOnCreation = extensionOnCreation;
         this._extension = extension;
@@ -95,10 +100,11 @@ public enum EDb {
         this._supportsServerMode = supportsServerMode;
         this._supportsMobile = supportsMobile;
         this._supportsDesktop = supportsDesktop;
+        this._isNosql = isNosql;
     }
 
     public static EDb[] getSpatialTypesDesktop() {
-        return new EDb[]{H2GIS, GEOPACKAGE, SPATIALITE, POSTGIS};
+        return new EDb[]{H2GIS, GEOPACKAGE, SPATIALITE, POSTGIS, MONGODB};
     }
 
     public static EDb[] getSpatialTypesMobile() {
@@ -150,6 +156,10 @@ public enum EDb {
         return _isSpatial;
     }
 
+    public boolean isNosql() {
+        return _isNosql;
+    }
+
     /**
      * Get a new instance of the spatial database version.
      * 
@@ -177,6 +187,18 @@ public enum EDb {
         Class< ? > forName = Class.forName(_dbClassName);
         Object newInstance = forName.newInstance();
         return (ADb) newInstance;
+    }
+
+    /**
+     * Get a new instance of the nosql database.
+     * 
+     * @return the database instance.
+     * @throws Exception
+     */
+    public INosqlDb getNosqlDb() throws Exception {
+        Class< ? > forName = Class.forName(_dbClassName);
+        Object newInstance = forName.newInstance();
+        return (INosqlDb) newInstance;
     }
 
     /**

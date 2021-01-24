@@ -110,6 +110,7 @@ public class ImageCache {
 
     public static final String GPKG32 = "gpkg32.png";
     public static final String POSTGIS32 = "postgis32.png";
+    public static final String MONGO32 = "mongo32.png";
 
     public static final String SETTINGS = "settings.gif";
 

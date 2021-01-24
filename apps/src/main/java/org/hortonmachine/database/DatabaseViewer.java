@@ -41,6 +41,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.styling.Style;
+import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -78,7 +79,7 @@ import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.util.WWUtil;
 
 /**
- * The spatialite/h2gis view controller.
+ * The database viewer.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  *
@@ -140,7 +141,8 @@ public class DatabaseViewer extends DatabaseController {
                 openNww();
             }
             pm.beginTask("Run query: " + sqlText, IHMProgressMonitor.UNKNOWN);
-            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(title, currentConnectedDatabase, sqlText, null);
+            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(title, (ASpatialDb) currentConnectedSqlDatabase,
+                    sqlText, null);
             ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
 
             if (toolsPanelController != null) {
@@ -169,15 +171,15 @@ public class DatabaseViewer extends DatabaseController {
         }
         try {
             pm.beginTask("Run query: " + sqlText, IHMProgressMonitor.UNKNOWN);
-            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(tableName, currentConnectedDatabase, sqlText,
-                    null);
+            DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(tableName,
+                    (ASpatialDb) currentConnectedSqlDatabase, sqlText, null);
             ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
 
             Style[] styles = null;
             if (isTableQuery && tableName != null) {
                 // try to get some style
-                if (currentConnectedDatabase.getType() == EDb.GEOPACKAGE) {
-                    String sldString = ((GeopackageCommonDb) currentConnectedDatabase).getSldString(tableName);
+                if (currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE) {
+                    String sldString = ((GeopackageCommonDb) currentConnectedSqlDatabase).getSldString(tableName);
                     if (sldString != null) {
                         Style style = SldUtilities.getStyleFromSldString(sldString);
                         styles = new Style[]{style};
@@ -285,7 +287,7 @@ public class DatabaseViewer extends DatabaseController {
         List<Action> actions = new ArrayList<>();
         addIfNotNull(actions, sqlTemplatesAndActions.getSelectOnColumnAction(selectedColumn, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getUpdateOnColumnAction(selectedColumn, this));
-        actions.add(null);
+        addSeparator(actions);
         addIfNotNull(actions, sqlTemplatesAndActions.getAddGeometryAction(selectedColumn, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getRecoverGeometryAction(selectedColumn, this));
 
@@ -295,19 +297,19 @@ public class DatabaseViewer extends DatabaseController {
 
         if (selectedColumn.geomColumn != null) {
             addIfNotNull(actions, sqlTemplatesAndActions.getDiscardGeometryColumnAction(selectedColumn, this));
-            actions.add(null);
+            addSeparator(actions);
             addIfNotNull(actions, sqlTemplatesAndActions.getCreateSpatialIndexAction(selectedColumn, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getCheckSpatialIndexAction(selectedColumn, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getRecoverSpatialIndexAction(selectedColumn, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getDisableSpatialIndexAction(selectedColumn, this));
-            actions.add(null);
+            addSeparator(actions);
             addIfNotNull(actions, sqlTemplatesAndActions.getShowSpatialMetadataAction(selectedColumn, this));
         }
         /*
          * FK key bound stuff
          */
         if (selectedColumn.references != null) {
-            actions.add(null);
+            addSeparator(actions);
             addIfNotNull(actions, sqlTemplatesAndActions.getCombinedSelectAction(selectedColumn, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewOtherTableAction(selectedColumn, this));
         }
@@ -324,39 +326,51 @@ public class DatabaseViewer extends DatabaseController {
     protected List<Action> makeDatabaseAction( final DbLevel dbLevel ) {
         List<Action> actions = new ArrayList<>();
         addIfNotNull(actions, sqlTemplatesAndActions.getRefreshDatabaseAction(guiBridge, this));
-        actions.add(null);
+        addSeparator(actions);
         addIfNotNull(actions, sqlTemplatesAndActions.getCopyDatabasePathAction(this));
         addIfNotNull(actions, sqlTemplatesAndActions.getSaveConnectionAction(this));
-        actions.add(null);
-        addIfNotNull(actions, sqlTemplatesAndActions.getCreateTableFromShapefileSchemaAction(guiBridge, this));
-        addIfNotNull(actions, sqlTemplatesAndActions.getAttachShapefileAction(guiBridge, this));
+        addSeparator(actions);
         addIfNotNull(actions, sqlTemplatesAndActions.getImportSqlFileAction(guiBridge, this));
-        actions.add(null);
-        addIfNotNull(actions, sqlTemplatesAndActions.getUpdateLayerStats(guiBridge, this));
-        actions.add(null);
-        addIfNotNull(actions, sqlTemplatesAndActions.getImportRaster2TilesTableAction(guiBridge, this));
-        addIfNotNull(actions, sqlTemplatesAndActions.getImportVector2TilesTableAction(guiBridge, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getNewCollectionAction(guiBridge, this));
+        if (currentConnectedSqlDatabase instanceof ASpatialDb) {
+            addSeparator(actions);
+            addIfNotNull(actions, sqlTemplatesAndActions.getCreateTableFromShapefileSchemaAction(guiBridge, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getAttachShapefileAction(guiBridge, this));
+            addSeparator(actions);
+            addIfNotNull(actions, sqlTemplatesAndActions.getUpdateLayerStats(guiBridge, this));
+            addSeparator(actions);
+            addIfNotNull(actions, sqlTemplatesAndActions.getImportRaster2TilesTableAction(guiBridge, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getImportVector2TilesTableAction(guiBridge, this));
+        }
         return actions;
+    }
+
+    private void addSeparator( List<Action> actions ) {
+        int size = actions.size();
+        if (actions.get(size - 1) != null) {
+            actions.add(null);
+        }
     }
 
     @SuppressWarnings("serial")
     protected List<Action> makeTableAction( final TableLevel selectedTable ) {
         List<Action> actions = new ArrayList<>();
         addIfNotNull(actions, sqlTemplatesAndActions.getCountRowsAction(selectedTable, this));
-        actions.add(null);
+        addSeparator(actions);
         addIfNotNull(actions, sqlTemplatesAndActions.getSelectAction(selectedTable, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getInsertAction(selectedTable, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getDropAction(selectedTable, this));
-        actions.add(null);
+        addSeparator(actions);
         addIfNotNull(actions, sqlTemplatesAndActions.getReprojectTableAction(selectedTable, this));
-        actions.add(null);
+        addSeparator(actions);
         if (selectedTable.isGeo) {
-            EDb type = currentConnectedDatabase.getType();
+            EDb type = currentConnectedSqlDatabase.getType();
             boolean useToWktBridge = true;
             if (type == EDb.GEOPACKAGE) {
                 useToWktBridge = false;
             }
-            addIfNotNull(actions, sqlTemplatesAndActions.getImportShapefileDataAction(guiBridge, selectedTable, this, useToWktBridge));
+            addIfNotNull(actions,
+                    sqlTemplatesAndActions.getImportShapefileDataAction(guiBridge, selectedTable, this, useToWktBridge));
             addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewTableAction(selectedTable, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewTableGeometriesAction(selectedTable, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getOpenInSldEditorAction(selectedTable, this));
@@ -371,7 +385,7 @@ public class DatabaseViewer extends DatabaseController {
                                 + " desc";
 
                         LinkedHashMap<String, List<Message>> day2MessageMap = new LinkedHashMap<>();
-                        currentConnectedDatabase.execOnConnection(connection -> {
+                        currentConnectedSqlDatabase.execOnConnection(connection -> {
                             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                                 while( rs.next() ) {
                                     int type = rs.getInt(1);

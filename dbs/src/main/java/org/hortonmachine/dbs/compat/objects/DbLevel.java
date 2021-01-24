@@ -22,11 +22,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.ISpatialTableNames;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
-import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
+import org.hortonmachine.dbs.nosql.INosqlCollection;
+import org.hortonmachine.dbs.nosql.INosqlDb;
+import org.hortonmachine.dbs.nosql.INosqlDocument;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 
 /**
@@ -52,14 +56,21 @@ public class DbLevel {
      * @return the {@link DbLevel}.
      * @throws Exception
      */
-    public static DbLevel getDbLevel( ASpatialDb db, String... types ) throws Exception {
+    public static DbLevel getDbLevel( ADb db, String... types ) throws Exception {
         DbLevel dbLevel = new DbLevel();
         String databasePath = db.getDatabasePath();
         File dbFile = new File(databasePath);
 
         String dbName = DbsUtilities.getNameWithoutExtention(dbFile);
         dbLevel.dbName = dbName;
-        HashMap<String, List<String>> currentDatabaseTablesMap = db.getTablesMap(true);
+        HashMap<String, List<String>> currentDatabaseTablesMap = null;
+        if (db instanceof ASpatialDb) {
+            currentDatabaseTablesMap = ((ASpatialDb) db).getTablesMap(true);
+        } else {
+            List<String> tables = db.getTables(true);
+            currentDatabaseTablesMap = new HashMap<>();
+            currentDatabaseTablesMap.put(ISpatialTableNames.USERDATA, tables);
+        }
         for( String typeName : types ) {
             TypeLevel typeLevel = new TypeLevel();
             typeLevel.typeName = typeName;
@@ -77,7 +88,9 @@ public class DbLevel {
 
                 GeometryColumn geometryColumns = null;
                 try {
-                    geometryColumns = db.getGeometryColumnsForTable(tableName);
+                    if (db instanceof ASpatialDb) {
+                        geometryColumns = ((ASpatialDb) db).getGeometryColumnsForTable(tableName);
+                    }
                 } catch (Exception e1) {
                     // ignore
                     e1.printStackTrace();
@@ -115,7 +128,8 @@ public class DbLevel {
                     if (geometryColumns != null && columnName.equalsIgnoreCase(geometryColumns.geometryColumnName)) {
                         columnLevel.geomColumn = geometryColumns;
                         if (columnType.equals("USER-DEFINED")) {
-                            EGeometryType guessedType =geometryColumns.geometryType;// TODO check EGeometryType.fromSpatialiteCode(geometryColumns.geometryType);
+                            EGeometryType guessedType = geometryColumns.geometryType;// TODO check
+                                                                                     // EGeometryType.fromSpatialiteCode(geometryColumns.geometryType);
                             if (guessedType != null) {
                                 columnLevel.columnType = guessedType.name();
                             }
@@ -134,6 +148,51 @@ public class DbLevel {
                     tableLevel.columnsList.add(columnLevel);
                 }
                 typeLevel.tablesList.add(tableLevel);
+            }
+            dbLevel.typesList.add(typeLevel);
+        }
+
+        return dbLevel;
+    }
+
+    public static DbLevel getDbLevel( INosqlDb db, String... types ) throws Exception {
+        DbLevel dbLevel = new DbLevel();
+        dbLevel.dbName = db.getDbName();
+
+        List<String> collectionsNames = db.getCollections(true);
+
+        HashMap<String, List<String>> currentDatabaseTablesMap = new HashMap<>();
+        currentDatabaseTablesMap.put(ISpatialTableNames.USERDATA, collectionsNames);
+        for( String typeName : types ) {
+            TypeLevel typeLevel = new TypeLevel();
+            typeLevel.typeName = typeName;
+            List<String> collecstionList = currentDatabaseTablesMap.get(typeName);
+            if (collecstionList == null) {
+                continue;
+            }
+            for( String collectionName : collecstionList ) {
+                TableLevel tableLevel = new TableLevel();
+                tableLevel.parent = dbLevel;
+                tableLevel.tableName = collectionName;
+
+                tableLevel.tableType = ETableType.OTHER;
+                tableLevel.isGeo = false;
+                typeLevel.tablesList.add(tableLevel);
+
+                INosqlCollection collection = db.getCollection(collectionName);
+
+                INosqlDocument first = collection.getFirst();
+                if (first != null) {
+                    List<String[]> firstLevelKeysAndTypes = first.getFirstLevelKeysAndTypes();
+                    for( String[] nameType : firstLevelKeysAndTypes ) {
+                        ColumnLevel columnLevel = new ColumnLevel();
+                        columnLevel.parent = tableLevel;
+                        columnLevel.columnName = nameType[0];
+                        columnLevel.columnType = nameType[1];
+                        columnLevel.isPK = nameType[0].equals("_id");
+                        tableLevel.columnsList.add(columnLevel);
+                    }
+                }
             }
             dbLevel.typesList.add(typeLevel);
         }

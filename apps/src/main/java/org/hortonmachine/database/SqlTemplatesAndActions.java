@@ -46,6 +46,7 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ASqlTemplates;
 import org.hortonmachine.dbs.compat.ConnectionData;
@@ -57,6 +58,8 @@ import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.dbs.nosql.INosqlCollection;
+import org.hortonmachine.dbs.nosql.INosqlDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.ITilesProducer;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
@@ -94,9 +97,11 @@ public class SqlTemplatesAndActions {
 
     public static final String HM_SAVED_DATABASES = "HM-SAVED-DATABASES";
     private ASqlTemplates sqlTemplates;
+    private boolean isNosql;
 
     public SqlTemplatesAndActions( EDb dbType ) throws Exception {
         sqlTemplates = dbType.getSqlTemplates();
+        isNosql = dbType.isNosql();
     }
 
     private static final Logger logger = Logger.INSTANCE;
@@ -114,6 +119,9 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getUpdateOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return null;
+        }
         return new AbstractAction("Update on column"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -258,6 +266,9 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getShowSpatialMetadataAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return null;
+        }
         return new AbstractAction("Show spatial metadata"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -270,6 +281,9 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getCombinedSelectAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return null;
+        }
         return new AbstractAction("Create combined select statement"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -286,14 +300,23 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getQuickViewOtherTableAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return null;
+        }
         return new AbstractAction("Quick view other table"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
                     String[] tableColsFromFK = column.tableColsFromFK();
                     String refTable = tableColsFromFK[0];
-                    QueryResult queryResult = spatialiteViewer.currentConnectedDatabase.getTableRecordsMapIn(refTable, null, 20,
-                            -1, null);
+                    QueryResult queryResult;
+                    if (spatialiteViewer.currentConnectedSqlDatabase instanceof ASpatialDb) {
+                        queryResult = ((ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase).getTableRecordsMapIn(refTable,
+                                null, 1000, -1, null);
+                    } else {
+                        queryResult = spatialiteViewer.currentConnectedSqlDatabase
+                                .getTableRecordsMapFromRawSql("select * from " + refTable, 100);
+                    }
                     spatialiteViewer.loadDataViewer(queryResult);
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -314,7 +337,8 @@ public class SqlTemplatesAndActions {
                     try {
                         databaseViewer.refreshDatabaseTree();
                     } catch (Exception ex) {
-                        databaseViewer.currentConnectedDatabase = null;
+                        databaseViewer.currentConnectedSqlDatabase = null;
+                        databaseViewer.currentConnectedNosqlDatabase = null;
                         logger.insertError("SqlTemplatesAndActions", "Error refreshing database...", ex);
                     } finally {
                         logConsole.finishProcess();
@@ -331,16 +355,29 @@ public class SqlTemplatesAndActions {
         return new AbstractAction("Copy path"){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                String databasePath = spatialiteViewer.currentConnectedDatabase.getDatabasePath();
-                GuiUtilities.copyToClipboard(databasePath);
+                if (spatialiteViewer.currentConnectedSqlDatabase != null) {
+                    String databasePath = spatialiteViewer.currentConnectedSqlDatabase.getDatabasePath();
+                    GuiUtilities.copyToClipboard(databasePath);
+                } else if (spatialiteViewer.currentConnectedNosqlDatabase != null) {
+                    String databasePath = spatialiteViewer.currentConnectedNosqlDatabase.getDbUrl();
+                    GuiUtilities.copyToClipboard(databasePath);
+                }
             }
         };
     }
 
     public Action getCreateTableFromShapefileSchemaAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return null;
+        }
         return new AbstractAction("Create table from shapefile"){
             @Override
             public void actionPerformed( ActionEvent e ) {
+                if (!(spatialiteViewer.currentConnectedSqlDatabase instanceof ASpatialDb)) {
+                    GuiUtilities.showWarningMessage(spatialiteViewer,
+                            DatabaseController.THIS_ACTION_IS_AVAILABLE_ONLY_FOR_SPATIAL_DATABASES);
+                    return;
+                }
                 File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", PreferencesHandler.getLastFile(),
                         HMConstants.vectorFileFilter);
                 if (openFiles != null && openFiles.length > 0) {
@@ -388,8 +425,8 @@ public class SqlTemplatesAndActions {
                         return;
                     }
 
-                    SpatialDbsImportUtils.createTableFromShp(spatialiteViewer.currentConnectedDatabase, openFiles[0],
-                            newTableName, sridStr, false);
+                    SpatialDbsImportUtils.createTableFromShp((ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase,
+                            openFiles[0], newTableName, sridStr, false);
                     spatialiteViewer.refreshDatabaseTree();
                 } catch (Exception e1) {
                     GuiUtilities.handleError(spatialiteViewer, e1);
@@ -399,6 +436,9 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getAttachShapefileAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return null;
+        }
         if (sqlTemplates.hasAttachShapefile()) {
             return new AbstractAction("Attach readonly shapefile"){
                 @Override
@@ -429,11 +469,14 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getSelectAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return null;
+        }
         return new AbstractAction("Select statement"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
-                    String query = DbsUtilities.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
+                    String query = DbsUtilities.getSelectQuery(spatialiteViewer.currentConnectedSqlDatabase, table, false);
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception e1) {
                     logger.insertError("SqlTemplatesAndActions", "Error", e1);
@@ -443,11 +486,15 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getInsertAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return null;
+        }
+        // TODO add json to collection if nosql?
         return new AbstractAction("Insert statement"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
-                    List<String[]> tableColumns = spatialiteViewer.currentConnectedDatabase.getTableColumns(table.tableName);
+                    List<String[]> tableColumns = spatialiteViewer.currentConnectedSqlDatabase.getTableColumns(table.tableName);
 
                     String cols = tableColumns.stream().map(tc -> tc[0]).collect(Collectors.joining(","));
                     String quest = tableColumns.stream().map(tc -> "?").collect(Collectors.joining(","));
@@ -463,6 +510,26 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getDropAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return new AbstractAction("Drop collection " + table.tableName){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    try {
+
+                        boolean doDrop = GuiUtilities.showYesNoDialog(spatialiteViewer,
+                                "Are you sure you want to drop collection '" + table.tableName + "'?");
+                        if (doDrop) {
+                            INosqlCollection collection = spatialiteViewer.currentConnectedNosqlDatabase
+                                    .getCollection(table.tableName);
+                            collection.drop();
+                            spatialiteViewer.refreshDatabaseTree();
+                        }
+                    } catch (Exception ex) {
+                        logger.insertError("SqlTemplatesAndActions", "Error", ex);
+                    }
+                }
+            };
+        }
         return new AbstractAction("Drop table statement"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -490,8 +557,15 @@ public class SqlTemplatesAndActions {
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
-                    String tableName = table.tableName;
-                    long count = spatialiteViewer.currentConnectedDatabase.getCount(tableName);
+                    long count = 0;
+                    if (spatialiteViewer.currentConnectedSqlDatabase != null) {
+                        String tableName = table.tableName;
+                        count = spatialiteViewer.currentConnectedSqlDatabase.getCount(tableName);
+                    } else if (spatialiteViewer.currentConnectedNosqlDatabase != null) {
+                        String tableName = table.tableName;
+                        INosqlCollection collection = spatialiteViewer.currentConnectedNosqlDatabase.getCollection(tableName);
+                        count = collection.getCount();
+                    }
                     JOptionPane.showMessageDialog(spatialiteViewer, "Count: " + count);
                 } catch (Exception ex) {
                     logger.insertError("SqlTemplatesAndActions", "Error", ex);
@@ -502,6 +576,9 @@ public class SqlTemplatesAndActions {
 
     public Action getImportShapefileDataAction( GuiBridgeHandler guiBridge, TableLevel table, DatabaseViewer spatialiteViewer,
             boolean useFromTextForGeom ) {
+        if (isNosql) {
+            return null;
+        }
         return new AbstractAction("Import data from shapefile"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -524,9 +601,9 @@ public class SqlTemplatesAndActions {
                     boolean hasErrors = false;
                     logConsole.beginProcess("Importing data...");
                     try {
-                        hasErrors = !SpatialDbsImportUtils.importShapefile(spatialiteViewer.currentConnectedDatabase,
-                                openFiles[0], spatialiteViewer.currentSelectedTable.tableName, -1, useFromTextForGeom,
-                                spatialiteViewer.pm);
+                        hasErrors = !SpatialDbsImportUtils.importShapefile(
+                                (ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase, openFiles[0],
+                                spatialiteViewer.currentSelectedTable.tableName, -1, useFromTextForGeom, spatialiteViewer.pm);
                     } catch (Exception ex) {
                         logger.insertError("SqlTemplatesAndActions", "Error importing data from shapefile", ex);
                         hasErrors = true;
@@ -564,8 +641,8 @@ public class SqlTemplatesAndActions {
                     String newTableName = result[0];
                     String newSrid = result[1];
 
-                    String query = sqlTemplates.reprojectTable(table, spatialiteViewer.currentConnectedDatabase, geometryColumn,
-                            tableName, newTableName, newSrid);
+                    String query = sqlTemplates.reprojectTable(table, (ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase,
+                            geometryColumn, tableName, newTableName, newSrid);
 
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception ex) {
@@ -576,11 +653,20 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getQuickViewTableAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return null;
+        }
         return new AbstractAction("Quick View Table in 3D"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
-                    String query = DbsUtilities.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
+                    if (!(spatialiteViewer.currentConnectedSqlDatabase instanceof ASpatialDb)) {
+                        GuiUtilities.showWarningMessage(spatialiteViewer,
+                                DatabaseController.THIS_ACTION_IS_AVAILABLE_ONLY_FOR_SPATIAL_DATABASES);
+                        return;
+                    }
+                    String query = DbsUtilities.getSelectQuery((ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase, table,
+                            false);
                     spatialiteViewer.viewSpatialQueryResult3D(table.tableName, query, spatialiteViewer.pm);
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -590,11 +676,20 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getQuickViewTableGeometriesAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return null;
+        }
         return new AbstractAction("Quick View Table Geometries"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
-                    String query = DbsUtilities.getSelectQuery(spatialiteViewer.currentConnectedDatabase, table, false);
+                    if (!(spatialiteViewer.currentConnectedSqlDatabase instanceof ASpatialDb)) {
+                        GuiUtilities.showWarningMessage(spatialiteViewer,
+                                DatabaseController.THIS_ACTION_IS_AVAILABLE_ONLY_FOR_SPATIAL_DATABASES);
+                        return;
+                    }
+                    String query = DbsUtilities.getSelectQuery((ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase, table,
+                            false);
                     spatialiteViewer.viewSpatialQueryResult(table.tableName, query, spatialiteViewer.pm, true);
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -604,14 +699,17 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getOpenInSldEditorAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        if (spatialiteViewer.currentConnectedDatabase.getType() == EDb.GEOPACKAGE) {
+        if (isNosql) {
+            return null;
+        }
+        if (spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE) {
             return new AbstractAction("Open in SLD editor"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     try {
 
                         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
-                        String databasePath = spatialiteViewer.currentConnectedDatabase.getDatabasePath();
+                        String databasePath = spatialiteViewer.currentConnectedSqlDatabase.getDatabasePath();
 
                         final MainController controller = new MainController(new File(databasePath), table.tableName);
                         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine SLD Editor");
@@ -643,6 +741,9 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getImportSqlFileAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return null;
+        }
         return new AbstractAction("Import sql file"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -684,14 +785,46 @@ public class SqlTemplatesAndActions {
         };
     }
 
+    public Action getNewCollectionAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
+        if (!isNosql) {
+            return null;
+        }
+        return new AbstractAction("Create new collection"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                String newName = GuiUtilities.showInputDialog(spatialiteViewer, "Insert the name for the new collection",
+                        "newcollection");
+                if (newName.trim().length() > 0) {
+                    try {
+                        if (!spatialiteViewer.currentConnectedNosqlDatabase.hasCollection(newName)) {
+                            spatialiteViewer.currentConnectedNosqlDatabase.createCollection(newName);
+                            spatialiteViewer.refreshDatabaseTree();
+                        } else {
+                            GuiUtilities.showWarningMessage(spatialiteViewer,
+                                    "A collection named '" + newName + "' already exists.");
+                        }
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        };
+    }
+
     public Action getSaveConnectionAction( DatabaseViewer databaseViewer ) {
         return new AbstractAction("Save Connection"){
             @SuppressWarnings("unchecked")
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
-                    ASpatialDb db = databaseViewer.currentConnectedDatabase;
-                    ConnectionData connectionData = db.getConnectionData();
+                    ConnectionData connectionData = null;
+                    if (databaseViewer.currentConnectedSqlDatabase != null) {
+                        ADb db = databaseViewer.currentConnectedSqlDatabase;
+                        connectionData = db.getConnectionData();
+                    } else if (databaseViewer.currentConnectedNosqlDatabase != null) {
+                        INosqlDb db = databaseViewer.currentConnectedNosqlDatabase;
+                        connectionData = db.getConnectionData();
+                    }
 
                     String newName = GuiUtilities.showInputDialog(databaseViewer, "Enter a name for the saved connection",
                             "db connection " + new DateTime().toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSS));
@@ -729,7 +862,10 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getImportRaster2TilesTableAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
-        if (databaseViewer.currentConnectedDatabase.getType() == EDb.GEOPACKAGE) {
+        if (isNosql) {
+            return null;
+        }
+        if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE) {
             return new AbstractAction("Import raster to tileset"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
@@ -741,7 +877,10 @@ public class SqlTemplatesAndActions {
         }
     }
     public Action getImportVector2TilesTableAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
-        if (databaseViewer.currentConnectedDatabase.getType() == EDb.GEOPACKAGE) {
+        if (isNosql) {
+            return null;
+        }
+        if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE) {
             return new AbstractAction("Import vector to tileset"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
@@ -774,7 +913,7 @@ public class SqlTemplatesAndActions {
             try {
                 String targetEpsg = "epsg:" + GeopackageCommonDb.MERCATOR_SRID;
                 CoordinateReferenceSystem mercatorCrs = CrsUtilities.getCrsFromEpsg(targetEpsg, null);
-                GeopackageCommonDb db = (GeopackageCommonDb) databaseViewer.currentConnectedDatabase;
+                GeopackageCommonDb db = (GeopackageCommonDb) databaseViewer.currentConnectedSqlDatabase;
                 List<FeatureEntry> features4326 = db.features();
                 PreparedGeometry limitsGeom3857 = null;
                 if (features4326.size() > 0) {
@@ -883,7 +1022,7 @@ public class SqlTemplatesAndActions {
                             ITilesProducer tileProducer = new GeopackageTilesProducer(pm, dataPath, isRaster, minZoom, maxZoom,
                                     256, _limitsGeom3857);
                             String description = "HM import of " + openFiles[0].getName();
-                            int addedTiles = ((GeopackageCommonDb) databaseViewer.currentConnectedDatabase)
+                            int addedTiles = ((GeopackageCommonDb) databaseViewer.currentConnectedSqlDatabase)
                                     .addTilestable(_nameForTable, description, envelopeInternal, tileProducer);
 
                             pm.message("Inserted " + addedTiles + " new tiles.");
