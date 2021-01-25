@@ -1127,4 +1127,95 @@ public class SqlTemplatesAndActions {
         }
         return null;
     }
+
+    public Action getInsertCollectionDocumentAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
+        if (isNosql) {
+            return new AbstractAction("Add document"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+
+                    try {
+                        if (databaseViewer.currentSelectedTable != null) {
+                            INosqlDb db = databaseViewer.currentConnectedNosqlDatabase;
+                            String json = GuiUtilities.showInputAreaDialog(databaseViewer,
+                                    "Add json to convert to document here.", "");
+                            if (json != null) {
+                                INosqlCollection collection = db.getCollection(databaseViewer.currentSelectedTable.tableName);
+                                collection.insert(json);
+                            }
+                        } else {
+                            GuiUtilities.showWarningMessage(databaseViewer, "Select a collection to insert the document to.");
+                        }
+                    } catch (Exception e1) {
+                        GuiUtilities.handleError(databaseViewer, e1);
+                        Logger.INSTANCE.e("Error", e1);
+                    }
+                }
+            };
+        }
+        return null;
+    }
+
+    public Action getUpdateCollectionDocumentAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
+        if (isNosql) {
+            return new AbstractAction("Update document by OID"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+
+                    try {
+                        if (databaseViewer.currentSelectedTable != null) {
+                            INosqlDb db = databaseViewer.currentConnectedNosqlDatabase;
+                            String oid = GuiUtilities.showInputDialog(databaseViewer, "Insert the document OID", "");
+                            if (oid != null && oid.trim().length() > 0) {
+                                oid = oid.trim();
+
+                                String json = GuiUtilities.showInputAreaDialog(databaseViewer,
+                                        "Add json to convert to document here.", "");
+                                if (json != null) {
+                                    INosqlCollection collection = db.getCollection(databaseViewer.currentSelectedTable.tableName);
+                                    collection.updateByOid(oid, json);
+                                }
+                            }
+
+                        } else {
+                            GuiUtilities.showWarningMessage(databaseViewer, "Select a collection to insert the document to.");
+                        }
+                    } catch (Exception e1) {
+                        GuiUtilities.handleError(databaseViewer, e1);
+                        Logger.INSTANCE.e("Error", e1);
+                    }
+                }
+            };
+        }
+        return null;
+    }
+
+    public Action getDeleteCollectionDocumentByIdAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
+        if (isNosql) {
+            return new AbstractAction("Delete document by OID"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+
+                    try {
+                        if (databaseViewer.currentSelectedTable != null) {
+                            String oid = GuiUtilities.showInputDialog(databaseViewer, "Insert the document OID", "");
+                            if (oid != null && oid.trim().length() > 0) {
+                                oid = oid.trim();
+                                INosqlDb db = databaseViewer.currentConnectedNosqlDatabase;
+                                INosqlCollection collection = db.getCollection(databaseViewer.currentSelectedTable.tableName);
+                                collection.deleteByOid(oid);
+                            }
+
+                        } else {
+                            GuiUtilities.showWarningMessage(databaseViewer, "Select a collection to delete the document from.");
+                        }
+                    } catch (Exception e1) {
+                        GuiUtilities.handleError(databaseViewer, e1);
+                        Logger.INSTANCE.e("Error", e1);
+                    }
+                }
+            };
+        }
+        return null;
+    }
 }

@@ -359,8 +359,12 @@ public class DatabaseViewer extends DatabaseController {
         List<Action> actions = new ArrayList<>();
         addIfNotNull(actions, sqlTemplatesAndActions.getCountRowsAction(selectedTable, this));
         addSeparator(actions);
+        addIfNotNull(actions, sqlTemplatesAndActions.getInsertCollectionDocumentAction(guiBridge, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getUpdateCollectionDocumentAction(guiBridge, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getDeleteCollectionDocumentByIdAction(guiBridge, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getSelectAction(selectedTable, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getInsertAction(selectedTable, this));
+        addSeparator(actions);
         addIfNotNull(actions, sqlTemplatesAndActions.getDropAction(selectedTable, this));
         addSeparator(actions);
         addIfNotNull(actions, sqlTemplatesAndActions.getReprojectTableAction(selectedTable, this));

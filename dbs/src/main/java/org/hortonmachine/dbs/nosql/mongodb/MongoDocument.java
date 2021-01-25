@@ -13,10 +13,13 @@ import org.json.JSONObject;
 public class MongoDocument implements INosqlDocument {
 
     private Document document;
-    
 
     public MongoDocument( Document document ) {
         this.document = document;
+    }
+
+    public MongoDocument( String json ) {
+        this.document = Document.parse(json);
     }
 
     public String toJson() {
@@ -44,6 +47,14 @@ public class MongoDocument implements INosqlDocument {
         }
 
         return list;
+    }
+
+    @Override
+    public <T> T adapt( Class<T> adaptee ) {
+        if (adaptee.isAssignableFrom(Document.class)) {
+            return adaptee.cast(document);
+        }
+        return null;
     }
 
 }

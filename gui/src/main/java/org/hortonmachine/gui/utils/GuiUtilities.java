@@ -54,6 +54,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -159,6 +160,18 @@ public class GuiUtilities {
     public static String showInputDialog( Component parentComponent, String message, String defaultInput ) {
         String answer = JOptionPane.showInputDialog(parentComponent, message, defaultInput);
         return answer;
+    }
+
+    public static String showInputAreaDialog( Component parentComponent, String message, String defaultInput ) {
+        final JTextArea commentTextArea = new JTextArea(message, 30, 80);
+        JScrollPane scrollPane = new JScrollPane(commentTextArea);
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(scrollPane, BorderLayout.CENTER);
+        boolean okToGo = openConfirmDialogWithPanel(parentComponent, panel, message);
+        if (okToGo) {
+            return commentTextArea.getText();
+        }
+        return null;
     }
 
     public static boolean showYesNoDialog( Component parentComponent, String message ) {
@@ -289,7 +302,7 @@ public class GuiUtilities {
     public static void setDefaultFrameIcon( JFrame frame ) {
         setDefaultFrameIcon(frame, null);
     }
-    
+
     /**
      * Set the frame icon, also considering the macos case.
      * 

@@ -8,4 +8,6 @@ public interface INosqlDocument {
 
     public List<String[]> getFirstLevelKeysAndTypes();
 
+    public <T> T adapt( Class<T> adaptee );
+
 }

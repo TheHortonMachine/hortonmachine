@@ -11,10 +11,12 @@ import java.util.List;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.hortonmachine.dbs.nosql.INosqlCollection;
 import org.hortonmachine.dbs.nosql.INosqlDocument;
 
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.model.Filters;
 
 public class MongoCollection implements INosqlCollection {
 
@@ -24,6 +26,7 @@ public class MongoCollection implements INosqlCollection {
         this.mongoCollection = mongoCollection;
     }
 
+    @Override
     public List<INosqlDocument> find( String query, int limit ) {
         if (query != null && query.trim().length() == 0) {
             query = null;
@@ -63,6 +66,7 @@ public class MongoCollection implements INosqlCollection {
         return list;
     }
 
+    @Override
     public INosqlDocument getFirst() {
         Document first = mongoCollection.find().first();
         if (first != null) {
@@ -81,6 +85,26 @@ public class MongoCollection implements INosqlCollection {
     @Override
     public void drop() {
         mongoCollection.drop();
+    }
+
+    @Override
+    public void insert( INosqlDocument document ) {
+        Document mongoDocument = document.adapt(Document.class);
+        mongoCollection.insertOne(mongoDocument);
+    }
+
+    @Override
+    public void insert( String documentJson ) {
+        Document mongoDocument = Document.parse(documentJson);
+        mongoCollection.insertOne(mongoDocument);
+    }
+
+    public void deleteByOid( String oid ) {
+        mongoCollection.deleteOne(Filters.eq("_id", new ObjectId(oid)));
+    }
+
+    public void updateByOid( String oid, String documentJson ) {
+        mongoCollection.replaceOne(Filters.eq("_id", new ObjectId(oid)), Document.parse(documentJson));
     }
 
 }
