@@ -459,5 +459,26 @@ public class PGDb extends ADb {
             }
         }
     }
+    
+    /**
+     * Get the list of databases.
+     * 
+     * @param db the db to use as query base.
+     * @return the list of dbs.
+     * @throws Exception
+     */
+    public static List<String> getDatabases( ADb db ) throws Exception {
+        List<String> dbs = new ArrayList<>();
+        String sql = "SELECT datname FROM pg_database WHERE datistemplate = false;";
+        db.execOnResultSet(sql, resSet -> {
+            while (resSet.next()) {
+                String dbName = resSet.getString(1);
+                dbs.add(dbName);
+            }
+            return null;
+        });
+
+        return dbs;
+    }
 
 }

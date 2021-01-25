@@ -19,7 +19,7 @@ public interface INosqlDb extends AutoCloseable {
 
     String[] getDbInfo();
 
-    String getDbUrl();
+    String getDbEngineUrl();
 
     String getDbName();
 

@@ -45,6 +45,7 @@ public class MongoDb implements INosqlDb {
     private String mDbPath;
     private MongoClient mongoClient;
     private MongoDatabase db;
+    private boolean useSsl = false;
 
     @Override
     public EDb getType() {
@@ -52,7 +53,7 @@ public class MongoDb implements INosqlDb {
     }
 
     @Override
-    public String getDbUrl() {
+    public String getDbEngineUrl() {
         return mDbPath.substring(0, mDbPath.lastIndexOf('/'));
     }
 
@@ -70,6 +71,10 @@ public class MongoDb implements INosqlDb {
     @Override
     public ConnectionData getConnectionData() {
         return connectionData;
+    }
+
+    public void setUseSsl( boolean useSsl ) {
+        this.useSsl = useSsl;
     }
 
     @Override
@@ -90,6 +95,9 @@ public class MongoDb implements INosqlDb {
         String clusterUrl = dbPath.substring(0, lastSlash);
         String dbName = dbPath.substring(lastSlash + 1);
 
+        if (useSsl) {
+            clusterUrl += "?ssl=true";
+        }
         mongoClient = MongoClients.create(clusterUrl);
 
         db = mongoClient.getDatabase(dbName);

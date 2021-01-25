@@ -1083,7 +1083,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 if (selected != null && selected.length() > 0) {
                                     ConnectionData connectionData = collect.get(selected);
                                     if (connectionData != null) {
-                                        openDatabase(connectionData);
+                                        openDatabase(connectionData, true);
                                     }
                                 }
 
@@ -1649,7 +1649,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             if (currentConnectedSqlDatabase != null) {
                 title = currentConnectedSqlDatabase.getDatabasePath();
             } else if (currentConnectedNosqlDatabase != null) {
-                title = currentConnectedNosqlDatabase.getDbUrl();
+                title = currentConnectedNosqlDatabase.getDbEngineUrl();
             }
         } else {
             dbLevel = new DbLevel();
@@ -1803,7 +1803,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             try {
                 DbLevel dbLevel = null;
                 String dbPath;
-                if (dbType.isNosql()) {
+                if (!dbType.isNosql()) {
                     if (dbType == EDb.SPATIALITE) {
                         if (SpatialiteCommonMethods.isSqliteFile(new File(dbfilePath))) {
                             currentConnectedSqlDatabase = new GTSpatialiteThreadsafeDb();
@@ -1842,7 +1842,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     currentConnectedNosqlDatabase = dbType.getNosqlDb();
                     currentConnectedNosqlDatabase.setCredentials(user, pwd);
                     currentConnectedNosqlDatabase.open(dbfilePath);
-                    dbPath = currentConnectedNosqlDatabase.getDbUrl();
+                    sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedNosqlDatabase.getType());
+                    dbPath = currentConnectedNosqlDatabase.getDbEngineUrl();
+                    dbLevel = gatherDatabaseLevels(currentConnectedNosqlDatabase);
                 }
                 setRightTreeRenderer();
                 layoutTree(dbLevel, true);
@@ -1925,7 +1927,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     DbLevel dbLevel = gatherDatabaseLevels(currentConnectedNosqlDatabase);
 
                     layoutTree(dbLevel, true);
-                    setDbTreeTitle(currentConnectedNosqlDatabase.getDbUrl());
+                    setDbTreeTitle(currentConnectedNosqlDatabase.getDbEngineUrl());
                 }
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
@@ -1945,7 +1947,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     }
 
-    protected void openDatabase( ConnectionData connectionData ) {
+    protected void openDatabase( ConnectionData connectionData, boolean openDialog ) {
         EDb type = EDb.forCode(connectionData.dbType);
         if (type.supportsDesktop()) {
             PreferencesHandler.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, connectionData.connectionUrl);
@@ -1956,98 +1958,52 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, connectionData.user);
         PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, connectionData.password);
 
-        // open dialog on that to allow for simple changes
-        JDialog f = new JDialog();
-        f.setModal(true);
-        String lastPath = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, "");
-        String lastUser = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, "sa");
-        String lastPwd = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, "");
-        String lastUrl = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_URL, "");
-        NewDbController newDb = new NewDbController(f, guiBridge, true, lastPath, lastUrl, lastUser, lastPwd, true);
-        f.add(newDb, BorderLayout.CENTER);
-        f.setTitle("Open database");
-        f.pack();
-        f.setIconImage(ImageCache.getInstance().getImage(ImageCache.CONNECT).getImage());
-        f.setLocationRelativeTo(_connectDbButton);
-        f.setVisible(true);
-        f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        if (openDialog) {
+            // open dialog on that to allow for simple changes
+            JDialog f = new JDialog();
+            f.setModal(true);
+            String lastPath = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, "");
+            String lastUser = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, "sa");
+            String lastPwd = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, "");
+            String lastUrl = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_URL, "");
+            NewDbController newDb = new NewDbController(f, guiBridge, true, lastPath, lastUrl, lastUser, lastPwd, true);
+            f.add(newDb, BorderLayout.CENTER);
+            f.setTitle("Open database");
+            f.pack();
+            f.setIconImage(ImageCache.getInstance().getImage(ImageCache.CONNECT).getImage());
+            f.setLocationRelativeTo(_connectDbButton);
+            f.setVisible(true);
+            f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        if (newDb.isOk()) {
-            String dbPath = newDb.getDbPath();
-            String user = newDb.getDbUser();
-            String pwd = newDb.getDbPwd();
-            EDb dbType = EDb.forCode(connectionData.dbType);
-            boolean connectInRemote = newDb.connectInRemote();
+            if (newDb.isOk()) {
+                String dbPath = newDb.getDbPath();
+                String user = newDb.getDbUser();
+                String pwd = newDb.getDbPwd();
+                EDb dbType = EDb.forCode(connectionData.dbType);
+                boolean connectInRemote = newDb.connectInRemote();
 
-            if (connectInRemote) {
-                PreferencesHandler.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, dbPath);
-                dbPath = "jdbc:h2:tcp://localhost:9092/" + dbPath;
-                PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, user);
-                PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, pwd);
-                openRemoteDatabase(dbPath, user, pwd);
-            } else {
-                PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, user);
-                PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, pwd);
-                if (dbPath.toLowerCase().contains("jdbc")) {
-                    PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_URL, dbPath);
+                if (connectInRemote) {
+                    PreferencesHandler.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, dbPath);
+                    dbPath = "jdbc:h2:tcp://localhost:9092/" + dbPath;
+                    PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, user);
+                    PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, pwd);
                     openRemoteDatabase(dbPath, user, pwd);
                 } else {
-                    PreferencesHandler.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, dbPath);
-                    openDatabase(dbType, dbPath, user, pwd);
+                    PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, user);
+                    PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, pwd);
+                    if (dbPath.toLowerCase().contains("jdbc")) {
+                        PreferencesHandler.setPreference(DatabaseGuiUtils.HM_JDBC_LAST_URL, dbPath);
+                        openRemoteDatabase(dbPath, user, pwd);
+                    } else {
+                        PreferencesHandler.setPreference(DatabaseGuiUtils.HM_LOCAL_LAST_FILE, dbPath);
+                        openDatabase(dbType, dbPath, user, pwd);
+                    }
                 }
-            }
 
+            }
+        } else {
+            openDatabase(type, connectionData.connectionUrl, connectionData.user, connectionData.password);
         }
-//        
-//        
-//        
-//        
-//        
-//        try {
-//            closeCurrentDb(true);
-//        } catch (Exception e1) {
-//            Logger.INSTANCE.insertError("", "Error closing the database...", e1);
-//        }
-//
-//        final LogConsoleController logConsole = new LogConsoleController(null);
-//        pm = logConsole.getProgressMonitor();
-//        Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
-//        Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
-//        JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
-//
-//        new Thread(() -> {
-//            logConsole.beginProcess("Open database");
-//            boolean hadError = false;
-//            try {
-//
-//                currentConnectedDatabase = type.getSpatialDb();
-//                if (connectionData.user != null) {
-//                    currentConnectedDatabase.setCredentials(connectionData.user, connectionData.password);
-//                }
-//                currentConnectedDatabase.open(connectionData.connectionUrl);
-//                sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedDatabase.getType());
-//
-//                if (databaseTreeCellRenderer != null) {
-//                    databaseTreeCellRenderer.setDb(currentConnectedDatabase);
-//                }
-//                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedDatabase);
-//
-//                layoutTree(dbLevel, true);
-//                setDbTreeTitle(currentConnectedDatabase.getDatabasePath());
-//            } catch (Exception e) {
-//                currentConnectedDatabase = null;
-//                Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
-//                hadError = true;
-//            } finally {
-//                logConsole.finishProcess();
-//                logConsole.stopLogging();
-//                Logger.INSTANCE.resetStreams();
-//                if (!hadError) {
-//                    logConsole.setVisible(false);
-//                    window.dispose();
-//                }
-//            }
-//        }, "DatabaseController->open database with connectiondata").start();
 
     }
 
@@ -2319,7 +2275,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             layoutTree(dbLevel, true);
         } else if (currentConnectedNosqlDatabase != null) {
             DbLevel dbLevel = gatherDatabaseLevels(currentConnectedNosqlDatabase);
-            setDbTreeTitle(currentConnectedNosqlDatabase.getDbUrl());
+            setDbTreeTitle(currentConnectedNosqlDatabase.getDbEngineUrl());
             layoutTree(dbLevel, true);
         }
     }

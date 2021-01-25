@@ -45,7 +45,6 @@ import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ASqlTemplates;
@@ -60,6 +59,7 @@ import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.nosql.INosqlCollection;
 import org.hortonmachine.dbs.nosql.INosqlDb;
+import org.hortonmachine.dbs.postgis.PGDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.ITilesProducer;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
@@ -82,10 +82,8 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
 
 /**
  * Simple queries templates.
@@ -359,7 +357,7 @@ public class SqlTemplatesAndActions {
                     String databasePath = spatialiteViewer.currentConnectedSqlDatabase.getDatabasePath();
                     GuiUtilities.copyToClipboard(databasePath);
                 } else if (spatialiteViewer.currentConnectedNosqlDatabase != null) {
-                    String databasePath = spatialiteViewer.currentConnectedNosqlDatabase.getDbUrl();
+                    String databasePath = spatialiteViewer.currentConnectedNosqlDatabase.getDbEngineUrl();
                     GuiUtilities.copyToClipboard(databasePath);
                 }
             }
@@ -1045,5 +1043,52 @@ public class SqlTemplatesAndActions {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    public Action getSwitchDatabaseAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
+        if (isNosql) {
+            return new AbstractAction("Switch database"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    INosqlDb db = databaseViewer.currentConnectedNosqlDatabase;
+                    List<String> databasesNames = db.getDatabasesNames();
+                    String selectedName = GuiUtilities.showComboDialog(databaseViewer, "Select database",
+                            "Select the database to switch to", databasesNames.toArray(new String[0]), db.getDbName());
+                    if (selectedName != null && !selectedName.equals(db.getDbName())) {
+                        ConnectionData connectionData = db.getConnectionData();
+                        connectionData.connectionLabel = selectedName;
+                        connectionData.connectionUrl = db.getDbEngineUrl() + "/" + selectedName;
+                        databaseViewer.openDatabase(connectionData, false);
+                    }
+                }
+            };
+
+        } else if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS
+                || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES) {
+            return new AbstractAction("Switch database"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    ADb db = databaseViewer.currentConnectedSqlDatabase;
+                    try {
+                        List<String> databasesNames = PGDb.getDatabases(db);
+                        ConnectionData connectionData = db.getConnectionData();
+                        int lastSlash = connectionData.connectionUrl.lastIndexOf('/');
+                        String engineUrl = connectionData.connectionUrl.substring(0, lastSlash);
+                        String dbName = connectionData.connectionUrl.substring(lastSlash + 1);
+
+                        String selectedName = GuiUtilities.showComboDialog(databaseViewer, "Select database",
+                                "Select the database to switch to", databasesNames.toArray(new String[0]), dbName);
+                        if (selectedName != null && !selectedName.equals(dbName)) {
+                            connectionData.connectionUrl = engineUrl + "/" + selectedName;
+                            connectionData.connectionLabel = selectedName;
+                            databaseViewer.openDatabase(connectionData, false);
+                        }
+                    } catch (Exception ex) {
+                        Logger.INSTANCE.e("Error", ex);
+                    }
+                }
+            };
+        }
+        return null;
     }
 }
