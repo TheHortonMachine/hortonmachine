@@ -1084,10 +1084,46 @@ public class SqlTemplatesAndActions {
                             databaseViewer.openDatabase(connectionData, false);
                         }
                     } catch (Exception ex) {
+                        GuiUtilities.handleError(databaseViewer, ex);
                         Logger.INSTANCE.e("Error", ex);
                     }
                 }
             };
+        }
+        return null;
+    }
+
+    public Action getDropDatabaseAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
+        if (isNosql) {
+            return new AbstractAction("Drop current database"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+
+                    INosqlDb db = databaseViewer.currentConnectedNosqlDatabase;
+
+                    try {
+                        boolean doDrop = GuiUtilities.showYesNoDialog(databaseViewer,
+                                "Are you sure you want to drop the current database '" + db.getDbName()
+                                        + "'?\nThis can't be undone!");
+                        if (doDrop) {
+                            db.drop();
+                            databaseViewer.closeCurrentDb(true);
+                        }
+                    } catch (Exception e1) {
+                        GuiUtilities.handleError(databaseViewer, e1);
+                        Logger.INSTANCE.e("Error", e1);
+                    }
+                }
+            };
+
+//        } else if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS
+//                || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES) {
+//            return new AbstractAction("Switch database"){
+//                @Override
+//                public void actionPerformed( ActionEvent e ) {
+//                    // TODO?
+//                }
+//            };
         }
         return null;
     }

@@ -2024,8 +2024,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         if (currentConnectedSqlDatabase != null) {
             currentConnectedSqlDatabase.close();
             currentConnectedSqlDatabase = null;
-            dataTableView._recordCountTextfield.setText("");
-
         } else if (currentConnectedNosqlDatabase != null) {
             currentConnectedNosqlDatabase.close();
             currentConnectedNosqlDatabase = null;

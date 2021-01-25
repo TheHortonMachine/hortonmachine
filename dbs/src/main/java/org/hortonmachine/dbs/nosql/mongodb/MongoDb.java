@@ -141,6 +141,11 @@ public class MongoDb implements INosqlDb {
         }
         return list;
     }
+    
+    @Override
+    public void drop() {
+        db.drop();
+    }
 
     @Override
     public boolean hasCollection( String name ) throws Exception {

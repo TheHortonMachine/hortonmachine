@@ -33,4 +33,6 @@ public interface INosqlDb extends AutoCloseable {
 
     void createCollection( String newName );
 
+    void drop();
+
 }
