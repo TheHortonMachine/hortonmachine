@@ -94,6 +94,7 @@ import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
+import org.hortonmachine.dbs.compat.objects.LeafLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
@@ -186,6 +187,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     protected DbLevel currentSelectedDb;
     protected TableLevel currentSelectedTable;
     protected ColumnLevel currentSelectedColumn;
+    protected LeafLevel currentSelectedLeaf;
 
     private Dimension preferredToolbarButtonSize = new Dimension(120, 65);
     private Dimension preferredSqleditorButtonSize = new Dimension(30, 30);
@@ -511,6 +513,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     currentSelectedDb = null;
                     currentSelectedTable = null;
                     currentSelectedColumn = null;
+                    currentSelectedLeaf = null;
                     if (paths.length > 0) {
                         Object selectedItem = paths[0].getLastPathComponent();
                         if (selectedItem instanceof DbLevel) {
@@ -541,6 +544,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             } catch (Exception e) {
                                 Logger.INSTANCE.insertError("", "ERROR", e);
                             }
+                        } else if (selectedItem instanceof LeafLevel) {
+                            currentSelectedLeaf = (LeafLevel) selectedItem;
                         } else {
                             currentSelectedTable = null;
                             currentDataTable.setModel(new DefaultTableModel());
@@ -1010,6 +1015,17 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     }
                 } else if (currentSelectedColumn != null) {
                     List<Action> columnActions = makeColumnActions(currentSelectedColumn);
+                    for( Action action : columnActions ) {
+                        if (action != null) {
+                            JMenuItem item = new JMenuItem(action);
+                            popupMenu.add(item);
+                            item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                        } else {
+                            popupMenu.add(new JSeparator());
+                        }
+                    }
+                } else if (currentSelectedLeaf != null) {
+                    List<Action> columnActions = makeLeafActions(currentSelectedLeaf);
                     for( Action action : columnActions ) {
                         if (action != null) {
                             JMenuItem item = new JMenuItem(action);
@@ -2260,6 +2276,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         PreferencesHandler.setPreference("HM_OLD_SQL_COMMANDS", oldSqlCommands.toArray(new String[0]));
     }
 
+    protected abstract List<Action> makeLeafActions( final LeafLevel selectedLeaf );
+    
     protected abstract List<Action> makeColumnActions( final ColumnLevel selectedColumn );
 
     protected abstract List<Action> makeDatabaseAction( final DbLevel dbLevel );

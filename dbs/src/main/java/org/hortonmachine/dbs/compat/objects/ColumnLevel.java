@@ -17,6 +17,9 @@
  */
 package org.hortonmachine.dbs.compat.objects;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hortonmachine.dbs.compat.GeometryColumn;
 
 /**
@@ -32,6 +35,8 @@ public class ColumnLevel {
     public boolean isPK = false;
     public GeometryColumn geomColumn;
 
+    public List<LeafLevel> leafsList = new ArrayList<LeafLevel>();
+    
     /**
      * if not null, it describes the table(colname) it references as foreign key.
      */

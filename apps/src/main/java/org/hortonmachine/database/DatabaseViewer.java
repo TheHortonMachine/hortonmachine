@@ -47,6 +47,7 @@ import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
+import org.hortonmachine.dbs.compat.objects.LeafLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.log.EMessageType;
@@ -282,11 +283,20 @@ public class DatabaseViewer extends DatabaseController {
         }
     }
 
+    protected List<Action> makeLeafActions( final LeafLevel selectedLeaf ) {
+        List<Action> actions = new ArrayList<>();
+        addIfNotNull(actions, sqlTemplatesAndActions.getUpdateValueAction(guiBridge, this));
+        
+        return actions;
+    }
+    
+    
     protected List<Action> makeColumnActions( final ColumnLevel selectedColumn ) {
 
         List<Action> actions = new ArrayList<>();
         addIfNotNull(actions, sqlTemplatesAndActions.getSelectOnColumnAction(selectedColumn, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getUpdateOnColumnAction(selectedColumn, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getUpdateValueAction(guiBridge, this));
         addSeparator(actions);
         addIfNotNull(actions, sqlTemplatesAndActions.getAddGeometryAction(selectedColumn, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getRecoverGeometryAction(selectedColumn, this));

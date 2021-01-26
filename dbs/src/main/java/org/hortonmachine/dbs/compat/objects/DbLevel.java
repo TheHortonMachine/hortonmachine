@@ -20,7 +20,10 @@ package org.hortonmachine.dbs.compat.objects;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
@@ -166,11 +169,11 @@ public class DbLevel {
         for( String typeName : types ) {
             TypeLevel typeLevel = new TypeLevel();
             typeLevel.typeName = typeName;
-            List<String> collecstionList = currentDatabaseTablesMap.get(typeName);
-            if (collecstionList == null) {
+            List<String> collectionsList = currentDatabaseTablesMap.get(typeName);
+            if (collectionsList == null) {
                 continue;
             }
-            for( String collectionName : collecstionList ) {
+            for( String collectionName : collectionsList ) {
                 TableLevel tableLevel = new TableLevel();
                 tableLevel.parent = dbLevel;
                 tableLevel.tableName = collectionName;
@@ -183,15 +186,24 @@ public class DbLevel {
 
                 INosqlDocument first = collection.getFirst();
                 if (first != null) {
-                    List<String[]> firstLevelKeysAndTypes = first.getFirstLevelKeysAndTypes();
-                    for( String[] nameType : firstLevelKeysAndTypes ) {
+                    LinkedHashMap<String, Object> schema = first.getSchema();
+
+                    for( Entry<String, Object> entry : schema.entrySet() ) {
+                        String key = entry.getKey();
+                        Object value = entry.getValue();
+                        String type = value.toString();
                         ColumnLevel columnLevel = new ColumnLevel();
+                        if (value instanceof Map) {
+                            type = "Document";
+                            handleDocument(columnLevel, (Map) value);
+                        }
                         columnLevel.parent = tableLevel;
-                        columnLevel.columnName = nameType[0];
-                        columnLevel.columnType = nameType[1];
-                        columnLevel.isPK = nameType[0].equals("_id");
+                        columnLevel.columnName = key;
+                        columnLevel.columnType = type;
+                        columnLevel.isPK = key.equals("_id");
                         tableLevel.columnsList.add(columnLevel);
                     }
+
                 }
             }
             dbLevel.typesList.add(typeLevel);
@@ -200,4 +212,26 @@ public class DbLevel {
         return dbLevel;
     }
 
+    private static void handleDocument( Object parent, Map<String, Object> map ) {
+        for( Entry<String, Object> entry : map.entrySet() ) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            String type = value.getClass().getSimpleName();
+            LeafLevel leafLevel = new LeafLevel();
+            if (value instanceof Map) {
+                type = "Document";
+                handleDocument(leafLevel, (Map) value);
+            }
+            leafLevel.parent = parent;
+            leafLevel.columnName = key;
+            leafLevel.columnType = type;
+            leafLevel.isPK = key.equals("_id");
+            if (parent instanceof LeafLevel) {
+                ((LeafLevel) parent).leafsList.add(leafLevel);
+            } else if (parent instanceof ColumnLevel) {
+                ((ColumnLevel) parent).leafsList.add(leafLevel);
+            }
+        }
+
+    }
 }

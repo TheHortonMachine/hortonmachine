@@ -28,6 +28,7 @@ import javax.swing.tree.TreePath;
 
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
+import org.hortonmachine.dbs.compat.objects.LeafLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.compat.objects.TypeLevel;
 
@@ -74,7 +75,11 @@ public class DatabaseTreeModel implements TreeModel {
             TableLevel tableLevel = (TableLevel) parent;
             return tableLevel.columnsList.size();
         } else if (parent instanceof ColumnLevel) {
-            return 0;
+            ColumnLevel columnLevel = (ColumnLevel) parent;
+            return columnLevel.leafsList.size();
+        } else if (parent instanceof LeafLevel) {
+            LeafLevel leafLevel = (LeafLevel) parent;
+            return leafLevel.leafsList.size();
         } else if (parent instanceof List) {
             List list = (List) parent;
             return list.size();
@@ -93,6 +98,12 @@ public class DatabaseTreeModel implements TreeModel {
         } else if (parent instanceof TableLevel) {
             TableLevel tableLevel = (TableLevel) parent;
             return tableLevel.columnsList.get(index);
+        } else if (parent instanceof ColumnLevel) {
+            ColumnLevel columnLevel = (ColumnLevel) parent;
+            return columnLevel.leafsList.get(index);
+        } else if (parent instanceof LeafLevel) {
+            LeafLevel leafLevel = (LeafLevel) parent;
+            return leafLevel.leafsList.get(index);
         } else if (parent instanceof List) {
             List list = (List) parent;
             Object item = list.get(index);

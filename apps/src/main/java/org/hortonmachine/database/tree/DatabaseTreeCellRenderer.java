@@ -24,6 +24,7 @@ import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
+import org.hortonmachine.dbs.compat.objects.LeafLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.compat.objects.TypeLevel;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
@@ -142,6 +143,32 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
                 setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_INDEX));
             } else if (columnLevel.references != null) {
                 setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_FK));
+            } else {
+                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
+            }
+        } else if (value instanceof LeafLevel) {
+            LeafLevel leafLevel = (LeafLevel) value;
+            if (leafLevel.isPK) {
+                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_PRIMARYKEY));
+            } else if (leafLevel.geomColumn != null) {
+                EGeometryType gType = leafLevel.geomColumn.geometryType;
+                switch( gType ) {
+                case POINT:
+                case MULTIPOINT:
+                    setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POINT));
+                    break;
+                case LINESTRING:
+                case MULTILINESTRING:
+                    setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_LINE));
+                    break;
+                case POLYGON:
+                case MULTIPOLYGON:
+                    setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POLYGON));
+                    break;
+                default:
+                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
+                    break;
+                }
             } else {
                 setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
             }

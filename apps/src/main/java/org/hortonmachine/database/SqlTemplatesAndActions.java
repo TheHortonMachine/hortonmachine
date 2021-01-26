@@ -1218,4 +1218,22 @@ public class SqlTemplatesAndActions {
         }
         return null;
     }
+
+    public Action getUpdateValueAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
+//        if (isNosql) {
+//            return new AbstractAction("Update value by OID"){
+//                @Override
+//                public void actionPerformed( ActionEvent e ) {
+//
+//                    try {
+//                      // TODO
+//                    } catch (Exception e1) {
+//                        GuiUtilities.handleError(databaseViewer, e1);
+//                        Logger.INSTANCE.e("Error", e1);
+//                    }
+//                }
+//            };
+//        }
+        return null;
+    }
 }

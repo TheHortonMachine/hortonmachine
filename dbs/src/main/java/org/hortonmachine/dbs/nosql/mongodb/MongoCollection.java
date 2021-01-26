@@ -38,7 +38,13 @@ public class MongoCollection implements INosqlCollection {
             Bson filter = null;
             if (query.contains("=")) {
                 String[] split = query.split("=");
-                filter = eq(split[0].trim(), split[1].trim());
+                String value = split[1].trim();
+                String key = split[0].trim();
+                if (key.equals("_id")) {
+                    filter = eq(key, new ObjectId(value));
+                } else {
+                    filter = eq(key, value);
+                }
             } else if (query.contains(">")) {
                 String[] split = query.split(">");
                 filter = lt(split[0].trim(), split[1].trim());
