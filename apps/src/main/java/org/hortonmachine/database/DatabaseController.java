@@ -286,7 +286,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
             dataTablesArray[i] = table;
 
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
             addDataTableContextMenu(table);
         }
 
@@ -1627,6 +1626,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         currentDataTable.setModel(new DefaultTableModel(values, names));
         currentDataTable.setCellSelectionEnabled(true);
 
+        if (currentConnectedNosqlDatabase != null) {
+            currentDataTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        } else if (currentConnectedSqlDatabase != null) {
+            currentDataTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        }
+
         for( int column = 0; column < currentDataTable.getColumnCount(); column++ ) {
             TableColumn tableColumn = currentDataTable.getColumnModel().getColumn(column);
             int preferredWidth = tableColumn.getMinWidth();
@@ -2277,7 +2282,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     }
 
     protected abstract List<Action> makeLeafActions( final LeafLevel selectedLeaf );
-    
+
     protected abstract List<Action> makeColumnActions( final ColumnLevel selectedColumn );
 
     protected abstract List<Action> makeDatabaseAction( final DbLevel dbLevel );

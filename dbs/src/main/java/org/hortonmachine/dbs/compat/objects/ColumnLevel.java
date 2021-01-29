@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.datatypes.EGeometryType;
+import org.hortonmachine.dbs.nosql.NosqlGeometryColumn;
 
 /**
  * Class representing a db column.
@@ -36,7 +38,7 @@ public class ColumnLevel {
     public GeometryColumn geomColumn;
 
     public List<LeafLevel> leafsList = new ArrayList<LeafLevel>();
-    
+
     /**
      * if not null, it describes the table(colname) it references as foreign key.
      */
@@ -59,7 +61,11 @@ public class ColumnLevel {
     @Override
     public String toString() {
         if (geomColumn == null) {
-            String col = columnName + " (" + columnType + ")";
+            String col = columnName;
+
+            if (columnType != null) {
+                col += " (" + columnType + ")";
+            }
             if (references != null) {
                 col += " " + references;
             }
@@ -68,9 +74,18 @@ public class ColumnLevel {
             }
             return col;
         } else {
-            String gType = geomColumn.geometryType.getTypeName();
-            boolean indexEnabled = geomColumn.isSpatialIndexEnabled == 1 ? true : false;
-            return columnName + " [" + gType + ",EPSG:" + geomColumn.srid + ",idx:" + indexEnabled + "]";
+            if (geomColumn instanceof NosqlGeometryColumn) {
+                NosqlGeometryColumn gc = (NosqlGeometryColumn) geomColumn;
+                return columnName + " [" + gc.indexType + ",EPSG:" + geomColumn.srid + ",idx: true]";
+            } else {
+                EGeometryType geometryType = geomColumn.geometryType;
+                String gType = "UNKNOWN";
+                if (geometryType != null) {
+                    gType = geometryType.getTypeName();
+                }
+                boolean indexEnabled = geomColumn.isSpatialIndexEnabled == 1 ? true : false;
+                return columnName + " [" + gType + ",EPSG:" + geomColumn.srid + ",idx:" + indexEnabled + "]";
+            }
         }
     }
 

@@ -7,15 +7,20 @@ import static com.mongodb.client.model.Filters.lt;
 import static com.mongodb.client.model.Filters.lte;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.nosql.INosqlCollection;
 import org.hortonmachine.dbs.nosql.INosqlDocument;
+import org.hortonmachine.dbs.nosql.NosqlGeometryColumn;
 
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.ListIndexesIterable;
 import com.mongodb.client.model.Filters;
 
 public class MongoCollection implements INosqlCollection {
@@ -24,6 +29,11 @@ public class MongoCollection implements INosqlCollection {
 
     public MongoCollection( com.mongodb.client.MongoCollection<Document> mongoCollection ) {
         this.mongoCollection = mongoCollection;
+    }
+
+    @Override
+    public String getName() {
+        return mongoCollection.getNamespace().getCollectionName();
     }
 
     @Override
@@ -111,6 +121,36 @@ public class MongoCollection implements INosqlCollection {
 
     public void updateByOid( String oid, String documentJson ) {
         mongoCollection.replaceOne(Filters.eq("_id", new ObjectId(oid)), Document.parse(documentJson));
+    }
+
+    public HashMap<String, GeometryColumn> getSpatialIndexes() {
+        HashMap<String, GeometryColumn> spatialIndexes = new HashMap<>();
+        ListIndexesIterable<Document> listIndexes = mongoCollection.listIndexes();
+        for( Document indexDoc : listIndexes ) {
+            Object object = indexDoc.get("key");
+            if (object instanceof Document) {
+                Document document = (Document) object;
+                for( Entry<String, Object> entry : document.entrySet() ) {
+                    Object value = entry.getValue();
+                    if (value instanceof String) {
+                        String indexType = (String) value;
+                        if (indexType.startsWith("2d")) {
+                            NosqlGeometryColumn gc = new NosqlGeometryColumn();
+                            gc.isSpatialIndexEnabled = 1;
+                            gc.srid = indexType.equals("2dsphere") ? 4326 : -1;
+                            gc.coordinatesDimension = 2;
+                            gc.geometryColumnName = entry.getKey();
+                            gc.tableName = getName();
+                            gc.indexType = indexType;
+
+                            spatialIndexes.put(entry.getKey(), gc);
+
+                        }
+                    }
+                }
+            }
+        }
+        return spatialIndexes;
     }
 
 }

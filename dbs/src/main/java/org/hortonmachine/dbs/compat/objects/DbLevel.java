@@ -158,6 +158,7 @@ public class DbLevel {
         return dbLevel;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static DbLevel getDbLevel( INosqlDb db, String... types ) throws Exception {
         DbLevel dbLevel = new DbLevel();
         dbLevel.dbName = db.getDbName();
@@ -184,6 +185,8 @@ public class DbLevel {
 
                 INosqlCollection collection = db.getCollection(collectionName);
 
+                HashMap<String, GeometryColumn> spatialIndexes = collection.getSpatialIndexes();
+
                 INosqlDocument first = collection.getFirst();
                 if (first != null) {
                     LinkedHashMap<String, Object> schema = first.getSchema();
@@ -195,8 +198,10 @@ public class DbLevel {
                         ColumnLevel columnLevel = new ColumnLevel();
                         if (value instanceof Map) {
                             type = "Document";
-                            handleDocument(columnLevel, (Map) value);
+                            handleDocument(columnLevel, (Map) value, spatialIndexes);
                         }
+
+                        columnLevel.geomColumn = spatialIndexes.get(key);
                         columnLevel.parent = tableLevel;
                         columnLevel.columnName = key;
                         columnLevel.columnType = type;
@@ -212,15 +217,18 @@ public class DbLevel {
         return dbLevel;
     }
 
-    private static void handleDocument( Object parent, Map<String, Object> map ) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void handleDocument( Object parent, Map<String, Object> map, HashMap<String, GeometryColumn> spatialIndexes ) {
         for( Entry<String, Object> entry : map.entrySet() ) {
             String key = entry.getKey();
-            Object value = entry.getValue();
+            Object value = entry.getValue().toString();
             String type = value.getClass().getSimpleName();
             LeafLevel leafLevel = new LeafLevel();
             if (value instanceof Map) {
                 type = "Document";
-                handleDocument(leafLevel, (Map) value);
+                handleDocument(leafLevel, (Map) value, spatialIndexes);
+            } else {
+                type = value.toString();
             }
             leafLevel.parent = parent;
             leafLevel.columnName = key;
@@ -228,8 +236,10 @@ public class DbLevel {
             leafLevel.isPK = key.equals("_id");
             if (parent instanceof LeafLevel) {
                 ((LeafLevel) parent).leafsList.add(leafLevel);
+                leafLevel.geomColumn = spatialIndexes.get(key);;
             } else if (parent instanceof ColumnLevel) {
                 ((ColumnLevel) parent).leafsList.add(leafLevel);
+                leafLevel.geomColumn = spatialIndexes.get(key);;
             }
         }
 

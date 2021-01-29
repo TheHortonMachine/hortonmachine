@@ -122,22 +122,26 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
                 setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_PRIMARYKEY));
             } else if (columnLevel.geomColumn != null) {
                 EGeometryType gType = columnLevel.geomColumn.geometryType;
-                switch( gType ) {
-                case POINT:
-                case MULTIPOINT:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POINT));
-                    break;
-                case LINESTRING:
-                case MULTILINESTRING:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_LINE));
-                    break;
-                case POLYGON:
-                case MULTIPOLYGON:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POLYGON));
-                    break;
-                default:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
-                    break;
+                if (gType != null) {
+                    switch( gType ) {
+                    case POINT:
+                    case MULTIPOINT:
+                        setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POINT));
+                        break;
+                    case LINESTRING:
+                    case MULTILINESTRING:
+                        setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_LINE));
+                        break;
+                    case POLYGON:
+                    case MULTIPOLYGON:
+                        setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POLYGON));
+                        break;
+                    default:
+                        setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
+                        break;
+                    }
+                } else {
+                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL));
                 }
             } else if (columnLevel.index != null) {
                 setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_INDEX));
@@ -152,22 +156,26 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
                 setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_PRIMARYKEY));
             } else if (leafLevel.geomColumn != null) {
                 EGeometryType gType = leafLevel.geomColumn.geometryType;
-                switch( gType ) {
-                case POINT:
-                case MULTIPOINT:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POINT));
-                    break;
-                case LINESTRING:
-                case MULTILINESTRING:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_LINE));
-                    break;
-                case POLYGON:
-                case MULTIPOLYGON:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POLYGON));
-                    break;
-                default:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
-                    break;
+                if (gType != null) {
+                    switch( gType ) {
+                    case POINT:
+                    case MULTIPOINT:
+                        setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POINT));
+                        break;
+                    case LINESTRING:
+                    case MULTILINESTRING:
+                        setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_LINE));
+                        break;
+                    case POLYGON:
+                    case MULTIPOLYGON:
+                        setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POLYGON));
+                        break;
+                    default:
+                        setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
+                        break;
+                    }
+                } else {
+                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL));
                 }
             } else {
                 setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));

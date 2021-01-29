@@ -1,6 +1,9 @@
 package org.hortonmachine.dbs.nosql;
 
+import java.util.HashMap;
 import java.util.List;
+
+import org.hortonmachine.dbs.compat.GeometryColumn;
 
 public interface INosqlCollection {
 
@@ -19,5 +22,9 @@ public interface INosqlCollection {
     void deleteByOid( String oid );
 
     void updateByOid( String oid, String documentJson );
+
+    HashMap<String, GeometryColumn> getSpatialIndexes();
+
+    String getName();
 
 }
