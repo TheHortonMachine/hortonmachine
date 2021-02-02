@@ -338,6 +338,8 @@ public class DatabaseViewer extends DatabaseController {
         addIfNotNull(actions, sqlTemplatesAndActions.getRefreshDatabaseAction(guiBridge, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getSwitchDatabaseAction(guiBridge, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getDropDatabaseAction(guiBridge, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getViewActiveSessionsAction(guiBridge, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getCleanIdleSessionsAction(guiBridge, this));
         addSeparator(actions);
         addIfNotNull(actions, sqlTemplatesAndActions.getCopyDatabasePathAction(this));
         addIfNotNull(actions, sqlTemplatesAndActions.getSaveConnectionAction(this));

@@ -1236,4 +1236,64 @@ public class SqlTemplatesAndActions {
 //        }
         return null;
     }
+
+    public Action getViewActiveSessionsAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
+        if (!isNosql && (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
+                || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS)) {
+            return new AbstractAction("List active connections"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+
+                    try {
+                        databaseViewer.runQuery("SELECT * FROM pg_stat_activity;", null);
+                    } catch (Exception e1) {
+                        GuiUtilities.handleError(databaseViewer, e1);
+                        Logger.INSTANCE.e("Error", e1);
+                    }
+                }
+            };
+        }
+        return null;
+    }
+
+    public Action getCleanIdleSessionsAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
+        if (!isNosql && (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
+                || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS)) {
+            return new AbstractAction("Clean up idle connections"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+
+                    try {
+                        String sql = "SELECT pid, datname, usename FROM  pg_stat_activity "
+                                + "WHERE  state in ('idle', 'idle in transaction', 'idle in transaction (aborted)', 'disabled') "
+                                + "order by datname";
+                        QueryResult result = databaseViewer.currentConnectedSqlDatabase.getTableRecordsMapFromRawSql(sql, 0);
+
+                        String killSql = "SELECT pg_terminate_backend(PID);";
+
+                        int pidIndex = result.names.indexOf("pid");
+                        int datnameIndex = result.names.indexOf("datname");
+                        int usenameIndex = result.names.indexOf("usename");
+                        StringBuilder sb = new StringBuilder();
+                        for( int i = 0; i < result.data.size(); i++ ) {
+                            Object[] objects = result.data.get(i);
+                            String pid = objects[pidIndex].toString();
+                            String datname = objects[datnameIndex].toString();
+                            String usename = objects[usenameIndex].toString();
+
+                            sb.append("-- db: ").append(datname).append(" user:").append(usename).append(" pid:").append(pid)
+                                    .append("\n");
+                            sb.append(killSql.replaceFirst("PID", pid)).append("\n");
+                        }
+
+                        databaseViewer.addTextToQueryEditor(sb.toString());
+                    } catch (Exception e1) {
+                        GuiUtilities.handleError(databaseViewer, e1);
+                        Logger.INSTANCE.e("Error", e1);
+                    }
+                }
+            };
+        }
+        return null;
+    }
 }

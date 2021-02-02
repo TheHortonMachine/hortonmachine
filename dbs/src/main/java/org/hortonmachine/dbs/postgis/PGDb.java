@@ -262,8 +262,8 @@ public class PGDb extends ADb {
                         return true;
                     }
                 }
-                return false;
             }
+            return false;
         });
     }
 
