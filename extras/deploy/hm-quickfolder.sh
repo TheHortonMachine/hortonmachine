@@ -21,4 +21,12 @@ MEM="-Xmx4g"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR=`dirname "$0"`
-java $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -cp "$DIR/libs/*" org.hortonmachine.gui.utils.HMMapframe $@
+
+if [ -f "$DIR/jre/bin/java" ]; then
+  JAVAEXE=$DIR/jre/bin/java
+else
+  JAVAEXE=java
+fi
+
+
+"$JAVAEXE" $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -cp "$DIR/libs/*" org.hortonmachine.gui.utils.HMMapframe $@

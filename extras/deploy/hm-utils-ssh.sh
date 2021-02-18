@@ -20,4 +20,12 @@
 MEM="-Xmx256m"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-java $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -cp "$DIR/libs/*" org.hortonmachine.gui.utils.SshTesterController
+
+if [ -f "$DIR/jre/bin/java" ]; then
+  JAVAEXE=$DIR/jre/bin/java
+else
+  JAVAEXE=java
+fi
+
+
+"$JAVAEXE" $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -cp "$DIR/libs/*" org.hortonmachine.gui.utils.SshTesterController

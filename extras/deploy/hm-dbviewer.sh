@@ -21,4 +21,11 @@ MEM="-Xmx4g"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR=`dirname "$0"`
-java -splash:$DIR/imgs/splash_dbviewer.png $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.database.DatabaseViewer $1
+
+if [ -f "$DIR/jre/bin/java" ]; then
+  JAVAEXE=$DIR/jre/bin/java
+else
+  JAVAEXE=java
+fi
+
+"$JAVAEXE" -splash:$DIR/imgs/splash_dbviewer.png $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.database.DatabaseViewer $1

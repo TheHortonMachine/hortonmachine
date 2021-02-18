@@ -22,4 +22,11 @@ MEM="-Xmx4g"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # the necessary argument is the port of the running server
-java $MEM -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.h2.tools.Server -tcpShutdown tcp://localhost:$1
+if [ -f "$DIR/jre/bin/java" ]; then
+  JAVAEXE=$DIR/jre/bin/java
+else
+  JAVAEXE=java
+fi
+
+
+"$JAVAEXE" $MEM -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.h2.tools.Server -tcpShutdown tcp://localhost:$1

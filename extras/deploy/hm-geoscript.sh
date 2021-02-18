@@ -27,4 +27,11 @@ then
     SPLASH=-splash:$DIR/imgs/splash_geoscript.png
 fi
 
-java $SPLASH $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -cp "$DIR/libs/*" org.hortonmachine.geoscript.GeoscriptConsole $1
+if [ -f "$DIR/jre/bin/java" ]; then
+  JAVAEXE=$DIR/jre/bin/java
+else
+  JAVAEXE=java
+fi
+
+
+"$JAVAEXE" $SPLASH $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -cp "$DIR/libs/*" org.hortonmachine.geoscript.GeoscriptConsole $1

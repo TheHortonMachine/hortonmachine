@@ -20,4 +20,12 @@
 MEM="-Xmx1g"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-java -splash:$DIR/imgs/splash_spatialtoolbox.png $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController $DIR/libs
+
+if [ -f "$DIR/jre/bin/java" ]; then
+  JAVAEXE=$DIR/jre/bin/java
+else
+  JAVAEXE=java
+fi
+
+
+"$JAVAEXE" -splash:$DIR/imgs/splash_spatialtoolbox.png $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController $DIR/libs
