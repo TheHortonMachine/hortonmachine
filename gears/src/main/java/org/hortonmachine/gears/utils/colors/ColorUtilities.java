@@ -35,7 +35,12 @@ public class ColorUtilities {
      * @return the {@link Color}.
      */
     public static Color colorFromRbgString( String rbgString ) {
-        String[] split = rbgString.split(",");
+        String[] split;
+        if (rbgString.contains(",")) {
+            split = rbgString.split(",");
+        }else {
+            split = rbgString.split(" ");
+        }
         if (split.length < 3 || split.length > 4) {
             throw new IllegalArgumentException("Color string has to be of type r,g,b.");
         }
@@ -122,7 +127,5 @@ public class ColorUtilities {
         Color transparentColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
         return transparentColor;
     }
-    
-    
 
 }

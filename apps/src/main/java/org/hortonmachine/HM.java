@@ -17,8 +17,12 @@
  */
 package org.hortonmachine;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +41,6 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
@@ -58,6 +61,7 @@ import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.math.regressions.LogTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.PolyTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.RegressionLine;
@@ -65,13 +69,28 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.OmsMatrixCharter;
 import org.hortonmachine.modules.FileIterator;
+import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.annotations.AbstractXYAnnotation;
+import org.jfree.chart.annotations.XYImageAnnotation;
+import org.jfree.chart.annotations.XYLineAnnotation;
+import org.jfree.chart.annotations.XYPolygonAnnotation;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.joda.time.DateTime;
-import org.joda.time.base.AbstractDateTime;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.index.strtree.STRtree;
+import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder;
 import org.opengis.feature.simple.SimpleFeature;
 
 import geoscript.style.Style;
@@ -123,6 +142,8 @@ public class HM {
         sb.append("\tscatterPlot( List<List<List<Number>>> pairsValuesLists )").append("\n");
         sb.append("Chart series of points with rendering options:").append("\n");
         sb.append("\tscatterPlot( Map<String, Object> options, List<List<List<Number>>> pairsValuesLists )").append("\n");
+        sb.append("Chart a list of geometries with optional rendering options:").append("\n");
+        sb.append("\tplotGeometries( Map<String, Object> options, List<geoscript.geom.Geometry> geomsList )").append("\n");
         sb.append("Calculate a log regression (use result.predict( x ) to get y):").append("\n");
         sb.append("\tRegressionLine logRegression( List<List<Double>> data, List<List<Double>> result )").append("\n");
         sb.append("Calculate a polynomial regression (use result.predict( x ) to get y):").append("\n");
@@ -579,6 +600,210 @@ public class HM {
 
         GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
 
+    }
+
+    public static void plotGeometries( List<geoscript.geom.Geometry> geomsList ) {
+        plotGeometries(null, geomsList);
+    }
+
+    public static void plotGeometries( Map<String, Object> options, List<geoscript.geom.Geometry> geomsList ) {
+        String title = "";
+        String xLabel = "x";
+        String yLabel = "y";
+        int width = 600;
+        int height = 600;
+        int strokeWidth = 2;
+        boolean drawCoords = true;
+
+        if (options != null) {
+            Object object = options.get("title");
+            if (object instanceof String) {
+                title = (String) object;
+            }
+            object = options.get("xlabel");
+            if (object instanceof String) {
+                xLabel = (String) object;
+            }
+            object = options.get("ylabel");
+            if (object instanceof String) {
+                yLabel = (String) object;
+            }
+            object = options.get("size");
+            if (object instanceof List) {
+                List size = (List) object;
+                try {
+                    if (size.size() == 2) {
+                        width = ((Number) size.get(0)).intValue();
+                        height = ((Number) size.get(1)).intValue();
+                    }
+                } catch (Exception e) {
+                    // ignore and use default
+                }
+            }
+            object = options.get("width");
+            if (object instanceof Number) {
+                width = ((Number) object).intValue();
+            }
+            object = options.get("height");
+            if (object instanceof Number) {
+                height = ((Number) object).intValue();
+            }
+            object = options.get("strokeWidth");
+            if (object instanceof Number) {
+                strokeWidth = ((Number) object).intValue();
+            }
+            object = options.get("drawCoords");
+            if (object instanceof Boolean) {
+                drawCoords = (boolean) object;
+            }
+        }
+
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        XYSeries s = new XYSeries("");
+        dataset.addSeries(s);
+        JFreeChart chart = ChartFactory.createScatterPlot(title, xLabel, yLabel, dataset, PlotOrientation.VERTICAL, false, true,
+                false);
+        XYPlot plot = (XYPlot) chart.getPlot();
+        XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+
+        String[] hexes = {"#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628", "#f781bf", "#999999", "#ffff33"};
+        List<Color> tableColors = Arrays.asList(hexes).stream().map(cs -> ColorUtilities.fromHex(cs))
+                .collect(Collectors.toList());
+        int colorIndex = 0;
+        int maxColor = tableColors.size();
+
+        Envelope env = new Envelope();
+        List<List<List<Number>>> data = new ArrayList<>();
+        for( geoscript.geom.Geometry geometry : geomsList ) {
+            Envelope envelope = geometry.getEnvelope();
+            env.expandToInclude(envelope);
+            List<AbstractXYAnnotation> annots = new ArrayList<>();
+            for( int i = 0; i < geometry.getNumGeometries(); i++ ) {
+                if (colorIndex == maxColor) {
+                    colorIndex = 0;
+                }
+                Color color = tableColors.get(colorIndex);
+                Color colorTransp = ColorUtilities.makeTransparent(color, 60);
+                Color transp = ColorUtilities.makeTransparent(Color.white, 0);
+                int w = strokeWidth * 4;
+                if (w < 16) {
+                    w = 16;
+                }
+                BufferedImage bi = new BufferedImage(w, w, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2d = (Graphics2D) bi.getGraphics();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(color);
+                g2d.setStroke(new BasicStroke(strokeWidth));
+                g2d.fillOval(strokeWidth, strokeWidth, w - 2 * strokeWidth, w - 2 * strokeWidth);
+                g2d.dispose();
+
+                geoscript.geom.Geometry geometryN = geometry.getGeometryN(i);
+                List<List<Number>> geomDataList = new ArrayList<>();
+                data.add(geomDataList);
+
+                if (EGeometryType.isPoint(geometryN.getG())) {
+                    Coordinate c = geometryN.getCoordinates()[0];
+                    XYImageAnnotation node = new XYImageAnnotation(c.x, c.y, bi);
+                    node.setToolTipText(geometry.toString());
+                    annots.add(node);
+                } else if (EGeometryType.isLine(geometryN.getG())) {
+                    Coordinate[] coordinates = geometryN.getCoordinates();
+                    for( int j = 0; j < coordinates.length - 1; j++ ) {
+                        Coordinate c1 = coordinates[j];
+                        Coordinate c2 = coordinates[j + 1];
+                        XYLineAnnotation lineAnn = new XYLineAnnotation(c1.x, c1.y, c2.x, c2.y, new BasicStroke(strokeWidth),
+                                color);
+                        lineAnn.setToolTipText(geometryN.toString());
+                        annots.add(0, lineAnn);
+                        if (drawCoords) {
+                            if (j == 0) {
+                                XYImageAnnotation node = new XYImageAnnotation(c1.x, c1.y, bi);
+                                annots.add(node);
+                            }
+                            XYImageAnnotation node = new XYImageAnnotation(c2.x, c2.y, bi);
+                            annots.add(node);
+                        }
+                    }
+                } else if (EGeometryType.isPolygon(geometryN.getG())) {
+                    Polygon polygon = (Polygon) geometryN.getG();
+
+                    DelaunayTriangulationBuilder b = new DelaunayTriangulationBuilder();
+                    b.setSites(polygon);
+                    Geometry triangles = b.getTriangles(new GeometryFactory());
+
+                    for( int j = 0; j < triangles.getNumGeometries(); j++ ) {
+                        Geometry g = triangles.getGeometryN(j);
+                        Point interiorPoint = g.getInteriorPoint();
+                        if (interiorPoint.intersects(polygon)) {
+                            Coordinate[] cs = g.getCoordinates();
+                            double[] cd = new double[cs.length * 2];
+                            int indexInt = 0;
+                            for( Coordinate c : cs ) {
+                                cd[indexInt++] = c.x;
+                                cd[indexInt++] = c.y;
+                            }
+                            XYPolygonAnnotation a = new XYPolygonAnnotation(cd, null, null, colorTransp);
+                            a.setToolTipText(geometryN.toString());
+                            annots.add(0, a);
+                        }
+                    }
+
+                    LineString exteriorRing = polygon.getExteriorRing();
+                    Coordinate[] coordinates = exteriorRing.getCoordinates();
+                    double[] coords = new double[coordinates.length * 2];
+                    int index = 0;
+                    for( Coordinate c : coordinates ) {
+                        coords[index++] = c.x;
+                        coords[index++] = c.y;
+                        if (drawCoords) {
+                            XYImageAnnotation node = new XYImageAnnotation(c.x, c.y, bi);
+                            annots.add(node);
+                        }
+                    }
+
+                    for( int j = 0; j < polygon.getNumInteriorRing(); j++ ) {
+                        LineString interiorRingN = polygon.getInteriorRingN(j);
+                        Coordinate[] coordinatesInt = interiorRingN.getCoordinates();
+                        double[] coordsInt = new double[coordinatesInt.length * 2];
+                        int indexInt = 0;
+                        for( Coordinate c : coordinatesInt ) {
+                            coordsInt[indexInt++] = c.x;
+                            coordsInt[indexInt++] = c.y;
+                            if (drawCoords) {
+                                XYImageAnnotation node = new XYImageAnnotation(c.x, c.y, bi);
+                                annots.add(node);
+                            }
+                        }
+                        XYPolygonAnnotation aInt = new XYPolygonAnnotation(coordsInt, new BasicStroke(strokeWidth), color,
+                                transp);
+                        annots.add(0, aInt);
+                    }
+                    XYPolygonAnnotation a = new XYPolygonAnnotation(coords, new BasicStroke(strokeWidth), color, transp);
+                    annots.add(0, a);
+                }
+
+                for( AbstractXYAnnotation ann : annots ) {
+                    renderer.addAnnotation(ann);
+                }
+                colorIndex++;
+            }
+        }
+
+        double deltaX = env.getWidth() * 0.1;
+        double deltaY = env.getHeight() * 0.1;
+        s.add(env.getMinX() - deltaX, env.getMinY() - deltaY);
+        s.add(env.getMaxX() + deltaX, env.getMaxY() + deltaY);
+
+        ChartPanel chartPanel = new ChartPanel(chart, true);
+        chartPanel.setRangeZoomable(true);
+        chartPanel.setDomainZoomable(true);
+
+        renderer.setSeriesPaint(0, ColorUtilities.makeTransparent(Color.red, 0));
+
+        Dimension preferredSize = new Dimension(width, height);
+        chartPanel.setPreferredSize(preferredSize);
+
+        GuiUtilities.openDialogWithPanel(chartPanel, "Simple Geometry Plot", preferredSize, false);
     }
 
     public static void scatterPlot( List<List<List<Number>>> data ) {
