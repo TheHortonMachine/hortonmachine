@@ -603,15 +603,19 @@ public class HM {
     }
 
     public static void plotGeometries( List<geoscript.geom.Geometry> geomsList ) {
-        plotGeometries(null, geomsList);
+        plotJtsGeometries(null, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()));
     }
 
     public static void plotGeometries( Map<String, Object> options, List<geoscript.geom.Geometry> geomsList ) {
+        plotJtsGeometries(options, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()));
+    }
+
+    public static void plotJtsGeometries( Map<String, Object> options, List<Geometry> geomsList ) {
         String title = "";
         String xLabel = "x";
         String yLabel = "y";
-        int width = 600;
-        int height = 600;
+        int width = 1000;
+        int height = 1000;
         int strokeWidth = 2;
         boolean drawCoords = true;
 
@@ -674,8 +678,8 @@ public class HM {
 
         Envelope env = new Envelope();
         List<List<List<Number>>> data = new ArrayList<>();
-        for( geoscript.geom.Geometry geometry : geomsList ) {
-            Envelope envelope = geometry.getEnvelope();
+        for( Geometry geometry : geomsList ) {
+            Envelope envelope = geometry.getEnvelopeInternal();
             env.expandToInclude(envelope);
             List<AbstractXYAnnotation> annots = new ArrayList<>();
             for( int i = 0; i < geometry.getNumGeometries(); i++ ) {
@@ -697,16 +701,16 @@ public class HM {
                 g2d.fillOval(strokeWidth, strokeWidth, w - 2 * strokeWidth, w - 2 * strokeWidth);
                 g2d.dispose();
 
-                geoscript.geom.Geometry geometryN = geometry.getGeometryN(i);
+                Geometry geometryN = geometry.getGeometryN(i);
                 List<List<Number>> geomDataList = new ArrayList<>();
                 data.add(geomDataList);
 
-                if (EGeometryType.isPoint(geometryN.getG())) {
+                if (EGeometryType.isPoint(geometryN)) {
                     Coordinate c = geometryN.getCoordinates()[0];
                     XYImageAnnotation node = new XYImageAnnotation(c.x, c.y, bi);
                     node.setToolTipText(geometry.toString());
                     annots.add(node);
-                } else if (EGeometryType.isLine(geometryN.getG())) {
+                } else if (EGeometryType.isLine(geometryN)) {
                     Coordinate[] coordinates = geometryN.getCoordinates();
                     for( int j = 0; j < coordinates.length - 1; j++ ) {
                         Coordinate c1 = coordinates[j];
@@ -724,8 +728,8 @@ public class HM {
                             annots.add(node);
                         }
                     }
-                } else if (EGeometryType.isPolygon(geometryN.getG())) {
-                    Polygon polygon = (Polygon) geometryN.getG();
+                } else if (EGeometryType.isPolygon(geometryN)) {
+                    Polygon polygon = (Polygon) geometryN;
 
                     DelaunayTriangulationBuilder b = new DelaunayTriangulationBuilder();
                     b.setSites(polygon);

@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +86,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.styling.Style;
 import org.geotools.swing.JMapFrame.Tool;
 import org.h2.jdbc.JdbcSQLException;
+import org.hortonmachine.HM;
 import org.hortonmachine.database.tree.DatabaseTreeCellRenderer;
 import org.hortonmachine.database.tree.DatabaseTreeModel;
 import org.hortonmachine.database.tree.MultiLineTableCellRenderer;
@@ -1287,14 +1289,14 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 int[] selectedRows = table.getSelectedRows();
                 int[] selectedCols = table.getSelectedColumns();
                 boolean isGeom = false;
-                boolean maybeImage = false;
+                boolean isBinary = false;
                 boolean proposeChart = false;
                 ESpatialiteGeometryType geomType = null;
                 if (selectedCols.length == 1 && selectedRows.length > 0) {
                     // check content
                     Object valueObj = table.getValueAt(selectedRows[0], selectedCols[0]);
                     if (valueObj instanceof byte[]) {
-                        maybeImage = true;
+                        isBinary = true;
                     }
 
                     String valueAt = valueObj.toString();
@@ -1320,7 +1322,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 });
                 item.setHorizontalTextPosition(JMenuItem.RIGHT);
                 popupMenu.add(item);
-                if (maybeImage) {
+                if (isBinary) {
                     JMenuItem item1 = new JMenuItem(new AbstractAction("View as image"){
                         private static final long serialVersionUID = 1L;
                         @Override
@@ -1352,20 +1354,15 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             for( int r : selectedRows ) {
                                 Object valueObj = table.getValueAt(r, selectedCols[0]);
                                 if (valueObj instanceof byte[]) {
-                                    try {
-                                        byte[] byteArray = (byte[]) valueObj;
-                                        String string = new String(byteArray);
+                                    byte[] byteArray = (byte[]) valueObj;
+                                    String string = new String(byteArray);
 
-                                        JTextArea tArea = new JTextArea(string, 10, 20);
-                                        JPanel p = new JPanel(new BorderLayout());
-                                        final JScrollPane scroll = new JScrollPane(tArea);
-                                        p.add(scroll, BorderLayout.CENTER);
-                                        tArea.setLineWrap(true);
-                                        GuiUtilities.openDialogWithPanel(p, "Cell as string", new Dimension(600, 500), false);
-                                    } catch (Exception e1) {
-                                        GuiUtilities.showWarningMessage(popupMenu, "Not an image.");
-                                        break;
-                                    }
+                                    JTextArea tArea = new JTextArea(string, 10, 20);
+                                    JPanel p = new JPanel(new BorderLayout());
+                                    final JScrollPane scroll = new JScrollPane(tArea);
+                                    p.add(scroll, BorderLayout.CENTER);
+                                    tArea.setLineWrap(true);
+                                    GuiUtilities.openDialogWithPanel(p, "Cell as string", new Dimension(600, 500), false);
                                 }
                             }
 
@@ -1501,8 +1498,43 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     });
                     item1.setHorizontalTextPosition(JMenuItem.RIGHT);
                     popupMenu.add(item1);
+                    JMenuItem item2 = new JMenuItem(new AbstractAction("Plot geometry"){
+                        private static final long serialVersionUID = 1L;
+                        @Override
+                        public void actionPerformed( ActionEvent e ) {
+
+                            WKTReader wktReader = new WKTReader();
+                            List<Geometry> geomsList = new ArrayList<>();
+                            for( int r : selectedRows ) {
+                                try {
+                                    String valueAt = table.getValueAt(r, selectedCols[0]).toString();
+                                    valueAt = removeSrid(valueAt);
+                                    Geometry geometry = wktReader.read(valueAt);
+                                    if (geometry instanceof GeometryCollection) {
+                                        int numGeometries = geometry.getNumGeometries();
+                                        for( int j = 0; j < numGeometries; j++ ) {
+                                            Geometry geometryN = geometry.getGeometryN(j);
+                                            geomsList.add(geometryN);
+                                        }
+                                    } else {
+                                        geomsList.add(geometry);
+                                    }
+                                } catch (ParseException e1) {
+                                    Logger.INSTANCE.insertError("", "ERROR", e1);
+                                }
+                            }
+
+                            if (geomsList.size() > 0) {
+                                HM.plotJtsGeometries(null, geomsList);
+                            }
+
+                        }
+
+                    });
+                    item2.setHorizontalTextPosition(JMenuItem.RIGHT);
+                    popupMenu.add(item2);
                     if (geomType != null && !geomType.isPoint()) {
-                        JMenuItem item2 = new JMenuItem(new AbstractAction("View geometry with directions hint"){
+                        JMenuItem item3 = new JMenuItem(new AbstractAction("View geometry with directions hint"){
                             private static final long serialVersionUID = 1L;
                             @Override
                             public void actionPerformed( ActionEvent e ) {
@@ -1544,8 +1576,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             }
 
                         });
-                        item2.setHorizontalTextPosition(JMenuItem.RIGHT);
-                        popupMenu.add(item2);
+                        item3.setHorizontalTextPosition(JMenuItem.RIGHT);
+                        popupMenu.add(item3);
                     }
                 }
             }
