@@ -35,6 +35,7 @@ import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
+import org.hortonmachine.dbs.compat.IHmExtrasDb;
 import org.hortonmachine.dbs.compat.ISpatialTableNames;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
@@ -61,7 +62,7 @@ import org.postgresql.util.PGobject;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class PostgisDb extends ASpatialDb {
+public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
     private PGDb pgDb;
     private boolean wasInitialized = false;
     private ASqlTemplates sqlTemplates;
@@ -674,4 +675,23 @@ public class PostgisDb extends ASpatialDb {
         pgDb.accept(visitor);
     }
 
+    @Override
+    public String getSldString( String tableName ) throws Exception {
+        return getSldStringInternal(pgDb, tableName);
+    }
+
+    @Override
+    public void updateSldStyle( String tableName, String sldString ) throws Exception {
+        updateSldStyleInternal(pgDb, tableName, sldString);
+    }
+
+    @Override
+    public String getFormString( String tableName ) throws Exception {
+        return getFormStringInternal(pgDb, tableName);
+    }
+
+    @Override
+    public void updateForm( String tableName, String form ) throws Exception {
+        updateFormsInternal(pgDb, tableName, form);
+    }
 }

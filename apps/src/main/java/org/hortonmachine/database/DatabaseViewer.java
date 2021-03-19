@@ -392,6 +392,7 @@ public class DatabaseViewer extends DatabaseController {
             addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewTableAction(selectedTable, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewTableGeometriesAction(selectedTable, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getOpenInSldEditorAction(selectedTable, this));
+            addIfNotNull(actions, sqlTemplatesAndActions.getOpenInGformsEditorAction(selectedTable, this));
         }
         if (selectedTable.tableName.equals(LogDb.TABLE_MESSAGES)) {
             actions.add(new AbstractAction("Show HTML report"){

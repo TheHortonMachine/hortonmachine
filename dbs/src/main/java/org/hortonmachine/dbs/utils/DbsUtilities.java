@@ -36,6 +36,7 @@ import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
+import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -410,5 +411,28 @@ public class DbsUtilities {
         } else {
             preferences.remove(preferenceKey);
         }
+    }
+
+    /**
+     * Get only the alphanumeric field names from a table. 
+     * 
+     * @param db the database.
+     * @param tableName the name of the table to check.
+     * @return the list of names.
+     * @throws Exception
+     */
+    public static List<String> getTableAlphanumericFields( ADb db, String tableName ) throws Exception {
+        List<String[]> tableColumns = db.getTableColumns(tableName);
+        List<String> names = new ArrayList<>();
+        for( String[] item : tableColumns ) {
+            String name = item[0];
+            String type = item[1];
+
+            EGeometryType geomType = EGeometryType.forTypeName(type);
+            if (geomType == EGeometryType.UNKNOWN) {
+                names.add(name);
+            }
+        }
+        return names;
     }
 }

@@ -51,6 +51,7 @@ import org.hortonmachine.dbs.compat.ASqlTemplates;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.IHmExtrasDb;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
@@ -70,6 +71,9 @@ import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.gforms.DbFormHandler;
+import org.hortonmachine.gforms.FormBuilderController;
+import org.hortonmachine.gforms.IFormHandler;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
@@ -700,7 +704,9 @@ public class SqlTemplatesAndActions {
         if (isNosql) {
             return null;
         }
-        if (spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE) {
+        if (spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE
+                || spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
+                || spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS) {
             return new AbstractAction("Open in SLD editor"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
@@ -711,6 +717,34 @@ public class SqlTemplatesAndActions {
 
                         final MainController controller = new MainController(new File(databasePath), table.tableName);
                         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine SLD Editor");
+                        Class<DatabaseViewer> class1 = DatabaseViewer.class;
+                        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
+                        frame.setIconImage(icon.getImage());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            };
+        } else {
+            return null;
+        }
+    }
+
+    public Action getOpenInGformsEditorAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return null;
+        }
+        if (spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE
+                || spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
+                || spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS) {
+            return new AbstractAction("Open in FORMS editor"){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    try {
+                        DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
+                        IFormHandler formHandler = new DbFormHandler(spatialiteViewer.currentConnectedSqlDatabase, table.tableName);
+                        final FormBuilderController controller = new FormBuilderController(formHandler);
+                        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine FORMS Editor");
                         Class<DatabaseViewer> class1 = DatabaseViewer.class;
                         ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
                         frame.setIconImage(icon.getImage());

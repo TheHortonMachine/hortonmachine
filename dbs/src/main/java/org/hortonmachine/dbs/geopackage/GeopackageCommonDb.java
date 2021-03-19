@@ -24,7 +24,6 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ConnectionData;
@@ -39,6 +38,7 @@ import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
+import org.hortonmachine.dbs.compat.IHmExtrasDb;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
@@ -57,10 +57,8 @@ import org.hortonmachine.dbs.utils.ResultSetToObjectFunction;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-public abstract class GeopackageCommonDb extends ASpatialDb {
+public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtrasDb {
 
-    private static final String HM_STYLES_TABLE = "hm_styles";
-    private static final String QGIS_STYLES_TABLE = "layer_styles";
     public static final String GEOPACKAGE_CONTENTS = "gpkg_contents";
     public static final String GEOMETRY_COLUMNS = "gpkg_geometry_columns";
     public static final String SPATIAL_REF_SYS = "gpkg_spatial_ref_sys";
@@ -1426,37 +1424,8 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
         });
     }
 
-    public String getSldString( String tableName ) throws Exception {
-        checkStyleTable();
-
-        return sqliteDb.execOnConnection(connection -> {
-            String sql = "select sld from " + HM_STYLES_TABLE + " where lower(tablename)='" + tableName.toLowerCase() + "'";
-            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-                if (rs.next()) {
-                    return rs.getString(1);
-                }
-            }
-            if (sqliteDb.hasTable(QGIS_STYLES_TABLE)) {
-                // check is maybe there is a qgis style available
-                sql = "select styleSLD from " + QGIS_STYLES_TABLE + " where lower(f_table_name)='" + tableName.toLowerCase()
-                        + "'";
-                try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
-                    if (rs.next()) {
-                        String sld = rs.getString(1);
-                        if (sld != null) {
-                            if (sld.trim().length() == 0)
-                                return null;
-                        }
-                        return sld;
-                    }
-                }
-            }
-            return null;
-        });
-    }
-
     public BasicStyle getBasicStyle( String tableName ) throws Exception {
-        checkStyleTable();
+        checkStyleTable(sqliteDb);
 
         return sqliteDb.execOnConnection(connection -> {
             BasicStyle basicStyle = new BasicStyle();
@@ -1470,37 +1439,6 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
             }
             return basicStyle;
         });
-    }
-
-    public void updateSldStyle( String tableName, String sldString ) throws Exception {
-        Long count = sqliteDb.getLong(
-                "select count(*) from " + HM_STYLES_TABLE + " where tablename='" + DbsUtilities.fixTableName(tableName) + "'");
-        String sql;
-        if (count == 0) {
-            sql = "INSERT INTO " + HM_STYLES_TABLE + "(tablename, sld) VALUES(?,?)";
-            sqliteDb.execOnConnection(connection -> {
-                try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
-                    pstmt.setString(1, tableName);
-                    pstmt.setString(2, sldString);
-                    pstmt.executeUpdate();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
-            });
-        } else {
-            sql = "update " + HM_STYLES_TABLE + " set sld=? where tablename=?";
-            sqliteDb.execOnConnection(connection -> {
-                try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
-                    pstmt.setString(1, sldString);
-                    pstmt.setString(2, tableName);
-                    pstmt.executeUpdate();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
-            });
-        }
     }
 
     public void updateSimplifiedStyle( String tableName, String simplified ) throws Exception {
@@ -1531,18 +1469,6 @@ public abstract class GeopackageCommonDb extends ASpatialDb {
                 }
                 return null;
             });
-        }
-    }
-
-    private void checkStyleTable() throws Exception {
-        if (!sqliteDb.hasTable(HM_STYLES_TABLE)) {
-            ADatabaseSyntaxHelper dt = sqliteDb.getType().getDatabaseSyntaxHelper();
-            sqliteDb.createTable(HM_STYLES_TABLE, //
-                    "tablename " + dt.TEXT(), //
-                    "sld " + dt.TEXT(), //
-                    "simplified " + dt.TEXT() //
-            );
-            sqliteDb.createIndex(HM_STYLES_TABLE, "tablename", true);
         }
     }
 

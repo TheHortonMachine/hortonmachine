@@ -55,4 +55,24 @@ public class GPGeopackageDb extends GeopackageCommonDb {
         });
 
     }
+
+    @Override
+    public String getSldString( String tableName ) throws Exception {
+        throw new RuntimeException("Not supported");
+    }
+
+    @Override
+    public void updateSldStyle( String tableName, String sldString ) throws Exception {
+        throw new RuntimeException("Not supported");
+    }
+
+    @Override
+    public String getFormString( String tableName ) throws Exception {
+        throw new RuntimeException("Not supported");
+    }
+
+    @Override
+    public void updateForm( String tableName, String form ) throws Exception {
+        throw new RuntimeException("Not supported");
+    }
 }

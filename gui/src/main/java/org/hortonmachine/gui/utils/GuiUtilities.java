@@ -43,6 +43,7 @@ import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -62,6 +63,7 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.DefaultEditorKit;
 
 import org.apache.commons.io.FilenameUtils;
 import org.hortonmachine.dbs.log.Logger;
@@ -252,8 +254,19 @@ public class GuiUtilities {
     }
 
     public static void setDefaultLookAndFeel() {
+        OSType osType = OsCheck.getOperatingSystemType();
+//        if(osType == OSType.MacOS) {
+//            // set keybindings
+//            InputMap im = (InputMap) UIManager.get("TextField.focusInputMap");
+//            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK), DefaultEditorKit.copyAction);
+//            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK), DefaultEditorKit.pasteAction);
+//            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK), DefaultEditorKit.cutAction);
+//            im = (InputMap) UIManager.get("TextPane.focusInputMap");
+//            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK), DefaultEditorKit.copyAction);
+//            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK), DefaultEditorKit.pasteAction);
+//            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK), DefaultEditorKit.cutAction);
+//        }
         try {
-            OSType osType = OsCheck.getOperatingSystemType();
             switch( osType ) {
             case Windows:
                 for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
@@ -280,15 +293,16 @@ public class GuiUtilities {
                 // }
                 // }
             default:
-                for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
-                    String name = info.getName();
-                    if ("Nimbus".equalsIgnoreCase(name)) {
-                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                        break;
-                    }
-                }
+//                for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
+//                    String name = info.getName();
+//                    if ("Nimbus".equalsIgnoreCase(name)) {
+//                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//                        break;
+//                    }
+//                }
                 break;
             }
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }

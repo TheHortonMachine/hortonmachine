@@ -24,9 +24,9 @@
     </at>
     <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
    </super>
-   <at name="id">/home/hydrologis/development/hortonmachine-git/apps/src/main/java/org/hortonmachine/gforms/FormBuilderView.xml</at>
+   <at name="id">/Users/hydrologis/development/hortonmachine-git/apps/src/main/java/org/hortonmachine/gforms/FormBuilderView.xml</at>
    <at name="rowspecs">CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE</at>
-   <at name="colspecs">FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:24DLU:NONE,FILL:DEFAULT:NONE,FILL:24DLU:NONE,FILL:DEFAULT:NONE</at>
+   <at name="colspecs">FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE</at>
    <at name="components">
     <object classname="java.util.LinkedList">
      <item >
@@ -74,8 +74,8 @@
              </object>
             </at>
             <at name="name">filePathtext</at>
-            <at name="width">2381</at>
-            <at name="height">30</at>
+            <at name="width">668</at>
+            <at name="height">26</at>
            </object>
           </at>
          </object>
@@ -129,10 +129,10 @@
             </at>
             <at name="actionCommand">...</at>
             <at name="name">browseButton</at>
-            <at name="width">62</at>
+            <at name="width">75</at>
             <at name="text">...</at>
             <at name="toolTipText">Load an existing Geopaparazzi Form</at>
-            <at name="height">31</at>
+            <at name="height">29</at>
            </object>
           </at>
          </object>
@@ -186,10 +186,10 @@
             </at>
             <at name="actionCommand">new</at>
             <at name="name">newButton</at>
-            <at name="width">62</at>
+            <at name="width">75</at>
             <at name="text">new</at>
             <at name="toolTipText">Create a new Geopaparazzi Form</at>
-            <at name="height">31</at>
+            <at name="height">29</at>
            </object>
           </at>
          </object>
@@ -242,13 +242,13 @@
              </object>
             </at>
             <at name="name">buttonsCombo</at>
-            <at name="width">2381</at>
+            <at name="width">668</at>
             <at name="items">
              <object classname="com.jeta.forms.store.properties.ItemsProperty">
               <at name="name">items</at>
              </object>
             </at>
-            <at name="height">36</at>
+            <at name="height">27</at>
            </object>
           </at>
          </object>
@@ -302,10 +302,10 @@
             </at>
             <at name="actionCommand">add</at>
             <at name="name">addSectionButton</at>
-            <at name="width">62</at>
+            <at name="width">75</at>
             <at name="text">add</at>
             <at name="toolTipText">Add new Section (Geopaparazzi Button)</at>
-            <at name="height">31</at>
+            <at name="height">29</at>
            </object>
           </at>
          </object>
@@ -359,10 +359,10 @@
             </at>
             <at name="actionCommand">del</at>
             <at name="name">deleteSectionButton</at>
-            <at name="width">62</at>
+            <at name="width">75</at>
             <at name="text">del</at>
             <at name="toolTipText">Delete selected Section  (Geopaparazzi Button)</at>
-            <at name="height">31</at>
+            <at name="height">29</at>
            </object>
           </at>
          </object>
@@ -387,9 +387,9 @@
          </at>
          <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
         </super>
-        <at name="id">embedded.475727589</at>
+        <at name="id">embedded.1333012659</at>
         <at name="rowspecs">FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE</at>
-        <at name="colspecs">FILL:DEFAULT:GROW(1.0),FILL:24DLU:NONE</at>
+        <at name="colspecs">FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE</at>
         <at name="components">
          <object classname="java.util.LinkedList">
           <item >
@@ -409,9 +409,9 @@
               </at>
               <at name="componentclass">com.jeta.forms.gui.form.FormComponent</at>
              </super>
-             <at name="id">embedded.1157799628</at>
+             <at name="id">embedded.1163303699</at>
              <at name="rowspecs">CENTER:DEFAULT:NONE</at>
-             <at name="colspecs">FILL:100DLU:NONE,FILL:4DLU:NONE,FILL:24DLU:NONE,FILL:30DLU:NONE,FILL:100DLU:NONE,FILL:4DLU:NONE,FILL:24DLU:NONE</at>
+             <at name="colspecs">FILL:100DLU:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE,FILL:30DLU:NONE,FILL:100DLU:NONE,FILL:4DLU:NONE,FILL:DEFAULT:NONE</at>
              <at name="components">
               <object classname="java.util.LinkedList">
                <item >
@@ -460,10 +460,10 @@
                       </at>
                       <at name="actionCommand">add</at>
                       <at name="name">addWidgetButton</at>
-                      <at name="width">62</at>
+                      <at name="width">75</at>
                       <at name="text">add</at>
                       <at name="toolTipText">Add a selected widget to the current tab</at>
-                      <at name="height">31</at>
+                      <at name="height">29</at>
                      </object>
                     </at>
                    </object>
@@ -517,10 +517,10 @@
                       </at>
                       <at name="actionCommand">del</at>
                       <at name="name">deleteWidgetButton</at>
-                      <at name="width">62</at>
+                      <at name="width">75</at>
                       <at name="text">del</at>
                       <at name="toolTipText">Delete selected widget from the current tab</at>
-                      <at name="height">31</at>
+                      <at name="height">29</at>
                      </object>
                     </at>
                    </object>
@@ -573,14 +573,14 @@
                        </object>
                       </at>
                       <at name="name">widgetsCombo</at>
-                      <at name="width">271</at>
+                      <at name="width">188</at>
                       <at name="items">
                        <object classname="com.jeta.forms.store.properties.ItemsProperty">
                         <at name="name">items</at>
                        </object>
                       </at>
                       <at name="toolTipText">List of available widgets to add to the current tab.</at>
-                      <at name="height">36</at>
+                      <at name="height">27</at>
                      </object>
                     </at>
                    </object>
@@ -633,14 +633,14 @@
                        </object>
                       </at>
                       <at name="name">loadedWidgetsCombo</at>
-                      <at name="width">271</at>
+                      <at name="width">188</at>
                       <at name="items">
                        <object classname="com.jeta.forms.store.properties.ItemsProperty">
                         <at name="name">items</at>
                        </object>
                       </at>
                       <at name="toolTipText">List of widgets on the current tab that can be removed.</at>
-                      <at name="height">36</at>
+                      <at name="height">27</at>
                      </object>
                     </at>
                    </object>
@@ -774,7 +774,6 @@
                    </at>
                   </object>
                  </at>
-                 <at name="componentCount">4</at>
                  <at name="tabPlacement">2</at>
                  <at name="tabLayoutPolicy">1</at>
                  <at name="name">buttonsTabPane</at>
@@ -786,8 +785,8 @@
                    </at>
                   </object>
                  </at>
-                 <at name="width">2474</at>
-                 <at name="height">1184</at>
+                 <at name="width">774</at>
+                 <at name="height">324</at>
                 </object>
                </at>
               </object>
@@ -841,10 +840,10 @@
                  </at>
                  <at name="actionCommand">add</at>
                  <at name="name">addFormButton</at>
-                 <at name="width">62</at>
+                 <at name="width">75</at>
                  <at name="text">add</at>
                  <at name="toolTipText">Add new tab to the current section.</at>
-                 <at name="height">31</at>
+                 <at name="height">29</at>
                 </object>
                </at>
               </object>
@@ -898,10 +897,10 @@
                  </at>
                  <at name="actionCommand">del</at>
                  <at name="name">deleteFormButton</at>
-                 <at name="width">62</at>
+                 <at name="width">75</at>
                  <at name="text">del</at>
                  <at name="toolTipText">Delete current tab from the section.</at>
-                 <at name="height">31</at>
+                 <at name="height">29</at>
                 </object>
                </at>
               </object>

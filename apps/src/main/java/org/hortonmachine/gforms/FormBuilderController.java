@@ -11,10 +11,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.font.TextAttribute;
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -25,7 +25,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -65,7 +64,6 @@ import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemText;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemTime;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
-import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.settings.SettingsController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
@@ -82,99 +80,112 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
     private static final String FIRST_OPEN_FILE_PROMPT = "Please first open a form file or create a new one.";
     private static final String LABELCOLOR = "#000000";
     private static final int DEFAULTWIDTH = 500;
-    private File selectedFile;
+    private IFormHandler formHandler;
     private LinkedHashMap<String, JSONObject> selectedSectionsMap;
     private String currentSelectedSectionName;
     private JSONObject currentSelectedSectionObject;
     private String currentSelectedFormName;
     private ComponentOrientation co;
+
     private static enum IMAGEWIDGET {
-        PICTURE, IMAGELIB,  SKETCH, MAP
+        PICTURE, IMAGELIB, SKETCH, MAP
     };
 
-    public FormBuilderController( File tagsFile ) throws Exception {
+    public FormBuilderController( IFormHandler formHandler ) throws Exception {
         setPreferredSize(new Dimension(1000, 800));
 
-        if (tagsFile != null && tagsFile.exists()) {
-            selectedFile = tagsFile;
+        if (formHandler != null) {
+            this.formHandler = formHandler;
         }
 
         init();
     }
 
     public boolean canCloseWithoutPrompt() {
-        return selectedFile == null;
+        return formHandler == null;
     }
 
     private void init() throws Exception {
         _filePathtext.setEditable(false);
+        if (formHandler != null) {
+            _filePathtext.setText(formHandler.getLabel());
+        }
 
         co = PreferencesHandler.getComponentOrientation();
         _buttonsTabPane.setTabPlacement(co.isLeftToRight() ? JTabbedPane.LEFT : JTabbedPane.RIGHT);
         _buttonsTabPane.addChangeListener(this);
         _buttonsTabPane.setBounds(20, 20, 500, 500);
 
-        _browseButton.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            fileChooser.setMultiSelectionEnabled(false);
-            FileFilter fileFilter = new FileFilter(){
+        if (formHandler != null && !formHandler.isFileBased()) {
+            _browseButton.setEnabled(false);
+            _newButton.setEnabled(false);
+        } else {
+            _browseButton.setEnabled(true);
+            _browseButton.addActionListener(e -> {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                fileChooser.setMultiSelectionEnabled(false);
+                FileFilter fileFilter = new FileFilter(){
 
-                @Override
-                public String getDescription() {
-                    return "*_tags.json";
-                }
-
-                @Override
-                public boolean accept( File f ) {
-                    return f.isDirectory() || f.getName().endsWith(SUFFIX);
-                }
-            };
-            fileChooser.setFileFilter(fileFilter);
-            fileChooser.setCurrentDirectory(PreferencesHandler.getLastFile());
-            int result = fileChooser.showOpenDialog(this);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                selectedFile = fileChooser.getSelectedFile();
-                if (selectedFile != null) {
-                    PreferencesHandler.setLastPath(selectedFile.getAbsolutePath());
-                    try {
-                        openTagsFile();
-                        _filePathtext.setText(selectedFile.getAbsolutePath());
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+                    @Override
+                    public String getDescription() {
+                        return "*_tags.json";
                     }
-                }
-            } else {
-                selectedFile = null;
-            }
-        });
 
-        _newButton.setText("new");
-        _newButton.addActionListener(e -> {
-            File createdFile = GuiUtilities.showSaveFileDialog(this, "Create new tags file", PreferencesHandler.getLastFile());
-            try {
-                selectedFile = createdFile;
-                if (selectedFile != null) {
-                    String absolutePath = selectedFile.getAbsolutePath();
-                    if (!absolutePath.endsWith(SUFFIX)) {
-                        absolutePath += SUFFIX;
-                        selectedFile = new File(absolutePath);
+                    @Override
+                    public boolean accept( File f ) {
+                        return f.isDirectory() || f.getName().endsWith(SUFFIX);
                     }
-                    FileUtilities.writeFile("[]", selectedFile);
-                    PreferencesHandler.setLastPath(absolutePath);
-                    try {
-                        _buttonsTabPane.removeAll();
-                        openTagsFile();
-                        _filePathtext.setText(selectedFile.getAbsolutePath());
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+                };
+                fileChooser.setFileFilter(fileFilter);
+                fileChooser.setCurrentDirectory(PreferencesHandler.getLastFile());
+                int result = fileChooser.showOpenDialog(this);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    if (selectedFile != null) {
+                        PreferencesHandler.setLastPath(selectedFile.getAbsolutePath());
+                        try {
+                            formHandler = new FileFormHandler(selectedFile);
 
-        });
+                            openTagsFile();
+                            _filePathtext.setText(formHandler.getLabel());
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                } else {
+                    formHandler = null;
+                }
+            });
+
+            _newButton.setText("new");
+            _newButton.addActionListener(e -> {
+                File createdFile = GuiUtilities.showSaveFileDialog(this, "Create new tags file",
+                        PreferencesHandler.getLastFile());
+                try {
+                    if (createdFile != null) {
+                        String absolutePath = createdFile.getAbsolutePath();
+                        if (!absolutePath.endsWith(SUFFIX)) {
+                            absolutePath += SUFFIX;
+                            createdFile = new File(absolutePath);
+                        }
+                        formHandler = new FileFormHandler(createdFile);
+                        formHandler.saveForm("[]");
+                        PreferencesHandler.setLastPath(absolutePath);
+                        try {
+                            _buttonsTabPane.removeAll();
+                            openTagsFile();
+                            _filePathtext.setText(formHandler.getLabel());
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+
+            });
+        }
 
         _addSectionButton.setText("add");
         _addSectionButton.addActionListener(e -> {
@@ -198,10 +209,10 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             JSONArray rootArray = Utilities.formsRootFromSectionsMap(selectedSectionsMap);
             String rootString = rootArray.toString(2);
             try {
-                FileUtilities.writeFile(rootString, selectedFile);
+                formHandler.saveForm(rootString);
                 openTagsFile();
                 _buttonsCombo.setSelectedItem(newSectionName);
-            } catch (IOException e1) {
+            } catch (Exception e1) {
                 e1.printStackTrace();
             }
         });
@@ -220,9 +231,9 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                 JSONArray rootArray = Utilities.formsRootFromSectionsMap(selectedSectionsMap);
                 String rootString = rootArray.toString(2);
                 try {
-                    FileUtilities.writeFile(rootString, selectedFile);
+                    formHandler.saveForm(rootString);
                     openTagsFile();
-                } catch (IOException e1) {
+                } catch (Exception e1) {
                     e1.printStackTrace();
                 }
             }
@@ -258,9 +269,9 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             JSONArray rootArray = Utilities.formsRootFromSectionsMap(selectedSectionsMap);
             String rootString = rootArray.toString(2);
             try {
-                FileUtilities.writeFile(rootString, selectedFile);
+                formHandler.saveForm(rootString);
                 reloadFormTab(newFormName);
-            } catch (IOException e1) {
+            } catch (Exception e1) {
                 e1.printStackTrace();
             }
         });
@@ -283,9 +294,9 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
                 String rootString = rootArray.toString(2);
 
                 try {
-                    FileUtilities.writeFile(rootString, selectedFile);
+                    formHandler.saveForm(rootString);
                     loadSection(currentSelectedSectionName);
-                } catch (IOException e1) {
+                } catch (Exception e1) {
                     e1.printStackTrace();
                 }
             }
@@ -361,14 +372,18 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
         _widgetsCombo.setModel(new DefaultComboBoxModel<String>(widgetNames.toArray(new String[0])));
 
-        if (selectedFile != null) {
+        if (formHandler != null) {
             openTagsFile();
         }
 
     }
 
-    private void openTagsFile() throws IOException {
-        selectedSectionsMap = Utilities.getSectionFromFile(selectedFile.getAbsolutePath());
+    private void openTagsFile() throws Exception {
+        String form = formHandler.getForm();
+        if (form == null) {
+            form = "[]";
+        }
+        selectedSectionsMap = Utilities.getSectionsFromJsonString(form);
 
         _buttonsCombo.setModel(new DefaultComboBoxModel<String>(selectedSectionsMap.keySet().toArray(new String[0])));
 
@@ -819,8 +834,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             break;
         case ItemBoolean.TYPE:
             JPanel booleanPanel = new JPanel(new BorderLayout());
-            JTextField keyBooleanTextField = new JTextField();
-            keyBooleanTextField.setText("enter key");
+            KeyComponent keyBooleanField = new KeyComponent(formHandler);
             JTextField labelBooleanTextField = new JTextField();
             labelBooleanTextField.setText("enter label");
 
@@ -828,7 +842,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             JCheckBox mandatoryBooleanCheckbox = new JCheckBox("is mandatory?");
 
             JPanel textFieldsBooleanPanel = new JPanel(new BorderLayout());
-            textFieldsBooleanPanel.add(keyBooleanTextField, BorderLayout.NORTH);
+            textFieldsBooleanPanel.add(keyBooleanField.getComponent(), BorderLayout.NORTH);
             textFieldsBooleanPanel.add(labelBooleanTextField, BorderLayout.CENTER);
             booleanPanel.add(textFieldsBooleanPanel, BorderLayout.NORTH);
             booleanPanel.add(defaultBooleanCheckbox, BorderLayout.CENTER);
@@ -836,8 +850,8 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
             boolean okBooleanPushed = GuiUtilities.openConfirmDialogWithPanel(this, booleanPanel, "Add Boolean");
             if (okBooleanPushed) {
-                checkKeyLabelAndRun(keyBooleanTextField, labelBooleanTextField, () -> {
-                    String key = keyBooleanTextField.getText().trim();
+                checkKeyLabelAndRun(keyBooleanField, labelBooleanTextField, () -> {
+                    String key = keyBooleanField.getText().trim();
                     String label = labelBooleanTextField.getText().trim();
                     Boolean defaultValue = defaultBooleanCheckbox.isSelected();
                     Boolean isMandatory = mandatoryBooleanCheckbox.isSelected();
@@ -856,8 +870,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             BorderLayout comboLayout = new BorderLayout();
             comboLayout.setVgap(10);
             JPanel comboPanel = new JPanel(comboLayout);
-            JTextField keyComboTextField = new JTextField();
-            keyComboTextField.setText("enter key");
+            KeyComponent keyComboField = new KeyComponent(formHandler);
             JTextField labelComboTextField = new JTextField();
             labelComboTextField.setText("enter label");
 
@@ -871,7 +884,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             JCheckBox mandatoryComboCheckbox = new JCheckBox("is mandatory?");
 
             JPanel helpComboPanel = new JPanel(new BorderLayout());
-            helpComboPanel.add(keyComboTextField, BorderLayout.NORTH);
+            helpComboPanel.add(keyComboField.getComponent(), BorderLayout.NORTH);
             helpComboPanel.add(labelComboTextField, BorderLayout.CENTER);
             comboPanel.add(helpComboPanel, BorderLayout.NORTH);
             comboPanel.add(itemsComboArea, BorderLayout.CENTER);
@@ -883,8 +896,8 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             boolean okComboPushed = GuiUtilities.openConfirmDialogWithPanel(this, comboPanel, "Add Combo");
             if (okComboPushed) {
                 boolean _comboIsMultiType = comboIsMultiType;
-                checkKeyLabelAndRun(keyComboTextField, labelComboTextField, () -> {
-                    String key = keyComboTextField.getText().trim();
+                checkKeyLabelAndRun(keyComboField, labelComboTextField, () -> {
+                    String key = keyComboField.getText().trim();
                     String label = labelComboTextField.getText().trim();
                     String[] items = itemsComboArea.getText().split("\n");
                     String defaultItem = defaultComboTextField.getText().trim();
@@ -900,8 +913,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             break;
         case ItemText.TYPE:
             JPanel textPanel = new JPanel(new BorderLayout());
-            JTextField keyTextTextField = new JTextField();
-            keyTextTextField.setText("enter key");
+            KeyComponent keyTextField = new KeyComponent(formHandler);
             JTextField labelTextTextField = new JTextField();
             labelTextTextField.setText("enter label");
             JTextField defaultTextTextField = new JTextField();
@@ -911,7 +923,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             JCheckBox mandatoryTextCheckbox = new JCheckBox("is mandatory?");
 
             JPanel helpTextPanel = new JPanel(new BorderLayout());
-            helpTextPanel.add(keyTextTextField, BorderLayout.NORTH);
+            helpTextPanel.add(keyTextField.getComponent(), BorderLayout.NORTH);
             helpTextPanel.add(labelTextTextField, BorderLayout.CENTER);
             textPanel.add(helpTextPanel, BorderLayout.NORTH);
             textPanel.add(defaultTextTextField, BorderLayout.CENTER);
@@ -922,8 +934,8 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
             boolean okTextPushed = GuiUtilities.openConfirmDialogWithPanel(this, textPanel, "Add Text");
             if (okTextPushed) {
-                checkKeyLabelAndRun(keyTextTextField, labelTextTextField, () -> {
-                    String key = keyTextTextField.getText().trim();
+                checkKeyLabelAndRun(keyTextField, labelTextTextField, () -> {
+                    String key = keyTextField.getText().trim();
                     String label = labelTextTextField.getText().trim();
                     String defaultValue = defaultTextTextField.getText().trim();
                     Boolean isLabel = isLabelTextCheckbox.isSelected();
@@ -940,8 +952,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             textIsInteger = true;
         case ItemDouble.TYPE:
             JPanel numericPanel = new JPanel(new BorderLayout());
-            JTextField keyNumericTextField = new JTextField();
-            keyNumericTextField.setText("enter key");
+            KeyComponent keyNumericField = new KeyComponent(formHandler);
             JTextField labelNumericTextField = new JTextField();
             labelNumericTextField.setText("enter label");
             JTextField defaultNumericTextField = new JTextField();
@@ -953,7 +964,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             JCheckBox mandatoryNumericCheckbox = new JCheckBox("is mandatory?");
 
             JPanel helpNumericPanel = new JPanel(new BorderLayout());
-            helpNumericPanel.add(keyNumericTextField, BorderLayout.NORTH);
+            helpNumericPanel.add(keyNumericField.getComponent(), BorderLayout.NORTH);
             helpNumericPanel.add(labelNumericTextField, BorderLayout.CENTER);
             helpNumericPanel.add(defaultNumericTextField, BorderLayout.SOUTH);
             numericPanel.add(helpNumericPanel, BorderLayout.NORTH);
@@ -983,8 +994,8 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             String title = "Add" + (textIsInteger ? " integer" : " double");
             boolean okNumericPushed = GuiUtilities.openConfirmDialogWithPanel(this, numericPanel, title);
             if (okNumericPushed) {
-                checkKeyLabelAndRun(keyNumericTextField, labelNumericTextField, () -> {
-                    String key = keyNumericTextField.getText().trim();
+                checkKeyLabelAndRun(keyNumericField, labelNumericTextField, () -> {
+                    String key = keyNumericField.getText().trim();
                     String label = labelNumericTextField.getText().trim();
                     String defaultValue = defaultNumericTextField.getText().trim();
                     Boolean isLabel = isLabelNumericCheckbox.isSelected();
@@ -1031,8 +1042,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             BorderLayout dynamictextLayout = new BorderLayout();
             dynamictextLayout.setVgap(10);
             JPanel dynamictextPanel = new JPanel(dynamictextLayout);
-            JTextField keyDynamicTextField = new JTextField();
-            keyDynamicTextField.setText("enter key");
+            KeyComponent keyDynamicTextField = new KeyComponent(formHandler);
             JTextField labelDynamicTextField = new JTextField();
             labelDynamicTextField.setText("enter label");
 
@@ -1044,7 +1054,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             JCheckBox mandatoryDynamicCheckbox = new JCheckBox("is mandatory?");
 
             JPanel helpDynamicPanel = new JPanel(new BorderLayout());
-            helpDynamicPanel.add(keyDynamicTextField, BorderLayout.NORTH);
+            helpDynamicPanel.add(keyDynamicTextField.getComponent(), BorderLayout.NORTH);
             helpDynamicPanel.add(labelDynamicTextField, BorderLayout.CENTER);
             dynamictextPanel.add(helpDynamicPanel, BorderLayout.NORTH);
             dynamictextPanel.add(itemsDynamicArea, BorderLayout.CENTER);
@@ -1073,8 +1083,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             break;
         case ItemDate.TYPE:
             JPanel datePanel = new JPanel(new BorderLayout());
-            JTextField keyDateTextField = new JTextField();
-            keyDateTextField.setText("enter key");
+            KeyComponent keyDateField = new KeyComponent(formHandler);
             JTextField labelDateTextField = new JTextField();
             labelDateTextField.setText("enter label");
             JTextField defaultDateTextField = new JTextField();
@@ -1083,7 +1092,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             JCheckBox mandatoryDateCheckbox = new JCheckBox("is mandatory?");
 
             JPanel helpDatePanel = new JPanel(new BorderLayout());
-            helpDatePanel.add(keyDateTextField, BorderLayout.NORTH);
+            helpDatePanel.add(keyDateField.getComponent(), BorderLayout.NORTH);
             helpDatePanel.add(labelDateTextField, BorderLayout.CENTER);
             datePanel.add(helpDatePanel, BorderLayout.NORTH);
             datePanel.add(defaultDateTextField, BorderLayout.CENTER);
@@ -1091,8 +1100,8 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
             boolean okDatePushed = GuiUtilities.openConfirmDialogWithPanel(this, datePanel, "Add Date");
             if (okDatePushed) {
-                checkKeyLabelAndRun(keyDateTextField, labelDateTextField, () -> {
-                    String key = keyDateTextField.getText().trim();
+                checkKeyLabelAndRun(keyDateField, labelDateTextField, () -> {
+                    String key = keyDateField.getText().trim();
                     String label = labelDateTextField.getText().trim();
                     String defaultValue = defaultDateTextField.getText().trim();
                     Boolean isMandatory = mandatoryDateCheckbox.isSelected();
@@ -1113,8 +1122,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             break;
         case ItemTime.TYPE:
             JPanel timePanel = new JPanel(new BorderLayout());
-            JTextField keyTimeTextField = new JTextField();
-            keyTimeTextField.setText("enter key");
+            KeyComponent keyTimeField = new KeyComponent(formHandler);
             JTextField labelTimeTextField = new JTextField();
             labelTimeTextField.setText("enter label");
             JTextField defaultTimeTextField = new JTextField();
@@ -1123,7 +1131,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             JCheckBox mandatoryTimeCheckbox = new JCheckBox("is mandatory?");
 
             JPanel helpTimePanel = new JPanel(new BorderLayout());
-            helpTimePanel.add(keyTimeTextField, BorderLayout.NORTH);
+            helpTimePanel.add(keyTimeField.getComponent(), BorderLayout.NORTH);
             helpTimePanel.add(labelTimeTextField, BorderLayout.CENTER);
             timePanel.add(helpTimePanel, BorderLayout.NORTH);
             timePanel.add(defaultTimeTextField, BorderLayout.CENTER);
@@ -1131,8 +1139,8 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
             boolean okTimePushed = GuiUtilities.openConfirmDialogWithPanel(this, timePanel, "Add Time");
             if (okTimePushed) {
-                checkKeyLabelAndRun(keyTimeTextField, labelTimeTextField, () -> {
-                    String key = keyTimeTextField.getText().trim();
+                checkKeyLabelAndRun(keyTimeField, labelTimeTextField, () -> {
+                    String key = keyTimeField.getText().trim();
                     String label = labelTimeTextField.getText().trim();
                     String defaultValue = defaultTimeTextField.getText().trim();
                     Boolean isMandatory = mandatoryTimeCheckbox.isSelected();
@@ -1158,25 +1166,24 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
             if (imageType == IMAGEWIDGET.PICTURE) // change only if untouched
                 imageType = IMAGEWIDGET.MAP;
         case ItemImagelib.TYPE:
-                imageType = IMAGEWIDGET.IMAGELIB;
+            imageType = IMAGEWIDGET.IMAGELIB;
         case ItemPicture.TYPE:
             JPanel picturesPanel = new JPanel(new BorderLayout());
-            JTextField keyPicturesTextField = new JTextField();
-            keyPicturesTextField.setText("enter key");
+            KeyComponent keyPicturesField = new KeyComponent(formHandler);
             JTextField labelPicturesTextField = new JTextField();
             labelPicturesTextField.setText("enter label");
 
             JCheckBox mandatoryPicturesCheckbox = new JCheckBox("is mandatory?");
 
-            picturesPanel.add(keyPicturesTextField, BorderLayout.NORTH);
+            picturesPanel.add(keyPicturesField.getComponent(), BorderLayout.NORTH);
             picturesPanel.add(labelPicturesTextField, BorderLayout.CENTER);
             picturesPanel.add(mandatoryPicturesCheckbox, BorderLayout.SOUTH);
 
             IMAGEWIDGET _imageType = imageType;
             boolean okPicturesPushed = GuiUtilities.openConfirmDialogWithPanel(this, picturesPanel, "Add Pictures");
             if (okPicturesPushed) {
-                checkKeyLabelAndRun(keyPicturesTextField, labelPicturesTextField, () -> {
-                    String key = keyPicturesTextField.getText().trim();
+                checkKeyLabelAndRun(keyPicturesField, labelPicturesTextField, () -> {
+                    String key = keyPicturesField.getText().trim();
                     String label = labelPicturesTextField.getText().trim();
                     Boolean isMandatory = mandatoryPicturesCheckbox.isSelected();
 
@@ -1244,29 +1251,29 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
         });
     }
 
-    private void checkKeyLabelAndRun( JTextField keyTextField, JTextField labelTextField, Runnable runOnOk ) {
-        String key = keyTextField.getText().trim();
+    private void checkKeyLabelAndRun( KeyComponent keyField, JTextField labelTextField, Runnable runOnOk ) {
+        String key = keyField.getText().trim();
         String label = labelTextField.getText().trim();
 
         if (key.length() != 0 && label.length() != 0) {
             if (checkKeyExistanceInSection(key)) {
-                GuiUtilities.showWarningMessage(keyTextField, "The inserted key already exists!");
+                GuiUtilities.showWarningMessage(keyField.getComponent(), "The inserted key already exists!");
                 return;
             }
             runOnOk.run();
             return;
         }
-        GuiUtilities.showWarningMessage(keyTextField, "The key and label fields are mandatory!");
+        GuiUtilities.showWarningMessage(keyField.getComponent(), "The key and label fields are mandatory!");
     }
 
     private void rewriteFileAndLoadCurrentTab() {
         JSONArray rootArray = Utilities.formsRootFromSectionsMap(selectedSectionsMap);
         String rootString = rootArray.toString(2);
         try {
-            FileUtilities.writeFile(rootString, selectedFile);
+            formHandler.saveForm(rootString);
             reloadFormTab(currentSelectedFormName);
             refreshFormWidgetsCombo();
-        } catch (IOException e1) {
+        } catch (Exception e1) {
             e1.printStackTrace();
         }
     }
@@ -1285,12 +1292,13 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
 
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
 
-        File openFile = null;
+        IFormHandler handler = null;
         if (args.length > 0 && new File(args[0]).exists()) {
-            openFile = new File(args[0]);
+            File openFile = new File(args[0]);
+            handler = new FileFormHandler(openFile);
         }
 
-        final FormBuilderController controller = new FormBuilderController(openFile);
+        final FormBuilderController controller = new FormBuilderController(handler);
         SettingsController.applySettings(controller);
 
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Geopaparazzi Form Builder");

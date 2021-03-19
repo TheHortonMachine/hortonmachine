@@ -34,7 +34,7 @@ public class GeopackageDb extends GeopackageCommonDb {
     public GeopackageDb() {
         sqliteDb = new SqliteDb();
     }
-    
+
     public void createFunctions() throws Exception {
         Connection cx = sqliteDb.getJdbcConnection();
         // minx
@@ -76,5 +76,25 @@ public class GeopackageDb extends GeopackageCommonDb {
                 return reader.getHeader().getFlags().isEmpty();
             }
         });
+    }
+
+    @Override
+    public String getSldString( String tableName ) throws Exception {
+        return getSldStringInternal(sqliteDb, tableName);
+    }
+
+    @Override
+    public void updateSldStyle( String tableName, String sldString ) throws Exception {
+        updateSldStyleInternal(sqliteDb, tableName, sldString);
+    }
+
+    @Override
+    public String getFormString( String tableName ) throws Exception {
+        return getFormStringInternal(sqliteDb, tableName);
+    }
+
+    @Override
+    public void updateForm( String tableName, String form ) throws Exception {
+        updateFormsInternal(sqliteDb, tableName, form);
     }
 }
