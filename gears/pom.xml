@@ -7,7 +7,7 @@
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
 		<relativePath>../pom.xml</relativePath>
-		<version>0.10.2</version>
+		<version>0.10.3-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>hm-gears</artifactId>
@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-dbs</artifactId>
-			<version>0.10.2</version>
+			<version>0.10.3-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
