@@ -614,8 +614,8 @@ public class HM {
         String title = "";
         String xLabel = "x";
         String yLabel = "y";
-        int width = 1000;
-        int height = 1000;
+        int width = 1200;
+        int height = 800;
         int strokeWidth = 2;
         boolean drawCoords = true;
 
@@ -689,16 +689,16 @@ public class HM {
                 Color color = tableColors.get(colorIndex);
                 Color colorTransp = ColorUtilities.makeTransparent(color, 60);
                 Color transp = ColorUtilities.makeTransparent(Color.white, 0);
-                int w = strokeWidth * 4;
-                if (w < 16) {
-                    w = 16;
+                int dotImageWidth = strokeWidth * 4;
+                if (dotImageWidth < 10) {
+                    dotImageWidth = 10;
                 }
-                BufferedImage bi = new BufferedImage(w, w, BufferedImage.TYPE_INT_ARGB);
+                BufferedImage bi = new BufferedImage(dotImageWidth, dotImageWidth, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D g2d = (Graphics2D) bi.getGraphics();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2d.setColor(color);
                 g2d.setStroke(new BasicStroke(strokeWidth));
-                g2d.fillOval(strokeWidth, strokeWidth, w - 2 * strokeWidth, w - 2 * strokeWidth);
+                g2d.fillRect(strokeWidth, strokeWidth, dotImageWidth - 2 * strokeWidth, dotImageWidth - 2 * strokeWidth);
                 g2d.dispose();
 
                 Geometry geometryN = geometry.getGeometryN(i);
