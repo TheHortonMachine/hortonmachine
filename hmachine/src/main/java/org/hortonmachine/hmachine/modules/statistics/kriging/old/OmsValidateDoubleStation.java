@@ -1,4 +1,4 @@
-package org.hortonmachine.hmachine.modules.statistics.kriging;
+package org.hortonmachine.hmachine.modules.statistics.kriging.old;
 
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_AUTHORNAMES;

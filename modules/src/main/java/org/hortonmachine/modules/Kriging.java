@@ -65,7 +65,7 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.hmachine.modules.statistics.kriging.OmsKriging;
+import org.hortonmachine.hmachine.modules.statistics.kriging.old.OmsKriging;
 
 @Description(OMSKRIGING_DESCRIPTION)
 @Author(name = OMSKRIGING_AUTHORNAMES, contact = OMSKRIGING_AUTHORCONTACTS)

@@ -10,7 +10,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.hortonmachine.gears.libs.monitor.PrintStreamProgressMonitor;
-import org.hortonmachine.hmachine.modules.statistics.kriging.OmsValidateDoubleStation;
+import org.hortonmachine.hmachine.modules.statistics.kriging.old.OmsValidateDoubleStation;
 import org.hortonmachine.hmachine.utils.HMTestCase;
 import org.hortonmachine.hmachine.utils.HMTestMaps;
 /**

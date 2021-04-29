@@ -53,6 +53,10 @@ public abstract class OLSTrendLine implements RegressionLine {
         return ols.calculateRSquared();
     }
 
+    public double[] getResiduals() {
+        return ols.estimateResiduals();
+    }
+
     @Override
     public double predict( double x ) {
         double yhat = coef.preMultiply(xVector(x))[0]; // apply coefs to xVector

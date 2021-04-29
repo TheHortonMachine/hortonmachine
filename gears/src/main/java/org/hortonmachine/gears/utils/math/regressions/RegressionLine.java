@@ -12,5 +12,7 @@ public interface RegressionLine {
 
     double[] getRegressionParametersErrors();
     
-    public double getRSquared();
+    double getRSquared();
+    
+    double[] getResiduals();
 }

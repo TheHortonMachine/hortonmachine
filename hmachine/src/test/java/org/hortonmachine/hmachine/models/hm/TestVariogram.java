@@ -7,7 +7,7 @@ import java.util.HashMap;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
-import org.hortonmachine.hmachine.modules.statistics.kriging.OmsVariogram;
+import org.hortonmachine.hmachine.modules.statistics.kriging.old.OmsVariogram;
 import org.hortonmachine.hmachine.utils.HMTestCase;
 
 public class TestVariogram extends HMTestCase {

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.hmachine.modules.statistics.kriging;
+package org.hortonmachine.hmachine.modules.statistics.kriging.old;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKRIGING_AUTHORCONTACTS;
