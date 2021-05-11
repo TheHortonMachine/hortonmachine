@@ -85,6 +85,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.styling.Style;
 import org.geotools.swing.JMapFrame.Tool;
+import org.h2.jdbc.JdbcBlob;
 import org.h2.jdbc.JdbcSQLException;
 import org.hortonmachine.HM;
 import org.hortonmachine.database.tree.DatabaseTreeCellRenderer;
@@ -1295,7 +1296,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 if (selectedCols.length == 1 && selectedRows.length > 0) {
                     // check content
                     Object valueObj = table.getValueAt(selectedRows[0], selectedCols[0]);
-                    if (valueObj instanceof byte[]) {
+                    if (valueObj instanceof byte[] || valueObj instanceof JdbcBlob) {
                         isBinary = true;
                     }
 
@@ -1329,9 +1330,22 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         public void actionPerformed( ActionEvent e ) {
                             for( int r : selectedRows ) {
                                 Object valueObj = table.getValueAt(r, selectedCols[0]);
-                                if (valueObj instanceof byte[]) {
+                                byte[] bytes = null;
+                                if (valueObj instanceof JdbcBlob) {
+                                    JdbcBlob blob = (JdbcBlob) valueObj;
                                     try {
-                                        BufferedImage image = ImageIO.read(new ByteArrayInputStream((byte[]) valueObj));
+                                        bytes = blob.getBytes(0, (int) blob.length());
+                                    } catch (SQLException e1) {
+                                        Logger.INSTANCE.e("error reading image bytes", e1);
+                                        continue;
+                                    }
+                                } else if (valueObj instanceof byte[]) {
+                                    bytes = (byte[]) valueObj;
+                                }
+
+                                if (bytes != null) {
+                                    try {
+                                        BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));
 
                                         GuiUtilities.showImage(popupMenu, valueObj.toString(), image);
                                     } catch (IOException e1) {
@@ -1353,9 +1367,21 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         public void actionPerformed( ActionEvent e ) {
                             for( int r : selectedRows ) {
                                 Object valueObj = table.getValueAt(r, selectedCols[0]);
-                                if (valueObj instanceof byte[]) {
-                                    byte[] byteArray = (byte[]) valueObj;
-                                    String string = new String(byteArray);
+                                byte[] bytes = null;
+                                if (valueObj instanceof JdbcBlob) {
+                                    JdbcBlob blob = (JdbcBlob) valueObj;
+                                    try {
+                                        bytes = blob.getBytes(0, (int) blob.length());
+                                    } catch (SQLException e1) {
+                                        Logger.INSTANCE.e("error reading image bytes", e1);
+                                        continue;
+                                    }
+                                } else if (valueObj instanceof byte[]) {
+                                    bytes = (byte[]) valueObj;
+                                }
+
+                                if (bytes != null) {
+                                    String string = new String(bytes);
 
                                     JTextArea tArea = new JTextArea(string, 10, 20);
                                     JPanel p = new JPanel(new BorderLayout());

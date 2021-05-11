@@ -60,7 +60,6 @@ import oms3.annotations.Status;
 @Name("kriging")
 @Status()
 @License("General Public License Version 3 (GPLv3)")
-@SuppressWarnings("nls")
 public class OmsKrigingVectorMode extends HMModel {
 
     @Description("The .shp of the measurement point, containing the position of the stations.")
@@ -225,7 +224,7 @@ public class OmsKrigingVectorMode extends HMModel {
 
             xStations[n1] = coordinate.x;
             yStations[n1] = coordinate.y;
-            zStations[n1] = coordinate.z;
+            zStations[n1] = coordinate.getZ();
 
             double[] hresiduals = hStations;
 
@@ -287,7 +286,7 @@ public class OmsKrigingVectorMode extends HMModel {
 
                     }
 
-                    double trend = (doDetrended) ? coordinate.z * trend_coefficient + trend_intercept : 0;
+                    double trend = (doDetrended) ? coordinate.getZ() * trend_coefficient + trend_intercept : 0;
                     h0 = h0 + trend;
 
                     result[j] = h0;
@@ -384,7 +383,7 @@ public class OmsKrigingVectorMode extends HMModel {
                         throw new Exception(msg.message("kriging.noPointZ"));
                     }
                 }
-                coordinate.z = z;
+                coordinate.setZ(z);
                 id2CoordinatesMcovarianceMatrix.put(name, coordinate);
             }
         } finally {

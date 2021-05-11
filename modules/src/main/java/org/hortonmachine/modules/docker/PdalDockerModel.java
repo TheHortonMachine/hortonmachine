@@ -32,7 +32,7 @@ import org.json.JSONObject;
  */
 public class PdalDockerModel extends HMModel {
 
-    private static final String TAG = "2.0";
+    private static final String TAG = "latest";
     private static final String PDAL = "pdal/pdal";
     private static final String PDAL_WITHTAG = PDAL + ":" + TAG;
     protected DockerHandler dockerHandler = new DockerHandler();

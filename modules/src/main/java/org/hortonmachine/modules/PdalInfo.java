@@ -32,7 +32,7 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("GdalInfo command.")
+@Description("PdalInfo command.")
 @Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
 @Keywords("pdal, docker")
 @Label(HMConstants.PDAL)
