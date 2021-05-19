@@ -18,7 +18,7 @@
  */
 package org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical;
 
-public class Exponential implements Model {
+public class Exponential implements ITheoreticalVariogram {
 
     double dist;
     double sill;

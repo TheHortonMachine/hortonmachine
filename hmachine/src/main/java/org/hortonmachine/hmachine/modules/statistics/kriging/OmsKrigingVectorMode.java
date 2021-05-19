@@ -35,6 +35,7 @@ import org.hortonmachine.gears.utils.math.regressions.RegressionLine;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 import org.hortonmachine.hmachine.modules.statistics.kriging.utils.SimpleLinearSystemSolverFactory;
 import org.hortonmachine.hmachine.modules.statistics.kriging.utils.StationsSelection;
+import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.ITheoreticalVariogram;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.TheoreticalVariogram;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -74,8 +75,7 @@ public class OmsKrigingVectorMode extends HMModel {
     @In
     public String fStationsZ = null;
 
-    @Description("The type of theoretical semivariogram: exponential, gaussian, spherical, pentaspherical"
-            + "linear, circular, bessel, periodic, hole, logaritmic, power, spline")
+    @Description("The type of theoretical semivariogram: " + ITheoreticalVariogram.TYPES)
     @In
     public String pSemivariogramType = null;
 

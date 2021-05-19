@@ -96,7 +96,7 @@ public class TheoreticalVariogram extends HMModel {
     @Out
     public HashMap<Integer, double[]> outHMtheoreticalVariogram = new HashMap<Integer, double[]>();;
 
-    Model modelVGM;
+    ITheoreticalVariogram modelVGM;
 
     @Execute
     public void process() throws Exception {
@@ -121,7 +121,7 @@ public class TheoreticalVariogram extends HMModel {
 
     public double calculateVGM( String model, double distance, double sill, double range, double nug ) {
 
-        modelVGM = SimpleModelFactory.createModel(model, distance, sill, range, nug);
+        modelVGM = ITheoreticalVariogram.create(model, distance, sill, range, nug);
         double result = modelVGM.computeSemivariance();
 
         return result;

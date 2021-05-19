@@ -20,35 +20,30 @@ package org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoreti
 
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 
-public class SimpleModelFactory {
+/**
+ * The  variogram interface.
+ */
+public interface ITheoreticalVariogram {
 
-    public static Model createModel( String type, double dist, double sill, double range, double nug ) {
-        Model model = null;
+    public static final String POWER = "power";
+    public static final String LOGARITHMIC = "logarithmic";
+    public static final String LINEAR = "linear";
+    public static final String EXPONENTIAL = "exponential";
+    public static final String TYPES = LINEAR + "," + EXPONENTIAL + "," + LOGARITHMIC + "," + POWER;
 
-        if ("exponential".equals(type)) {
+    abstract public double computeSemivariance();
+
+    public static ITheoreticalVariogram create( String type, double dist, double sill, double range, double nug ) {
+        ITheoreticalVariogram model = null;
+
+        if (EXPONENTIAL.equals(type)) {
             model = new Exponential(dist, sill, range, nug);
-        } else if ("gaussian".equals(type)) {
-            model = new Gaussian(dist, sill, range, nug);
-        } else if ("spherical".equals(type)) {
-            model = new Spherical(dist, sill, range, nug);
-        } else if ("pentaspherical".equals(type)) {
-            model = new Pentaspherical(dist, sill, range, nug);
-        } else if ("linear".equals(type)) {
+        } else if (LINEAR.equals(type)) {
             model = new Linear(dist, sill, range, nug);
-        } else if ("circular".equals(type)) {
-            model = new Circular(dist, sill, range, nug);
-        } else if ("bessel".equals(type)) {
-            model = new Bessel(dist, sill, range, nug);
-        } else if ("periodic".equals(type)) {
-            model = new Periodic(dist, sill, range, nug);
-        } else if ("hole".equals(type)) {
-            model = new Hole(dist, sill, range, nug);
-        } else if ("logarithmic".equals(type)) {
+        } else if (LOGARITHMIC.equals(type)) {
             model = new Logarithmic(dist, sill, range, nug);
-        } else if ("power".equals(type)) {
+        } else if (POWER.equals(type)) {
             model = new Power(dist, sill, range, nug);
-        } else if ("spline".equals(type)) {
-            model = new Spline(dist, sill, range, nug);
         } else {
             throw new ModelsIllegalargumentException("Not a valid type: " + type, model);
         }
@@ -56,5 +51,4 @@ public class SimpleModelFactory {
         return model;
 
     }
-
 }

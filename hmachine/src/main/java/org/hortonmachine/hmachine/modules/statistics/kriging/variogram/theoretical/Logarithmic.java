@@ -18,7 +18,7 @@
  */
 package org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical;
 
-public class Logarithmic implements Model {
+public class Logarithmic implements ITheoreticalVariogram {
 
     double dist;
     double sill;

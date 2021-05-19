@@ -18,7 +18,7 @@
  */
 package org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical;
 
-public class Power implements Model {
+public class Power implements ITheoreticalVariogram {
 
     double dist;
     double sill;
