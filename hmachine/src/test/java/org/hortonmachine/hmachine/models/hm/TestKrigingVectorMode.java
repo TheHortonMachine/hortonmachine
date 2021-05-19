@@ -1,16 +1,16 @@
 package org.hortonmachine.hmachine.models.hm;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map.Entry;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
-import org.hortonmachine.hmachine.modules.statistics.kriging.OmsKrigingCheckMode;
 import org.hortonmachine.hmachine.modules.statistics.kriging.OmsKrigingVectorMode;
 import org.junit.Test;
 
@@ -26,7 +26,6 @@ public class TestKrigingVectorMode {
         return file.getAbsolutePath();
     }
 
-    @SuppressWarnings("rawtypes")
     @Test
     public void testKrigings() throws Exception {
 
@@ -71,19 +70,19 @@ public class TestKrigingVectorMode {
         HashMap<String, HashMap<Integer, Double>> expectedDate2IdValueMap = new HashMap<>();
 
         HashMap<Integer, Double> id2DataMap = new HashMap<>();
-        id2DataMap.put(465, 3.0);
-        id2DataMap.put(713, 10.0);
-        id2DataMap.put(739, 3.0);
+        id2DataMap.put(465, 3.989371127704894);
+        id2DataMap.put(713, 5.129653798910705);
+        id2DataMap.put(739, 4.773522198797728);
         expectedDate2IdValueMap.put("2014-10-01 12:00", id2DataMap);
         id2DataMap = new HashMap<>();
-        id2DataMap.put(465, 10.0);
-        id2DataMap.put(713, 15.0);
-        id2DataMap.put(739, 15.0);
+        id2DataMap.put(465, 11.787708461388936);
+        id2DataMap.put(713, 11.402312659753031);
+        id2DataMap.put(739, 12.532726275127615);
         expectedDate2IdValueMap.put("2014-10-02 12:00", id2DataMap);
         id2DataMap = new HashMap<>();
-        id2DataMap.put(465, 5.0);
-        id2DataMap.put(713, 5.0);
-        id2DataMap.put(739, 13.0);
+        id2DataMap.put(465, 7.548860810813379);
+        id2DataMap.put(713, 5.20679546816802);
+        id2DataMap.put(739, 8.932202995718598);
         expectedDate2IdValueMap.put("2014-10-03 12:00", id2DataMap);
 
         while( inputReader.doProcess ) {
@@ -101,15 +100,12 @@ public class TestKrigingVectorMode {
                 double[] values = entry.getValue();
 
                 double checkValue = id2Data.get(key);
-                
-                System.out.println("\tStation: " + key + " -> " + values[0] + " VS. " + checkValue);
 
+                assertEquals(checkValue, values[0], 0.000001);
+//                System.out.println("\tStation: " + key + " -> " + values[0] + " VS. " + checkValue);
             }
-
         }
         inputReader.close();
-//            expectedOutputReader.close();
-
     }
 
 }

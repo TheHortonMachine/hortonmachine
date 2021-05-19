@@ -40,7 +40,7 @@ import oms3.annotations.Status;
 
 @Description("Teorethical semivariogram models.")
 @Documentation("vgm.html")
-@Author(name = "Giuseppe Formetta, Adami Francesco & Marialaura Bancheri", contact = " http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Author(name = "Giuseppe Formetta, Adami Francesco, Marialaura Bancheri", contact = " http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Kriging, Hydrology")
 @Label(HMConstants.STATISTICS)
 @Name("kriging")
