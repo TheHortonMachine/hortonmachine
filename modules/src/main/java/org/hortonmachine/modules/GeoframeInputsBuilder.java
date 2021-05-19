@@ -19,6 +19,7 @@ package org.hortonmachine.modules;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -126,6 +127,7 @@ public class GeoframeInputsBuilder extends HMModel {
         netAttributesBuilder.inDem = pit;
         netAttributesBuilder.inFlow = drain;
         netAttributesBuilder.inNet = net;
+        netAttributesBuilder.doHack = true;
         netAttributesBuilder.onlyDoSimpleGeoms = true;
         netAttributesBuilder.process();
         SimpleFeatureCollection outNet = netAttributesBuilder.outNet;
@@ -133,7 +135,7 @@ public class GeoframeInputsBuilder extends HMModel {
         // dumpVector(outNet,
         // "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_all/aaa.shp");
 
-        List<Geometry> netGeometries = FeatureUtilities.featureCollectionToGeometriesList(outNet, true, null);
+        List<Geometry> netGeometries = FeatureUtilities.featureCollectionToGeometriesList(outNet, true, "hack");
 
         Map<Integer, List<Polygon>> collected = cells.parallelStream()
                 .filter(poly -> ((Number) poly.getUserData()).doubleValue() != HMConstants.doubleNovalue)
@@ -174,19 +176,37 @@ public class GeoframeInputsBuilder extends HMModel {
             Geometry basinBuffer = maxPolygon.buffer(1);
             PreparedGeometry preparedBasin = PreparedGeometryFactory.prepare(basinBuffer);
             List<LineString> netPieces = new ArrayList<>();
+            int minHack = Integer.MAX_VALUE;
+            HashMap<Integer, List<LineString>> hack4Lines = new HashMap<>();
             for( Geometry netGeom : netGeometries ) {
                 if (preparedBasin.intersects(netGeom)) {
                     Geometry netIntersection = maxPolygon.intersection(netGeom);
                     for( int i = 0; i < netIntersection.getNumGeometries(); i++ ) {
                         Geometry geometryN = netIntersection.getGeometryN(i);
                         if (geometryN instanceof LineString) {
+                            Object userData = geometryN.getUserData();
+                            int hack = Integer.parseInt(userData.toString());
+                            minHack = Math.min(minHack, hack);
                             netPieces.add((LineString) geometryN);
+                            
+                            List<LineString> list = hack4Lines.get(hack);
+                            if(list == null) {
+                                list = new ArrayList<>();
+                            }
+                            list.add((LineString) geometryN);
+                            hack4Lines.put(hack, list);
                         }
                     }
                 }
             }
             MultiLineString netLines = GeometryUtilities.gf().createMultiLineString(netPieces.toArray(new LineString[0]));
             double netLength = netLines.getLength();
+            
+            double mainNetLength = 0;
+            List<LineString> minHackLines = hack4Lines.get(minHack);
+            for( LineString minHackLine : minHackLines ) {
+                mainNetLength += minHackLine.getLength();
+            }
 
             Envelope basinEnvelope = maxPolygon.getEnvelopeInternal();
 
@@ -251,7 +271,7 @@ public class GeoframeInputsBuilder extends HMModel {
             }
 
             // finalize feature writing
-            Object[] basinValues = new Object[]{maxPolygon, basinNum, point.x, point.y, elev, avgElev, areaKm2, netLength,
+            Object[] basinValues = new Object[]{maxPolygon, basinNum, point.x, point.y, elev, avgElev, areaKm2, mainNetLength,
                     skyview};
             basinsBuilder.addAll(basinValues);
             SimpleFeature basinFeature = basinsBuilder.buildFeature(null);
@@ -280,7 +300,7 @@ public class GeoframeInputsBuilder extends HMModel {
             csvText.append(elev).append(";");
             csvText.append(avgElev).append(";");
             csvText.append(areaKm2).append(";");
-            csvText.append(netLength).append(";");
+            csvText.append(mainNetLength).append(";");
             csvText.append(skyview).append("\n");
 
             pm.worked(1);
