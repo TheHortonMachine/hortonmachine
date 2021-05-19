@@ -65,7 +65,7 @@ import oms3.annotations.Status;
 
 @Description("Ordinary kriging algorithm.")
 @Documentation("Kriging.html")
-@Author(name = "Giuseppe Formetta, Daniele Andreis, Silvia Franceschi, Andrea Antonello, Marialaura Bancheri & Francesco Serafin")
+@Author(name = "Giuseppe Formetta, Daniele Andreis, Silvia Franceschi, Andrea Antonello, Marialaura Bancheri, Francesco Serafin")
 @Keywords("Kriging, Hydrology")
 @Label("")
 @Name("kriging")

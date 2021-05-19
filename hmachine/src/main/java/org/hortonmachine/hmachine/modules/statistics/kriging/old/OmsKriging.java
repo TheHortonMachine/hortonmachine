@@ -344,7 +344,7 @@ public class OmsKriging extends HMModel {
                 double zTmp = zStationList.get(i);
                 double hTmp = hStationList.get(i);
                 boolean doubleStation = ModelsEngine.verifyDoubleStation(xStation, yStation, zStation, hStation, xTmp, yTmp,
-                        zTmp, hTmp, i, false, pm);
+                        zTmp, hTmp, i, false);
                 if (!doubleStation) {
                     xStation[i] = xTmp;
                     yStation[i] = yTmp;

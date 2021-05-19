@@ -23,7 +23,9 @@ import static java.lang.Math.exp;
 import static java.lang.Math.log;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
-import static org.hortonmachine.gears.libs.modules.HMConstants.*;
+import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
+import static org.hortonmachine.gears.libs.modules.HMConstants.intNovalue;
+import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.gears.utils.math.NumericsUtilities.dEq;
 
 import java.awt.geom.Point2D;
@@ -33,7 +35,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -55,12 +56,6 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.operation.MathTransform2D;
-import org.opengis.referencing.operation.TransformException;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateList;
 import org.locationtech.jts.geom.Envelope;
@@ -68,6 +63,11 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.MathTransform2D;
+import org.opengis.referencing.operation.TransformException;
 
 /**
  * A class containing several methods used by the modules.
@@ -1398,12 +1398,11 @@ public class ModelsEngine {
      * @param hTmp
      * @param i the current index
      * @param doMean if the h value of a double station have different value then do the mean.
-     * @param pm
      * @return true if there is already this station.
      * @throws Exception
      */
     public static boolean verifyDoubleStation( double[] xStation, double[] yStation, double[] zStation, double[] hStation,
-            double xTmp, double yTmp, double zTmp, double hTmp, int i, boolean doMean, IHMProgressMonitor pm ) throws Exception {
+            double xTmp, double yTmp, double zTmp, double hTmp, int i, boolean doMean ) throws Exception {
 
         for( int j = 0; j < i - 1; j++ ) {
 

@@ -54,7 +54,7 @@ import oms3.annotations.Status;
 
 @Description("Ordinary kriging algorithm.")
 @Documentation("Kriging.html")
-@Author(name = "Giuseppe Formetta, Daniele Andreis, Silvia Franceschi, Andrea Antonello, Marialaura Bancheri & Francesco Serafin")
+@Author(name = "Giuseppe Formetta, Daniele Andreis, Silvia Franceschi, Andrea Antonello, Marialaura Bancheri, Francesco Serafin")
 @Keywords("Kriging, Hydrology")
 @Label("")
 @Name("kriging")
@@ -82,10 +82,6 @@ public class OmsKrigingCheckMode extends HMModel {
     @Description("The HM with the measured data to be interpolated.")
     @In
     public HashMap<Integer, double[]> inData = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IHMProgressMonitor pm = new LogProgressMonitor();
 
     @Description("Include zeros in computations (default is true).")
     @In

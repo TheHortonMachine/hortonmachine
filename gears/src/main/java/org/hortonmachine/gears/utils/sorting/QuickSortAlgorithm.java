@@ -21,7 +21,6 @@ package org.hortonmachine.gears.utils.sorting;
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 public class QuickSortAlgorithm {
     private double[] valuesToSortDouble;
     private float[] valuesToSortFloat;
@@ -29,7 +28,7 @@ public class QuickSortAlgorithm {
     private double[] valuesToFollowDouble;
     private float[] valuesToFollowFloat;
     private int[] valuesToFollowInt;
-    private IHMProgressMonitor monitor = new LogProgressMonitor();
+    private IHMProgressMonitor monitor;
 
     public QuickSortAlgorithm( IHMProgressMonitor monitor ) {
         if (monitor != null)
@@ -49,12 +48,14 @@ public class QuickSortAlgorithm {
 
         number = values.length;
 
-        monitor.beginTask("Sorting...", -1);
-
-        monitor.worked(1);
+        if (monitor != null) {
+            monitor.beginTask("Sorting...", -1);
+            monitor.worked(1);
+        }
         quicksort(0, number - 1);
 
-        monitor.done();
+        if (monitor != null)
+            monitor.done();
     }
 
     /**
@@ -67,29 +68,31 @@ public class QuickSortAlgorithm {
     public void sort( float[] values, float[] valuesToFollow ) {
         this.valuesToSortFloat = values;
         this.valuesToFollowFloat = valuesToFollow;
-        
+
         number = values.length;
-        
-        monitor.beginTask("Sorting...", -1);
-        
-        monitor.worked(1);
+
+        if (monitor != null) {
+            monitor.beginTask("Sorting...", -1);
+            monitor.worked(1);
+        }
         quicksortFloat(0, number - 1);
-        
-        monitor.done();
+        if (monitor != null)
+            monitor.done();
     }
 
     public void sort( double[] values, int[] valuesToFollow ) {
         this.valuesToSortDouble = values;
         this.valuesToFollowInt = valuesToFollow;
-        
+
         number = values.length;
-        
-        monitor.beginTask("Sorting...", -1);
-        
-        monitor.worked(1);
+
+        if (monitor != null) {
+            monitor.beginTask("Sorting...", -1);
+            monitor.worked(1);
+        }
         quicksortInt(0, number - 1);
-        
-        monitor.done();
+        if (monitor != null)
+            monitor.done();
     }
 
     private void quicksort( int low, int high ) {
@@ -133,13 +136,13 @@ public class QuickSortAlgorithm {
         int i = low, j = high;
         // Get the pivot element from the middle of the list
         double pivot = valuesToSortFloat[(low + high) >>> 1];
-        
+
         // Divide into two lists
         while( i <= j ) {
             // If the current value from the left list is smaller then the pivot
             // element then get the next element from the left list
             while( valuesToSortFloat[i] < pivot || (isNovalue(valuesToSortFloat[i]) && !isNovalue(pivot)) ) {
-                
+
                 i++;
             }
             // If the current value from the right list is larger then the pivot
@@ -147,7 +150,7 @@ public class QuickSortAlgorithm {
             while( valuesToSortFloat[j] > pivot || (!isNovalue(valuesToSortFloat[j]) && isNovalue(pivot)) ) {
                 j--;
             }
-            
+
             // If we have found a values in the left list which is larger then
             // the pivot element and if we have found a value in the right list
             // which is smaller then the pivot element then we exchange the
@@ -170,13 +173,13 @@ public class QuickSortAlgorithm {
         int i = low, j = high;
         // Get the pivot element from the middle of the list
         double pivot = valuesToSortDouble[(low + high) >>> 1];
-        
+
         // Divide into two lists
         while( i <= j ) {
             // If the current value from the left list is smaller then the pivot
             // element then get the next element from the left list
             while( valuesToSortDouble[i] < pivot || (isNovalue(valuesToSortDouble[i]) && !isNovalue(pivot)) ) {
-                
+
                 i++;
             }
             // If the current value from the right list is larger then the pivot
@@ -184,7 +187,7 @@ public class QuickSortAlgorithm {
             while( valuesToSortDouble[j] > pivot || (!isNovalue(valuesToSortDouble[j]) && isNovalue(pivot)) ) {
                 j--;
             }
-            
+
             // If we have found a values in the left list which is larger then
             // the pivot element and if we have found a value in the right list
             // which is smaller then the pivot element then we exchange the
@@ -237,4 +240,3 @@ public class QuickSortAlgorithm {
     }
 
 }
-

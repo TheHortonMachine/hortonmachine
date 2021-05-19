@@ -1,0 +1,10 @@
+@T,table,,,,,,,,,,,
+Created,4/15/2017 16:01,,,,,,,,,,,
+Author,HortonMachine library,,,,,,,,,,,
+@H,timestamp,value_1,value_2,value_3,value_4,value_5,value_6,value_7,value_8,value_9,value_11,value_12
+ID, ,1185,387,904,538,586,589,905,629,632,1060,780
+Type,Date,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double
+Format,yyyy-MM-dd HH:mm,,,,,,,,,,,
+,2014-10-01 12:00,5,0,5,8,3,3,0,3,5,8,5
+,2014-10-02 12:00,13,13,23,13,13,3,15,10,13,13,15
+,2014-10-03 12:00,5,10,25,0,8,0,13,3,5,10,5

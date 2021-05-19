@@ -42,7 +42,7 @@ public class StationsSelection {
     public String fStationsid = null;
 
     /** The pm. */
-    public IHMProgressMonitor pm = new LogProgressMonitor();
+    public IHMProgressMonitor pm;
 
     /** The x station initial set. */
     public double[] xStationInitialSet;
@@ -189,7 +189,7 @@ public class StationsSelection {
                 int idTmp = idStationList.get(i);
 
                 boolean doubleStation = ModelsEngine.verifyDoubleStation(xStationInitialSet, yStationInitialSet,
-                        zStationInitialSet, hStationInitialSet, xTmp, yTmp, zTmp, hTmp, i, false, pm);
+                        zStationInitialSet, hStationInitialSet, xTmp, yTmp, zTmp, hTmp, i, false);
                 if (!doubleStation) {
                     xStationInitialSet[i] = xTmp;
                     yStationInitialSet[i] = yTmp;

@@ -149,7 +149,7 @@ public class OmsValidateDoubleStation extends HMModel {
             double zTmp = zStationList.get(i);
             double hTmp = hStationList.get(i);
             boolean doubleStation = ModelsEngine.verifyDoubleStation(xStation, yStation, zStation, hStation, xTmp, yTmp, zTmp,
-                    hTmp, i, doMean, null);
+                    hTmp, i, doMean);
 
             if (!doubleStation) {
                 xStation[k] = xStationList.get(i);
