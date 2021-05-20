@@ -28,6 +28,17 @@
 			<groupId>org.mapsforge</groupId>
 			<artifactId>mapsforge-map-awt</artifactId>
 			<version>${mapsforge.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.github.blackears</groupId>
+					<artifactId>svgSalamander</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.formdev</groupId>
+			<artifactId>svgSalamander</artifactId>
+			<version>1.1.2.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mapsforge</groupId>
