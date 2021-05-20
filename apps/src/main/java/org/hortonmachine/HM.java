@@ -130,8 +130,10 @@ public class HM {
         sb.append(
                 "\tchartMatrix( String title, String xLabel, String yLabel, double[][] data, List<String> series, List<String> colors, boolean doLegend )")
                 .append("\n");
-        sb.append("Chart a category histogram:").append("\n");
+        sb.append("Chart a simple category histogram:").append("\n");
         sb.append("\thistogram( Map<String, Object> options, List<String> categories, List<Number> values )").append("\n");
+        sb.append("Chart a category histogram with multiple series:").append("\n");
+        sb.append("\thistogram( Map<String, Object> options, List<String> seriesNames, List<String> categories, List<List<Number>> values )").append("\n");
         sb.append("Chart a numeric histogram:").append("\n");
         sb.append("\thistogram( Map<String, Object> options, List<List<Number>> pairsValuesList )").append("\n");
         sb.append("Chart a time series:").append("\n");
@@ -510,7 +512,12 @@ public class HM {
         GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
     }
 
-    public static void histogram( Map<String, Object> options, List<String> categories, List<Number> values ) {
+    public static void histogram( Map<String, Object> options, List<String> categories, List<Object> values ) {
+        histogram(options, Arrays.asList(""), categories, values);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void histogram( Map<String, Object> options, List<String> series, List<String> categories, List<Object> values ) {
         String title = "";
         String xLabel = "x";
         String yLabel = "y";
@@ -539,12 +546,32 @@ public class HM {
             }
         }
 
-        double[] valuesDouble = new double[values.size()];
-        for( int i = 0; i < valuesDouble.length; i++ ) {
-            valuesDouble[i] = values.get(i).doubleValue();
+        List<double[]> data = new ArrayList<>();
+
+        Object object = values.get(0);
+        if (object instanceof List) {
+            for( int i = 0; i < values.size(); i++ ) {
+                List<Number> numList = (List) values.get(i);
+
+                double[] valuesDouble = new double[numList.size()];
+                for( int j = 0; j < valuesDouble.length; j++ ) {
+                    Number num = (Number) numList.get(j);
+                    valuesDouble[j] = num.doubleValue();
+                }
+                data.add(valuesDouble);
+            }
+        } else {
+            // it has to be number
+            double[] valuesDouble = new double[values.size()];
+            for( int i = 0; i < valuesDouble.length; i++ ) {
+                Number num = (Number) values.get(i);
+                valuesDouble[i] = num.doubleValue();
+            }
+            data.add(valuesDouble);
         }
-        CategoryHistogram categoryHistogram = new CategoryHistogram(title, categories.toArray(new String[categories.size()]),
-                valuesDouble);
+
+        CategoryHistogram categoryHistogram = new CategoryHistogram(title, series,
+                categories.toArray(new String[categories.size()]), data);
         categoryHistogram.setXLabel(xLabel);
         categoryHistogram.setYLabel(yLabel);
         ChartPanel chartPanel = new ChartPanel(categoryHistogram.getChart(), true);
@@ -591,7 +618,8 @@ public class HM {
             categories[i] = pair.get(0).toString();
             valuesDouble[i] = pair.get(1).doubleValue();
         }
-        CategoryHistogram categoryHistogram = new CategoryHistogram(title, categories, valuesDouble);
+        CategoryHistogram categoryHistogram = new CategoryHistogram(title, Arrays.asList(""), categories,
+                Arrays.asList(valuesDouble));
         categoryHistogram.setXLabel(xLabel);
         categoryHistogram.setYLabel(yLabel);
         ChartPanel chartPanel = new ChartPanel(categoryHistogram.getChart(), true);

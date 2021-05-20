@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1432,7 +1431,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                                 xStr[r] = xObj.toString();
                                                 y[r] = ((Number) yObj).doubleValue();
                                             }
-                                            categoryHistogram = new CategoryHistogram("", xStr, y);
+                                            categoryHistogram = new CategoryHistogram(xStr, y);
                                         }
                                     } else {
                                         if (scatterChart == null) {

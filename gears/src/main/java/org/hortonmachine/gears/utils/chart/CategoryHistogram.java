@@ -17,6 +17,9 @@
  */
 package org.hortonmachine.gears.utils.chart;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -33,21 +36,31 @@ import org.jfree.data.category.DefaultCategoryDataset;
 public class CategoryHistogram implements IChart {
 
     private String[] categories;
-    private double[] values;
+    private List<double[]> values;
     private DefaultCategoryDataset dataset;
     private String title;
     private JFreeChart chart;
     private String yLabel = "Value";
     private String xLabel = "Category";
+    private List<String> series;
 
     public CategoryHistogram( String[] categories, double[] values ) {
-        this("Histogram", categories, values);
+        this("Histogram", null, categories, Arrays.asList(values));
     }
 
-    public CategoryHistogram( String title, String[] categories, double[] values ) {
+    public CategoryHistogram( List<String> series, String[] categories, List<double[]> values ) {
+        this("Histogram", series, categories, values);
+    }
+
+    public CategoryHistogram( String title, List<String> series, String[] categories, List<double[]> values ) {
         this.title = title;
+        this.series = series;
         this.categories = categories;
         this.values = values;
+
+        if (this.series == null) {
+            this.series = Arrays.asList("");
+        }
     }
 
     public String getTitle() {
@@ -56,11 +69,15 @@ public class CategoryHistogram implements IChart {
 
     private void createDataset() {
         dataset = new DefaultCategoryDataset();
-        for( int i = 0; i < categories.length; i++ ) {
-            dataset.addValue(values[i], "", categories[i]);
+
+        for( int j = 0; j < series.size(); j++ ) {
+
+            double[] seriesValues = values.get(j);
+            for( int i = 0; i < categories.length; i++ ) {
+                dataset.addValue(seriesValues[i], series.get(j), categories[i]);
+            }
         }
     }
-    
 
     public void setXLabel( String xLabel ) {
         this.xLabel = xLabel;
@@ -73,23 +90,26 @@ public class CategoryHistogram implements IChart {
     public JFreeChart getChart() {
         if (chart == null) {
             createDataset();
-            chart = ChartFactory.createBarChart(title,
-            // chart title
-                    xLabel,
+            
+            boolean doLegend = series.size() > 1 ? true:false;
+            chart = ChartFactory.createBarChart(
+                    // chart title
+                    title,
                     // domain axis label
-                    yLabel,
+                    xLabel,
                     // range axis label
-                    dataset,
+                    yLabel,
                     // data
-                    PlotOrientation.VERTICAL,
+                    dataset,
                     // orientation
-                    false,
+                    PlotOrientation.VERTICAL,
                     // include legend
-                    true,
+                    doLegend,
                     // tooltips?
+                    true,
+                    // URLs?
                     false
-            // URLs?
-                    );
+            );
 
             CategoryPlot plot = (CategoryPlot) chart.getPlot();
             CategoryAxis rangeAxis = plot.getDomainAxis();
@@ -101,7 +121,11 @@ public class CategoryHistogram implements IChart {
     public static void main( String[] args ) {
         String[] asd = {"a", "b", "c", "d", "e", "f", "g"};
         double[] qwe = {1, 2, 3, 2.5, 5.5, 1, 2};
-        CategoryHistogram categoryHistogram = new CategoryHistogram(asd, qwe);
+        double[] zxc = {2, 2, 0, 0, 1, 1, 5};
+        CategoryHistogram categoryHistogram = new CategoryHistogram("test", Arrays.asList("series A", "series B"), asd,
+                Arrays.asList(qwe, zxc));
+        categoryHistogram.setXLabel("letters");
+        categoryHistogram.setYLabel("numbers");
         PlotFrame frame = new PlotFrame(categoryHistogram);
         frame.setDimension(1600, 1000);
         frame.plot();
