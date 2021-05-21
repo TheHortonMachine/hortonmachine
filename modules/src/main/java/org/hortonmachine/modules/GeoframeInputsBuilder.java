@@ -143,6 +143,7 @@ public class GeoframeInputsBuilder extends HMModel {
 
         SimpleFeatureBuilder basinsBuilder = getBasinsBuilder(pit.getCoordinateReferenceSystem());
         SimpleFeatureBuilder netBuilder = getNetBuilder(pit.getCoordinateReferenceSystem());
+        SimpleFeatureBuilder singleNetBuilder = getSingleNetBuilder(pit.getCoordinateReferenceSystem());
 
         DefaultFeatureCollection allBasins = new DefaultFeatureCollection();
         DefaultFeatureCollection allNetworks = new DefaultFeatureCollection();
@@ -183,8 +184,8 @@ public class GeoframeInputsBuilder extends HMModel {
                     Geometry netIntersection = maxPolygon.intersection(netGeom);
                     for( int i = 0; i < netIntersection.getNumGeometries(); i++ ) {
                         Geometry geometryN = netIntersection.getGeometryN(i);
-                        if (geometryN instanceof LineString) {
-                            Object userData = geometryN.getUserData();
+                        if (geometryN instanceof LineString && geometryN.getLength() > 0) {
+                            Object userData = netGeom.getUserData();
                             int hack = Integer.parseInt(userData.toString());
                             minHack = Math.min(minHack, hack);
                             netPieces.add((LineString) geometryN);
@@ -199,8 +200,6 @@ public class GeoframeInputsBuilder extends HMModel {
                     }
                 }
             }
-            MultiLineString netLines = GeometryUtilities.gf().createMultiLineString(netPieces.toArray(new LineString[0]));
-            double netLength = netLines.getLength();
             
             double mainNetLength = 0;
             List<LineString> minHackLines = hack4Lines.get(minHack);
@@ -283,12 +282,15 @@ public class GeoframeInputsBuilder extends HMModel {
                 dumpVector(singleBasin, basinShpFile.getAbsolutePath());
             }
 
-            Object[] netValues = new Object[]{netLines, basinNum, netLength};
-            netBuilder.addAll(netValues);
-            SimpleFeature netFeature = netBuilder.buildFeature(null);
-            allNetworks.add(netFeature);
             DefaultFeatureCollection singleNet = new DefaultFeatureCollection();
-            singleNet.add(netFeature);
+            for( LineString netLine : netPieces ) {
+                Object[] netValues = new Object[]{netLine, basinNum, netLine.getLength()};
+                singleNetBuilder.addAll(netValues);
+                SimpleFeature singleNetFeature = singleNetBuilder.buildFeature(null);
+                
+                allNetworks.add(singleNetFeature);
+                singleNet.add(singleNetFeature);
+            }
             File netShpFile = new File(basinFolder, "network_complete_ID_" + basinNum + ".shp");
             if (!netShpFile.exists() || doOverWrite) {
                 dumpVector(singleNet, netShpFile.getAbsolutePath());
@@ -359,15 +361,26 @@ public class GeoframeInputsBuilder extends HMModel {
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         return builder;
     }
+    private SimpleFeatureBuilder getSingleNetBuilder( CoordinateReferenceSystem crs ) {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("net");
+        b.setCRS(crs);
+        b.add("the_geom", LineString.class);
+        b.add("basinid", Integer.class);
+        b.add("length_m", Double.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        return builder;
+    }
 
     public static void main( String[] args ) throws Exception {
-        String path = "yourbasefolder";
+        String path = "/Users/hydrologis/lavori_tmp/UNITN/fixgeoframebuilder/test/";
 
-        String pit = path + "pitfiller.asc";
-        String drain = path + "brenta_drain.asc";
-        String net = path + "brenta_net_10000.asc";
-        String sky = path + "brenta_skyview.asc";
-        String basins = path + "mytest_pts_desiredbasins_10000000_20.asc";
+        String pit = path + "pit_adige.tif";
+        String drain = path + "draindir_cut_MO_adige.tif";
+        String net = path + "net25000_cut_MO_adige.tif";
+        String sky = path + "skyview_adige.tif";
+        String basins = path + "subbDes25000_cut_MO_adige.tif";
         String outfolder = path + "geoframe";
 
         GeoframeInputsBuilder g = new GeoframeInputsBuilder();

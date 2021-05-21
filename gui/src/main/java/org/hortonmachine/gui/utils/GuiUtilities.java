@@ -30,6 +30,9 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -40,6 +43,8 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -639,6 +644,29 @@ public class GuiUtilities {
                 return false;
         }
 
+    }
+
+    /**
+     * 
+     * 
+     * 
+     * @param component
+     * @param filesConsumer
+     */
+    @SuppressWarnings("serial")
+    public static void addFileDropTarget( Component component, Consumer<File[]> filesConsumer ) {
+        component.setDropTarget(new DropTarget(){
+            public synchronized void drop( DropTargetDropEvent evt ) {
+                try {
+                    evt.acceptDrop(DnDConstants.ACTION_COPY);
+                    @SuppressWarnings("unchecked")
+                    List<File> droppedFiles = (List<File>) evt.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                    filesConsumer.accept(droppedFiles.toArray(new File[0]));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
     }
 
 }

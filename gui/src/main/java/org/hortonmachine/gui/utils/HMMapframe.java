@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
@@ -149,42 +150,8 @@ public class HMMapframe extends JMapFrame {
 
         SwingUtilities.invokeLater(() -> {
 
-            if (!rasterFiles.isEmpty()) {
-                for( File rasterFile : rasterFiles ) {
-                    try {
-                        GridCoverage2D raster = OmsRasterReader.readRaster(rasterFile.getAbsolutePath());
-                        File styleFile = FileUtilities.substituteExtention(rasterFile, "sld");
-                        Style style;
-                        if (styleFile.exists()) {
-                            style = SldUtilities.getStyleFromFile(styleFile);
-                        } else {
-                            style = SldUtilities.getStyleFromRasterFile(rasterFile);
-                        }
-                        GridCoverageLayer layer = new GridCoverageLayer(raster, style, rasterFile.getName());
-                        mapFrame.addLayer(layer);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            if (!vectorFiles.isEmpty()) {
-                for( File vectorFile : vectorFiles ) {
-                    try {
-                        SimpleFeatureCollection fc = OmsVectorReader.readVector(vectorFile.getAbsolutePath());
-                        File styleFile = FileUtilities.substituteExtention(vectorFile, "sld");
-                        Style style;
-                        if (styleFile.exists()) {
-                            style = SldUtilities.getStyleFromFile(styleFile);
-                        } else {
-                            style = SLD.createSimpleStyle(fc.getSchema());
-                        }
-                        FeatureLayer layer = new FeatureLayer(fc, style, vectorFile.getName());
-                        mapFrame.addLayer(layer);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+            loadRasters(mapFrame, rasterFiles);
+            loadVectors(mapFrame, vectorFiles);
 
             final DefaultComboBoxModel<String> layersComboModel = new DefaultComboBoxModel<String>();
             layersComboModel.addElement("");
@@ -215,6 +182,48 @@ public class HMMapframe extends JMapFrame {
         });
 
         return mapFrame;
+    }
+
+    private static void loadVectors( HMMapframe mapFrame, List<File> vectorFiles ) {
+        if (!vectorFiles.isEmpty()) {
+            for( File vectorFile : vectorFiles ) {
+                try {
+                    SimpleFeatureCollection fc = OmsVectorReader.readVector(vectorFile.getAbsolutePath());
+                    File styleFile = FileUtilities.substituteExtention(vectorFile, "sld");
+                    Style style;
+                    if (styleFile.exists()) {
+                        style = SldUtilities.getStyleFromFile(styleFile);
+                    } else {
+                        style = SLD.createSimpleStyle(fc.getSchema());
+                    }
+                    FeatureLayer layer = new FeatureLayer(fc, style, vectorFile.getName());
+                    mapFrame.addLayer(layer);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private static void loadRasters( HMMapframe mapFrame, List<File> rasterFiles ) {
+        if (!rasterFiles.isEmpty()) {
+            for( File rasterFile : rasterFiles ) {
+                try {
+                    GridCoverage2D raster = OmsRasterReader.readRaster(rasterFile.getAbsolutePath());
+                    File styleFile = FileUtilities.substituteExtention(rasterFile, "sld");
+                    Style style;
+                    if (styleFile.exists()) {
+                        style = SldUtilities.getStyleFromFile(styleFile);
+                    } else {
+                        style = SldUtilities.getStyleFromRasterFile(rasterFile);
+                    }
+                    GridCoverageLayer layer = new GridCoverageLayer(raster, style, rasterFile.getName());
+                    mapFrame.addLayer(layer);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private static void getFiles( File[] inputFiles, List<File> rasterFiles, List<File> vectorFiles ) {
@@ -311,6 +320,18 @@ public class HMMapframe extends JMapFrame {
             }
         });
 
+        Consumer<File[]> filesConsumer = files -> {
+            List<File> rasterFiles = new ArrayList<>();
+            List<File> vectorFiles = new ArrayList<>();
+
+            getFiles(files, rasterFiles, vectorFiles);
+            SwingUtilities.invokeLater(() -> {
+                loadRasters(mapFrame, rasterFiles);
+                loadVectors(mapFrame, vectorFiles);
+            });
+        };
+        GuiUtilities.addFileDropTarget(mapFrame.getLayeredPane(), filesConsumer);
+
         return mapFrame;
     }
 
@@ -332,8 +353,20 @@ public class HMMapframe extends JMapFrame {
             files.add(openFile);
         }
 
-        if (!files.isEmpty()) {
+        boolean hasFiles = files.isEmpty();
+        if (!hasFiles) {
+            File lastFile = PreferencesHandler.getLastFile();
+            if (!lastFile.isDirectory()) {
+                lastFile = lastFile.getParentFile();
+            }
+            File[] selectedFiles = GuiUtilities.showOpenFolderDialog(null, "Select folder to load...", false, lastFile);
+            if (selectedFiles != null && selectedFiles.length > 0) {
+                files = Arrays.asList(selectedFiles);
+            }
+        }
+        if (files != null && !files.isEmpty()) {
             HMMapframe mf = openFiles(files.toArray(new File[0]));
+            GuiUtilities.setDefaultFrameIcon(mf);
             SettingsController.applySettings(mf);
             mf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         } else {
