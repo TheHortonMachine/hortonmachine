@@ -41,6 +41,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -49,6 +50,7 @@ import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.libs.modules.NetLink;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.locationtech.jts.geom.Coordinate;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -121,6 +123,10 @@ public class OmsNetNumbering extends HMModel {
     @Out
     public String outGeoframeTopology = null;
 
+    @Description(OMSNETNUMBERING_outBasinsInfo_DESCRIPTION)
+    @Out
+    public String outBasinsInfo = null;
+
     @Description(OMSNETNUMBERING_outMindmapDesired_DESCRIPTION)
     @Out
     public String outDesiredMindmap = null;
@@ -148,6 +154,7 @@ public class OmsNetNumbering extends HMModel {
     public static final String OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION = "The allowed variance for the desired area.";
     public static final String OMSNETNUMBERING_pMaxAllowedConfluences_DESCRIPTION = "The maximum number of channels that can converge into 1 node (-1 = no limit). Works only in desired area mode.";
     public static final String OMSNETNUMBERING_outGeoframeTopology_DESCRIPTION = "The optional geoframe topology output file.";
+    public static final String OMSNETNUMBERING_outBasinsInfo_DESCRIPTION = "The optional basins info output file.";
 
     private int nCols;
 
@@ -247,7 +254,8 @@ public class OmsNetNumbering extends HMModel {
                                 }
                             }
                         }
-                        // also consider basins that have 1 fixed upstream basin (case of monitoring point)
+                        // also consider basins that have 1 fixed upstream basin (case of monitoring
+                        // point)
                         if (upStreamLinks.size() == 1 && upStreamLinks.get(0).isFixed()) {
                             NetLink fixed = upStreamLinks.get(0);
                             double area = getLinkOnlyArea(netLink);
@@ -276,7 +284,8 @@ public class OmsNetNumbering extends HMModel {
                     } while( postConvertedSize - convertedSize > 0 );
 
                     // if (pMaxAllowedConfluences > 0) {
-                    // // review the tree and solve junctions with more than that number of upstreams
+                    // // review the tree and solve junctions with more than that number of
+                    // upstreams
                     // do {
                     // convertedSize = conversionMap.size();
                     // List<NetLink> links = Arrays.asList(rootLink);
@@ -301,6 +310,12 @@ public class OmsNetNumbering extends HMModel {
                     printLinkAsGeoframe(rootLink, geoframeSb);
                     outGeoframeTopology = geoframeSb.toString();
 
+                    // build basins info
+                    StringBuilder basinsInfoSb = new StringBuilder();
+                    basinsInfoSb.append("basinid;outletX;outletY;area\n");
+                    printLinkAsIdOutletUpstreamArea(rootLink, inTca, inTca.getGridGeometry(), basinsInfoSb);
+                    outBasinsInfo = basinsInfoSb.toString();
+
                     WritableRaster desiredSubbasinsWR = CoverageUtilities.createWritableRaster(nCols, nRows, Integer.class, null,
                             HMConstants.intNovalue);
                     WritableRandomIter desiredSubbasinsWIter = RandomIterFactory.createWritable(desiredSubbasinsWR, null);
@@ -310,7 +325,8 @@ public class OmsNetNumbering extends HMModel {
                             if (!isNovalue(value)) {
                                 Integer convertedBasinNum = conversionMap.get(value);
                                 if (convertedBasinNum != null) {
-                                    // check if the converted has been converted also in some different thread
+                                    // check if the converted has been converted also in some
+                                    // different thread
                                     Integer convertedBasinNumTmp = conversionMap.get(convertedBasinNum);
                                     while( convertedBasinNumTmp != null ) {
                                         convertedBasinNum = convertedBasinNumTmp;
@@ -378,7 +394,8 @@ public class OmsNetNumbering extends HMModel {
                         if (fixedCounts == ups.size() && fixedCounts != 0) {
                             if (!netLink.isFixed()) {
                                 // all upstream are fixed and area is small, aggregate downstream
-                                // if the last basin is too small, let's aggregate it with the parent
+                                // if the last basin is too small, let's aggregate it with the
+                                // parent
                                 NetLink parentLink = netLink.getDownStreamLink();
                                 netLink.desiredChainNetLink = parentLink.num;
                                 conversionMap.put(netLink.num, parentLink.num);
@@ -479,7 +496,8 @@ public class OmsNetNumbering extends HMModel {
 
     // if (removedCount < toRemove) {
     // throw new ModelsIllegalargumentException(
-    // "Unable to remove converging channel to the desired parameter, due to presence of fixed channels.
+    // "Unable to remove converging channel to the desired parameter, due to presence of fixed
+    // channels.
     // Check your input data.",
     // this);
     // }
@@ -511,10 +529,24 @@ public class OmsNetNumbering extends HMModel {
             printLinkAsMindMap(upNode, level, sb);
         }
     }
+
     private void printLinkAsGeoframe( NetLink node, StringBuilder sb ) {
         for( NetLink upNode : node.getUpStreamLinks() ) {
             sb.append(upNode.num).append(" ").append(node.num).append("\n");
             printLinkAsGeoframe(upNode, sb);
+        }
+    }
+
+    private void printLinkAsIdOutletUpstreamArea( NetLink node, GridCoverage2D inTca, GridGeometry2D gridGeometry2D,
+            StringBuilder sb ) {
+        Coordinate coordinate = CoverageUtilities.coordinateFromColRow(node.downCol, node.downRow, gridGeometry2D);
+
+        int tca = node.getTca();
+        double area = xres * yres * tca;
+        sb.append(node.num).append(";").append(coordinate.x).append(";").append(coordinate.y).append(";").append(area)
+                .append("\n");
+        for( NetLink upNode : node.getUpStreamLinks() ) {
+            printLinkAsIdOutletUpstreamArea(upNode, inTca, gridGeometry2D, sb);
         }
     }
 

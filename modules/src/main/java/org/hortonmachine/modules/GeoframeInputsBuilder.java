@@ -142,7 +142,6 @@ public class GeoframeInputsBuilder extends HMModel {
                 .collect(Collectors.groupingBy(poly -> ((Number) poly.getUserData()).intValue()));
 
         SimpleFeatureBuilder basinsBuilder = getBasinsBuilder(pit.getCoordinateReferenceSystem());
-        SimpleFeatureBuilder netBuilder = getNetBuilder(pit.getCoordinateReferenceSystem());
         SimpleFeatureBuilder singleNetBuilder = getSingleNetBuilder(pit.getCoordinateReferenceSystem());
 
         DefaultFeatureCollection allBasins = new DefaultFeatureCollection();

@@ -50,6 +50,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
+import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
@@ -126,6 +127,11 @@ public class NetNumbering extends HMModel {
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outGeoframeTopology = null;
+    
+    @Description(OMSNETNUMBERING_outBasinsInfo_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outBasinsInfo = null;
 
     @Execute
     public void process() throws Exception {
@@ -151,22 +157,25 @@ public class NetNumbering extends HMModel {
         if (pDesiredArea != null && outDesiredMindmap != null && outDesiredMindmap.trim().length() > 0) {
             FileUtilities.writeFile(omsnetnumbering.outDesiredMindmap, new File(outDesiredMindmap));
         }
-        if (outGeoframeTopology != null && outGeoframeTopology != null && outGeoframeTopology.trim().length() > 0) {
+        if (outGeoframeTopology != null && omsnetnumbering.outGeoframeTopology != null && omsnetnumbering.outGeoframeTopology.trim().length() > 0) {
             FileUtilities.writeFile(omsnetnumbering.outGeoframeTopology, new File(outGeoframeTopology));
+        }
+        if (outBasinsInfo != null && omsnetnumbering.outBasinsInfo != null && omsnetnumbering.outBasinsInfo.trim().length() > 0) {
+            FileUtilities.writeFile(omsnetnumbering.outBasinsInfo, new File(outBasinsInfo));
         }
     }
 
     public static void main( String[] args ) throws Exception {
-        String folder = "yourbasefolder";
-        String inPoints = folder + "idroStation.shp";
+        String folder = "/Users/hydrologis/lavori_tmp/UNITN/fixgeoframebuilder/test2/brenta_levico_02/";
+        String inPoints = null;//folder + "idroStation.shp";
 
-        int desiredArea = 100000_00;
+        int desiredArea = 2_000_000;
         int desiredDelta = 20;
         // int maxChannels = -1;
 
-        String inFlow = folder + "brenta_drain.asc";
-        String inTca = folder + "brenta_tca.asc";
-        String inNet = folder + "brenta_net_10000.asc";
+        String inFlow = folder + "brenta_levico_drain_02.asc";
+        String inTca = folder + "brenta_levico_tca_02.asc";
+        String inNet = folder + "brenta_levico_net10000_02.asc";
         String withPoints = inPoints == null ? "" : "_pts";
 
         String outNetnum = folder + "mytest" + withPoints + "_netnum.asc";
@@ -176,6 +185,7 @@ public class NetNumbering extends HMModel {
         String outMM = folder + "mytest" + withPoints + "_mindmap.txt";
         String outDesMM = folder + "mytest" + withPoints + "_mindmap_desired_" + desiredArea + "_" + desiredDelta + ".txt";
         String outGeoframe = folder + "mytest" + withPoints + "_geoframe.txt";
+        String outBasinInfo = folder + "mytest" + withPoints + "_basininfo.txt";
         NetNumbering omsnetnumbering = new NetNumbering();
         omsnetnumbering.inFlow = inFlow;
         omsnetnumbering.inTca = inTca;
@@ -190,6 +200,7 @@ public class NetNumbering extends HMModel {
         omsnetnumbering.outMindmap = outMM;
         omsnetnumbering.outDesiredMindmap = outDesMM;
         omsnetnumbering.outGeoframeTopology = outGeoframe;
+        omsnetnumbering.outBasinsInfo = outBasinInfo;
         omsnetnumbering.outBasins = outBasins;
         omsnetnumbering.outDesiredBasins = outDesireredBasins;
         omsnetnumbering.outNetnum = outNetnum;
