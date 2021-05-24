@@ -25,7 +25,7 @@ public class Exponential implements ITheoreticalVariogram {
     double range;
     double nug;
 
-    public Exponential( double dist, double sill, double range, double nug ) {
+    public void init( double dist, double sill, double range, double nug ) {
         this.dist = dist;
         this.sill = sill;
         this.range = range;
@@ -34,15 +34,23 @@ public class Exponential implements ITheoreticalVariogram {
 
     @Override
     public double computeSemivariance() {
-
         double result = 0;
-
         if (dist != 0.0) {
-            result = nug + sill * (1 - (Math.exp(-dist / range)));
+            result = nug + sill * (1 - Math.exp(-dist / range));
         }
-        // System.out.println(func[i]);
-
         return result;
+    }
+
+    @Override
+    public double[] computeJacobian() {
+        if (dist != 0.0) {
+            return new double[]{//
+                    1 - Math.exp(-(dist / range)), // dSill
+                    -sill * Math.exp(-(dist / range)) * (dist / (range * range)), // dRange
+                    1.0 // dNug
+            };
+        }
+        return new double[]{0.0, 0.0, 0.0};
     }
 
 }

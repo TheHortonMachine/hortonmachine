@@ -25,7 +25,7 @@ public class Linear implements ITheoreticalVariogram {
     double range;
     double nug;
 
-    public Linear( double dist, double sill, double range, double nug ) {
+    public void init( double dist, double sill, double range, double nug ) {
         this.dist = dist;
         this.sill = sill;
         this.range = range;
@@ -39,12 +39,29 @@ public class Linear implements ITheoreticalVariogram {
 
         if (dist > 0.0 & dist <= range) {
             result = nug + sill * (dist / range);
-        }
-        if (dist > range) {
+        } else if (dist > range) {
             result = sill + nug;
         }
 
         return result;
+    }
+
+    @Override
+    public double[] computeJacobian() {
+        if (dist > 0.0 & dist <= range) {
+            return new double[]{//
+                    (dist / range), // dSill
+                    -sill * dist * 1 / Math.pow(range, 2.0), // dRange
+                    1.0 // dNug
+            };
+        } else if (dist > range) {
+            return new double[]{//
+                    1.0, // dSill
+                    0.0, // dRange
+                    1.0 // dNug
+            };
+        }
+        return new double[]{0.0, 0.0, 0.0};
     }
 
 }

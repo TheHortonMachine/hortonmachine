@@ -121,7 +121,8 @@ public class TheoreticalVariogram extends HMModel {
 
     public double calculateVGM( String model, double distance, double sill, double range, double nug ) {
 
-        modelVGM = ITheoreticalVariogram.create(model, distance, sill, range, nug);
+        modelVGM = ITheoreticalVariogram.create(model);
+        modelVGM.init(distance, sill, range, nug);
         double result = modelVGM.computeSemivariance();
 
         return result;

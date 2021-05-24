@@ -27,8 +27,6 @@ import org.geotools.feature.SchemaException;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.utils.math.matrixes.ColumnVector;
 import org.hortonmachine.gears.utils.math.regressions.PolyTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.RegressionLine;

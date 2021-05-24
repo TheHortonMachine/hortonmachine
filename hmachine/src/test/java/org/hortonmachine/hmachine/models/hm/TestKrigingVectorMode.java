@@ -12,6 +12,9 @@ import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.hmachine.modules.statistics.kriging.OmsKrigingVectorMode;
+import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.VariogramFunction;
+import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.VariogramFunctionFitter;
+import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.ITheoreticalVariogram;
 import org.junit.Test;
 
 /**
@@ -24,6 +27,21 @@ public class TestKrigingVectorMode {
         URL url = this.getClass().getClassLoader().getResource(name);
         File file = new File(url.toURI());
         return file.getAbsolutePath();
+    }
+
+    @Test
+    public void testVariogramFitter() throws Exception {
+        double[] distances = {1, 2, 3, 1, 2, 3};
+        double[] values = {1, 1.5, 2, 2, 2.5, 3};
+
+        VariogramFunction function = new VariogramFunction(ITheoreticalVariogram.LINEAR);
+
+        VariogramFunctionFitter fitter = new VariogramFunctionFitter(function, 1, 3, 4);
+        double[] fit = fitter.fit(distances, values);
+
+        assertEquals(1.9769933586233943, fit[0], 0.0000001);
+        assertEquals(3.9539830033063583, fit[1], 0.0000001);
+        assertEquals(1.0000000000000002, fit[2], 0.0000001);
     }
 
     @Test

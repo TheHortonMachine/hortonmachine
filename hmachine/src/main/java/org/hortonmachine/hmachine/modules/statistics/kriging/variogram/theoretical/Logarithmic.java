@@ -25,7 +25,7 @@ public class Logarithmic implements ITheoreticalVariogram {
     double range;
     double nug;
 
-    public Logarithmic( double dist, double sill, double range, double nug ) {
+    public void init( double dist, double sill, double range, double nug ) {
         this.dist = dist;
         this.sill = sill;
         this.range = range;
@@ -37,9 +37,20 @@ public class Logarithmic implements ITheoreticalVariogram {
         double result = 0;
         if (dist != 0.0) {
             result = nug + sill * (Math.log(dist / range));
-            // System.out.println(result[i]);
         }
         return result;
+    }
+
+    @Override
+    public double[] computeJacobian() {
+        if (dist != 0.0) {
+            return new double[]{//
+                    Math.log(dist / range), // dSill
+                    sill * (range / dist) * (-dist / (range * range)), // dRange
+                    1.0 // dNug
+            };
+        }
+        return new double[]{0.0, 0.0, 0.0};
     }
 
 }

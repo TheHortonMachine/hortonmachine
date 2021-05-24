@@ -29,21 +29,28 @@ public interface ITheoreticalVariogram {
     public static final String LOGARITHMIC = "logarithmic";
     public static final String LINEAR = "linear";
     public static final String EXPONENTIAL = "exponential";
-    public static final String TYPES = LINEAR + "," + EXPONENTIAL + "," + LOGARITHMIC + "," + POWER;
+    public static final String GAUSSIAN = "gaussian";
+    public static final String TYPES = LINEAR + "," + EXPONENTIAL + "," + LOGARITHMIC + "," + POWER + "," + GAUSSIAN;
 
-    abstract public double computeSemivariance();
+    void init(double dist, double sill, double range, double nug);
+    
+    double computeSemivariance();
 
-    public static ITheoreticalVariogram create( String type, double dist, double sill, double range, double nug ) {
+    double[] computeJacobian();
+
+    public static ITheoreticalVariogram create( String type) {
         ITheoreticalVariogram model = null;
 
         if (EXPONENTIAL.equals(type)) {
-            model = new Exponential(dist, sill, range, nug);
+            model = new Exponential();
         } else if (LINEAR.equals(type)) {
-            model = new Linear(dist, sill, range, nug);
+            model = new Linear();
         } else if (LOGARITHMIC.equals(type)) {
-            model = new Logarithmic(dist, sill, range, nug);
+            model = new Logarithmic();
         } else if (POWER.equals(type)) {
-            model = new Power(dist, sill, range, nug);
+            model = new Power();
+        } else if (GAUSSIAN.equals(type)) {
+            model = new Gaussian();
         } else {
             throw new ModelsIllegalargumentException("Not a valid type: " + type, model);
         }

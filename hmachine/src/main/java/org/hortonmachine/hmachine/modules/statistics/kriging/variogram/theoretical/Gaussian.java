@@ -16,9 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical;
 
-public class Power implements ITheoreticalVariogram {
+public class Gaussian implements ITheoreticalVariogram {
 
     double dist;
     double sill;
@@ -34,10 +35,14 @@ public class Power implements ITheoreticalVariogram {
 
     @Override
     public double computeSemivariance() {
+
         double result = 0;
+        double hr = dist / (range);
+
         if (dist != 0.0) {
-            result = nug + sill * Math.pow(dist, range);
+            result = nug + sill * (1.0 - (Math.exp(-(hr * hr))));
         }
+
         return result;
     }
 
@@ -45,12 +50,12 @@ public class Power implements ITheoreticalVariogram {
     public double[] computeJacobian() {
         if (dist != 0.0) {
             return new double[]{//
-                    Math.pow(dist, range), // dSill
-                    sill * range * Math.pow(dist, range - 1.0), // dRange
-                    1.0 // dNug
+                    1 - Math.exp(-(dist / range) * (dist / range)), //
+                    -sill * Math.exp(-(dist / range) * (dist / range)) * (2 * dist * dist / (range * range * range)), //
+                    1.//
             };
         }
-        return new double[]{0.0, 0.0, 0.0};
+        return new double[]{0, 0, 0};
     }
 
 }
