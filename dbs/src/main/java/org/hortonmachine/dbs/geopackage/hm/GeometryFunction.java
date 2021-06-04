@@ -30,7 +30,7 @@ import org.sqlite.Function;
  */
 public abstract class GeometryFunction extends Function {
 
-    public abstract Object execute(GeoPkgGeomReader reader) throws IOException;
+    public abstract Object execute(GeoPkgGeomReader reader) throws Exception;
 
     @Override
     protected void xFunc() throws SQLException {
@@ -41,7 +41,7 @@ public abstract class GeometryFunction extends Function {
         Object res;
         try {
             res = execute(new GeoPkgGeomReader(value_blob(0)));
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new SQLException(e);
         }
 

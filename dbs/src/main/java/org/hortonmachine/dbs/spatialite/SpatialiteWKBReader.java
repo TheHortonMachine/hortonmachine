@@ -131,7 +131,7 @@ public class SpatialiteWKBReader {
      * @return the geometry read
      * @throws ParseException if the WKB is ill-formed
      */
-    public Geometry read( byte[] bytes ) throws ParseException {
+    public Geometry read( byte[] bytes ) throws Exception {
         // possibly reuse the ByteArrayInStream?
         // don't throw IOExceptions, since we are not doing any I/O
         try {
@@ -149,14 +149,14 @@ public class SpatialiteWKBReader {
      * @throws IOException if the underlying stream creates an error
      * @throws ParseException if the WKB is ill-formed
      */
-    public Geometry read( InStream is ) throws IOException, ParseException {
+    public Geometry read( InStream is ) throws Exception {
         dis.setInStream(is);
         Geometry g = readSpatialiteGeometry();
         return g;
     }
 
     @SuppressWarnings("unused")
-    private Geometry readSpatialiteGeometry() throws IOException, ParseException {
+    private Geometry readSpatialiteGeometry() throws Exception {
         int start = dis.readByte();
         if (start != 0x00) {
             throw new IllegalArgumentException("Not a geometry, start byte != 0x00");
@@ -228,7 +228,7 @@ public class SpatialiteWKBReader {
         return geom;
     }
 
-    private Geometry readGeometry() throws IOException, ParseException {
+    private Geometry readGeometry() throws Exception {
 //        // determine byte order
 //        byte byteOrderWKB = dis.readByte();
 //        // always set byte order, since it may change from geometry to geometry
@@ -301,24 +301,24 @@ public class SpatialiteWKBReader {
         return g;
     }
 
-    private Point readPoint() throws IOException {
+    private Point readPoint() throws Exception {
         CoordinateSequence pts = readCoordinateSequence(1);
         return factory.createPoint(pts);
     }
 
-    private LineString readLineString() throws IOException {
+    private LineString readLineString() throws Exception {
         int size = dis.readInt();
         CoordinateSequence pts = readCoordinateSequenceLineString(size);
         return factory.createLineString(pts);
     }
 
-    private LinearRing readLinearRing() throws IOException {
+    private LinearRing readLinearRing() throws Exception {
         int size = dis.readInt();
         CoordinateSequence pts = readCoordinateSequenceRing(size);
         return factory.createLinearRing(pts);
     }
 
-    private Polygon readPolygon() throws IOException {
+    private Polygon readPolygon() throws Exception {
         int numRings = dis.readInt();
         LinearRing[] holes = null;
         if (numRings > 1)
@@ -331,7 +331,7 @@ public class SpatialiteWKBReader {
         return factory.createPolygon(shell, holes);
     }
 
-    private MultiPoint readMultiPoint() throws IOException, ParseException {
+    private MultiPoint readMultiPoint() throws Exception {
         int numGeom = dis.readInt();
         Point[] geoms = new Point[numGeom];
         for( int i = 0; i < numGeom; i++ ) {
@@ -343,7 +343,7 @@ public class SpatialiteWKBReader {
         return factory.createMultiPoint(geoms);
     }
 
-    private MultiLineString readMultiLineString() throws IOException, ParseException {
+    private MultiLineString readMultiLineString() throws Exception {
         int numGeom = dis.readInt();
         LineString[] geoms = new LineString[numGeom];
         for( int i = 0; i < numGeom; i++ ) {
@@ -355,7 +355,7 @@ public class SpatialiteWKBReader {
         return factory.createMultiLineString(geoms);
     }
 
-    private MultiPolygon readMultiPolygon() throws IOException, ParseException {
+    private MultiPolygon readMultiPolygon() throws Exception {
         int numGeom = dis.readInt();
         Polygon[] geoms = new Polygon[numGeom];
         for( int i = 0; i < numGeom; i++ ) {
@@ -367,7 +367,7 @@ public class SpatialiteWKBReader {
         return factory.createMultiPolygon(geoms);
     }
 
-    private GeometryCollection readGeometryCollection() throws IOException, ParseException {
+    private GeometryCollection readGeometryCollection() throws Exception {
         int numGeom = dis.readInt();
         Geometry[] geoms = new Geometry[numGeom];
         for( int i = 0; i < numGeom; i++ ) {
@@ -376,7 +376,7 @@ public class SpatialiteWKBReader {
         return factory.createGeometryCollection(geoms);
     }
 
-    private CoordinateSequence readCoordinateSequence( int size ) throws IOException {
+    private CoordinateSequence readCoordinateSequence( int size ) throws Exception {
         CoordinateSequence seq = csFactory.create(size, inputDimension);
         int targetDim = seq.getDimension();
         if (targetDim > inputDimension)
@@ -390,7 +390,7 @@ public class SpatialiteWKBReader {
         return seq;
     }
 
-    private CoordinateSequence readCoordinateSequenceLineString( int size ) throws IOException {
+    private CoordinateSequence readCoordinateSequenceLineString( int size ) throws Exception {
         CoordinateSequence seq = readCoordinateSequence(size);
         if (isStrict)
             return seq;
@@ -399,7 +399,7 @@ public class SpatialiteWKBReader {
         return CoordinateSequences.extend(csFactory, seq, 2);
     }
 
-    private CoordinateSequence readCoordinateSequenceRing( int size ) throws IOException {
+    private CoordinateSequence readCoordinateSequenceRing( int size ) throws Exception {
         CoordinateSequence seq = readCoordinateSequence(size);
         if (isStrict)
             return seq;
@@ -413,7 +413,7 @@ public class SpatialiteWKBReader {
      * Makes the X and Y ordinates precise according to the precision model
      * in use.
      */
-    private void readCoordinate() throws IOException {
+    private void readCoordinate() throws Exception {
         for( int i = 0; i < inputDimension; i++ ) {
             if (i <= 1) {
                 ordValues[i] = precisionModel.makePrecise(dis.readDouble());

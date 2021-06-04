@@ -190,9 +190,10 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      *            the geometry to insert.
      * @param epsg
      *            the optional epsg.
+     * @param where an optional where string (without the where keyword)
      * @throws Exception
      */
-    public void insertGeometry( String tableName, Geometry geometry, String epsg ) throws Exception {
+    public void insertGeometry( String tableName, Geometry geometry, String epsg , String where) throws Exception {
         String epsgStr = "4326";
         if (epsg == null) {
             epsgStr = epsg;
@@ -200,9 +201,12 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
 
         GeometryColumn gc = getGeometryColumnsForTable(tableName);
         String sql = "INSERT INTO " + tableName + " (" + gc.geometryColumnName + ") VALUES (ST_GeomFromText(?, " + epsgStr + "))";
-
+        if(where != null) {
+            sql += " WHERE " + where;
+        }
+        String _sql = sql;
         execOnConnection(connection -> {
-            try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(_sql)) {
                 pStmt.setString(1, geometry.toText());
                 pStmt.executeUpdate();
             }

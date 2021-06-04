@@ -69,10 +69,10 @@ public class SpatialiteThreadsafeDb extends SpatialiteDb {
         }
     }
 
-    public void insertGeometry( String tableName, Geometry geometry, String epsg ) throws Exception {
+    public void insertGeometry( String tableName, Geometry geometry, String epsg, String where ) throws Exception {
         try {
             lockWrite("insertGeometry");
-            super.insertGeometry(tableName, geometry, epsg);
+            super.insertGeometry(tableName, geometry, epsg, where);
         } finally {
             unlockWrite("insertGeometry");
         }

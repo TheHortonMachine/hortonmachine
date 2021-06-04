@@ -74,14 +74,14 @@ public class GeoPkgGeomReader {
         this.input = new ByteArrayInStream(bytes);
     }
 
-    public GeometryHeader getHeader() throws IOException {
+    public GeometryHeader getHeader() throws Exception {
         if (header == null) {
             header = readHeader();
         }
         return header;
     }
 
-    public Geometry get() throws IOException {
+    public Geometry get() throws Exception {
         if (header == null) {
             header = readHeader();
         }
@@ -149,7 +149,7 @@ public class GeoPkgGeomReader {
         }
     }
 
-    public Envelope getEnvelope() throws IOException {
+    public Envelope getEnvelope() throws Exception {
         if (getHeader().getFlags().getEnvelopeIndicator() == EnvelopeType.NONE) {
             return get().getEnvelopeInternal();
         } else {
@@ -197,7 +197,7 @@ public class GeoPkgGeomReader {
     *       0 = Big Endian   (most significant bit first)
     *       1 = Little Endian (least significant bit first)
     */
-    protected GeometryHeader readHeader() throws IOException {
+    protected GeometryHeader readHeader() throws Exception {
         GeometryHeader h = new GeometryHeader();
 
         // read first 4 bytes

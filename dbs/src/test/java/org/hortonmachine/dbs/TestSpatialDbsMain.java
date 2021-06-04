@@ -333,7 +333,7 @@ public class TestSpatialDbsMain {
         checkReadWrite(geom);
     }
 
-    private void checkReadWrite( Geometry geom ) throws ParseException {
+    private void checkReadWrite( Geometry geom ) throws Exception {
         SpatialiteWKBWriter w = new SpatialiteWKBWriter();
         byte[] geomBytes = w.write(geom);
         SpatialiteWKBReader r = new SpatialiteWKBReader();

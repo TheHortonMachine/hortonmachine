@@ -40,7 +40,7 @@ public class GeopackageDb extends GeopackageCommonDb {
         // minx
         Function.create(cx, "ST_MinX", new GeometryFunction(){
             @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
+            public Object execute( GeoPkgGeomReader reader ) throws Exception {
                 return reader.getEnvelope().getMinX();
             }
         });
@@ -48,7 +48,7 @@ public class GeopackageDb extends GeopackageCommonDb {
         // maxx
         Function.create(cx, "ST_MaxX", new GeometryFunction(){
             @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
+            public Object execute( GeoPkgGeomReader reader ) throws Exception {
                 return reader.getEnvelope().getMaxX();
             }
         });
@@ -56,7 +56,7 @@ public class GeopackageDb extends GeopackageCommonDb {
         // miny
         Function.create(cx, "ST_MinY", new GeometryFunction(){
             @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
+            public Object execute( GeoPkgGeomReader reader ) throws Exception {
                 return reader.getEnvelope().getMinY();
             }
         });
@@ -64,7 +64,7 @@ public class GeopackageDb extends GeopackageCommonDb {
         // maxy
         Function.create(cx, "ST_MaxY", new GeometryFunction(){
             @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
+            public Object execute( GeoPkgGeomReader reader ) throws Exception {
                 return reader.getEnvelope().getMaxY();
             }
         });
@@ -72,7 +72,7 @@ public class GeopackageDb extends GeopackageCommonDb {
         // empty
         Function.create(cx, "ST_IsEmpty", new GeometryFunction(){
             @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
+            public Object execute( GeoPkgGeomReader reader ) throws Exception {
                 return reader.getHeader().getFlags().isEmpty();
             }
         });

@@ -24,32 +24,32 @@ public class GPGeopackageDb extends GeopackageCommonDb {
 
         database.create_function("ST_MinX", 1, new GPGeometryFunction(){
             @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
+            public Object execute( GeoPkgGeomReader reader ) throws Exception {
                 return reader.getEnvelope().getMinX();
             }
         });
         database.create_function("ST_MaxX", 1, new GPGeometryFunction(){
             @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
+            public Object execute( GeoPkgGeomReader reader ) throws Exception {
                 return reader.getEnvelope().getMaxX();
             }
         });
         database.create_function("ST_MinY", 1, new GPGeometryFunction(){
             @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
+            public Object execute( GeoPkgGeomReader reader ) throws Exception {
                 return reader.getEnvelope().getMinY();
             }
         });
         database.create_function("ST_MaxY", 1, new GPGeometryFunction(){
             @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
+            public Object execute( GeoPkgGeomReader reader ) throws Exception {
                 return reader.getEnvelope().getMaxY();
             }
         });
 
         database.create_function("ST_IsEmpty", 1, new GPGeometryFunction(){
             @Override
-            public Object execute( GeoPkgGeomReader reader ) throws IOException {
+            public Object execute( GeoPkgGeomReader reader ) throws Exception {
                 return reader.getHeader().getFlags().isEmpty();
             }
         });

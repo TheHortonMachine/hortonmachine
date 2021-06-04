@@ -10,7 +10,7 @@ import jsqlite.FunctionContext;
 
 public abstract class GPGeometryFunction implements Function {
 
-    public abstract Object execute( GeoPkgGeomReader reader ) throws IOException;
+    public abstract Object execute( GeoPkgGeomReader reader ) throws Exception;
 
     @Override
     public void function( FunctionContext fc, String[] args ) {
@@ -24,7 +24,7 @@ public abstract class GPGeometryFunction implements Function {
             Object res;
             try {
                 res = execute(new GeoPkgGeomReader(value));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new SQLException(e);
             }
 

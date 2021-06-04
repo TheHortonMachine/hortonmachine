@@ -1073,7 +1073,8 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         sqliteDb.executeInsertUpdateDeleteSql(sql);
     }
 
-    public void insertGeometry( String tableName, Geometry geometry, String epsgStr ) throws Exception {
+    @Override
+    public void insertGeometry( String tableName, Geometry geometry, String epsgStr, String where ) throws Exception {
         int epsg = 4326;
         if (epsgStr != null) {
             try {
@@ -1087,9 +1088,13 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         Object obj = gp.toSqlObject(geometry);
         GeometryColumn gc = getGeometryColumnsForTable(tableName);
         String sql = "INSERT INTO " + tableName + " (" + gc.geometryColumnName + ") VALUES (?)";
+        if (where != null) {
+            sql = "UPDATE " + tableName + " SET " + gc.geometryColumnName + "=? WHERE " + where;
+        }
+        String _sql = sql;
 
         execOnConnection(connection -> {
-            try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(_sql)) {
                 pStmt.setObject(1, obj);
                 pStmt.executeUpdate();
             }
