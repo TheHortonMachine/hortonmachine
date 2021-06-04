@@ -25,11 +25,11 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
+import org.hortonmachine.gears.utils.PrintUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTReader;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Test for the {@link OmsContourExtractor}.
@@ -55,9 +55,9 @@ public class TestContourExtractor extends HMTestCase {
 
         WKTReader r = new WKTReader();
         Geometry expected1 = r.read(
-                "LINESTRING (50868220 -149055150, 50868220 -149054745, 50868085 -149054475, 50867815 -149054340, 50861515 -149054340, 50861245 -149054475, 50861110 -149054745, 50861110 -149058345, 50861245 -149058615, 50861515 -149058750, 50867815 -149058750, 50868085 -149058615, 50868220 -149058345, 50868220 -149055150)");
+                "LINESTRING (1640918.5 5139838.5, 1640918.5 5139825, 1640914 5139816, 1640905 5139811.5, 1640695 5139811.5, 1640686 5139816, 1640681.5 5139825, 1640681.5 5139945, 1640686 5139954, 1640695 5139958.5, 1640905 5139958.5, 1640914 5139954, 1640918.5 5139945, 1640918.5 5139838.5)");
         Geometry expected2 = r.read(
-                "LINESTRING (50866915 -149055150, 50867245 -149055315, 50867410 -149055645, 50867410 -149057445, 50867245 -149057775, 50866915 -149057940, 50862415 -149057940, 50862085 -149057775, 50861920 -149057445, 50861920 -149055645, 50862085 -149055315, 50862415 -149055150, 50866915 -149055150)");
+                "LINESTRING (1640875 5139838.5, 1640886 5139844, 1640891.5 5139855, 1640891.5 5139915, 1640886 5139926, 1640875 5139931.5, 1640725 5139931.5, 1640714 5139926, 1640708.5 5139915, 1640708.5 5139855, 1640714 5139844, 1640725 5139838.5, 1640875 5139838.5)");
 
         SimpleFeatureIterator featureIterator = contours.features();
         Geometry geometry = (Geometry) featureIterator.next().getDefaultGeometry();

@@ -353,7 +353,7 @@ public class HMMapframe extends JMapFrame {
             files.add(openFile);
         }
 
-        boolean hasFiles = files.isEmpty();
+        boolean hasFiles = !files.isEmpty();
         if (!hasFiles) {
             File lastFile = PreferencesHandler.getLastFile();
             if (!lastFile.isDirectory()) {

@@ -152,6 +152,8 @@ public class OmsNetworkAttributesBuilder extends HMModel {
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlow);
         if (inTca != null) {
             tcaIter = CoverageUtilities.getRandomIterator(inTca);
+        } else {
+            pm.errorMessage("No tca map supplied. Network numbering is disabled.");
         }
         netIter = CoverageUtilities.getRandomIterator(inNet);
 

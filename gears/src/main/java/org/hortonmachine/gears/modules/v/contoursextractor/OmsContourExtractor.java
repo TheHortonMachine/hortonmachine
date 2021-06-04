@@ -28,7 +28,6 @@ import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtr
 import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_NAME;
 import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_STATUS;
 
-import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,12 +40,9 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.metadata.spatial.PixelOrientation;
-
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.util.AffineTransformation;
+import org.opengis.feature.simple.SimpleFeature;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -116,8 +112,6 @@ public class OmsContourExtractor extends HMModel {
             throw new ModelsIllegalargumentException("Min has to be bigger than Max.", this, pm);
         }
 
-        final AffineTransform mt2D = (AffineTransform) inCoverage.getGridGeometry().getGridToCRS2D(PixelOrientation.CENTER);
-
         List<Double> contourIntervals = new ArrayList<Double>();
         pm.message("Adding levels:");
         for( double level = pMin; level <= pMax; level += pInterval ) {
@@ -135,8 +129,6 @@ public class OmsContourExtractor extends HMModel {
         outGeodata = new DefaultFeatureCollection();
 
         List<Geometry> contours = FeatureUtilities.featureCollectionToGeometriesList(contoursFC, true, "value");
-        final AffineTransformation jtsTransformation = new AffineTransformation(mt2D.getScaleX(), mt2D.getShearX(),
-                mt2D.getTranslateX(), mt2D.getShearY(), mt2D.getScaleY(), mt2D.getTranslateY());
         for( Geometry geom : contours ) {
             LineString lineString = (LineString) geom;
             Object userData = lineString.getUserData();
@@ -145,7 +137,6 @@ public class OmsContourExtractor extends HMModel {
                 elev = (Double) userData;
                 lineString.setUserData(null);
             }
-            lineString.apply(jtsTransformation);
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(contoursFC.getSchema());
             Object[] values = new Object[]{lineString, elev};
             builder.addAll(values);

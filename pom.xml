@@ -22,18 +22,18 @@
 	</modules>
 
 	<properties>
-		<gt.version>23.0</gt.version>
+		<gt.version>25.0</gt.version>
 		<groovy.version>3.0.7</groovy.version>
-		<geoscript.version>1.15.0</geoscript.version>
+		<geoscript.version>1.17.0</geoscript.version>
 
 		<c3p0.version>0.9.5.5</c3p0.version>
 		<h2gis.version>1.5.0</h2gis.version>
 		<sqlitejdbc.version>3.32.3.1</sqlitejdbc.version>
-		<jt.version>1.5.0</jt.version>
+		<jt.version>1.6.0</jt.version>
 
-		<imageio.ext.version>1.3.2</imageio.ext.version>
-		<jts.version>1.16.1</jts.version>
-		<jaiext.version>1.1.14</jaiext.version>
+		<imageio.ext.version>1.3.9</imageio.ext.version>
+		<jts.version>1.18.1</jts.version>
+		<jaiext.version>1.1.20</jaiext.version>
 		<jackson.version>2.9.8</jackson.version>
 
 		<java.awt.headless>true</java.awt.headless>
@@ -46,7 +46,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<postgis.version>2.5.0</postgis.version>
-		<postgresql.jdbc.version>42.2.11</postgresql.jdbc.version>
+		<postgresql.jdbc.version>42.2.19</postgresql.jdbc.version>
 
 		<performRelease>false</performRelease>
 

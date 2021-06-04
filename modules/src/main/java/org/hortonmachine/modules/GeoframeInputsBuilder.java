@@ -86,6 +86,11 @@ public class GeoframeInputsBuilder extends HMModel {
     @In
     public String inDrain = null;
 
+    @Description("Input tca raster map.")
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @In
+    public String inTca = null;
+
     @Description("Input network raster map.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
@@ -110,7 +115,7 @@ public class GeoframeInputsBuilder extends HMModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inPitfiller, inDrain, inNet, inSkyview, inBasins, outFolder);
+        checkNull(inPitfiller, inDrain, inTca, inNet, inSkyview, inBasins, outFolder);
 
         GridCoverage2D subBasins = getRaster(inBasins);
         CoordinateReferenceSystem crs = subBasins.getCoordinateReferenceSystem();
@@ -122,18 +127,19 @@ public class GeoframeInputsBuilder extends HMModel {
         GridCoverage2D sky = getRaster(inSkyview);
         GridCoverage2D drain = getRaster(inDrain);
         GridCoverage2D net = getRaster(inNet);
+        GridCoverage2D tca = getRaster(inTca);
 
         OmsNetworkAttributesBuilder netAttributesBuilder = new OmsNetworkAttributesBuilder();
         netAttributesBuilder.inDem = pit;
         netAttributesBuilder.inFlow = drain;
+        netAttributesBuilder.inTca = tca;
         netAttributesBuilder.inNet = net;
         netAttributesBuilder.doHack = true;
         netAttributesBuilder.onlyDoSimpleGeoms = true;
         netAttributesBuilder.process();
         SimpleFeatureCollection outNet = netAttributesBuilder.outNet;
 
-        // dumpVector(outNet,
-        // "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_all/aaa.shp");
+        dumpVector(outNet, "/Users/hydrologis/lavori_tmp/UNITN/fixgeoframebuilder/test/net_to_check.shp");
 
         List<Geometry> netGeometries = FeatureUtilities.featureCollectionToGeometriesList(outNet, true, "hack");
 
@@ -176,9 +182,31 @@ public class GeoframeInputsBuilder extends HMModel {
             Geometry basinBuffer = maxPolygon.buffer(1);
             PreparedGeometry preparedBasin = PreparedGeometryFactory.prepare(basinBuffer);
             List<LineString> netPieces = new ArrayList<>();
+            List<Integer> hacksList = new ArrayList<>();
             int minHack = Integer.MAX_VALUE;
             HashMap<Integer, List<LineString>> hack4Lines = new HashMap<>();
             for( Geometry netGeom : netGeometries ) {
+
+//                for( int i = 0; i < netGeom.getNumGeometries(); i++ ) {
+//                    Geometry geometryN = netGeom.getGeometryN(i);
+//                    if (preparedBasin.contains(geometryN)) {
+//                        if (geometryN instanceof LineString && geometryN.getLength() > 0) {
+//                            Object userData = netGeom.getUserData();
+//                            int hack = Integer.parseInt(userData.toString());
+//                            minHack = Math.min(minHack, hack);
+//
+//                            netPieces.add((LineString) geometryN);
+//
+//                            List<LineString> list = hack4Lines.get(hack);
+//                            if (list == null) {
+//                                list = new ArrayList<>();
+//                            }
+//                            list.add((LineString) geometryN);
+//                            hack4Lines.put(hack, list);
+//                        }
+//                    }
+//                }
+
                 if (preparedBasin.intersects(netGeom)) {
                     Geometry netIntersection = maxPolygon.intersection(netGeom);
                     for( int i = 0; i < netIntersection.getNumGeometries(); i++ ) {
@@ -187,10 +215,12 @@ public class GeoframeInputsBuilder extends HMModel {
                             Object userData = netGeom.getUserData();
                             int hack = Integer.parseInt(userData.toString());
                             minHack = Math.min(minHack, hack);
+
                             netPieces.add((LineString) geometryN);
-                            
+                            hacksList.add(hack);
+
                             List<LineString> list = hack4Lines.get(hack);
-                            if(list == null) {
+                            if (list == null) {
                                 list = new ArrayList<>();
                             }
                             list.add((LineString) geometryN);
@@ -199,7 +229,7 @@ public class GeoframeInputsBuilder extends HMModel {
                     }
                 }
             }
-            
+
             double mainNetLength = 0;
             List<LineString> minHackLines = hack4Lines.get(minHack);
             for( LineString minHackLine : minHackLines ) {
@@ -282,11 +312,13 @@ public class GeoframeInputsBuilder extends HMModel {
             }
 
             DefaultFeatureCollection singleNet = new DefaultFeatureCollection();
-            for( LineString netLine : netPieces ) {
-                Object[] netValues = new Object[]{netLine, basinNum, netLine.getLength()};
+            for( int i = 0; i < netPieces.size(); i++ ) {
+                LineString netLine = netPieces.get(i);
+                Integer hack = hacksList.get(i);
+                Object[] netValues = new Object[]{netLine, basinNum, netLine.getLength(), hack};
                 singleNetBuilder.addAll(netValues);
                 SimpleFeature singleNetFeature = singleNetBuilder.buildFeature(null);
-                
+
                 allNetworks.add(singleNetFeature);
                 singleNet.add(singleNetFeature);
             }
@@ -349,17 +381,17 @@ public class GeoframeInputsBuilder extends HMModel {
         return builder;
     }
 
-    private SimpleFeatureBuilder getNetBuilder( CoordinateReferenceSystem crs ) {
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("net");
-        b.setCRS(crs);
-        b.add("the_geom", MultiLineString.class);
-        b.add("basinid", Integer.class);
-        b.add("length_m", Double.class);
-        SimpleFeatureType type = b.buildFeatureType();
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-        return builder;
-    }
+//    private SimpleFeatureBuilder getNetBuilder( CoordinateReferenceSystem crs ) {
+//        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+//        b.setName("net");
+//        b.setCRS(crs);
+//        b.add("the_geom", MultiLineString.class);
+//        b.add("basinid", Integer.class);
+//        b.add("length_m", Double.class);
+//        SimpleFeatureType type = b.buildFeatureType();
+//        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+//        return builder;
+//    }
     private SimpleFeatureBuilder getSingleNetBuilder( CoordinateReferenceSystem crs ) {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("net");
@@ -367,6 +399,7 @@ public class GeoframeInputsBuilder extends HMModel {
         b.add("the_geom", LineString.class);
         b.add("basinid", Integer.class);
         b.add("length_m", Double.class);
+        b.add("hack", Double.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         return builder;
@@ -377,6 +410,7 @@ public class GeoframeInputsBuilder extends HMModel {
 
         String pit = path + "pit_adige.tif";
         String drain = path + "draindir_cut_MO_adige.tif";
+        String tca = path + "tca_cut_MO_adige.tif";
         String net = path + "net25000_cut_MO_adige.tif";
         String sky = path + "skyview_adige.tif";
         String basins = path + "subbDes25000_cut_MO_adige.tif";
@@ -385,6 +419,7 @@ public class GeoframeInputsBuilder extends HMModel {
         GeoframeInputsBuilder g = new GeoframeInputsBuilder();
         g.inPitfiller = pit;
         g.inDrain = drain;
+        g.inTca = tca;
         g.inNet = net;
         g.inSkyview = sky;
         g.inBasins = basins;
