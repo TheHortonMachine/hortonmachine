@@ -21,6 +21,7 @@ import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.geopackage.geom.GeoPkgGeomReader;
 import org.hortonmachine.dbs.geopackage.geom.GeoPkgGeomWriter;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
 public class GeopackageGeometryParser implements IGeometryParser {
@@ -47,7 +48,13 @@ public class GeopackageGeometryParser implements IGeometryParser {
 
     @Override
     public Object toSqlObject( Geometry geometry ) throws Exception {
-        return new GeoPkgGeomWriter().write(geometry);
+        Coordinate coordinate = geometry.getCoordinate();
+        int dim = 2;
+        if(!Double.isNaN(coordinate.z)) {
+            dim = 3; // wkbwriter only supports 2 and 3
+        }
+        byte[] bytes = new GeoPkgGeomWriter(dim).write(geometry);
+        return bytes;
     }
 
 }

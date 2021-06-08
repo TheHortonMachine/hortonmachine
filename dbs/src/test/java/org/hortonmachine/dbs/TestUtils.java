@@ -6,11 +6,19 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hortonmachine.dbs.geopackage.geom.GeoPkgGeomReader;
+import org.hortonmachine.dbs.geopackage.geom.GeoPkgGeomWriter;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.MercatorUtils;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.io.WKBReader;
+import org.locationtech.jts.io.WKBWriter;
 
 /**
  * Tests for utilities
@@ -166,6 +174,29 @@ public class TestUtils {
         name = "name with space";
         fixedName = DbsUtilities.fixTableName(name);
         assertEquals("'" + name + "'", fixedName);
+    }
+
+    @Test
+    public void testWkb() throws Exception {
+        Coordinate c1 = new Coordinate(1, 2, 3);
+        Coordinate c2 = new Coordinate(10, 20, 30);
+        GeometryFactory gf = new GeometryFactory();
+        LineString lineString = gf.createLineString(new Coordinate[]{c1, c2});
+        lineString.setSRID(4326);
+
+        int outputDimension = 3;
+        WKBWriter w = new WKBWriter(outputDimension);
+        byte[] bytes = w.write(lineString);
+        
+        byte[] bytesGpkg =  new GeoPkgGeomWriter(outputDimension).write(lineString);
+
+        WKBReader r = new WKBReader(gf);
+        Geometry geometry = r.read(bytes);
+        
+        Geometry geometryGpkg = new GeoPkgGeomReader(bytesGpkg).get();
+        
+        assertTrue(geometry.equals(geometryGpkg));
+
     }
 
 }

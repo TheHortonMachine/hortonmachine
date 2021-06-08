@@ -36,6 +36,7 @@ import org.geotools.feature.FeatureCollection;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureWriter;
+import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -75,6 +76,10 @@ public class OmsVectorWriter extends HMModel {
     // currently not used, for future compatibility
     public String pType = null;
 
+    @Description(OMSVECTORWRITER_P_OVERWRITE_DESCRIPTION)
+    @In
+    public boolean doOverwrite = true;
+
     @Description(OMSVECTORWRITER_FILE_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
@@ -92,6 +97,7 @@ public class OmsVectorWriter extends HMModel {
     public static final String OMSVECTORWRITER_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSVECTORWRITER_IN_VECTOR_DESCRIPTION = "The read feature collection.";
     public static final String OMSVECTORWRITER_P_TYPE_DESCRIPTION = "The vector type to write (Supported is: shp).";
+    public static final String OMSVECTORWRITER_P_OVERWRITE_DESCRIPTION = "Flag to define if existing data should be overwritten.";
     public static final String OMSVECTORWRITER_TABLE_DESCRIPTION = "The table to write to (where applicable).";
     public static final String OMSVECTORWRITER_FILE_DESCRIPTION = "The vector file to write.";
     // PARAM NAMES STOP
@@ -107,6 +113,9 @@ public class OmsVectorWriter extends HMModel {
         }
         String name = vectorFile.getName();
         if (name.toLowerCase().endsWith(HMConstants.SHP) || (pType != null && pType.equals(HMConstants.SHP))) {
+            if (vectorFile.exists() && !doOverwrite) {
+                throw new ModelsIOException("Overwriting is disabled. First delete the data.", this);
+            }
             OmsShapefileFeatureWriter.writeShapefile(vectorFile.getAbsolutePath(), inVector, pm);
         } else if (name.toLowerCase().contains("." + HMConstants.GPKG)) {
             if (!name.contains(HMConstants.DB_TABLE_PATH_SEPARATOR)) {
@@ -123,13 +132,20 @@ public class OmsVectorWriter extends HMModel {
             String dbPath = split[0];
 
             try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
-                db.open(dbPath);
+                boolean existed = db.open(dbPath);
                 db.initSpatialMetadata(null);
 
                 CoordinateReferenceSystem crs = inVector.getBounds().getCoordinateReferenceSystem();
                 int srid = CrsUtilities.getSrid(crs);
                 db.addCRS("EPSG", srid, crs.toWKT());
-                SpatialDbsImportUtils.createTableFromSchema(db, inVector.getSchema(), table, null, false);
+
+                if (db.hasTable(table) && !doOverwrite) {
+                    throw new ModelsIOException("Overwriting is disabled. First delete the data.", this);
+                }
+
+                if (!db.hasTable(table) || !existed) {
+                    SpatialDbsImportUtils.createTableFromSchema(db, inVector.getSchema(), table, null, false);
+                }
                 SpatialDbsImportUtils.importFeatureCollection(db, inVector, table, -1, false, pm);
             }
         } else {
