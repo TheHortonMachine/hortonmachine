@@ -35,6 +35,10 @@ import static org.hortonmachine.gears.libs.modules.Variables.BICUBIC;
 import static org.hortonmachine.gears.libs.modules.Variables.BILINEAR;
 import static org.hortonmachine.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
 
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
+
 import javax.media.jai.Interpolation;
 
 import oms3.annotations.Author;
@@ -56,6 +60,8 @@ import org.geotools.coverage.processing.Operations;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.JGTProcessingRegion;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description(OMSRASTERRESOLUTIONRESAMPLER_DESCRIPTION)
 @Documentation(OMSRASTERRESOLUTIONRESAMPLER_DOCUMENTATION)
@@ -88,7 +94,6 @@ public class OmsRasterResolutionResampler extends HMModel {
     @Out
     public GridCoverage2D outGeodata;
 
-    @SuppressWarnings("nls")
     @Execute
     public void process() throws Exception {
         checkNull(inGeodata, pXres);
@@ -109,8 +114,12 @@ public class OmsRasterResolutionResampler extends HMModel {
         }
 
         pm.beginTask("Resampling...", IHMProgressMonitor.UNKNOWN);
-        outGeodata = (GridCoverage2D) Operations.DEFAULT.resample(inGeodata, inGeodata.getCoordinateReferenceSystem(),
+        GridCoverage2D tmp = (GridCoverage2D) Operations.DEFAULT.resample(inGeodata, null,
                 newGridGeometry, interpolation);
+        RenderedImage renderedImage = tmp.getRenderedImage();
+        WritableRaster wr = CoverageUtilities.renderedImage2DoubleWritableRaster(renderedImage, false);
+        
+        outGeodata = CoverageUtilities.buildCoverage("resampled", wr, CoverageUtilities.gridGeometry2RegionParamsMap(newGridGeometry), inGeodata.getCoordinateReferenceSystem());
         pm.done();
     }
 

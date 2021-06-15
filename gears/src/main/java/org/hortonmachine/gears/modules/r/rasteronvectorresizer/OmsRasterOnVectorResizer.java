@@ -41,6 +41,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -100,8 +101,31 @@ public class OmsRasterOnVectorResizer extends HMModel {
         double xres = regionMap.getXres();
         double yres = regionMap.getYres();
         bounds.expandBy(2 * xres, 2 * yres);
+        double n = regionMap.getNorth();
+        double s = regionMap.getSouth();
+        double w = regionMap.getWest();
+        double e = regionMap.getEast();
 
-        RegionMap subRegion = regionMap.toSubRegion(bounds);
+        double newW = bounds.getMinX();
+        if (newW < w) {
+            newW = w;
+        }
+        double newE = bounds.getMaxX();
+        if (newE > e) {
+            newE = e;
+        }
+        double newS = bounds.getMinY();
+        if (newS < s) {
+            newS = s;
+        }
+        double newN = bounds.getMaxY();
+        if (newN > n) {
+            newN = n;
+        }
+
+        Envelope env = new Envelope(newW, newE, newS, newN);
+
+        RegionMap subRegion = regionMap.toSubRegion(env);
 
         WritableRaster outWR = CoverageUtilities.createWritableRaster(subRegion.getCols(), subRegion.getRows(), null, null, null);
         WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);

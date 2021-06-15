@@ -94,4 +94,5 @@ public class RasterResolutionResampler extends HMModel {
         rasterresolutionresampler.process();
         dumpRaster(rasterresolutionresampler.outGeodata, outGeodata);
     }
+
 }

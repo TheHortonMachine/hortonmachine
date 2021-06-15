@@ -31,6 +31,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -45,13 +46,20 @@ import org.hortonmachine.hmachine.modules.network.networkattributes.OmsNetworkAt
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.locationtech.jts.operation.overlayng.OverlayNG;
+import org.locationtech.jts.operation.overlayng.OverlayNGRobust;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
+import org.locationtech.jts.operation.union.UnaryUnionOp;
+import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -111,7 +119,7 @@ public class GeoframeInputsBuilder extends HMModel {
     @In
     public String outFolder = null;
 
-    private boolean doOverWrite = false;
+    private boolean doOverWrite = true;
 
     @Execute
     public void process() throws Exception {
@@ -122,8 +130,20 @@ public class GeoframeInputsBuilder extends HMModel {
         pm.beginTask("Vectorize raster map...", IHMProgressMonitor.UNKNOWN);
         List<Polygon> cells = CoverageUtilities.gridcoverageToCellPolygons(subBasins, null);
         pm.done();
-
+        
         GridCoverage2D pit = getRaster(inPitfiller);
+
+//        Point checkPoint = gf.createPoint(new Coordinate(708212.62,5141393.38));
+//        RegionMap regionParams = CoverageUtilities.getRegionParamsFromGridCoverage(pit);
+//        Geometry buffer = checkPoint.buffer(regionParams.getXres()*4);
+//        PreparedGeometry preparedBuffer = PreparedGeometryFactory.prepare(buffer);
+//        List<Polygon> collect = cells.parallelStream().filter(geom -> preparedBuffer.intersects(geom)).collect(Collectors.toList());
+//        for( Polygon polygon : collect ) {
+//            System.out.println(polygon);
+//        }
+//        Geometry union = CascadedPolygonUnion.union(collect);
+//        System.out.println(union);
+
         GridCoverage2D sky = getRaster(inSkyview);
         GridCoverage2D drain = getRaster(inDrain);
         GridCoverage2D net = getRaster(inNet);
@@ -139,15 +159,14 @@ public class GeoframeInputsBuilder extends HMModel {
         netAttributesBuilder.process();
         SimpleFeatureCollection outNet = netAttributesBuilder.outNet;
 
-        dumpVector(outNet, "/Users/hydrologis/lavori_tmp/UNITN/fixgeoframebuilder/test/net_to_check.shp");
-
         List<Geometry> netGeometries = FeatureUtilities.featureCollectionToGeometriesList(outNet, true, "hack");
 
-        Map<Integer, List<Polygon>> collected = cells.parallelStream()
+        Map<Integer, List<Geometry>> collected = cells.parallelStream()
                 .filter(poly -> ((Number) poly.getUserData()).doubleValue() != HMConstants.doubleNovalue)
                 .collect(Collectors.groupingBy(poly -> ((Number) poly.getUserData()).intValue()));
 
         SimpleFeatureBuilder basinsBuilder = getBasinsBuilder(pit.getCoordinateReferenceSystem());
+        SimpleFeatureBuilder basinCentroidsBuilder = getBasinCentroidsBuilder(pit.getCoordinateReferenceSystem());
         SimpleFeatureBuilder singleNetBuilder = getSingleNetBuilder(pit.getCoordinateReferenceSystem());
 
         DefaultFeatureCollection allBasins = new DefaultFeatureCollection();
@@ -157,19 +176,21 @@ public class GeoframeInputsBuilder extends HMModel {
         csvText.append("#id;x;y;elev_m;avgelev_m;area_km2;netlength;centroid_skyview\n");
 
         pm.beginTask("Extract vector basins...", collected.size());
-        for( Entry<Integer, List<Polygon>> entry : collected.entrySet() ) {
+        for( Entry<Integer, List<Geometry>> entry : collected.entrySet() ) {
             int basinNum = entry.getKey();
+            pm.message("Processing basin " + basinNum + "...");
 
-            List<Polygon> polygons = entry.getValue();
+            List<Geometry> polygons = entry.getValue();
             Geometry basin = CascadedPolygonUnion.union(polygons);
+            Geometry basinBuffer = basin.buffer(1);
 
             // extract largest basin
             double maxArea = Double.NEGATIVE_INFINITY;
-            Geometry maxPolygon = basin;
-            int numGeometries = basin.getNumGeometries();
+            Geometry maxPolygon = basinBuffer;
+            int numGeometries = basinBuffer.getNumGeometries();
             if (numGeometries > 1) {
                 for( int i = 0; i < numGeometries; i++ ) {
-                    Geometry geometryN = basin.getGeometryN(i);
+                    Geometry geometryN = basinBuffer.getGeometryN(i);
                     double area = geometryN.getArea();
                     if (area > maxArea) {
                         maxArea = area;
@@ -179,33 +200,12 @@ public class GeoframeInputsBuilder extends HMModel {
             }
 
             // get network pieces inside basin
-            Geometry basinBuffer = maxPolygon.buffer(1);
             PreparedGeometry preparedBasin = PreparedGeometryFactory.prepare(basinBuffer);
             List<LineString> netPieces = new ArrayList<>();
             List<Integer> hacksList = new ArrayList<>();
             int minHack = Integer.MAX_VALUE;
             HashMap<Integer, List<LineString>> hack4Lines = new HashMap<>();
             for( Geometry netGeom : netGeometries ) {
-
-//                for( int i = 0; i < netGeom.getNumGeometries(); i++ ) {
-//                    Geometry geometryN = netGeom.getGeometryN(i);
-//                    if (preparedBasin.contains(geometryN)) {
-//                        if (geometryN instanceof LineString && geometryN.getLength() > 0) {
-//                            Object userData = netGeom.getUserData();
-//                            int hack = Integer.parseInt(userData.toString());
-//                            minHack = Math.min(minHack, hack);
-//
-//                            netPieces.add((LineString) geometryN);
-//
-//                            List<LineString> list = hack4Lines.get(hack);
-//                            if (list == null) {
-//                                list = new ArrayList<>();
-//                            }
-//                            list.add((LineString) geometryN);
-//                            hack4Lines.put(hack, list);
-//                        }
-//                    }
-//                }
 
                 if (preparedBasin.intersects(netGeom)) {
                     Geometry netIntersection = maxPolygon.intersection(netGeom);
@@ -299,18 +299,36 @@ public class GeoframeInputsBuilder extends HMModel {
             }
 
             // finalize feature writing
+            
+            // BASINS
             Object[] basinValues = new Object[]{maxPolygon, basinNum, point.x, point.y, elev, avgElev, areaKm2, mainNetLength,
                     skyview};
             basinsBuilder.addAll(basinValues);
             SimpleFeature basinFeature = basinsBuilder.buildFeature(null);
             allBasins.add(basinFeature);
+            
+            // dump single subbasin
             DefaultFeatureCollection singleBasin = new DefaultFeatureCollection();
             singleBasin.add(basinFeature);
             File basinShpFile = new File(basinFolder, "subbasins_complete_ID_" + basinNum + ".shp");
             if (!basinShpFile.exists() || doOverWrite) {
                 dumpVector(singleBasin, basinShpFile.getAbsolutePath());
             }
-
+            
+            Object[] centroidValues = new Object[]{centroid, basinNum, point.x, point.y, elev, avgElev, areaKm2, mainNetLength,
+                    skyview};
+            basinCentroidsBuilder.addAll(centroidValues);
+            SimpleFeature basinCentroidFeature = basinCentroidsBuilder.buildFeature(null);
+            
+            // dump single centroid
+            DefaultFeatureCollection singleCentroid = new DefaultFeatureCollection();
+            singleCentroid.add(basinCentroidFeature);
+            File centroidShpFile = new File(basinFolder, "centroid_ID_" + basinNum + ".shp");
+            if (!centroidShpFile.exists() || doOverWrite) {
+                dumpVector(singleCentroid, centroidShpFile.getAbsolutePath());
+            }
+            
+            // CHANNELS
             DefaultFeatureCollection singleNet = new DefaultFeatureCollection();
             for( int i = 0; i < netPieces.size(); i++ ) {
                 LineString netLine = netPieces.get(i);
@@ -381,6 +399,24 @@ public class GeoframeInputsBuilder extends HMModel {
         return builder;
     }
 
+    private SimpleFeatureBuilder getBasinCentroidsBuilder( CoordinateReferenceSystem crs ) {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("basin");
+        b.setCRS(crs);
+        b.add("the_geom", Point.class);
+        b.add("basinid", Integer.class);
+        b.add("centrx", Double.class);
+        b.add("centry", Double.class);
+        b.add("elev_m", Double.class);
+        b.add("avgelev_m", Double.class);
+        b.add("area_km2", Double.class);
+        b.add("length_m", Double.class);
+        b.add("skyview", Double.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        return builder;
+    }
+
 //    private SimpleFeatureBuilder getNetBuilder( CoordinateReferenceSystem crs ) {
 //        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
 //        b.setName("net");
@@ -406,14 +442,14 @@ public class GeoframeInputsBuilder extends HMModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        String path = "/Users/hydrologis/lavori_tmp/UNITN/fixgeoframebuilder/test/";
+        String path = "/Users/hydrologis/lavori_tmp/UNITN/avisio_10/";
 
-        String pit = path + "pit_adige.tif";
-        String drain = path + "draindir_cut_MO_adige.tif";
-        String tca = path + "tca_cut_MO_adige.tif";
-        String net = path + "net25000_cut_MO_adige.tif";
-        String sky = path + "skyview_adige.tif";
-        String basins = path + "subbDes25000_cut_MO_adige.tif";
+        String pit = path + "wa_pit_10m.asc";
+        String drain = path + "wa_dedrain_10m.asc";
+        String tca = path + "wa_tca_10m.asc";
+        String net = path + "wa_net1000_10m.asc";
+        String sky = path + "wa_sky_10m.asc";
+        String basins = path + "wa_subb_10m.asc";
         String outfolder = path + "geoframe";
 
         GeoframeInputsBuilder g = new GeoframeInputsBuilder();
