@@ -90,6 +90,7 @@ import org.geotools.coverage.processing.Operations;
 import org.geotools.coverageio.gdal.BaseGDALGridCoverage2DReader;
 import org.geotools.coverageio.gdal.aig.AIGReader;
 import org.geotools.gce.arcgrid.ArcGridReader;
+import org.geotools.gce.geotiff.GeoTiffFormat;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.gce.grassraster.GrassCoverageReader;
 import org.geotools.gce.grassraster.JGrassMapEnvironment;
@@ -243,10 +244,17 @@ public class OmsRasterReader extends HMModel {
             if (format instanceof UnknownFormat) {
                 throw new ModelsIllegalargumentException("Unupported format for: " + mapFile, this.getClass().getSimpleName(),
                         pm);
+
             } else {
                 try {
                     pm.beginTask("Reading coverage: " + mapFile.getName(), IHMProgressMonitor.UNKNOWN);
-                    AbstractGridCoverage2DReader rasterReader = format.getReader(mapFile);
+
+                    AbstractGridCoverage2DReader rasterReader;
+                    if (format instanceof GeoTiffFormat) {
+                        rasterReader = new GeoTiffReader(file, new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE));
+                    } else {
+                        rasterReader = format.getReader(mapFile);
+                    }
                     originalEnvelope = rasterReader.getOriginalEnvelope();
                     if (!doEnvelope) {
                         outRaster = rasterReader.read(generalParameter);

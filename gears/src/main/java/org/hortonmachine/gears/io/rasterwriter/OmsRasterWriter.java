@@ -41,12 +41,14 @@ import org.geotools.gce.arcgrid.ArcGridFormat;
 import org.geotools.gce.arcgrid.ArcGridWriteParams;
 import org.geotools.gce.arcgrid.ArcGridWriter;
 import org.geotools.gce.geotiff.GeoTiffFormat;
+import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.gce.geotiff.GeoTiffWriteParams;
 import org.geotools.gce.geotiff.GeoTiffWriter;
 import org.geotools.gce.grassraster.GrassCoverageWriter;
 import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.format.GrassCoverageFormat;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
+import org.geotools.util.factory.Hints;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -144,10 +146,10 @@ public class OmsRasterWriter extends HMModel {
         wp.setTilingMode(GeoToolsWriteParams.MODE_DEFAULT);
         final ParameterValueGroup paramWrite = format.getWriteParameters();
         paramWrite.parameter(AbstractGridFormat.GEOTOOLS_WRITE_PARAMS.getName().toString()).setValue(wp);
-        GeoTiffWriter gtw = (GeoTiffWriter) format.getWriter(mapFile);
+        GeoTiffWriter gtw = new GeoTiffWriter(mapFile, new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE));// (GeoTiffWriter) format.getWriter(mapFile);
         gtw.write(inRaster, (GeneralParameterValue[]) paramWrite.values().toArray(new GeneralParameterValue[1]));
     }
-
+    
     private void writeGrass( File mapFile ) throws Exception {
         File cellFile = mapFile;
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(cellFile);
