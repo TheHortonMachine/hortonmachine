@@ -10,19 +10,17 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
-public class RasterLoopProcessor {
+public class MultiRasterLoopProcessor {
 
     private IHMProgressMonitor pm;
     private String taskName;
 
-    public RasterLoopProcessor( String taskName, IHMProgressMonitor pm ) {
+    public MultiRasterLoopProcessor( String taskName, IHMProgressMonitor pm ) {
         this.taskName = taskName;
         this.pm = pm;
     }
 
-    public void process( IDataLoopFunction function, GridCoverage2D... rasters ) {
-
-
+    public GridCoverage2D loop( IDataLoopFunction function, GridCoverage2D... rasters ) {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(rasters[0]);
         int rows = regionMap.getRows();
         int cols = regionMap.getCols();
@@ -42,7 +40,7 @@ public class RasterLoopProcessor {
             double[] values = new double[rasters.length];
             for( int r = 0; r < rows; r++ ) {
                 if (pm.isCanceled()) {
-                    return;
+                    return null;
                 }
                 for( int c = 0; c < cols; c++ ) {
 
@@ -66,6 +64,7 @@ public class RasterLoopProcessor {
             outIter.done();
         }
 
+        return CoverageUtilities.buildCoverage("raster", outWR, regionMap, rasters[0].getCoordinateReferenceSystem());
     }
 
 }

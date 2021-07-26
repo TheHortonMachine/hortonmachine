@@ -23,7 +23,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.IDataLoopFunction;
-import org.hortonmachine.gears.libs.modules.RasterLoopProcessor;
+import org.hortonmachine.gears.libs.modules.MultiRasterLoopProcessor;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -72,15 +72,15 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
     public GridCoverage2D outputPet;
 
     // VARS DOC START
-    public static final String DESCRIPTION = "The Potential Evapotranspired Watervolume model.";
+    public static final String DESCRIPTION = "The Potential Evapotranspired Watervolume model (from INVEST).";
     public static final String DOCUMENTATION = "";
     public static final String KEYWORDS = "potential, evapotranspiration";
     public static final String LABEL = HYDROGEOMORPHOLOGY;
     public static final String NAME = "PotentialEvapotranspiredWaterVolume";
     public static final int STATUS = 5;
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String AUTHORNAMES = "Silvia Franceschi, Andrea Antonello, Ferdinando Villa";
-    public static final String AUTHORCONTACTS = "www.hydrologis.com";
+    public static final String AUTHORNAMES = "The klab team.";
+    public static final String AUTHORCONTACTS = "www.integratedmodelling.org";
 
     public static final String inCropCoefficient_DESCRIPTION = "The map of crop coefficient.";
     public static final String inMaxTemp_DESCRIPTION = "The map of maximum temperature.";
@@ -98,7 +98,7 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
     public void process() throws Exception {
         checkNull(inCropCoefficient, inMaxTemp, inMinTemp, inAtmosphericTemp, inSolarRadiation, inRainfall);
 
-        RasterLoopProcessor processor = new RasterLoopProcessor("Calculating PET...", pm);
+        MultiRasterLoopProcessor processor = new MultiRasterLoopProcessor("Calculating PET...", pm);
         IDataLoopFunction funct = new IDataLoopFunction(){
             @Override
             public double process( double... values ) {
@@ -114,7 +114,8 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
                 }
             }
         };
-        processor.process(funct, inCropCoefficient, inMaxTemp, inMinTemp, inAtmosphericTemp, inRainfall, inSolarRadiation);
+        outputPet = processor.loop(funct, inCropCoefficient, inMaxTemp, inMinTemp, inAtmosphericTemp, inRainfall,
+                inSolarRadiation);
 
     }
 

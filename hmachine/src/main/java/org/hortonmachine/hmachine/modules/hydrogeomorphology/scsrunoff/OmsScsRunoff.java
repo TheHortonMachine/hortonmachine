@@ -23,7 +23,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.IDataLoopFunction;
-import org.hortonmachine.gears.libs.modules.RasterLoopProcessor;
+import org.hortonmachine.gears.libs.modules.MultiRasterLoopProcessor;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -73,8 +73,8 @@ public class OmsScsRunoff extends HMModel {
     public static final String NAME = "ScsRunoff";
     public static final int STATUS = 5;
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String AUTHORNAMES = "Silvia Franceschi, Andrea Antonello, Ferdinando Villa";
-    public static final String AUTHORCONTACTS = "www.hydrologis.com";
+    public static final String AUTHORNAMES = "The klab team.";
+    public static final String AUTHORCONTACTS = "www.integratedmodelling.org";
 
     public static final String inRainfall_DESCRIPTION = "The rainfall volume.";
     public static final String inNet_DESCRIPTION = "The network map.";
@@ -89,7 +89,7 @@ public class OmsScsRunoff extends HMModel {
     public void process() throws Exception {
         checkNull(inRainfall, inNet, inCurveNumber);
 
-        RasterLoopProcessor processor = new RasterLoopProcessor("Calculating runoff...", pm);
+        MultiRasterLoopProcessor processor = new MultiRasterLoopProcessor("Calculating runoff...", pm);
         IDataLoopFunction funct = new IDataLoopFunction(){
             @Override
             public double process( double... values ) {
@@ -99,7 +99,7 @@ public class OmsScsRunoff extends HMModel {
                 return calculateRunoff(values[0], values[1], values[2], (int) values[3]);
             }
         };
-        processor.process(funct, inRainfall, inNet, inCurveNumber, inNumberOfEvents);
+        outputDischarge = processor.loop(funct, inRainfall, inNet, inCurveNumber, inNumberOfEvents);
 
     }
 
