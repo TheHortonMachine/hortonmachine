@@ -18,7 +18,9 @@
 package org.hortonmachine.modules;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.scsrunoff.OmsScsRunoff;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.scsrunoff.OmsScsRunoff.*;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -32,14 +34,14 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
-@Description(ScsRunoff.DESCRIPTION)
-@Author(name = ScsRunoff.AUTHORNAMES, contact = ScsRunoff.AUTHORCONTACTS)
-@Keywords(ScsRunoff.KEYWORDS)
-@Label(ScsRunoff.LABEL)
-@Name(ScsRunoff.NAME)
-@Status(ScsRunoff.STATUS)
-@License(ScsRunoff.LICENSE)
-public class ScsRunoff extends OmsScsRunoff {
+@Description(OmsScsRunoff.DESCRIPTION)
+@Author(name = OmsScsRunoff.AUTHORNAMES, contact = OmsScsRunoff.AUTHORCONTACTS)
+@Keywords(OmsScsRunoff.KEYWORDS)
+@Label(OmsScsRunoff.LABEL)
+@Name(OmsScsRunoff.NAME)
+@Status(OmsScsRunoff.STATUS)
+@License(OmsScsRunoff.LICENSE)
+public class ScsRunoff extends HMModel {
     @Description(inRainfall_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @Unit(pRainfall_UNIT)
