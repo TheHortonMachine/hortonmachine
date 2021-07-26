@@ -30,6 +30,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.hortonmachine.gears.libs.modules.ClassField;
+import org.scannotation.AnnotationDB;
+import org.scannotation.ClasspathUrlFinder;
+
 import oms3.Access;
 import oms3.ComponentAccess;
 import oms3.annotations.Author;
@@ -42,12 +46,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.hortonmachine.gears.libs.modules.ClassField;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.hmachine.i18n.HortonMessages;
-import org.scannotation.AnnotationDB;
-import org.scannotation.ClasspathUrlFinder;
 
 /**
  * Class presenting modules names and classes.

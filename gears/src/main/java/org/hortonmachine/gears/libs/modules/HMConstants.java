@@ -58,7 +58,7 @@ public class HMConstants {
      * @return true if the passed value is a novalue.
      */
     public static boolean isNovalue( double value ) {
-        return value == doubleNovalue;
+        return Double.isNaN(value) || value == doubleNovalue;
     }
 
     /**
@@ -71,7 +71,7 @@ public class HMConstants {
      */
     public static boolean isOneNovalue( double... values ) {
         for( double value : values ) {
-            if (value == doubleNovalue)
+            if (Double.isNaN(value) ||value == doubleNovalue)
                 return true;
         }
         return false;
@@ -94,7 +94,7 @@ public class HMConstants {
      * @return true if the passed value is a novalue.
      */
     public static boolean isNovalue( float value ) {
-        return value == floatNovalue;
+        return Float.isNaN(value) || value == floatNovalue;
     }
 
     /**

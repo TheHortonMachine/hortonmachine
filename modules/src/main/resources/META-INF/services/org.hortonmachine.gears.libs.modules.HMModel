@@ -88,6 +88,7 @@ org.hortonmachine.modules.Nabla
 org.hortonmachine.modules.NetDiff
 org.hortonmachine.modules.NetNumbering
 org.hortonmachine.modules.NetworkAttributesBuilder
+org.hortonmachine.modules.PdalConverterLas2Gltf
 org.hortonmachine.modules.PdalFilterElm
 org.hortonmachine.modules.PdalFilterOutliers
 org.hortonmachine.modules.PdalFilterPmf
@@ -124,6 +125,7 @@ org.hortonmachine.modules.RasterWriter
 org.hortonmachine.modules.RescaledDistance
 org.hortonmachine.modules.SaintGeo
 org.hortonmachine.modules.ScanLineRasterizer
+org.hortonmachine.modules.ScsRunoff
 org.hortonmachine.modules.Shalstab
 org.hortonmachine.modules.Shp2DxfConverter
 org.hortonmachine.modules.Skyview

@@ -356,4 +356,6 @@ public class HMModel {
         String help = ModelsSupporter.generateTemplate(this);
         pm.message(help);
     }
+    
+    
 }
