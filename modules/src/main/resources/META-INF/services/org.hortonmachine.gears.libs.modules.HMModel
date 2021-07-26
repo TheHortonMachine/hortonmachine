@@ -50,6 +50,7 @@ org.hortonmachine.modules.HecrasInputBuilder
 org.hortonmachine.modules.Hillshade
 org.hortonmachine.modules.HoleFiller
 org.hortonmachine.modules.ImageMosaicCreator
+org.hortonmachine.modules.InfiltratedWaterVolume
 org.hortonmachine.modules.Insolation
 org.hortonmachine.modules.IntensityClassifierDebrisFlowTN
 org.hortonmachine.modules.IntensityClassifierFlood
@@ -101,6 +102,7 @@ org.hortonmachine.modules.Peakflow
 org.hortonmachine.modules.Pitfiller
 org.hortonmachine.modules.PointsRasterizer
 org.hortonmachine.modules.PointsVectorizer
+org.hortonmachine.modules.PotentialEvapotranspiredWaterVolume
 org.hortonmachine.modules.PresteyTaylorEtpModel
 org.hortonmachine.modules.Profile
 org.hortonmachine.modules.RangeLookup
