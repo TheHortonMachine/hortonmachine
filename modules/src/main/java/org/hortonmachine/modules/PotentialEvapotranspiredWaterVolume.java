@@ -25,11 +25,8 @@ import static org.hortonmachine.hmachine.modules.hydrogeomorphology.evapotrans.O
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.evapotrans.OmsPotentialEvapotranspiredWaterVolume.inSolarRadiation_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.evapotrans.OmsPotentialEvapotranspiredWaterVolume.outputPet_DESCRIPTION;
 
-import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.modules.IDataLoopFunction;
-import org.hortonmachine.gears.libs.modules.RasterLoopProcessor;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.evapotrans.OmsPotentialEvapotranspiredWaterVolume;
 
 import oms3.annotations.Author;
@@ -41,6 +38,7 @@ import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description(OmsPotentialEvapotranspiredWaterVolume.DESCRIPTION)
 @Author(name = OmsPotentialEvapotranspiredWaterVolume.AUTHORNAMES, contact = OmsPotentialEvapotranspiredWaterVolume.AUTHORCONTACTS)
@@ -51,65 +49,54 @@ import oms3.annotations.Status;
 @License(OmsPotentialEvapotranspiredWaterVolume.LICENSE)
 public class PotentialEvapotranspiredWaterVolume extends HMModel {
     @Description(inCropCoefficient_DESCRIPTION)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
-    public GridCoverage2D inCropCoefficient = null;
+    public String inCropCoefficient = null;
 
     @Description(inMaxTemp_DESCRIPTION)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
-    public GridCoverage2D inMaxTemp = null;
+    public String inMaxTemp = null;
 
     @Description(inMinTemp_DESCRIPTION)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
-    public GridCoverage2D inMinTemp = null;
+    public String inMinTemp = null;
 
     @Description(inAtmosTemp_DESCRIPTION)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
-    public GridCoverage2D inAtmosphericTemp = null;
+    public String inAtmosphericTemp = null;
 
     @Description(inSolarRadiation_DESCRIPTION)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
-    public GridCoverage2D inSolarRadiation = null;
+    public String inSolarRadiation = null;
 
     @Description(inRainfall_DESCRIPTION)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
-    public GridCoverage2D inRainfall;
+    public String inRainfall;
 
     @Description(outputPet_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
     @In
-    public GridCoverage2D outputPet;
+    public String outputPet;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inCropCoefficient, inMaxTemp, inMinTemp, inAtmosphericTemp, inSolarRadiation, inRainfall);
-
-        RasterLoopProcessor processor = new RasterLoopProcessor("Calculating PET...", pm);
-        IDataLoopFunction funct = new IDataLoopFunction(){
-            @Override
-            public double process( double... values ) {
-                boolean isValid = true;
-                for( double d : values ) {
-                    isValid = isValid && !HMConstants.isNovalue(d);
-                }
-                if (isValid) {
-                    return calculateRunoff(values[0], values[1], values[2], values[3], values[4], values[5]);
-
-                } else {
-                    return Double.NaN;
-                }
-            }
-        };
-        processor.process(funct, inCropCoefficient, inMaxTemp, inMinTemp, inAtmosphericTemp, inRainfall, inSolarRadiation);
+        OmsPotentialEvapotranspiredWaterVolume pet = new OmsPotentialEvapotranspiredWaterVolume();
+        pet.inCropCoefficient = getRaster(inCropCoefficient);
+        pet.inMaxTemp = getRaster(inMaxTemp);
+        pet.inMinTemp = getRaster(inMinTemp);
+        pet.inAtmosphericTemp = getRaster(inAtmosphericTemp);
+        pet.inRainfall = getRaster(inRainfall);
+        pet.inSolarRadiation = getRaster(inSolarRadiation);
+        pet.process();
+        
+        dumpRaster(pet.outputPet, outputPet);
 
     }
 
-    /**
-     * Calculate pet.
-     *  
-     */
-    public static double calculateRunoff( double kc, double tMax, double tMin, double tAvg, double rainfall, double solarRad ) {
-        double referenceET = 0.0013 * 0.408 * solarRad * (tAvg + 17) * Math.pow((tMax - tMin - 0.0123 * rainfall), 0.76);
-        double pet = kc * referenceET;
-        return pet;
-    }
 
 }
