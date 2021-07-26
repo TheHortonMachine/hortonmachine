@@ -70,6 +70,9 @@ public class OmsDePitter extends GridMultiProcessing {
     @Out
     public GridCoverage2D outFlow = null;
 
+    public boolean doParallel = true;
+    public boolean doFlow = true;
+
     // @Description(OMSDEPITTER_outPitPoints_DESCRIPTION)
     // @Out
     // public SimpleFeatureCollection outPitPoints = null;
@@ -134,13 +137,23 @@ public class OmsDePitter extends GridMultiProcessing {
                     shownCount = IHMProgressMonitor.UNKNOWN;
                 }
                 pm.beginTask("Processing " + pitCount + " pits (iteration N." + iteration++ + ")... ", shownCount);
-                pitsList.parallelStream().forEach(originalPitNode -> {
-                    int _count = count.incrementAndGet();
-                    if (pm.isCanceled()) {
-                        return;
-                    }
-                    processPitNode(originalPitNode, allPitsPositions, _count, pitIter);
-                });
+                if (doParallel) {
+                    pitsList.parallelStream().forEach(originalPitNode -> {
+                        int _count = count.incrementAndGet();
+                        if (pm.isCanceled()) {
+                            return;
+                        }
+                        processPitNode(originalPitNode, allPitsPositions, _count, pitIter);
+                    });
+                } else {
+                    pitsList.stream().forEach(originalPitNode -> {
+                        int _count = count.incrementAndGet();
+                        if (pm.isCanceled()) {
+                            return;
+                        }
+                        processPitNode(originalPitNode, allPitsPositions, _count, pitIter);
+                    });
+                }
                 // for( GridNode originalPitNode : pitsList ) {
                 // count++;
                 // if (pm.isCanceled()) {
@@ -215,34 +228,37 @@ public class OmsDePitter extends GridMultiProcessing {
             // }
             // }
 
-            WritableRaster flowRaster = CoverageUtilities.createWritableRaster(cols, rows, Short.class, null, null);
-            WritableRandomIter flowIter = CoverageUtilities.getWritableRandomIterator(flowRaster);
-            try {
-                pm.beginTask("Calculating flowdirections...", rows * cols);
-                processGrid(cols, rows, false, ( c, r ) -> {
-                    if (pm.isCanceled()) {
-                        return;
-                    }
-                    GridNode node = new GridNode(pitIter, cols, rows, xRes, yRes, c, r);
-                    boolean isValid = node.isValid();
-                    if (!isValid || node.touchesBound() || node.touchesNovalue()) {
-                        flowIter.setSample(c, r, 0, HMConstants.intNovalue);
-                    } else {
-                        GridNode nextDown = node.goDownstreamSP();
-                        if (nextDown == null) {
+            if (doFlow) {
+                WritableRaster flowRaster = CoverageUtilities.createWritableRaster(cols, rows, Short.class, null, null);
+                WritableRandomIter flowIter = CoverageUtilities.getWritableRandomIterator(flowRaster);
+                try {
+                    pm.beginTask("Calculating flowdirections...", rows * cols);
+                    processGrid(cols, rows, false, ( c, r ) -> {
+                        if (pm.isCanceled()) {
+                            return;
+                        }
+                        GridNode node = new GridNode(pitIter, cols, rows, xRes, yRes, c, r);
+                        boolean isValid = node.isValid();
+                        if (!isValid || node.touchesBound() || node.touchesNovalue()) {
                             flowIter.setSample(c, r, 0, HMConstants.intNovalue);
                         } else {
-                            int newFlow = node.getFlow();
-                            flowIter.setSample(c, r, 0, newFlow);
+                            GridNode nextDown = node.goDownstreamSP();
+                            if (nextDown == null) {
+                                flowIter.setSample(c, r, 0, HMConstants.intNovalue);
+                            } else {
+                                int newFlow = node.getFlow();
+                                flowIter.setSample(c, r, 0, newFlow);
+                            }
                         }
-                    }
-                    pm.worked(1);
-                });
-                pm.done();
+                        pm.worked(1);
+                    });
+                    pm.done();
 
-                outFlow = CoverageUtilities.buildCoverage("flow", flowRaster, regionMap, inElev.getCoordinateReferenceSystem());
-            } finally {
-                flowIter.done();
+                    outFlow = CoverageUtilities.buildCoverage("flow", flowRaster, regionMap,
+                            inElev.getCoordinateReferenceSystem());
+                } finally {
+                    flowIter.done();
+                }
             }
 
         } finally {

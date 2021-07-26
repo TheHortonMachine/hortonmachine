@@ -249,12 +249,9 @@ public class OmsRasterReader extends HMModel {
                 try {
                     pm.beginTask("Reading coverage: " + mapFile.getName(), IHMProgressMonitor.UNKNOWN);
 
-                    AbstractGridCoverage2DReader rasterReader;
-                    if (format instanceof GeoTiffFormat) {
-                        rasterReader = new GeoTiffReader(file, new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE));
-                    } else {
-                        rasterReader = format.getReader(mapFile);
-                    }
+                    AbstractGridCoverage2DReader rasterReader = format.getReader(mapFile,
+                            new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE));
+
                     originalEnvelope = rasterReader.getOriginalEnvelope();
                     if (!doEnvelope) {
                         outRaster = rasterReader.read(generalParameter);

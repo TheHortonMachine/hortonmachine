@@ -340,16 +340,16 @@ public class ParametersPanel extends JPanel implements MouseListener {
         String defaultFieldValue = inputField.fieldValue;
         if (!typeCheck.isFile) {
             JTextField textField;
-            if (!onlyNumbers) {
+//            if (!onlyNumbers) {
                 textField = new JTextField();
-            } else {
-                NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.US); // always use
-                                                                                       // dot as
-                                                                                       // comma
-                DecimalFormat decimalFormat = (DecimalFormat) numberFormat;
-                decimalFormat.setGroupingUsed(false);
-                textField = new JFormattedTextField(decimalFormat);
-            }
+//            } else {
+//                NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.US); // always use
+//                                                                                       // dot as
+//                                                                                       // comma
+//                DecimalFormat decimalFormat = (DecimalFormat) numberFormat;
+//                decimalFormat.setGroupingUsed(false);
+//                textField = new JFormattedTextField(decimalFormat);
+//            }
             if (typeCheck.isEasting) {
                 eastingListeningFields.add(textField);
                 this.add(textField, cc.xy(col, row));

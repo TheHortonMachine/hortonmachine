@@ -34,10 +34,6 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.exceptions.ModelsUserCancelException;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
-import org.hortonmachine.gears.utils.CrsUtilities;
-import org.opengis.referencing.ReferenceIdentifier;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.locationtech.jts.geom.GeometryFactory;
 
 import oms3.annotations.Description;
@@ -54,6 +50,9 @@ public class HMModel {
 
     private static boolean doLogging = false;
     static {
+        System.setProperty("org.geotools.referencing.forceXY", "true");
+        
+        
         // remove nasty error message if jai has no native backbone
         // JAI.getDefaultInstance().setImagingListener(new ImagingListener(){
         // @Override

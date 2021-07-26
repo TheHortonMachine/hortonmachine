@@ -66,6 +66,9 @@ public class DePitter extends HMModel {
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outFlow = null;
+    
+    public boolean doParallel = true;
+    public boolean doFlow = true;
 
     @Execute
     public void process() throws Exception {
@@ -74,10 +77,21 @@ public class DePitter extends HMModel {
         pitfiller.pm = pm;
         pitfiller.doProcess = doProcess;
         pitfiller.doReset = doReset;
+        pitfiller.doParallel = doParallel;
+        pitfiller.doFlow = doFlow;
         pitfiller.process();
         if (outPit != null)
             dumpRaster(pitfiller.outPit, outPit);
         if (outFlow != null)
             dumpRaster(pitfiller.outFlow, outFlow);
+    }
+    
+    public static void main( String[] args ) throws Exception {
+        DePitter d= new DePitter();
+        d.inElev = "/Users/hydrologis/data/PIT_TEST/eu_dem_v22_itnord.tif";
+        d.outPit = "/Users/hydrologis/data/PIT_TEST/pit.tif";
+        d.doFlow = false;
+        d.doParallel= true;
+        d.process();
     }
 }
