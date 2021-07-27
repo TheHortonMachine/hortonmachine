@@ -70,6 +70,14 @@
 				</exclusion>
 				<exclusion>
 					<groupId>org.geotools</groupId>
+					<artifactId>gt-main</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt-epsg-hsql</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
 					<artifactId>gt-netcdf</artifactId>
 				</exclusion>
 				<exclusion>
@@ -78,7 +86,15 @@
 				</exclusion>
 				<exclusion>
 					<groupId>org.geotools</groupId>
+					<artifactId>gt-imagemosaic</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
 					<artifactId>gt-imagepyramid</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt-svg</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.geotools</groupId>
