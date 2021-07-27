@@ -109,6 +109,7 @@ public class InfiltratedWaterVolume extends HMModel {
         inf.pAlpha = pAlpha;
         inf.pBeta = pBeta;
         inf.pGamma = pGamma;
+        inf.pm = pm;
         inf.process();
 
         dumpRaster(inf.outInfiltration, outInfiltration);

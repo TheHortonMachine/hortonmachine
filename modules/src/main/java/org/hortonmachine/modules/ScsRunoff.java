@@ -75,6 +75,7 @@ public class ScsRunoff extends HMModel {
         rf.inNet = getRaster(inNet);
         rf.inCurveNumber = getRaster(inCurveNumber);
         rf.inNumberOfEvents = getRaster(inNumberOfEvents);
+        rf.pm = pm;
         rf.process();
 
         dumpRaster(rf.outputDischarge, outputDischarge);

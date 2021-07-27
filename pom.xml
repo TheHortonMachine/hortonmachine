@@ -110,7 +110,7 @@
 				<artifactId>slf4j-api</artifactId>
 				<version>1.7.5</version>
 			</dependency>
-			<dependency>
+		  <dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-jdk14</artifactId>
 				<version>1.7.5</version>
@@ -869,7 +869,7 @@
 				<version>3.8.1</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
-				        <release>14</release>
+				        <release>11</release>
 					<debug>true</debug>
 				</configuration>
 			</plugin>
@@ -967,7 +967,7 @@
 							<goal>jar</goal>
 						</goals>
 						<configuration>
-							<source>8</source>
+							<source>11</source>
 							<doclint>none</doclint>
 							<quiet>true</quiet>
 							<failOnWarnings>false</failOnWarnings>

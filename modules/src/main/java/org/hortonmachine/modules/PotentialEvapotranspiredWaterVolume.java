@@ -92,11 +92,11 @@ public class PotentialEvapotranspiredWaterVolume extends HMModel {
         pet.inAtmosphericTemp = getRaster(inAtmosphericTemp);
         pet.inRainfall = getRaster(inRainfall);
         pet.inSolarRadiation = getRaster(inSolarRadiation);
+        pet.pm = pm;
         pet.process();
-        
+
         dumpRaster(pet.outputPet, outputPet);
 
     }
-
 
 }
