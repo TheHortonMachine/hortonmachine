@@ -81,5 +81,15 @@ public class ScsRunoff extends HMModel {
         dumpRaster(rf.outputDischarge, outputDischarge);
 
     }
+    
+    public static void main( String[] args ) throws Exception {
+        ScsRunoff scs = new ScsRunoff();
+        scs.inRainfall = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/precip_gura_test.tif";
+        scs.inNet = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/stream.tif";
+        scs.inCurveNumber = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/CN.tif";
+        scs.inNumberOfEvents = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/n_events.tif";
+        scs.outputDischarge = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/discharge.tif";
+        scs.process();
+    }
 
 }

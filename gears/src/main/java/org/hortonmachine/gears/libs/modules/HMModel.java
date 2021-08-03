@@ -34,6 +34,7 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.exceptions.ModelsUserCancelException;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.GeometryFactory;
 
 import oms3.annotations.Description;
@@ -51,8 +52,7 @@ public class HMModel {
     private static boolean doLogging = false;
     static {
         System.setProperty("org.geotools.referencing.forceXY", "true");
-        
-        
+
         // remove nasty error message if jai has no native backbone
         // JAI.getDefaultInstance().setImagingListener(new ImagingListener(){
         // @Override
@@ -265,6 +265,21 @@ public class HMModel {
         return filePath;
     }
 
+    /** 
+     * Get the novalue from the coverage, if defined.
+     * 
+     * @param gc the coverage to check.
+     * @return the novalue from the coverage or a default if not defined.
+     */
+    protected double getNovalue( GridCoverage2D gc ) {
+        Double nvObj = CoverageUtilities.getNovalue(gc);
+        double nv = HMConstants.doubleNovalue;
+        if (nvObj != null) {
+            nv = nvObj;
+        }
+        return nv;
+    }
+
     /**
      * Fast default reading of raster from definition. 
      * 
@@ -356,6 +371,5 @@ public class HMModel {
         String help = ModelsSupporter.generateTemplate(this);
         pm.message(help);
     }
-    
-    
+
 }

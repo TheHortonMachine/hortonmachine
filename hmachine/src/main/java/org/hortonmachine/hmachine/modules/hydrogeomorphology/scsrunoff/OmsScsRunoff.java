@@ -89,17 +89,36 @@ public class OmsScsRunoff extends HMModel {
     public void process() throws Exception {
         checkNull(inRainfall, inNet, inCurveNumber);
 
+        double rainNv = getNovalue(inRainfall);
+        double netNv = getNovalue(inNet);
+        double cnNv = getNovalue(inCurveNumber);
+        double _eventsNv = HMConstants.doubleNovalue;
+        if (inNumberOfEvents != null) {
+            _eventsNv = getNovalue(inNumberOfEvents);
+        }
+        double eventsNv = _eventsNv;
+
         MultiRasterLoopProcessor processor = new MultiRasterLoopProcessor("Calculating runoff...", pm);
         IDataLoopFunction funct = new IDataLoopFunction(){
             @Override
             public double process( double... values ) {
-                if (HMConstants.isNovalue(values[3])) {
-                    values[3] = 1; // default num events to 1 if not available
+
+                double rain = values[0];
+                double cn = values[1];
+                double net = values[2];
+                if (rain == rainNv || HMConstants.isNovalue(values[0]) || cn == cnNv || HMConstants.isNovalue(cn)) {
+                    return rainNv;
                 }
-                return calculateRunoff(values[0], values[1], values[2], (int) values[3]);
+                int eventNum = (int) values[3];
+                if (eventNum == eventsNv || HMConstants.isNovalue(eventNum)) {
+                    eventNum = 1; // default num events to 1 if not available
+                }
+                boolean isNet = net != netNv && !HMConstants.isNovalue(net);
+
+                return calculateRunoff(rain, cn, isNet, eventNum);
             }
         };
-        outputDischarge = processor.loop(funct, inRainfall, inNet, inCurveNumber, inNumberOfEvents);
+        outputDischarge = processor.loop(funct, inRainfall, inCurveNumber, inNet, inNumberOfEvents);
 
     }
 
@@ -108,20 +127,16 @@ public class OmsScsRunoff extends HMModel {
      *  
      * @param rainfall the rainfall in mm.
      * @param curveNumber the curvenumber value.
-     * @param net the net value. It is only used for net presence (if it is different from novalue).
+     * @param net <code>true</code>, if the pixel is a net pixel.
      * @param eventsNum number of events.
      * @return the runoff value.
      */
-    public static double calculateRunoff( double rainfall, double curveNumber, double net, int eventsNum ) {
-        if (!HMConstants.isNovalue(rainfall) || !HMConstants.isNovalue(curveNumber)) {
-            return HMConstants.doubleNovalue;
-        }
-
+    public static double calculateRunoff( double rainfall, double curveNumber, boolean isNet, int eventsNum ) {
         double runoff = 0;
         rainfall = (double) Math.round(rainfall);
         if (rainfall == 0) {
             runoff = 0;
-        } else if (!HMConstants.isNovalue(net)) {
+        } else if (isNet) {
             runoff = rainfall;
         } else {
             double sScsCoeff = 1000.0 / curveNumber - 10.0; // TODO check cn unit
