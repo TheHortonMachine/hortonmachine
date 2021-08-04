@@ -39,7 +39,7 @@ public class TestRasterTransformer extends HMTestCase {
 
     public void testRasterTransformer() throws Exception {
 
-        double[][] flowData = HMTestMaps.flowData;
+        int[][] flowData = HMTestMaps.flowData;
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);

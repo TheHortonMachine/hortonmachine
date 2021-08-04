@@ -110,6 +110,26 @@ public class HMTestCase extends TestCase {
         } while( !rectIter.nextLineDone() );
     }
 
+    protected void checkMatrixEqual( RenderedImage image, int[][] matrix, int delta ) {
+        RectIter rectIter = RectIterFactory.create(image, null);
+        int y = 0;
+        do {
+            int x = 0;
+            do {
+                int value = rectIter.getSample();
+                int expectedResult = matrix[y][x];
+                if (isNovalue(value)) {
+                    assertTrue(x + " " + y, isNovalue(expectedResult));
+                } else {
+                    assertEquals(x + " " + y, expectedResult, value, delta);
+                }
+                x++;
+            } while( !rectIter.nextPixelDone() );
+            rectIter.startPixels();
+            y++;
+        } while( !rectIter.nextLineDone() );
+    }
+
     protected void checkEqualsSinlgeValue( RenderedImage image, double expectedResult, double delta ) {
         RectIter rectIter = RectIterFactory.create(image, null);
         int y = 0;
@@ -137,7 +157,7 @@ public class HMTestCase extends TestCase {
             do {
                 double value = rectIter.getSampleDouble();
                 double expectedResult = matrix[y][x];
-                if (isNovalue(value)) {
+                if (isNovalue(value) && !isNovalue(expectedResult)) {
                     assertTrue("Difference at position: " + x + " " + y + " expected NaN, got " + expectedResult,
                             isNovalue(expectedResult));
                 } else {
@@ -222,6 +242,6 @@ public class HMTestCase extends TestCase {
                 }
             }
         }
-        
+
     }
 }

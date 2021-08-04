@@ -24,7 +24,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.HMTestCase;
-import org.hortonmachine.gears.utils.HMTestMaps;
 /**
  * Test {@link OmsRasterReader}.
  * 
@@ -49,29 +48,39 @@ public class TestRasterReader extends HMTestCase {
         reader.file = arcPath;
         reader.process();
         GridCoverage2D readCoverage = reader.outRaster;
-        checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
+
+        double[][] mapData = new double[][]{//
+                {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
+                {600, -9999.0, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
+                {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
+                {400, 410, 650, 700, 750, 800, 850, 490, 450, 1500}, //
+                {450, 550, 430, 500, 600, 700, 800, 500, 450, 1500}, //
+                {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
+                {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
+                {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
+        checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
 
         reader = new OmsRasterReader();
         reader.file = grassPath;
         reader.process();
         readCoverage = reader.outRaster;
-        
+
         // grass rasters have Double.NaN novalues
-        double[][] mapData = new double[][]{//
-            {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
-                    {600, Double.NaN, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
-                    {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
-                    {400, 410, 650, 700, 750, 800, 850, 490, 450, 1500}, //
-                    {450, 550, 430, 500, 600, 700, 800, 500, 450, 1500}, //
-                    {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
-                    {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
-                    {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
+        mapData = new double[][]{//
+                {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
+                {600, Double.NaN, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
+                {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
+                {400, 410, 650, 700, 750, 800, 850, 490, 450, 1500}, //
+                {450, 550, 430, 500, 600, 700, 800, 500, 450, 1500}, //
+                {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
+                {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
+                {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
         checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
     }
 
     public void testRasterReaderBoundsOnly() throws Exception {
         double[][] mapData = new double[][]{//
-        {1000, 1000, 1200, 1250, 1300, 1350, 1450}, //
+                {1000, 1000, 1200, 1250, 1300, 1350, 1450}, //
                 {750, 850, 860, 900, 1000, 1200, 1250}, //
                 {700, 750, 800, 850, 900, 1000, 1100}, //
                 {650, 700, 750, 800, 850, 490, 450}, //
@@ -113,13 +122,13 @@ public class TestRasterReader extends HMTestCase {
 
     public void testRasterReaderResOnly() throws Exception {
         double[][] mapData1 = new double[][]{//
-        {NaN, 850.0, 900.0, 1200.0, 1500.0}, //
+                {-9999.0, 850.0, 900.0, 1200.0, 1500.0}, //
                 {410.0, 700.0, 800.0, 490.0, 1500.0}, //
                 {600.0, 750.0, 770.0, 1000.0, 1500.0}, //
                 {910.0, 1001.0, 1200.0, 1300.0, 1500.0} //
         };
         double[][] mapData2 = new double[][]{//
-        {800.0, 1000.0, 1200.0, 1300.0, 1450.0}, //
+                {800.0, 1000.0, 1200.0, 1300.0, 1450.0}, //
                 {500.0, 700.0, 800.0, 900.0, 1100.0}, //
                 {450.0, 430.0, 600.0, 800.0, 450.0}, //
                 {600.0, 750.0, 780.0, 1000.0, 1250.0} //
@@ -146,7 +155,7 @@ public class TestRasterReader extends HMTestCase {
 
     public void testRasterReaderBoundsAndRes() throws Exception {
         double[][] mapData = new double[][]{//
-        {1000.0, 1200.0, 1250.0, 1300.0, 1450.0}, //
+                {1000.0, 1200.0, 1250.0, 1300.0, 1450.0}, //
                 {700.0, 800.0, 850.0, 900.0, 1100.0}, //
                 {650.0, 750.0, 800.0, 850.0, 450.0}, //
                 {700.0, 760.0, 770.0, 850.0, 1150.0} //

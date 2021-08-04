@@ -144,10 +144,11 @@ public class OmsZonalStats extends HMModel {
         // pm.message("" + readEnvelope);
         GridGeometry2D gridGeometry = inRaster.getGridGeometry();
         RandomIter readIter = CoverageUtilities.getRandomIterator(inRaster);
+        double novalue = HMConstants.getNovalue(inRaster);
         pm.beginTask("Processing polygons...", geometriesList.size());
         for( Geometry geometry : geometriesList ) {
-            double[] polygonStats = polygonStats(geometry, gridGeometry, readIter, hasUserTotalMean, tm_usertm_tactivecells,
-                    pPercentageThres, pm);
+            double[] polygonStats = polygonStats(geometry, gridGeometry, readIter, novalue, hasUserTotalMean,
+                    tm_usertm_tactivecells, pPercentageThres, pm);
             if (polygonStats == null) {
                 continue;
             }
@@ -208,7 +209,7 @@ public class OmsZonalStats extends HMModel {
      * @return
      * @throws Exception
      */
-    public static double[] polygonStats( Geometry geometry, GridGeometry2D gridGeometry, RandomIter inIter,
+    public static double[] polygonStats( Geometry geometry, GridGeometry2D gridGeometry, RandomIter inIter, double novalue,
             boolean hasUserTotalMean, double[] tm_utm_tac, double percentageThres, IHMProgressMonitor monitor ) throws Exception {
         GeometryFactory gf = GeometryUtilities.gf();
         GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
@@ -281,7 +282,7 @@ public class OmsZonalStats extends HMModel {
                              */
                             for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
                                 double v = inIter.getSampleDouble(k, r, 0);
-                                if (isNovalue(v)) {
+                                if (isNovalue(v, novalue)) {
                                     passiveCellCount++;
                                     continue;
                                 }

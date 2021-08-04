@@ -120,7 +120,7 @@ public class OmsRescaledDistance extends GridMultiProcessing {
 
         RenderedImage flowRI = inFlow.getRenderedImage();
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
-        double novalue = HMConstants.getNovalue(inFlow);
+        int novalue = HMConstants.getIntNovalue(inFlow);
 
         RenderedImage netRI = inNet.getRenderedImage();
         RandomIter netIter = RandomIterFactory.create(netRI, null);

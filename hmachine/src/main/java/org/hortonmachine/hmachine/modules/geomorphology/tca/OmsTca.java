@@ -123,7 +123,7 @@ public class OmsTca extends HMModel {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
-        double novalue = HMConstants.getNovalue(inFlow);
+        int novalue = HMConstants.getIntNovalue(inFlow);
 
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster tcaWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);

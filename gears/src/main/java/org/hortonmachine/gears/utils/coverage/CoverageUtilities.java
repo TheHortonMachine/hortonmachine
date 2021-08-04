@@ -868,7 +868,13 @@ public class CoverageUtilities {
     public static GridCoverage2D buildCoverage( String name, double[][] dataMatrix, HashMap<String, Double> envelopeParams,
             CoordinateReferenceSystem crs, boolean matrixIsRowCol ) {
         WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
-        return buildCoverage(name, writableRaster, envelopeParams, crs);
+        return buildCoverageWithNovalue(name, writableRaster, envelopeParams, crs, HMConstants.doubleNovalue);
+    }
+
+    public static GridCoverage2D buildCoverageWithNovalue( String name, double[][] dataMatrix,
+            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs, boolean matrixIsRowCol, double novalue ) {
+        WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
+        return buildCoverageWithNovalue(name, writableRaster, envelopeParams, crs, novalue);
     }
 
     /**
@@ -884,13 +890,19 @@ public class CoverageUtilities {
     public static GridCoverage2D buildCoverage( String name, float[][] dataMatrix, HashMap<String, Double> envelopeParams,
             CoordinateReferenceSystem crs, boolean matrixIsRowCol ) {
         WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
-        return buildCoverage(name, writableRaster, envelopeParams, crs);
+        return buildCoverageWithNovalue(name, writableRaster, envelopeParams, crs, HMConstants.floatNovalue);
     }
 
     public static GridCoverage2D buildCoverage( String name, int[][] dataMatrix, HashMap<String, Double> envelopeParams,
             CoordinateReferenceSystem crs, boolean matrixIsRowCol ) {
         WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
-        return buildCoverage(name, writableRaster, envelopeParams, crs);
+        return buildCoverageWithNovalue(name, writableRaster, envelopeParams, crs, HMConstants.intNovalue);
+    }
+
+    public static GridCoverage2D buildCoverageWithNovalue( String name, int[][] dataMatrix,
+            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs, boolean matrixIsRowCol, int novalue ) {
+        WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
+        return buildCoverageWithNovalue(name, writableRaster, envelopeParams, crs, novalue);
     }
 
     /**
@@ -904,15 +916,29 @@ public class CoverageUtilities {
      */
     public static GridCoverage2D buildCoverage( String name, RenderedImage renderedImage, HashMap<String, Double> envelopeParams,
             CoordinateReferenceSystem crs ) {
+        return buildCoverageWithNovalue(name, renderedImage, envelopeParams, crs, HMConstants.doubleNovalue);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static GridCoverage2D buildCoverageWithNovalue( String name, RenderedImage renderedImage,
+            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs, double novalue ) {
 
         double west = envelopeParams.get(WEST);
         double south = envelopeParams.get(SOUTH);
         double east = envelopeParams.get(EAST);
         double north = envelopeParams.get(NORTH);
         Envelope2D writeEnvelope = new Envelope2D(crs, west, south, east - west, north - south);
+
+        final GridSampleDimension[] bands = RenderedSampleDimension.create(name, renderedImage.getData(), null, null, null, null,
+                null);
+
         GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
 
-        GridCoverage2D coverage2D = factory.create(name, renderedImage, writeEnvelope);
+        Map properties = new HashMap<>();
+        NoDataContainer ndc = new NoDataContainer(novalue);
+        properties.put(NoDataContainer.GC_NODATA, ndc);
+
+        GridCoverage2D coverage2D = factory.create(name, renderedImage, writeEnvelope, bands, null, properties);
         return coverage2D;
     }
 
@@ -927,15 +953,7 @@ public class CoverageUtilities {
      */
     public static GridCoverage2D buildCoverage( String name, WritableRaster writableRaster,
             HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs ) {
-        double west = envelopeParams.get(WEST);
-        double south = envelopeParams.get(SOUTH);
-        double east = envelopeParams.get(EAST);
-        double north = envelopeParams.get(NORTH);
-        Envelope2D writeEnvelope = new Envelope2D(crs, west, south, east - west, north - south);
-        GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
-
-        GridCoverage2D coverage2D = factory.create(name, writableRaster, writeEnvelope);
-        return coverage2D;
+        return buildCoverageWithNovalue(name, writableRaster, envelopeParams, crs, HMConstants.doubleNovalue);
     }
 
     /**

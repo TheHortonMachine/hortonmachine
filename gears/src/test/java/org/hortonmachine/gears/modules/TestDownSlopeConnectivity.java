@@ -43,7 +43,7 @@ public class TestDownSlopeConnectivity extends HMTestCase {
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
-        double[][] flowData = HMTestMaps.flowData;
+        int[][] flowData = HMTestMaps.flowData;
         flowGC = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
         double[][] netData = HMTestMaps.extractNet0Data;

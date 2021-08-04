@@ -48,7 +48,10 @@ public abstract class Node {
         if (novalue != null) {
             this.doubleNovalue = novalue;
             this.floatNovalue = novalue.floatValue();
-            this.intNovalue = novalue.intValue();
+            if (!Double.isNaN(novalue)) {
+                // set int nv only if different from NaN, else it will be set to 0
+                this.intNovalue = novalue.intValue();
+            }
         }
     }
 

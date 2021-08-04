@@ -108,7 +108,7 @@ public class OmsSplitSubbasins extends HMModel {
 
         hackOrder = pHackorder;
 
-        double flowNovalue = HMConstants.getNovalue(inFlow);
+        int flowNovalue = HMConstants.getIntNovalue(inFlow);
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
         RenderedImage hacksRI = inHack.getRenderedImage();

@@ -26,6 +26,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @SuppressWarnings("nls")
 public class TestFlowUtils extends HMTestCase {
     private static final double NaN = HMConstants.doubleNovalue;
+    private static final int intNaN = HMConstants.intNovalue;
 
     private int nCols;
     private int nRows;
@@ -36,11 +37,11 @@ public class TestFlowUtils extends HMTestCase {
 
     protected void setUp() throws Exception {
         double[][] mapData = HMTestMaps.mapData;
-        double[][] flowData = HMTestMaps.flowData;
+        int[][] flowData = HMTestMaps.flowData;
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
-        GridCoverage2D inElev = CoverageUtilities.buildCoverage("elevation", mapData, envelopeParams, crs, true);
-        GridCoverage2D inFlow = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+        GridCoverage2D inElev = CoverageUtilities.buildCoverageWithNovalue("elevation", mapData, envelopeParams, crs, true, NaN);
+        GridCoverage2D inFlow = CoverageUtilities.buildCoverageWithNovalue("flow", flowData, envelopeParams, crs, true, intNaN);
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         nCols = regionMap.getCols();
@@ -189,14 +190,14 @@ public class TestFlowUtils extends HMTestCase {
     }
 
     public void testEnteringFlowCells() throws Exception {
-        FlowNode node = new FlowNode(flowIter, nCols, nRows, 2, 2, NaN);
+        FlowNode node = new FlowNode(flowIter, nCols, nRows, 2, 2, intNaN);
 
         List<FlowNode> enteringNodes = node.getEnteringNodes();
         Node flowNode = enteringNodes.get(0);
         assertEquals(flowNode.col, 3);
         assertEquals(flowNode.row, 1);
 
-        node = new FlowNode(flowIter, nCols, nRows, 5, 4, NaN);
+        node = new FlowNode(flowIter, nCols, nRows, 5, 4, intNaN);
         enteringNodes = node.getEnteringNodes();
         flowNode = enteringNodes.get(0);
         assertEquals(flowNode.col, 6);
@@ -210,7 +211,7 @@ public class TestFlowUtils extends HMTestCase {
     }
 
     public void testDownstreamFlowCells() throws Exception {
-        FlowNode node = new FlowNode(flowIter, nCols, nRows, 4, 1, NaN);
+        FlowNode node = new FlowNode(flowIter, nCols, nRows, 4, 1, intNaN);
 
         FlowNode n = node.goDownstream();
         assertEquals(n.col, 3);

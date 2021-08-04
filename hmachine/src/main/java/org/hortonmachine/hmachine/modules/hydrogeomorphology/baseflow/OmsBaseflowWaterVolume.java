@@ -101,7 +101,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
         WritableRaster outBaseflowWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
         WritableRandomIter outBaseflowIter = CoverageUtilities.getWritableRandomIterator(outBaseflowWR);
 
-        double novalue = HMConstants.getNovalue(inFlowdirections);
+        int novalue = HMConstants.getIntNovalue(inFlowdirections);
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlowdirections);
         RandomIter netInfiltrationIter = CoverageUtilities.getRandomIterator(inNetInfiltration);
         RandomIter infiltrationIter = CoverageUtilities.getRandomIterator(inInfiltration);

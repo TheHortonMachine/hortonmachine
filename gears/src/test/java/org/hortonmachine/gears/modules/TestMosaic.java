@@ -27,13 +27,22 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.modules.r.mosaic.OmsMosaic;
 import org.hortonmachine.gears.modules.r.mosaic.OmsMosaic12;
 import org.hortonmachine.gears.utils.HMTestCase;
-import org.hortonmachine.gears.utils.HMTestMaps;
 /**
  * Test for the mosaic modules.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestMosaic extends HMTestCase {
+    static double[][] mapData = new double[][]{//
+            {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
+            {600, -9999.0, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
+            {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
+            {400, 410, 650, 700, 750, 800, 850, 490, 450, 1500}, //
+            {450, 550, 430, 500, 600, 700, 800, 500, 450, 1500}, //
+            {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
+            {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
+            {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
+
     public void testMosaic() throws Exception {
         URL testUrl = this.getClass().getClassLoader().getResource("dtm_test_left.asc");
         File left = new File(testUrl.toURI());
@@ -47,7 +56,7 @@ public class TestMosaic extends HMTestCase {
         mosaic.pm = pm;
         mosaic.process();
         GridCoverage2D readCoverage = mosaic.outRaster;
-        checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
+        checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
     }
 
     public void testMosaic12() throws Exception {
@@ -63,7 +72,7 @@ public class TestMosaic extends HMTestCase {
         mosaic.testmode = true;
         mosaic.process();
         GridCoverage2D readCoverage = mosaic.outRaster;
-        checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
+        checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
     }
 
 }

@@ -148,7 +148,7 @@ public class OmsNetworkAttributesBuilder extends HMModel {
         cols = regionMap.getCols();
         rows = regionMap.getRows();
         gridGeometry = inFlow.getGridGeometry();
-        double novalue = HMConstants.getNovalue(inFlow);
+        int novalue = HMConstants.getIntNovalue(inFlow);
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlow);
         if (inTca != null) {

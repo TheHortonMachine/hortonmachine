@@ -142,6 +142,8 @@ public class OmsVectorizer extends HMModel {
 
     private CoordinateReferenceSystem crs;
 
+    private double novalue;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outVector == null, doReset)) {
@@ -149,6 +151,8 @@ public class OmsVectorizer extends HMModel {
         }
         checkNull(inRaster);
         crs = inRaster.getCoordinateReferenceSystem();
+
+        novalue = HMConstants.getNovalue(inRaster);
 
         doRegionCheck();
 
@@ -164,7 +168,7 @@ public class OmsVectorizer extends HMModel {
             sb.append("],(");
             sb.append(pValue);
             sb.append(" null)");
-            classes = HMConstants.doubleNovalue + "," + pValue + "," + HMConstants.doubleNovalue;
+            classes = novalue + "," + pValue + "," + novalue;
 
             String ranges = sb.toString();
 
@@ -252,7 +256,7 @@ public class OmsVectorizer extends HMModel {
 
         RandomIter rasterIter = CoverageUtilities.getRandomIterator(inRaster);
         WritableRaster[] holder = new WritableRaster[1];
-        GridCoverage2D outGC = CoverageUtilities.createCoverageFromTemplate(inRaster, HMConstants.doubleNovalue, holder);
+        GridCoverage2D outGC = CoverageUtilities.createCoverageFromTemplate(inRaster, novalue, holder);
         WritableRandomIter outIter = RandomIterFactory.createWritable(holder[0], null);
 
         pm.beginTask("Masking map...", nRows);
@@ -260,7 +264,7 @@ public class OmsVectorizer extends HMModel {
             for( int c = 0; c < nCols; c++ ) {
                 double value = rasterIter.getSampleDouble(c, r, 0);
                 boolean doNull = false;
-                if (!isNovalue(value)) {
+                if (!isNovalue(value, novalue)) {
                     if (!Double.isNaN(pMaskThreshold)) {
                         // check threshold
                         if (value < pMaskThreshold) {

@@ -93,10 +93,13 @@ public class OmsRangeLookup extends HMModel {
         if (!concatOr(outRaster == null, doReset)) {
             return;
         }
-        
-        JAIExt.initJAIEXT(true); // FIXME remove when the jaitools rangelookup is not pulled fro raster process anymore
+
+        JAIExt.initJAIEXT(true); // FIXME remove when the jaitools rangelookup is not pulled fro
+                                 // raster process anymore
 
         checkNull(inRaster, pRanges, pClasses);
+
+        double novalue = HMConstants.getNovalue(inRaster);
 
         RenderedImage inRI = inRaster.getRenderedImage();
 
@@ -157,10 +160,11 @@ public class OmsRangeLookup extends HMModel {
         pb.setSource("source0", inRI);
         pb.setParameter("table", table);
         pb.setParameter("roi", roi);
-        pb.setParameter("default", (Double) HMConstants.doubleNovalue);
+        pb.setParameter("default", (Double) novalue);
         RenderedImage lookupImg = JAI.create("RLookup", pb);
 
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        outRaster = CoverageUtilities.buildCoverage("rangelookup", lookupImg, regionMap, inRaster.getCoordinateReferenceSystem());
+        outRaster = CoverageUtilities.buildCoverageWithNovalue("rangelookup", lookupImg, regionMap,
+                inRaster.getCoordinateReferenceSystem(), novalue);
     }
 }

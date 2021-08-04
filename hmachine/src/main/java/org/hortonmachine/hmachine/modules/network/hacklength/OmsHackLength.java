@@ -125,7 +125,7 @@ public class OmsHackLength extends HMModel {
             elevIter = CoverageUtilities.getRandomIterator(inElevation);
         }
 
-        double novalue = HMConstants.getNovalue(inFlow);
+        int novalue = HMConstants.getIntNovalue(inFlow);
         hacklength(flowIter, novalue, tcaIter, elevIter);
 
         tcaIter.done();
@@ -136,7 +136,7 @@ public class OmsHackLength extends HMModel {
 
     }
 
-    private void hacklength( RandomIter flowIter, double novalue, RandomIter tcaIter, RandomIter elevIter ) {
+    private void hacklength( RandomIter flowIter, int novalue, RandomIter tcaIter, RandomIter elevIter ) {
 
         double runningDistance = 0.0;
         double maxTca = 0.0;

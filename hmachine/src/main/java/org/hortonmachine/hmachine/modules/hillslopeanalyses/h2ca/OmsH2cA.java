@@ -92,7 +92,7 @@ public class OmsH2cA extends HMModel {
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
 
-        double novalue = HMConstants.getNovalue(inFlow);
+        int novalue = HMConstants.getIntNovalue(inFlow);
 
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);

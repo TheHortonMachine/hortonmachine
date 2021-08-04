@@ -41,7 +41,7 @@ public class TestZonalStats extends HMTestCase {
     private RegionMap ep = HMTestMaps.getEnvelopeparams();
 
     private GridCoverage2D flowCoverage;
-    private double[][] flowData;
+    private int[][] flowData;
     private SimpleFeatureCollection testLeftFC;
 
     @Override

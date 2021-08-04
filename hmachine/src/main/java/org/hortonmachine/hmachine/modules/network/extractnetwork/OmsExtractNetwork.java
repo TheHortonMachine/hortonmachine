@@ -138,13 +138,13 @@ public class OmsExtractNetwork extends GridMultiProcessing {
             networkWR = extractNetTcaThreshold(tcaRI);
         } else if (pMode.equals(TCA_SLOPE)) {
             checkNull(inSlope);
-            double novalue = HMConstants.getNovalue(inFlow);
+            int novalue = HMConstants.getIntNovalue(inFlow);
             RenderedImage flowRI = inFlow.getRenderedImage();
             RenderedImage slopeRI = inSlope.getRenderedImage();
             networkWR = extractNetMode1(flowRI, novalue, tcaRI, slopeRI);
         } else if (pMode.equals(TCA_CONVERGENT)) {
             checkNull(inSlope, inTc3);
-            double novalue = HMConstants.getNovalue(inFlow);
+            int novalue = HMConstants.getIntNovalue(inFlow);
             RenderedImage flowRI = inFlow.getRenderedImage();
             RenderedImage classRI = inTc3.getRenderedImage();
             RenderedImage slopeRI = inSlope.getRenderedImage();
@@ -198,7 +198,7 @@ public class OmsExtractNetwork extends GridMultiProcessing {
      * slope.
      * @throws Exception 
      */
-    private WritableRaster extractNetMode1( RenderedImage flowRI, double novalue, RenderedImage tcaRI, RenderedImage slopeRI )
+    private WritableRaster extractNetMode1( RenderedImage flowRI, int novalue, RenderedImage tcaRI, RenderedImage slopeRI )
             throws Exception {
 
         RandomIter flowRandomIter = RandomIterFactory.create(flowRI, null);
@@ -263,7 +263,7 @@ public class OmsExtractNetwork extends GridMultiProcessing {
      * as being part of the channel network.
      * @throws Exception 
      */
-    private WritableRaster extractNetMode2( RenderedImage flowRI, double novalue, RenderedImage tcaRI, RenderedImage classRI,
+    private WritableRaster extractNetMode2( RenderedImage flowRI, int novalue, RenderedImage tcaRI, RenderedImage classRI,
             RenderedImage slopeRI ) throws Exception {
         RandomIter flowRandomIter = RandomIterFactory.create(flowRI, null);
         RandomIter tcaRandomIter = RandomIterFactory.create(tcaRI, null);

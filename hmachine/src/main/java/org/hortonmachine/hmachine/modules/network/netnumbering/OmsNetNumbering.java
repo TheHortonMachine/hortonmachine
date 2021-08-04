@@ -188,7 +188,7 @@ public class OmsNetNumbering extends HMModel {
             outNetnum = CoverageUtilities.buildCoverage("netnum", netNumWR, regionMap, inFlow.getCoordinateReferenceSystem());
 
             netNumIter = RandomIterFactory.createWritable(netNumWR, null);
-            double novalue = HMConstants.getNovalue(inFlow);
+            int novalue = HMConstants.getIntNovalue(inFlow);
             WritableRaster basinWR = ModelsEngine.extractSubbasins(flowIter, novalue, netIter, netNumIter, nRows, nCols, pm);
             outBasins = CoverageUtilities.buildCoverage("subbasins", basinWR, regionMap, inFlow.getCoordinateReferenceSystem());
 

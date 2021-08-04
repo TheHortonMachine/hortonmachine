@@ -64,7 +64,16 @@ public class TestRasterWriter extends HMTestCase {
             reader.file = arcPath;
             reader.process();
             GridCoverage2D readCoverage = reader.outRaster;
-            checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
+            double[][] mapData = new double[][]{//
+                    {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
+                    {600, -9999.0, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
+                    {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
+                    {400, 410, 650, 700, 750, 800, 850, 490, 450, 1500}, //
+                    {450, 550, 430, 500, 600, 700, 800, 500, 450, 1500}, //
+                    {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
+                    {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
+                    {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
+            checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
 
             writer = new OmsRasterWriter();
             writer.inRaster = coverage;

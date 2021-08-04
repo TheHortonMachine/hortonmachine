@@ -107,6 +107,7 @@ public class OmsHoughCirclesRasterCleaner extends HMModel {
         checkNull(inVector, pMaxOverlap, inRaster);
 
         RandomIter rasterIter = CoverageUtilities.getRandomIterator(inRaster);
+        double novalue = HMConstants.getNovalue(inRaster);
         GridGeometry2D gridGeometry = inRaster.getGridGeometry();
         double[] tm_utm_tac = new double[3];
 
@@ -160,7 +161,7 @@ public class OmsHoughCirclesRasterCleaner extends HMModel {
             // check if the inner part of the circle is indeed rather empty
 
             // min, max, mean, var, sdev, activeCellCount, passiveCellCount
-            double[] stats = OmsZonalStats.polygonStats(circle, gridGeometry, rasterIter, false, tm_utm_tac, 0, pm);
+            double[] stats = OmsZonalStats.polygonStats(circle, gridGeometry, rasterIter, novalue, false, tm_utm_tac, 0, pm);
             // if we have many more active cells than passive cells, that is not a circle
             double activeCells = stats[5];
             double novalues = stats[6];

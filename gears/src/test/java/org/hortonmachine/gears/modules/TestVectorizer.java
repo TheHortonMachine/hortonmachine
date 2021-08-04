@@ -50,17 +50,17 @@ public class TestVectorizer extends HMTestCase {
         vectorizer.pm = pm;
         vectorizer.inRaster = inCoverage;
         vectorizer.pValue = 2.0;
-        vectorizer.pThres = 1;
+        vectorizer.pThres = 2;
         vectorizer.fDefault = "rast";
         vectorizer.process();
 
         SimpleFeatureCollection outGeodata = vectorizer.outVector;
-        assertEquals(2, outGeodata.size());
-
         List<SimpleFeature> features = FeatureUtilities.featureCollectionToList(outGeodata);
         SimpleFeature f1 = features.get(0);
-        SimpleFeature f2 = features.get(1);
         Geometry g1 = (Geometry) f1.getDefaultGeometry();
+
+        assertEquals(2, outGeodata.size());
+        SimpleFeature f2 = features.get(1);
         Geometry g2 = (Geometry) f2.getDefaultGeometry();
 
         // SimpleFeature nvFeature = f1;

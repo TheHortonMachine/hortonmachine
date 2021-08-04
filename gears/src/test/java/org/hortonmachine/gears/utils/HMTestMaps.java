@@ -18,28 +18,21 @@
  */
 package org.hortonmachine.gears.utils;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.utils.CrsUtilities;
-import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
  * The grass map named test and its values to be used in tests.
  * 
@@ -47,6 +40,7 @@ import org.locationtech.jts.geom.Polygon;
  */
 public class HMTestMaps {
     private static final double NaN = HMConstants.doubleNovalue;
+    private static final int intNaN = HMConstants.intNovalue;
     private static RegionMap envelopeParams = null;
 
     private static CoordinateReferenceSystem crs = null;
@@ -200,15 +194,26 @@ public class HMTestMaps {
             {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
             {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
 
+//    public static double[][] mapData4326 = new double[][]{//
+//            {NaN, 800.0, 900.0, 1000.0, NaN, NaN, NaN, NaN, NaN, NaN}, //
+//            {NaN, 600.0, NaN, 750.0, 860.0, 1250.0, 1300.0, 1350.0, 1450.0, 1500.0}, //
+//            {NaN, 500.0, 700.0, 750.0, 800.0, 850.0, 1000.0, 1200.0, 1250.0, 1500.0}, //
+//            {450.0, 550.0, 650.0, 700.0, 750.0, 800.0, 850.0, 1000.0, 1100.0, NaN}, //
+//            {500.0, 600.0, 700.0, 500.0, 600.0, 700.0, 800.0, 450.0, 1500.0, NaN}, //
+//            {600.0, 700.0, 750.0, 800.0, 760.0, 850.0, 1000.0, 1150.0, 1500.0, NaN}, //
+//            {800.0, 910.0, 980.0, 1150.0, 1200.0, 1000.0, 1100.0, 1250.0, 1500.0, NaN}, //
+//            {NaN, NaN, NaN, NaN, NaN, NaN, 1300.0, 1450.0, 1500.0, NaN}};
+
     public static double[][] mapData4326 = new double[][]{//
             {NaN, 800.0, 900.0, 1000.0, NaN, NaN, NaN, NaN, NaN, NaN}, //
-            {NaN, 600.0, NaN, 750.0, 860.0, 1250.0, 1300.0, 1350.0, 1450.0, 1500.0}, //
-            {NaN, 500.0, 700.0, 750.0, 800.0, 850.0, 1000.0, 1200.0, 1250.0, 1500.0}, //
-            {450.0, 550.0, 650.0, 700.0, 750.0, 800.0, 850.0, 1000.0, 1100.0, NaN}, //
-            {500.0, 600.0, 700.0, 500.0, 600.0, 700.0, 800.0, 450.0, 1500.0, NaN}, //
-            {600.0, 700.0, 750.0, 800.0, 760.0, 850.0, 1000.0, 1150.0, 1500.0, NaN}, //
-            {800.0, 910.0, 980.0, 1150.0, 1200.0, 1000.0, 1100.0, 1250.0, 1500.0, NaN}, //
-            {NaN, NaN, NaN, NaN, NaN, NaN, 1300.0, 1450.0, 1500.0, NaN}};
+            {NaN, 600.0, NaN, 750.0, 850.0, 1200.0, 1300.0, 1350.0, 1450.0, 1500.0}, //
+            {NaN, 500.0, 550.0, 700.0, 800.0, 850.0, 1000.0, 1200.0, 1250.0, 1500.0}, //
+            {NaN, 450.0, 650.0, 700.0, 750.0, 800.0, 850.0, 1000.0, 1100.0, 1500.0}, //
+            {500.0, 600.0, 700.0, 500.0, 600.0, 700.0, 800.0, 500.0, 450.0, NaN}, //
+            {600.0, 700.0, 750.0, 800.0, 760.0, 770.0, 850.0, 1150.0, 1500.0, NaN}, //
+            {800.0, 910.0, 980.0, 1001.0, 1150.0, 1000.0, 1100.0, 1250.0, 1500.0, NaN}, //
+            {NaN, NaN, NaN, NaN, NaN, NaN, 1300.0, 1450.0, 1500.0, NaN} //
+    };
 
     public static double[][] outPitData = new double[][]{//
             /*    */{800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
@@ -232,15 +237,15 @@ public class HMTestMaps {
             {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
             {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
 
-    public static double[][] flowData = new double[][]{//
-            {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-            {NaN, NaN, 6, 6, 6, 6, 6, 6, 6, NaN}, //
-            {NaN, 7, 6, 6, 6, 6, 6, 7, 7, NaN}, //
-            {NaN, 5, 5, 7, 6, 6, 6, 6, 5, NaN}, //
-            {NaN, 3, 4, 5, 5, 5, 5, 5, 5, NaN}, //
-            {NaN, 2, 3, 3, 4, 4, 4, 3, 3, NaN}, //
-            {NaN, 4, 4, 4, 4, 4, 5, 4, 4, NaN}, //
-            {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
+    public static int[][] flowData = new int[][]{//
+            {intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN}, //
+            {intNaN, intNaN, 6, 6, 6, 6, 6, 6, 6, intNaN}, //
+            {intNaN, 7, 6, 6, 6, 6, 6, 7, 7, intNaN}, //
+            {intNaN, 5, 5, 7, 6, 6, 6, 6, 5, intNaN}, //
+            {intNaN, 3, 4, 5, 5, 5, 5, 5, 5, intNaN}, //
+            {intNaN, 2, 3, 3, 4, 4, 4, 3, 3, intNaN}, //
+            {intNaN, 4, 4, 4, 4, 4, 5, 4, 4, intNaN}, //
+            {intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN}};
 
     public static double[][] drainData0 = new double[][]{//
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
@@ -1047,9 +1052,6 @@ public class HMTestMaps {
             {NaN, 4.0, 4.0, 4.0, 1.0, 4.0, 4.0, 4.0, 4.0, NaN}, //
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
     };
-    
-    
-
 
     // public static SimpleFeatureCollection createFcFromPoint( Coordinate point,
     // CoordinateReferenceSystem crs ) {

@@ -152,12 +152,14 @@ public class OmsZonalStatsIM extends HMModelIM {
 
                 // pm.message("" + readEnvelope);
                 GridCoverage2D readGC = getGridCoverage(0, readEnvelope);
+                double novalue = HMConstants.getNovalue(readGC);
                 GridGeometry2D gridGeometry = readGC.getGridGeometry();
                 Raster readRaster = readGC.getRenderedImage().getData();
+
                 RandomIter readIter = RandomIterFactory.create(readRaster, null);
                 for( Geometry geometry : removeGeometriesQueue ) {
-                    double[] polygonStats = OmsZonalStats.polygonStats(geometry, gridGeometry, readIter, hasUserTotalMean,
-                            tm_usertm_tactivecells, pPercentageThres, pm);
+                    double[] polygonStats = OmsZonalStats.polygonStats(geometry, gridGeometry, readIter, novalue,
+                            hasUserTotalMean, tm_usertm_tactivecells, pPercentageThres, pm);
                     if (polygonStats == null) {
                         continue;
                     }

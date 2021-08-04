@@ -53,6 +53,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -103,7 +104,9 @@ public class OmsRasterDiff extends HMModel {
         RandomIter r1Iter = CoverageUtilities.getRandomIterator(inRaster1);
         RandomIter r2Iter = CoverageUtilities.getRandomIterator(inRaster2);
 
-        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
+        double r1Nv = HMConstants.getNovalue(inRaster1);
+        double r2Nv = HMConstants.getNovalue(inRaster2);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, r1Nv);
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         pm.beginTask("Subtracting raster...", cols);
@@ -112,11 +115,11 @@ public class OmsRasterDiff extends HMModel {
                 double r1 = r1Iter.getSampleDouble(c, r, 0);
                 double r2 = r2Iter.getSampleDouble(c, r, 0);
                 double diff;
-                if (isNovalue(r1) && isNovalue(r2)) {
+                if (isNovalue(r1, r1Nv) && isNovalue(r2, r2Nv)) {
                     continue;
-                } else if (isNovalue(r1)) {
+                } else if (isNovalue(r1, r1Nv)) {
                     diff = r2;
-                } else if (isNovalue(r2)) {
+                } else if (isNovalue(r2, r2Nv)) {
                     diff = r1;
                 } else {
                     diff = r1 - r2;
@@ -126,7 +129,7 @@ public class OmsRasterDiff extends HMModel {
 //                    diff = doubleNovalue;
                 }
                 if (pThreshold != null && diff < thres) {
-                    diff = doubleNovalue;
+                    diff = r1Nv;
                 }
                 outIter.setSample(c, r, 0, diff);
             }
@@ -138,7 +141,8 @@ public class OmsRasterDiff extends HMModel {
         r2Iter.done();
         outIter.done();
 
-        outRaster = CoverageUtilities.buildCoverage("corrected", outWR, regionMap, inRaster1.getCoordinateReferenceSystem());
+        outRaster = CoverageUtilities.buildCoverageWithNovalue("corrected", outWR, regionMap,
+                inRaster1.getCoordinateReferenceSystem(), r1Nv);
     }
 
 }

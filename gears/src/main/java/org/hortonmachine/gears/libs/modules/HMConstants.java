@@ -62,6 +62,14 @@ public class HMConstants {
         }
         return nv;
     }
+    public static int getIntNovalue( GridCoverage2D gc ) {
+        Double nvObj = CoverageUtilities.getNovalue(gc);
+        int nv = HMConstants.intNovalue;
+        if (nvObj != null) {
+            nv = nvObj.intValue();
+        }
+        return nv;
+    }
 
     /**
      * Check if a value is novalue, the standard HM way.

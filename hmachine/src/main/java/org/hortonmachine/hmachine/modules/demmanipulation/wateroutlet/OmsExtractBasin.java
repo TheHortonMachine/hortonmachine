@@ -201,7 +201,7 @@ public class OmsExtractBasin extends HMModel {
             pEast = snapOutlet.x;
             pNorth = snapOutlet.y;
         }
-        double novalue = HMConstants.getNovalue(inFlow);
+        int novalue = HMConstants.getIntNovalue(inFlow);
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlow);
         WritableRaster basinWR = CoverageUtilities.createWritableRaster(ncols, nrows, Short.class, null, shortNovalue);
         WritableRandomIter basinIter = RandomIterFactory.createWritable(basinWR, null);

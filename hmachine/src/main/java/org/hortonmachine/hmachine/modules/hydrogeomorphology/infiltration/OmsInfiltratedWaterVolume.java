@@ -132,7 +132,7 @@ public class OmsInfiltratedWaterVolume extends HMModel {
         WritableRaster outInfWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
         WritableRandomIter outInfIter = CoverageUtilities.getWritableRandomIterator(outInfWR);
 
-        double novalue = HMConstants.getNovalue(inFlowdirections);
+        int novalue = HMConstants.getIntNovalue(inFlowdirections);
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlowdirections);
         RandomIter petIter = CoverageUtilities.getRandomIterator(inPet);

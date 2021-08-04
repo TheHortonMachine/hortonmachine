@@ -82,8 +82,8 @@ public class OmsMarkoutlets extends HMModel {
 
         WritableRaster mflowWR = CoverageUtilities.renderedImage2WritableRaster(inFlow.getRenderedImage(), false);
         WritableRandomIter mflowIter = RandomIterFactory.createWritable(mflowWR, null);
-        
-        double novalue = HMConstants.getNovalue(inFlow);
+
+        int novalue = HMConstants.getIntNovalue(inFlow);
 
         pm.beginTask(msg.message("markoutlets.working"), nRows); //$NON-NLS-1$
 

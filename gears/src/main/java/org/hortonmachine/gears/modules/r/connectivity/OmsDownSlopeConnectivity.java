@@ -120,7 +120,7 @@ public class OmsDownSlopeConnectivity extends HMModel {
         RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
         RandomIter slopeIter = CoverageUtilities.getRandomIterator(inSlope);
 
-        double flowNv = HMConstants.getNovalue(inFlow);
+        int flowNv = HMConstants.getIntNovalue(inFlow);
         double netNv = HMConstants.getNovalue(inNet);
 
         RandomIter weightsIter;

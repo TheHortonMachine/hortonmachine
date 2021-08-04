@@ -17,7 +17,6 @@
  */
 package org.hortonmachine.gears.modules;
 
-
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -35,6 +34,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestRasterDiff extends HMTestCase {
     private double NaN = HMConstants.doubleNovalue;
+    private int intNaN = HMConstants.intNovalue;
     private GridCoverage2D inRaster1;
     private GridCoverage2D inRaster2;
 
@@ -42,17 +42,17 @@ public class TestRasterDiff extends HMTestCase {
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
-        double[][] inData = HMTestMaps.flowData;
-        double[][] inDataPlus = new double[inData.length][inData[0].length];
+        int[][] inData = HMTestMaps.flowData;
+        int[][] inDataPlus = new int[inData.length][inData[0].length];
         for( int i = 0; i < inData.length; i++ ) {
             for( int j = 0; j < inData[0].length; j++ ) {
-                inDataPlus[i][j] = inData[i][j] + 0.0;
+                inDataPlus[i][j] = inData[i][j] + 0;
             }
         }
-        inRaster1 = CoverageUtilities.buildCoverage("data", inDataPlus, envelopeParams, crs, true);
+        inRaster1 = CoverageUtilities.buildCoverageWithNovalue("data", inDataPlus, envelopeParams, crs, true, intNaN);
 
         inData = HMTestMaps.flowData;
-        inRaster2 = CoverageUtilities.buildCoverage("flow", inData, envelopeParams, crs, true);
+        inRaster2 = CoverageUtilities.buildCoverageWithNovalue("flow", inData, envelopeParams, crs, true, intNaN);
     }
 
     public void testDiff() throws Exception {
@@ -63,15 +63,15 @@ public class TestRasterDiff extends HMTestCase {
         cutout.process();
         GridCoverage2D out = cutout.outRaster;
 
-        double[][] expected = new double[][]{//
-        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, 0, 0, 0, 0, 0, 0, 0, NaN}, //
-                {NaN, 0, 0, 0, 0, 0, 0, 0, 0, NaN}, //
-                {NaN, 0, 0, 0, 0, 0, 0, 0, 0, NaN}, //
-                {NaN, 0, 0, 0, 0, 0, 0, 0, 0, NaN}, //
-                {NaN, 0, 0, 0, 0, 0, 0, 0, 0, NaN}, //
-                {NaN, 0, 0, 0, 0, 0, 0, 0, 0, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
+        int[][] expected = new int[][]{//
+                {intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN}, //
+                {intNaN, intNaN, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
+                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
+                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
+                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
+                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
+                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
+                {intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN}};
         checkMatrixEqual(out.getRenderedImage(), expected, 0);
     }
 
@@ -84,15 +84,15 @@ public class TestRasterDiff extends HMTestCase {
         cutout.process();
         GridCoverage2D out = cutout.outRaster;
 
-        double[][] expected = new double[][]{//
-        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, 0, 0, 0, 0, 0, 0, 0, NaN}, //
-                {NaN, 0, 0, 0, 0, 0, 0, 0, 0, NaN}, //
-                {NaN, 0, 0, 0, 0, 0, 0, 0, 0, NaN}, //
-                {NaN, 0, 0, 0, 0, 0, 0, 0, 0, NaN}, //
-                {NaN, 0, 0, 0, 0, 0, 0, 0, 0, NaN}, //
-                {NaN, 0, 0, 0, 0, 0, 0, 0, 0, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
+        int[][] expected = new int[][]{//
+                {intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN}, //
+                {intNaN, intNaN, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
+                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
+                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
+                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
+                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
+                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
+                {intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN}};
         checkMatrixEqual(out.getRenderedImage(), expected, 0);
     }
 

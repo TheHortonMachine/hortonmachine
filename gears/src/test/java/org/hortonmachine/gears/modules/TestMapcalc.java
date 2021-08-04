@@ -69,7 +69,7 @@ public class TestMapcalc extends HMTestCase {
 
     public void testMapcalc2() throws Exception {
 
-        double[][] elevationData = HMTestMaps.flowData;
+        int[][] elevationData = HMTestMaps.flowData;
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("flow", elevationData, envelopeParams, crs, true);
@@ -85,7 +85,7 @@ public class TestMapcalc extends HMTestCase {
         GridCoverage2D outMap = mapcalc.outRaster;
         RenderedImage renderedImage = outMap.getRenderedImage();
         printImage(renderedImage);
-        checkMatrixEqual(renderedImage, HMTestMaps.flowData, 0.000000001);
+        checkMatrixEqual(renderedImage, HMTestMaps.flowData, 0);
     }
 
     public void testMapcalc3() throws Exception {
