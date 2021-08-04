@@ -117,4 +117,16 @@ public class InfiltratedWaterVolume extends HMModel {
 
     }
 
+    public static void main( String[] args ) throws Exception {
+        InfiltratedWaterVolume v = new InfiltratedWaterVolume();
+        v.inPet = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/pet.tif";
+        v.inFlowdirections = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/dedrain_gura.tif";
+        v.inNet = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/denet100_gura.tif";
+        v.inRainfall = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/precip_gura_onDEM.tif";
+        v.inRunoff = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/discharge.tif";
+        v.outInfiltration = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/infiltration.tif";
+        v.outNetInfiltration = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/net_infiltration.tif";
+        v.process();
+    }
+
 }
