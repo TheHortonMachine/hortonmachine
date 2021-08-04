@@ -628,7 +628,12 @@ public class OmsDePitter extends GridMultiProcessing {
                     if (Double.isInfinite(surroundingMin)) {
                         continue;
                     }
-                    pitsList.add(node);
+                    if (!node.isFlat()) {
+                        // fill simple ones directly
+                        node.setValueInMap(pitIter, surroundingMin + delta);
+                    } else {
+                        pitsList.add(node);
+                    }
                 }
             }
             if (verbose)

@@ -105,5 +105,14 @@ public class DrainDir extends HMModel {
         dumpRaster(draindir.outFlow, outFlow);
         dumpRaster(draindir.outTca, outTca);
     }
+    
+    public static void main( String[] args ) throws Exception {
+        DrainDir d = new DrainDir();
+        d.inPit = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/depit_gura.tif";
+        d.inFlow = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/deflow_gura.tif";
+        d.outFlow = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/dedrain_gura.tif";
+        d.outTca = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/detca_gura.tif";
+        d.process();
+    }
 
 }

@@ -22,6 +22,7 @@ import static org.hortonmachine.hmachine.modules.hydrogeomorphology.evapotrans.O
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.evapotrans.OmsPotentialEvapotranspiredWaterVolume.inMaxTemp_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.evapotrans.OmsPotentialEvapotranspiredWaterVolume.inMinTemp_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.evapotrans.OmsPotentialEvapotranspiredWaterVolume.inRainfall_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.evapotrans.OmsPotentialEvapotranspiredWaterVolume.inReferenceEtp_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.evapotrans.OmsPotentialEvapotranspiredWaterVolume.inSolarRadiation_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.evapotrans.OmsPotentialEvapotranspiredWaterVolume.outputPet_DESCRIPTION;
 
@@ -78,6 +79,11 @@ public class PotentialEvapotranspiredWaterVolume extends HMModel {
     @In
     public String inRainfall;
 
+    @Description(inReferenceEtp_DESCRIPTION)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @In
+    public String inReferenceEtp = null;
+
     @Description(outputPet_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
@@ -92,11 +98,19 @@ public class PotentialEvapotranspiredWaterVolume extends HMModel {
         pet.inAtmosphericTemp = getRaster(inAtmosphericTemp);
         pet.inRainfall = getRaster(inRainfall);
         pet.inSolarRadiation = getRaster(inSolarRadiation);
+        pet.inReferenceEtp = getRaster(inReferenceEtp);
         pet.pm = pm;
         pet.process();
 
         dumpRaster(pet.outputPet, outputPet);
-
+    }
+    
+    public static void main( String[] args ) throws Exception {
+        PotentialEvapotranspiredWaterVolume p = new PotentialEvapotranspiredWaterVolume();
+        p.inCropCoefficient = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/kc_0.tif";
+        p.inReferenceEtp="/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/ET0_gura_onDEM.tif";
+        p.outputPet = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/pet.tif";
+        p.process();
     }
 
 }

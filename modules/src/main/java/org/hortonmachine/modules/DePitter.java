@@ -66,9 +66,8 @@ public class DePitter extends HMModel {
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outFlow = null;
-    
+
     public boolean doParallel = true;
-    public boolean doFlow = true;
 
     @Execute
     public void process() throws Exception {
@@ -78,20 +77,20 @@ public class DePitter extends HMModel {
         pitfiller.doProcess = doProcess;
         pitfiller.doReset = doReset;
         pitfiller.doParallel = doParallel;
-        pitfiller.doFlow = doFlow;
+        pitfiller.doFlow = outFlow != null;
         pitfiller.process();
         if (outPit != null)
             dumpRaster(pitfiller.outPit, outPit);
         if (outFlow != null)
             dumpRaster(pitfiller.outFlow, outFlow);
     }
-    
+
     public static void main( String[] args ) throws Exception {
-        DePitter d= new DePitter();
+        DePitter d = new DePitter();
         d.inElev = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/DEM_gura.tif";
         d.outPit = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/depit_gura.tif";
-        d.doFlow = false;
-        d.doParallel= true;
+        d.outFlow = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/deflow_gura.tif";
+        d.doParallel = true;
         d.process();
     }
 }

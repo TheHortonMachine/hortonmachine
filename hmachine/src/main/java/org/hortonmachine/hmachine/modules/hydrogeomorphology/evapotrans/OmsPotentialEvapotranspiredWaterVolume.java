@@ -67,6 +67,10 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
     @In
     public GridCoverage2D inRainfall;
 
+    @Description(inReferenceEtp_DESCRIPTION)
+    @In
+    public GridCoverage2D inReferenceEtp = null;
+
     @Description(outputPet_DESCRIPTION)
     @In
     public GridCoverage2D outputPet;
@@ -83,6 +87,7 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
     public static final String AUTHORCONTACTS = "www.integratedmodelling.org";
 
     public static final String inCropCoefficient_DESCRIPTION = "The map of crop coefficient.";
+    public static final String inReferenceEtp_DESCRIPTION = "The map of reference evapotraspiration (optional, excludes all but the crop coefficient).";
     public static final String inMaxTemp_DESCRIPTION = "The map of maximum temperature.";
     public static final String inMinTemp_DESCRIPTION = "The map of minimum temperature.";
     public static final String inAtmosTemp_DESCRIPTION = "The map of atmospheric temperature.";
@@ -96,44 +101,78 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inCropCoefficient, inMaxTemp, inMinTemp, inAtmosphericTemp, inSolarRadiation, inRainfall);
+        checkNull(inCropCoefficient);// , inMaxTemp, inMinTemp, inAtmosphericTemp, inSolarRadiation,
+                                     // inRainfall);
 
-        double rainNv = HMConstants.getNovalue(inRainfall);
+        double kcNovalue = HMConstants.getNovalue(inCropCoefficient);
+        if (inReferenceEtp != null) {
+            double etpNovalue = HMConstants.getNovalue(inReferenceEtp);
 
-        MultiRasterLoopProcessor processor = new MultiRasterLoopProcessor("Calculating PET...", pm);
-        IDataLoopFunction funct = new IDataLoopFunction(){
-            @Override
-            public double process( double... values ) {
-                boolean isValid = true;
-                for( double d : values ) {
-                    isValid = isValid && !HMConstants.isNovalue(d);
+            MultiRasterLoopProcessor processor = new MultiRasterLoopProcessor("Calculating PET...", pm);
+            IDataLoopFunction funct = new IDataLoopFunction(){
+                @Override
+                public double process( double... values ) {
+                    double kc = values[0];
+                    double refEtp = values[1];
+                    if (HMConstants.isNovalue(kc, kcNovalue) || HMConstants.isNovalue(refEtp, etpNovalue)) {
+                        return etpNovalue;
+                    }
+
+                    return calculateEtp(kc, refEtp);
                 }
-                if (isValid) {
+            };
+            outputPet = processor.loop(funct, etpNovalue, inCropCoefficient, inReferenceEtp);
+        } else {
+            checkNull(inMaxTemp, inMinTemp, inAtmosphericTemp, inSolarRadiation, inRainfall);
+
+            double rainNv = HMConstants.getNovalue(inRainfall);
+            double maxNv = HMConstants.getNovalue(inMaxTemp);
+            double minNv = HMConstants.getNovalue(inMinTemp);
+            double tempNv = HMConstants.getNovalue(inAtmosphericTemp);
+            double solarNv = HMConstants.getNovalue(inSolarRadiation);
+
+            MultiRasterLoopProcessor processor = new MultiRasterLoopProcessor("Calculating PET...", pm);
+            IDataLoopFunction funct = new IDataLoopFunction(){
+                @Override
+                public double process( double... values ) {
                     double kc = values[0];
                     double tMax = values[1];
                     double tMin = values[2];
                     double tAvg = values[3];
                     double rainfall = values[4];
                     double solarRad = values[5];
+                    if (HMConstants.isNovalue(kc, kcNovalue) || HMConstants.isNovalue(tMax, maxNv)
+                            || HMConstants.isNovalue(tMin, minNv) || HMConstants.isNovalue(tAvg, tempNv)
+                            || HMConstants.isNovalue(solarRad, solarNv)) {
+                        return rainNv;
+                    }
                     return calculateEtp(kc, tMax, tMin, tAvg, rainfall, solarRad);
-                } else {
-                    return rainNv;
                 }
-            }
-        };
-        outputPet = processor.loop(funct, rainNv, inCropCoefficient, inMaxTemp, inMinTemp, inAtmosphericTemp, inRainfall,
-                inSolarRadiation);
+            };
+            outputPet = processor.loop(funct, rainNv, inCropCoefficient, inMaxTemp, inMinTemp, inAtmosphericTemp, inRainfall,
+                    inSolarRadiation);
+        }
 
     }
 
     /**
-     * Calculate pet.
+     * Calculate pet using the solar radiation.
      *  
      */
     public static double calculateEtp( double kc, double tMax, double tMin, double tAvg, double rainfall, double solarRad ) {
         double referenceET = 0.0013 * 0.408 * solarRad * (tAvg + 17) * Math.pow((tMax - tMin - 0.0123 * rainfall), 0.76);
-        double pet = kc * referenceET;
-        return pet;
+        return calculateEtp(kc, referenceET);
+    }
+
+    /**
+     * Calculate pet using the reference etp.
+     * 
+     * @param kc
+     * @param referenceET
+     * @return
+     */
+    private static double calculateEtp( double kc, double referenceET ) {
+        return kc * referenceET;
     }
 
 }

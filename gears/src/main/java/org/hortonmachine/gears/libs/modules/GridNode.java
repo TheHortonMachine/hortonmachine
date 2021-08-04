@@ -140,7 +140,7 @@ public class GridNode extends Node {
                     throw new RuntimeException();
                 }
 
-                if (HMConstants.isNovalue(tmp)) {
+                if (HMConstants.isNovalue(tmp, doubleNovalue)) {
                     touchesNovalue = true;
                 } else {
                     if (tmp < surroundingMin && tmp != elevation) {

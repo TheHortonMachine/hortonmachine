@@ -93,8 +93,8 @@ public class RasterResizer extends HMModel {
     public static void main( String[] args ) throws Exception {
         RasterResizer r = new RasterResizer();
         r.inMaskRaster = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/DEM_gura.tif";
-        r.inRaster = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/precip_gura.tif";
-        r.outRaster = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/precip_gura_onDEM.tif";
+        r.inRaster = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/ET0_gura_1.tif";
+        r.outRaster = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/ET0_gura_onDEM.tif";
         r.process();
     }
 }

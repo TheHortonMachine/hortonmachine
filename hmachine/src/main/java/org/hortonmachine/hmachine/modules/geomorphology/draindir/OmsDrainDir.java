@@ -210,8 +210,8 @@ public class OmsDrainDir extends HMModel {
         if (pm.isCanceled()) {
             return;
         }
-        outFlow = CoverageUtilities.buildCoverage("draindir", dirWR, regionMap, inPit.getCoordinateReferenceSystem());
-        outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, inPit.getCoordinateReferenceSystem());
+        outFlow = CoverageUtilities.buildCoverageWithNovalue("draindir", dirWR, regionMap, inPit.getCoordinateReferenceSystem(), HMConstants.intNovalue);
+        outTca = CoverageUtilities.buildCoverageWithNovalue("tca", tcaWR, regionMap, inPit.getCoordinateReferenceSystem(), HMConstants.shortNovalue);
     }
 
     private void orlandiniD8LAD( int[] indexes, WritableRaster deviationsWR, BitMatrix analizedMatrix, WritableRaster pitWR,
