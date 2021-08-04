@@ -23,8 +23,10 @@ import java.text.DecimalFormat;
 
 import javax.swing.filechooser.FileFilter;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.gears.io.geopaparazzi.GeopaparazziUtilities;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -46,19 +48,40 @@ public class HMConstants {
      */
     public static final double doubleNovalue = -9999.0;
 
-    /**
-     * Checker for default double novalue.
+    /** 
+     * Get the novalue from the coverage, if defined.
      * 
-     * <p>
-     * This was done since with NaN the != check doesn't work.
-     * This has to be strict in line with the {@link #doubleNovalue}.
-     * </p>
+     * @param gc the coverage to check.
+     * @return the novalue from the coverage or a default if not defined.
+     */
+    public static double getNovalue( GridCoverage2D gc ) {
+        Double nvObj = CoverageUtilities.getNovalue(gc);
+        double nv = HMConstants.doubleNovalue;
+        if (nvObj != null) {
+            nv = nvObj;
+        }
+        return nv;
+    }
+
+    /**
+     * Check if a value is novalue, the standard HM way.
      * 
      * @param value the value to check.
-     * @return true if the passed value is a novalue.
+     * @return <code>true</code> if the value is a novalue.
      */
     public static boolean isNovalue( double value ) {
         return Double.isNaN(value) || value == doubleNovalue;
+    }
+
+    /** 
+     * Check if the value is a novalue, also against a provided possible value. 
+     * 
+     * @param value the value to check.
+     * @param noValue the novalue to check against.
+     * @return <code>true</code> if the value is a novalue.
+     */
+    public static boolean isNovalue( double value, double noValue ) {
+        return value == noValue || isNovalue(value);
     }
 
     /**
@@ -71,7 +94,7 @@ public class HMConstants {
      */
     public static boolean isOneNovalue( double... values ) {
         for( double value : values ) {
-            if (Double.isNaN(value) ||value == doubleNovalue)
+            if (Double.isNaN(value) || value == doubleNovalue)
                 return true;
         }
         return false;

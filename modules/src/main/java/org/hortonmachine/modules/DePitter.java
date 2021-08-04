@@ -88,8 +88,8 @@ public class DePitter extends HMModel {
     
     public static void main( String[] args ) throws Exception {
         DePitter d= new DePitter();
-        d.inElev = "/Users/hydrologis/data/PIT_TEST/eu_dem_v22_itnord.tif";
-        d.outPit = "/Users/hydrologis/data/PIT_TEST/pit.tif";
+        d.inElev = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/DEM_gura.tif";
+        d.outPit = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/depit_gura.tif";
         d.doFlow = false;
         d.doParallel= true;
         d.process();

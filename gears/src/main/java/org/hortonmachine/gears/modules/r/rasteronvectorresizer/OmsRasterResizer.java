@@ -40,7 +40,6 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.HMVersion;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Coordinate;
@@ -177,16 +176,8 @@ public class OmsRasterResizer extends HMModel {
             GridGeometry2D inGridGeometry = inRaster.getGridGeometry();
             GridGeometry2D maskGridGeometry = inMaskRaster.getGridGeometry();
 
-            Double novalueObj = CoverageUtilities.getNovalue(inRaster);
-            double inRasterNv = HMConstants.doubleNovalue;
-            if (novalueObj != null) {
-                inRasterNv = novalueObj;
-            }
-            novalueObj = CoverageUtilities.getNovalue(inMaskRaster);
-            double maskRasterNv = HMConstants.doubleNovalue;
-            if (novalueObj != null) {
-                maskRasterNv = novalueObj;
-            }
+            double inRasterNv = HMConstants.getNovalue(inRaster);
+            double maskRasterNv = HMConstants.getNovalue(inMaskRaster);
 
             try {
                 pm.beginTask("Resizing raster...", rows);
@@ -196,7 +187,7 @@ public class OmsRasterResizer extends HMModel {
                     }
                     for( int c = 0; c < cols; c++ ) {
                         double maskValue = outIter.getSampleDouble(c, r, 0);
-                        if (maskValue != maskRasterNv && !HMConstants.isNovalue(maskValue)) {
+                        if (!HMConstants.isNovalue(maskValue, maskRasterNv)) {
                             Coordinate coordinate = CoverageUtilities.coordinateFromColRow(c, r, maskGridGeometry);
                             if (inEnvelope.contains(coordinate)) {
                                 int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, inGridGeometry, null);
@@ -213,8 +204,8 @@ public class OmsRasterResizer extends HMModel {
                 }
                 pm.done();
 
-                outRaster = CoverageUtilities.buildCoverage("resized", outWR, maskRegionMap,
-                        inRaster.getCoordinateReferenceSystem());
+                outRaster = CoverageUtilities.buildCoverageWithNovalue("resized", outWR, maskRegionMap,
+                        inRaster.getCoordinateReferenceSystem(), inRasterNv);
             } finally {
                 inIter.done();
                 maskOutIter.done();

@@ -21,8 +21,6 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSCOVERAGELISTER_AUTHO
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCOVERAGELISTER_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCOVERAGELISTER_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCOVERAGELISTER_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCOVERAGELISTER_FILE_NOVALUE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSCOVERAGELISTER_GEODATA_NOVALUE_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCOVERAGELISTER_IN_FILES_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCOVERAGELISTER_KEYWORDS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCOVERAGELISTER_LABEL;
@@ -38,10 +36,14 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSCOVERAGELISTER_P_WES
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCOVERAGELISTER_P_X_RES_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCOVERAGELISTER_P_Y_RES_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCOVERAGELISTER_STATUS;
-import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -55,11 +57,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
 
 @Description(OMSCOVERAGELISTER_DESCRIPTION)
 @Documentation(OMSCOVERAGELISTER_DOCUMENTATION)
@@ -75,14 +72,6 @@ public class OmsCoverageLister extends HMModel {
     @UI(HMConstants.FILESPATHLIST_UI_HINT)
     @In
     public List<String> inFiles;
-
-    @Description(OMSCOVERAGELISTER_FILE_NOVALUE_DESCRIPTION)
-    @In
-    public Double fileNovalue = -9999.0;
-
-    @Description(OMSCOVERAGELISTER_GEODATA_NOVALUE_DESCRIPTION)
-    @In
-    public Double geodataNovalue = doubleNovalue;
 
     @Description(OMSCOVERAGELISTER_P_NORTH_DESCRIPTION)
     @UI(HMConstants.PROCESS_NORTH_UI_HINT)
@@ -136,8 +125,6 @@ public class OmsCoverageLister extends HMModel {
         for( String file : inFiles ) {
             OmsRasterReader reader = new OmsRasterReader();
             reader.file = file;
-            reader.fileNovalue = fileNovalue;
-            reader.geodataNovalue = geodataNovalue;
             reader.pNorth = pNorth;
             reader.pSouth = pSouth;
             reader.pWest = pWest;

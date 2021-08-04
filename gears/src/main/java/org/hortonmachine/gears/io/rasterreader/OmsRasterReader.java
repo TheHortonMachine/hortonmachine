@@ -17,67 +17,28 @@
  */
 package org.hortonmachine.gears.io.rasterreader;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_FILE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_FILE_NOVALUE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_GEO_DATA_NOVALUE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_COLS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_EAST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_NORTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_ROWS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_SOUTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_WEST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_X_RES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_Y_RES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_STATUS;
-import static org.hortonmachine.gears.libs.modules.HMConstants.AIG;
-import static org.hortonmachine.gears.libs.modules.HMConstants.ESRIGRID;
-import static org.hortonmachine.gears.libs.modules.HMConstants.GEOTIF;
-import static org.hortonmachine.gears.libs.modules.HMConstants.GEOTIFF;
-import static org.hortonmachine.gears.libs.modules.HMConstants.GRASS;
-import static org.hortonmachine.gears.libs.modules.HMConstants.JPEG;
-import static org.hortonmachine.gears.libs.modules.HMConstants.JPG;
-import static org.hortonmachine.gears.libs.modules.HMConstants.PNG;
-import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.COLS;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_AUTHORNAMES;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_DESCRIPTION;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_KEYWORDS;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_LABEL;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_LICENSE;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_NAME;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_STATUS;
+import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERREADER;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.EAST;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.NORTH;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.ROWS;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.SOUTH;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.WEST;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.XRES;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.YRES;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.buildCoverage;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.createGridGeometryGeneralParameter;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.createWritableRaster;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionParams;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.makeRegionParamsMap;
 
-import java.awt.RenderingHints;
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.media.jai.ImageLayout;
-import javax.media.jai.JAI;
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -85,19 +46,12 @@ import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.coverage.grid.io.UnknownFormat;
-import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
 import org.geotools.coverage.processing.Operations;
-import org.geotools.coverageio.gdal.BaseGDALGridCoverage2DReader;
-import org.geotools.coverageio.gdal.aig.AIGReader;
-import org.geotools.gce.arcgrid.ArcGridReader;
-import org.geotools.gce.geotiff.GeoTiffFormat;
-import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.gce.grassraster.GrassCoverageReader;
 import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.gce.grassraster.format.GrassCoverageFormat;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
-import org.geotools.gce.image.WorldImageReader;
 import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.factory.Hints;
@@ -107,14 +61,10 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.files.FileUtilities;
-import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import it.geosolutions.jaiext.range.NoDataContainer;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -140,14 +90,6 @@ public class OmsRasterReader extends HMModel {
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String file = null;
-
-    @Description(OMSRASTERREADER_FILE_NOVALUE_DESCRIPTION)
-    @In
-    public Double fileNovalue = -9999.0;
-
-    @Description(OMSRASTERREADER_GEO_DATA_NOVALUE_DESCRIPTION)
-    @In
-    public Double geodataNovalue = doubleNovalue;
 
     @Description(OMSRASTERREADER_P_NORTH_DESCRIPTION)
     @UI(HMConstants.PROCESS_NORTH_UI_HINT)
@@ -193,6 +135,27 @@ public class OmsRasterReader extends HMModel {
     @Out
     public GridCoverage2D outRaster = null;
 
+    public static final String OMSRASTERREADER_DESCRIPTION = "Raster reader module.";
+    public static final String OMSRASTERREADER_DOCUMENTATION = "OmsRasterReader.html";
+    public static final String OMSRASTERREADER_KEYWORDS = "IO, Coverage, Raster, Reading";
+    public static final String OMSRASTERREADER_LABEL = RASTERREADER;
+    public static final String OMSRASTERREADER_NAME = "rasterreader";
+    public static final int OMSRASTERREADER_STATUS = 40;
+    public static final String OMSRASTERREADER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSRASTERREADER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSRASTERREADER_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSRASTERREADER_FILE_DESCRIPTION = "The raster file to read with extension (supported are: asc, tiff, grass).";
+    public static final String OMSRASTERREADER_P_NORTH_DESCRIPTION = "The optional requested boundary north coordinate.";
+    public static final String OMSRASTERREADER_P_SOUTH_DESCRIPTION = "The optional requested boundary south coordinate.";
+    public static final String OMSRASTERREADER_P_WEST_DESCRIPTION = "The optional requested boundary west coordinate.";
+    public static final String OMSRASTERREADER_P_EAST_DESCRIPTION = "The optional requested boundary east coordinate.";
+    public static final String OMSRASTERREADER_P_X_RES_DESCRIPTION = "The optional requested resolution in x.";
+    public static final String OMSRASTERREADER_P_Y_RES_DESCRIPTION = "The optional requested resolution in y.";
+    public static final String OMSRASTERREADER_P_ROWS_DESCRIPTION = "The optional requested numer of rows.";
+    public static final String OMSRASTERREADER_P_COLS_DESCRIPTION = "The optional requested numer of cols.";
+    public static final String OMSRASTERREADER_DO_LEGACY_GRASS_DESCRIPTION = "Optional flag to force a legacy GRASS driver usage.";
+    public static final String OMSRASTERREADER_OUT_RASTER_DESCRIPTION = "The read output raster map.";
+
     /**
      * Flag to read only envelope (if true, the output geodata is null).
      */
@@ -210,22 +173,11 @@ public class OmsRasterReader extends HMModel {
     private double[] pRes;
     private int[] pRowcol;
 
-    private double internalFileNovalue = -9999.0;
-    private double internalGeodataNovalue = doubleNovalue;
-
     @Execute
     public void process() throws Exception {
         if (!concatOr(outRaster == null, doReset)) {
             return;
         }
-
-        if (fileNovalue != null) {
-            internalFileNovalue = fileNovalue;
-        }
-        if (geodataNovalue != null) {
-            internalGeodataNovalue = geodataNovalue;
-        }
-
         if (hasBoundsRequest() && (!hasResolutionRequest() && !hasRowColsRequest())) {
             throw new RuntimeException("If bounds are requested, also a resolution or number of rows/cols has to be supplied.");
         }
@@ -255,14 +207,8 @@ public class OmsRasterReader extends HMModel {
                     originalEnvelope = rasterReader.getOriginalEnvelope();
                     if (!doEnvelope) {
                         outRaster = rasterReader.read(generalParameter);
-
-                        Double noValueObj = CoverageUtilities.getNovalue(outRaster);
-                        if (noValueObj != null) {
-                            fileNovalue = noValueObj;
-                        }
-
                         resample();
-                        checkNovalues();
+//                        checkNovalues();
                     }
 
                     boolean crsValid = CrsUtilities.isCrsValid(outRaster.getCoordinateReferenceSystem());
@@ -324,7 +270,6 @@ public class OmsRasterReader extends HMModel {
             GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
             GrassCoverageReader reader = format.getReader(mapEnvironment.getCELL());
             outRaster = (GridCoverage2D) reader.read(generalParameter);
-            checkNovalues();
         }
     }
 
@@ -379,40 +324,40 @@ public class OmsRasterReader extends HMModel {
         outRaster = (GridCoverage2D) Operations.DEFAULT.resample(outRaster, crs, gg, null);
     }
 
-    private void checkNovalues() {
-        // TODO make this nice, this can't be the way
-        if (fileNovalue == null || geodataNovalue == null) {
-            return;
-        }
-        if (isNovalue(internalFileNovalue) && isNovalue(internalGeodataNovalue)) {
-            return;
-        }
-        if (!NumericsUtilities.dEq(internalFileNovalue, internalGeodataNovalue)) {
-            HashMap<String, Double> params = getRegionParamsFromGridCoverage(outRaster);
-            int height = params.get(ROWS).intValue();
-            int width = params.get(COLS).intValue();
-            WritableRaster tmpWR = createWritableRaster(width, height, null, null, null);
-            WritableRandomIter tmpIter = RandomIterFactory.createWritable(tmpWR, null);
-            RenderedImage readRI = outRaster.getRenderedImage();
-            RandomIter readIter = RandomIterFactory.create(readRI, null);
-            int minX = readRI.getMinX();
-            int minY = readRI.getMinY();
-            for( int r = 0; r < height; r++ ) {
-                for( int c = 0; c < width; c++ ) {
-                    double value = readIter.getSampleDouble(c + minX, r + minY, 0);
-                    if (isNovalue(value) || value == internalFileNovalue || value == -Float.MAX_VALUE
-                            || value == Float.MAX_VALUE) {
-                        tmpIter.setSample(c, r, 0, internalGeodataNovalue);
-                    } else {
-                        tmpIter.setSample(c, r, 0, value);
-                    }
-                }
-            }
-            readIter.done();
-            tmpIter.done();
-            outRaster = buildCoverage(new File(file).getName(), tmpWR, params, outRaster.getCoordinateReferenceSystem());
-        }
-    }
+//    private void checkNovalues() {
+//        // TODO make this nice, this can't be the way
+//        if (fileNovalue == null || geodataNovalue == null) {
+//            return;
+//        }
+//        if (isNovalue(internalFileNovalue) && isNovalue(internalGeodataNovalue)) {
+//            return;
+//        }
+//        if (!NumericsUtilities.dEq(internalFileNovalue, internalGeodataNovalue)) {
+//            HashMap<String, Double> params = getRegionParamsFromGridCoverage(outRaster);
+//            int height = params.get(ROWS).intValue();
+//            int width = params.get(COLS).intValue();
+//            WritableRaster tmpWR = createWritableRaster(width, height, null, null, null);
+//            WritableRandomIter tmpIter = RandomIterFactory.createWritable(tmpWR, null);
+//            RenderedImage readRI = outRaster.getRenderedImage();
+//            RandomIter readIter = RandomIterFactory.create(readRI, null);
+//            int minX = readRI.getMinX();
+//            int minY = readRI.getMinY();
+//            for( int r = 0; r < height; r++ ) {
+//                for( int c = 0; c < width; c++ ) {
+//                    double value = readIter.getSampleDouble(c + minX, r + minY, 0);
+//                    if (isNovalue(value) || value == internalFileNovalue || value == -Float.MAX_VALUE
+//                            || value == Float.MAX_VALUE) {
+//                        tmpIter.setSample(c, r, 0, internalGeodataNovalue);
+//                    } else {
+//                        tmpIter.setSample(c, r, 0, value);
+//                    }
+//                }
+//            }
+//            readIter.done();
+//            tmpIter.done();
+//            outRaster = buildCoverage(new File(file).getName(), tmpWR, params, outRaster.getCoordinateReferenceSystem());
+//        }
+//    }
 
     private boolean hasBoundsRequest() {
         return pNorth != null && pSouth != null && pWest != null && pEast != null;

@@ -102,6 +102,8 @@ public class OmsDePitter extends GridMultiProcessing {
 
     private double yRes;
 
+    private double novalue;
+
     @Execute
     public void process() throws Exception {
         checkNull(inElev);
@@ -111,6 +113,8 @@ public class OmsDePitter extends GridMultiProcessing {
         rows = regionMap.getRows();
         xRes = regionMap.getXres();
         yRes = regionMap.getYres();
+
+        novalue = HMConstants.getNovalue(inElev);
 
         // output raster
         WritableRaster pitRaster = CoverageUtilities.renderedImage2DoubleWritableRaster(inElev.getRenderedImage(), false);
@@ -183,7 +187,8 @@ public class OmsDePitter extends GridMultiProcessing {
 
             }
 
-            outPit = CoverageUtilities.buildCoverage("pitfiller", pitRaster, regionMap, inElev.getCoordinateReferenceSystem());
+            outPit = CoverageUtilities.buildCoverageWithNovalue("pitfiller", pitRaster, regionMap,
+                    inElev.getCoordinateReferenceSystem(), novalue);
             // GridGeometry2D gridGeometry = inElev.getGridGeometry();
             //
             // SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
@@ -237,7 +242,7 @@ public class OmsDePitter extends GridMultiProcessing {
                         if (pm.isCanceled()) {
                             return;
                         }
-                        GridNode node = new GridNode(pitIter, cols, rows, xRes, yRes, c, r);
+                        GridNode node = new GridNode(pitIter, cols, rows, xRes, yRes, c, r, novalue);
                         boolean isValid = node.isValid();
                         if (!isValid || node.touchesBound() || node.touchesNovalue()) {
                             flowIter.setSample(c, r, 0, HMConstants.intNovalue);
@@ -254,8 +259,8 @@ public class OmsDePitter extends GridMultiProcessing {
                     });
                     pm.done();
 
-                    outFlow = CoverageUtilities.buildCoverage("flow", flowRaster, regionMap,
-                            inElev.getCoordinateReferenceSystem());
+                    outFlow = CoverageUtilities.buildCoverageWithNovalue("flow", flowRaster, regionMap,
+                            inElev.getCoordinateReferenceSystem(), HMConstants.intNovalue);
                 } finally {
                     flowIter.done();
                 }
@@ -302,10 +307,6 @@ public class OmsDePitter extends GridMultiProcessing {
                         return;
                     }
                     GridNode currentPitNode = nodesInPit.get(workingIndex);
-
-                    if (currentPitNode.col == 9 && currentPitNode.row == 8) {
-                        System.out.println();
-                    }
 
                     List<GridNode> surroundingNodes = new ArrayList<>(currentPitNode.getValidSurroundingNodes());
                     removeExistingPits(allPitsPositions, surroundingNodes);
@@ -608,7 +609,7 @@ public class OmsDePitter extends GridMultiProcessing {
         List<GridNode> updatedConnected = new ArrayList<>();
         for( GridNode gridNode : connected ) {
             GridNode updatedNode = new GridNode(pitIter, gridNode.cols, gridNode.rows, gridNode.xRes, gridNode.yRes, gridNode.col,
-                    gridNode.row);
+                    gridNode.row, novalue);
             updatedConnected.add(updatedNode);
         }
         makeCellsFlowReady(iteration, pitfillExitNode, updatedConnected, allPitsPositions, pitIter, delta);
@@ -621,7 +622,7 @@ public class OmsDePitter extends GridMultiProcessing {
             pm.beginTask("Extract pits from DTM...", nRows);
         for( int row = 0; row < nRows; row++ ) {
             for( int col = 0; col < nCols; col++ ) {
-                GridNode node = new GridNode(pitIter, nCols, nRows, xRes, yRes, col, row);
+                GridNode node = new GridNode(pitIter, nCols, nRows, xRes, yRes, col, row, novalue);
                 if (node.isPit()) {
                     double surroundingMin = node.getSurroundingMin();
                     if (Double.isInfinite(surroundingMin)) {
@@ -651,7 +652,7 @@ public class OmsDePitter extends GridMultiProcessing {
                     continue;
                 }
 
-                GridNode node = new GridNode(pitIter, nCols, nRows, xRes, yRes, col, row);
+                GridNode node = new GridNode(pitIter, nCols, nRows, xRes, yRes, col, row, novalue);
                 if (node.isPit()) {
                     double surroundingMin = node.getSurroundingMin();
                     if (Double.isInfinite(surroundingMin)) {

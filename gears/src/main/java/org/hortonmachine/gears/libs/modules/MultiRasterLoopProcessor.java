@@ -20,7 +20,7 @@ public class MultiRasterLoopProcessor {
         this.pm = pm;
     }
 
-    public GridCoverage2D loop( IDataLoopFunction function, GridCoverage2D... rasters ) {
+    public GridCoverage2D loop( IDataLoopFunction function, Double noValue, GridCoverage2D... rasters ) {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(rasters[0]);
         int rows = regionMap.getRows();
         int cols = regionMap.getCols();
@@ -33,6 +33,11 @@ public class MultiRasterLoopProcessor {
             if (rasters != null) {
                 iters[i] = CoverageUtilities.getRandomIterator(rasters[i]);
             }
+        }
+
+        double nv = HMConstants.doubleNovalue;
+        if (noValue != null) {
+            nv = noValue;
         }
 
         try {
@@ -48,7 +53,7 @@ public class MultiRasterLoopProcessor {
                         if (iters[i] != null) {
                             values[i] = iters[i].getSampleDouble(c, r, 0);
                         } else {
-                            values[i] = Double.NaN;
+                            values[i] = nv;
                         }
                     }
                     double result = function.process(values);
@@ -64,7 +69,7 @@ public class MultiRasterLoopProcessor {
             outIter.done();
         }
 
-        return CoverageUtilities.buildCoverage("raster", outWR, regionMap, rasters[0].getCoordinateReferenceSystem());
+        return CoverageUtilities.buildCoverageWithNovalue("raster", outWR, regionMap, rasters[0].getCoordinateReferenceSystem(), noValue);
     }
 
 }

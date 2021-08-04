@@ -165,6 +165,7 @@ public class OmsPointCloudMaximaFinder extends HMModel {
             helper.xres = regionMap.getXres();
             helper.yres = regionMap.getYres();
             helper.dsmDtmDiffIter = CoverageUtilities.getRandomIterator(inDsmDtmDiff);
+            helper.novalue = HMConstants.getNovalue(inDsmDtmDiff);
         }
 
         try {
@@ -219,10 +220,10 @@ public class OmsPointCloudMaximaFinder extends HMModel {
                         if (isLocalMaxima) {
                             if (helper != null) {
                                 // check if it is some border or noise
-                                GridCoordinates2D gridCoord = helper.gridGeometry.worldToGrid(new DirectPosition2D(currentDot.x,
-                                        currentDot.y));
+                                GridCoordinates2D gridCoord = helper.gridGeometry
+                                        .worldToGrid(new DirectPosition2D(currentDot.x, currentDot.y));
                                 GridNode node = new GridNode(helper.dsmDtmDiffIter, helper.cols, helper.rows, helper.xres,
-                                        helper.yres, gridCoord.x, gridCoord.y);
+                                        helper.yres, gridCoord.x, gridCoord.y, helper.novalue);
                                 double topElevation = node.elevation;
                                 if (!node.isValid() || node.touchesBound()) {
                                     isLocalMaxima = false;
@@ -280,6 +281,7 @@ public class OmsPointCloudMaximaFinder extends HMModel {
         double xres;
         double yres;
         RandomIter dsmDtmDiffIter;
+        double novalue;
     }
 
 }

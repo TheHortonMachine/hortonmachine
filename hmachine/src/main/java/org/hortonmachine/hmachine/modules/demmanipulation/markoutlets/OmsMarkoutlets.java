@@ -46,6 +46,7 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.FlowNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -81,12 +82,14 @@ public class OmsMarkoutlets extends HMModel {
 
         WritableRaster mflowWR = CoverageUtilities.renderedImage2WritableRaster(inFlow.getRenderedImage(), false);
         WritableRandomIter mflowIter = RandomIterFactory.createWritable(mflowWR, null);
+        
+        double novalue = HMConstants.getNovalue(inFlow);
 
         pm.beginTask(msg.message("markoutlets.working"), nRows); //$NON-NLS-1$
 
         for( int r = 0; r < nRows; r++ ) {
             for( int c = 0; c < nCols; c++ ) {
-                FlowNode flowNode = new FlowNode(mflowIter, nCols, nRows, c, r);
+                FlowNode flowNode = new FlowNode(mflowIter, nCols, nRows, c, r, novalue);
                 if (flowNode.isValid() && flowNode.isHeadingOutside()) {
                     flowNode.setValueInMap(mflowIter, FlowNode.OUTLET);
                 }

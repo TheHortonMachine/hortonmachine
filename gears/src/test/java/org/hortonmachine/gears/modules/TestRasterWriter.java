@@ -24,7 +24,6 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
-import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -63,8 +62,6 @@ public class TestRasterWriter extends HMTestCase {
 
             OmsRasterReader reader = new OmsRasterReader();
             reader.file = arcPath;
-            reader.fileNovalue = HMConstants.doubleNovalue;
-            reader.geodataNovalue = HMConstants.doubleNovalue;
             reader.process();
             GridCoverage2D readCoverage = reader.outRaster;
             checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
@@ -76,8 +73,6 @@ public class TestRasterWriter extends HMTestCase {
 
             reader = new OmsRasterReader();
             reader.file = grassPath;
-            reader.fileNovalue = HMConstants.doubleNovalue;
-            reader.geodataNovalue = HMConstants.doubleNovalue;
             reader.process();
             readCoverage = reader.outRaster;
             checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);

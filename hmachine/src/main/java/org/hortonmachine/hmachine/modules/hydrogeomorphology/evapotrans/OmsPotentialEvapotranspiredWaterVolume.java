@@ -98,6 +98,8 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
     public void process() throws Exception {
         checkNull(inCropCoefficient, inMaxTemp, inMinTemp, inAtmosphericTemp, inSolarRadiation, inRainfall);
 
+        double rainNv = HMConstants.getNovalue(inRainfall);
+
         MultiRasterLoopProcessor processor = new MultiRasterLoopProcessor("Calculating PET...", pm);
         IDataLoopFunction funct = new IDataLoopFunction(){
             @Override
@@ -107,14 +109,19 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
                     isValid = isValid && !HMConstants.isNovalue(d);
                 }
                 if (isValid) {
-                    return calculateRunoff(values[0], values[1], values[2], values[3], values[4], values[5]);
-
+                    double kc = values[0];
+                    double tMax = values[1];
+                    double tMin = values[2];
+                    double tAvg = values[3];
+                    double rainfall = values[4];
+                    double solarRad = values[5];
+                    return calculateEtp(kc, tMax, tMin, tAvg, rainfall, solarRad);
                 } else {
-                    return Double.NaN;
+                    return rainNv;
                 }
             }
         };
-        outputPet = processor.loop(funct, inCropCoefficient, inMaxTemp, inMinTemp, inAtmosphericTemp, inRainfall,
+        outputPet = processor.loop(funct, rainNv, inCropCoefficient, inMaxTemp, inMinTemp, inAtmosphericTemp, inRainfall,
                 inSolarRadiation);
 
     }
@@ -123,7 +130,7 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
      * Calculate pet.
      *  
      */
-    public static double calculateRunoff( double kc, double tMax, double tMin, double tAvg, double rainfall, double solarRad ) {
+    public static double calculateEtp( double kc, double tMax, double tMin, double tAvg, double rainfall, double solarRad ) {
         double referenceET = 0.0013 * 0.408 * solarRad * (tAvg + 17) * Math.pow((tMax - tMin - 0.0123 * rainfall), 0.76);
         double pet = kc * referenceET;
         return pet;

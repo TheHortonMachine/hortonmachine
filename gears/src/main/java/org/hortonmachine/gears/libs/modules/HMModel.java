@@ -265,21 +265,6 @@ public class HMModel {
         return filePath;
     }
 
-    /** 
-     * Get the novalue from the coverage, if defined.
-     * 
-     * @param gc the coverage to check.
-     * @return the novalue from the coverage or a default if not defined.
-     */
-    protected double getNovalue( GridCoverage2D gc ) {
-        Double nvObj = CoverageUtilities.getNovalue(gc);
-        double nv = HMConstants.doubleNovalue;
-        if (nvObj != null) {
-            nv = nvObj;
-        }
-        return nv;
-    }
-
     /**
      * Fast default reading of raster from definition. 
      * 

@@ -101,6 +101,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
         WritableRaster outBaseflowWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
         WritableRandomIter outBaseflowIter = CoverageUtilities.getWritableRandomIterator(outBaseflowWR);
 
+        double novalue = HMConstants.getNovalue(inFlowdirections);
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlowdirections);
         RandomIter netInfiltrationIter = CoverageUtilities.getRandomIterator(inNetInfiltration);
         RandomIter infiltrationIter = CoverageUtilities.getRandomIterator(inInfiltration);
@@ -115,7 +116,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
                     return;
                 }
                 for( int c = 0; c < cols; c++ ) {
-                    FlowNode node = new FlowNode(flowIter, cols, rows, c, r);
+                    FlowNode node = new FlowNode(flowIter, cols, rows, c, r, novalue);
 
                     // get exit cells
                     if (node.isHeadingOutside()) {

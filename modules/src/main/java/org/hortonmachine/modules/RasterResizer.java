@@ -94,7 +94,7 @@ public class RasterResizer extends HMModel {
         RasterResizer r = new RasterResizer();
         r.inMaskRaster = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/DEM_gura.tif";
         r.inRaster = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/precip_gura.tif";
-        r.outRaster = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/precip_gura_test.tif";
+        r.outRaster = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/precip_gura_onDEM.tif";
         r.process();
     }
 }

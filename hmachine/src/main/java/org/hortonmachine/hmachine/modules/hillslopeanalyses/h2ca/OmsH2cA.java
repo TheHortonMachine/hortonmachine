@@ -51,6 +51,7 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.FlowNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -91,6 +92,8 @@ public class OmsH2cA extends HMModel {
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
 
+        double novalue = HMConstants.getNovalue(inFlow);
+
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
@@ -115,7 +118,7 @@ public class OmsH2cA extends HMModel {
         WritableRaster h2caWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
         WritableRandomIter h2caIter = RandomIterFactory.createWritable(h2caWR, null);
 
-        ModelsEngine.markHillSlopeWithLinkValue(flowIter, attributeIter, h2caIter, cols, rows, pm);
+        ModelsEngine.markHillSlopeWithLinkValue(flowIter, novalue, attributeIter, h2caIter, cols, rows, pm);
 
         h2caIter.done();
         attributeIter.done();

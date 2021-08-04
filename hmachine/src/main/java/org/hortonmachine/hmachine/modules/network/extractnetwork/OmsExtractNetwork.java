@@ -36,6 +36,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.FlowNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.Node;
 import org.hortonmachine.gears.libs.modules.multiprocessing.GridMultiProcessing;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -137,22 +138,25 @@ public class OmsExtractNetwork extends GridMultiProcessing {
             networkWR = extractNetTcaThreshold(tcaRI);
         } else if (pMode.equals(TCA_SLOPE)) {
             checkNull(inSlope);
+            double novalue = HMConstants.getNovalue(inFlow);
             RenderedImage flowRI = inFlow.getRenderedImage();
             RenderedImage slopeRI = inSlope.getRenderedImage();
-            networkWR = extractNetMode1(flowRI, tcaRI, slopeRI);
+            networkWR = extractNetMode1(flowRI, novalue, tcaRI, slopeRI);
         } else if (pMode.equals(TCA_CONVERGENT)) {
             checkNull(inSlope, inTc3);
+            double novalue = HMConstants.getNovalue(inFlow);
             RenderedImage flowRI = inFlow.getRenderedImage();
             RenderedImage classRI = inTc3.getRenderedImage();
             RenderedImage slopeRI = inSlope.getRenderedImage();
-            networkWR = extractNetMode2(flowRI, tcaRI, classRI, slopeRI);
+            networkWR = extractNetMode2(flowRI, novalue, tcaRI, classRI, slopeRI);
         } else {
             throw new ModelsIllegalargumentException("The selected mode is not valid.", this);
         }
         if (pm.isCanceled()) {
             return;
         }
-        outNet = CoverageUtilities.buildCoverage("network", networkWR, regionMap, inTca.getCoordinateReferenceSystem());
+        outNet = CoverageUtilities.buildCoverageWithNovalue("network", networkWR, regionMap, inTca.getCoordinateReferenceSystem(),
+                shortNovalue);
 
     }
 
@@ -194,7 +198,8 @@ public class OmsExtractNetwork extends GridMultiProcessing {
      * slope.
      * @throws Exception 
      */
-    private WritableRaster extractNetMode1( RenderedImage flowRI, RenderedImage tcaRI, RenderedImage slopeRI ) throws Exception {
+    private WritableRaster extractNetMode1( RenderedImage flowRI, double novalue, RenderedImage tcaRI, RenderedImage slopeRI )
+            throws Exception {
 
         RandomIter flowRandomIter = RandomIterFactory.create(flowRI, null);
         RandomIter tcaRandomIter = RandomIterFactory.create(tcaRI, null);
@@ -216,7 +221,7 @@ public class OmsExtractNetwork extends GridMultiProcessing {
 
                     if (tcaValue * slopeValue >= pThres) {
                         netRandomIter.setSample(c, r, 0, NETVALUE);
-                        FlowNode flowNode = new FlowNode(flowRandomIter, cols, rows, c, r);
+                        FlowNode flowNode = new FlowNode(flowRandomIter, cols, rows, c, r, novalue);
                         FlowNode runningNode = flowNode;
                         while( (runningNode = runningNode.goDownstream()) != null ) {
                             int rCol = runningNode.col;
@@ -258,7 +263,7 @@ public class OmsExtractNetwork extends GridMultiProcessing {
      * as being part of the channel network.
      * @throws Exception 
      */
-    private WritableRaster extractNetMode2( RenderedImage flowRI, RenderedImage tcaRI, RenderedImage classRI,
+    private WritableRaster extractNetMode2( RenderedImage flowRI, double novalue, RenderedImage tcaRI, RenderedImage classRI,
             RenderedImage slopeRI ) throws Exception {
         RandomIter flowRandomIter = RandomIterFactory.create(flowRI, null);
         RandomIter tcaRandomIter = RandomIterFactory.create(tcaRI, null);
@@ -283,7 +288,7 @@ public class OmsExtractNetwork extends GridMultiProcessing {
                     tcaValue = pow(tcaValue, pExp) * slopeValue;
                     if (tcaValue >= pThres && classRandomIter.getSample(c, r, 0) == 15) {
                         netRandomIter.setSample(c, r, 0, NETVALUE);
-                        FlowNode flowNode = new FlowNode(flowRandomIter, cols, rows, c, r);
+                        FlowNode flowNode = new FlowNode(flowRandomIter, cols, rows, c, r, novalue);
                         FlowNode runningNode = flowNode;
                         while( (runningNode = runningNode.goDownstream()) != null ) {
                             int rCol = runningNode.col;

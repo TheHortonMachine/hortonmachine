@@ -207,13 +207,14 @@ public class OmsRasterMaximaFinder extends HMModel {
         outCircles = new DefaultFeatureCollection();
 
         RandomIter elevIter = CoverageUtilities.getRandomIterator(inDsmDtmDiff);
+        double novalue = HMConstants.getNovalue(inDsmDtmDiff);
 
         int id = 1;
         pm.beginTask("Finding maxima...", rows);
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
 
-                GridNode node = new GridNode(elevIter, cols, rows, xRes, yRes, c, r);
+                GridNode node = new GridNode(elevIter, cols, rows, xRes, yRes, c, r, novalue);
                 if (!node.isValid()) {
                     continue;
                 }
@@ -340,7 +341,7 @@ public class OmsRasterMaximaFinder extends HMModel {
             pm.worked(1);
         }
         pm.done();
-        
+
         elevIter.done();
 
         if (pBorderDistanceThres > 0) {

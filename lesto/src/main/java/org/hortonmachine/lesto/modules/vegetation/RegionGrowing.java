@@ -111,14 +111,19 @@ public class RegionGrowing extends HMModel {
 
         GridGeometry2D gridGeometry = inDsmGC.getGridGeometry();
 
+        double dsmNv = HMConstants.getNovalue(inDsmGC);
+        double dtmNv;
+
         RandomIter dsmIter = CoverageUtilities.getRandomIterator(inDsmGC);
         RandomIter dtmIter;
         if (inDtm != null) {
             GridCoverage2D inDtmGC = getRaster(inDtm);
             dtmIter = CoverageUtilities.getRandomIterator(inDtmGC);
+            dtmNv = HMConstants.getNovalue(inDtmGC);
         } else {
             WritableRaster dtmWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, 0.0);
             dtmIter = RandomIterFactory.createWritable(dtmWR, null);
+            dtmNv = HMConstants.doubleNovalue;
         }
 
         WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
@@ -133,8 +138,8 @@ public class RegionGrowing extends HMModel {
             Coordinate coordinate = ((Geometry) maximaFeature.getDefaultGeometry()).getCoordinate();
             int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, null);
 
-            GridNode startDsmNode = new GridNode(dsmIter, cols, rows, xRes, yRes, colRow[0], colRow[1]);
-            GridNode startDtmNode = new GridNode(dtmIter, cols, rows, xRes, yRes, colRow[0], colRow[1]);
+            GridNode startDsmNode = new GridNode(dsmIter, cols, rows, xRes, yRes, colRow[0], colRow[1], dsmNv);
+            GridNode startDtmNode = new GridNode(dtmIter, cols, rows, xRes, yRes, colRow[0], colRow[1], dtmNv);
             growRegion(startDsmNode, startDtmNode, index, startDsmNode, startDtmNode);
 
             index++;

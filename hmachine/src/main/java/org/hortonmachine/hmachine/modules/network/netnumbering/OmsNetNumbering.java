@@ -188,7 +188,8 @@ public class OmsNetNumbering extends HMModel {
             outNetnum = CoverageUtilities.buildCoverage("netnum", netNumWR, regionMap, inFlow.getCoordinateReferenceSystem());
 
             netNumIter = RandomIterFactory.createWritable(netNumWR, null);
-            WritableRaster basinWR = ModelsEngine.extractSubbasins(flowIter, netIter, netNumIter, nRows, nCols, pm);
+            double novalue = HMConstants.getNovalue(inFlow);
+            WritableRaster basinWR = ModelsEngine.extractSubbasins(flowIter, novalue, netIter, netNumIter, nRows, nCols, pm);
             outBasins = CoverageUtilities.buildCoverage("subbasins", basinWR, regionMap, inFlow.getCoordinateReferenceSystem());
 
             RandomIter subbasinIter = CoverageUtilities.getRandomIterator(outBasins);
@@ -340,8 +341,8 @@ public class OmsNetNumbering extends HMModel {
                         }
                     }
                     desiredSubbasinsWIter.done();
-                    outDesiredBasins = CoverageUtilities.buildCoverage("desiredsubbasins", desiredSubbasinsWR, regionMap,
-                            inFlow.getCoordinateReferenceSystem());
+                    outDesiredBasins = CoverageUtilities.buildCoverageWithNovalue("desiredsubbasins", desiredSubbasinsWR,
+                            regionMap, inFlow.getCoordinateReferenceSystem(), HMConstants.intNovalue);
                 }
 
             } finally {

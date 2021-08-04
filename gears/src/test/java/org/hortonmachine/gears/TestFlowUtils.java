@@ -53,7 +53,7 @@ public class TestFlowUtils extends HMTestCase {
     }
 
     public void testGridNodeWindow() throws Exception {
-        GridNode n = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 0, 0);
+        GridNode n = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 0, 0, NaN);
         double[][] window = n.getWindow(4, false);
 
         double[][] expected = new double[][]{//
@@ -65,7 +65,7 @@ public class TestFlowUtils extends HMTestCase {
         };
         checkMatrixEqual(expected, window, DELTA);
 
-        n = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 4, 5);
+        n = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 4, 5, NaN);
         window = n.getWindow(5, false);
         expected = new double[][]{//
                 /*    */{650, 700, 750, 800, 850}, //
@@ -89,14 +89,14 @@ public class TestFlowUtils extends HMTestCase {
     }
 
     public void testSlopeTo() throws Exception {
-        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 0, 0);
-        GridNode node2 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 0, 1);
+        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 0, 0, NaN);
+        GridNode node2 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 0, 1, NaN);
         double slopeTo = node1.getSlopeTo(node2);
         assertEquals(slopeTo, 6.666666666666667, DELTA);
     }
 
     public void testSurroundingCells() throws Exception {
-        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 0, 0);
+        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 0, 0, NaN);
         List<GridNode> surroundingNodes = node1.getSurroundingNodes();
         assertEquals(8, surroundingNodes.size());
 
@@ -110,7 +110,7 @@ public class TestFlowUtils extends HMTestCase {
     }
 
     public void testNextSteepestNode() throws Exception {
-        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
+        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2, NaN);
         GridNode nextDownstreamNode = node1.goDownstreamSP();
         assertEquals(nextDownstreamNode.col, 1);
         assertEquals(nextDownstreamNode.row, 3);
@@ -124,7 +124,7 @@ public class TestFlowUtils extends HMTestCase {
     }
 
     public void testEnteringCells() throws Exception {
-        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
+        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2, NaN);
 
         List<GridNode> enteringNodes = node1.getEnteringNodesSP();
         for( GridNode flowNode : enteringNodes ) {
@@ -134,7 +134,7 @@ public class TestFlowUtils extends HMTestCase {
     }
 
     public void testSurroundingCellValues() throws Exception {
-        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
+        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2, NaN);
 
         assertEquals(node1.getElevationAt(Direction.E), 750, DELTA);
         assertEquals(node1.getElevationAt(Direction.EN), 850, DELTA);
@@ -147,7 +147,7 @@ public class TestFlowUtils extends HMTestCase {
     }
 
     public void testNonEnteringCells() throws Exception {
-        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
+        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2, NaN);
 
         List<GridNode> nonEnteringNodes = node1.getNonEnteringNodesSP();
         assertEquals(6, nonEnteringNodes.size());
@@ -158,11 +158,11 @@ public class TestFlowUtils extends HMTestCase {
     }
 
     public void testTouchesBound() throws Exception {
-        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
+        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2, NaN);
         boolean touchesNovalue = node1.touchesNovalue();
         assertTrue(touchesNovalue);
 
-        node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 1, 5);
+        node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 1, 5, NaN);
         touchesNovalue = node1.touchesNovalue();
         assertFalse(touchesNovalue);
     }
@@ -171,7 +171,7 @@ public class TestFlowUtils extends HMTestCase {
         TreeSet<GridNode> set = new TreeSet<GridNode>(new GridNodeElevationToLeastComparator());
         for( int r = 0; r < nRows; r++ ) {
             for( int c = 0; c < nCols; c++ ) {
-                GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
+                GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r, NaN);
                 if (node.isValid()) {
                     boolean added = set.add(node);
                     assertTrue(added);
@@ -189,14 +189,14 @@ public class TestFlowUtils extends HMTestCase {
     }
 
     public void testEnteringFlowCells() throws Exception {
-        FlowNode node = new FlowNode(flowIter, nCols, nRows, 2, 2);
+        FlowNode node = new FlowNode(flowIter, nCols, nRows, 2, 2, NaN);
 
         List<FlowNode> enteringNodes = node.getEnteringNodes();
         Node flowNode = enteringNodes.get(0);
         assertEquals(flowNode.col, 3);
         assertEquals(flowNode.row, 1);
 
-        node = new FlowNode(flowIter, nCols, nRows, 5, 4);
+        node = new FlowNode(flowIter, nCols, nRows, 5, 4, NaN);
         enteringNodes = node.getEnteringNodes();
         flowNode = enteringNodes.get(0);
         assertEquals(flowNode.col, 6);
@@ -210,7 +210,7 @@ public class TestFlowUtils extends HMTestCase {
     }
 
     public void testDownstreamFlowCells() throws Exception {
-        FlowNode node = new FlowNode(flowIter, nCols, nRows, 4, 1);
+        FlowNode node = new FlowNode(flowIter, nCols, nRows, 4, 1, NaN);
 
         FlowNode n = node.goDownstream();
         assertEquals(n.col, 3);

@@ -105,7 +105,8 @@ public class OmsAspectIM extends HMModelIM {
             int writeRows ) {
 
         RandomIter elevIter = inRasterIterators.get(0);
-        GridNode node = new GridNode(elevIter, readCols, readRows, xRes, yRes, readCol, readRow);
+        Double novalue = inRasterNovalues.get(0);
+        GridNode node = new GridNode(elevIter, readCols, readRows, xRes, yRes, readCol, readRow, novalue);
         double aspect = OmsAspect.calculateAspect(node, radtodeg, doRound);
         WritableRandomIter outDataIter = outRasterIterators.get(0);
         outDataIter.setSample(writeCol, writeRow, 0, aspect);

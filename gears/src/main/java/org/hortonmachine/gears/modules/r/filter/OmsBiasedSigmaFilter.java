@@ -22,13 +22,19 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
-import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
 import java.awt.image.WritableRaster;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.GridNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -40,13 +46,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.GridNode;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description("A biased sigma filter.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
@@ -81,7 +80,8 @@ public class OmsBiasedSigmaFilter extends HMModel {
         double yres = regionMap.getYres();
 
         RandomIter inIter = CoverageUtilities.getRandomIterator(inGeodata);
-        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
+        double novalue = HMConstants.getNovalue(inGeodata);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, novalue);
         WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
 
         int part = (pWindow - 1) / 2;
@@ -89,7 +89,7 @@ public class OmsBiasedSigmaFilter extends HMModel {
         pm.beginTask("Processing filter...", cols - (pWindow - 1));
         for( int r = part; r < rows - part; r++ ) {
             for( int c = part; c < cols - part; c++ ) {
-                GridNode node = new GridNode(inIter, cols, rows, xres, yres, c, r);
+                GridNode node = new GridNode(inIter, cols, rows, xres, yres, c, r, novalue);
                 if (node.isValid() && !node.touchesBound()) {
                     double[][] window = node.getWindow(pWindow, false);
 

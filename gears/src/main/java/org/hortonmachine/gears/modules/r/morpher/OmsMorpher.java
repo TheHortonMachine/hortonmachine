@@ -92,6 +92,8 @@ public class OmsMorpher extends HMModel {
             pKernel = MorpherHelp.DEFAULT3X3KERNEL;
         }
 
+        double inNovalue = HMConstants.getNovalue(inMap);
+
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inMap);
         WritableRaster inWR = CoverageUtilities.renderedImage2WritableRaster(inMap.getRenderedImage(), false);
         WritableRaster[] wrHolder = new WritableRaster[1];
@@ -116,13 +118,13 @@ public class OmsMorpher extends HMModel {
             prune(inWR, regionMap, outWR, MorpherHelp.DEFAULT_PRUNE_KERNEL, pIterations);
         } else {
             if (pMode.equals(DILATE)) {
-                dilate(inWR, regionMap, outWR, pKernel, doBinary, pm);
+                dilate(inWR, inNovalue, regionMap, outWR, pKernel, doBinary, pm);
             } else if (pMode.equals(ERODE)) {
-                erode(inWR, regionMap, outWR, pKernel, pm);
+                erode(inWR, inNovalue, regionMap, outWR, pKernel, pm);
             } else if (pMode.equals(OPEN)) {
-                open(inWR, regionMap, outWR, pKernel, doBinary, pm);
+                open(inWR, inNovalue, regionMap, outWR, pKernel, doBinary, pm);
             } else if (pMode.equals(CLOSE)) {
-                close(inWR, regionMap, outWR, pKernel, doBinary, pm);
+                close(inWR, inNovalue, regionMap, outWR, pKernel, doBinary, pm);
             } else {
                 throw new ModelsIllegalargumentException("Could not recognize mode.", this, pm);
             }
@@ -140,8 +142,8 @@ public class OmsMorpher extends HMModel {
      * @param binary if <code>true</code>, binary mode is used.
      * @param pm 
      */
-    public static void dilate( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray, boolean binary,
-            IHMProgressMonitor pm ) {
+    public static void dilate( WritableRaster inWR, double inNovalue, RegionMap regionMap, WritableRaster outWR,
+            int[] kernelArray, boolean binary, IHMProgressMonitor pm ) {
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
         double xres = regionMap.getXres();
@@ -155,7 +157,7 @@ public class OmsMorpher extends HMModel {
         pm.beginTask("Perform dilation...", cols);
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
-                GridNode node = new GridNode(inIter, cols, rows, xres, yres, c, r);
+                GridNode node = new GridNode(inIter, cols, rows, xres, yres, c, r, inNovalue);
                 if (!node.isValid()) {
                     double[][] nodeNeighbours = node.getWindow(kernel.length, false);
                     // apply the kernel
@@ -202,7 +204,7 @@ public class OmsMorpher extends HMModel {
      * @param outWR the raster to modify.
      * @param kernelArray the kernel to use.
      */
-    public static void erode( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray,
+    public static void erode( WritableRaster inWR, double inNovalue, RegionMap regionMap, WritableRaster outWR, int[] kernelArray,
             IHMProgressMonitor pm ) {
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
@@ -217,7 +219,7 @@ public class OmsMorpher extends HMModel {
         pm.beginTask("Perform erosion...", cols);
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
-                GridNode node = new GridNode(inIter, cols, rows, xres, yres, c, r);
+                GridNode node = new GridNode(inIter, cols, rows, xres, yres, c, r, inNovalue);
                 if (node.isValid()) {
                     double[][] nodeNeighbours = node.getWindow(kernel.length, false);
                     // apply the kernel
@@ -264,12 +266,12 @@ public class OmsMorpher extends HMModel {
      * @param kernelArray the kernel to use.
      * @param binary if <code>true</code>, binary mode is used.
      */
-    public static void open( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray, boolean binary,
-            IHMProgressMonitor pm ) {
-        erode(inWR, regionMap, outWR, kernelArray, pm);
+    public static void open( WritableRaster inWR, double inNovalue, RegionMap regionMap, WritableRaster outWR, int[] kernelArray,
+            boolean binary, IHMProgressMonitor pm ) {
+        erode(inWR, inNovalue, regionMap, outWR, kernelArray, pm);
         inWR.setDataElements(0, 0, outWR);
         clearRaster(regionMap, outWR);
-        dilate(inWR, regionMap, outWR, kernelArray, binary, pm);
+        dilate(inWR, inNovalue, regionMap, outWR, kernelArray, binary, pm);
     }
 
     /**
@@ -281,12 +283,12 @@ public class OmsMorpher extends HMModel {
      * @param kernelArray the kernel to use.
      * @param binary if <code>true</code>, binary mode is used.
      */
-    public static void close( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray, boolean binary,
-            IHMProgressMonitor pm ) {
-        dilate(inWR, regionMap, outWR, kernelArray, binary, pm);
+    public static void close( WritableRaster inWR, double inNovalue, RegionMap regionMap, WritableRaster outWR, int[] kernelArray,
+            boolean binary, IHMProgressMonitor pm ) {
+        dilate(inWR, inNovalue, regionMap, outWR, kernelArray, binary, pm);
         inWR.setDataElements(0, 0, outWR);
         clearRaster(regionMap, outWR);
-        erode(inWR, regionMap, outWR, kernelArray, pm);
+        erode(inWR, inNovalue, regionMap, outWR, kernelArray, pm);
     }
 
     public static void skeletonize( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[][] kernels ) {

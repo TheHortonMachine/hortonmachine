@@ -36,6 +36,7 @@ import javax.media.jai.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.GridNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.multiprocessing.GridMultiProcessing;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -107,13 +108,15 @@ public class OmsCurvatures extends GridMultiProcessing {
         double xRes = regionMap.getXres();
         double yRes = regionMap.getYres();
 
+        double novalue = HMConstants.getNovalue(inElev);
         RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
 
-        WritableRaster profWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRaster planWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRaster tangWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster profWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, novalue);
+        WritableRaster planWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, novalue);
+        WritableRaster tangWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, novalue);
 
         final double[] planTangProf = new double[3];
+
 
         try {
             /*
@@ -124,7 +127,7 @@ public class OmsCurvatures extends GridMultiProcessing {
                 if (pm.isCanceled()) {
                     return;
                 }
-                GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
+                GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r, novalue);
                 if (node.isValid() && !node.touchesNovalue() && !node.touchesBound()) {
                     calculateCurvatures2(node, planTangProf);
                     planWR.setSample(c, r, 0, planTangProf[0]);
@@ -140,9 +143,12 @@ public class OmsCurvatures extends GridMultiProcessing {
         if (pm.isCanceled()) {
             return;
         }
-        outProf = CoverageUtilities.buildCoverage("prof_curvature", profWR, regionMap, inElev.getCoordinateReferenceSystem());
-        outPlan = CoverageUtilities.buildCoverage("plan_curvature", planWR, regionMap, inElev.getCoordinateReferenceSystem());
-        outTang = CoverageUtilities.buildCoverage("tang_curvature", tangWR, regionMap, inElev.getCoordinateReferenceSystem());
+        outProf = CoverageUtilities.buildCoverageWithNovalue("prof_curvature", profWR, regionMap,
+                inElev.getCoordinateReferenceSystem(), novalue);
+        outPlan = CoverageUtilities.buildCoverageWithNovalue("plan_curvature", planWR, regionMap,
+                inElev.getCoordinateReferenceSystem(), novalue);
+        outTang = CoverageUtilities.buildCoverageWithNovalue("tang_curvature", tangWR, regionMap,
+                inElev.getCoordinateReferenceSystem(), novalue);
     }
 
     /**

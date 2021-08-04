@@ -35,15 +35,23 @@ public abstract class Node {
     protected boolean touchesBound = false;
     protected boolean touchesNovalue = false;
     protected final RandomIter gridIter;
+    protected double doubleNovalue = HMConstants.doubleNovalue;
+    protected float floatNovalue = HMConstants.floatNovalue;
+    protected int intNovalue = HMConstants.intNovalue;
 
-    public Node( RandomIter gridIter, int cols, int rows, int col, int row ) {
+    public Node( RandomIter gridIter, int cols, int rows, int col, int row, Double novalue ) {
         this.gridIter = gridIter;
         this.cols = cols;
         this.rows = rows;
         this.col = col;
         this.row = row;
+        if (novalue != null) {
+            this.doubleNovalue = novalue;
+            this.floatNovalue = novalue.floatValue();
+            this.intNovalue = novalue.intValue();
+        }
     }
-    
+
     /**
      * Get the value from a map. Default to getting a double value.
      * 
@@ -63,13 +71,13 @@ public abstract class Node {
     public float getFloatValueFromMap( RandomIter map ) {
         try {
             if (map == null) {
-                return HMConstants.floatNovalue;
+                return floatNovalue;
             }
             float value = map.getSampleFloat(col, row, 0);
             return value;
         } catch (Exception e) {
             // ignore and return novalue
-            return HMConstants.floatNovalue;
+            return floatNovalue;
         }
     }
 
@@ -82,13 +90,13 @@ public abstract class Node {
     public int getIntValueFromMap( RandomIter map ) {
         try {
             if (map == null) {
-                return HMConstants.intNovalue;
+                return intNovalue;
             }
             int value = map.getSample(col, row, 0);
             return value;
         } catch (Exception e) {
             // ignore and return novalue
-            return HMConstants.intNovalue;
+            return intNovalue;
         }
     }
 
@@ -101,16 +109,16 @@ public abstract class Node {
     public double getDoubleValueFromMap( RandomIter map ) {
         try {
             if (map == null) {
-                return HMConstants.doubleNovalue;
+                return doubleNovalue;
             }
             double value = map.getSampleDouble(col, row, 0);
             return value;
         } catch (Exception e) {
             // ignore and return novalue
-            return HMConstants.doubleNovalue;
+            return doubleNovalue;
         }
     }
-    
+
     public void setValueInMap( WritableRandomIter map, double value ) {
         setDoubleValueInMap(map, value);
     }

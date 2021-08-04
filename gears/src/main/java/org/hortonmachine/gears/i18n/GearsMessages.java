@@ -277,29 +277,6 @@ public class GearsMessages {
     public static final String OMSWINDOWSAMPLER_P_Y_STEP_DESCRIPTION = "The rows to move the window forward (default is = pRows).";
     public static final String OMSWINDOWSAMPLER_OUT_GEODATA_DESCRIPTION = "The output coverage.";
 
-    public static final String OMSRASTERREADER_DESCRIPTION = "Raster reader module.";
-    public static final String OMSRASTERREADER_DOCUMENTATION = "OmsRasterReader.html";
-    public static final String OMSRASTERREADER_KEYWORDS = "IO, Coverage, Raster, Reading";
-    public static final String OMSRASTERREADER_LABEL = RASTERREADER;
-    public static final String OMSRASTERREADER_NAME = "rasterreader";
-    public static final int OMSRASTERREADER_STATUS = 40;
-    public static final String OMSRASTERREADER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERREADER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERREADER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERREADER_FILE_DESCRIPTION = "The raster file to read with extension (supported are: asc, tiff, grass).";
-    public static final String OMSRASTERREADER_FILE_NOVALUE_DESCRIPTION = "The file novalue.";
-    public static final String OMSRASTERREADER_GEO_DATA_NOVALUE_DESCRIPTION = "The novalue wanted in the raster.";
-    public static final String OMSRASTERREADER_P_NORTH_DESCRIPTION = "The optional requested boundary north coordinate.";
-    public static final String OMSRASTERREADER_P_SOUTH_DESCRIPTION = "The optional requested boundary south coordinate.";
-    public static final String OMSRASTERREADER_P_WEST_DESCRIPTION = "The optional requested boundary west coordinate.";
-    public static final String OMSRASTERREADER_P_EAST_DESCRIPTION = "The optional requested boundary east coordinate.";
-    public static final String OMSRASTERREADER_P_X_RES_DESCRIPTION = "The optional requested resolution in x.";
-    public static final String OMSRASTERREADER_P_Y_RES_DESCRIPTION = "The optional requested resolution in y.";
-    public static final String OMSRASTERREADER_P_ROWS_DESCRIPTION = "The optional requested numer of rows.";
-    public static final String OMSRASTERREADER_P_COLS_DESCRIPTION = "The optional requested numer of cols.";
-    public static final String OMSRASTERREADER_DO_LEGACY_GRASS_DESCRIPTION = "Optional flag to force a legacy GRASS driver usage.";
-    public static final String OMSRASTERREADER_OUT_RASTER_DESCRIPTION = "The read output raster map.";
-
     public static final String OMSGRASSLEGACYWRITER_DESCRIPTION = "Legacy class for writing grass rasters.";
     public static final String OMSGRASSLEGACYWRITER_DOCUMENTATION = "";
     public static final String OMSGRASSLEGACYWRITER_KEYWORDS = "IO, Grass, Raster, Writing";

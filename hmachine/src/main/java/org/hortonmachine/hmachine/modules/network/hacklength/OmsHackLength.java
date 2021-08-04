@@ -55,6 +55,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.Direction;
 import org.hortonmachine.gears.libs.modules.FlowNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.Node;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -124,7 +125,8 @@ public class OmsHackLength extends HMModel {
             elevIter = CoverageUtilities.getRandomIterator(inElevation);
         }
 
-        hacklength(flowIter, tcaIter, elevIter);
+        double novalue = HMConstants.getNovalue(inFlow);
+        hacklength(flowIter, novalue, tcaIter, elevIter);
 
         tcaIter.done();
         flowIter.done();
@@ -134,7 +136,7 @@ public class OmsHackLength extends HMModel {
 
     }
 
-    private void hacklength( RandomIter flowIter, RandomIter tcaIter, RandomIter elevIter ) {
+    private void hacklength( RandomIter flowIter, double novalue, RandomIter tcaIter, RandomIter elevIter ) {
 
         double runningDistance = 0.0;
         double maxTca = 0.0;
@@ -145,7 +147,7 @@ public class OmsHackLength extends HMModel {
         pm.beginTask(msg.message("hacklength.calculating"), nRows); //$NON-NLS-1$
         for( int r = 0; r < nRows; r++ ) {
             for( int c = 0; c < nCols; c++ ) {
-                FlowNode flowNode = new FlowNode(flowIter, nCols, nRows, c, r);
+                FlowNode flowNode = new FlowNode(flowIter, nCols, nRows, c, r, novalue);
                 if (flowNode.isSource() && !flowNode.isHeadingOutside()) {
                     runningDistance = 0;
                     flowNode.setValueInMap(hacklengthIter, runningDistance);

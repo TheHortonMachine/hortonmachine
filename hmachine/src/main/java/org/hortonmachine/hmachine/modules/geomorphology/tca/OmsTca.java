@@ -52,6 +52,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.hortonmachine.gears.libs.modules.FlowNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -122,6 +123,7 @@ public class OmsTca extends HMModel {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
+        double novalue = HMConstants.getNovalue(inFlow);
 
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster tcaWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
@@ -135,7 +137,7 @@ public class OmsTca extends HMModel {
         pm.beginTask("Calculating tca...", rows); //$NON-NLS-1$
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
-                FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
+                FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r, novalue);
                 if (flowNode.isSource()) {
                     double previousTcaValue = 0.0;
 
@@ -210,7 +212,8 @@ public class OmsTca extends HMModel {
             outTca = CoverageUtilities.buildDummyCoverage();
         } else {
             outLoop = null;
-            outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, inFlow.getCoordinateReferenceSystem());
+            outTca = CoverageUtilities.buildCoverageWithNovalue("tca", tcaWR, regionMap, inFlow.getCoordinateReferenceSystem(),
+                    doubleNovalue);
         }
     }
 

@@ -24,6 +24,7 @@ import javax.media.jai.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.GridNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
@@ -58,8 +59,10 @@ public abstract class GridNodeMultiProcessing extends MultiProcessing {
         int rows = regionMap.getRows();
         double xRes = regionMap.getXres();
         double yRes = regionMap.getYres();
-
+        
         RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
+        
+        double novalue = HMConstants.getNovalue(inElev);
 
         ExecutionPlanner planner = createDefaultPlanner();
         planner.setNumberOfTasks(rows * cols);
@@ -70,7 +73,7 @@ public abstract class GridNodeMultiProcessing extends MultiProcessing {
                 int _c = c, _r = r;
                 planner.submit(() -> {
                     if (!pm.isCanceled()) {
-                        GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, _c, _r);
+                        GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, _c, _r, novalue);
                         calculator.calculate(node);
                     }
                 });

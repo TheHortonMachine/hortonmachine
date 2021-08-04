@@ -69,6 +69,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.Direction;
 import org.hortonmachine.gears.libs.modules.GridNode;
 import org.hortonmachine.gears.libs.modules.GridNodeElevationToLeastComparator;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.BitMatrix;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -172,14 +173,16 @@ public class OmsLeastCostFlowDirections extends HMModel {
         orderedNodes = new TreeSet<GridNode>(new GridNodeElevationToLeastComparator());
         assignedFlowsMap = new BitMatrix(cols, rows);
 
+        double novalue = HMConstants.getNovalue(inElev);
+
         pm.beginTask("Check for potential outlets...", rows);
         int nonValidCellsNum = 0;
         for( int r = 0; r < rows; r++ ) {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return;
             }
             for( int c = 0; c < cols; c++ ) {
-                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r);
+                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r, novalue);
                 if (!node.isValid()) {
                     nonValidCellsNum++;
                     assignedFlowsMap.mark(c, r);
@@ -259,13 +262,13 @@ public class OmsLeastCostFlowDirections extends HMModel {
         pm.done();
 
         CoordinateReferenceSystem crs = inElev.getCoordinateReferenceSystem();
-        outFlow = CoverageUtilities.buildCoverage("flowdirections", flowWR, regionMap, crs);
+        outFlow = CoverageUtilities.buildCoverageWithNovalue("flowdirections", flowWR, regionMap, crs, doubleNovalue);
         if (doTca)
-            outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, crs);
+            outTca = CoverageUtilities.buildCoverageWithNovalue("tca", tcaWR, regionMap, crs, doubleNovalue);
         if (doSlope)
-            outSlope = CoverageUtilities.buildCoverage("slope", slopeWR, regionMap, crs);
+            outSlope = CoverageUtilities.buildCoverageWithNovalue("slope", slopeWR, regionMap, crs, doubleNovalue);
         if (doAspect)
-            outAspect = CoverageUtilities.buildCoverage("aspect", aspectWR, regionMap, crs);
+            outAspect = CoverageUtilities.buildCoverageWithNovalue("aspect", aspectWR, regionMap, crs, doubleNovalue);
     }
 
     private void setNodeValues( GridNode node, int enteringFlow ) {

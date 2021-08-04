@@ -201,7 +201,7 @@ public class OmsExtractBasin extends HMModel {
             pEast = snapOutlet.x;
             pNorth = snapOutlet.y;
         }
-
+        double novalue = HMConstants.getNovalue(inFlow);
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlow);
         WritableRaster basinWR = CoverageUtilities.createWritableRaster(ncols, nrows, Short.class, null, shortNovalue);
         WritableRandomIter basinIter = RandomIterFactory.createWritable(basinWR, null);
@@ -216,7 +216,7 @@ public class OmsExtractBasin extends HMModel {
                 throw new IllegalArgumentException("The chosen outlet point doesn't have a valid value.");
             }
 
-            FlowNode runningNode = new FlowNode(flowIter, ncols, nrows, outletColRow[0], outletColRow[1]);
+            FlowNode runningNode = new FlowNode(flowIter, ncols, nrows, outletColRow[0], outletColRow[1], novalue);
             runningNode.setIntValueInMap(basinIter, 1);
             outArea++;
 
@@ -249,7 +249,7 @@ public class OmsExtractBasin extends HMModel {
             pm.done();
 
             outArea = outArea * xRes * yRes;
-            outBasin = CoverageUtilities.buildCoverage("basin", basinWR, regionMap, crs);
+            outBasin = CoverageUtilities.buildCoverageWithNovalue("basin", basinWR, regionMap, crs, shortNovalue);
 
             extractVectorBasin();
         } finally {

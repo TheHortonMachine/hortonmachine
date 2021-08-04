@@ -19,7 +19,6 @@ package org.hortonmachine.gears.libs.modules;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
-import static org.hortonmachine.gears.libs.modules.HMConstants.*;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -69,15 +68,15 @@ public class GridNode extends Node {
      * @param col the col of the current {@link GridNode node}.
      * @param row the row of the current {@link GridNode node}.
      */
-    public GridNode( RandomIter elevationIter, int cols, int rows, double xRes, double yRes, int col, int row ) {
-        super(elevationIter, cols, rows, col, row);
+    public GridNode( RandomIter elevationIter, int cols, int rows, double xRes, double yRes, int col, int row, Double novalue ) {
+        super(elevationIter, cols, rows, col, row, novalue);
 
         this.xRes = xRes;
         this.yRes = yRes;
 
         if (isInRaster(col, row)) {
             elevation = gridIter.getSampleDouble(col, row, 0);
-            if (HMConstants.isNovalue(elevation)) {
+            if (HMConstants.isNovalue(elevation, novalue)) {
                 isValid = false;
             } else {
                 isValid = true;
@@ -272,7 +271,7 @@ public class GridNode extends Node {
                 int tmpCol = col + c;
                 for( int r = -delta; r <= delta; r++ ) {
                     int tmpRow = row + r;
-                    GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
+                    GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow, doubleNovalue);
                     window[r + delta][c + delta] = n.elevation;
                 }
             }
@@ -285,7 +284,7 @@ public class GridNode extends Node {
 
                     double distance = sqrt(c * c + r * r);
                     if (distance <= radius) {
-                        GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
+                        GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow, doubleNovalue);
                         window[r + delta][c + delta] = n.elevation;
                     } else {
                         window[r + delta][c + delta] = doubleNovalue;
@@ -318,7 +317,7 @@ public class GridNode extends Node {
             int tmpCol = col + c;
             for( int r = -delta; r <= delta; r++ ) {
                 int tmpRow = row + r;
-                GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
+                GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow, doubleNovalue);
                 windowNodes.add(n);
             }
         }
@@ -367,7 +366,7 @@ public class GridNode extends Node {
             int newCol = col + direction.col;
             int newRow = row + direction.row;
             if (isInRaster(newCol, newRow)) {
-                GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow);
+                GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow, doubleNovalue);
                 if (node.isValid()) {
                     double slopeTo = getSlopeTo(node);
                     if (slopeTo > 0 && slopeTo > maxSlope) {
@@ -416,7 +415,7 @@ public class GridNode extends Node {
             int newCol = col + direction.col;
             int newRow = row + direction.row;
             if (isInRaster(newCol, newRow)) {
-                GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow);
+                GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow, doubleNovalue);
                 if (node.isValid()) {
                     nodes.add(node);
                 } else {
@@ -438,7 +437,7 @@ public class GridNode extends Node {
     public GridNode getNodeAt( Direction direction ) {
         int newCol = col + direction.col;
         int newRow = row + direction.row;
-        GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow);
+        GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow, doubleNovalue);
         return node;
     }
 
@@ -487,7 +486,7 @@ public class GridNode extends Node {
                 int newCol = col + direction.col;
                 int newRow = row + direction.row;
                 if (isInRaster(newCol, newRow)) {
-                    GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow);
+                    GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow, doubleNovalue);
                     if (node.isValid()) {
                         nodes.add(node);
                     }

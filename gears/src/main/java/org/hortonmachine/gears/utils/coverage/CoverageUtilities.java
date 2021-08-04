@@ -27,6 +27,8 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.shortNovalue;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
@@ -50,6 +52,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.CoverageFactoryFinder;
+import org.geotools.coverage.GridSampleDimension;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
@@ -936,6 +939,40 @@ public class CoverageUtilities {
     }
 
     /**
+     * Creates a {@link GridCoverage2D coverage} from the {@link WritableRaster writable raster} and the necessary geographic Information.
+     * 
+     * <p>This also sets the nodata value in the metadata (useful for tiffs for example).</p>
+     * 
+     * @param name the name of the coverage.
+     * @param writableRaster the raster containing the data.
+     * @param envelopeParams the map of boundary parameters.
+     * @param crs the {@link CoordinateReferenceSystem}.
+     * @param novalue the novalue to set in the metadata.
+     * @return the {@link GridCoverage2D coverage}.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static GridCoverage2D buildCoverageWithNovalue( String name, WritableRaster writableRaster,
+            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs, double novalue ) {
+        double west = envelopeParams.get(WEST);
+        double south = envelopeParams.get(SOUTH);
+        double east = envelopeParams.get(EAST);
+        double north = envelopeParams.get(NORTH);
+        Envelope2D writeEnvelope = new Envelope2D(crs, west, south, east - west, north - south);
+        final GridSampleDimension[] bands = RenderedSampleDimension.create(name, writableRaster, null, null, null, null, null);
+        final ColorModel model = bands[0].getColorModel(0, bands.length, writableRaster.getSampleModel().getDataType());
+        final RenderedImage image = new BufferedImage(model, writableRaster, false, null);
+
+        GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
+
+        Map properties = new HashMap<>();
+        NoDataContainer ndc = new NoDataContainer(novalue);
+        properties.put(NoDataContainer.GC_NODATA, ndc);
+
+        GridCoverage2D coverage2D = factory.create(name, image, writeEnvelope, bands, null, properties);
+        return coverage2D;
+    }
+
+    /**
      * Creates a useless {@link GridCoverage2D} that might be usefull as placeholder.
      * 
      * @return the dummy grod coverage.
@@ -1818,15 +1855,12 @@ public class CoverageUtilities {
      * @return the novalue or null if none defined.
      */
     public static Double getNovalue( GridCoverage2D raster ) {
-        Map< ? , ? > properties = raster.getProperties();
-        if (properties != null) {
-            Object object = properties.get(NoDataContainer.GC_NODATA);
-            if (object instanceof NoDataContainer) {
-                NoDataContainer nodataContainer = (NoDataContainer) object;
-                double noValue = nodataContainer.getAsSingleValue();
-                return noValue;
-            }
+        NoDataContainer noDataProperty = org.geotools.coverage.util.CoverageUtilities.getNoDataProperty(raster);
+        if (noDataProperty != null) {
+            double noValue = noDataProperty.getAsSingleValue();
+            return noValue;
         }
         return null;
     }
+
 }

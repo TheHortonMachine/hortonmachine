@@ -132,6 +132,8 @@ public class OmsInfiltratedWaterVolume extends HMModel {
         WritableRaster outInfWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
         WritableRandomIter outInfIter = CoverageUtilities.getWritableRandomIterator(outInfWR);
 
+        double novalue = HMConstants.getNovalue(inFlowdirections);
+
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlowdirections);
         RandomIter petIter = CoverageUtilities.getRandomIterator(inPet);
         RandomIter runoffIter = CoverageUtilities.getRandomIterator(inRunoff);
@@ -146,7 +148,7 @@ public class OmsInfiltratedWaterVolume extends HMModel {
                     return;
                 }
                 for( int c = 0; c < cols; c++ ) {
-                    FlowNode node = new FlowNode(flowIter, cols, rows, c, r);
+                    FlowNode node = new FlowNode(flowIter, cols, rows, c, r, novalue);
                     if (node.isSource()) {
                         sourceCells.add(node);
                     }

@@ -708,6 +708,9 @@ public class ModelsEngine {
         WritableRaster netnumWR = CoverageUtilities.createWritableRaster(cols, rows, Integer.class, null, null);
         WritableRandomIter netnumIter = RandomIterFactory.createWritable(netnumWR, null);
 
+        double flowNv = HMConstants.getNovalue(flowGC);
+        double netNv = HMConstants.getNovalue(netGC);
+
         RandomIter flowIter = CoverageUtilities.getRandomIterator(flowGC);
         RandomIter netIter = CoverageUtilities.getRandomIterator(netGC);
         RandomIter tcaIter = null;
@@ -736,13 +739,13 @@ public class ModelsEngine {
                         GridCoordinates2D gridCoordinate = gridGeometry
                                 .worldToGrid(new DirectPosition2D(pointCoordinate.x, pointCoordinate.y));
 
-                        GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, gridCoordinate.x, gridCoordinate.y);
-                        FlowNode flowNode = new FlowNode(flowIter, cols, rows, gridCoordinate.x, gridCoordinate.y);
+                        GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, gridCoordinate.x, gridCoordinate.y, netNv);
+                        FlowNode flowNode = new FlowNode(flowIter, cols, rows, gridCoordinate.x, gridCoordinate.y, flowNv);
                         while( !netNode.isValid() ) {
                             flowNode = flowNode.goDownstream();
                             if (flowNode == null)
                                 break;
-                            netNode = new GridNode(netIter, cols, rows, -1, -1, flowNode.col, flowNode.row);
+                            netNode = new GridNode(netIter, cols, rows, -1, -1, flowNode.col, flowNode.row, netNv);
                         }
                         if (flowNode != null) {
                             /*
@@ -755,7 +758,7 @@ public class ModelsEngine {
                              */
                             FlowNode flowNodeTmp = flowNode.goDownstream();
                             if (flowNodeTmp != null) {
-                                netNode = new GridNode(netIter, cols, rows, -1, -1, flowNodeTmp.col, flowNodeTmp.row);
+                                netNode = new GridNode(netIter, cols, rows, -1, -1, flowNodeTmp.col, flowNodeTmp.row, netNv);
                                 if (netNode.isValid) {
                                     splitNodes.add(flowNodeTmp);
                                     fixedNodesColRows.add(flowNode.col + "_" + flowNode.row);
@@ -771,13 +774,13 @@ public class ModelsEngine {
             pm.beginTask("Find confluences...", rows);
             for( int r = 0; r < rows; r++ ) {
                 for( int c = 0; c < cols; c++ ) {
-                    GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, c, r);
+                    GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, c, r, netNv);
                     if (netNode.isValid()) {
                         List<GridNode> validSurroundingNodes = netNode.getValidSurroundingNodes();
-                        FlowNode currentflowNode = new FlowNode(flowIter, cols, rows, c, r);
+                        FlowNode currentflowNode = new FlowNode(flowIter, cols, rows, c, r, flowNv);
                         int enteringCount = 0;
                         for( GridNode gridNode : validSurroundingNodes ) {
-                            FlowNode tmpNode = new FlowNode(flowIter, cols, rows, gridNode.col, gridNode.row);
+                            FlowNode tmpNode = new FlowNode(flowIter, cols, rows, gridNode.col, gridNode.row, flowNv);
                             List<FlowNode> enteringNodes = currentflowNode.getEnteringNodes();
                             if (enteringNodes.contains(tmpNode)) {
                                 enteringCount++;
@@ -878,7 +881,7 @@ public class ModelsEngine {
      * @param pm
      * @return the map of extracted subbasins.
      */
-    public static WritableRaster extractSubbasins( WritableRandomIter flowIter, RandomIter netIter,
+    public static WritableRaster extractSubbasins( WritableRandomIter flowIter, double flowNovalue, RandomIter netIter,
             WritableRandomIter netNumberIter, int rows, int cols, IHMProgressMonitor pm ) {
 
         for( int r = 0; r < rows; r++ ) {
@@ -891,7 +894,7 @@ public class ModelsEngine {
         WritableRaster subbasinWR = CoverageUtilities.createWritableRaster(cols, rows, Integer.class, null, null);
         WritableRandomIter subbasinIter = RandomIterFactory.createWritable(subbasinWR, null);
 
-        markHillSlopeWithLinkValue(flowIter, netNumberIter, subbasinIter, cols, rows, pm);
+        markHillSlopeWithLinkValue(flowIter, flowNovalue, netNumberIter, subbasinIter, cols, rows, pm);
 
         try {
             for( int r = 0; r < rows; r++ ) {
@@ -927,12 +930,12 @@ public class ModelsEngine {
      * @param rows region rows.
      * @param pm monitor.
      */
-    public static void markHillSlopeWithLinkValue( RandomIter flowIter, RandomIter attributeIter, WritableRandomIter markedIter,
-            int cols, int rows, IHMProgressMonitor pm ) {
+    public static void markHillSlopeWithLinkValue( RandomIter flowIter, double flowNovalue, RandomIter attributeIter,
+            WritableRandomIter markedIter, int cols, int rows, IHMProgressMonitor pm ) {
         pm.beginTask("Marking the hillslopes with the channel value...", rows);
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
-                FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
+                FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r, flowNovalue);
                 if (flowNode.isHeadingOutside()) {
                     // ignore single cells on borders that exit anyway
                     continue;

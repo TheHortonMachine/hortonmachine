@@ -18,6 +18,8 @@
 package org.hortonmachine.hmachine.modules.hydrogeomorphology.scsrunoff;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.HYDROGEOMORPHOLOGY;
+import static org.hortonmachine.gears.libs.modules.HMConstants.getNovalue;
+import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -106,19 +108,19 @@ public class OmsScsRunoff extends HMModel {
                 double rain = values[0];
                 double cn = values[1];
                 double net = values[2];
-                if (rain == rainNv || HMConstants.isNovalue(values[0]) || cn == cnNv || HMConstants.isNovalue(cn)) {
+                if (isNovalue(rain, rainNv) || isNovalue(cn, cnNv)) {
                     return rainNv;
                 }
                 int eventNum = (int) values[3];
-                if (eventNum == eventsNv || HMConstants.isNovalue(eventNum)) {
+                if (isNovalue(eventNum, eventsNv)) {
                     eventNum = 1; // default num events to 1 if not available
                 }
-                boolean isNet = net != netNv && !HMConstants.isNovalue(net);
+                boolean isNet = !isNovalue(net, netNv);
 
                 return calculateRunoff(rain, cn, isNet, eventNum);
             }
         };
-        outputDischarge = processor.loop(funct, inRainfall, inCurveNumber, inNet, inNumberOfEvents);
+        outputDischarge = processor.loop(funct, rainNv, inRainfall, inCurveNumber, inNet, inNumberOfEvents);
 
     }
 

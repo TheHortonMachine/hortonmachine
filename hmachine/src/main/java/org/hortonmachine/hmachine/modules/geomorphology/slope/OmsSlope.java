@@ -56,6 +56,7 @@ import oms3.annotations.Unit;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.Direction;
 import org.hortonmachine.gears.libs.modules.GridNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
@@ -100,6 +101,8 @@ public class OmsSlope extends HMModel {
         double xRes = regionMap.get(CoverageUtilities.XRES);
         double yRes = regionMap.get(CoverageUtilities.YRES);
 
+        double novalue = HMConstants.getNovalue(inPit);
+
         RenderedImage elevationRI = inPit.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
         RenderedImage flowRI = inFlow.getRenderedImage();
@@ -111,7 +114,7 @@ public class OmsSlope extends HMModel {
         for( int r = 0; r < nRows; r++ ) {
             for( int c = 0; c < nCols; c++ ) {
                 double flowValue = flowIter.getSampleDouble(c, r, 0);
-                GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
+                GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r, novalue);
                 double value = calculateSlope(node, flowValue);
                 if (doHandleNegativeSlope && value < 0) {
                     value = Double.MIN_VALUE;
@@ -122,7 +125,8 @@ public class OmsSlope extends HMModel {
         }
         pm.done();
 
-        outSlope = CoverageUtilities.buildCoverage("slope", slopeWR, regionMap, inPit.getCoordinateReferenceSystem());
+        outSlope = CoverageUtilities.buildCoverageWithNovalue("slope", slopeWR, regionMap, inPit.getCoordinateReferenceSystem(),
+                doubleNovalue);
     }
 
     /**

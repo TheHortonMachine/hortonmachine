@@ -92,8 +92,9 @@ public class OmsCurvaturesIM extends HMModelIM {
             int writeRows ) {
 
         RandomIter elevIter = inRasterIterators.get(0);
+        Double novalue = inRasterNovalues.get(0);
 
-        GridNode node = new GridNode(elevIter, readCols, readRows, xRes, yRes, readCol, readRow);
+        GridNode node = new GridNode(elevIter, readCols, readRows, xRes, yRes, readCol, readRow, novalue);
         OmsCurvatures.calculateCurvatures2(node, planTangProf);
         if (outPlan != null)
             outRasterIterators.get(0).setSample(writeCol, writeRow, 0, planTangProf[0]);

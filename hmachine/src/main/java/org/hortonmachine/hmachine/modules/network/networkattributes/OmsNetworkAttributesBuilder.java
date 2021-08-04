@@ -148,6 +148,7 @@ public class OmsNetworkAttributesBuilder extends HMModel {
         cols = regionMap.getCols();
         rows = regionMap.getRows();
         gridGeometry = inFlow.getGridGeometry();
+        double novalue = HMConstants.getNovalue(inFlow);
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlow);
         if (inTca != null) {
@@ -173,7 +174,7 @@ public class OmsNetworkAttributesBuilder extends HMModel {
                         // we make sure that we pick only outlets that are on the net
                         continue;
                     }
-                    FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
+                    FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r, novalue);
                     if (flowNode.isMarkedAsOutlet()) {
                         exitsList.add(flowNode);
                     } else if (flowNode.touchesBound() && flowNode.isValid()) {
@@ -257,7 +258,8 @@ public class OmsNetworkAttributesBuilder extends HMModel {
                 pm.done();
 
                 if (hackWIter != null) {
-                    outHack = CoverageUtilities.buildCoverage("hack", hackWR, regionMap, inFlow.getCoordinateReferenceSystem());
+                    outHack = CoverageUtilities.buildCoverageWithNovalue("hack", hackWR, regionMap,
+                            inFlow.getCoordinateReferenceSystem(), HMConstants.doubleNovalue);
                 }
             }
 

@@ -99,12 +99,15 @@ public class OmsCurvaturesBivariate extends HMModel {
     @Out
     public GridCoverage2D outAspect = null;
 
+    private double novalue;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outProf == null, doReset)) {
             return;
         }
         checkNull(inElev);
+        novalue = HMConstants.getNovalue(inElev);
 
         if (pCells < 3) {
             pCells = 3;
@@ -121,10 +124,10 @@ public class OmsCurvaturesBivariate extends HMModel {
 
         RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
 
-        WritableRaster profWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRaster planWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRaster slopeWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRaster aspectWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster profWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, novalue);
+        WritableRaster planWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, novalue);
+        WritableRaster slopeWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, novalue);
+        WritableRaster aspectWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, novalue);
 
         final double[] planProfSlopeAspect = new double[4];
         double disXX = Math.pow(xRes, 2.0);
@@ -138,7 +141,8 @@ public class OmsCurvaturesBivariate extends HMModel {
                 return;
             }
             for( int c = 1; c < nCols - 1; c++ ) {
-                calculateCurvatures(elevationIter, planProfSlopeAspect, nCols, nRows, c, r, xRes, yRes, disXX, disYY, pCells);
+                calculateCurvatures(elevationIter, novalue, planProfSlopeAspect, nCols, nRows, c, r, xRes, yRes, disXX, disYY,
+                        pCells);
                 planWR.setSample(c, r, 0, planProfSlopeAspect[0]);
                 profWR.setSample(c, r, 0, planProfSlopeAspect[1]);
                 slopeWR.setSample(c, r, 0, planProfSlopeAspect[2]);
@@ -152,10 +156,10 @@ public class OmsCurvaturesBivariate extends HMModel {
             return;
         }
         CoordinateReferenceSystem crs = inElev.getCoordinateReferenceSystem();
-        outProf = CoverageUtilities.buildCoverage("prof_curvature", profWR, regionMap, crs);
-        outPlan = CoverageUtilities.buildCoverage("plan_curvature", planWR, regionMap, crs);
-        outSlope = CoverageUtilities.buildCoverage("slope", slopeWR, regionMap, crs);
-        outAspect = CoverageUtilities.buildCoverage("aspect", aspectWR, regionMap, crs);
+        outProf = CoverageUtilities.buildCoverageWithNovalue("prof_curvature", profWR, regionMap, crs, novalue);
+        outPlan = CoverageUtilities.buildCoverageWithNovalue("plan_curvature", planWR, regionMap, crs, novalue);
+        outSlope = CoverageUtilities.buildCoverageWithNovalue("slope", slopeWR, regionMap, crs, novalue);
+        outAspect = CoverageUtilities.buildCoverageWithNovalue("aspect", aspectWR, regionMap, crs, novalue);
     }
 
     /**
@@ -172,10 +176,10 @@ public class OmsCurvaturesBivariate extends HMModel {
      * @param disXX the diagonal size of the cell, x component.
      * @param disYY the diagonal size of the cell, y component.
      */
-    public static void calculateCurvatures( RandomIter elevationIter, final double[] planTangProf, int ncols, int nrows, int col,
-            int row, double xRes, double yRes, double disXX, double disYY, int windowSize ) {
+    public static void calculateCurvatures( RandomIter elevationIter, double novalue, final double[] planTangProf, int ncols,
+            int nrows, int col, int row, double xRes, double yRes, double disXX, double disYY, int windowSize ) {
 
-        GridNode node = new GridNode(elevationIter, ncols, nrows, xRes, yRes, col, row);
+        GridNode node = new GridNode(elevationIter, ncols, nrows, xRes, yRes, col, row, novalue);
         double[][] window = node.getWindow(windowSize, false);
         if (!hasNovalues(window)) {
             double[] parameters = calculateParameters(window);

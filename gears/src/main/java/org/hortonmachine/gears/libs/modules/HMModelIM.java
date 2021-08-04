@@ -64,6 +64,7 @@ public abstract class HMModelIM extends HMModel {
     private List<ImageMosaicReader> readers = new ArrayList<ImageMosaicReader>();
 
     protected List<RandomIter> inRasterIterators = new ArrayList<RandomIter>();
+    protected List<Double> inRasterNovalues = new ArrayList<Double>();
     protected List<GridCoverage2D> inRasters = new ArrayList<GridCoverage2D>();
     protected List<WritableRandomIter> outRasterIterators = new ArrayList<WritableRandomIter>();
     protected List<GridCoverage2D> outGridCoverages = new ArrayList<GridCoverage2D>();
@@ -257,6 +258,7 @@ public abstract class HMModelIM extends HMModel {
                 RandomIter readIter = RandomIterFactory.create(readRaster, null);
                 inRasterIterators.add(readIter);
                 inRasters.add(readGC);
+                inRasterNovalues.add(HMConstants.getNovalue(readGC));
                 index++;
             } catch (Exception e) {
                 StringBuilder errSb = new StringBuilder();

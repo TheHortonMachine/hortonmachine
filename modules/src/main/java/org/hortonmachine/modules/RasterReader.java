@@ -28,27 +28,7 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_DO_LEGACY_GRASS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_FILE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_FILE_NOVALUE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_GEO_DATA_NOVALUE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_COLS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_EAST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_NORTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_ROWS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_SOUTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_WEST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_X_RES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_P_Y_RES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERREADER_STATUS;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.*;
 import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -70,14 +50,6 @@ public class RasterReader extends HMModel {
     @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String file = null;
-
-    @Description(OMSRASTERREADER_FILE_NOVALUE_DESCRIPTION)
-    @In
-    public Double fileNovalue = -9999.0;
-
-    @Description(OMSRASTERREADER_GEO_DATA_NOVALUE_DESCRIPTION)
-    @In
-    public Double geodataNovalue = doubleNovalue;
 
     @Description(OMSRASTERREADER_P_NORTH_DESCRIPTION)
     @UI(HMConstants.PROCESS_NORTH_UI_HINT)
@@ -137,8 +109,6 @@ public class RasterReader extends HMModel {
     public void process() throws Exception {
         OmsRasterReader rasterreader = new OmsRasterReader();
         rasterreader.file = file;
-        rasterreader.fileNovalue = fileNovalue;
-        rasterreader.geodataNovalue = geodataNovalue;
         rasterreader.pNorth = pNorth;
         rasterreader.pSouth = pSouth;
         rasterreader.pWest = pWest;

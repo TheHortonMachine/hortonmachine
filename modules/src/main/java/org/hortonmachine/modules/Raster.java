@@ -40,17 +40,15 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.Envelope2D;
-import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.libs.modules.GridNode;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
+import org.locationtech.jts.geom.Coordinate;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import org.locationtech.jts.geom.Coordinate;
 
 /**
  * A simple raster wrapper for scripting environment.
@@ -73,6 +71,7 @@ public class Raster {
     private final double xRes;
     private final double yRes;
     private GridGeometry2D gridGeometry;
+    private final double novalue;
 
     /**
      * Create a raster for reading purposes.
@@ -106,8 +105,10 @@ public class Raster {
         if (makeNew) {
             newWR = createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
             iter = RandomIterFactory.createWritable(newWR, null);
+            novalue = HMConstants.doubleNovalue;
         } else {
             iter = RandomIterFactory.create(raster.getRenderedImage(), null);
+            novalue = HMConstants.getNovalue(raster);
         }
     }
 
@@ -141,6 +142,7 @@ public class Raster {
 
         newWR = createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
         iter = RandomIterFactory.createWritable(newWR, null);
+        novalue = HMConstants.doubleNovalue;
     }
 
     /**
@@ -184,6 +186,7 @@ public class Raster {
         makeNew = true;
         newWR = createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
         iter = RandomIterFactory.createWritable(newWR, null);
+        novalue = HMConstants.doubleNovalue;
     }
 
     public int getRows() {
@@ -237,7 +240,7 @@ public class Raster {
             double value = iter.getSampleDouble(col, row, 0);
             return value;
         }
-        return HMConstants.doubleNovalue;
+        return novalue;
     }
 
     /**
@@ -301,7 +304,7 @@ public class Raster {
      * @return the array of cell values around them as [E, EN, N, NW, W, WS, S, SE].
      */
     public double[] surrounding( int col, int row ) {
-        GridNode node = new GridNode(iter, cols, rows, xRes, yRes, col, row);
+        GridNode node = new GridNode(iter, cols, rows, xRes, yRes, col, row, novalue);
         List<GridNode> surroundingNodes = node.getSurroundingNodes();
         double[] surr = new double[8];
         for( int i = 0; i < surroundingNodes.size(); i++ ) {
@@ -309,7 +312,7 @@ public class Raster {
             if (gridNode != null) {
                 surr[i] = gridNode.elevation;
             } else {
-                surr[i] = HMConstants.doubleNovalue;
+                surr[i] = novalue;
             }
         }
         return surr;
@@ -320,7 +323,7 @@ public class Raster {
     }
 
     public double novalue() {
-        return HMConstants.doubleNovalue;
+        return novalue;
     }
 
     public static boolean valuesEqual( double value1, double value2 ) {

@@ -41,6 +41,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.Direction;
 import org.hortonmachine.gears.libs.modules.FlowNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.multiprocessing.GridMultiProcessing;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -119,6 +120,7 @@ public class OmsRescaledDistance extends GridMultiProcessing {
 
         RenderedImage flowRI = inFlow.getRenderedImage();
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
+        double novalue = HMConstants.getNovalue(inFlow);
 
         RenderedImage netRI = inNet.getRenderedImage();
         RandomIter netIter = RandomIterFactory.create(netRI, null);
@@ -142,7 +144,7 @@ public class OmsRescaledDistance extends GridMultiProcessing {
                     // we make sure that we pick only outlets that are on the net
                     return;
                 }
-                FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
+                FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r, novalue);
                 if (flowNode.isHeadingOutside()) {
                     exitsList.add(flowNode);
                 }

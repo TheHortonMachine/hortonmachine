@@ -84,7 +84,7 @@ public class ScsRunoff extends HMModel {
     
     public static void main( String[] args ) throws Exception {
         ScsRunoff scs = new ScsRunoff();
-        scs.inRainfall = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/precip_gura_test.tif";
+        scs.inRainfall = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/precip_gura_onDEM.tif";
         scs.inNet = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/stream.tif";
         scs.inCurveNumber = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/CN.tif";
         scs.inNumberOfEvents = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/n_events.tif";

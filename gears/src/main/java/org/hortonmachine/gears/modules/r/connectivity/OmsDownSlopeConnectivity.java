@@ -29,6 +29,17 @@ import java.awt.image.WritableRaster;
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
+import org.hortonmachine.gears.libs.modules.FlowNode;
+import org.hortonmachine.gears.libs.modules.GridNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.ConstantRandomIter;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
@@ -41,17 +52,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
-import org.hortonmachine.gears.libs.modules.FlowNode;
-import org.hortonmachine.gears.libs.modules.GridNode;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.ConstantRandomIter;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description(OmsDownSlopeConnectivity.DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
@@ -120,6 +120,9 @@ public class OmsDownSlopeConnectivity extends HMModel {
         RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
         RandomIter slopeIter = CoverageUtilities.getRandomIterator(inSlope);
 
+        double flowNv = HMConstants.getNovalue(inFlow);
+        double netNv = HMConstants.getNovalue(inNet);
+
         RandomIter weightsIter;
         if (inWeights != null) {
             weightsIter = CoverageUtilities.getRandomIterator(inWeights);
@@ -134,16 +137,16 @@ public class OmsDownSlopeConnectivity extends HMModel {
 
         pm.beginTask("Calculate downslope connectivity...", nRows);
         for( int r = 0; r < nRows; r++ ) {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return;
             }
             for( int c = 0; c < nCols; c++ ) {
-                FlowNode flowNode = new FlowNode(flowIter, nCols, nRows, c, r);
+                FlowNode flowNode = new FlowNode(flowIter, nCols, nRows, c, r, flowNv);
                 if (!flowNode.isValid()) {
                     continue;
                 }
 
-                GridNode netNode = new GridNode(netIter, nCols, nRows, xres, yres, c, r);
+                GridNode netNode = new GridNode(netIter, nCols, nRows, xres, yres, c, r, netNv);
 
                 double connectivitySum = 0;
                 while( flowNode.isValid() && !netNode.isValid() ) {
@@ -166,7 +169,7 @@ public class OmsDownSlopeConnectivity extends HMModel {
                     double Di = distance / weight / slope;
                     connectivitySum = connectivitySum + Di;
                     flowNode = nextFlowNode;
-                    netNode = new GridNode(netIter, nCols, nRows, xres, yres, nextFlowNode.col, nextFlowNode.row);
+                    netNode = new GridNode(netIter, nCols, nRows, xres, yres, nextFlowNode.col, nextFlowNode.row, netNv);
                 }
                 connectivityIter.setSample(c, r, 0, connectivitySum);
             }

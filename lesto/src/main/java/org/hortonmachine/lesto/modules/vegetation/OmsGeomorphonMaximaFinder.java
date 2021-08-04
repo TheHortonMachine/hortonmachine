@@ -152,12 +152,15 @@ public class OmsGeomorphonMaximaFinder extends HMModel {
         pitCode = GeomorphonClassification.PIT.getCode();
         spurCode = GeomorphonClassification.SPUR.getCode();
 
+        double geomorphNv = HMConstants.getNovalue(geomorphonGC);
+        double elevNv = HMConstants.getNovalue(dsmDtmThresDiff);
+
         RandomIter geomorphIter = CoverageUtilities.getRandomIterator(geomorphonGC);
         RandomIter elevIter = CoverageUtilities.getRandomIterator(dsmDtmThresDiff);
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
-                GridNode geomorphNode = new GridNode(geomorphIter, cols, rows, 1, -1, c, r);
-                GridNode elevNode = new GridNode(elevIter, cols, rows, 1, -1, c, r);
+                GridNode geomorphNode = new GridNode(geomorphIter, cols, rows, 1, -1, c, r, geomorphNv);
+                GridNode elevNode = new GridNode(elevIter, cols, rows, 1, -1, c, r, elevNv);
                 if (geomorphNode.elevation == peakCode && !elevNode.touchesBound()) {
                     // found peak
                     boolean isLocalMaxima = true;
@@ -167,7 +170,7 @@ public class OmsGeomorphonMaximaFinder extends HMModel {
 
                     if (peakNodes.size() == 1) {
                         GridNode topNode = peakNodes.first();
-                        GridNode topElevNode = new GridNode(elevIter, cols, rows, 1, -1, topNode.col, topNode.row);
+                        GridNode topElevNode = new GridNode(elevIter, cols, rows, 1, -1, topNode.col, topNode.row, elevNv);
                         List<GridNode> validSurroundingNodes = topElevNode.getValidSurroundingNodes();
                         if (validSurroundingNodes.size() < 6) {
                             // no more than 2 invalid permitted
@@ -192,7 +195,7 @@ public class OmsGeomorphonMaximaFinder extends HMModel {
                         if (topNode != null) {
                             // check
 
-                            GridNode topElevNode = new GridNode(elevIter, cols, rows, 1, -1, topNode.col, topNode.row);
+                            GridNode topElevNode = new GridNode(elevIter, cols, rows, 1, -1, topNode.col, topNode.row, elevNv);
                             double[][] windowValues = topElevNode.getWindow(3, false);
                             double min = Double.POSITIVE_INFINITY;
                             double max = Double.NEGATIVE_INFINITY;

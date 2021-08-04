@@ -108,6 +108,7 @@ public class OmsSplitSubbasins extends HMModel {
 
         hackOrder = pHackorder;
 
+        double flowNovalue = HMConstants.getNovalue(inFlow);
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
         RenderedImage hacksRI = inHack.getRenderedImage();
@@ -116,17 +117,20 @@ public class OmsSplitSubbasins extends HMModel {
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
         WritableRandomIter hacksIter = RandomIterFactory.createWritable(hackWR, null);
 
-        WritableRaster netImage = CoverageUtilities.createWritableRaster(nCols, nRows, null, null,
-                HMConstants.doubleNovalue);
+        double outNv = HMConstants.doubleNovalue;
+        WritableRaster netImage = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, outNv);
         WritableRandomIter netIter = RandomIterFactory.createWritable(netImage, null);
         net(hacksIter, netIter);
 
         WritableRaster netNumberWR = netNumber(flowIter, hacksIter, netIter);
         WritableRandomIter netNumberIter = RandomIterFactory.createWritable(netNumberWR, null);
-        WritableRaster subbasinWR = ModelsEngine.extractSubbasins(flowIter, netIter, netNumberIter, nRows, nCols, pm);
+        WritableRaster subbasinWR = ModelsEngine.extractSubbasins(flowIter, flowNovalue, netIter, netNumberIter, nRows, nCols,
+                pm);
 
-        outNetnum = CoverageUtilities.buildCoverage("netnum", netNumberWR, regionMap, inFlow.getCoordinateReferenceSystem()); //$NON-NLS-1$
-        outSubbasins = CoverageUtilities.buildCoverage("subbasins", subbasinWR, regionMap, inFlow.getCoordinateReferenceSystem()); //$NON-NLS-1$
+        outNetnum = CoverageUtilities.buildCoverageWithNovalue("netnum", netNumberWR, regionMap, //$NON-NLS-1$
+                inFlow.getCoordinateReferenceSystem(), outNv);
+        outSubbasins = CoverageUtilities.buildCoverageWithNovalue("subbasins", subbasinWR, regionMap, //$NON-NLS-1$
+                inFlow.getCoordinateReferenceSystem(), outNv);
     }
     /**
      * Return the map of the network with only the river of the choosen order.
@@ -176,9 +180,10 @@ public class OmsSplitSubbasins extends HMModel {
 
                     boolean isSource = true;
                     for( int k = 1; k <= 8; k++ ) {
-                        boolean isDraining = flowIter.getSampleDouble(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0], 0) == dir[k][2];
-                        boolean isOnNet = !isNovalue(netIter.getSampleDouble(flowColRow[0] + dir[k][1],
-                                flowColRow[1] + dir[k][0], 0));
+                        boolean isDraining = flowIter.getSampleDouble(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0],
+                                0) == dir[k][2];
+                        boolean isOnNet = !isNovalue(
+                                netIter.getSampleDouble(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0], 0));
                         if (isDraining && isOnNet) {
                             isSource = false;
                             break;
@@ -204,7 +209,8 @@ public class OmsSplitSubbasins extends HMModel {
                             drainingPixelNum = 0;
                             for( int k = 1; k <= 8; k++ ) {
                                 if (!isNovalue(netIter.getSampleDouble(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0], 0))
-                                        && flowIter.getSampleDouble(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0], 0) == dir[k][2]) {
+                                        && flowIter.getSampleDouble(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0],
+                                                0) == dir[k][2]) {
                                     drainingPixelNum++;
                                 }
                             }
@@ -214,8 +220,8 @@ public class OmsSplitSubbasins extends HMModel {
                             }
                             netNumberRandomIter.setSample(flowColRow[0], flowColRow[1], 0, n);
 
-                            if (!ModelsEngine
-                                    .go_downstream(flowColRow, flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0)))
+                            if (!ModelsEngine.go_downstream(flowColRow,
+                                    flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0)))
                                 throw new ModelsIllegalargumentException("go_downstream failure...", this, pm);
                         }
                     }

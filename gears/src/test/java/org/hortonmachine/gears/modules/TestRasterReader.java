@@ -47,16 +47,12 @@ public class TestRasterReader extends HMTestCase {
 
         OmsRasterReader reader = new OmsRasterReader();
         reader.file = arcPath;
-        reader.fileNovalue = NaN;
-        reader.geodataNovalue = NaN;
         reader.process();
         GridCoverage2D readCoverage = reader.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
 
         reader = new OmsRasterReader();
         reader.file = grassPath;
-        reader.fileNovalue = NaN;
-        reader.geodataNovalue = NaN;
         reader.process();
         readCoverage = reader.outRaster;
         
