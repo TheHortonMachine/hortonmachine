@@ -19,6 +19,7 @@ package org.hortonmachine.gears.utils.colors;
 
 import java.awt.Color;
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -131,6 +132,180 @@ public class RasterStyleUtilities {
 
         Style newStyle = SLD.wrapSymbolizers(rasterSym);
         return newStyle;
+    }
+
+    public static String createQGISRasterStyle( String colorTableName, double min, double max, double[] values,
+            int labelDecimals ) throws Exception {
+
+        boolean isCategories = false;
+        List<Color> colorList = new ArrayList<Color>();
+        String tableString = new DefaultTables().getTableString(colorTableName);
+        if (tableString == null) {
+            return null;
+        }
+        String[] split = tableString.split("\n");
+        List<Double> newValues = null; // if necessary
+        for( String line : split ) {
+            if (line.startsWith("#")) { //$NON-NLS-1$
+                continue;
+            }
+            String[] lineSplit = line.trim().split("\\s+"); //$NON-NLS-1$
+
+            if (lineSplit.length == 3) {
+                int r = Integer.parseInt(lineSplit[0]);
+                int g = Integer.parseInt(lineSplit[1]);
+                int b = Integer.parseInt(lineSplit[2]);
+
+                colorList.add(new Color(r, g, b));
+            } else if (lineSplit.length == 8) {
+                if (newValues == null) {
+                    newValues = new ArrayList<Double>();
+                }
+
+                // also value are provided, rewrite input values
+                double v1 = Double.parseDouble(lineSplit[0]);
+                int r1 = Integer.parseInt(lineSplit[1]);
+                int g1 = Integer.parseInt(lineSplit[2]);
+                int b1 = Integer.parseInt(lineSplit[3]);
+
+                colorList.add(new Color(r1, g1, b1));
+                newValues.add(v1);
+
+                double v2 = Double.parseDouble(lineSplit[4]);
+                int r2 = Integer.parseInt(lineSplit[5]);
+                int g2 = Integer.parseInt(lineSplit[6]);
+                int b2 = Integer.parseInt(lineSplit[7]);
+
+                colorList.add(new Color(r2, g2, b2));
+                newValues.add(v2);
+            } else if (lineSplit.length == 4) {
+                if (newValues == null) {
+                    newValues = new ArrayList<Double>();
+                }
+
+                // also value are provided, rewrite input values
+                double v1 = Double.parseDouble(lineSplit[0]);
+                int r1 = Integer.parseInt(lineSplit[1]);
+                int g1 = Integer.parseInt(lineSplit[2]);
+                int b1 = Integer.parseInt(lineSplit[3]);
+
+                colorList.add(new Color(r1, g1, b1));
+                newValues.add(v1);
+
+                isCategories = true;
+            }
+        }
+
+        Color[] colorsArray = colorList.toArray(new Color[0]);
+        if (newValues != null) {
+            // redefine values
+            values = new double[newValues.size()];
+            for( int i = 0; i < newValues.size(); i++ ) {
+                values[i] = newValues.get(i);
+            }
+        }
+
+        if (isCategories) {
+            return getQgisStyleCategories(min, max, values, colorsArray, labelDecimals);
+        } else {
+            return getQgisStyleContinuous(min, max, values, colorsArray, labelDecimals);
+        }
+
+    }
+
+    private static String getQgisStyleCategories( double min, double max, double[] values, Color[] colors, int labelDecimals )
+            throws Exception {
+
+        String fPattern = "0.#################";
+        if (labelDecimals >= 0) {
+            fPattern = "0.";
+            for( int i = 0; i < labelDecimals; i++ ) {
+                fPattern += "#";
+            }
+        }
+        DecimalFormat f = new DecimalFormat(fPattern);
+
+        String ind = "\t";
+        StringBuilder sb = new StringBuilder();
+        sb.append("<qgis>\n");
+        sb.append(ind).append("<pipe>\n");
+        sb.append(ind).append(ind)
+                .append("<rasterrenderer band=\"1\" type=\"paletted\" alphaBand=\"-1\" opacity=\"1\" nodataColor=\"\">\n");
+        sb.append(ind).append(ind).append(ind).append("<colorPalette>\n");
+        for( int i = 0; i < colors.length; i++ ) {
+            double value = values[i];
+            sb.append(ind).append(ind).append(ind).append(ind);
+
+            String label = f.format(value);
+            String color = ColorUtilities.asHex(colors[i]);
+
+            // <paletteEntry value="0" alpha="255" color="#7e7fef" label="cat0"/>
+            sb.append("<paletteEntry value=\"" + value + "\" alpha=\"255\" color=\"" + color + "\" label=\"" + label + "\"/>\n");
+        }
+        sb.append(ind).append(ind).append(ind).append("</colorPalette>\n");
+        sb.append(ind).append(ind).append("</rasterrenderer>\n");
+        sb.append(ind).append("</pipe>\n");
+        sb.append("</qgis>\n");
+
+        return sb.toString();
+    }
+
+    private static String getQgisStyleContinuous( double min, double max, double[] values, Color[] colors, int labelDecimals )
+            throws Exception {
+
+        double delta = (max - min) / colors.length - 1;
+        if (values == null) {
+            values = new double[colors.length];
+
+            for( int i = 0; i < values.length; i++ ) {
+                values[i] = min + delta * i;
+            }
+        }
+
+        String fPattern = "0.#################";
+        if (labelDecimals >= 0) {
+            fPattern = "0.";
+            for( int i = 0; i < labelDecimals; i++ ) {
+                fPattern += "#";
+            }
+        }
+        DecimalFormat f = new DecimalFormat(fPattern);
+
+        String ind = "\t";
+        StringBuilder sb = new StringBuilder();
+        sb.append("<qgis>\n");
+        sb.append(ind).append("<pipe>\n");
+        sb.append(ind).append(ind) //
+                .append("<rasterrenderer band=\"1\" type=\"singlebandpseudocolor\"")//
+                .append(" classificationMax=\"").append(max).append("\"")//
+                .append(" classificationMin=\"").append(min).append("\"")//
+                .append(" alphaBand=\"-1\" opacity=\"1\" nodataColor=\"\">\n");
+
+        sb.append(ind).append(ind).append(ind).append("<rastershader>\n");
+        sb.append(ind).append(ind).append(ind).append(ind).append("<colorrampshader ")//
+                .append(" minimumValue=\"").append(min).append("\"")//
+                .append(" maximumValue=\"").append(max).append("\"")//
+                .append(" colorRampType=\"INTERPOLATED\"")//
+                .append(" classificationMode=\"1\"")//
+                .append(" clip=\"0\"")//
+                .append(">\n");
+        for( int i = 0; i < values.length; i++ ) {
+            sb.append(ind).append(ind).append(ind).append(ind).append(ind);
+
+            String label = f.format(values[i]);
+            String color = ColorUtilities.asHex(colors[i]);
+
+            // <item color="#d7191c" value="846.487670898438" label="846,4877" alpha="255"/>
+            sb.append("<item color=\"" + color + "\" value=\"" + values[i] + "\" label=\"" + label + "\" alpha=\"255\"/>\n");
+        }
+        sb.append(ind).append(ind).append(ind).append(ind).append("</colorrampshader>\n");
+        sb.append(ind).append(ind).append(ind).append("</rastershader>\n");
+
+        sb.append(ind).append(ind).append("</rasterrenderer>\n");
+        sb.append(ind).append("</pipe>\n");
+        sb.append("</qgis>\n");
+
+        return sb.toString();
     }
 
     public static Style createDefaultRasterStyle() {

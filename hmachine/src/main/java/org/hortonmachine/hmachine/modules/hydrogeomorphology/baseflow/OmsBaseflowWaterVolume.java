@@ -88,7 +88,12 @@ public class OmsBaseflowWaterVolume extends HMModel {
     public static final String outBaseflow_DESCRIPTION = "The map of infiltration.";
     public static final String inInf_DESCRIPTION = "The infiltrated watervolume.";
     public static final String inNetInf_DESCRIPTION = "The net infiltrated watervolume.";
+
     // VARS DOC END
+
+    private double infNv;
+
+    private double netNv;
 
     @Execute
     public void process() throws Exception {
@@ -101,11 +106,14 @@ public class OmsBaseflowWaterVolume extends HMModel {
         WritableRaster outBaseflowWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
         WritableRandomIter outBaseflowIter = CoverageUtilities.getWritableRandomIterator(outBaseflowWR);
 
-        int novalue = HMConstants.getIntNovalue(inFlowdirections);
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlowdirections);
+        int flowNv = HMConstants.getIntNovalue(inFlowdirections);
         RandomIter netInfiltrationIter = CoverageUtilities.getRandomIterator(inNetInfiltration);
+        double netInfNv = HMConstants.getNovalue(inNetInfiltration);
         RandomIter infiltrationIter = CoverageUtilities.getRandomIterator(inInfiltration);
+        infNv = HMConstants.getNovalue(inInfiltration);
         RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
+        netNv = HMConstants.getNovalue(inNet);
 
         List<FlowNode> sourceCells = new ArrayList<>();
         List<FlowNode> exitCells = new ArrayList<>();
@@ -116,7 +124,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
                     return;
                 }
                 for( int c = 0; c < cols; c++ ) {
-                    FlowNode node = new FlowNode(flowIter, cols, rows, c, r, novalue);
+                    FlowNode node = new FlowNode(flowIter, cols, rows, c, r, flowNv);
 
                     // get exit cells
                     if (node.isHeadingOutside()) {
@@ -124,7 +132,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
                     }
                     // and source cells on network
                     double net = node.getDoubleValueFromMap(netIter);
-                    if (!HMConstants.isNovalue(net) && node.isSource()) {
+                    if (!HMConstants.isNovalue(net, netNv) && node.isSource()) {
                         sourceCells.add(node);
                     }
                 }
@@ -172,7 +180,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
                 boolean canProcess = true;
                 for( FlowNode upstreamCell : upstreamCells ) {
                     double upstreamLi = upstreamCell.getDoubleValueFromMap(infiltrationIter);
-                    if (HMConstants.isNovalue(upstreamLi)) {
+                    if (HMConstants.isNovalue(upstreamLi, infNv)) {
                         // stop, we still need the other upstream values
                         canProcess = false;
                         break;
@@ -184,7 +192,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
                     // TODO check this line. Is there really sourceCell? Or downCell?
                     double currentCellLi = sourceCell.getDoubleValueFromMap(infiltrationIter);// infiltratedWaterVolumeState.get(locator,
                                                                                               // Double.class);
-                    if (!HMConstants.isNovalue(currentCellLi)) {
+                    if (!HMConstants.isNovalue(currentCellLi, infNv)) {
                         double lSumCurrentCell = 0.0;
                         for( FlowNode upstreamCell : upstreamCells ) {
                             int subX = upstreamCell.col;
@@ -206,7 +214,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
             RandomIter netIter, RandomIter infiltrationIter, RandomIter netInfiltrationIter ) {
         // process current cell
         double net = cell.getDoubleValueFromMap(netIter);
-        boolean isStream = !HMConstants.isNovalue(net);
+        boolean isStream = !HMConstants.isNovalue(net, netNv);
 
         double bSum = 0.0;
         int x = cell.col;
@@ -221,8 +229,8 @@ public class OmsBaseflowWaterVolume extends HMModel {
             int downX = downCell.col;
             double downBSum = bSumMatrix[downY][downX];
             double downLSum = lSumMatrix[downY][downX];
-            Double downLi = downCell.getDoubleValueFromMap(infiltrationIter);
-            Double downLAvailable = downCell.getDoubleValueFromMap(netInfiltrationIter);
+            double downLi = downCell.getDoubleValueFromMap(infiltrationIter);
+            double downLAvailable = downCell.getDoubleValueFromMap(netInfiltrationIter);
 
             if (downLSum != 0 && downLSum - downLi != 0) {
                 bSum = lSumMatrix[y][x] * (1 - (downLAvailable / downLSum) * downBSum / (downLSum - downLi));

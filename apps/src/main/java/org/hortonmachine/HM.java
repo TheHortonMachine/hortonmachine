@@ -53,6 +53,8 @@ import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
+import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
 import org.hortonmachine.gears.utils.chart.CategoryHistogram;
 import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.gears.utils.chart.TimeSeries;
@@ -61,6 +63,7 @@ import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.math.regressions.LogTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.PolyTrendLine;
@@ -69,6 +72,7 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.OmsMatrixCharter;
 import org.hortonmachine.modules.FileIterator;
+import org.hortonmachine.modules.RasterSummary;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -133,7 +137,9 @@ public class HM {
         sb.append("Chart a simple category histogram:").append("\n");
         sb.append("\thistogram( Map<String, Object> options, List<String> categories, List<Number> values )").append("\n");
         sb.append("Chart a category histogram with multiple series:").append("\n");
-        sb.append("\thistogram( Map<String, Object> options, List<String> seriesNames, List<String> categories, List<List<Number>> values )").append("\n");
+        sb.append(
+                "\thistogram( Map<String, Object> options, List<String> seriesNames, List<String> categories, List<List<Number>> values )")
+                .append("\n");
         sb.append("Chart a numeric histogram:").append("\n");
         sb.append("\thistogram( Map<String, Object> options, List<List<Number>> pairsValuesList )").append("\n");
         sb.append("Chart a time series:").append("\n");
@@ -181,6 +187,8 @@ public class HM {
         sb.append("\tString printColorTables()").append("\n");
         sb.append("Create the style object for a given colortable:").append("\n");
         sb.append("\tStyle styleForColorTable( String tableName, double min, double max, double opacity )").append("\n");
+        sb.append("Create the QGIS style file for a given colortable and raster file:").append("\n");
+        sb.append("\tmakeQgisStyleForRaster( String tableName, String rasterPath, int labelDecimals )").append("\n");
 
         sb.append("\n");
         sb.append("Spatial tools").append("\n");
@@ -517,7 +525,8 @@ public class HM {
     }
 
     @SuppressWarnings("unchecked")
-    public static void histogram( Map<String, Object> options, List<String> series, List<String> categories, List<Object> values ) {
+    public static void histogram( Map<String, Object> options, List<String> series, List<String> categories,
+            List<Object> values ) {
         String title = "";
         String xLabel = "x";
         String yLabel = "y";
@@ -1083,6 +1092,23 @@ public class HM {
     public static Style styleForColorTable( String tableName, double min, double max, double opacity ) throws Exception {
         return new SLDReader().read(
                 RasterStyleUtilities.styleToString(RasterStyleUtilities.createStyleForColortable(tableName, min, max, opacity)));
+    }
+
+    public static void makeQgisStyleForRaster( String tableName, String rasterPath ) throws Exception {
+        makeQgisStyleForRaster(tableName, rasterPath, 2);
+    }
+
+    public static void makeQgisStyleForRaster( String tableName, String rasterPath, int labelDecimals ) throws Exception {
+        RasterSummary s = new RasterSummary();
+        s.pm = new DummyProgressMonitor();
+        s.inRaster = rasterPath;
+        s.process();
+        double min = s.outMin;
+        double max = s.outMax;
+
+        String style = RasterStyleUtilities.createQGISRasterStyle(tableName, min, max, null, labelDecimals);
+        File styleFile = FileUtilities.substituteExtention(new File(rasterPath), "qml");
+        FileUtilities.writeFile(style, styleFile);
     }
 
     public static String ts2str( long millis ) {

@@ -104,13 +104,5 @@ public class PotentialEvapotranspiredWaterVolume extends HMModel {
 
         dumpRaster(pet.outputPet, outputPet);
     }
-    
-    public static void main( String[] args ) throws Exception {
-        PotentialEvapotranspiredWaterVolume p = new PotentialEvapotranspiredWaterVolume();
-        p.inCropCoefficient = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/kc_0.tif";
-        p.inReferenceEtp="/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/ET0_gura_onDEM.tif";
-        p.outputPet = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_klab/hydrology/INVEST/testGura/evapotranspiration_toni/pet.tif";
-        p.process();
-    }
 
 }

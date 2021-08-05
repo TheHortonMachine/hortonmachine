@@ -37,6 +37,8 @@ public enum EColorTables {
     sea, //
     slope, //
     reds, //
+    blues, //
+    greens, //
     contrasting130, //
     contrasting; //
 }
