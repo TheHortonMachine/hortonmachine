@@ -151,6 +151,7 @@ public class FlowNode extends Node {
                 ", \n\tflow=" + flow + //
                 ", \n\tisValid=" + isValid() + //
                 ", \n\ttouchesBounds=" + touchesBound + //
+                ", \n\tisSource=" + isSource() + //
                 "\n]";
     }
 

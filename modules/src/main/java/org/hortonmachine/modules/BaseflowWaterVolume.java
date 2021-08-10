@@ -17,12 +17,13 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow.OmsBaseflowWaterVolume.inFlowdirections_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow.OmsBaseflowWaterVolume.*;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow.OmsBaseflowWaterVolume.inInf_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow.OmsBaseflowWaterVolume.inNetInf_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow.OmsBaseflowWaterVolume.inNet_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow.OmsBaseflowWaterVolume.outBaseflow_DESCRIPTION;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow.OmsBaseflowWaterVolume;
@@ -35,6 +36,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
+import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -65,6 +67,11 @@ public class BaseflowWaterVolume extends HMModel {
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlowdirections = null;
+    
+    @Description(outLsum_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outLsum = null;
 
     @Description(outBaseflow_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -82,6 +89,7 @@ public class BaseflowWaterVolume extends HMModel {
         bf.process();
 
         dumpRaster(bf.outBaseflow, outBaseflow);
+        dumpRaster(bf.outLsum, outLsum);
 
     }
 

@@ -176,52 +176,58 @@ public class OmsInfiltratedWaterVolume extends HMModel {
 
             double[][] lSumAvailableMatrix = new double[rows][cols];
 
-            for( FlowNode sourceNode : sourceCells ) {
-                double pet = sourceNode.getValueFromMap(petIter);
-                double runoff = sourceNode.getValueFromMap(runoffIter);
-                double rain = sourceNode.getValueFromMap(rainIter);
-                double net = sourceNode.getValueFromMap(netIter);
+            for( FlowNode sourceCell : sourceCells ) {
+                double pet = sourceCell.getValueFromMap(petIter);
+                double runoff = sourceCell.getValueFromMap(runoffIter);
+                double rain = sourceCell.getValueFromMap(rainIter);
+                double net = sourceCell.getValueFromMap(netIter);
 
-                if (!HMConstants.isNovalue(pet, petNv) && !HMConstants.isNovalue(rain, rainNv)
-                        && !HMConstants.isNovalue(runoff, runoffNv)) {
+                if (!HMConstants.isNovalue(rain, rainNv) && !HMConstants.isNovalue(runoff, runoffNv)) {
 
+                    boolean isPetNv = HMConstants.isNovalue(pet, petNv);
+
+                    boolean isStream = !HMConstants.isNovalue(net, netNv);
                     double initialAet = 0;
-                    boolean isNotStream = HMConstants.isNovalue(net, netNv);
-                    if (isNotStream) {
-                        initialAet = Math.min(pet, rain - runoff);
+                    double li = 0;
+                    if (!isStream) {
+                        if (isPetNv) {
+                            initialAet = rain - runoff;
+                        } else {
+                            initialAet = Math.min(pet, rain - runoff);
+                        }
+                        li = rain - runoff - initialAet;
                     }
-                    double li = rain - runoff - initialAet;
                     double lAvailable = Math.min(pGamma * li, li);
 
-                    lSumAvailableMatrix[sourceNode.row][sourceNode.col] = 0;
+                    lSumAvailableMatrix[sourceCell.row][sourceCell.col] = 0;
 
-                    sourceNode.setDoubleValueInMap(outLiAvailableIter, lAvailable);
-                    sourceNode.setDoubleValueInMap(outLiIter, li);
-                    sourceNode.setDoubleValueInMap(outAetIter, initialAet);
+                    sourceCell.setDoubleValueInMap(outLiAvailableIter, lAvailable);
+                    sourceCell.setDoubleValueInMap(outLiIter, li);
+                    sourceCell.setDoubleValueInMap(outAetIter, initialAet);
 
                     // go downstream
-                    FlowNode cell = sourceNode.goDownstream();
+                    FlowNode cell = sourceCell.goDownstream();
 
                     Set<FlowNode> seen = new HashSet<>();
 
                     while( cell != null ) {
-
                         List<FlowNode> upstreamCells = cell.getEnteringNodes();
                         // check if all upstream have a value
                         boolean canProcess = canProcess(outNv, outLiAvailableIter, upstreamCells);
                         if (canProcess) {
                             pet = cell.getDoubleValueFromMap(petIter);
+                            isPetNv = HMConstants.isNovalue(pet, petNv);
                             rain = cell.getDoubleValueFromMap(rainIter);
                             runoff = cell.getDoubleValueFromMap(runoffIter);
                             net = cell.getDoubleValueFromMap(netIter);
 
-                            if (!HMConstants.isNovalue(pet, petNv) && !HMConstants.isNovalue(rain, rainNv)
-                                    && !HMConstants.isNovalue(runoff, runoffNv)) {
+                            if (!HMConstants.isNovalue(rain, rainNv) && !HMConstants.isNovalue(runoff, runoffNv)) {
+                                isStream = !HMConstants.isNovalue(net, netNv);
 
                                 double lAvailableUpstream = 0.0;
                                 double lSumAvailableUpstream = 0.0;
                                 for( FlowNode upstreamCell : upstreamCells ) {
-                                    double upstreamLAvailable = upstreamCell.getDoubleValueFromMap(outLiAvailableIter);
+                                    double upstreamLAvailable = upstreamCell.getValueFromMap(outLiAvailableIter);
                                     // infiltratedWaterVolumeState.get(upstreamCell,
                                     // Double.class);
                                     int x = upstreamCell.col;
@@ -237,15 +243,24 @@ public class OmsInfiltratedWaterVolume extends HMModel {
                                 lSumAvailableMatrix[cell.row][cell.col] = lSumAvailableCurrentCell;
 
                                 double aetCC = 0;
-                                if (isNotStream) {
-                                    aetCC = Math.min(pet, rain - runoff + pAlpha * pBeta * lSumAvailableCurrentCell);
+                                double liCC = 0;
+                                if (!isStream) {
+                                    if (isPetNv) {
+                                        aetCC = rain - runoff + pAlpha * pBeta * lSumAvailableCurrentCell;
+                                    } else {
+                                        aetCC = Math.min(pet, rain - runoff + pAlpha * pBeta * lSumAvailableCurrentCell);
+                                    }
+                                    liCC = rain - runoff - aetCC;
                                 }
-                                double liCC = rain - runoff - aetCC;
                                 double lAvailableCC = Math.min(pGamma * liCC, liCC);
                                 cell.setDoubleValueInMap(outLiAvailableIter, lAvailableCC);
                                 cell.setDoubleValueInMap(outLiIter, liCC);
                                 cell.setDoubleValueInMap(outAetIter, aetCC);
 
+                            } else if (!HMConstants.isNovalue(net, netNv) && cell.isValid()) {
+                                cell.setDoubleValueInMap(outLiAvailableIter, 0);
+                                cell.setDoubleValueInMap(outLiIter, 0);
+                                cell.setDoubleValueInMap(outAetIter, 0);
                             }
 
                             cell = cell.goDownstream();
@@ -267,9 +282,9 @@ public class OmsInfiltratedWaterVolume extends HMModel {
 
             }
 
-            outInfiltration = CoverageUtilities.buildCoverageWithNovalue("infiltration", outLiAvailableWR, regionMap,
+            outInfiltration = CoverageUtilities.buildCoverageWithNovalue("infiltration", outLiWR, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), outNv);
-            outNetInfiltration = CoverageUtilities.buildCoverageWithNovalue("netinfiltration", outLiWR, regionMap,
+            outNetInfiltration = CoverageUtilities.buildCoverageWithNovalue("netinfiltration", outLiAvailableWR, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), outNv);
             outAet = CoverageUtilities.buildCoverageWithNovalue("aet", outAetWR, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), outNv);
@@ -294,7 +309,7 @@ public class OmsInfiltratedWaterVolume extends HMModel {
     private boolean canProcess( double outNv, WritableRandomIter outLiAvailableIter, List<FlowNode> upstreamCells ) {
         boolean canProcess = true;
         for( FlowNode upstreamCell : upstreamCells ) {
-            double upstreamLAvailable = upstreamCell.getDoubleValueFromMap(outLiAvailableIter);
+            double upstreamLAvailable = upstreamCell.getValueFromMap(outLiAvailableIter);
             // infiltratedWaterVolumeState.get(upstreamCell,
             // Double.class);
 

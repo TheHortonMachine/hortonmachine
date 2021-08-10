@@ -21,15 +21,19 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.HYDROGEOMORPHOLOG
 
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.modules.FlowNode;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
@@ -68,6 +72,10 @@ public class OmsBaseflowWaterVolume extends HMModel {
     @In
     public GridCoverage2D inFlowdirections = null;
 
+    @Description(outLsum_DESCRIPTION)
+    @Out
+    public GridCoverage2D outLsum = null;
+
     @Description(outBaseflow_DESCRIPTION)
     @Out
     public GridCoverage2D outBaseflow = null;
@@ -85,7 +93,8 @@ public class OmsBaseflowWaterVolume extends HMModel {
 
     public static final String inFlowdirections_DESCRIPTION = "The map of flowdirections (D8).";
     public static final String inNet_DESCRIPTION = "The map of net.";
-    public static final String outBaseflow_DESCRIPTION = "The map of infiltration.";
+    public static final String outBaseflow_DESCRIPTION = "The map of baseflow.";
+    public static final String outLsum_DESCRIPTION = "The map of Lsum.";
     public static final String inInf_DESCRIPTION = "The infiltrated watervolume.";
     public static final String inNetInf_DESCRIPTION = "The net infiltrated watervolume.";
 
@@ -103,8 +112,13 @@ public class OmsBaseflowWaterVolume extends HMModel {
         int rows = regionMap.getRows();
         int cols = regionMap.getCols();
 
-        WritableRaster outBaseflowWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
+        double outNv = HMConstants.doubleNovalue;
+        double lsumNv = -1E32;
+
+        WritableRaster outBaseflowWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, outNv);
         WritableRandomIter outBaseflowIter = CoverageUtilities.getWritableRandomIterator(outBaseflowWR);
+        WritableRaster outLsumWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, lsumNv);
+        WritableRandomIter outLsumIter = CoverageUtilities.getWritableRandomIterator(outLsumWR);
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlowdirections);
         int flowNv = HMConstants.getIntNovalue(inFlowdirections);
@@ -131,8 +145,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
                         exitCells.add(node);
                     }
                     // and source cells on network
-                    double net = node.getDoubleValueFromMap(netIter);
-                    if (!HMConstants.isNovalue(net, netNv) && node.isSource()) {
+                    if (node.isSource()) {
                         sourceCells.add(node);
                     }
                 }
@@ -142,17 +155,30 @@ public class OmsBaseflowWaterVolume extends HMModel {
 
             // calculate matrix of cumulated infiltration
             double[][] lSumMatrix = new double[rows][cols];
-            calculateLsumMatrix(sourceCells, lSumMatrix, infiltrationIter);
+            for( int row = 0; row < rows; row++ ) {
+                for( int col = 0; col < cols; col++ ) {
+                    lSumMatrix[row][col] = lsumNv;
+                }
+            }
+            calculateLsumMatrix(sourceCells, lSumMatrix, infiltrationIter, netIter, outLsumIter, lsumNv, pm);
 
             // calculate matrix of cumulated baseflow
             double[][] bSumMatrix = new double[rows][cols];
+            pm.beginTask("Calcuate bsum...", exitCells.size());
             for( FlowNode exitCell : exitCells ) {
+                if (pm.isCanceled()) {
+                    return;
+                }
                 walkUpAndProcess(exitCell, bSumMatrix, lSumMatrix, outBaseflowIter, netIter, infiltrationIter,
                         netInfiltrationIter);
+                pm.worked(1);
             }
+            pm.done();
 
-            outBaseflow = CoverageUtilities.buildCoverage("baseflow", outBaseflowWR, regionMap,
-                    inFlowdirections.getCoordinateReferenceSystem());
+            outBaseflow = CoverageUtilities.buildCoverageWithNovalue("baseflow", outBaseflowWR, regionMap,
+                    inFlowdirections.getCoordinateReferenceSystem(), outNv);
+            outLsum = CoverageUtilities.buildCoverageWithNovalue("lsum", outLsumWR, regionMap,
+                    inFlowdirections.getCoordinateReferenceSystem(), lsumNv);
         } finally {
             flowIter.done();
             netInfiltrationIter.done();
@@ -160,54 +186,83 @@ public class OmsBaseflowWaterVolume extends HMModel {
             netIter.done();
 
             outBaseflowIter.done();
+            outLsumIter.done();
         }
 
     }
 
-    private void calculateLsumMatrix( List<FlowNode> sourceCells, double[][] lSumMatrix, RandomIter infiltrationIter ) {
+    private void calculateLsumMatrix( List<FlowNode> sourceCells, double[][] lSumMatrix, RandomIter infiltrationIter,
+            RandomIter netIter, WritableRandomIter outLsumIter, double lsumNv, IHMProgressMonitor pm ) {
+
+        pm.beginTask("Calculating lsum...", sourceCells.size());
         for( FlowNode sourceCell : sourceCells ) {
-            double li = sourceCell.getDoubleValueFromMap(infiltrationIter);
+            double li = sourceCell.getValueFromMap(infiltrationIter);
+            if (HMConstants.isNovalue(li, infNv)) {
+                pm.errorMessage("Found novalue in infiltration map. Check your data. Setting infiltration to 0.");
+                li = 0;
+            }
             int x = sourceCell.col;
             int y = sourceCell.row;
             lSumMatrix[y][x] = li; // no upstream contribution
 
+            sourceCell.setValueInMap(outLsumIter, li);
+
             // go downstream
-            FlowNode downCell = sourceCell.goDownstream();
-            while( downCell != null ) {
-                FlowNode cell = downCell;
+            Set<FlowNode> seen = new HashSet<>();
+            FlowNode cell = sourceCell.goDownstream();
+            while( cell != null ) {
                 List<FlowNode> upstreamCells = cell.getEnteringNodes();
                 // check if all upstream have a value
-                boolean canProcess = true;
-                for( FlowNode upstreamCell : upstreamCells ) {
-                    double upstreamLi = upstreamCell.getDoubleValueFromMap(infiltrationIter);
-                    if (HMConstants.isNovalue(upstreamLi, infNv)) {
-                        // stop, we still need the other upstream values
-                        canProcess = false;
-                        break;
-                    }
-                }
-
+                boolean canProcess = canProcess(outLsumIter, lsumNv, upstreamCells);
                 if (canProcess) {
-
-                    // TODO check this line. Is there really sourceCell? Or downCell?
-                    double currentCellLi = sourceCell.getDoubleValueFromMap(infiltrationIter);// infiltratedWaterVolumeState.get(locator,
-                                                                                              // Double.class);
-                    if (!HMConstants.isNovalue(currentCellLi, infNv)) {
-                        double lSumCurrentCell = 0.0;
-                        for( FlowNode upstreamCell : upstreamCells ) {
-                            int subX = upstreamCell.col;
-                            int subY = upstreamCell.row;
-
-                            lSumCurrentCell += lSumMatrix[subY][subX];
-                        }
-                        lSumMatrix[y][x] = currentCellLi + lSumCurrentCell;
+                    double currentCellLi = cell.getValueFromMap(infiltrationIter);
+                    // infiltratedWaterVolumeState.get(locator,
+                    // Double.class);
+                    if (HMConstants.isNovalue(currentCellLi, infNv)) {
+                        pm.errorMessage("Found novalue in infiltration map. Check your data. Setting infiltration to 0.");
+                        currentCellLi = 0;
                     }
-                    downCell = cell.goDownstream();
+                    double lSumUpstreamCells = 0.0;
+                    for( FlowNode upstreamCell : upstreamCells ) {
+                        int subX = upstreamCell.col;
+                        int subY = upstreamCell.row;
+
+                        lSumUpstreamCells += lSumMatrix[subY][subX];
+                    }
+                    double currentCellLSum = currentCellLi + lSumUpstreamCells;
+                    lSumMatrix[cell.row][cell.col] = currentCellLSum;
+                    cell.setValueInMap(outLsumIter, currentCellLSum);
+                    cell = cell.goDownstream();
+
+                    if (cell != null) {
+                        if (seen.contains(cell)) {
+                            cell = null;
+                        } else {
+                            seen.add(cell);
+                        }
+                    }
                 } else {
                     break;
                 }
             }
+            pm.worked(1);
         }
+        pm.done();
+    }
+
+    private boolean canProcess( WritableRandomIter outLsumIter, double lsumNv, List<FlowNode> upstreamCells ) {
+        boolean canProcess = true;
+        for( FlowNode upstreamCell : upstreamCells ) {
+            double lsum = upstreamCell.getValueFromMap(outLsumIter);
+
+//                    double lsum = lSumMatrix[upstreamCell.row][upstreamCell.col];
+            if (HMConstants.isNovalue(lsum, lsumNv)) {
+                // stop, we still need the other upstream values
+                canProcess = false;
+                break;
+            }
+        }
+        return canProcess;
     }
 
     private void walkUpAndProcess( FlowNode cell, double[][] bSumMatrix, double[][] lSumMatrix, WritableRandomIter baseflowIter,
@@ -233,7 +288,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
             double downLAvailable = downCell.getDoubleValueFromMap(netInfiltrationIter);
 
             if (downLSum != 0 && downLSum - downLi != 0) {
-                bSum = lSumMatrix[y][x] * (1 - (downLAvailable / downLSum) * downBSum / (downLSum - downLi));
+                bSum = lSumMatrix[y][x] * (1 - downLAvailable / downLSum) * downBSum / (downLSum - downLi);
             } else {
                 bSum = lSumMatrix[y][x];
             }
