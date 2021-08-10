@@ -67,11 +67,29 @@ public class BaseflowWaterVolume extends HMModel {
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inFlowdirections = null;
-    
+
     @Description(outLsum_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outLsum = null;
+
+    @Description(outB_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outB = null;
+
+    @Description(outVri_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outVri = null;
+
+    @Description(outQb_DESCRIPTION)
+    @Out
+    public Double outQb = null;
+
+    @Description(outVriSum_DESCRIPTION)
+    @Out
+    public Double outVriSum = null;
 
     @Description(outBaseflow_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -90,6 +108,11 @@ public class BaseflowWaterVolume extends HMModel {
 
         dumpRaster(bf.outBaseflow, outBaseflow);
         dumpRaster(bf.outLsum, outLsum);
+        dumpRaster(bf.outVri, outVri);
+        dumpRaster(bf.outB, outB);
+
+        outQb = bf.outQb;
+        outVriSum = bf.outVriSum;
 
     }
 

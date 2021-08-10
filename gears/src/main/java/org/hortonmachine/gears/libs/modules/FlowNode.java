@@ -167,7 +167,9 @@ public class FlowNode extends Node {
      */
     public boolean isHeadingOutside() {
         if (!wasHeadingOutsideChecked) {
-            if (touchesBound) {
+            if (!isValid) {
+                isHeadingOutside = false;
+            } else if (touchesBound) {
                 Node goDownstream = goDownstream();
                 if (goDownstream == null || !goDownstream.isValid()) {
                     isHeadingOutside = true;

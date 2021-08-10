@@ -76,6 +76,22 @@ public class OmsBaseflowWaterVolume extends HMModel {
     @Out
     public GridCoverage2D outLsum = null;
 
+    @Description(outB_DESCRIPTION)
+    @Out
+    public GridCoverage2D outB = null;
+
+    @Description(outVri_DESCRIPTION)
+    @Out
+    public GridCoverage2D outVri = null;
+
+    @Description(outQb_DESCRIPTION)
+    @Out
+    public Double outQb = null;
+
+    @Description(outVriSum_DESCRIPTION)
+    @Out
+    public Double outVriSum = null;
+
     @Description(outBaseflow_DESCRIPTION)
     @Out
     public GridCoverage2D outBaseflow = null;
@@ -93,8 +109,12 @@ public class OmsBaseflowWaterVolume extends HMModel {
 
     public static final String inFlowdirections_DESCRIPTION = "The map of flowdirections (D8).";
     public static final String inNet_DESCRIPTION = "The map of net.";
-    public static final String outBaseflow_DESCRIPTION = "The map of baseflow.";
+    public static final String outBaseflow_DESCRIPTION = "The map of cumulated baseflow.";
+    public static final String outB_DESCRIPTION = "The map of single cell baseflow.";
+    public static final String outVri_DESCRIPTION = "The map of contribution of local recharge in pixel to baseflow.";
     public static final String outLsum_DESCRIPTION = "The map of Lsum.";
+    public static final String outQb_DESCRIPTION = "The total baseflow.";
+    public static final String outVriSum_DESCRIPTION = "The Vri sum value.";
     public static final String inInf_DESCRIPTION = "The infiltrated watervolume.";
     public static final String inNetInf_DESCRIPTION = "The net infiltrated watervolume.";
 
@@ -117,6 +137,11 @@ public class OmsBaseflowWaterVolume extends HMModel {
 
         WritableRaster outBaseflowWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, outNv);
         WritableRandomIter outBaseflowIter = CoverageUtilities.getWritableRandomIterator(outBaseflowWR);
+
+        WritableRaster outBWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, outNv);
+        WritableRandomIter outBIter = CoverageUtilities.getWritableRandomIterator(outBWR);
+        WritableRaster outVriWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, outNv);
+        WritableRandomIter outVriIter = CoverageUtilities.getWritableRandomIterator(outVriWR);
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlowdirections);
         int flowNv = HMConstants.getIntNovalue(inFlowdirections);
@@ -173,10 +198,54 @@ public class OmsBaseflowWaterVolume extends HMModel {
             }
             pm.done();
 
+            double qb = 0;
+            int count = 0;
+            pm.beginTask("Calculate total baseflow...", rows);
+            for( int row = 0; row < rows; row++ ) {
+                for( int col = 0; col < cols; col++ ) {
+                    double li = infiltrationIter.getSampleDouble(col, row, 0);
+                    if (!HMConstants.isNovalue(li, infNv)) {
+                        qb += li;
+                        count++;
+                    }
+                }
+                pm.worked(1);
+            }
+            double qbTmp = qb / count;
+            outQb = qbTmp;
+            pm.done();
+
+            pm.beginTask("Calculate Vri...", rows);
+            double vriSum = 0;
+            for( int row = 0; row < rows; row++ ) {
+                for( int col = 0; col < cols; col++ ) {
+                    double li = infiltrationIter.getSampleDouble(col, row, 0);
+                    double bSum = outBaseflowIter.getSampleDouble(col, row, 0);
+                    double lSum = lSumMatrix[row][col];
+
+                    if (!HMConstants.isNovalue(li, infNv)) {
+                        double vri = li / (qbTmp * count);
+                        vriSum += vri;
+                        outVriIter.setSample(col, row, 0, vri);
+
+                        double bi = Math.max(bSum * li / lSum, 0);
+                        outBIter.setSample(col, row, 0, bi);
+                    }
+                }
+                pm.worked(1);
+            }
+            pm.done();
+            outVriSum = vriSum;
+
             outBaseflow = CoverageUtilities.buildCoverageWithNovalue("baseflow", outBaseflowWR, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), outNv);
             outLsum = CoverageUtilities.buildCoverageWithNovalue("lsum", lSumMatrix, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), true, lsumNv);
+
+            outB = CoverageUtilities.buildCoverageWithNovalue("b", outBWR, regionMap,
+                    inFlowdirections.getCoordinateReferenceSystem(), outNv);
+            outVri = CoverageUtilities.buildCoverageWithNovalue("vri", outVriWR, regionMap,
+                    inFlowdirections.getCoordinateReferenceSystem(), lsumNv);
         } finally {
             flowIter.done();
             netInfiltrationIter.done();
@@ -184,6 +253,8 @@ public class OmsBaseflowWaterVolume extends HMModel {
             netIter.done();
 
             outBaseflowIter.done();
+            outBIter.done();
+            outVriIter.done();
         }
 
     }
